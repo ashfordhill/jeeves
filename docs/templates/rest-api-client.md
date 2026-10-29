@@ -10,7 +10,7 @@ Mini-box on an `http-service` or `web-app` element. A `calls` arrow from this mi
 - `retries` (default 0)
 
 ## Runtime package `@jeeves/rest-client`
-Thin wrapper over `openapi-fetch` with timeouts, retries, and request-ID propagation. Types come from `openapi-typescript`, generated from the target's contract.
+Thin wrapper over `openapi-fetch` with timeouts, retries, and request-ID propagation. Types are generated from the target's contract in the shape `openapi-typescript` emits, by the runtime's own `jeeves-rest-client-types` (S9): openapi-typescript needs the TypeScript 5 compiler API, and generated projects use TypeScript 7, which has none. `npm run typecheck` regenerates them first (`pretypecheck`).
 
 ## Scaffold
 Generated-owned: `src/clients/<target>.generated.ts` (types plus a configured client). Base URL comes from an environment variable set in compose.

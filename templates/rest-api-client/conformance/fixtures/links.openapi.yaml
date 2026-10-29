@@ -1,0 +1,52 @@
+# The links API as the conformance test extends it: the scaffolded /ping plus /request-id.
+openapi: 3.1.0
+info:
+  title: Links service API
+  version: 0.1.0
+servers:
+  - url: /v1
+paths:
+  /ping:
+    get:
+      operationId: ping
+      parameters:
+        - name: message
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+          example: hello
+      responses:
+        "200":
+          description: The API is up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pong"
+  /request-id:
+    get:
+      operationId: requestId
+      summary: The ID of the request as this service received it
+      responses:
+        "200":
+          description: The request ID
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [requestId]
+                additionalProperties: false
+                properties:
+                  requestId:
+                    type: string
+components:
+  schemas:
+    Pong:
+      type: object
+      required: [message]
+      additionalProperties: false
+      properties:
+        message:
+          type: string

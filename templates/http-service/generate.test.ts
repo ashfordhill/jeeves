@@ -57,6 +57,14 @@ describe("http-service generate", () => {
     expect(source).toContain('auth: "none",');
   });
 
+  it("adds each REST client's plugin, so its environment is checked at startup", () => {
+    const design = serviceDesign({ restServer: {}, client: true });
+    const source = wiringSource(createGenerateContext(design, lookup, "stats"));
+    expect(source).toContain('import { linksClient } from "./clients/links.generated.ts";');
+    expect(source).toContain("plugins: [\n    linksClient.plugin,\n  ],");
+    expect(source).not.toContain("rest-server");
+  });
+
   it("is deterministic", () => {
     const options = { database: true, restServer: {} };
     expect(generate(ctxFor(options))).toEqual(generate(ctxFor(options)));

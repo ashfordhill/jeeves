@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import Fastify, { type FastifyBaseLogger, type FastifyInstance, LogController } from "fastify";
 import { z } from "zod";
 import {
@@ -137,12 +138,17 @@ export async function createService(
       disableRequestLogging: (request) => request.url === "/health" || request.url === "/ready",
     }),
     forceCloseConnections: "idle",
+    // One ID per request across services: adopt the caller's, else make a UUID. REST clients
+    // (@jeeves/rest-client) forward it on the calls a request makes.
+    requestIdHeader: "x-request-id",
+    genReqId: () => randomUUID(),
   });
 
   let shuttingDown = false;
   // Keep-alive connections that finish a request during shutdown would otherwise stay open and
   // hold up `close()`.
-  app.addHook("onSend", async (_request, reply) => {
+  app.addHook("onSend", async (request, reply) => {
+    reply.header("x-request-id", request.id);
     if (shuttingDown) reply.header("connection", "close");
   });
   const readiness = async (): Promise<ReadinessReport> => {

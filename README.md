@@ -33,7 +33,7 @@ Settings shows whether a key is set (never the key) and lets you pick the model 
 ```bash
 pnpm check        # Biome lint, type check, Vitest unit tests (no Docker needed; API tests use in-process PGlite)
 pnpm test:e2e     # Playwright; starts Postgres and both apps itself
-pnpm test:templates  # template conformance tests (Testcontainers; needs Docker, about a minute)
+pnpm test:templates  # template conformance tests (Testcontainers and Chromium; needs Docker and network, a few minutes)
 ```
 
 Playwright's Chromium needs system libraries. If it fails with a missing `libnspr4.so` (or similar), either install them once with `sudo pnpm exec playwright install-deps chromium`, or run the suite inside the official Playwright image with `pnpm test:e2e:docker`.
@@ -44,6 +44,6 @@ Playwright's Chromium needs system libraries. If it fails with a missing `libnsp
 apps/web          Jeeves UI (React, Vite, Mantine)
 apps/server       Fastify API, Drizzle + Postgres
 packages/*        spec, registry, providers (OpenAI + fake model), template-kit (template contract + conformance harness); generator and orchestrator are empty until later sections
-templates/        template packages; postgres, http-service and rest-api-server are complete (S7, S8), the others are manifests only until S9
+templates/        template packages; the five v1 templates are complete (S7–S9): postgres, http-service, rest-api-server, web-app, rest-api-client
 docs/             sources, template briefs, handoff log, reference notes
 ```

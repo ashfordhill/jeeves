@@ -51,8 +51,6 @@ export function createGenerateContext(
   const dir = dirOf(elementManifest, element.id);
   if (dir === undefined) throw new GenerateContextError(`"${element.id}" is not an element`);
 
-  const isSelf = (end: { element: string; attachment?: string }) =>
-    end.element === element.id && end.attachment === attachment?.id;
   const peerOf = (end: { element: string; attachment?: string }): ResolvedEnd => {
     const peer = design.elements.find((e) => e.id === end.element);
     if (!peer) throw new GenerateContextError(`Connection to unknown element "${end.element}"`);
@@ -64,20 +62,29 @@ export function createGenerateContext(
       element: peer,
       ...(peerAttachment && { attachment: peerAttachment }),
       ...(peerManifest && { manifest: peerManifest }),
-      ...(peerElementManifest && { dir: dirOf(peerElementManifest, peer.id) }),
+      ...(peerElementManifest && {
+        elementManifest: peerElementManifest,
+        dir: dirOf(peerElementManifest, peer.id),
+      }),
     };
   };
-
-  const incoming: ResolvedConnection[] = [];
-  const outgoing: ResolvedConnection[] = [];
-  for (const connection of design.connections) {
-    if (isSelf(connection.to)) {
-      incoming.push({ connection, self: connection.to, peer: peerOf(connection.from) });
+  /** Connections at one end: the element itself (`attachmentId` undefined) or an attachment. */
+  const connectionsOf = (attachmentId: string | undefined) => {
+    const isSelf = (end: { element: string; attachment?: string }) =>
+      end.element === element.id && end.attachment === attachmentId;
+    const incoming: ResolvedConnection[] = [];
+    const outgoing: ResolvedConnection[] = [];
+    for (const connection of design.connections) {
+      if (isSelf(connection.to)) {
+        incoming.push({ connection, self: connection.to, peer: peerOf(connection.from) });
+      }
+      if (isSelf(connection.from)) {
+        outgoing.push({ connection, self: connection.from, peer: peerOf(connection.to) });
+      }
     }
-    if (isSelf(connection.from)) {
-      outgoing.push({ connection, self: connection.from, peer: peerOf(connection.to) });
-    }
-  }
+    return { incoming, outgoing };
+  };
+  const { incoming, outgoing } = connectionsOf(attachment?.id);
 
   return {
     design,
@@ -92,6 +99,7 @@ export function createGenerateContext(
         attachment: a,
         manifest: attachmentManifest,
         config: resolveConfig(attachmentManifest.config, a.config),
+        ...connectionsOf(a.id),
       };
     }),
     incoming,

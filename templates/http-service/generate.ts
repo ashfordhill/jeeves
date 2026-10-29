@@ -6,7 +6,15 @@ import type {
   GenerateResult,
   ResolvedConnection,
 } from "@jeeves/template-kit";
-import { renderScaffold } from "@jeeves/template-kit";
+import {
+  clientExportName,
+  clientModulePath,
+  contractPath,
+  renderScaffold,
+  restClientTargets,
+} from "@jeeves/template-kit";
+
+export { contractPath };
 
 const SCAFFOLD = fileURLToPath(new URL("./scaffold/service", import.meta.url));
 
@@ -25,19 +33,22 @@ export function healthcheck(port: number): ComposeService["healthcheck"] {
   };
 }
 
-/** The contract file a rest-api-server attachment scaffolds for a service (PLAN §9 layout). */
-export function contractPath(serviceId: string): string {
-  return `contracts/${serviceId}.openapi.yaml`;
-}
-
 interface Wiring {
   database?: { id: string; name: string };
   restServer?: { basePath: string; auth: string };
+  /** REST clients (rest-api-client attachments), by target element ID. */
+  clients: { target: string; exportName: string; module: string }[];
 }
 
 /** What the design says this service is wired to. Throws on wiring this version can't build. */
 export function wiringOf(ctx: GenerateContext): Wiring {
-  const wiring: Wiring = {};
+  const wiring: Wiring = {
+    clients: restClientTargets(ctx).map(({ target }) => ({
+      target: target.id,
+      exportName: clientExportName(target.id),
+      module: `./${posix.relative(`${ctx.dir}/src`, clientModulePath(ctx.dir, target.id))}`,
+    })),
+  };
   const databases = ctx.outgoing.filter((c) => c.connection.kind === "uses-database");
   if (databases.length > 1) {
     throw new Error(`${ctx.element.id} uses ${databases.length} databases; one is supported`);
@@ -74,6 +85,7 @@ export function wiringSource(ctx: GenerateContext): string {
     wiring.database && 'import { postgresDependency } from "@jeeves/postgres-runtime";',
     wiring.restServer && 'import { restServer } from "@jeeves/rest-server";',
     'import { defineService } from "@jeeves/service-runtime";',
+    ...wiring.clients.map((c) => `import { ${c.exportName} } from ${q(c.module)};`),
     wiring.database && 'import * as schema from "./db/schema.ts";',
   ].filter(Boolean);
 
@@ -105,6 +117,10 @@ export function wiringSource(ctx: GenerateContext): string {
         "    }),",
       ].join("\n"),
     );
+  }
+  for (const client of wiring.clients) {
+    // The plugin checks the client's environment at startup and forwards request IDs.
+    plugins.push(`${client.exportName}.plugin,`);
   }
   body.push(
     "",

@@ -887,3 +887,174 @@ The S7 postgres conformance (11 tests) still passes. The type-check tests run `n
   - The compose-CLI `TestPackContext` adapter must implement `ServiceHandle.stop()` returning `{ exitCode }` (`docker stop` then `docker inspect`) and `run()` (`docker compose run --rm --no-deps --no-TTY -e …`). See `packages/template-kit/src/harness/environment.ts`.
   - http-service's test pack stops and restarts the database and the service, so run packs in an order where that's acceptable. The postgres pack and the http-service pack both restart things and both leave everything running.
   - A project needs `vendor/jeeves/` before `docker compose build`, because every service Dockerfile copies it.
+
+---
+
+## S9: web-app and rest-api-client templates (2026-10-29)
+
+### Built
+
+- **`@jeeves/rest-client`** (`templates/rest-api-client/runtime`; openapi-fetch 0.17.0, yaml 2.9.1). It has three entry points.
+  - **`.`** (browser and Node): `createRestClient<paths>({ name, baseUrl, timeoutMs, retries, headers, requestId, fetch })` returns an openapi-fetch client.
+    - The base URL is resolved on every call, so it can come from the environment or the runtime config.
+    - Error statuses come back as `{ error, response }`, typed from the contract, as openapi-fetch returns them.
+    - A call that gets no response throws `RestClientTimeoutError` or `RestClientNetworkError`. Both are `RestClientError` with `code` `TIMEOUT` or `NETWORK`, plus `client`, `method`, `url` and `attempts`. The timeout is per attempt and runs until the response headers arrive. A caller's own abort is passed through unwrapped.
+    - Retries apply only to idempotent methods (GET, HEAD, OPTIONS, PUT, DELETE), after a timeout, a network error or a 502/503/504, with backoff of 100 ms doubling up to 2 s. POST and PATCH are never retried.
+    - Every call sends `x-request-id`: the caller's own, the handled request's, or a new UUID. Retries share it.
+  - **`./service`** (Node): `serviceRestClient<paths>({ name, basePath, urlEnv, tokenEnv?, timeoutMs, retries })`.
+    - It reads `API_<TARGET>_URL` (and `API_<TARGET>_TOKEN`, sent as `Authorization: Bearer`) from the environment.
+    - It exposes `.plugin`, a service plugin (matched structurally, so there's no import of the service runtime). The plugin's `configure(env)` adds the client's problems to the service's startup report (`API_LINKS_URL: must be an http(s) URL (got "links:8080")`). Its `register(app)` adds an `onRequest` hook that keeps the handled request's ID in `AsyncLocalStorage`, so calls made while handling a request forward that ID.
+    - Used outside a service (scripts, tests), it reads `process.env`.
+  - **`./codegen`** and the **`jeeves-rest-client-types`** bin:
+    - The bin runs in an element directory. For each `src/clients/*.generated.ts`, it reads the `// @jeeves-contract <path>` line and writes `src/clients/<target>.openapi.ts` from that contract. A file that's already up to date isn't rewritten.
+    - The generator (`contractTypes`, in `src/types.ts`) emits the same shape openapi-typescript does (`paths`, `components`, `operations`, `webhooks`, `$defs`).
+    - It handles local `$ref`s (schemas, responses, parameters, request bodies, headers), path-level parameters merged with operation-level ones, type arrays, `enum`/`const`, `oneOf`/`anyOf`/`allOf`, `additionalProperties`, `prefixItems`, and descriptions as JSDoc.
+    - It reports every problem at once: a version other than 3.1, a missing or duplicate `operationId`, a dangling `$ref`.
+    - It's covered by a golden file, and `test-fixtures/usage.ts` (compiled by `pnpm typecheck`) checks the output against openapi-fetch, including `@ts-expect-error` lines for a missing path parameter, a wrong body, an unknown path and a missing method.
+- **`templates/rest-api-client`**:
+  - `generate.ts` writes `src/clients/<target>.generated.ts` (generated-owned) inside the calling element. It exports `<camelTarget>Client` (`links` becomes `linksClient`, `link-store` becomes `linkStoreClient`), configured from the design: base path, timeout, retries, and a token variable when the target uses `auth: bearer`.
+    - On an http-service it uses `serviceRestClient`.
+    - On a web-app it uses `createRestClient` with ``baseUrl: () => `${apiUrl("<target>")}<basePath>` ``.
+  - Compose: the caller gets `API_<TARGET>_URL=http://<target>:<port>`, `API_<TARGET>_TOKEN=<target>-local-token` when the API uses bearer auth, and `depends_on: <target>: service_healthy`.
+  - It adds the runtime dependency `@jeeves/rest-client` and the package script `pretypecheck: jeeves-rest-client-types`, so `npm run typecheck` and `pnpm typecheck` regenerate the types from the current contract first. I confirmed pnpm 12 runs `pre` scripts.
+  - It refuses (with a clear message) a client with no `calls` connection, two clients for the same target on one element, and a host other than http-service or web-app.
+  - Test pack, 3 checks:
+    - `types`: `npm run typecheck` in the calling element on the host
+    - `call`: a documented GET through the generated client inside compose. It uses `/ping` when the contract has it, otherwise the first GET whose examples make a request.
+    - `timeout`: a call that gets no answer fails with `RestClientTimeoutError`/`TIMEOUT`
+    
+    For a service, the calls run as a one-off `node --eval` script in the service's container that imports the generated module (for `timeout`, it points the client at a local socket that never answers). For a web-app, they run in Chromium through the page's own client (`window.__JEEVES__.apis`); for `timeout`, Playwright holds `/_api/<target>/**` requests.
+  - `agent-guide.md`, `template.ts`, `generate.test.ts`, and `conformance/rest-api-client.conformance.ts`.
+- **`@jeeves/web-runtime`** (`templates/web-app/runtime`; React 19 as a peer, Vite as an optional peer):
+  - `defineApp({ name, title, apis })`, which is what the generated wiring declares.
+  - `startApp(app, <App />)`:
+    - It fetches `/jeeves-config.json` (no-store), checks it (`title`, `apis.<name>.url`, every problem at once), sets `document.title`, and exposes `window.__JEEVES__ = { app, config, apis }`.
+    - It renders the app in `StrictMode`, inside a `JeevesProvider` and an `ErrorBoundary`. If the config can't load, it renders an alert saying why.
+    - At `/_jeeves/status` it renders the status page instead of the app.
+  - `useRuntimeConfig()`, `useApis<typeof app.apis>()`, `runtimeConfig()`, and `apiUrl(name)` (which generated browser clients call).
+  - `JeevesProvider`, for tests to pass a config and fake clients.
+  - `ErrorBoundary`: an optional `fallback(error, reset)`; the default is an alert with a "Try again" button.
+  - The status page shows the runtime config and a mouse-usable form (API, GET path, Call) that calls through the generated client. `?api=<name>&path=<path>` calls right away; the result is in `[data-jeeves-result=<name>]` with `data-jeeves-ok`, and typed errors show their `code`.
+  - `nginx/40-jeeves-config.sh` (shipped in the tarball) runs from the nginx image's `/docker-entrypoint.d/`. It fills `${NAME}` in `/etc/jeeves/config.json.template` with JSON-escaped environment values, substituting only the template's own variables.
+  - `@jeeves/web-runtime/vite` exports `jeevesDev({ title })`, a serve-only Vite plugin. It serves the runtime config from the same template and proxies `/_api/<name>` to `API_<NAME>_URL` (adding the token). An unconfigured API gets a 502 that names the variable to set.
+- **`templates/web-app`**:
+  - Scaffold (`scaffold/app`, project-owned):
+    - `package.json`: `dev` (`vite --port <port> --strictPort`), `build`, `typecheck` and `test` scripts; React 19.2.8; Vite 8.2.2, @vitejs/plugin-react 6.1.1, TypeScript 7.0.2, Vitest 5.0.0
+    - `tsconfig.json`, `vite.config.ts`, `index.html`, `public/favicon.svg` (without it the favicon 404 is a console error), `src/main.tsx`, `src/App.tsx`, `src/pages/Home.tsx`, `src/styles.css`
+    - a two-stage `Dockerfile` (`node:24.22.2-alpine` build, `nginx:1.30.5-alpine` serve) and `Dockerfile.dockerignore`
+    
+    The title is escaped for JSON, JS strings and HTML. Placeholders sit only inside strings and comments so Biome can parse the scaffold.
+  - Generated:
+    - `src/jeeves.generated.ts`: `defineApp` with each client under its target ID.
+    - `nginx/default.conf.template`, which:
+      - listens on `${PORT}`
+      - serves `/healthz`
+      - sends `no-store` for the config and `no-cache` for `index.html`
+      - caches `/assets/` immutably
+      - has one `location /_api/<target>/` per client, which rewrites to the service root and uses `proxy_pass` with a variable and `resolver 127.0.0.11 valid=10s`, so a restarted service's new address is picked up
+      - adds `Authorization: Bearer ${API_<TARGET>_TOKEN}` server-side for bearer APIs
+      - falls back to `index.html` for client-side routes
+      
+      The Dockerfile sets `NGINX_ENVSUBST_FILTER=^(PORT|API_)` so nginx's own `$uri` and friends are left alone.
+    - `nginx/jeeves-config.json.template`: `{ title: ${APP_TITLE}, apis: { <target>: { url: "/_api/<target>" } } }`.
+  - Compose: built from the project root; `PORT` and `APP_TITLE` (with `$` escaped as `$$`); port `127.0.0.1::<port>`; a `wget /healthz` health check; `restart: unless-stopped`; `depends_on` for `depends-on` connections.
+  - Test pack, 4 checks:
+    - `page-loads`: `#root` rendered, no console errors or page errors, network idle
+    - `client-routes`: a deep path serves the app
+    - `runtime-config`: `/jeeves-config.json` and `window.__JEEVES__.config` equal what the design and compose say, and the page title is applied
+    - `sample-call`: for each client, `/_jeeves/status?api=…&path=…` renders an OK result, with no console errors
+  - `agent-guide.md`, `template.ts`, `generate.test.ts`, and `conformance/web-app.conformance.ts`. The manifest's port description now says the port is also the container port.
+- **`@jeeves/service-runtime`:** Fastify now uses `requestIdHeader: "x-request-id"` and `genReqId: randomUUID`, and every response carries `x-request-id`. A service adopts its caller's ID, and logs line up across services.
+- **http-service:** `wiringOf` and `wiringSource` add each rest-api-client's `<target>Client.plugin` to the service's plugins (imported from `./clients/<target>.generated.ts`). The fixtures have a rest-api-client stand-in and a `client` option.
+- **Template-kit (additive changes):**
+  - `ResolvedEnd.elementManifest` (the peer element's own manifest, when the end is an attachment).
+  - `ResolvedAttachment.incoming` and `.outgoing` (each attachment's connections, seen from the element's context).
+  - `GenerateResult.packageScripts` with `mergePackageScripts` (adds missing scripts and never changes existing ones). The harness applies it.
+  - `conventions.ts`: `contractPath` and `bearerToken` (moved here; http-service and rest-api-server re-export them, so S8's duplicate is gone), `apiEnvName`, `clientModulePath`, `clientExportName`, and `restClientTargets(ctx)` (each client attachment with its target, the server's base path and auth, and the target's port).
+  - `@jeeves/template-kit/browser`: `withPage(fn)` (headless Chromium, collecting console and page errors) and `assertNoPageProblems`. It depends on `@playwright/test` 1.63.0 (already the root's version).
+- `@jeeves/template-rest-api-server` now also exports `./test-pack` (for `exampleRequest`).
+- Docs: the web-app brief's open question is answered and the rest-api-client brief's types note is updated. The PLAN progress line and the README's template and `test:templates` lines are updated.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 304 files in 102ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  44 passed (44)
+      Tests  285 passed (285)
+```
+
+`pnpm test:templates` (Docker 29.9.1, after `pnpm format`, all six conformance files):
+
+```text
+ Test Files  6 passed (6)
+      Tests  70 passed (70)
+   Duration  330.09s
+```
+
+The S9 scenarios, from the per-file `--reporter verbose` runs (all passed on the first run):
+
+```text
+rest-api-client.conformance.ts — an http-service (stats) calling another (links, bearer, /v1) (10)
+ ✓ generates the client, its runtime, the types script, and the compose wiring
+ ✓ forwards the request ID and the bearer token on calls a request makes
+ ✓ rest-api-client test pack > the generated client type-checks against the target's contract
+ ✓ rest-api-client test pack > a call to the target API succeeds inside compose
+ ✓ rest-api-client test pack > a call that gets no answer fails with a typed timeout error   2240ms (1 s × 2 attempts)
+ ✓ http-service test pack for the calling service > (all 4 checks)
+ ✓ the generated types follow the contract: a removed operation becomes a type error
+
+web-app.conformance.ts — a web-app (web) calling links through a generated client, plus docs (no APIs) (15)
+ ✓ generates the wiring, the proxy, the runtime config template, and the compose service
+ ✓ the page shows data from the service, fetched through the generated client
+ ✓ the proxy finds the service again after it restarts
+ ✓ web-app test pack for web > (all 4 checks)
+ ✓ rest-api-client test pack for web's client > (all 3 checks, in Chromium)
+ ✓ web-app test pack for docs (no APIs) > (all 4 checks)
+ ✓ both apps type-check, the client against the service's contract
+```
+
+The web app's title is `Links & "Co" $5 <beta>`, so the JSON (config script), HTML (`index.html`), JS (`vite.config.ts`) and compose (`$$`) escaping are all exercised end to end. The S7 and S8 suites (postgres, http-service, rest-api-server, service-with-postgres) still pass in the same run. No containers or images were left behind. The type-check steps run `npm install` on the host, and the image builds pull from npm, so these tests need network access.
+
+`pnpm test:e2e`: the first run after the conformance suite had 3 failures in `chat.spec.ts` (fake-provider text not visible within 5 s). The spec passed alone (4 of 4), and two more full runs passed 12 of 12. I couldn't reproduce it; it looks like a timing flake under load rather than an S9 change, since S9 touches no chat code. Watch for it.
+
+### Deviations and choices the plan left open
+
+- **Client types aren't made by openapi-typescript.** It builds its output with the TypeScript 5 compiler API, and the generated projects (like this repo) use TypeScript 7, whose `typescript` package has no JS API (`Object.keys(require("typescript"))` is just `version` and `versionMajorMinor`). Installing TS 5 next to it would conflict on the `typescript` peer and add the compiler to every service image. So `@jeeves/rest-client` has a ~350-line generator that emits the same shape openapi-fetch expects, for the JSON Schema subset that `@jeeves/rest-server` contracts use.
+- **Types follow the contract, not the design.** The contract is project-owned and agents change it during orchestration, so types can't be fixed at generation time. The generated client module is design-derived and generated-owned; `<target>.openapi.ts` is derived from the contract by `pretypecheck`. The type-only import is erased by Node's type stripping and by Vite, so images don't need it.
+- **Browsers reach APIs through the web app's own nginx** (`/_api/<target>/` to `http://<target>:<port>/`), not directly. The service ports are ephemeral loopback ports, this avoids CORS, and the bearer token stays server-side. The runtime config holds the browser-facing path, and the upstream address comes from the container's environment at start (the brief's "runtime config injection").
+- **Environment names are `API_<TARGET>_URL` and `API_<TARGET>_TOKEN`.** The prefix avoids clashes such as a target named `database` taking `DATABASE_URL`. The value is the service's origin; the base path comes from the design and is in the generated client.
+- **nginx listens on the design's `port`** inside the container, the same number as the dev server, so there's one port per element as with services.
+- **Generated frontends are unstyled** (plain CSS) rather than Mantine. See the brief.
+- **The diagnostics page `/_jeeves/status` is part of the runtime**, not the scaffold. The web-app test pack needs something that renders a call result and that agents won't rewrite. It's in every build, which is fine for local v1.
+- **Test packs drive a browser on the host** (Playwright's Chromium), and the client's `types` check runs `npm run typecheck` on the host, which needs installed `node_modules`. Both match how S10's baseline check runs (install first, then the packs).
+- **service-runtime change** (an earlier section's code): request-ID adoption was needed for the brief's "request-ID propagation" to mean anything across services. It's small and covered by the new rest-client service tests.
+
+### Known issues
+
+- `src/clients/<target>.openapi.ts` is neither hashed in the lock nor scaffolded. S10 should leave it out of ownership checks; it can be committed or ignored, since typecheck rewrites it.
+- The client timeout covers the time until the response headers arrive, not reading a slow body.
+- nginx's `rewrite` decodes the path before proxying, so an encoded `%2F` in a path segment reaches the service as `/`.
+- After a service restarts, the proxy may keep the old address for up to 10 s (`resolver … valid=10s`). Compose usually keeps the address, and the conformance restart recovered at once.
+- Web images, like service images, `npm install` without a lockfile (S8's known issue).
+- The `timeout` check takes the client's `timeoutMs × (retries + 1)` plus backoff: 5 s with the defaults.
+- `jeevesDev` needs `API_<NAME>_URL` set by hand from `docker compose port …`. Dev mode isn't covered by conformance tests, only by unit tests of the plugin.
+- Cold start: pulls `nginx:1.30.5-alpine` and installs React, Vite and friends in the web image build (~60 s the first time).
+
+### For S10 and later
+
+- **Generator:**
+  - Apply `packageScripts` with `mergePackageScripts`, alongside `runtimeDependencies` and `packageDependencies` (see `addElementDependencies` in `packages/template-kit/src/harness/project.ts`).
+  - Vendor all five runtimes. A web-app's Dockerfile copies `@jeeves/web-runtime/nginx/40-jeeves-config.sh` out of its build stage's `node_modules`.
+- **Baseline check:** install before running packs, and make sure Playwright's Chromium is available on the host (the web-app and client packs launch it).
+  - Run the web-app and rest-api-client packs before the http-service packs, or give the proxy ~10 s after them: http-service's checks restart services.
+  - The client packs for a service call `docker exec` in the calling service's container.
+- **`ResolvedAttachment.outgoing`** is how an element template sees its attachments' connections. Use `restClientTargets(ctx)` rather than re-deriving client targets.
+- **Orchestrator (S11/S12):**
+  - An agent changing a contract should run `pnpm typecheck` in every element that calls that API: the types are regenerated there, and breaking changes show up as type errors.
+  - The rest-api-client conformance test shows this: renaming `/request-id` in the contract makes `src/features/relay/index.ts` fail to type-check.

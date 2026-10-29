@@ -1,5 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "types": ["node"] },
-  "include": ["manifest.ts"]
+  "include": ["*.ts", "test-pack", "conformance"],
+  // Copied into a generated frontend by the conformance test; type-checked there.
+  "exclude": ["conformance/fixtures/web-app"]
 }

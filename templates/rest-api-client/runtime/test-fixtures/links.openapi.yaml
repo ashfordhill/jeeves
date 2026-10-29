@@ -1,0 +1,117 @@
+openapi: 3.1.0
+info:
+  title: Links API
+  version: 0.1.0
+servers:
+  - url: /v1
+paths:
+  /ping:
+    get:
+      operationId: ping
+      summary: Check that the API answers
+      parameters:
+        - name: message
+          in: query
+          schema: { type: string, maxLength: 64 }
+      responses:
+        "200":
+          description: Up
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Pong" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /links:
+    post:
+      operationId: createLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              additionalProperties: false
+              properties:
+                url: { type: string, format: uri }
+                tags: { type: array, items: { type: string } }
+      responses:
+        "201":
+          description: Created
+          headers:
+            Location:
+              required: true
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Link" }
+        default:
+          $ref: "#/components/responses/BadRequest"
+  /links/{code}:
+    parameters:
+      - $ref: "#/components/parameters/Code"
+    get:
+      operationId: getLink
+      parameters:
+        - name: x-trace
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Link" }
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteLink
+      responses:
+        "204":
+          description: Deleted
+components:
+  parameters:
+    Code:
+      name: code
+      in: path
+      required: true
+      schema: { type: string, pattern: "^[a-z0-9]+$" }
+  schemas:
+    Pong:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    Link:
+      type: object
+      required: [code, url, status]
+      properties:
+        code: { type: string }
+        url: { type: string }
+        status: { enum: [active, expired] }
+        note: { type: [string, "null"] }
+        visits: { type: integer, description: "How often it was opened" }
+        meta:
+          type: object
+          additionalProperties: { type: string }
+        pair:
+          type: array
+          prefixItems: [{ type: string }, { type: number }]
+          items: false
+        owner:
+          oneOf:
+            - { $ref: "#/components/schemas/Pong" }
+            - { type: "null" }
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string }
+        message: { type: string }
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }

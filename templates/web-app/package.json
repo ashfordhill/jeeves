@@ -3,12 +3,21 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "exports": "./manifest.ts",
+  "exports": {
+    ".": "./manifest.ts",
+    "./template": "./template.ts"
+  },
   "scripts": {
     "typecheck": "tsc -p ."
   },
   "dependencies": {
     "@jeeves/spec": "workspace:*",
+    "@jeeves/template-kit": "workspace:*",
+    "@jeeves/template-rest-api-client": "workspace:*",
     "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@jeeves/template-http-service": "workspace:*",
+    "@jeeves/template-rest-api-server": "workspace:*"
   }
 }

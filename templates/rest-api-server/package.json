@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./manifest.ts",
-    "./template": "./template.ts"
+    "./template": "./template.ts",
+    "./test-pack": "./test-pack/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

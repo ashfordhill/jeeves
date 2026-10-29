@@ -22,4 +22,4 @@ Through a `rest-api-client` attachment.
 Playwright: the page loads without console errors; runtime config is applied; with a connected service, a sample call renders its result.
 
 ## Open questions
-- Mantine as the default UI kit for generated frontends (matches Jeeves), or unstyled?
+- ~~Mantine as the default UI kit for generated frontends (matches Jeeves), or unstyled?~~ Unstyled: plain React with a small `styles.css` (S9). Mantine would add install time and image size to every frontend and fix a look the user hasn't chosen; the agent guide says adding a UI library is fine.

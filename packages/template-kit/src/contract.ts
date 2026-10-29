@@ -61,8 +61,13 @@ export interface OutputFile {
 export interface ResolvedEnd {
   element: Element;
   attachment?: Attachment;
-  /** Undefined when the peer is a "needs a template" element or its template is unknown. */
+  /**
+   * The manifest of the peer's attachment, if the connection ends on one, else of the element.
+   * Undefined when the peer is a "needs a template" element or its template is unknown.
+   */
   manifest?: TemplateManifest;
+  /** The peer element's own manifest (the same as `manifest` unless the end is an attachment). */
+  elementManifest?: TemplateManifest;
   /** The peer element's directory, when it has a template. */
   dir?: string;
 }
@@ -80,6 +85,10 @@ export interface ResolvedAttachment {
   attachment: Attachment;
   manifest: TemplateManifest;
   config: Record<string, unknown>;
+  /** Connections ending at this attachment, in design order. */
+  incoming: ResolvedConnection[];
+  /** Connections starting at this attachment, in design order. */
+  outgoing: ResolvedConnection[];
 }
 
 /** Everything `generate` may look at. Built by `createGenerateContext`. */
@@ -113,6 +122,17 @@ export interface GenerateResult {
    * changed or removed (`mergePackageDependencies`).
    */
   packageDependencies?: PackageDependency[];
+  /**
+   * `package.json` scripts an element needs, for example `pretypecheck` to regenerate client
+   * types. Added when the script name is missing; an existing script is never changed.
+   */
+  packageScripts?: PackageScript[];
+}
+
+export interface PackageScript {
+  element: string;
+  name: string;
+  command: string;
 }
 
 export interface PackageDependency {

@@ -3,6 +3,7 @@
 export * from "./compose.ts";
 export * from "./context.ts";
 export * from "./contract.ts";
+export * from "./conventions.ts";
 export * from "./packages.ts";
 export * from "./scaffold.ts";
 export * from "./test-pack.ts";

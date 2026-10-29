@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { mergePackageDependencies, runtimeTarballName, vendoredRuntimeSpec } from "./packages.ts";
+import {
+  mergePackageDependencies,
+  mergePackageScripts,
+  runtimeTarballName,
+  vendoredRuntimeSpec,
+} from "./packages.ts";
 
 describe("runtime tarballs", () => {
   it("are named the way pnpm pack names them", () => {
@@ -40,5 +45,28 @@ describe("mergePackageDependencies", () => {
       { name: "vitest", spec: "1.0.0" },
     ];
     expect(mergePackageDependencies(text, entries)).toBe(text);
+  });
+});
+
+describe("mergePackageScripts", () => {
+  const text = `${JSON.stringify({ name: "web", scripts: { typecheck: "tsc -p ." } }, null, 2)}\n`;
+
+  it("adds missing scripts after the existing ones", () => {
+    const merged = JSON.parse(
+      mergePackageScripts(text, [{ name: "pretypecheck", command: "jeeves-rest-client-types" }]),
+    );
+    expect(merged.scripts).toEqual({
+      typecheck: "tsc -p .",
+      pretypecheck: "jeeves-rest-client-types",
+    });
+  });
+
+  it("never changes a script the project already has", () => {
+    expect(mergePackageScripts(text, [{ name: "typecheck", command: "other" }])).toBe(text);
+  });
+
+  it("adds a scripts section when there is none", () => {
+    const merged = JSON.parse(mergePackageScripts('{"name":"x"}', [{ name: "a", command: "b" }]));
+    expect(merged).toEqual({ name: "x", scripts: { a: "b" } });
   });
 });

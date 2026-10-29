@@ -14,6 +14,7 @@ import type { GenerateResult, OutputFile, RuntimePackage, TemplateModule } from 
 import {
   type DependencyEntry,
   mergePackageDependencies,
+  mergePackageScripts,
   runtimeTarballName,
   VENDOR_DIR,
   vendoredRuntimeSpec,
@@ -99,8 +100,8 @@ export function buildProject(options: BuildProjectOptions): BuiltProject {
 }
 
 /**
- * Adds each element's runtime and package dependencies to its `package.json` (which a template
- * scaffolds). Runtime versions come from the modules that ship them.
+ * Adds each element's runtime and package dependencies and package scripts to its `package.json`
+ * (which a template scaffolds). Runtime versions come from the modules that ship them.
  */
 function addElementDependencies(
   options: BuildProjectOptions,
@@ -111,6 +112,7 @@ function addElementDependencies(
     if (module.runtime) runtimes.set(module.runtime.name, module.runtime);
   }
   const byElement = new Map<string, DependencyEntry[]>();
+  const scripts = new Map<string, { name: string; command: string }[]>();
   const add = (element: string, entry: DependencyEntry) =>
     byElement.set(element, [...(byElement.get(element) ?? []), entry]);
   for (const result of results.values()) {
@@ -126,6 +128,10 @@ function addElementDependencies(
     for (const dep of result.packageDependencies ?? []) {
       add(dep.element, { name: dep.name, spec: dep.version, ...(dep.dev && { dev: true }) });
     }
+    for (const script of result.packageScripts ?? []) {
+      if (!byElement.has(script.element)) byElement.set(script.element, []);
+      scripts.set(script.element, [...(scripts.get(script.element) ?? []), script]);
+    }
   }
   const written: string[] = [];
   for (const [element, entries] of byElement) {
@@ -135,7 +141,10 @@ function addElementDependencies(
     const file = join(options.dir, path);
     if (!existsSync(file)) throw new Error(`${element} has dependencies but no ${path}`);
     const text = readFileSync(file, "utf8");
-    const merged = mergePackageDependencies(text, entries);
+    const merged = mergePackageScripts(
+      mergePackageDependencies(text, entries),
+      scripts.get(element) ?? [],
+    );
     if (merged !== text) {
       writeFileSync(file, merged);
       written.push(path);

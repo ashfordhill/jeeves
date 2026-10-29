@@ -92,6 +92,17 @@ describe("createGenerateContext", () => {
     expect(createGenerateContext(design, lookup, "web").outgoing).toEqual([]);
   });
 
+  it("lists each attachment's own connections, with the peer element's manifest", () => {
+    const web = createGenerateContext(design, lookup, "web");
+    const [resolved] = web.attachments;
+    expect(resolved?.outgoing.map((c) => c.connection.id)).toEqual(["c2"]);
+    expect(resolved?.incoming).toEqual([]);
+    expect(resolved?.outgoing[0]?.peer.elementManifest?.id).toBe("svc");
+    const api = createGenerateContext(design, lookup, "api");
+    expect(api.incoming[0]?.peer.manifest?.id).toBe("client");
+    expect(api.incoming[0]?.peer.elementManifest?.id).toBe("svc");
+  });
+
   it("refuses elements that can't be generated", () => {
     expect(() => createGenerateContext(design, lookup, "sms")).toThrow(GenerateContextError);
     expect(() => createGenerateContext(design, lookup, "nope")).toThrow(/No element/);

@@ -44,3 +44,18 @@ export function mergePackageDependencies(text: string, entries: DependencyEntry[
   }
   return changed ? `${JSON.stringify(pkg, null, 2)}\n` : text;
 }
+
+/**
+ * Adds scripts a `package.json` is missing. A script that is already there is left alone, even
+ * with another command: the file is project-owned. Returns the text unchanged when nothing was
+ * added.
+ */
+export function mergePackageScripts(text: string, scripts: { name: string; command: string }[]) {
+  const pkg = JSON.parse(text) as Record<string, unknown>;
+  const existing = (pkg.scripts ?? {}) as Record<string, string>;
+  const missing = scripts.filter((s) => !(s.name in existing));
+  if (missing.length === 0) return text;
+  const added = { ...existing };
+  for (const script of missing) added[script.name] = script.command;
+  return `${JSON.stringify({ ...pkg, scripts: added }, null, 2)}\n`;
+}
