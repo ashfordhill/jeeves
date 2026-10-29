@@ -15,6 +15,10 @@ const CONSUMER_SCAFFOLD = fileURLToPath(new URL("./scaffold/consumer", import.me
  */
 export const SUPERUSER = { user: "postgres", password: "postgres" } as const;
 
+/** Kept equal to the runtime's `drizzle-orm`, so a service gets one copy. */
+export const DRIZZLE_ORM_VERSION = "0.45.4";
+export const DRIZZLE_KIT_VERSION = "0.31.11";
+
 export function consumerPassword(consumerId: string): string {
   return `${consumerId}-local`;
 }
@@ -144,5 +148,10 @@ export function generate(ctx: GenerateContext): GenerateResult {
       element: c.id,
       name: "@jeeves/postgres-runtime",
     })),
+    // The consumer scaffold's schema.ts and drizzle.config.ts use these directly.
+    packageDependencies: consumers.flatMap((c) => [
+      { element: c.id, name: "drizzle-orm", version: DRIZZLE_ORM_VERSION },
+      { element: c.id, name: "drizzle-kit", version: DRIZZLE_KIT_VERSION, dev: true },
+    ]),
   };
 }

@@ -3,12 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "exports": "./manifest.ts",
+  "exports": {
+    ".": "./manifest.ts",
+    "./template": "./template.ts"
+  },
   "scripts": {
     "typecheck": "tsc -p ."
   },
   "dependencies": {
     "@jeeves/spec": "workspace:*",
+    "@jeeves/template-kit": "workspace:*",
     "zod": "4.5.4"
   }
 }

@@ -44,6 +44,6 @@ Playwright's Chromium needs system libraries. If it fails with a missing `libnsp
 apps/web          Jeeves UI (React, Vite, Mantine)
 apps/server       Fastify API, Drizzle + Postgres
 packages/*        spec, registry, providers (OpenAI + fake model), template-kit (template contract + conformance harness); generator and orchestrator are empty until later sections
-templates/        template packages; postgres is complete (S7), the others are manifests only until S8/S9
+templates/        template packages; postgres, http-service and rest-api-server are complete (S7, S8), the others are manifests only until S9
 docs/             sources, template briefs, handoff log, reference notes
 ```

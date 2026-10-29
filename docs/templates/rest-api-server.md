@@ -25,4 +25,4 @@ Target of `calls` from `rest-api-client`.
 Change the OpenAPI file first, then implement handlers. Clients are regenerated from the spec, so breaking changes show up as client type errors.
 
 ## Open questions
-- Which OpenAPI validation library to use (decide in S8; prefer a maintained MIT one, e.g. the Fastify ecosystem's).
+- ~~Which OpenAPI validation library to use?~~ Ajv 2020 (MIT) directly, with a small contract loader in `@jeeves/rest-server` (S8). `fastify-openapi-glue` only validates responses by serializing them, and the brief asks for real response validation.

@@ -1,0 +1,22 @@
+{
+  "name": "@jeeves/service-runtime",
+  "version": "0.1.0",
+  "description": "Fastify bootstrap, environment config, health and readiness, graceful shutdown, and the defineFeature() plugin API for Jeeves http-service elements.",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "exports": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "fastify": "5.12.7",
+    "zod": "4.5.4"
+  }
+}

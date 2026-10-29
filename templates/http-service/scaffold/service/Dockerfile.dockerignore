@@ -1,0 +1,7 @@
+# What {{serviceName}}'s image build may see of the project root (the build context).
+*
+!vendor/jeeves/
+!contracts/
+!{{serviceDir}}/
+{{serviceDir}}/node_modules/
+{{serviceDir}}/test/

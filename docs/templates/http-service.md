@@ -26,4 +26,4 @@ Container starts; `/health` returns 200; `/ready` returns 200 with dependencies 
 Add behavior as features in `src/features/<name>/` registered through `defineFeature()`. Do not edit `jeeves.generated.ts` or the runtime package. Add tests in `test/`.
 
 ## Open questions
-- Is Fastify the right base, or does the user prefer Hono or Express?
+- ~~Is Fastify the right base, or does the user prefer Hono or Express?~~ Fastify (S8), as PLAN §16 assumed.

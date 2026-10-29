@@ -25,6 +25,8 @@ export default defineTemplate({
       kind: "uses-database",
       direction: "out",
       label: "Database",
+      // The service gets one DATABASE_URL, so one database element.
+      multiple: false,
       accepts: { elementKinds: ["database"] },
     },
     { kind: "depends-on", direction: "out", label: "Depends on" },

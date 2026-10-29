@@ -50,6 +50,13 @@ describe("postgres generate", () => {
     ]);
   });
 
+  it("gives each consumer drizzle-orm, and drizzle-kit for writing migrations", () => {
+    expect(generateFor().packageDependencies?.filter((d) => d.element === "links")).toEqual([
+      { element: "links", name: "drizzle-orm", version: "0.45.4" },
+      { element: "links", name: "drizzle-kit", version: "0.31.11", dev: true },
+    ]);
+  });
+
   it("is deterministic regardless of connection order", () => {
     const design = sharedDatabaseDesign(["audit"]);
     const reversed = { ...design, connections: [...design.connections].reverse() };

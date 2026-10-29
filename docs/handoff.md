@@ -730,3 +730,160 @@ How the "Done when" items are covered: healthy container (check 1 plus `up --wai
   - `pnpm pack` in `TemplateModule.runtime.dir` gives the vendored tarball (`prepack` builds `dist/`).
   - Test packs need a `TestPackContext` backed by the compose CLI instead of Testcontainers. Checks only use `ctx.compose`, `ctx.subject`, `ctx.projectDir` and `service()` handles, so that should be a small adapter.
   - Copy `agentGuide` into `jeeves/elements/<id>.md`.
+
+---
+
+## S8: http-service and rest-api-server templates (2026-10-29)
+
+### Built
+
+- **`@jeeves/service-runtime`** (`templates/http-service/runtime`, Fastify 5.12.7, Zod 4.5.4):
+  - `defineService` (what the generated wiring declares: name, defaults from the element config, `dependencies`, `plugins`), `createService` (builds without opening the port; tests use `app.inject`), `runService`, and `startService` (what `src/main.ts` calls).
+  - Environment validated with Zod: `PORT`, `HOST`, `LOG_LEVEL`, `SHUTDOWN_TIMEOUT_MS`, `READY_TIMEOUT_MS`, plus each dependency's `configure(env)` and each feature's own `env` shape. Every problem is reported at once (`Service "links" can't start: invalid environment` followed by `  - PORT: must be a whole number from 1 to 65535 (got "x")`), and the process exits 1 with no stack trace.
+  - `/health` (liveness) and `/ready` (each dependency's `ready()` with a timeout; 503 `not-ready` or `shutting-down`). Health and readiness requests aren't logged.
+  - Graceful shutdown on SIGTERM/SIGINT: stop taking requests, finish in-flight ones (responses during shutdown send `Connection: close`, otherwise keep-alive sockets hold `close()` up), then features' `stop()` and dependencies' `close()` in reverse. It exits 0, or 1 after `SHUTDOWN_TIMEOUT_MS`.
+  - `defineFeature({ name, env?, operations?, register?, start?, stop? })` and `loadFeatures(dir)`, which imports `src/features/<name>/index.ts` in name order and skips `_`/`.` folders. `operations` are handlers by `operationId` for a plugin that `servesOperations`; declaring operations with no such plugin, or one operation in two features, stops startup.
+  - Re-exports `z`, so features don't need their own Zod.
+- **`postgresDependency({ name, schema, migrationsFolder })`** in `@jeeves/postgres-runtime`: a `Dependency` (matching the service runtime's shape structurally, with no import). It checks the environment with the service's, migrates before features start, answers `/ready`, closes the pool, and exposes `db` (Drizzle) and `pool`.
+- **`templates/http-service`**:
+  - Scaffold (`scaffold/service`, project-owned): `package.json` (`start`, `typecheck`, and `test` scripts; dev dependencies typescript 7.0.2, @types/node, vitest), `tsconfig.json` (NodeNext, `erasableSyntaxOnly`), a `Dockerfile` (`node:24.22.2-alpine`; `npm install --omit=dev` in the service dir; runs `node src/main.ts` with type stripping, so there's no build), `Dockerfile.dockerignore`, `src/main.ts`, `src/features/README.md`, and `test/README.md`.
+  - `generate.ts`:
+    - Generated `src/jeeves.generated.ts`: `export const service = defineService(...)`, `export const database = postgresDependency(...)` when a postgres element is connected, and `restServer({ contract, basePath, auth })` when the element has a rest-api-server attachment.
+    - Compose service:
+      - built from the project root with `dockerfile: services/<id>/Dockerfile`
+      - environment: `PORT`, `LOG_LEVEL`, `SHUTDOWN_TIMEOUT_MS=10000`
+      - port `127.0.0.1::<port>`
+      - a health check that runs `node -e fetch(.../ready)`
+      - `stop_grace_period: 15s`, `restart: unless-stopped`
+      - `depends_on` for `depends-on` connections
+    - Runtime dependency `@jeeves/service-runtime`.
+    - Refuses a non-postgres database or more than one database.
+  - Test pack (4 checks): `health`; `ready` (200, then stops the connected database, expects 503 naming it, restarts it, and expects 200 again); `config-validation` (one-off container with `PORT=not-a-port LOG_LEVEL=chatty`: non-zero exit, both problems named, no stack trace); `graceful-shutdown` (`docker stop` gives exit code 0 within `SHUTDOWN_TIMEOUT_MS`; it then starts the service again).
+  - `agent-guide.md`, `template.ts` (`@jeeves/template-http-service/template`), `generate.test.ts`, and the conformance test.
+  - Manifest: the `uses-database` out-port is now `multiple: false` (S7's known issue).
+- **`@jeeves/rest-server`** (`templates/rest-api-server/runtime`; Ajv 8.20.0 + ajv-formats 3.0.1, yaml 2.9.1; `fastify` and `@jeeves/service-runtime` are optional peers, used for types only):
+  - `loadContract`/`parseContract`: OpenAPI 3.1 only. It resolves local `$ref`s on parameters, request bodies and responses, and merges path-level and operation-level parameters. It reports every problem (wrong version, missing or duplicate `operationId`, bad YAML) in a `ContractError`.
+  - `createValidators(contract)`: per-operation request validation (path, query and header values coerced with defaults; JSON body) and response validation by status (exact, then `2XX`, then `default`). Component schemas resolve because the document is registered in Ajv and local refs are rewritten to point at it.
+  - `restServer({ contract, basePath, auth, responseValidation })` is a `ServicePlugin`:
+    - Routes every operation under `basePath`.
+    - Error responses:
+      - 400 `REQUEST_INVALID` with `details: [{ in, path, message }]`, also for malformed JSON
+      - 404 `NOT_FOUND` under the base path
+      - 501 `NOT_IMPLEMENTED` for operations with no handler (also logged at startup)
+      - 500 `RESPONSE_INVALID` for an undocumented status or a schema-invalid body (`responseValidation: "warn"` only logs)
+    - A handler for an operation that isn't in the contract stops startup.
+    - Serves `/openapi.json` (with `servers` set to the real base path) and `/_jeeves/operations` (each operation and whether, and by which feature, it's implemented).
+    - `auth: "bearer"` requires `REST_BEARER_TOKEN` (an environment problem if unset) and compares it in constant time.
+- **`templates/rest-api-server`**:
+  - Scaffold: `contracts/<service>.openapi.yaml` (a `GET /ping` with an optional `message` query parameter, `maxLength` 64, with an example; `Pong` and `Error` schemas; a `BadRequest` response) and `<service dir>/src/features/ping/index.ts`.
+  - `generate.ts`: those scaffold files, `REST_BEARER_TOKEN=<id>-local-token` in compose when `auth: bearer`, and runtime dependency `@jeeves/rest-server`.
+  - Test pack (4 checks, all driven by the project's contract file):
+    - `openapi-served`: the served paths match the file, and `servers[0].url` equals the base path
+    - `handlers`: every operation in `/_jeeves/operations` is implemented, and the running image serves every operation in the file
+    - `contract-smoke`: every GET operation (or any with `x-jeeves-smoke: true`) whose required parameters and body have examples is called, and the response is validated against the contract on the client side
+    - `invalid-requests`: per operation, one broken rule (a non-object body, a too-long, non-numeric or out-of-enum query or header value, or a missing required query parameter) must get a 400 `REQUEST_INVALID` with details
+  - `agent-guide.md`, `template.ts`, `generate.test.ts`, `test-pack/index.test.ts` (runs the pack against an in-process service, including "no handler" and "invalid response" failures), and the conformance test.
+- **Template-kit (additive changes):**
+  - `GenerateResult.packageDependencies` (registry packages with exact versions, optionally dev) and `GenerateContext.attachments` (the element's attachments with manifests and resolved config).
+  - `ServiceHandle.stop({ graceSeconds })` now returns `{ exitCode }`, and there's a new `ServiceHandle.run({ env, command })` (`docker compose run --rm --no-deps --no-TTY`).
+  - `packages.ts`: `VENDOR_DIR`, `runtimeTarballName` (the `pnpm pack` naming), `vendoredRuntimeSpec(elementDir, name, version)` (`file:../../vendor/jeeves/…tgz`), and `mergePackageDependencies` (adds missing dependencies only and never changes listed ones; sorts the maps it touches).
+  - Harness:
+    - `vendorRuntimes(dir, modules)` runs `pnpm pack` into `vendor/jeeves/`.
+    - `buildProject` adds each element's runtime and package dependencies to its `package.json` (skipping stubs).
+    - `down({ images: true })` and dispose remove the images compose built.
+- **postgres:** `generate` now also gives each consumer `drizzle-orm` 0.45.4 and the `drizzle-kit` 0.31.11 dev dependency. The new `conformance/service-with-postgres.conformance.ts` runs two real http-service consumers.
+- Runtime `prepack` scripts run `tsc -p tsconfig.build.json` directly, not `pnpm build`, so packing works where `pnpm` is only reachable through corepack.
+- Docs: the open questions in the http-service and rest-api-server briefs are answered; the PLAN progress line and the README's template line are updated.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 247 files in 53ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  35 passed (35)
+      Tests  235 passed (235)
+```
+
+`pnpm test:templates` (Docker 29.9.1, after `pnpm format`):
+
+```text
+ Test Files  4 passed (4)
+      Tests  45 passed (45)
+   Duration  198.14s
+```
+
+The three "Done when" scenarios, from the per-file `--reporter verbose` runs:
+
+```text
+http-service.conformance.ts — a service alone (6)
+ ✓ references the vendored runtime from the service's package.json
+ ✓ test pack > the container starts and /health returns 200
+ ✓ test pack > /ready returns 200 with dependencies up and 503 with one stopped
+ ✓ test pack > a bad environment is rejected with a readable error
+ ✓ test pack > SIGTERM shuts the service down cleanly within the timeout
+ ✓ the generated service type-checks against the packed runtime
+
+rest-api-server.conformance.ts — http-service with a rest-api-server attachment (11)
+ ✓ scaffolds the contract and wires the server into the service
+ ✓ the ping operation answers under the base path
+ ✓ rest-api-server test pack > /openapi.json serves the contract
+ ✓ rest-api-server test pack > every operation in the contract has a handler
+ ✓ rest-api-server test pack > documented examples get schema-valid responses
+ ✓ rest-api-server test pack > invalid requests get 400 with a structured error
+ ✓ http-service test pack > (all 4 checks)
+ ✓ the service with its API type-checks
+
+service-with-postgres.conformance.ts — http-service plus postgres (17)
+ ✓ adds the database runtime and Drizzle to each service's package.json
+ ✓ a feature writes to and reads from the service's own database
+ ✓ postgres test pack (services applied their migrations at startup) > (all 5 checks)
+ ✓ http-service test pack for links > (all 4 checks; /ready went 503 with main-db stopped)
+ ✓ http-service test pack for stats > (all 4 checks)
+ ✓ data written before restarts is still there, and the service reconnected
+ ✓ the service with a database and a feature type-checks
+```
+
+The S7 postgres conformance (11 tests) still passes. The type-check tests run `npm install` and `npm run typecheck` on the host in the generated service directory, so they need network access, as the Docker image builds do. No containers or images were left behind afterwards.
+
+`pnpm test:e2e`: 12 passed (the manifests and package exports changed).
+
+### Deviations and choices the plan left open
+
+- **Fastify** (PLAN §16), as assumed.
+- **No OpenAPI library besides Ajv.** `fastify-openapi-glue` can't validate responses, only serialize them. A ~200-line loader plus Ajv 2020 does what the brief asks, with error shapes we control. Only OpenAPI 3.1 is accepted; 3.0 contracts are refused with a clear message.
+- **Features are discovered from folders**, not registered in `main.ts`, so an attachment added by regeneration (rest-api-server's `ping`) works even though `main.ts` is project-owned and already written.
+- **Generated services run TypeScript directly** with Node 24's type stripping (no build step in the image). The scaffold's `tsconfig.json` sets `erasableSyntaxOnly`, so `pnpm typecheck` catches what Node can't strip, and the agent guide says so. The runtimes ship compiled `dist/`, because Node won't strip types inside `node_modules`.
+- **Images build from the project root** with a per-Dockerfile `Dockerfile.dockerignore`, so vendored runtimes and `contracts/` are in the build context without sending the whole project. The Dockerfile uses `npm install` (no lockfile) because the image installs one service, not the pnpm workspace; dependency versions are pinned exactly, but transitive ones aren't locked yet.
+- **`package.json` is project-owned, but dependencies get added to it.** Templates declare `runtimeDependencies` and `packageDependencies`, and generation adds the missing ones (never changing or removing any). This is how a database or API attachment added later reaches an existing service. S10 should do the same and needn't hash `package.json`.
+- **The compose health check probes `/ready`**, not `/health`, so `up --wait` means "dependencies reachable". `replicas` isn't used in compose (as the brief says: local Docker runs one).
+- **Bearer auth** is a single local token from compose (`<id>-local-token`), like S7's fixed local passwords. It's a placeholder, as the brief says.
+- **The REST API reports itself at `/_jeeves/operations`**, so the "every operation has a handler" check can see what the running image actually implements.
+- **The service plus Postgres conformance test lives in `templates/postgres/conformance/`**: importing the postgres template from http-service would make a workspace dependency cycle (postgres already depends on the http-service manifest). The http-service unit tests use stand-in manifests with the real IDs for the same reason. The S7 stub-based postgres conformance test stays as it was, and the new file covers real consumers.
+- **`contractPath()`** exists in both http-service and rest-api-server `generate.ts` (same cycle reason). They must stay in sync: `contracts/<service id>.openapi.yaml`.
+
+### Known issues
+
+- No lockfile inside service images (see above). S10 may want to generate one per service, or install from the workspace lockfile with `pnpm deploy`.
+- The `graceful-shutdown` check doesn't hold a request open during the stop; that path is covered by the runtime's unit test (`finishes in-flight requests during a graceful shutdown`).
+- A contract with only GET operations that have no examples gets no smoke requests (the check logs `ran 0` and passes). The agent guide tells agents to add examples.
+- `@jeeves/postgres-runtime`'s `DatabaseConfigError` still uses a constructor parameter property. That's fine because the runtime ships compiled, but it's the one non-strippable spot left in the runtimes.
+- First run cold start: pulls `node:24.22.2-alpine` and installs from npm in each image build (~40 s per scenario after that, thanks to the build cache).
+
+### For S9 and later
+
+- **S9 (rest-api-client, web-app):**
+  - The client's `calls` wiring for a service belongs in http-service's `wiringOf`/`wiringSource` (it already reads `ctx.attachments`; add the client attachment and the outgoing `calls` connections there).
+  - The target's contract is `contracts/<target id>.openapi.yaml`, and its base path is the target's rest-api-server attachment `basePath` (`peer.attachment.config`; apply defaults through the peer manifest).
+  - A server with `auth: bearer` reads `REST_BEARER_TOKEN`. A client in compose can get the same value (`<target id>-local-token`) from the client template's compose fragment.
+  - `@jeeves/rest-server` exports `loadContract` and `createValidators` if the client's test pack wants contract-side checks.
+  - A web-app talking to a service should go through `depends_on` with `service_healthy` (services have a `/ready` health check).
+- **S10 (generator):**
+  - Reuse `vendorRuntimes` (or the same `pnpm pack` call), `vendoredRuntimeSpec`, and `mergePackageDependencies`. Apply `packageDependencies` too.
+  - The compose-CLI `TestPackContext` adapter must implement `ServiceHandle.stop()` returning `{ exitCode }` (`docker stop` then `docker inspect`) and `run()` (`docker compose run --rm --no-deps --no-TTY -e …`). See `packages/template-kit/src/harness/environment.ts`.
+  - http-service's test pack stops and restarts the database and the service, so run packs in an order where that's acceptable. The postgres pack and the http-service pack both restart things and both leave everything running.
+  - A project needs `vendor/jeeves/` before `docker compose build`, because every service Dockerfile copies it.

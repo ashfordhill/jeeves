@@ -76,6 +76,12 @@ export interface ResolvedConnection {
 
 type Endpoint = Connection["from"];
 
+export interface ResolvedAttachment {
+  attachment: Attachment;
+  manifest: TemplateManifest;
+  config: Record<string, unknown>;
+}
+
 /** Everything `generate` may look at. Built by `createGenerateContext`. */
 export interface GenerateContext {
   design: DesignDocument;
@@ -87,6 +93,8 @@ export interface GenerateContext {
   config: Record<string, unknown>;
   /** The element's directory, e.g. `databases/links-db`. */
   dir: string;
+  /** The element's attachments, in design order, with their config defaults applied. */
+  attachments: ResolvedAttachment[];
   /** Connections ending at this element (or attachment), in design order. */
   incoming: ResolvedConnection[];
   /** Connections starting at this element (or attachment), in design order. */
@@ -99,6 +107,20 @@ export interface GenerateResult {
   compose: ComposeFragment;
   /** Runtime packages an element needs in its `package.json` (vendored by the generator). */
   runtimeDependencies: { element: string; name: string }[];
+  /**
+   * Registry packages an element needs in its `package.json`, for example `drizzle-orm` for a
+   * service that uses a database. Like runtime dependencies, they're added when missing and never
+   * changed or removed (`mergePackageDependencies`).
+   */
+  packageDependencies?: PackageDependency[];
+}
+
+export interface PackageDependency {
+  element: string;
+  name: string;
+  /** An exact version. */
+  version: string;
+  dev?: boolean;
 }
 
 /** A template's test pack: ordered checks run against the composed, running project. */
@@ -133,9 +155,18 @@ export interface ServiceHandle {
   exec(command: string[]): Promise<{ exitCode: number; output: string }>;
   /** Restarts the container and waits until it is healthy again. */
   restart(): Promise<void>;
-  stop(): Promise<void>;
+  /** Stops the container (SIGTERM, then SIGKILL after the grace period). */
+  stop(options?: { graceSeconds?: number }): Promise<{ exitCode: number }>;
   /** Starts a stopped service and waits until it is healthy. */
   start(): Promise<void>;
+  /**
+   * Runs a one-off container of this service (`docker compose run --rm --no-deps`) with extra
+   * environment or another command, and waits for it to exit.
+   */
+  run(options: {
+    env?: Record<string, string>;
+    command?: string[];
+  }): Promise<{ exitCode: number; output: string }>;
 }
 
 export interface CheckResult {

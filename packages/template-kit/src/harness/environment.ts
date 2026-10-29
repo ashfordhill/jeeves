@@ -25,8 +25,11 @@ export interface StartedProject extends AsyncDisposable {
   dir: string;
   compose: ComposeFile;
   service(name: string): ServiceHandle;
-  /** `docker compose down`; volumes are kept unless `volumes` is true. */
-  down(options?: { volumes?: boolean }): Promise<void>;
+  /**
+   * `docker compose down`; volumes are kept unless `volumes` is true, and images compose built
+   * are removed when `images` is true.
+   */
+  down(options?: { volumes?: boolean; images?: boolean }): Promise<void>;
 }
 
 /**
@@ -58,21 +61,44 @@ export async function startProject(
     service(name) {
       let handle = handles.get(name);
       if (!handle) {
-        handle = serviceHandle(name, started.getContainer(`${name}-1`));
+        handle = serviceHandle(name, started.getContainer(`${name}-1`), {
+          dir,
+          projectName: options.projectName,
+        });
         handles.set(name, handle);
       }
       return handle;
     },
     async down(downOptions) {
       await started.down({ removeVolumes: downOptions?.volumes ?? false, timeout: 10_000 });
+      if (downOptions?.images) await removeBuiltImages(dir, options.projectName, compose);
     },
     async [Symbol.asyncDispose]() {
       await started.down({ removeVolumes: true, timeout: 10_000 });
+      await removeBuiltImages(dir, options.projectName, compose);
     },
   };
 }
 
-function serviceHandle(name: string, container: StartedTestContainer): ServiceHandle {
+/** Removes images compose built for this project (services with `build` and no `image`). */
+async function removeBuiltImages(dir: string, projectName: string, compose: ComposeFile) {
+  const images = Object.entries(compose.services)
+    .filter(([, service]) => service.build && !service.image)
+    .map(([name]) => `${projectName}-${name}`);
+  if (images.length === 0) return;
+  await run("docker", ["image", "rm", "--force", ...images], { cwd: dir }).catch(() => {});
+}
+
+interface ComposeProject {
+  dir: string;
+  projectName: string;
+}
+
+function serviceHandle(
+  name: string,
+  container: StartedTestContainer,
+  project: ComposeProject,
+): ServiceHandle {
   return {
     name,
     async endpoint(containerPort) {
@@ -90,8 +116,35 @@ function serviceHandle(name: string, container: StartedTestContainer): ServiceHa
     // waits with the container's wait strategy (the health check, where there is one).
     restart: () => container.restart({ timeout: 10_000 }),
     start: () => container.restart({ timeout: 10_000 }),
-    async stop() {
-      await run("docker", ["stop", "--time", "10", container.getId()]);
+    async stop(stopOptions) {
+      const grace = String(stopOptions?.graceSeconds ?? 10);
+      await run("docker", ["stop", "--time", grace, container.getId()]);
+      const { stdout } = await run("docker", [
+        "inspect",
+        "--format",
+        "{{.State.ExitCode}}",
+        container.getId(),
+      ]);
+      return { exitCode: Number(stdout.trim()) };
+    },
+    async run(runOptions) {
+      const args = ["compose", "--project-name", project.projectName, "run", "--rm", "--no-deps"];
+      args.push("--no-TTY");
+      for (const [key, value] of Object.entries(runOptions.env ?? {})) {
+        args.push("--env", `${key}=${value}`);
+      }
+      args.push(name, ...(runOptions.command ?? []));
+      try {
+        const { stdout, stderr } = await run("docker", args, {
+          cwd: project.dir,
+          maxBuffer: 16 * 1024 * 1024,
+        });
+        return { exitCode: 0, output: stdout + stderr };
+      } catch (error) {
+        const failed = error as { code?: number; stdout?: string; stderr?: string };
+        if (typeof failed.code !== "number") throw error;
+        return { exitCode: failed.code, output: (failed.stdout ?? "") + (failed.stderr ?? "") };
+      }
     },
   };
 }

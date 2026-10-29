@@ -19,7 +19,7 @@
   "scripts": {
     "typecheck": "tsc -p .",
     "build": "tsc -p tsconfig.build.json",
-    "prepack": "pnpm build"
+    "prepack": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

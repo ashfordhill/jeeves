@@ -86,6 +86,14 @@ export function createGenerateContext(
     manifest,
     config: resolveConfig(manifest.config, (attachment ?? element).config),
     dir,
+    attachments: element.attachments.map((a) => {
+      const attachmentManifest = manifestOf(lookup, a.template, a.id);
+      return {
+        attachment: a,
+        manifest: attachmentManifest,
+        config: resolveConfig(attachmentManifest.config, a.config),
+      };
+    }),
     incoming,
     outgoing,
   };
