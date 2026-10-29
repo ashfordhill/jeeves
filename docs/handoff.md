@@ -1201,3 +1201,157 @@ How the "Done when" items are covered:
   - To get only the checks, the steps are separate; split `runBaseline` if a task needs just "typecheck + packs" without reinstalling.
 - **Regenerate before orchestrating** a changed design. `generateProject` refuses to overwrite hand edits; agents must never edit generated-owned files (the generated `AGENTS.md` says so).
 - **The `GenerationService` pattern** (in-memory live state plus periodic saves, an NDJSON follow endpoint, `interrupted` on restart) is a template for run events if pg-boss doesn't cover streaming.
+
+---
+
+## S11: Orchestrator, part 1 (planning and run state) (2026-10-29)
+
+### Built
+
+- **`@jeeves/orchestrator`** (`packages/orchestrator`, pure apart from reading the project folder):
+  - `states.ts`: run statuses (PLAN §10's eight plus `planning`), task statuses (`pending`, `running`, `done`, `needs-attention`, `cancelled`), attempt statuses (`running`, `succeeded`, `failed`, `interrupted`, `cancelled`). `allows(status, action)` and `runActions(status)` are the one table of which action (start, pause, resume, cancel, replan, edit) each state allows.
+  - `seed.ts`: `seedPlan({ design, lock, templates })` makes one task per element and per attachment whose notes aren't empty.
+    - **Order:** `elementOrder` is a topological sort over every connection (`uses-database`, `calls`, `depends-on`; from depends on to). Ties break by element kind (database, then library/external, service, worker, frontend), then by document order. A cycle is broken at the lowest-ranked element.
+    - **Within an element**, attachment tasks come before the element's own task: an API or client before the features that use it.
+    - **Each task** carries `key` (`links`, `links.links-api`, and `-2`, `-3` for splits), `ownedPaths` (from `lock.json`), and `dependsOn` (element IDs). Seed titles are `Implement <element name>` and `Implement <attachment template> (<id>) on <element name>`.
+    - `orderProblems(tasks)` reports a task placed before a task of an element it depends on. It's a warning, not an error.
+  - `planner.ts`: `refinePlan(provider, model, input, signal)`.
+    - The model gets the seed plan and the element briefs (`jeeves/elements/<id>.md`, truncated at 12k characters each) and must call `submitPlan`, whose arguments are validated with Zod: 1–40 tasks, each with 1–10 acceptance tests.
+    - `checkSubmittedPlan` accepts only seed targets, requires every seed target to be covered, puts the tasks back in seed order (keeping the model's order within a target), and copies `ownedPaths` and `dependsOn` from the seed. So **the model can't widen a task's paths or reorder dependencies**.
+    - An invalid plan, or an answer without the tool call, is sent back with the errors, up to 3 model calls. A `ProviderError` is thrown to the caller.
+  - `project.ts`: `readGeneratedProject(dir)` returns the lock, the design snapshot, and the briefs, with clear errors.
+  - `execute.ts`: the **S12 seam**. `TaskExecutor.execute({ runId, dir, task, attempt, signal })` returns `{ status, summary, usage, error? }`. `stubExecutor(delayMs)` waits, then reports success with `STUB_SUMMARY` and unknown usage. It rejects on abort.
+- **Server:**
+  - Migration `0003_orchestrator`, with three tables: `runs` (status, `status_reason`, `output_dir`, `design_revision` from the lock, `planner` JSON with mode/model/message/usage, `warnings`, timestamps), `tasks` (position, key, element, attachment, title, description, acceptance, owned paths, depends-on, source, `edited`, status), and `attempts` (number, status, summary, usage, error).
+  - **pg-boss 12.35.1** (`src/runs/jobs.ts`):
+    - `pgBossJobs(options)` creates the queues `jeeves-run-plan` and `jeeves-run-step` with `retryLimit: 0`, a 6 h expiry, 0.5 s polling, and local concurrency 4. `main.ts` starts it on `DATABASE_URL`, so pg-boss's tables live in the `pgboss` schema of Jeeves's database.
+    - `localJobs()` is the in-process default for API tests.
+    - The JobQueue interface keeps pg-boss out of `RunService`.
+  - `RunService` (`src/runs/service.ts`):
+    - `create` refuses a project with no `lock.json` at its output folder (`PROJECT_NOT_GENERATED`) and a second active run (`RUN_ACTIVE`). It inserts a `planning` run and queues the plan job.
+    - The plan job seeds, then refines with the `planner` role's model.
+      - **Falling back to the seed** happens when there's no key, the planner never gives a valid plan, or the provider fails (the message says which, and for `auth`/`quota` it says to fix Settings and press Plan again). The planner's usage is recorded.
+      - **Warnings** are recorded when the design changed after generation (`lock.designRevision` ≠ the current revision) and when the latest generation into that folder wasn't green with the baseline.
+      - An unreadable project fails the run.
+    - Edits (`editTask`, `removeTask`, `reorder`) work only on pending tasks, and only when the run is planned or stopped (`paused`, `needs-attention`, `waiting_for_provider`).
+    - `act`: start, pause, resume, cancel, replan.
+      - Each transition is a conditional update on the current status, so racing requests can't both win.
+      - Cancel marks pending tasks cancelled and aborts planning or the task in progress.
+    - The step job runs the first pending task: claim the task, insert an attempt, then call the executor.
+      - Success marks the task done. A failed attempt (or an executor error) marks the task and the run `needs-attention` with a reason. An aborted attempt is `cancelled`.
+      - Then, if the run is still running, it queues the next step. No pending task left means `succeeded`.
+      - An in-memory per-run guard makes duplicate jobs no-ops.
+    - `get` returns the run, its tasks with attempts, `actions`, `editable`, `orderProblems`, and usage (planner, attempts, and total; unknown stays unknown).
+  - **Restart recovery:** `recoverRuns(db)` (in `main.ts` before pg-boss starts) marks running attempts `interrupted` and puts their tasks back to `pending` (the workspace is untouched). Running runs become `paused` with "Jeeves restarted while this run was running. Press Resume to continue." `requeuePlanning(db, jobs)` (after listen) queues planning again for runs left in `planning`.
+  - Routes (`src/routes/runs.ts`):
+    - `GET|POST /projects/:id/runs`
+    - `GET /projects/:id/runs/:runId`
+    - `PATCH|DELETE …/tasks/:taskId`
+    - `PUT …/order` (`{ taskIds }`: exactly the pending tasks)
+    - `POST …/{start,pause,resume,cancel,replan}`
+  - `AppDeps` gained `jobs` and `executor`. `main.ts` uses `stubExecutor(JEEVES_STUB_TASK_MS ?? 1500)`.
+- **Web: the Runs view** (`apps/web/src/runs/`):
+  - **Left column:** **Plan a run** (disabled, with the reason, until the project is generated or while a run is active) and the run list (status badge, done/total tasks, date).
+  - **Run header:** status and the allowed actions: **Start**, **Resume**, **Pause**, **Plan again**, and **Cancel run** (with an inline "Yes, cancel run / Keep it" confirmation). Below it: the status reason, warnings, and how the plan was made (refined by which model, or seed and why) with token usage.
+  - **Task cards:** number, title, element (and attachment), status, an "edited" tag, description, acceptance tests, the owned paths ("May change: …"), order warnings, and attempts.
+    - While the run is editable, each pending task has Move up, Move down, Edit (an inline form: title, description, acceptance tests one per line), and Remove (with an inline confirmation).
+  - It polls every second while the run is planning or a task is running. If the app starts on `#/runs`, it opens the project itself.
+  - The unused `shell/EmptyView.tsx` is removed.
+- **Fixtures:** `fixtures/chat/e2e-script.json` has a first turn, `Refine the seed plan`, that answers the planner for the link-shortener fixture (it splits the Links service). `playwright.config.ts` sets `JEEVES_STUB_TASK_MS=2000`.
+- README (Runs section, status, layout) and the PLAN progress line.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 346 files in 138ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  53 passed (53)
+      Tests  384 passed (384)
+```
+
+The S11 tests (`pnpm vitest run packages/orchestrator apps/server/src/routes/runs.test.ts apps/web/src/runs --reporter verbose`): 32 passed across 5 files. 15 are orchestrator tests (seed order, cycles, planner validation, retries, provider errors), 12 are API tests, and 5 are web tests. The API tests:
+
+```text
+✓ planning > can't plan a project that hasn't been generated
+✓ planning > plans a generated fixture project with the planner into dependency-ordered tasks
+✓ planning > falls back to the seed, in dependency order, when no planner model is set up
+✓ planning > uses the seed and says why when the provider is out of quota
+✓ planning > warns when the design changed after generation, and allows one active run
+✓ editing the plan > edits, removes, and reorders pending tasks, and the changes persist
+✓ running (stub execution) > marks every task done in order, records attempts, and succeeds
+✓ running (stub execution) > pauses between tasks, refuses edits while running, and resumes
+✓ running (stub execution) > cancel stops the task in progress and the rest of the plan
+✓ running (stub execution) > a failed attempt stops the run as needs-attention
+✓ restarts > a run survives a server restart: the attempt is interrupted and the run resumes
+✓ restarts > planning interrupted by a restart is planned again on start
+```
+
+The API tests generate the real fixture project (`generateProject` without `pnpm pack` or git) into a temp folder and plan it. The restart test uses **real pg-boss on PGlite** (`fromPglite`, PGlite persisted in a temp folder). It drops the first "process" mid-task (`stop({ graceful: false })` with the attempt still hanging), reopens the database, runs `recoverRuns`, and resumes. The planned order for the fixture is `links.links-api`, `links`, `web`. `links-db` and `web-links-client` have no notes, so they get no tasks.
+
+`pnpm test:e2e`:
+
+- First full run: 15 passed, 1 failed. The failure was `chat.spec.ts` › "settings show key status and save models per role": "Save models" was still disabled after `fill`.
+- That spec alone: 4 of 4 passed. The next full run: 16 of 16 passed, including the new `runs.spec.ts` (2 tests, ~18 s).
+- S11 doesn't touch Settings, so this looks like the same kind of load-dependent flake S9 saw in `chat.spec.ts`.
+
+`runs.spec.ts`, all by mouse:
+
+- **Planning:** plan the generated fixture; check the planner's four tasks, the baseline warning, and the acceptance tests.
+- **Editing:** edit a task's title and acceptance tests; move tasks up and down (and see the dependency warning); remove one with confirmation. A reload shows the same plan.
+- **axe:** no violations on the Runs panel.
+- **Running:** Start; Pause while the first task runs; the first task finishes and the rest stay "To do" 2.5 s later. Resume runs to Succeeded with one succeeded attempt per task.
+- **Cancel:** plan a second run, then Cancel (with confirmation).
+- **Second test:** an ungenerated project explains why it can't be planned.
+
+**A real restart, by hand**, against Docker Postgres with real pg-boss (scratch script: start the server with `node --import tsx src/main.ts` on port 4320, generate and plan the fixture, start, SIGKILL during the second task, start again, resume):
+
+```text
+before SIGKILL: status running; links.links-api: done [succeeded], links: running [running], links-2: pending, web: pending
+after restart:  status paused, "Jeeves restarted while this run was running. Press Resume to continue."
+                links.links-api: done [succeeded], links: pending [interrupted], links-2: pending, web: pending
+resumed: running
+finished: succeeded; links: done [interrupted, succeeded], every other task done [succeeded]
+```
+
+(Kill the server process itself: the `tsx` CLI forks, so SIGKILL on `tsx` leaves the real server running.)
+
+I didn't run the planner against real OpenAI: S11's "Done when" uses the fake provider, and this machine has no key configured.
+
+### Deviations and choices the plan left open
+
+- **A `planning` run state** (not in §10's list). Planning calls a model and can take a while, so the run exists and shows progress first. A restart re-queues planning.
+- **After a restart, running runs are paused, not resumed automatically.** §10 says the attempt is interrupted and "Resume starts a new attempt". I made Resume the person's decision, so a crashed coding agent isn't restarted unattended. S12 adds the diff summary to the new attempt's brief. The interrupted attempt's workspace is left as it is.
+- **Pause takes effect between tasks** ("Paused. A task in progress finishes first."). Cancel aborts the task in progress through the executor's `AbortSignal`.
+- **Planner problems fall back to the seed** instead of moving the run to `waiting_for_provider`. A seed plan is still useful. The run shows why, and **Plan again** retries. `waiting_for_provider` is in the state table for S12's coding-agent failures.
+- **The planner can't change owned paths, dependencies, or the dependency order**: tasks are re-sorted into seed order and take their paths from the lock. It can only split, retitle, describe, and add acceptance tests, and it must cover every seed task.
+- **The person can reorder freely.** A task moved ahead of something it depends on gets a warning (`orderProblems`), not a refusal.
+- **Attachment tasks share their element's owned paths.** The lock has owned paths per element, and attachments live in the element's folder; the contract file is in the element's owned paths.
+- **Generation is still an in-process job**, not pg-boss (S10's choice). Only runs use pg-boss.
+- **The Runs view polls** (1 s while live) instead of streaming. Run state is all in the database, so polling survives restarts without reconnect logic. S12's live agent events may want an NDJSON stream like Generate's.
+- **One active run per project** (any run that isn't cancelled, failed, or succeeded).
+
+### Known issues
+
+- **Generate isn't blocked while a run is active**, and a run doesn't notice a regeneration under it. S12 should refuse Generate (or at least warn) while a run for that folder is running or paused.
+- **pg-boss jobs stay "active" after a crash** until their 6 h expiry. That's harmless, since run state lives in Jeeves's tables and recovery doesn't depend on pg-boss's job state, but they appear in pg-boss's own tables.
+- **The per-run "busy" guard is in memory**, which is right for one Jeeves process. Two server processes on one database would need a database lock (pg-boss's `singleton`/`stately` policy, or `SELECT … FOR UPDATE`).
+- **The stub reports unknown usage**, so a run's total shows "unknown" once a task has run.
+- **The planner's message is the whole seed plus all briefs.** Very large designs could hit context limits; briefs are truncated at 12k characters each, but there's no overall cap.
+- **`chat.spec.ts`'s settings test flaked once under load** (see above).
+
+### For S12
+
+- **Swap in the real executor:** pass `executor` in `main.ts` (`AppDeps.executor`).
+  - `AttemptInput` has the run, the folder, the task (with `ownedPaths`, `acceptance`, `dependsOn`, `description`), the attempt number, and an abort signal.
+  - Return `failed` with `error` for a red check. The service already turns that into `needs-attention`.
+  - Retries (default 2) belong in the executor or in `runTask`; today one failure stops the run.
+  - Throwing a `ProviderError` with `blocksProvider` should become `waiting_for_provider` (not wired yet; `runTask` treats every throw as `needs-attention`).
+- **Attempt `number` > 1 after an `interrupted` attempt** is the resume case: brief the agent with the existing diff.
+- **The planner model** comes from `models("planner")`; the coding model is the `coding` role in Settings.
+- **Running the project's checks:** `@jeeves/generator/baseline` (`runBaseline`, or its steps) and the lock's `ownedPaths` for the diff check.
+- **Git:** generation leaves `pnpm-lock.yaml` uncommitted (S10). Commit it with the first task.

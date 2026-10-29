@@ -1,6 +1,57 @@
 {
   "turns": [
     {
+      "match": "Refine the seed plan",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "submitPlan",
+              "arguments": {
+                "summary": "Split the Links service into redirects and click counting.",
+                "tasks": [
+                  {
+                    "element": "links",
+                    "attachment": "links-api",
+                    "title": "Create and fetch short links",
+                    "description": "POST /links creates a short link from a URL; GET /links/:code returns it with its click count.",
+                    "acceptance": [
+                      "POST /api/links with a valid URL returns 201 and a code",
+                      "GET /api/links/:code returns the URL and its click count"
+                    ]
+                  },
+                  {
+                    "element": "links",
+                    "title": "Redirect short codes",
+                    "description": "GET /:code answers 302 to the stored URL.",
+                    "acceptance": [
+                      "GET /:code returns 302 to the URL",
+                      "An unknown code returns 404"
+                    ]
+                  },
+                  {
+                    "element": "links",
+                    "title": "Count clicks",
+                    "description": "Each redirect adds one to the link's click count.",
+                    "acceptance": ["Two redirects make the click count 2"]
+                  },
+                  {
+                    "element": "web",
+                    "title": "Shorten form and recent links",
+                    "description": "One page: paste a URL, get a short link, see recent links with click counts.",
+                    "acceptance": [
+                      "Submitting a URL shows its short link",
+                      "Recent links show their click counts"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "match": "no accounts",
       "steps": [
         {

@@ -139,6 +139,85 @@ export type GenerationEvent =
   | { type: "check"; check: GenerationCheck }
   | { type: "done"; generation: Generation };
 
+export type RunStatus =
+  | "planning"
+  | "planned"
+  | "running"
+  | "paused"
+  | "needs-attention"
+  | "waiting_for_provider"
+  | "cancelled"
+  | "failed"
+  | "succeeded";
+export type RunAction = "start" | "pause" | "resume" | "cancel" | "replan";
+export type Usage = { inputTokens: number; outputTokens: number; known: boolean };
+
+/** One orchestration run, as `apps/server/src/runs/service.ts` returns it. */
+export type Run = {
+  id: number;
+  projectId: string;
+  status: RunStatus;
+  statusReason: string | null;
+  outputDir: string;
+  designRevision: number | null;
+  planner: {
+    mode: "refined" | "seed";
+    model: string | null;
+    message: string | null;
+    usage: Usage | null;
+  } | null;
+  warnings: string[];
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+};
+
+export type RunSummary = Run & { taskCount: number; doneCount: number };
+
+export type Attempt = {
+  id: number;
+  number: number;
+  status: "running" | "succeeded" | "failed" | "interrupted" | "cancelled";
+  summary: string | null;
+  usage: Usage | null;
+  error: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+};
+
+export type RunTask = {
+  id: number;
+  position: number;
+  key: string;
+  element: string;
+  attachment: string | null;
+  title: string;
+  description: string;
+  acceptance: string[];
+  ownedPaths: string[];
+  dependsOn: string[];
+  source: "seed" | "planner";
+  edited: boolean;
+  status: "pending" | "running" | "done" | "needs-attention" | "cancelled";
+  attempts: Attempt[];
+};
+
+export type RunDetail = {
+  run: Run;
+  tasks: RunTask[];
+  actions: RunAction[];
+  editable: boolean;
+  orderProblems: { taskId: number; message: string }[];
+  usage: { planner: Usage | null; attempts: Usage; total: Usage };
+};
+
+export type RunsOverview = {
+  runs: RunSummary[];
+  readiness: { outputDir: string | null; ready: boolean; reason: string | null };
+};
+
+export type TaskPatch = { title?: string; description?: string; acceptance?: string[] };
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -157,7 +236,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const body = (await res.json().catch(() => ({}))) as { message?: string };
     throw new ApiError(res.status, body.message ?? `${res.status} ${res.statusText}`);
   }
-  return (await res.json()) as T;
+  return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
 export const api = {
@@ -253,6 +332,31 @@ export const api = {
   cancelGeneration: (id: string, generationId: number) =>
     request<{ cancelling: boolean }>(`/projects/${id}/generations/${generationId}/cancel`, {
       method: "POST",
+    }),
+
+  runs: (id: string) => request<RunsOverview>(`/projects/${id}/runs`),
+
+  planRun: (id: string) =>
+    request<{ run: Run }>(`/projects/${id}/runs`, { method: "POST" }).then((r) => r.run),
+
+  run: (id: string, runId: number) => request<RunDetail>(`/projects/${id}/runs/${runId}`),
+
+  runAction: (id: string, runId: number, action: RunAction) =>
+    request<{ run: Run }>(`/projects/${id}/runs/${runId}/${action}`, { method: "POST" }),
+
+  editTask: (id: string, runId: number, taskId: number, patch: TaskPatch) =>
+    request<{ task: RunTask }>(`/projects/${id}/runs/${runId}/tasks/${taskId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+
+  removeTask: (id: string, runId: number, taskId: number) =>
+    request<void>(`/projects/${id}/runs/${runId}/tasks/${taskId}`, { method: "DELETE" }),
+
+  reorderTasks: (id: string, runId: number, taskIds: number[]) =>
+    request<void>(`/projects/${id}/runs/${runId}/order`, {
+      method: "PUT",
+      body: JSON.stringify({ taskIds }),
     }),
 
   settings: () => request<SettingsView>("/settings"),

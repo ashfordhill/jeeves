@@ -6,8 +6,8 @@
 import { MantineProvider } from "@mantine/core";
 import { DrawView } from "./draw/DrawView.tsx";
 import { ProjectMenu } from "./draw/ProjectMenu.tsx";
+import { RunsView } from "./runs/RunsView.tsx";
 import { SettingsView } from "./settings/SettingsView.tsx";
-import { EmptyView } from "./shell/EmptyView.tsx";
 import { StatusBar } from "./shell/StatusBar.tsx";
 import { useColorScheme } from "./shell/useColorScheme.ts";
 import { useHashView } from "./shell/useHashView.ts";
@@ -21,7 +21,7 @@ function ViewBody({ view }: { view: ViewId }) {
     case "draw":
       return <DrawView />;
     case "runs":
-      return <EmptyView title="Runs">Orchestration runs will be listed here.</EmptyView>;
+      return <RunsView />;
     case "settings":
       return <SettingsView />;
   }

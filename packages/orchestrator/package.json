@@ -6,5 +6,12 @@
   "exports": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@jeeves/generator": "workspace:*",
+    "@jeeves/providers": "workspace:*",
+    "@jeeves/registry": "workspace:*",
+    "@jeeves/spec": "workspace:*",
+    "zod": "4.5.4"
   }
 }

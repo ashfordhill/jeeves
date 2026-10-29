@@ -1,3 +1,4 @@
+import { stubExecutor, type TaskExecutor } from "@jeeves/orchestrator";
 import { builtinRegistry, type Registry } from "@jeeves/registry";
 import Fastify, { type FastifyInstance } from "fastify";
 import {
@@ -13,8 +14,11 @@ import { GenerationService, type GeneratorRunner } from "./generate/service.ts";
 import { chatRoutes } from "./routes/chat.ts";
 import { generateRoutes } from "./routes/generate.ts";
 import { projectRoutes } from "./routes/projects.ts";
+import { runRoutes } from "./routes/runs.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { templateRoutes } from "./routes/templates.ts";
+import { type JobQueue, localJobs } from "./runs/jobs.ts";
+import { RunService } from "./runs/service.ts";
 import { jeevesHome, Settings } from "./settings.ts";
 
 export type HealthResponse = {
@@ -35,6 +39,10 @@ export type AppDeps = {
   generator?: GeneratorRunner;
   /** Parent folder for default output folders (`JEEVES_PROJECTS_DIR`, else ~/jeeves-projects). */
   projectsDir?: string;
+  /** Background jobs for runs: pg-boss in the app, an in-process queue by default (tests). */
+  jobs?: JobQueue;
+  /** Runs each task. S11's stub marks tasks done; S12 runs coding agents. */
+  executor?: TaskExecutor;
   logger?: boolean;
 };
 
@@ -48,6 +56,8 @@ export function buildApp({
   models = providerModels(settings),
   generator,
   projectsDir,
+  jobs = localJobs(),
+  executor = stubExecutor(),
   logger = false,
 }: AppDeps): FastifyInstance {
   const app = Fastify({ logger });
@@ -85,11 +95,14 @@ export function buildApp({
   const chat = new ChatService(db, design, registry, models);
 
   const generation = new GenerationService(db, design, generator, projectsDir);
+  const runs = new RunService(db, design, models, registry, jobs, executor);
+  app.addHook("onReady", () => runs.init());
 
   app.register(projectRoutes, { service: design });
   app.register(generateRoutes, { generation });
   app.register(templateRoutes, { registry });
   app.register(chatRoutes, { chat });
+  app.register(runRoutes, { runs });
   app.register(settingsRoutes, { settings });
 
   return app;

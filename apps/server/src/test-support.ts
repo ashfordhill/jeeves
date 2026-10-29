@@ -17,7 +17,7 @@ export async function openTestDb(dataDir?: string) {
   const client = new PGlite(dataDir);
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder });
-  return { db: db as Db, close: () => client.close() };
+  return { db: db as Db, client, close: () => client.close() };
 }
 
 /** `models` and `settings` default to "no provider configured" in a throwaway directory. */

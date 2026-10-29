@@ -2,7 +2,7 @@
 
 Jeeves turns a software design into a working, tested application by combining strict, reusable templates with coding agents. Draw Jeeves is its design canvas. See [PLAN.md](PLAN.md) for the architecture and build plan.
 
-Status: S1–S10 are done (see `docs/handoff.md`). The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. Settings shows provider key status and the model per role. Runs is still empty.
+Status: S1–S11 are done (see `docs/handoff.md`). The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit, reorder, and start, pause, or cancel. Task execution is still a stub that marks each task done; coding agents arrive in S12. Settings shows provider key status and the model per role.
 
 ## Requirements
 
@@ -36,6 +36,14 @@ With **Run the baseline check** on, Jeeves then runs `pnpm install`, `pnpm -r ty
 
 Generating again is safe: files Jeeves owns (listed with hashes in `jeeves/lock.json`) are rewritten, project-owned files are never touched, and missing dependencies are added to each element's `package.json`. If a generated-owned file was edited by hand, Jeeves stops without writing anything and names the file. Removed elements are reported, never deleted.
 
+## Runs
+
+After generating, open **Runs** and press **Plan a run**. Jeeves reads the generated project (`jeeves/lock.json`, `jeeves/design.json`, `jeeves/elements/*.md`) and makes one task per element or attachment that has implementation notes, in dependency order: databases, then services, then their clients, then frontends. The planner model (Settings, "Planner") may split tasks and adds acceptance tests to each. Without a key, or if the planner fails, the plan is the seed and the run says why. A task may only change its element's owned paths.
+
+Before starting, you can edit a task's title, description, and acceptance tests, move tasks up or down (a task moved ahead of something it depends on gets a warning), and remove tasks. **Start** runs the tasks one at a time, **Pause** stops after the current task, **Resume** continues, and **Cancel run** stops everything. Planning and each step are pg-boss jobs in Jeeves's Postgres, and run state is saved there. If Jeeves restarts mid-task, that attempt is marked interrupted and the run waits, paused, for **Resume**.
+
+Until S12, execution is a stub: each task is marked done after `JEEVES_STUB_TASK_MS` (default 1500 ms).
+
 ## Test
 
 ```bash
@@ -50,8 +58,8 @@ Playwright's Chromium needs system libraries. If it fails with a missing `libnsp
 
 ```text
 apps/web          Jeeves UI (React, Vite, Mantine)
-apps/server       Fastify API, Drizzle + Postgres
-packages/*        spec, registry, providers (OpenAI + fake model), template-kit (template contract + conformance harness), generator (design to template project, baseline check); orchestrator is empty until S11
+apps/server       Fastify API, Drizzle + Postgres, pg-boss jobs for runs
+packages/*        spec, registry, providers (OpenAI + fake model), template-kit (template contract + conformance harness), generator (design to template project, baseline check), orchestrator (seed planning, planner refinement, run states, the task-execution seam)
 templates/        template packages; the five v1 templates are complete (S7–S9): postgres, http-service, rest-api-server, web-app, rest-api-client
 docs/             sources, template briefs, handoff log, reference notes
 ```

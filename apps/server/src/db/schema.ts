@@ -1,3 +1,4 @@
+import { attemptStatuses, runStatuses, taskStatuses } from "@jeeves/orchestrator";
 import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
 import {
   boolean,
@@ -224,4 +225,89 @@ export const generations = pgTable(
     finishedAt: timestamp("finished_at", { withTimezone: true }),
   },
   (t) => [index("generations_project_idx").on(t.projectId, t.id)],
+);
+
+export type RunUsage = { inputTokens: number; outputTokens: number; known: boolean };
+
+/** How the plan was made: refined by the planner model, or the deterministic seed alone (and why). */
+export type RunPlanner = {
+  mode: "refined" | "seed";
+  model: string | null;
+  /** The planner's own summary, or why the seed was used as is. */
+  message: string | null;
+  usage: RunUsage | null;
+};
+
+/** One orchestration of a generated template project (PLAN §10). */
+export const runs = pgTable(
+  "runs",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    status: text("status", { enum: runStatuses }).notNull(),
+    /** Why the run stopped, paused, or failed, in words for the person. */
+    statusReason: text("status_reason"),
+    outputDir: text("output_dir").notNull(),
+    /** The design revision the project was generated from (`jeeves/lock.json`). */
+    designRevision: integer("design_revision"),
+    planner: jsonb("planner").$type<RunPlanner>(),
+    warnings: jsonb("warnings").$type<string[]>().notNull().default([]),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("runs_project_idx").on(t.projectId, t.id)],
+);
+
+/** A unit of agent work. `position` orders a run's tasks; the person can reorder pending ones. */
+export const tasks = pgTable(
+  "tasks",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    runId: integer("run_id")
+      .notNull()
+      .references(() => runs.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    key: text("key").notNull(),
+    element: text("element").notNull(),
+    attachment: text("attachment"),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    acceptance: jsonb("acceptance").$type<string[]>().notNull(),
+    ownedPaths: jsonb("owned_paths").$type<string[]>().notNull(),
+    dependsOn: jsonb("depends_on").$type<string[]>().notNull(),
+    source: text("source", { enum: ["seed", "planner"] }).notNull(),
+    /** Changed by the person after planning. */
+    edited: boolean("edited").notNull().default(false),
+    status: text("status", { enum: taskStatuses }).notNull(),
+    createdAt: createdAt(),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("tasks_run_idx").on(t.runId, t.position)],
+);
+
+/** One try at a task. Retries and resumes after a restart are new attempts. */
+export const attempts = pgTable(
+  "attempts",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    taskId: integer("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    runId: integer("run_id")
+      .notNull()
+      .references(() => runs.id, { onDelete: "cascade" }),
+    number: integer("number").notNull(),
+    status: text("status", { enum: attemptStatuses }).notNull(),
+    summary: text("summary"),
+    usage: jsonb("usage").$type<RunUsage>(),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("attempts_task_idx").on(t.taskId, t.number)],
 );

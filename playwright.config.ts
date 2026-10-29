@@ -36,6 +36,8 @@ export default defineConfig({
         // Generate's default output folders go somewhere throwaway too.
         JEEVES_PROJECTS_DIR: mkdtempSync(join(tmpdir(), "jeeves-e2e-projects-")),
         OPENAI_API_KEY: "",
+        // Run execution is a stub until S12: each task takes this long, so Pause can be clicked.
+        JEEVES_STUB_TASK_MS: "2000",
       },
       reuseExistingServer: false,
       timeout: 60_000,
