@@ -5,7 +5,7 @@ test("loads the shell, reports a healthy server, and switches views", async ({ p
   await page.goto("/");
   await expect(page.getByText("Jeeves", { exact: true })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Draw" })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("heading", { name: "Draw" })).toBeVisible();
+  await expect(page.getByRole("toolbar", { name: "Drawing tools" })).toBeVisible();
   await expect(page.getByText("Server healthy")).toBeVisible();
 
   await page.getByRole("tab", { name: "Settings" }).click();

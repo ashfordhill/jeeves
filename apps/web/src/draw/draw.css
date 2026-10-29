@@ -1,0 +1,636 @@
+/*
+ * Draw board. Card, handle, and edge looks follow automation-pitch (tokens.css .react-flow__handle,
+ * step tiles: 3px --line border, 14px radius, --cream fill, --shadow).
+ */
+.draw-board {
+  position: absolute;
+  inset: 0;
+}
+
+.draw-board .react-flow {
+  --xy-background-color: transparent;
+  background: transparent;
+}
+
+.draw-board .paper-texture {
+  z-index: -1;
+}
+
+.draw-board[data-tool="hand"] .react-flow__pane {
+  cursor: var(--grab-cursor);
+}
+
+.draw-board[data-tool="hand"] .react-flow__pane.dragging {
+  cursor: var(--grabbing-cursor);
+}
+
+.draw-board[data-tool="element"] .react-flow__pane,
+.draw-board[data-tool="text"] .react-flow__pane,
+.draw-board[data-tool="note"] .react-flow__pane,
+.draw-board[data-tool="frame"] .react-flow__pane,
+.draw-board[data-tool="connect"] .react-flow__node,
+.draw-board[data-tool="attachment"] .react-flow__node-element {
+  cursor: crosshair;
+}
+
+.draw-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+/* Toolbar */
+.draw-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border: 3px solid var(--line);
+  border-radius: 14px;
+  background: var(--cream);
+  box-shadow: var(--shadow);
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.tool-btn:hover:not(:disabled) {
+  background: var(--paper);
+}
+
+.tool-btn.is-on {
+  background: var(--yellow);
+  border-color: var(--ink);
+  color: var(--on-yellow);
+}
+
+.tool-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tool-btn:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.tool-divider {
+  width: 2px;
+  height: 24px;
+  margin: 0 3px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--line) 30%, transparent);
+}
+
+/* Palettes */
+.palette {
+  border: 3px solid var(--line) !important;
+  border-radius: 14px !important;
+  background: var(--cream) !important;
+  color: var(--ink);
+  padding: 10px !important;
+}
+
+.palette[data-dragging] {
+  opacity: 0.25;
+}
+
+.palette-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.palette-group + .palette-group {
+  margin-top: 8px;
+}
+
+.palette-group-title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.palette-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 7px 8px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+}
+
+.palette-item:hover,
+.palette-item:focus-visible {
+  border-color: var(--line);
+  background: var(--paper);
+  outline: none;
+}
+
+.palette-item > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.palette-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.palette-item-name {
+  font-weight: 800;
+}
+
+.palette-item-description {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* Handles (automation-pitch look); hidden until hover or the connector tool. */
+.draw-board .react-flow__handle.card-handle {
+  width: 12px;
+  height: 12px;
+  min-width: 0;
+  min-height: 0;
+  border: 3px solid var(--ink);
+  background: var(--cream);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.draw-board .react-flow__handle-left.card-handle {
+  left: -7px;
+  border-radius: 3px 8px 8px 3px;
+}
+
+.draw-board .react-flow__handle-right.card-handle {
+  right: -7px;
+  border-radius: 8px 3px 3px 8px;
+}
+
+/* Element card */
+.element-card {
+  position: relative;
+  box-sizing: border-box;
+  width: 260px;
+  padding: 10px 12px 12px;
+  border: 3px solid var(--line);
+  border-radius: 14px;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.draw-board .element-card > .react-flow__handle.card-handle {
+  top: 30px;
+}
+
+.element-card.is-selected {
+  outline: 4px solid var(--select-ring);
+  outline-offset: 2px;
+}
+
+.element-card.is-pending,
+.attachment-box.is-pending {
+  outline: 3px dashed var(--yellow);
+  outline-offset: 2px;
+}
+
+.element-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.element-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 2.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.element-card-titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.element-card-name {
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.element-card-template {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.attachment-box .card-chips {
+  margin: 0 0 0 auto;
+}
+
+.card-chip {
+  padding: 1px 7px;
+  border: 1.5px solid color-mix(in srgb, var(--line) 40%, transparent);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.card-chip[data-unset] {
+  border-style: dashed;
+  color: var(--minus);
+}
+
+.card-chip-label {
+  color: var(--ink-soft);
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachment-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 2px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.draw-board .attachment-box .react-flow__handle.card-handle {
+  width: 10px;
+  height: 10px;
+  border-width: 2.5px;
+}
+
+.draw-board .attachment-box .react-flow__handle-left.card-handle {
+  left: -19px;
+}
+
+.draw-board .attachment-box .react-flow__handle-right.card-handle {
+  right: -19px;
+}
+
+.attachment-box-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  background: var(--cream);
+  color: var(--ink);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.attachment-remove:hover {
+  color: var(--minus);
+  border-color: var(--minus);
+}
+
+.draw-board[data-tool="connect"] .react-flow__handle.card-handle,
+.draw-board .react-flow__handle.connectingfrom,
+.draw-board .react-flow__handle.connectingto {
+  opacity: 1;
+}
+
+.draw-board .react-flow__node:hover .react-flow__handle.card-handle {
+  opacity: 1;
+}
+
+.draw-board .react-flow__handle.connectingto.valid {
+  background: var(--yellow);
+}
+
+/* Annotations */
+.text-annotation {
+  position: relative;
+  min-width: 60px;
+  max-width: 360px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: pre-wrap;
+}
+
+.text-annotation.is-selected,
+.note-annotation.is-selected {
+  outline: 3px solid var(--select-ring);
+  outline-offset: 2px;
+}
+
+.note-annotation {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+  border: 2px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  border-radius: 4px 4px 14px 4px;
+  color: #071c28;
+  box-shadow: var(--chip-shadow);
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow: hidden;
+}
+
+.note-annotation[data-color="yellow"] {
+  background: #f8e49a;
+}
+
+.note-annotation[data-color="blue"] {
+  background: #c3e4f6;
+}
+
+.note-annotation[data-color="green"] {
+  background: #c8ecd2;
+}
+
+.note-annotation[data-color="pink"] {
+  background: #f6cfe0;
+}
+
+.note-annotation[data-color="gray"] {
+  background: #dfe5e8;
+}
+
+.frame-annotation {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 3px dashed color-mix(in srgb, var(--line) 60%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cream) 35%, transparent);
+}
+
+.frame-annotation.is-selected {
+  border-color: var(--blue);
+}
+
+.frame-title {
+  position: absolute;
+  top: -14px;
+  left: 14px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--paper);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.annotation-text[data-empty] {
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  font-style: italic;
+}
+
+.annotation-editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 140px;
+  margin: 0;
+  padding: 2px 4px;
+  border: 2px solid var(--blue);
+  border-radius: 6px;
+  background: var(--cream);
+  color: var(--ink);
+  font: inherit;
+  resize: none;
+}
+
+/* Edges */
+.draw-board .react-flow__edge-path.connection-path {
+  stroke: var(--line);
+  stroke-width: 3;
+}
+
+.draw-board .react-flow__edge-path.arrow-path,
+.free-arrows .arrow-path {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 2;
+  stroke-dasharray: 7 6;
+}
+
+.draw-board .react-flow__edge-path.is-selected {
+  stroke: var(--blue);
+}
+
+.draw-board .react-flow__arrowhead polyline {
+  stroke: var(--line);
+  fill: var(--line);
+}
+
+.free-arrows {
+  position: absolute;
+  overflow: visible;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.free-arrow-head {
+  fill: var(--ink-soft);
+}
+
+.edge-chip {
+  position: absolute;
+  padding: 1px 8px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.edge-chip.is-selected {
+  border-color: var(--blue);
+}
+
+.edge-chip.arrow-chip {
+  border-style: dashed;
+}
+
+/* Overlays */
+.draw-notice {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  max-width: min(640px, calc(100% - 32px));
+  padding: 10px 40px 10px 14px;
+  border: 3px solid var(--line);
+  border-radius: 12px;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.draw-notice[data-tone="error"] {
+  border-color: var(--minus);
+}
+
+.draw-notice-message {
+  margin: 0;
+  font-weight: 700;
+}
+
+.draw-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.draw-notice-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  padding: 2px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.draw-empty-hint,
+.draw-tool-hint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--banner);
+  color: var(--ink);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.draw-empty-hint {
+  top: 50%;
+}
+
+.draw-tool-hint {
+  top: 76px;
+}
+
+/* React Flow zoom controls in the board's style. */
+.draw-board .react-flow__controls {
+  border: 3px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--chip-shadow);
+}
+
+.draw-board .react-flow__controls-button {
+  background: var(--cream);
+  color: var(--ink);
+  border-bottom: 2px solid color-mix(in srgb, var(--line) 30%, transparent);
+}
+
+.draw-board .react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+/* Header project menu */
+.project-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  padding: 5px 10px;
+  border: 2.5px solid var(--chrome-line);
+  border-radius: 10px;
+  background: var(--chrome-well);
+  color: var(--chrome-ink);
+  font-weight: 800;
+}
+
+.project-menu-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

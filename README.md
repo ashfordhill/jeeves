@@ -2,7 +2,7 @@
 
 Jeeves turns a software design into a working, tested application by combining strict, reusable templates with coding agents. Draw Jeeves is its design canvas. See [PLAN.md](PLAN.md) for the architecture and build plan.
 
-Status: S1 (repository foundation) is done. The app is an empty shell with Draw, Runs and Settings views.
+Status: S1–S4 are done (see `docs/handoff.md`). The Draw view has a working board: place elements and annotations, add attachments, and draw typed connections. The design and layout are saved through the design API. Runs and Settings are still empty.
 
 ## Requirements
 

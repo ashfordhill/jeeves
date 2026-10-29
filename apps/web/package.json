@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@fontsource-variable/nunito": "5.3.0",
+    "@jeeves/registry": "workspace:*",
+    "@jeeves/spec": "workspace:*",
     "@mantine/core": "9.6.0",
     "@mantine/hooks": "9.6.0",
     "@tabler/icons-react": "3.46.0",
+    "@xyflow/react": "12.11.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zustand": "5.0.15"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.3",

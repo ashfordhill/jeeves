@@ -1,9 +1,11 @@
 /**
- * App shell: header (brand + Draw / Runs / Settings tabs), the view stage on
+ * App shell: header (brand, Draw / Runs / Settings tabs, project menu), the view stage on
  * paper, and the status bar. Layout and chrome follow automation-pitch.
- * The inspector rail and canvas arrive in S4–S5.
+ * The inspector rail arrives in S5.
  */
 import { MantineProvider } from "@mantine/core";
+import { DrawView } from "./draw/DrawView.tsx";
+import { ProjectMenu } from "./draw/ProjectMenu.tsx";
 import { EmptyView } from "./shell/EmptyView.tsx";
 import { StatusBar } from "./shell/StatusBar.tsx";
 import { useColorScheme } from "./shell/useColorScheme.ts";
@@ -12,17 +14,11 @@ import { useServerHealth } from "./shell/useServerHealth.ts";
 import { ViewTabs } from "./shell/ViewTabs.tsx";
 import type { ViewId } from "./shell/views.ts";
 import { mantineTheme } from "./theme/mantineTheme.ts";
-import { PaperTextureSvg } from "./theme/PaperTexture.tsx";
 
 function ViewBody({ view }: { view: ViewId }) {
   switch (view) {
     case "draw":
-      return (
-        <>
-          <PaperTextureSvg />
-          <EmptyView title="Draw">The design canvas will live here.</EmptyView>
-        </>
-      );
+      return <DrawView />;
     case "runs":
       return <EmptyView title="Runs">Orchestration runs will be listed here.</EmptyView>;
     case "settings":
@@ -40,7 +36,9 @@ export function App() {
       <header className="app-header chrome-bar">
         <span className="app-brand">Jeeves</span>
         <ViewTabs view={view} onSelect={setView} />
-        <span className="app-header-end" />
+        <span className="app-header-end">
+          <ProjectMenu />
+        </span>
       </header>
       <main className="view-stage">
         <div

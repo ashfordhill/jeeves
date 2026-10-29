@@ -20,21 +20,28 @@ automation-pitch has no `LICENSE` file and no license field in `package.json`. I
 | `apps/web/public/favicon.svg` | `public/favicon.svg` | Copied as is; replace when Jeeves has its own mark. |
 | Dependency versions | `package.json` / installed `node_modules` | React, Mantine, Tabler, Vite, Vitest, Playwright, axe, jsdom, Nunito, and TypeScript are pinned to the versions automation-pitch has installed. |
 
+## Adapted in S4 (board)
+
+| Jeeves file | Source | What changed |
+| --- | --- | --- |
+| `apps/web/src/draw/Canvas.tsx` (`BoardTexture`) | `src/board/PaperTexture.tsx` (`PaperTexture`) | Same idea: the S1 `PaperTextureSvg` fed with `useViewport()` so the paper follows the camera. |
+| `apps/web/src/draw/draw.css` (handles, cards, edges) | `src/app/styles/tokens.css` (`.react-flow__handle*`, `.react-flow__edge-path`), `src/board/tiles/StepTile.tsx` | Handle shape and colors copied, scoped to `.card-handle`. Element cards reuse the step tile's 3px `--line` border, 14px radius, `--cream` fill and `--shadow`. The hand tool uses the S1 `--grab-cursor` / `--grabbing-cursor`. |
+| `apps/web/src/draw/nodes/ElementNode.tsx` | `src/board/nodes/StepNode.tsx` | Same pattern (a React Flow node rendering a tile with left/right handles), but attachment mini-boxes carry their own handles. |
+
+Not used after all: `reactFlowBridge.ts`, `zoom.ts`, `firstLayoutCamera.ts`, `routing/` (`FlowArrow`, `polyline`), `tiles/FitLabel`, and `Toolbar.tsx`. They're bound to automation-pitch's lane layout and store. Jeeves uses React Flow's built-in bezier edges, `fitView`, and `Controls`, and an Excalidraw-style floating toolbar written fresh.
+
 ## Left for later sections (adapt when needed)
 
 | Source | Use in | Notes |
 | --- | --- | --- |
-| `src/board/Board.tsx`, `Board.css`, `nodes/`, `flow/rfHandle.ts`, `reactFlowBridge.ts`, `zoom.ts`, `firstLayoutCamera.ts` | S4 canvas | React Flow wiring, handles, zoom and first-fit camera. The handle CSS lives in automation-pitch's `tokens.css` (`.react-flow__handle*`). |
-| `src/board/tiles/` (`StepTile`, `DataChip`, `FitLabel`, accessory marks) | S4 element cards | Card shape, chips and the "accessory" mini-marks are the closest thing to attachment mini-boxes. |
-| `src/board/routing/` (`FlowArrow`, `polyline`) | S4 connections | Edge rendering. |
 | `src/board/layout/elk*.ts`, `warmLayout.ts` | S6 auto-placement (§7) | Its layered layout assumes a rooted acyclic workflow; Jeeves only needs "place new nodes near X", and must allow cycles. |
 | `src/app/inspector/` (`InspectorFold`, `InspectorField`, `SelectedItemForm`) and the `AppShell` aside setup in `App.tsx` | S5 inspector | Fold-to-strip rail; field layout. |
-| `src/app/components/Toolbar.tsx`, `ChromeToolCluster.tsx` | S4 toolbar, S5 undo/redo | Hamburger + undo/redo cluster styling. |
-| `src/app/sound/cues.ts`, `SoundToggle.tsx` | S4 or S5 | Optional sounds (§5). Not added in S1 because the shell has no actions worth a cue. |
+| `src/app/components/ChromeToolCluster.tsx` | S5 undo/redo | Hamburger + undo/redo cluster styling. |
+| `src/app/sound/cues.ts`, `SoundToggle.tsx` | S5 or later | Optional sounds (§5). Not added in S1 because the shell has no actions worth a cue. |
 | `src/app/theme/` (ThemeModal, presets, texture picker) | Optional, after v1 | Four built-in themes (Ice, Graphite, Forest, Plum) are defined in `chromeTheme.ts`. Jeeves ships Ice only for now. |
 | `src/keyboard/` | S5 shortcuts | Rebindable keymap; shortcuts must stay optional. |
 | `src/export/` | After v1 | Board-to-image export. |
-| `e2e/` helpers and axe usage | S4, S5 | Their Playwright patterns for drag, React Flow, and axe. |
+| `e2e/` helpers and axe usage | S5 | Their Playwright patterns for drag, React Flow, and axe. |
 
 ## Left behind (not planned)
 

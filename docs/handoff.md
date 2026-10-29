@@ -252,3 +252,100 @@ Coverage of the "Done when" checks (`apps/server/src/routes/projects.test.ts`):
 - Send canvas edits with `source: "canvas"` and the `baseRevision` you last saw. On 409, the body already has the current `DesignState`. On 422, show `errors[0].message`. Use `registry.canConnect` logic client-side for refusal explanations before posting, since the server's answer is a generic 422.
 - Layout is last-write-wins with no revision. Debounce PUTs and send the whole document.
 - There's no projects UI yet. S4 needs at least "create or open a project" (e.g. auto-create one on first load).
+
+---
+
+## S4: Draw Jeeves canvas, part 1 (board) (2026-10-28)
+
+### Built
+
+All new code is in `apps/web/src/draw/`. New web dependencies: `@xyflow/react` 12.11.6 and `zustand` 5.0.15 (automation-pitch's versions), plus `@jeeves/spec` and `@jeeves/registry` from the workspace.
+
+- **`store.ts`** (Zustand) holds the open project, the design/findings/history from the server, the layout, the template catalog, the current tool, the connector's first click, the notice strip, and which annotation is being edited.
+  - `edit(ops)` posts to `/operations` with `source: "canvas"` and the last seen revision. Edits are chained so they post one at a time. The store always adopts the design the server returns.
+  - On a 409 it adopts the current design from the response and says "The design changed somewhere else…". On a 422 it shows `errors[0].message`.
+  - `setLayoutItems` / `setViewport` change the layout locally and save it with a PUT debounced by 400 ms. `flushLayout()` runs on `pagehide` and on unmount.
+- **Projects:** the project comes from `?project=<id>` in the URL, else the last one opened (localStorage `jeeves.project`), else the newest, else a new "Untitled design". The ID is written back to the URL. The header has a project menu (switch projects, New project). There's no rename or delete UI yet.
+- **`flow.ts`** maps the design and layout to React Flow nodes and edges. It's pure and keeps React Flow's `measured` and `selected` across rebuilds.
+  - Nodes: elements, plus text, note, and frame annotations. Frames have `zIndex: -1`.
+  - Edges: connections, plus arrows bound at both ends. Arrows with a free end are drawn from layout `points` by `edges/FreeArrows.tsx`.
+  - Items with no layout entry go on a 4-column fallback grid.
+  - Handle IDs: an element's own ports are `in` / `out`; an attachment mini-box's are `in:<attachmentId>` / `out:<attachmentId>`.
+- **Toolbar** (`Toolbar.tsx`, floating, Excalidraw-style): Select, Hand, Elements palette, Attachments palette, Connector, Text, Sticky note, Frame, and Delete selection.
+  - The element palette is grouped from `GET /templates` `palette`. The attachment palette lists the latest attachment templates.
+  - Click-to-place: pick a tool, then click the board. Picking an attachment, then clicking a card, attaches it.
+  - Drag-to-place: palette items and the Text/Note/Frame buttons are HTML5-draggable onto the board. Attachments are dropped onto a card; the drop is hit-tested by point.
+  - Optional shortcuts: V, H, C, T, N, F, Escape, Delete/Backspace.
+  - After placing anything, the tool goes back to Select.
+- **Element card** (`nodes/ElementNode.tsx`): template icon, name, template name, the manifest's chips (stored value, else the JSON Schema default, else a red dashed "not set"), and the attachment mini-boxes. Each mini-box has its own handles, a compact chip, and a remove (×) button while the card is selected.
+- **Connections** (`connect.ts`, `planConnect`) work by dragging handle to handle, or with the Connector tool (click an item, then another; clicking a mini-box picks that attachment).
+  - The connection kind is inferred with `registry.connectionKinds`. If more than one kind fits, the notice asks which.
+  - A refusal shows the reason with one-click fixes:
+    - the reverse direction ("can't start a … connection; it goes the other way" plus "Connect from … instead")
+    - use an existing attachment
+    - add an attachment and connect it
+  - A connection with an annotation at either end becomes a plain arrow annotation.
+  - The checks run client-side with `builtinRegistry()` from `@jeeves/registry`, the same code the server uses.
+- **Annotations** (`nodes/AnnotationNodes.tsx`): double-click to edit text in place. The edit is saved as one `updateAnnotation` on blur; Escape cancels and Ctrl/Cmd+Enter commits. New text and notes open in edit mode. Notes and frames resize with React Flow's `NodeResizer`, which saves width and height to the layout.
+- **Board:** the paper texture follows the camera, React Flow `Controls` give mouse zoom and fit, the Hand tool pans with automation-pitch's grab cursors, and the middle or right button pans in any tool.
+  - The camera saves to `layout.viewport` on move end. If there's no saved camera, the board fits once on open, but only when it isn't empty.
+- **Unit tests:** `src/test-api.ts` is an in-memory fake of the design API built on the real `applyOperations` and `validateDesign`. It's used by `App.test.tsx` and `store.test.ts`.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 119 files in 25ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  13 passed (13)
+      Tests  128 passed (128)
+```
+
+`pnpm test:e2e`:
+
+```text
+  ✓  2 [chromium] › apps/web/e2e/shell.spec.ts:4:1 › loads the shell, reports a healthy server, and switches views (1.7s)
+  ✓  1 [chromium] › apps/web/e2e/draw.spec.ts:89:1 › refuses an incompatible connection with an explanation (2.0s)
+  ✓  3 [chromium] › apps/web/e2e/draw.spec.ts:121:1 › dragging a node saves layout without changing the semantic revision (2.7s)
+  ✓  4 [chromium] › apps/web/e2e/draw.spec.ts:33:1 › builds a service + REST server + Postgres board that survives a reload (3.2s)
+  4 passed (5.1s)
+```
+
+`npx playwright test --repeat-each 4` gave 16 passed (no flakes). `vite build` succeeds; it warns that the bundle is over 500 kB.
+
+Coverage of the "Done when" checks (`apps/web/e2e/draw.spec.ts`, one fresh project per test):
+
+- **Place, attach, connect, reload:** the test places a service by click, drags the REST API server onto its card, drags Postgres onto the board, and connects service → Postgres with the Connector tool. The API then shows two elements, one attachment, and one `uses-database` connection. After a reload the cards, mini-box, and connection chip are back, with the same node transform. Axe reports zero violations on the board.
+- **Incompatible connection refused:** Postgres → service shows an alert (`"PostgreSQL" can't start a "uses-database" connection …`). No edge is drawn and the revision doesn't change. Clicking the suggested fix connects it the right way round (revision + 1).
+- **Dragging doesn't change the revision:** a mouse drag of a card triggers a layout PUT and moves the saved position, and the semantic revision stays the same.
+
+I also checked by hand, in screenshots: the link-shortener fixture with a frame, text, and note in light and dark mode; a handle-to-handle drag (web app → service made a `depends-on`); and editing a note in place.
+
+### Deviations and choices the plan left open
+
+- **Palette from the API, compatibility from the bundled registry.** The palette and card data come from `GET /templates`, as the plan says. Connect and attach checks import `builtinRegistry()` in the browser, because they need the Zod manifests and must agree with the server exactly. If templates ever load dynamically on the server, this needs an API check (e.g. a `POST /projects/:id/can-connect`).
+- **The connection kind is inferred, not picked.** With the v1 manifests, at most one kind ever fits a pair of ends. The chooser in the notice exists but isn't reached by any v1 pair.
+- **Plain arrows are drawn by connecting to or from an annotation.** Arrows with a free end can't be created from the canvas yet (§5 lists "plain arrow" under annotations). They're rendered if chat or the API makes them and the layout has `points`, but they can't be selected or edited.
+- **Frames don't contain anything.** Layout `parent` isn't set, and moving a frame doesn't move what's on it.
+- **Some minimal deletion is included** even though S5 owns multi-select delete. The Delete button and key remove the current selection (rubber-band selection already gives multi-select), and the × on a selected card's mini-box removes that attachment. Without them, S4's board couldn't undo a mistake by mouse.
+- **Element IDs are slugs of the display name** (`http-service`, `http-service-2`, …) and names get " 2" suffixes. S5's inspector will let users rename; IDs never change.
+- The React Flow attribution is hidden (`proOptions.hideAttribution`). React Flow logs a console warning about it; that's harmless.
+
+### Known issues
+
+- There's no client-side layout undo yet (§6); S5 adds undo/redo.
+- If a placement edit fails, its layout entry stays behind as an orphan. That's harmless; `pruneLayout` exists if it matters.
+- Setting `pointer-events: none` on the palette while dragging cancels the HTML5 drag in Chromium, so the palette only fades. On a short window the palette can cover cards under the toolbar; drag-to-attach then needs the card lower, or use click-to-attach.
+- The bundle is about 1 MB minified (Mantine, React Flow, Zod, and the registry). Code-split later if it matters.
+
+### For S5
+
+- Selection lives in React Flow's node and edge state inside `Canvas.tsx`, not in the store. The inspector will need it in the store: mirror `selected` in `onNodesChange` / `onEdgesChange`.
+- `useDraw.getState().edit(ops)` is the single write path. `loaded.history` (`canUndo` / `canRedo`) is already kept up to date, so undo/redo buttons only need `POST /undo` and `/redo` plus adopting the returned state, the same as `edit`.
+- `loaded.findings` is loaded and refreshed on every edit but not shown yet. Put the badges in `ElementNode`, next to `.element-card-head`.
+- Cards are `<article aria-label="<name>, <template>">` and mini-boxes are `<li aria-label="<template>">`. The e2e tests depend on those names.
+- `apps/web/e2e/draw.spec.ts` has the helpers `openNewProject`, `designOf`, and `layoutOf`.
