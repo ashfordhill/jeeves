@@ -149,6 +149,11 @@ describe("agent executor", () => {
     expect(webBrief).toContain("openapi:");
     expect(prompt).not.toContain("## Earlier work");
     expect(prompt).toContain("## AGENTS.md");
+    // The agent runs the checks it can; the test packs only run from Jeeves.
+    expect(prompt).toContain(
+      "run `pnpm install`, `pnpm -r --no-bail typecheck`, `pnpm -r --no-bail test` yourself",
+    );
+    expect(prompt).toContain("don't look for them or try to run them");
     expect(run.agent.requests[0]?.model).toBe("fake-coder");
   });
 

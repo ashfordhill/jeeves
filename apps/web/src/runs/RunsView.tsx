@@ -3,15 +3,7 @@
  * remove tasks), then Start, Pause, Resume, or Cancel it, and watch the state of each task.
  * Everything works by mouse; there are no required shortcuts.
  */
-import {
-  ActionIcon,
-  Badge,
-  Button,
-  Loader,
-  NativeSelect,
-  Textarea,
-  TextInput,
-} from "@mantine/core";
+import { ActionIcon, Button, Loader, NativeSelect, Textarea, TextInput } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowDown,
@@ -40,6 +32,7 @@ import {
   type Usage,
 } from "../draw/api.ts";
 import { projectFromUrl, useDraw } from "../draw/store.ts";
+import { StatusBadge, type StatusColor } from "../shell/StatusBadge.tsx";
 import { AttemptDetails } from "./AttemptDetails.tsx";
 import "./runs.css";
 import { isLive, useRuns } from "./store.ts";
@@ -59,16 +52,16 @@ const statusLabels: Record<RunStatus, string> = {
 };
 
 /** Shade 9, so light badges keep 4.5:1 contrast (axe). */
-const statusColors: Record<RunStatus, string> = {
-  planning: "blue.9",
-  planned: "blue.9",
-  running: "cyan.9",
-  paused: "yellow.9",
-  "needs-attention": "orange.9",
-  waiting_for_provider: "grape.9",
-  cancelled: "gray.9",
-  failed: "red.9",
-  succeeded: "teal.9",
+const statusColors: Record<RunStatus, StatusColor> = {
+  planning: "blue",
+  planned: "blue",
+  running: "cyan",
+  paused: "yellow",
+  "needs-attention": "orange",
+  waiting_for_provider: "grape",
+  cancelled: "gray",
+  failed: "red",
+  succeeded: "teal",
 };
 
 const taskLabels: Record<RunTask["status"], string> = {
@@ -79,12 +72,12 @@ const taskLabels: Record<RunTask["status"], string> = {
   cancelled: "Cancelled",
 };
 
-const taskColors: Record<RunTask["status"], string> = {
-  pending: "gray.9",
-  running: "cyan.9",
-  done: "teal.9",
-  "needs-attention": "orange.9",
-  cancelled: "gray.9",
+const taskColors: Record<RunTask["status"], StatusColor> = {
+  pending: "gray",
+  running: "cyan",
+  done: "teal",
+  "needs-attention": "orange",
+  cancelled: "gray",
 };
 
 const attemptLabels: Record<Attempt["status"], string> = {
@@ -97,9 +90,9 @@ const attemptLabels: Record<Attempt["status"], string> = {
 
 function RunBadge({ status }: { status: RunStatus }) {
   return (
-    <Badge color={statusColors[status]} variant="light" className="run-badge">
+    <StatusBadge color={statusColors[status]} className="run-badge">
       {statusLabels[status]}
-    </Badge>
+    </StatusBadge>
   );
 }
 
@@ -510,10 +503,10 @@ function TaskCard({
         <code className="run-task-target" title="Element (and attachment) this task implements">
           {target}
         </code>
-        <Badge color={taskColors[task.status]} variant="light">
+        <StatusBadge color={taskColors[task.status]}>
           {task.status === "running" ? <Loader size={10} color="currentColor" /> : null}{" "}
           {taskLabels[task.status]}
-        </Badge>
+        </StatusBadge>
         {task.edited ? <span className="run-task-tag">edited</span> : null}
         {editable && !editing ? (
           <span className="run-task-tools">

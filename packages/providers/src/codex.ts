@@ -5,7 +5,13 @@
  *
  * Credentials are Codex's own: `codex login` (ChatGPT or an API key), or `CODEX_API_KEY`.
  */
-import { Codex, type ThreadEvent, type ThreadItem, type ThreadOptions } from "@openai/codex-sdk";
+import {
+  Codex,
+  type Input,
+  type ThreadEvent,
+  type ThreadItem,
+  type ThreadOptions,
+} from "@openai/codex-sdk";
 import type { CodingAgentEvent, CodingAgentProvider, CodingSessionResult } from "./coding.ts";
 import { ProviderError, type ProviderErrorKind } from "./errors.ts";
 import type { Usage } from "./types.ts";
@@ -16,8 +22,8 @@ export const CODEX = "codex";
 export type CodexThreadLike = {
   readonly id: string | null;
   runStreamed(
-    input: string,
-    options?: { signal?: AbortSignal },
+    input: Input,
+    options?: { signal?: AbortSignal; outputSchema?: unknown },
   ): Promise<{ events: AsyncGenerator<ThreadEvent> }>;
 };
 

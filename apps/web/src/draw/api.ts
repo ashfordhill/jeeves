@@ -57,16 +57,29 @@ export type ChatEvent =
 
 export type ModelRole = "designChat" | "planner" | "coding";
 
+export type ProviderId = "openai" | "codex" | "local";
+
+export type ProviderStatus = {
+  id: ProviderId;
+  name: string;
+  description: string;
+  kinds: ("model" | "coding")[];
+  /** `false` for a provider that is listed but not built yet. */
+  available: boolean;
+  suggestedModels: string[];
+  /** An empty model name means the provider's own default. */
+  defaultModelAllowed: boolean;
+  ready: boolean;
+  status: string;
+  help: string | null;
+};
+
+export type RoleModel = { provider: ProviderId; model: string };
+
 export type SettingsView = {
   configPath: string;
-  providers: {
-    id: string;
-    name: string;
-    configured: boolean;
-    source: "env" | "file" | null;
-    envVar: string;
-  }[];
-  models: Record<ModelRole, string>;
+  providers: ProviderStatus[];
+  roles: Record<ModelRole, RoleModel>;
   fakeModel: boolean;
 };
 
@@ -300,6 +313,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   listProjects: () => request<{ projects: Project[] }>("/projects").then((r) => r.projects),
 
+  renameProject: (id: string, name: string) =>
+    request<{ project: Project }>(`/projects/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    }).then((r) => r.project),
+
   createProject: (name: string) =>
     request<{ project: Project }>("/projects", {
       method: "POST",
@@ -432,8 +451,8 @@ export const api = {
 
   settings: () => request<SettingsView>("/settings"),
 
-  setModels: (models: Partial<Record<ModelRole, string>>) =>
-    request<SettingsView>("/settings/models", { method: "PUT", body: JSON.stringify(models) }),
+  setRoles: (roles: Partial<Record<ModelRole, RoleModel>>) =>
+    request<SettingsView>("/settings/roles", { method: "PUT", body: JSON.stringify(roles) }),
 };
 
 /** Calls `onLine` for each non-empty line of a newline-delimited stream. */

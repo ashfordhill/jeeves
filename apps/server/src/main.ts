@@ -6,12 +6,12 @@ import {
   stubExecutor,
 } from "@jeeves/orchestrator";
 import { buildApp } from "./app.ts";
-import { fakeModels } from "./chat/models.ts";
+import { fakeModels, providerModels } from "./chat/models.ts";
 import { failInterruptedTurns } from "./chat/service.ts";
 import { loadConfig } from "./config.ts";
 import { connectDb, ensureDatabase } from "./db/client.ts";
 import { failInterruptedGenerations } from "./generate/service.ts";
-import { codexAgents, fakeCodingAgents } from "./runs/agents.ts";
+import { codingAgents, fakeCodingAgents } from "./runs/agents.ts";
 import { pgBossJobs } from "./runs/jobs.ts";
 import { recoverRuns, requeuePlanning } from "./runs/service.ts";
 import { jeevesHome, Settings } from "./settings.ts";
@@ -41,7 +41,9 @@ const app = buildApp({
   pingDb: db.ping,
   version,
   settings,
-  models: fakeScript ? fakeModels(fakeScript) : undefined,
+  models: fakeScript
+    ? fakeModels(fakeScript)
+    : providerModels(settings, process.env.JEEVES_CODEX_PATH),
   jobs,
   executor: executor(),
   logger: true,
@@ -60,7 +62,7 @@ function executor() {
   return createAgentExecutor({
     agents: codingScript
       ? fakeCodingAgents(codingScript)
-      : codexAgents(settings, process.env.JEEVES_CODEX_PATH),
+      : codingAgents(settings, process.env.JEEVES_CODEX_PATH),
     checks: process.env.JEEVES_FAKE_CHECKS
       ? markerChecks(Number(process.env.JEEVES_FAKE_CHECKS) || 0)
       : projectChecks(),

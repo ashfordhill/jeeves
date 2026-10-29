@@ -25,6 +25,7 @@ Use the source IDs below when citing requirements. Later explicit user correctio
 | SRC-14 | Request to preserve these sources for independent review |
 | SRC-15 | Answers to the plan review: scope reset, template model, design-level elements, sequential build sections |
 | SRC-16 | Confirmation of the rewrite's five assumptions |
+| SRC-17 | Provider-agnostic model selection (S13) |
 
 ### SRC-01 — Original Jeeves request
 
@@ -201,3 +202,19 @@ Assistant summary being answered: (1) v1 builds five small reference templates (
 User answer, verbatim:
 
 > yes those all sound right, go with them
+
+### SRC-17 — Provider-agnostic model selection (2026-10-29)
+
+Context: at the start of S13 the assistant reported that the end-to-end journey needed real providers, that Codex was logged in with a ChatGPT plan, and that there was no OpenAI API key for the design chat and planner.
+
+User messages, verbatim:
+
+> so I think we should make the provider agnostic for one. just like how in something like Cursor you can pick from a wide variety of models. And 2, I have both OpenAI and Claude subscriptions so we can trial run with either and offer the user an option to select the model. I would also like to support local LLMs in the future to see if we can kill token usage altogether on a moderately powered machine (like a gamer PC for instance) without losing quality. This is why we have the template generation from the visual diagram structure - these pieces will be partially fully tested and we can add stuff around that. it's all inputs/outputs so the test case data might be different but the overall concepts will be the same
+
+The assistant then noted that Anthropic doesn't allow third-party products to use claude.ai subscription logins (including through the Claude Agent SDK), so a Claude adapter needs an Anthropic API key, and asked about scope.
+
+> I actually only have an OpenAI API Key right now, I only have the $20/month Claude subscription so it seems like I don't have access to API Keys. Oh well. I saved the OpenAI one in OPENAI_API_KEY .env you should be able to access at the OS-leve. to answer the other questions: 2. Sure. 3. Yeah we can just stub out the local LLM for now; maybe add that as another segment to the PLAN.md so a new agent can work on it later.
+
+("2" approved folding the provider picker into S13 and recording it in the plan; "3" was whether to build the local adapter now.) The OpenAI API account then turned out to have no credits, and the user chose "Codex as chat model": route the design chat and planner through the Codex login instead of the API.
+
+Interpretation recorded in PLAN.md: each role picks a provider and model in Settings; Codex backs the design chat and planner on a ChatGPT plan; local models are S14; a Claude adapter stays after v1 until there's an Anthropic API key.

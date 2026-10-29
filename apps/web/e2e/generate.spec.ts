@@ -33,10 +33,19 @@ test("generates the fixture into a folder, then stops on a hand-edited generated
   ).toBe(200);
   await page.reload();
 
+  // Renaming the project (header menu) renames the default output folder too.
+  await page.getByRole("button", { name: "Project: E2E generate" }).click();
+  await page.getByRole("menuitem", { name: "Rename project" }).click();
+  const rename = page.getByRole("dialog", { name: "Rename project" });
+  await rename.getByRole("textbox", { name: "Project name" }).fill("E2E shorty");
+  await rename.getByRole("button", { name: "Rename" }).click();
+  await expect(page.getByRole("button", { name: "Project: E2E shorty" })).toBeVisible();
+  await expect(rename).toHaveCount(0);
+
   await page.getByRole("button", { name: "Generate", exact: true }).click();
   await expect(drawer(page)).toBeVisible();
   const folder = drawer(page).getByRole("textbox", { name: "Output folder" });
-  await expect(folder).toHaveValue(/e2e-generate$/);
+  await expect(folder).toHaveValue(/e2e-shorty$/);
 
   const outputDir = join(mkdtempSync(join(tmpdir(), "jeeves-e2e-out-")), "shorty");
   await folder.fill(outputDir);

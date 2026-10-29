@@ -41,6 +41,11 @@ export type ModelSource = (
   role: ModelRole,
 ) => { provider: ModelProvider; model: string } | { error: string };
 
+/** The model name to record and show; an empty name means the provider's own default. */
+export function modelLabel(source: { provider: ModelProvider; model: string }): string {
+  return source.model || `${source.provider.id} (default model)`;
+}
+
 export type FileInfo = { id: string; name: string; mediaType: string; size: number };
 
 export type ChatTurn = {
@@ -203,7 +208,7 @@ export class ChatService {
     try {
       const source = this.models("designChat");
       if ("error" in source) throw new TurnError(source.error);
-      model = source.model;
+      model = modelLabel(source);
       const items: ModelItem[] = [
         ...history,
         {

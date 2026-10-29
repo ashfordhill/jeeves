@@ -1,10 +1,18 @@
 /**
- * Settings (PLAN §12): whether each provider has an API key (never the key itself) and the model
- * used for each role. Keys are set outside the UI, in the environment or the config file.
+ * Settings (PLAN §12): each provider's status (never a key), and the provider and model used for
+ * each role. Keys and logins are set up outside the UI, in the environment, the config file, or
+ * the provider's own CLI.
  */
-import { Badge, Button, Loader, TextInput } from "@mantine/core";
+import { Autocomplete, Button, Loader, NativeSelect } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { api, type ModelRole, type SettingsView as Settings } from "../draw/api.ts";
+import {
+  api,
+  type ModelRole,
+  type ProviderStatus,
+  type RoleModel,
+  type SettingsView as Settings,
+} from "../draw/api.ts";
+import { StatusBadge } from "../shell/StatusBadge.tsx";
 import "./settings.css";
 
 const ROLES: { role: ModelRole; label: string; description: string }[] = [
@@ -13,13 +21,21 @@ const ROLES: { role: ModelRole; label: string; description: string }[] = [
   { role: "coding", label: "Coding agent", description: "Implements each task." },
 ];
 
-function sourceLabel(source: "env" | "file" | null) {
-  return source === "env" ? "from the environment" : "from the config file";
+const roleKind = (role: ModelRole) => (role === "coding" ? "coding" : "model");
+
+function same(a: RoleModel, b: RoleModel) {
+  return a.provider === b.provider && a.model.trim() === b.model.trim();
+}
+
+function modelProblem(provider: ProviderStatus | undefined, model: string) {
+  if (!provider) return "Pick a provider.";
+  if (!model.trim() && !provider.defaultModelAllowed) return "Enter a model name.";
+  return undefined;
 }
 
 export function SettingsView() {
   const [settings, setSettings] = useState<Settings>();
-  const [models, setModels] = useState<Record<ModelRole, string>>();
+  const [roles, setRoles] = useState<Record<ModelRole, RoleModel>>();
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -29,7 +45,7 @@ export function SettingsView() {
       .settings()
       .then((s) => {
         setSettings(s);
-        setModels(s.models);
+        setRoles(s.roles);
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
   }, []);
@@ -42,7 +58,7 @@ export function SettingsView() {
       </div>
     );
   }
-  if (!settings || !models) {
+  if (!settings || !roles) {
     return (
       <div className="draw-loading" role="status">
         <Loader size="sm" /> Loading settings…
@@ -50,18 +66,29 @@ export function SettingsView() {
     );
   }
 
-  const dirty = ROLES.some(({ role }) => models[role].trim() !== settings.models[role]);
-  const valid = ROLES.every(({ role }) => models[role].trim().length > 0);
+  const providerOf = (id: string) => settings.providers.find((p) => p.id === id);
+  const changed = ROLES.filter(({ role }) => !same(roles[role], settings.roles[role]));
+  const valid = ROLES.every(
+    ({ role }) => !modelProblem(providerOf(roles[role].provider), roles[role].model),
+  );
+  const update = (role: ModelRole, next: RoleModel) => {
+    setSaved(false);
+    setRoles({ ...roles, [role]: next });
+  };
   const save = async () => {
     setSaving(true);
     setError(undefined);
     try {
-      const changed = ROLES.filter(({ role }) => models[role].trim() !== settings.models[role]);
-      const next = await api.setModels(
-        Object.fromEntries(changed.map(({ role }) => [role, models[role].trim()])),
+      const next = await api.setRoles(
+        Object.fromEntries(
+          changed.map(({ role }) => [
+            role,
+            { provider: roles[role].provider, model: roles[role].model.trim() },
+          ]),
+        ),
       );
       setSettings(next);
-      setModels(next.models);
+      setRoles(next.roles);
       setSaved(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -86,25 +113,18 @@ export function SettingsView() {
           {settings.providers.map((p) => (
             <li key={p.id}>
               <span className="settings-provider-name">{p.name}</span>
-              {p.configured ? (
-                <Badge color="teal" variant="light">
-                  API key set {sourceLabel(p.source)}
-                </Badge>
-              ) : (
-                <Badge color="red" variant="light">
-                  No API key
-                </Badge>
-              )}
-              {!p.configured ? (
-                <p className="settings-help">
-                  Set <code>{p.envVar}</code> before starting Jeeves, or add{" "}
-                  <code>{`{"${p.id}": {"apiKey": "…"}}`}</code> to{" "}
-                  <code>{settings.configPath}</code>. Keys are never shown or stored in designs.
-                </p>
-              ) : null}
+              <StatusBadge color={p.ready ? "teal" : p.available ? "red" : "gray"}>
+                {p.status}
+              </StatusBadge>
+              <p className="settings-help">{p.description}</p>
+              {p.help ? <p className="settings-help">{p.help}</p> : null}
             </li>
           ))}
         </ul>
+        <p className="settings-help">
+          Keys are read from the environment or <code>{settings.configPath}</code>. They're never
+          shown here or stored in designs.
+        </p>
       </section>
 
       <section className="settings-card" aria-labelledby="settings-models">
@@ -116,24 +136,65 @@ export function SettingsView() {
             void save();
           }}
         >
-          {ROLES.map(({ role, label, description }) => (
-            <TextInput
-              key={role}
-              label={label}
-              description={description}
-              value={models[role]}
-              error={models[role].trim() ? undefined : "Enter a model name."}
-              onChange={(event) => {
-                setSaved(false);
-                setModels({ ...models, [role]: event.currentTarget.value });
-              }}
-            />
-          ))}
+          {ROLES.map(({ role, label, description }) => {
+            const choice = roles[role];
+            const provider = providerOf(choice.provider);
+            const options = settings.providers.filter((p) => p.kinds.includes(roleKind(role)));
+            return (
+              <fieldset key={role} className="settings-role">
+                <legend>{label}</legend>
+                <p className="settings-help">{description}</p>
+                <div className="settings-role-fields">
+                  <NativeSelect
+                    label={`${label} provider`}
+                    value={choice.provider}
+                    data={options.map((p) => ({
+                      value: p.id,
+                      label: p.available ? p.name : `${p.name} (coming later)`,
+                      disabled: !p.available,
+                    }))}
+                    onChange={(event) => {
+                      const next = providerOf(event.currentTarget.value);
+                      if (!next) return;
+                      // A model name rarely carries over between providers.
+                      update(role, {
+                        provider: next.id,
+                        model: next.id === choice.provider ? choice.model : "",
+                      });
+                    }}
+                  />
+                  <Autocomplete
+                    label={`${label} model`}
+                    value={choice.model}
+                    data={provider?.suggestedModels ?? []}
+                    placeholder={
+                      provider?.defaultModelAllowed ? `${provider.name}'s default` : undefined
+                    }
+                    error={modelProblem(provider, choice.model)}
+                    onChange={(model) => update(role, { ...choice, model })}
+                  />
+                </div>
+                {provider &&
+                !provider.ready &&
+                provider.available &&
+                !(settings.fakeModel && roleKind(role) === "model") ? (
+                  <p className="settings-warning">
+                    {provider.name} isn't set up yet ({provider.status}). See Providers above.
+                  </p>
+                ) : null}
+              </fieldset>
+            );
+          })}
           <div className="settings-actions">
-            <Button type="submit" disabled={!dirty || !valid} loading={saving}>
+            <Button
+              type="submit"
+              color="cyan.9"
+              disabled={changed.length === 0 || !valid}
+              loading={saving}
+            >
               Save models
             </Button>
-            {saved && !dirty ? (
+            {saved && changed.length === 0 ? (
               <span className="settings-saved" role="status">
                 Saved to {settings.configPath}
               </span>

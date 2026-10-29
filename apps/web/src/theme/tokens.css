@@ -399,3 +399,8 @@ body,
 .health-dot[data-health="offline"] {
   background: var(--minus);
 }
+
+/* See shell/StatusBadge.tsx. Dark mode keeps Mantine's own light-variant text color. */
+[data-mantine-color-scheme="light"] .status-badge {
+  color: var(--status-ink);
+}

@@ -1,52 +1,64 @@
 /**
- * Provider keys and models per role (PLAN §12). Keys come from the environment or
+ * Provider keys and the provider and model per role (PLAN §12). Keys come from the environment or
  * `~/.jeeves/config.json` and never leave this process: the API reports only whether a key is set
- * and where from. Models per role are stored in the same file.
+ * and where from. The choice per role is stored in the same file.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { type ModelRole, modelRoles } from "@jeeves/providers";
+import {
+  DEFAULT_ROLE_MODELS,
+  type ModelRole,
+  modelRoles,
+  type ProviderId,
+  type ProviderInfo,
+  providerCatalog,
+  type RoleModel,
+  roleModelProblem,
+} from "@jeeves/providers";
 import { z } from "zod";
 
-export const DEFAULT_MODELS: Record<ModelRole, string> = {
-  designChat: "gpt-5.4-mini",
-  planner: "gpt-5.4-mini",
-  coding: "gpt-5.1-codex",
-};
-
-const modelName = z.string().trim().min(1).max(100);
+const roleEnum = z.enum(modelRoles as [ModelRole, ...ModelRole[]]);
+const providerEnum = z.enum(providerCatalog.map((p) => p.id) as [ProviderId, ...ProviderId[]]);
+const roleModelSchema = z.strictObject({
+  provider: providerEnum,
+  model: z.string().trim().max(100),
+});
 
 const configFileSchema = z.looseObject({
   openai: z.looseObject({ apiKey: z.string().optional() }).optional(),
-  models: z.partialRecord(z.enum(modelRoles as [ModelRole, ...ModelRole[]]), modelName).optional(),
+  roles: z.partialRecord(roleEnum, roleModelSchema).optional(),
+  /** Before S13: a model name per role, always on the role's default provider. */
+  models: z.partialRecord(roleEnum, z.string()).optional(),
 });
 type ConfigFile = z.infer<typeof configFileSchema>;
 
-export const modelsPatchSchema = z.strictObject({
-  designChat: modelName.optional(),
-  planner: modelName.optional(),
-  coding: modelName.optional(),
-});
+export const rolesPatchSchema = z.partialRecord(roleEnum, roleModelSchema);
+export type RolesPatch = z.infer<typeof rolesPatchSchema>;
 
 export type KeySource = "env" | "file";
 
-export type ProviderStatus = {
-  id: "openai";
-  name: string;
-  configured: boolean;
-  source: KeySource | null;
-  /** Where the key can be set. */
-  envVar: string;
+export type ProviderStatus = Pick<
+  ProviderInfo,
+  "id" | "name" | "description" | "kinds" | "available" | "suggestedModels" | "defaultModelAllowed"
+> & {
+  /** Whether the provider can be used right now (key set, logged in). */
+  ready: boolean;
+  /** One line about its credentials, e.g. "API key set from the environment". */
+  status: string;
+  /** How to set it up, when it isn't ready. */
+  help: string | null;
 };
 
 export type SettingsView = {
   configPath: string;
   providers: ProviderStatus[];
-  models: Record<ModelRole, string>;
+  roles: Record<ModelRole, RoleModel>;
   /** Set when the server replays a scripted fake model instead of calling a provider. */
   fakeModel: boolean;
 };
+
+export class SettingsError extends Error {}
 
 export function jeevesHome(env: NodeJS.ProcessEnv = process.env): string {
   return env.JEEVES_HOME ?? join(homedir(), ".jeeves");
@@ -71,30 +83,80 @@ export class Settings {
     return fromFile ? { key: fromFile, source: "file" } : undefined;
   }
 
-  models(): Record<ModelRole, string> {
-    return { ...DEFAULT_MODELS, ...this.read().models };
+  /** Whether `codex login` has stored credentials (Codex reads them itself). */
+  codexLoggedIn(): boolean {
+    const codexHome = this.env.CODEX_HOME ?? join(this.env.HOME ?? homedir(), ".codex");
+    return existsSync(join(codexHome, "auth.json")) || !!this.env.CODEX_API_KEY?.trim();
   }
 
-  setModels(patch: z.infer<typeof modelsPatchSchema>): Record<ModelRole, string> {
+  roles(): Record<ModelRole, RoleModel> {
     const config = this.read();
-    this.write({ ...config, models: { ...config.models, ...patch } });
-    return this.models();
+    const roles = { ...DEFAULT_ROLE_MODELS };
+    for (const role of modelRoles) {
+      const chosen = config.roles?.[role];
+      const legacy = config.models?.[role]?.trim();
+      if (chosen) roles[role] = { provider: chosen.provider, model: chosen.model.trim() };
+      else if (legacy) roles[role] = { ...DEFAULT_ROLE_MODELS[role], model: legacy };
+    }
+    return roles;
+  }
+
+  /** Throws `SettingsError` if a provider can't fill its role; nothing is saved then. */
+  setRoles(patch: RolesPatch): Record<ModelRole, RoleModel> {
+    for (const [role, choice] of Object.entries(patch) as [ModelRole, RoleModel][]) {
+      const problem = roleModelProblem(role, choice);
+      if (problem) throw new SettingsError(`${role}: ${problem}`);
+    }
+    const config = this.read();
+    const { models: _legacy, ...rest } = config;
+    // The old per-role model names move into `roles` the first time anything is saved.
+    this.write({ ...rest, roles: { ...this.roles(), ...patch } });
+    return this.roles();
+  }
+
+  providerStatus(id: ProviderId): Pick<ProviderStatus, "ready" | "status" | "help"> {
+    switch (id) {
+      case "openai": {
+        const key = this.openaiKey();
+        return key
+          ? {
+              ready: true,
+              status: `API key set ${key.source === "env" ? "from the environment" : "from the config file"}`,
+              help: null,
+            }
+          : {
+              ready: false,
+              status: "No API key",
+              help: `Set OPENAI_API_KEY before starting Jeeves, or add {"openai": {"apiKey": "…"}} to ${this.configPath}.`,
+            };
+      }
+      case "codex":
+        return this.codexLoggedIn()
+          ? { ready: true, status: "Logged in", help: null }
+          : {
+              ready: false,
+              status: "Not logged in",
+              help: "Run `codex login` in a terminal (a ChatGPT plan or an API key both work), then reload this page.",
+            };
+      case "local":
+        return { ready: false, status: "Coming later", help: null };
+    }
   }
 
   view(): SettingsView {
-    const openai = this.openaiKey();
     return {
       configPath: this.configPath,
-      providers: [
-        {
-          id: "openai",
-          name: "OpenAI",
-          configured: !!openai,
-          source: openai?.source ?? null,
-          envVar: "OPENAI_API_KEY",
-        },
-      ],
-      models: this.models(),
+      providers: providerCatalog.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        kinds: p.kinds,
+        available: p.available,
+        suggestedModels: p.suggestedModels,
+        defaultModelAllowed: p.defaultModelAllowed,
+        ...this.providerStatus(p.id),
+      })),
+      roles: this.roles(),
       fakeModel: this.fakeModel,
     };
   }

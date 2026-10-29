@@ -266,6 +266,7 @@ function Composer() {
         <Button
           type="submit"
           size="xs"
+          color="cyan.9"
           leftSection={<IconSend size={14} aria-hidden />}
           disabled={!canSend}
         >

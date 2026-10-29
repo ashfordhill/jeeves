@@ -1534,3 +1534,134 @@ Observations from the real run:
 - **Run output:** results are on `jeeves/run-<id>` in the project folder. The person merges it. `docker compose up` there runs the app.
 - **For scripted journeys:** `JEEVES_FAKE_CODING_SCRIPT`, `JEEVES_FAKE_CHECKS`, and `JEEVES_STUB_EXECUTOR` are the switches. `fixtures/coding/README.md` explains the script.
 - Consider fixing the orphaned-Codex issue above before long real runs.
+
+---
+
+## S13: End-to-end acceptance and polish (2026-10-29) — PARTIAL: blocked on provider credits
+
+**Status:** the journey ran through chat, canvas edits, Generate (green), and planning on real providers. Orchestration started, then stopped on the first task when Codex ran out of credits. "Implements the notes, and the app runs with all tests green" is **not done yet**. All automated suites pass. The run is waiting for the provider and can be resumed (see "To finish S13").
+
+### Scope change (SRC-17)
+
+At the start the user asked for provider-agnostic model selection, "like Cursor" (SRC-17, in `docs/sources.md`). S13 absorbed the provider picker. Then two blockers came up:
+
+- The OpenAI API key had no credits. The first real chat turn failed with "You have no credits remaining".
+- The user has a $20 Claude plan but no Anthropic API key. Anthropic's Agent SDK docs don't allow third-party products to use claude.ai logins, so a Claude adapter is left for after v1 and needs an API key (PLAN §12).
+
+The user chose to run the design chat and planner on Codex (their ChatGPT plan login), so S13 also built a Codex `ModelProvider`. Local models became PLAN §15 **S14**.
+
+### Built
+
+- **Provider catalog** (`packages/providers/src/catalog.ts`): `openai` (model roles), `codex` (model and coding roles), and `local` (listed, `available: false`, pointing at S14).
+  - `DEFAULT_ROLE_MODELS`: chat and planner use `openai`/`gpt-5.4-mini`; coding uses `codex` with an empty model, which means Codex's default from `~/.codex/config.toml`.
+  - `roleModelProblem` refuses unknown, unavailable, or wrong-kind providers, and an empty model where the provider has no default.
+- **Codex as a `ModelProvider`** (`packages/providers/src/codex-model.ts`):
+  - Each `respond` is a fresh Codex session: read-only sandbox, an empty scratch folder, network and web search off, `modelReasoningEffort: "medium"`.
+  - The whole request goes in one prompt: instructions, each tool's JSON Schema, and the transcript. Images become `local_image` files.
+  - Codex answers with `outputSchema` `{message, toolCalls: [{name, arguments: <JSON string>}]}`.
+  - The answer maps back to `ModelResponse`, so ChatService and the planner are unchanged.
+  - It doesn't stream: the text arrives as one delta. Plain-text answers are tolerated. Errors go through `codexError`, so quota and auth block the provider.
+  - The `CodexThreadLike` input type now takes `Input` (text plus images) and `outputSchema`.
+- **Settings** (`apps/server/src/settings.ts`, `routes/settings.ts`):
+  - The config file has `roles: {designChat|planner|coding: {provider, model}}`.
+  - The old `models` map is still read, and it moves into `roles` on the next save.
+  - `PUT /settings/roles` replaces `PUT /settings/models`. It returns 422 `INVALID_ROLE_MODEL` with the reason, and saves nothing on a refusal.
+  - `GET /settings` lists every provider with `ready`, `status`, and `help`. Codex shows "Logged in" when `$CODEX_HOME/auth.json` exists or `CODEX_API_KEY` is set; Jeeves never reads the credentials.
+- **Resolution:**
+  - `providerModels(settings, codexPath)` picks OpenAI or Codex per role. Codex is one shared instance, and a logged-out Codex returns an error.
+  - `codingAgents` (renamed from `codexAgents`) returns an error for a provider that can't code.
+  - `modelLabel(source)` records `codex (default model)` instead of `""` for chat turns and planner runs. Before this, an empty model hid planner usage: the Runs view said "Refined by the planner ()" and "planner not used".
+- **Web Settings:**
+  - Providers card: a status badge, a description, and setup help for each provider.
+  - Models card: for each role, a provider `NativeSelect` and a model `Autocomplete` with suggestions. The local provider shows as disabled "(coming later)", and a provider that isn't ready gets a warning.
+- **Polish found on the journey:**
+  - **Invisible status badges.** Mantine's light badge with a shade (`teal.9`, used by S12's Runs badges) paints the shade as both background and text. Axe only reports it as "incomplete", so tests passed.
+    - The new `shell/StatusBadge.tsx` uses the base color's tint plus a per-color ink of at least 6.5:1 in light mode.
+    - Runs and Settings use it.
+  - **Rename project** in the project menu (modal; `PATCH /projects/:id` already existed). Before this, every project stayed "Untitled design" and generated into `~/jeeves-projects/untitled-design`.
+  - **The task brief no longer tells the agent to run the template test packs.** They live in Jeeves, and the real run showed Codex searching `~/github/jeeves` and writing a script to run them, which spent credits. The agent now runs install, typecheck, and test (and compose if Docker works), and is told not to look for the packs (`AGENT_CHECKS` in `brief.ts`).
+  - The chat Send button and the rename button use `cyan.9`, the contrast fix S10 noted.
+- **Docs:** PLAN §2 decision row, §12 rewritten (picker table, Codex as model, Claude needs an API key), the S13 note, the new **S14: Local models**, and the decision log. `docs/sources.md` SRC-17 (verbatim). README: a "User guide: from a brief to a running app" section and "Providers and models" (replaces "Design chat and API keys").
+
+### The journey (real providers, 2026-10-29)
+
+Setup: `pnpm dev` (OpenAI key in the environment, but no credits on it); Codex logged in with a ChatGPT plan (default model `gpt-6-astra`, reasoning high for coding). Every UI step was driven by mouse with a Playwright script against the dev server (scratch scripts, not committed). The brief was a "Reading list" app: save URLs with an optional title, list newest first, mark read or unread, delete, an unread count, http(s) validation with a 400, and duplicate URLs return the existing article.
+
+| # | Step | Result |
+| --- | --- | --- |
+| 0 | Settings: Design chat and Planner → Codex, model empty | Saved; the screenshot showed the badges with **invisible text** → fixed (StatusBadge) |
+| 1a | New project, Chat: attach the brief, "Make me a design for the app in the attached brief." on **OpenAI** | **Failed in 3 s**: "You have no credits remaining…". The turn stored the error and the board was untouched (correct handling). Blocker → built Codex as a model provider |
+| 1b | The same on **Codex** | **Done in 59 s**, 50,860 in / 1,422 out tokens. `listTemplates`, five `describeTemplate` calls, one `applyOperations` (5 changes), one undo step. Result: `reading-service` (http-service + rest-api-server `/api`), `reading-db` (postgres 17), `reading-web` (web-app + rest-api-client), `uses-database` + `calls`, **0 findings**, with detailed notes on every element and attachment |
+| 2 | Canvas: select the web app, Inspector: Title → "My reading list", append an All/Unread/Read filter requirement to the notes | Saved as revision 3, by mouse |
+| 3 | Project menu → **Rename project** "Reading list" (added this section), then Generate with the baseline | Default folder `~/jeeves-projects/reading-list`. **Green in 83 s**: generate, install, typecheck, compose-up, test-packs (**20/20**), compose-down |
+| 4 | Runs → Plan a run (planner on Codex) | **Planned in 107 s**, 17,692 / 2,575 tokens. 8 tasks: a db "verify" task, API contract and handlers, URL identity/atomic dupes, list consistency, typed client, page and filters, mutations, browser flows. Each has 3–5 acceptance tests and owned paths from the lock. The planner flagged that the chat's notes asked for an `/api` proxy while the web-app template serves same-origin calls at `/_api/reading-service/` |
+| 5 | Edit the plan by mouse: remove the db task (the postgres pack already checks isolation, and an agent can't change anything there usefully); edit the two `/api` tasks to use the template prefix; Start | 7 tasks, run 23, branch-per-task, 2 retries |
+| 6 | Task 1 (`reading-service.reading-api`) on Codex | After about 5 min: **`waiting_for_provider`**, "Codex: Your workspace is out of credits. Ask your workspace owner to refill in order to continue." The task went back to pending, there was no retry loop, and the partial work (contract, migration, feature, tests) stays uncommitted on `jeeves/run-23-reading-service.reading-api` |
+
+Not reached: tasks 1–7 implemented, Jeeves's checks on real work, the run branch merged, and the app used in the browser.
+
+### Commands and results
+
+`pnpm check` (final):
+
+```text
+$ biome check .
+Checked 362 files in 113ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  56 passed (56)
+      Tests  410 passed (410)
+```
+
+`pnpm test:e2e`:
+
+- First full run: 15 passed and 2 failed. Axe flagged teal shade 9 on its tint (4.32:1), on Settings and in the shell test. I fixed it with darker inks.
+- Next run of three specs: 6 failed, all at page load ("Drawing tools" toolbar not found) while the real Codex run was loading the machine.
+- Full rerun: **17 passed** (25.6 s).
+
+New and changed tests:
+
+- `codex-model.test.ts` (3): the prompt and images, read-only options, `outputSchema`, mapping, scratch cleanup, plain-text fallback, quota errors.
+- `settings.test.ts` (5): provider status, roles save and refusals (422 with nothing saved), legacy `models` migration, Codex login detection, role resolution, `modelLabel`.
+- `agent.test.ts`: brief check wording.
+- e2e:
+  - `chat.spec.ts` settings test: provider and model per role, the local option disabled, axe.
+  - `generate.spec.ts`: rename project, and the default folder follows the name.
+
+### Deviations
+
+- The provider picker and the Codex model provider were built in S13 (SRC-17), not after v1.
+- The web app's `/api` proxy note conflicts with the template's `/_api/<service>/` prefix. The design chat writes notes from template descriptions and doesn't see this. I fixed it in the plan, not the design. Task 7's acceptance tests still mention `/api`, because I only edited descriptions and tasks lock once the run starts.
+- During the run I used a non-watch server (`node --import tsx src/main.ts` plus the web `pnpm dev`), so code edits couldn't restart it mid-task (`tsx watch` would pause the run).
+
+### Known issues
+
+- **Both providers are out of credits on this machine:** the OpenAI API (no credits) and Codex ("workspace is out of credits").
+- **Run 23 shows planner usage as unknown** and "Refined by the planner ()": it was planned before the `modelLabel` fix. New runs are fine.
+- **Codex as a chat model costs a fresh session per tool round** (about 15–25 s each; a design turn took 59 s and about 50k input tokens, mostly Codex's own system prompt plus the catalog). It doesn't stream.
+- **Generated compose files publish random host ports** (`127.0.0.1::5173`). The README tells people to use `docker compose port`. Showing the URL in Jeeves would help.
+- **Codex still reads outside the project** (S12). The brief fix removes the main reason it did.
+- The S12 orphaned-Codex-on-SIGKILL issue is unchanged.
+
+### To finish S13
+
+1. Restore credits for whichever provider will do the coding (Codex workspace credits, or wait for the plan's limit to reset). Optionally add OpenAI API credits for a faster chat and planner.
+2. `pnpm dev` → Runs → project "Reading list", run 23 → **Resume**. Task 1 continues from the work already in the folder (a new session briefed with the earlier diff).
+3. When the run succeeds:
+
+   ```bash
+   cd ~/jeeves-projects/reading-list
+   git merge jeeves/run-23
+   docker compose up --build --wait
+   docker compose port reading-web 5173
+   ```
+
+   Then use the app in a browser: save, duplicate, filter, toggle, delete.
+4. Append the results under a new handoff entry, "S13 (continued)".
+
+### For S14
+
+- Add the provider in `catalog.ts` (`available: true`) and in `providerModels`/`codingAgents`. Follow the `providerStatus` pattern for a reachability check.
+- `codex-model.ts` shows how to wrap an agent-style backend. An OpenAI-compatible Chat Completions adapter should use native tools instead, like `openai.ts`.
+- To compare quality, rerun this section's brief, `fixtures/briefs/reading-list.md`. The step 1b output above is the bar for the design chat.

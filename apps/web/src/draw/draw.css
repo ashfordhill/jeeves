@@ -1293,3 +1293,15 @@ button.finding-btn:hover {
   justify-content: space-between;
   gap: 6px;
 }
+
+.project-rename {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-rename-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

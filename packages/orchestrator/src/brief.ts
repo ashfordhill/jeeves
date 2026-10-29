@@ -23,6 +23,13 @@ export const REQUIRED_CHECKS = [
   "every template test pack for every element (they must stay green)",
 ];
 
+/** The checks an agent can run inside the project; the test packs only run from Jeeves. */
+export const AGENT_CHECKS = [
+  "pnpm install",
+  "pnpm -r --no-bail typecheck",
+  "pnpm -r --no-bail test",
+];
+
 export type BriefInput = {
   project: GeneratedProject;
   task: PlannedTask;
@@ -64,9 +71,11 @@ export function taskBrief({ project, task, attempt, earlierWork }: BriefInput): 
     "",
     "## Checks",
     "",
-    "When you stop, Jeeves runs these itself; your own report doesn't count. Run them before you finish:",
+    "When you stop, Jeeves runs these itself; your own report doesn't count:",
     "",
     ...REQUIRED_CHECKS.map((c) => `- ${c}`),
+    "",
+    `Before you finish, run ${AGENT_CHECKS.map((c) => `\`${c}\``).join(", ")} yourself, and \`docker compose up --build --wait\` if Docker works where you are. The template test packs are part of Jeeves, not this project: don't look for them or try to run them (Jeeves's own source is not part of your task). If they fail, Jeeves sends you their output.`,
     "",
     "Don't commit, push, or switch branches: Jeeves commits your work after the checks pass.",
   ];

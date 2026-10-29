@@ -2,7 +2,7 @@
 
 Jeeves turns a software design into a working, tested application by combining strict, reusable templates with coding agents. Draw Jeeves is its design canvas. See [PLAN.md](PLAN.md) for the architecture and build plan.
 
-Status: S1–S12 are done (see `docs/handoff.md`). The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit and reorder, then runs each task with Codex, checks the result itself, and commits it to a run branch. Settings shows provider key status and the model per role.
+Status: S1–S13 are done (see `docs/handoff.md`); S14 (local models) is next. The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit and reorder, then runs each task with Codex, checks the result itself, and commits it to a run branch. Settings picks the provider and model for each role (design chat, planner, coding).
 
 ## Requirements
 
@@ -19,14 +19,41 @@ pnpm dev          # starts Postgres in Docker, the API on :4310 and the UI on :4
 
 Open http://127.0.0.1:4300. The status bar shows "Server healthy" once the API can reach Postgres. `pnpm db:down` stops Postgres (data stays in the `jeeves-pg` volume). The server applies pending database migrations (`apps/server/drizzle/`) every time it starts. After changing `apps/server/src/db/schema.ts`, run `pnpm --filter @jeeves/server db:generate` to add a migration.
 
-## Design chat and API keys
+## User guide: from a brief to a running app
 
-The Chat tab calls OpenAI. Give Jeeves a key in either place (the environment wins):
+This is the path S13 tested end to end (`docs/handoff.md`, S13).
 
-- `OPENAI_API_KEY=sk-… pnpm dev`
-- `~/.jeeves/config.json`: `{ "openai": { "apiKey": "sk-…" } }` (keep it `chmod 600`)
+1. **Pick providers.** Open **Settings**. Each role (design chat, planner, coding agent) has a provider and a model. With only a ChatGPT plan, choose **Codex** for all three and leave the model empty to use Codex's default; run `codex login` first. With an OpenAI API key that has credits, the design chat and planner can use **OpenAI API** instead (it streams replies and is quicker per call). See [Providers and models](#providers-and-models).
+2. **Describe the app.** In **Draw**, open the project menu (top right) → **New project**, then **Rename project** (the name becomes the generated folder's name). Open the rail's **Chat** tab, **Attach** a Markdown brief (or a PNG/SVG sketch), and ask for a design, e.g. "Make me a design for the app in the attached brief." The assistant reads the template catalog, places elements, attachments, and connections, and writes implementation notes for each. The whole turn is one undo step.
+3. **Adjust it.** Click a card to open it in the **Inspector**: change config values, edit the notes (they're what the coding agents implement), add or remove attachments, or draw connections with the Connector tool. The **Findings** tab lists anything that blocks generation.
+4. **Generate.** Press **Generate**, keep **Run the baseline check** on, and press **Generate project**. "Green" means the template project installs, type checks, starts in Docker, and passes every template test pack, before any AI writes code.
+5. **Plan and run.** Open **Runs** → **Plan a run**. Read the tasks: edit, reorder, or remove any before pressing **Start**. Each task runs a coding agent, then Jeeves's own checks, then a commit. Click an attempt for its live log, check results, and diff. A failed task is retried with the check output; if it still fails, the run stops as **Needs attention** and **Resume** tries again.
+6. **Run the app.** The work is on the run branch in the project folder:
 
-Settings shows whether a key is set (never the key) and lets you pick the model for each role; models are saved to the same file. `JEEVES_HOME` moves that directory. Setting `JEEVES_FAKE_MODEL_SCRIPT=<file>` makes the server replay a scripted fake model instead (the e2e suite uses `fixtures/chat/e2e-script.json`).
+   ```bash
+   cd ~/jeeves-projects/<project>
+   git merge jeeves/run-<id>        # or: git checkout jeeves/run-<id>
+   docker compose up --build --wait
+   docker compose port <web element id> 5173   # prints 127.0.0.1:<port>; open it
+   ```
+
+   Compose publishes each service on a random local port, so `docker compose port` (or `docker compose ps`) tells you where. `docker compose down` stops it (data stays in its volumes).
+
+To change the app later: edit the design, generate again (project-owned files and the agents' work are kept), and plan a new run.
+
+## Providers and models
+
+Settings lists each provider with its status, and each role picks a provider and a model (type any name; the list only suggests some). Choices are saved to `~/.jeeves/config.json` (`JEEVES_HOME` moves that directory).
+
+| Provider | Roles | Set up |
+| --- | --- | --- |
+| **OpenAI API** | design chat, planner | `OPENAI_API_KEY=sk-… pnpm dev`, or `{ "openai": { "apiKey": "sk-…" } }` in `~/.jeeves/config.json` (keep it `chmod 600`). The environment wins. API usage is billed separately from ChatGPT plans, so the account needs credits |
+| **Codex** | design chat, planner, coding | `codex login` once (a ChatGPT plan or an API key). An empty model means Codex's default from `~/.codex/config.toml` |
+| **Local model** | coming in S14 | Shown as "coming later" |
+
+As a design chat or planner model, Codex answers each step in one structured reply instead of streaming, and a chat turn takes about a minute. Jeeves never shows or stores keys in designs or generated projects. A Claude adapter needs an Anthropic API key and is planned after v1 (PLAN §12).
+
+Setting `JEEVES_FAKE_MODEL_SCRIPT=<file>` makes the server replay a scripted fake model instead (the e2e suite uses `fixtures/chat/e2e-script.json`).
 
 ## Generate
 
@@ -54,7 +81,7 @@ Git: every run works on `jeeves/run-<id>`, branched from what the project had ch
 
 Click an attempt to see its live log (agent messages, commands, file edits, and each check), the check results, the changed files, and the diff. Token usage is shown per attempt and per run (cost is unknown: Codex doesn't report it).
 
-Codex uses its own login: run `codex login` once (ChatGPT or an API key). The Codex CLI comes with the SDK; `JEEVES_CODEX_PATH` points Jeeves at another `codex` binary. The model is Settings → "Coding" (it must be one your Codex account can use).
+Codex uses its own login: run `codex login` once (ChatGPT or an API key). The Codex CLI comes with the SDK; `JEEVES_CODEX_PATH` points Jeeves at another `codex` binary. The model is Settings → "Coding agent" (empty for Codex's default, or one your Codex account can use).
 
 ## Test
 

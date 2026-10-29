@@ -28,7 +28,7 @@ import {
 import { ProviderError } from "@jeeves/providers";
 import type { TemplateLookup } from "@jeeves/spec";
 import { and, asc, desc, eq, getTableColumns, inArray, notInArray, sql } from "drizzle-orm";
-import type { ModelSource } from "../chat/service.ts";
+import { type ModelSource, modelLabel } from "../chat/service.ts";
 import type { Db } from "../db/client.ts";
 import {
   attempts,
@@ -398,7 +398,7 @@ export class RunService {
       if (!refined.ok) {
         return seedOnly(
           `The planner didn't produce a valid plan, so this is the seed plan. ${refined.reason}`,
-          source.model,
+          modelLabel(source),
           refined.usage,
         );
       }
@@ -407,7 +407,7 @@ export class RunService {
         tasks: refined.tasks,
         planner: {
           mode: "refined",
-          model: source.model,
+          model: modelLabel(source),
           message: refined.summary,
           usage: refined.usage,
         } satisfies RunPlanner,
@@ -419,7 +419,7 @@ export class RunService {
         : "";
       return seedOnly(
         `The planner model failed (${error.kind}): ${error.message} This is the seed plan.${hint}`,
-        source.model,
+        modelLabel(source),
       );
     }
   }

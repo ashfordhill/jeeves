@@ -1,21 +1,44 @@
 import { readFileSync } from "node:fs";
-import { createFakeProvider, createOpenAIProvider, scriptByMessage } from "@jeeves/providers";
+import {
+  createCodexModelProvider,
+  createFakeProvider,
+  createOpenAIProvider,
+  providerInfo,
+  scriptByMessage,
+} from "@jeeves/providers";
 import type { Settings } from "../settings.ts";
 import type { ModelSource } from "./service.ts";
 
 /**
- * Real providers: OpenAI with the key from the environment or `~/.jeeves/config.json`, read on
- * every turn so a newly set key works without a restart.
+ * Real providers, picked per role in Settings. Credentials are read on every turn, so a newly set
+ * key works without a restart.
  */
-export function providerModels(settings: Settings): ModelSource {
+export function providerModels(settings: Settings, codexPath?: string): ModelSource {
+  const codex = createCodexModelProvider(codexPath ? { codexPath } : {});
   return (role) => {
-    const key = settings.openaiKey();
-    if (!key) {
-      return {
-        error: `No OpenAI API key is set. Set OPENAI_API_KEY before starting Jeeves, or add {"openai": {"apiKey": "…"}} to ${settings.configPath}.`,
-      };
+    const { provider, model } = settings.roles()[role];
+    switch (provider) {
+      case "openai": {
+        const key = settings.openaiKey();
+        if (!key) {
+          return {
+            error: `No OpenAI API key is set. Set OPENAI_API_KEY before starting Jeeves, or add {"openai": {"apiKey": "…"}} to ${settings.configPath}.`,
+          };
+        }
+        return { provider: createOpenAIProvider({ apiKey: key.key }), model };
+      }
+      case "codex":
+        if (!settings.codexLoggedIn()) {
+          return {
+            error: "Codex isn't logged in. Run `codex login` in a terminal, then try again.",
+          };
+        }
+        return { provider: codex, model };
+      default:
+        return {
+          error: `${providerInfo(provider)?.name ?? provider} can't be used for this. Pick another provider in Settings.`,
+        };
     }
-    return { provider: createOpenAIProvider({ apiKey: key.key }), model: settings.models()[role] };
   };
 }
 

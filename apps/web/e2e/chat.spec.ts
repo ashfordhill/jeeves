@@ -125,20 +125,28 @@ test("an unknown capability becomes a needs-a-template element, and files can be
   expect(saved.design.elements).toMatchObject([{ id: "sms", template: null }]);
 });
 
-test("settings show key status and save models per role", async ({ page }) => {
+test("settings show provider status and save a provider and model per role", async ({ page }) => {
   await page.goto("/#/settings");
   await expect(page.getByText(/replaying a scripted fake model/)).toBeVisible();
-  await expect(page.getByText("No API key")).toBeVisible();
+  await expect(page.getByText("No API key", { exact: true })).toBeVisible();
+  await expect(page.getByText("Coming later", { exact: true })).toBeVisible();
+
+  // The coding role offers Codex, and the local provider only as "coming later".
+  const codingProvider = page.getByRole("combobox", { name: "Coding agent provider" });
+  await expect(codingProvider).toHaveValue("codex");
+  await expect(
+    codingProvider.getByRole("option", { name: "Local model (coming later)" }),
+  ).toBeDisabled();
 
   // Runs share one settings file, so each run saves its own name.
   const model = `e2e-model-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-  const designChat = page.getByRole("textbox", { name: "Design chat" });
+  const designChat = page.getByRole("combobox", { name: "Design chat model" });
   await designChat.fill(model);
   await page.getByRole("button", { name: "Save models" }).click();
   await expect(page.getByText(/^Saved to /)).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole("textbox", { name: "Design chat" })).toHaveValue(model);
+  await expect(page.getByRole("combobox", { name: "Design chat model" })).toHaveValue(model);
   const axe = await new AxeBuilder({ page }).analyze();
   expect(axe.violations).toEqual([]);
 });

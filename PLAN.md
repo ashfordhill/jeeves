@@ -1,6 +1,6 @@
 # Jeeves and Draw Jeeves
 
-Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md` (S1–S12 done).
+Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md` (S1–S13 done).
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
@@ -55,6 +55,7 @@ flowchart LR
 | Visual style follows automation-pitch | SRC-15 |
 | Chat accepts files: Markdown/text and images (PNG, JPEG, SVG) | SRC-15 |
 | OpenAI and Codex first, behind provider interfaces so Claude or others can be added | SRC-01 |
+| Provider-agnostic: each role (design chat, planner, coding) picks a provider and model in Settings, like a model picker in an editor. Subscription logins (Codex with a ChatGPT plan) are first-class next to API keys; local models are next (S14) | SRC-17 |
 | No Temporal. Open-source, free building blocks only; avoid writing what a library already does | SRC-15 |
 | Jeeves itself is built by sequential, manually started agents, one section each (§15), not by Jeeves | SRC-15, SRC-16 |
 | Prototype apps (qrwty, inventory labeling, storefront, grocery review) are out of this build; each has a brief in `docs/examples/` | SRC-15 |
@@ -259,10 +260,22 @@ A model's "done" never counts as evidence. Model-dependent features (chat, plann
 
 Two interfaces in `packages/providers`:
 
-- `ModelProvider`: chat with tools, image input, streaming, and usage reporting. Used by the design chat and the planner. **OpenAI** (Responses API) first.
-- `CodingAgentProvider`: start a session in a working directory with a brief, stream events, interrupt, resume if supported, and report usage. **Codex** first, using the open-source Codex SDK or app-server (whichever is current and stable when S12 starts).
+- `ModelProvider`: chat with tools, image input, streaming, and usage reporting. Used by the design chat and the planner.
+- `CodingAgentProvider`: start a session in a working directory with a brief, stream events, interrupt, resume if supported, and report usage. Used for tasks.
 
-Each provider declares its capabilities, and unsupported features are reported rather than silently dropped. Models are configured per role (design chat, planner, coding). A Claude adapter (Anthropic API plus the Claude Agent SDK) is a later, separate section. API keys live in `~/.jeeves/config.json` or environment variables, never in designs or generated projects.
+**Provider picker (SRC-17).** Settings lists every provider with its status, and each role picks a provider and a model (free text with suggestions). The catalog is `packages/providers/src/catalog.ts`:
+
+| Provider | Roles | Credentials |
+| --- | --- | --- |
+| OpenAI API (Responses API) | design chat, planner | `OPENAI_API_KEY` or `~/.jeeves/config.json` |
+| Codex (open-source Codex SDK) | design chat, planner, coding | Codex's own login (`codex login`: a ChatGPT plan or an API key) |
+| Local model (OpenAI-compatible server) | design chat, planner; coding later | none. Listed as "coming later" until S14 |
+
+For model roles, Codex runs each model call as a fresh read-only session and answers in structured output (a message plus tool calls), so Jeeves's own tool loop is unchanged; replies arrive whole rather than streamed.
+
+Each provider declares its capabilities, and unsupported features are reported rather than silently dropped. API keys live in `~/.jeeves/config.json` or environment variables, never in designs or generated projects.
+
+**Claude.** A Claude adapter (Anthropic API for model roles, the Claude Agent SDK for coding) is after v1. Both need an Anthropic API key: Anthropic doesn't allow third-party products to use claude.ai subscription logins, including through the Agent SDK.
 
 ## 13. Tech stack
 
@@ -425,10 +438,22 @@ Each section is one agent's job, sized for a clean context. Run them **in order,
 - **Read:** the whole plan and every handoff entry.
 - **Build:** the full journey. A chat prompt with an attached Markdown brief produces a design, the user adjusts it on the canvas, Generate goes green, orchestration with real providers implements the notes, and the app runs in Docker with all tests green. Fix rough edges found along the way and document the user guide in the README.
 - **Done when:** the journey is recorded step by step in the handoff with the results, including what failed and was fixed. All automated suites pass.
+- **Added during S13 (SRC-17):** the provider picker in Settings and Codex as a model provider, so the journey could run on a ChatGPT plan without API credits.
+
+### S14: Local models
+
+- **Read:** §12, `packages/providers` (`types.ts`, `catalog.ts`, `openai.ts`, `codex-model.ts`), and S13's handoff.
+- **Build:**
+  - A `local` `ModelProvider` for OpenAI-compatible servers (Ollama, LM Studio, llama.cpp `llama-server`, vLLM) over Chat Completions with native tool calls, image input where the model supports it, streaming, and usage. Report a model without tool support as `unsupported` rather than guessing.
+  - Settings: the server's base URL (default `http://127.0.0.1:11434/v1`), a reachability status, and the model list from `GET /models`. Flip `local` to `available: true` in the catalog.
+  - A local coding agent if a stable open-source one fits `CodingAgentProvider` (for example Codex pointed at the local server through its `--oss`/provider config); otherwise leave coding on Codex and say why.
+  - A short guide in the README: which models were tried, the machine, and how well the design chat, planner, and coding did on the S13 journey brief.
+- **Done when:** unit tests replay recorded Chat Completions streams (tools, usage, errors); the S13 journey's chat and planner steps run against a local model on the user's machine and the result is recorded in the handoff, including where quality fell short of the hosted models.
+- **Not in this section:** cloud providers, Claude, or fine-tuning.
 
 ### After v1 (not scheduled)
 
-Google Cloud deployment; a Claude provider adapter; `pr-per-task` if it wasn't done in S12; parallel tasks; filling in and building the stub templates; using Jeeves on the prototype briefs in `docs/examples/`.
+Google Cloud deployment; a Claude provider adapter (Anthropic API key, see §12); `pr-per-task` if it wasn't done in S12; parallel tasks; filling in and building the stub templates; using Jeeves on the prototype briefs in `docs/examples/`.
 
 ## 16. Open questions
 
@@ -445,3 +470,4 @@ These are reversible implementation choices; the section agent may change them i
 - 2026-10-28: Initial architecture. Two modes, Agent Slices, templates, shared tests, a UI, and provider abstraction (SRC-01). Draw Jeeves as an integrated typed canvas with chat that edits the board directly; local Docker plus Google Cloud; Jeeves hosted locally (SRC-03 to SRC-08). Reference projects added (SRC-09 to SRC-13). Full detail is in [docs/archive/PLAN-v1.md](docs/archive/PLAN-v1.md).
 - 2026-10-28: Plan review and rewrite (SRC-15). Ticket mode dropped; orchestration redefined as implementing generated template projects; templates are option (b); elements are design-level, with attachments as mini-boxes; automation-pitch style; chat file input; Temporal dropped in favor of pg-boss on Postgres; v1 is local Docker only; prototypes and the template catalog moved to their own briefs; Jeeves is built in thirteen sequential single-agent sections.
 - 2026-10-28: User confirmed TypeScript for v1 templates, React Flow over an Excalidraw fork, five reference templates in v1, that Jeeves is not built by Jeeves, and design-edit-regenerate as the post-v1 change path (SRC-16).
+- 2026-10-29: Provider-agnostic model selection (SRC-17). Each role picks a provider and model in Settings; Codex can back the design chat and planner on a ChatGPT plan; local models get their own section (S14); a Claude adapter stays after v1 because it needs an Anthropic API key.
