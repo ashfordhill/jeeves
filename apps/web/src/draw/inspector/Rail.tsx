@@ -1,10 +1,15 @@
 /**
- * The right-hand rail of the Draw view: Inspector and Findings tabs. It can be collapsed to a
+ * The right-hand rail of the Draw view: Inspector, Findings, and Chat tabs. It can be collapsed to a
  * thin strip (remembered per browser) that still shows the findings count.
  */
 import { Tabs } from "@mantine/core";
-import { IconLayoutSidebarRightCollapse, IconLayoutSidebarRightExpand } from "@tabler/icons-react";
+import {
+  IconLayoutSidebarRightCollapse,
+  IconLayoutSidebarRightExpand,
+  IconMessageCircle,
+} from "@tabler/icons-react";
 import { useState } from "react";
+import { ChatPanel } from "../../chat/ChatPanel.tsx";
 import { type RailTab, useDraw } from "../store.ts";
 import { FindingsPanel } from "./FindingsPanel.tsx";
 import { Inspector } from "./Inspector.tsx";
@@ -43,7 +48,7 @@ export function Rail() {
 
   if (collapsed) {
     return (
-      <aside className="draw-rail is-collapsed" aria-label="Inspector and findings">
+      <aside className="draw-rail is-collapsed" aria-label="Inspector, findings, and chat">
         <button
           type="button"
           className="rail-toggle"
@@ -65,12 +70,24 @@ export function Rail() {
         >
           <FindingsCount count={count} />
         </button>
+        <button
+          type="button"
+          className="rail-toggle"
+          aria-label="Show chat"
+          title="Show chat"
+          onClick={() => {
+            setRailTab("chat");
+            setCollapsed(false);
+          }}
+        >
+          <IconMessageCircle size={18} aria-hidden />
+        </button>
       </aside>
     );
   }
 
   return (
-    <aside className="draw-rail" aria-label="Inspector and findings">
+    <aside className="draw-rail" aria-label="Inspector, findings, and chat">
       <Tabs
         value={tab}
         onChange={(value) => value && setRailTab(value as RailTab)}
@@ -83,6 +100,7 @@ export function Rail() {
             <Tabs.Tab value="findings" rightSection={<FindingsCount count={count} />}>
               Findings
             </Tabs.Tab>
+            <Tabs.Tab value="chat">Chat</Tabs.Tab>
           </Tabs.List>
           <button
             type="button"
@@ -99,6 +117,9 @@ export function Rail() {
         </Tabs.Panel>
         <Tabs.Panel value="findings" className="rail-panel">
           <FindingsPanel />
+        </Tabs.Panel>
+        <Tabs.Panel value="chat" className="rail-panel rail-panel-chat">
+          <ChatPanel />
         </Tabs.Panel>
       </Tabs>
     </aside>

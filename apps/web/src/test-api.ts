@@ -35,7 +35,11 @@ export function fakeApi() {
     projectId: TEST_PROJECT,
     design: state.design,
     findings: validateDesign(state.design, registry),
-    history: { canUndo: state.done.length > 0, canRedo: state.undone.length > 0 },
+    history: {
+      canUndo: state.done.length > 0,
+      canRedo: state.undone.length > 0,
+      latestEdit: state.done.length || null,
+    },
   });
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {

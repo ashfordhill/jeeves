@@ -45,7 +45,7 @@ export type Selection = { nodes: string[]; edges: string[] };
 /** A request for the canvas to select these items and bring them into view. */
 export type FocusRequest = Selection & { seq: number; zoom: boolean };
 
-export type RailTab = "inspector" | "findings";
+export type RailTab = "inspector" | "findings" | "chat";
 
 /**
  * One undoable step. `design` marks a server-side edit made here; the server's history holds the
@@ -108,6 +108,14 @@ type DrawState = {
   setRailTab(tab: RailTab): void;
   undo(): Promise<void>;
   redo(): Promise<void>;
+  /**
+   * Adopts a design changed elsewhere in this app (a chat turn) as one design undo step. Layout
+   * items the server placed are added; local positions win for items already here. `changed`
+   * items are selected and brought into view.
+   */
+  adoptChange(state: DesignState, layout: LayoutDocument, changed: readonly string[]): void;
+  /** Undoes that server edit, if it's still the newest one. Returns whether it did. */
+  undoEdit(operationId: number): Promise<boolean>;
 };
 
 /** Whether the undo / redo buttons have anything to do. */
@@ -351,6 +359,47 @@ export const useDraw = create<DrawState>()((set, get) => {
       if (top) steps.pop();
       set({ redoSteps: steps });
       if (get().loaded?.history.canRedo) await serverStep("redo");
+    },
+
+    adoptChange(state, layout, changed) {
+      const loaded = get().loaded;
+      if (!loaded || loaded.project.id !== state.projectId) return;
+      // An older state (a canvas edit landed after the turn) must not replace a newer one.
+      const newer = state.design.revision > loaded.design.revision;
+      if (newer) adopt(state);
+      const missing = Object.entries(layout.items).filter(([id]) => !loaded.layout.items[id]);
+      if (missing.length > 0) {
+        const current = get().loaded as Loaded;
+        set({
+          loaded: {
+            ...current,
+            layout: {
+              ...current.layout,
+              items: { ...current.layout.items, ...Object.fromEntries(missing) },
+            },
+          },
+        });
+      }
+      if (newer) set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
+      const connections = new Set(state.design.connections.map((c) => c.id));
+      if (changed.length > 0) {
+        get().focus(
+          {
+            nodes: changed.filter((id) => !connections.has(id)),
+            edges: changed.filter((id) => connections.has(id)),
+          },
+          { zoom: true },
+        );
+      }
+    },
+
+    async undoEdit(operationId) {
+      if (get().loaded?.history.latestEdit !== operationId) return false;
+      const steps = [...get().undoSteps];
+      const marker = steps.findLastIndex((step) => step.kind === "design");
+      if (marker >= 0) steps.splice(marker, 1);
+      set({ undoSteps: steps });
+      return serverStep("undo");
     },
 
     setLayoutItems(items, options) {

@@ -1,0 +1,186 @@
+{
+  "turns": [
+    {
+      "match": "no accounts",
+      "steps": [
+        {
+          "text": "Got it: no accounts, so links are public."
+        }
+      ]
+    },
+    {
+      "match": "link shortener",
+      "steps": [
+        {
+          "text": "Let me look at the templates.",
+          "toolCalls": [
+            {
+              "name": "listTemplates",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "applyOperations",
+              "arguments": {
+                "ops": [
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "links",
+                      "name": "Links service",
+                      "template": {
+                        "id": "http-service",
+                        "version": "0.1.0"
+                      },
+                      "config": {
+                        "port": 8080
+                      },
+                      "attachments": [
+                        {
+                          "id": "links-api",
+                          "template": {
+                            "id": "rest-api-server",
+                            "version": "0.1.0"
+                          },
+                          "config": {
+                            "basePath": "/api"
+                          },
+                          "notes": "POST /links creates a short link from a URL. GET /links/:code returns it with its click count."
+                        }
+                      ],
+                      "notes": "Create short links; redirect GET /:code with 302; count clicks."
+                    }
+                  },
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "links-db",
+                      "name": "Links DB",
+                      "template": {
+                        "id": "postgres",
+                        "version": "0.1.0"
+                      },
+                      "config": {}
+                    }
+                  },
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "web",
+                      "name": "Web app",
+                      "template": {
+                        "id": "web-app",
+                        "version": "0.1.0"
+                      },
+                      "config": {
+                        "title": "Shorty"
+                      },
+                      "attachments": [
+                        {
+                          "id": "web-links-client",
+                          "template": {
+                            "id": "rest-api-client",
+                            "version": "0.1.0"
+                          },
+                          "config": {}
+                        }
+                      ],
+                      "notes": "One page: paste a URL, get a short link, see recent links with click counts."
+                    }
+                  },
+                  {
+                    "op": "connect",
+                    "connection": {
+                      "id": "links-uses-db",
+                      "kind": "uses-database",
+                      "from": {
+                        "element": "links"
+                      },
+                      "to": {
+                        "element": "links-db"
+                      }
+                    }
+                  },
+                  {
+                    "op": "connect",
+                    "connection": {
+                      "id": "web-calls-links",
+                      "kind": "calls",
+                      "from": {
+                        "element": "web",
+                        "attachment": "web-links-client"
+                      },
+                      "to": {
+                        "element": "links",
+                        "attachment": "links-api"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "I drew a link shortener: a links service with a REST API and its Postgres database, and a web app that calls the API."
+        }
+      ]
+    },
+    {
+      "match": "accounts",
+      "steps": [
+        {
+          "text": "One question before I change anything.",
+          "toolCalls": [
+            {
+              "name": "askUser",
+              "arguments": {
+                "question": "Should people sign in?",
+                "choices": ["No accounts", "Email login"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "match": "my brief",
+      "steps": [
+        {
+          "text": "I read your brief."
+        }
+      ]
+    },
+    {
+      "match": "sms",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "applyOperations",
+              "arguments": {
+                "ops": [
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "sms",
+                      "name": "SMS gateway",
+                      "template": null,
+                      "notes": "Send a text when a link passes 1000 clicks."
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "No template sends SMS yet, so I added an element that needs a template."
+        }
+      ]
+    }
+  ]
+}

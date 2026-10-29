@@ -470,3 +470,154 @@ Unit tests:
 - To highlight changed elements after a turn, use `useDraw.getState().focus({ nodes: changedIds }, { zoom: true })`.
 - A per-turn Undo button can call `useDraw.getState().undo()` when the chat turn is the newest server step. Otherwise it needs a targeted undo the server doesn't have yet (it only undoes the newest applied edit).
 - The rail is a natural home for the chat panel, as a third tab or a docked section. `Rail.tsx` is small.
+
+---
+
+## S6: Providers and design chat (2026-10-29)
+
+### Built
+
+New dependencies, pinned: `openai` 7.34.0 (providers), `@resvg/resvg-js` 2.6.2 and `elkjs` 0.12.0 (server, elkjs matches automation-pitch).
+
+- **`packages/providers`**
+  - `types.ts`: a provider-neutral `ModelProvider` interface with `respond(request, { signal, onEvent })`.
+    - Requests and responses carry a list of `ModelItem`s: messages (text and image parts), tool calls, tool results, and `opaque` items (provider state that must be replayed).
+    - Each provider declares `capabilities`, and `assertSupported` throws an `unsupported` `ProviderError` rather than silently dropping an image or tools.
+    - `ModelRole` is `designChat | planner | coding`.
+  - `errors.ts`: `ProviderError` with a `kind` of `auth | quota | rate-limit | unavailable | bad-request | unsupported | other`. `blocksProvider` is true for auth and quota (the §10 `waiting_for_provider` rule for S11/S12).
+  - `openai.ts`: the Responses API adapter.
+    - Streamed, stateless (`store: false`), and resends the whole conversation each call.
+    - Reasoning items come back encrypted (`include: ["reasoning.encrypted_content"]`) and are replayed as opaque items within a turn.
+    - Tools use `strict: false`, because the operation schemas have optional fields.
+    - SDK errors are mapped to `ProviderError` kinds (401/403 → auth, 429 `insufficient_quota` → quota, other 429 → rate-limit, 5xx/network → unavailable).
+  - `fake.ts`: `createFakeProvider(script)` replays steps (text, tool calls, usage, or a scripted error), streams text word by word, and records every request.
+    - `scriptByMessage(json)` is a stateless script keyed by the person's latest message, plus how many model rounds have run since it. The e2e server uses it, since many projects share one process.
+    - Messages starting with `CALLER_NOTE_PREFIX` (`[Jeeves]`) don't start a new turn.
+- **Server chat** (`apps/server/src/chat/`)
+  - `service.ts` `ChatService` runs a turn:
+    - It inserts a `running` turn, then calls the model with the §7 tools until a response has no tool calls or the model calls `askUser`. At most 16 rounds.
+    - It commits every edit as **one** `source: "chat"` operation through `DesignService.edit`, so a turn is one undo step.
+    - It places new items, then saves the turn.
+    - One turn per project at a time; a second gets 409 `CHAT_BUSY`.
+    - A failed turn (provider error, no key, too many rounds) commits nothing and stores the error.
+  - **Stale edits:**
+    - If the commit gets a 409, the pending ops are replayed on the current design and committed (up to three times).
+    - If they no longer apply, nothing is committed. The workspace resets to the current design and the model gets a `[Jeeves] Your edits were not applied … Call getDesign …` note, then redoes its edits (at most two redos per turn).
+  - `tools.ts` has a `Workspace`, a working copy of the design, plus the tools: `listTemplates`, `describeTemplate`, `getDesign`, `applyOperations`, `validateDesign`, `explainFinding`, and `askUser`.
+    - `applyOperations` checks each batch with the real `applyOperations`. That's what enforces "never invent template IDs or config keys" (`UNKNOWN_TEMPLATE` / `CONFIG_INVALID` refusals go back to the model).
+    - Each tool call adds an activity line ("Prepared 5 changes", "Edit refused: …").
+  - `context.ts`: the system instructions (the §7 rules), a one-line-per-template catalog, a design summary, and the selection. These go in a `[Jeeves] Context` user message before the person's message. Earlier turns (the last 12) are sent as plain user/assistant messages, with any question asked and any failure noted.
+  - `files.ts` handles uploads:
+    - accepted types: Markdown, text, PNG, JPEG, WebP, and SVG, up to 10 MB
+    - checked by magic bytes or UTF-8 decoding; an SVG must render
+    - text is sent as text, cut at 60k characters
+    - images are sent as image parts
+    - SVG is rasterized with resvg (512–1600 px wide, white background), and its source is added when it's under 20k characters
+  - `place.ts`: ELK (layered, left to right) lays out the new items among themselves. The block goes to the right of the selection, or of everything if nothing is selected, and is moved down until it overlaps nothing. Existing items never move. Card sizes are estimates (element 260 × 110 + 34 per attachment).
+  - `models.ts`: `providerModels(settings)` re-reads the OpenAI key on every turn. `fakeModels(path)` is used when `JEEVES_FAKE_MODEL_SCRIPT` is set.
+- **Tables** (migration `0001_chat.sql`):
+  - `files` (bytea data, cascade on project delete)
+  - `chat_turns` (message, file IDs, selection, status, reply, question, `operation_id`, changed IDs, activity, usage, model, error)
+  - `main.ts` marks turns left `running` as failed at startup.
+- **Routes:**
+
+  | Route | Result |
+  | --- | --- |
+  | `GET /projects/:id/chat` | `{ turns }` |
+  | `POST /projects/:id/chat {message, fileIds?, selection?}` | NDJSON stream of `turn`, `text`, `activity`, then `done` with `{ turn, state, layout }`. 404, 409 `CHAT_BUSY`, and 422 `UNKNOWN_FILE` are plain JSON before streaming |
+  | `POST /projects/:id/files` | Raw body with the file's content type and an `x-file-name` header (URI-encoded); 201 `{ file }`, 415 unsupported, 422 invalid |
+  | `GET /projects/:id/files/:fileId` | The bytes, with a sandboxing CSP |
+  | `GET /settings`, `PUT /settings/models` | Key status (never the key), the config path, models per role, and `fakeModel` |
+
+- **Settings** (`src/settings.ts`): the OpenAI key comes from `OPENAI_API_KEY`, else `~/.jeeves/config.json` `openai.apiKey`. `JEEVES_HOME` moves the directory. Models per role are stored in the same file, which is written with mode 600 and keeps other keys. Default models: `designChat` and `planner` `gpt-5.4-mini`, `coding` `gpt-5.1-codex`. These are guesses from the SDK's model list; change them in Settings.
+- **`DesignState.history.latestEdit`**: the operation ID the next undo would revert, or `null`. The chat's per-turn Undo is enabled only when it matches the turn's `operationId`.
+- **Web:**
+  - `src/chat/store.ts` (Zustand) holds the turns, the live streamed turn, the draft, and staged files (uploaded as soon as they're picked).
+  - `send()` marks the turn live first (so a double click can't send twice), flushes layout, sends the selection, and streams. On `done` it calls the Draw store's new `adoptChange(state, layout, changed)`. That adopts the design (only if it's newer), adds server-placed layout items, pushes a design undo step, and selects and zooms to the changed items.
+  - `src/chat/ChatPanel.tsx` is the rail's new **Chat** tab (the collapsed rail has a chat button too):
+    - example prompts to start from
+    - the user message with file chips
+    - the streamed reply and activity lines
+    - "Changed:" chips that focus items on the board (connections show as "A → B")
+    - `askUser` choice buttons (only on the newest turn)
+    - a per-turn Undo (`useDraw.undoEdit(operationId)`)
+    - Attach, Send (Ctrl/Cmd+Enter too), and a send-error line that keeps the draft
+  - `src/settings/SettingsView.tsx`: provider key status with where to set it, the fake-model notice, and model fields per role with a Save button (saves only the roles that changed).
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 159 files in 38ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  22 passed (22)
+      Tests  170 passed (170)
+```
+
+`pnpm test:e2e`:
+
+```text
+  ✓  [chromium] › apps/web/e2e/chat.spec.ts › a chat message draws a link shortener as one undo step
+  ✓  [chromium] › apps/web/e2e/chat.spec.ts › askUser shows clickable choices and the answer continues the conversation
+  ✓  [chromium] › apps/web/e2e/chat.spec.ts › an unknown capability becomes a needs-a-template element, and files can be attached
+  ✓  [chromium] › apps/web/e2e/chat.spec.ts › settings show key status and save models per role
+  ✓  (the 8 S4/S5 tests)
+  12 passed (10.7s)
+```
+
+`npx playwright test --repeat-each 3`: 35 of 36 passed. The miss is the settings test racing with its own parallel repeats on the one shared settings file (see known issues); every other test passed in all three repeats. I also checked screenshots of the chat panel after a turn with a question card, in light and dark mode, plus the Settings page.
+
+Coverage of the "Done when" checks (fake provider, `apps/server/src/chat/chat.test.ts`, PGlite):
+
+- **"Make me a link shortener" creates valid elements and connections as one undo step:**
+  - The script lists templates, describes one, and applies the link-shortener batch.
+  - Result: 3 elements, `uses-database` + `calls` connections, zero findings, and streamed text, activity, and usage.
+  - `history.latestEdit` equals the turn's `operationId`, and one `POST /undo` empties the design.
+  - New elements are auto-placed (distinct positions, saved layout).
+  - The e2e test does the same through the UI: it clicks the example, Send, and the turn's Undo (the board empties), then the toolbar's Redo (it's back). After a reload the conversation is still there. Axe reports zero violations.
+- **An unknown capability becomes a "needs a template" element:** the model first tries `sms-gateway@0.1.0`. It's refused with `UNKNOWN_TEMPLATE`, and the refusal goes back to the model. It then adds the element with `template: null` and notes. The result is a `NEEDS_TEMPLATE` finding. This is also covered in e2e.
+- **A stale edit is retried after re-reading:**
+  - *Rebase:* a canvas edit lands mid-turn. The chat ops are replayed on revision 1 and committed; both changes survive, and `changed` lists only the chat's item.
+  - *Redo:* the canvas deletes the element the chat wanted to connect. The replay fails, so the model gets the `[Jeeves]` note, calls `getDesign`, and redoes its edits. The final design is valid and is still one undo step.
+- **Also covered:**
+  - `askUser` stores the question and ends the turn, and the answer comes back with the question in history.
+  - A provider auth error, or no key configured, fails the turn with nothing changed.
+  - Unknown project or file, and an empty message, are refused.
+  - Markdown, PNG, and SVG uploads reach the model as text and image parts (SVG as PNG plus source), and are served back.
+  - Unsupported, mislabeled, empty, and unnamed uploads are refused.
+  - Settings key precedence and mode 600.
+  - Placement beside the selection, avoiding overlaps.
+  - Providers: OpenAI SSE parsing via an injected `fetch` (text deltas, tool calls, reasoning replay, usage, request body), error mapping, the fake's replay and `scriptByMessage` rounds, and `assertSupported`.
+  - The web chat store: streaming into the board, the per-turn undo, send failures that keep the draft, and choice sends.
+
+**Manual smoke test with a real OpenAI key: not done.** There's no `OPENAI_API_KEY` in this environment and no `~/.jeeves/config.json`. To run it: `OPENAI_API_KEY=sk-… pnpm dev`, open the Chat tab, send "Make me a link shortener like bit.ly" (optionally attaching a Markdown brief), and check the board, Undo, and Settings ("API key set from the environment"). Check the default model name in Settings first; it's a guess.
+
+### Deviations and choices the plan left open
+
+- **Chat lives in the rail as a third tab**, not a separate docked panel. It's collapsible with the rail, and the collapsed rail has a chat button.
+- **Edits are collected and committed at the end of the turn**, not as each tool call arrives, so a turn is always one operation. The model sees its pending edits through `getDesign` and `validateDesign`.
+- **"Stale edit is retried after re-reading"** is done in two layers: first a silent replay of the same ops on the newer design, and only if that fails, a note that makes the model re-read and redo its edits.
+- **Auto-placement runs on the server** after the commit, and the result comes back in `done.layout`. The client adds those positions for items it doesn't have, without overwriting local positions.
+- **Streaming uses NDJSON over a POST response**, not SSE or WebSockets, read with `fetch` and a stream reader. A turn finishes and is saved even if the browser disconnects.
+- **Uploads are raw bodies**, not multipart, so no `@fastify/multipart` dependency.
+- **The per-turn Undo** only works while the turn is the newest server edit (via `latestEdit`). Otherwise it's disabled with a tooltip pointing to the toolbar's Undo. There's no targeted undo.
+- **Model names are free text.** OpenAI's model list changes too often to hard-code a picker.
+
+### Known issues
+
+- The real OpenAI path is untested end to end (see above). Two things to check in that smoke test: that `include: ["reasoning.encrypted_content"]` is accepted for the chosen model, and that `strict: false` tools work with the large operation schema.
+- The settings e2e test writes to one shared settings file, so `--repeat-each` runs race on it. Normal runs (one instance) are fine.
+- There's no cancel button for a running turn, and no client-side timeout. A hung provider leaves the turn running until it errors.
+- Replies are plain text (`white-space: pre-wrap`), not rendered Markdown, the same as notes in S5.
+- Chat history sent to the model is the last 12 turns' text, without tool details. Long projects may want summarization later.
+- Usage is recorded per turn (`usage.known`) but not shown in the UI yet; S11/S12's Runs view will want the same shape.
+
+### For S7 and later
+
+- S11's planner can reuse `ModelSource` (`apps/server/src/chat/service.ts`) and `providerModels(settings)` with `role: "planner"`. `ProviderError.blocksProvider` is the signal for `waiting_for_provider`.
+- To test with the fake model in e2e, add turns to `fixtures/chat/e2e-script.json` (format in `fixtures/chat/README.md`).
+- `history.latestEdit` is in `DesignState`; S5's toolbar undo doesn't need it, but anything wanting "undo exactly this step" does.

@@ -72,7 +72,7 @@ describe("draw store", () => {
       { op: "addElement", element: { id: "links", name: "Links", template: ref("http-service") } },
     ]);
     await edit([{ op: "setNotes", id: "links", notes: "Shorten links." }]);
-    expect(useDraw.getState().loaded?.history).toEqual({ canUndo: true, canRedo: false });
+    expect(useDraw.getState().loaded?.history).toMatchObject({ canUndo: true, canRedo: false });
 
     await useDraw.getState().undo();
     expect(useDraw.getState().loaded?.design.elements[0]?.notes).toBe("");

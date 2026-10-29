@@ -11,7 +11,8 @@ export type DesignState = {
   projectId: string;
   design: DesignDocument;
   findings: Finding[];
-  history: { canUndo: boolean; canRedo: boolean };
+  /** `latestEdit` is the operation ID the next undo reverts, if any. */
+  history: { canUndo: boolean; canRedo: boolean; latestEdit: number | null };
 };
 
 export type PaletteEntry = { group: string; templates: { id: string; version: string }[] };
@@ -23,6 +24,51 @@ export type EditResult =
   | { ok: true; state: DesignState }
   | { ok: false; reason: "conflict"; message: string; state: DesignState }
   | { ok: false; reason: "invalid"; message: string; errors: Finding[] };
+
+export type FileInfo = { id: string; name: string; mediaType: string; size: number };
+
+export type ChatQuestion = { question: string; choices: string[]; allowFreeText: boolean };
+export type ChatActivity = { tool: string; ok: boolean; summary: string };
+
+/** One chat turn, as `apps/server/src/chat/service.ts` returns it. */
+export type ChatTurn = {
+  id: number;
+  message: string;
+  files: FileInfo[];
+  selection: string[];
+  status: "running" | "done" | "failed";
+  reply: string;
+  question: ChatQuestion | null;
+  operationId: number | null;
+  changed: string[];
+  activity: ChatActivity[];
+  usage: { inputTokens: number; outputTokens: number; known: boolean } | null;
+  model: string | null;
+  error: string | null;
+  createdAt: string;
+};
+
+/** Streamed by `POST /projects/:id/chat`, one JSON object per line. */
+export type ChatEvent =
+  | { type: "turn"; turn: ChatTurn }
+  | { type: "text"; delta: string }
+  | { type: "activity"; activity: ChatActivity }
+  | { type: "done"; turn: ChatTurn; state: DesignState; layout: LayoutDocument };
+
+export type ModelRole = "designChat" | "planner" | "coding";
+
+export type SettingsView = {
+  configPath: string;
+  providers: {
+    id: string;
+    name: string;
+    configured: boolean;
+    source: "env" | "file" | null;
+    envVar: string;
+  }[];
+  models: Record<ModelRole, string>;
+  fakeModel: boolean;
+};
 
 export class ApiError extends Error {
   constructor(
@@ -78,6 +124,54 @@ export const api = {
 
   redo: (id: string, baseRevision: number) =>
     change(`/projects/${id}/redo`, { baseRevision, source: "canvas" }),
+
+  chatTurns: (id: string) =>
+    request<{ turns: ChatTurn[] }>(`/projects/${id}/chat`).then((r) => r.turns),
+
+  /** Sends a chat message; `onEvent` gets each streamed event, ending with `done`. */
+  chat: async (
+    id: string,
+    body: { message: string; fileIds: string[]; selection: string[] },
+    onEvent: (event: ChatEvent) => void,
+  ) => {
+    const res = await fetch(`/api/projects/${id}/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok || !res.body) {
+      const error = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new ApiError(res.status, error.message ?? `${res.status} ${res.statusText}`);
+    }
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (value) buffer += value;
+      const lines = buffer.split("\n");
+      buffer = done ? "" : (lines.pop() ?? "");
+      for (const line of lines) if (line.trim()) onEvent(JSON.parse(line) as ChatEvent);
+      if (done) break;
+    }
+  },
+
+  uploadFile: (id: string, file: File, mediaType: string) =>
+    fetch(`/api/projects/${id}/files`, {
+      method: "POST",
+      headers: { "content-type": mediaType, "x-file-name": encodeURIComponent(file.name) },
+      body: file,
+    }).then(async (res) => {
+      const body = (await res.json().catch(() => ({}))) as { file?: FileInfo; message?: string };
+      if (!res.ok || !body.file) throw new ApiError(res.status, body.message ?? res.statusText);
+      return body.file;
+    }),
+
+  fileUrl: (id: string, fileId: string) => `/api/projects/${id}/files/${fileId}`,
+
+  settings: () => request<SettingsView>("/settings"),
+
+  setModels: (models: Partial<Record<ModelRole, string>>) =>
+    request<SettingsView>("/settings/models", { method: "PUT", body: JSON.stringify(models) }),
 };
 
 /** Posts a design change (operations, undo, or redo) and sorts the answer into an EditResult. */

@@ -1,5 +1,6 @@
 import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
 import {
+  customType,
   index,
   integer,
   jsonb,
@@ -86,3 +87,63 @@ export const layouts = pgTable("layouts", {
   document: jsonb("document").$type<LayoutDocument>().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+const bytea = customType<{ data: Buffer; driverData: Buffer | Uint8Array }>({
+  dataType: () => "bytea",
+  fromDriver: (value) => (Buffer.isBuffer(value) ? value : Buffer.from(value)),
+});
+
+/** Files attached to chat messages: Markdown, text, and images, stored with the project. */
+export const files = pgTable("files", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  mediaType: text("media_type").notNull(),
+  size: integer("size").notNull(),
+  data: bytea("data").notNull(),
+  createdAt: createdAt(),
+});
+
+export const chatTurnStatuses = ["running", "done", "failed"] as const;
+export type ChatTurnStatus = (typeof chatTurnStatuses)[number];
+
+/** A question the chat agent asked with `askUser`; the person answers with a new message. */
+export type ChatQuestion = { question: string; choices: string[]; allowFreeText: boolean };
+
+/** One line of "what the agent did" in a turn, e.g. a tool call and its outcome. */
+export type ChatActivity = { tool: string; ok: boolean; summary: string };
+
+export type ChatUsage = { inputTokens: number; outputTokens: number; known: boolean };
+
+/**
+ * One chat turn: the person's message and the agent's reply. A turn's design edits are one
+ * operation (`operation_id`), so they are one undo step.
+ */
+export const chatTurns = pgTable(
+  "chat_turns",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    message: text("message").notNull(),
+    fileIds: jsonb("file_ids").$type<string[]>().notNull().default([]),
+    /** Board selection when the message was sent. */
+    selection: jsonb("selection").$type<string[]>().notNull().default([]),
+    status: text("status", { enum: chatTurnStatuses }).notNull(),
+    reply: text("reply").notNull().default(""),
+    question: jsonb("question").$type<ChatQuestion>(),
+    operationId: integer("operation_id"),
+    /** Elements and other items the turn added or changed, for highlighting. */
+    changed: jsonb("changed").$type<string[]>().notNull().default([]),
+    activity: jsonb("activity").$type<ChatActivity[]>().notNull().default([]),
+    usage: jsonb("usage").$type<ChatUsage>(),
+    model: text("model"),
+    error: text("error"),
+    createdAt: createdAt(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("chat_turns_project_idx").on(t.projectId, t.id)],
+);

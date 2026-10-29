@@ -22,7 +22,8 @@ import {
 export type Project = typeof projects.$inferSelect;
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
-export type History = { canUndo: boolean; canRedo: boolean };
+/** `latestEdit` is the operation ID that undo would revert next, if any. */
+export type History = { canUndo: boolean; canRedo: boolean; latestEdit: number | null };
 
 /** What the canvas needs after loading or changing a design. */
 export type DesignState = {
@@ -312,13 +313,15 @@ async function lockProject(tx: Tx, id: string): Promise<Project | undefined> {
 }
 
 async function history(db: Db | Tx, projectId: string): Promise<History> {
-  const has = async (state: "applied" | "undone") => {
-    const rows = await db
+  const newest = async (state: "applied" | "undone") => {
+    const [row] = await db
       .select({ id: operations.id })
       .from(operations)
       .where(and(eq(operations.projectId, projectId), eq(operations.state, state)))
+      .orderBy(desc(operations.id))
       .limit(1);
-    return rows.length > 0;
+    return row?.id ?? null;
   };
-  return { canUndo: await has("applied"), canRedo: await has("undone") };
+  const latestEdit = await newest("applied");
+  return { canUndo: latestEdit !== null, canRedo: (await newest("undone")) !== null, latestEdit };
 }

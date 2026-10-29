@@ -5,10 +5,15 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import { providerModels } from "./chat/models.ts";
+import { ChatService, type ModelSource } from "./chat/service.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
+import { chatRoutes } from "./routes/chat.ts";
 import { projectRoutes } from "./routes/projects.ts";
+import { settingsRoutes } from "./routes/settings.ts";
 import { templateRoutes } from "./routes/templates.ts";
+import { jeevesHome, Settings } from "./settings.ts";
 
 export type HealthResponse = {
   status: "ok" | "degraded";
@@ -21,6 +26,9 @@ export type AppDeps = {
   pingDb: () => Promise<void>;
   version: string;
   registry?: Registry;
+  settings?: Settings;
+  /** Providers for chat (and later the planner). Defaults to the real ones from `settings`. */
+  models?: ModelSource;
   logger?: boolean;
 };
 
@@ -30,6 +38,8 @@ export function buildApp({
   pingDb,
   version,
   registry = builtinRegistry(),
+  settings = new Settings(jeevesHome()),
+  models = providerModels(settings),
   logger = false,
 }: AppDeps): FastifyInstance {
   const app = Fastify({ logger });
@@ -63,8 +73,13 @@ export function buildApp({
     return reply.code(database === "ok" ? 200 : 503).send(body);
   });
 
-  app.register(projectRoutes, { service: new DesignService(db, registry) });
+  const design = new DesignService(db, registry);
+  const chat = new ChatService(db, design, registry, models);
+
+  app.register(projectRoutes, { service: design });
   app.register(templateRoutes, { registry });
+  app.register(chatRoutes, { chat });
+  app.register(settingsRoutes, { settings });
 
   return app;
 }

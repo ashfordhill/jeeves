@@ -6,6 +6,7 @@
 import { MantineProvider } from "@mantine/core";
 import { DrawView } from "./draw/DrawView.tsx";
 import { ProjectMenu } from "./draw/ProjectMenu.tsx";
+import { SettingsView } from "./settings/SettingsView.tsx";
 import { EmptyView } from "./shell/EmptyView.tsx";
 import { StatusBar } from "./shell/StatusBar.tsx";
 import { useColorScheme } from "./shell/useColorScheme.ts";
@@ -22,7 +23,7 @@ function ViewBody({ view }: { view: ViewId }) {
     case "runs":
       return <EmptyView title="Runs">Orchestration runs will be listed here.</EmptyView>;
     case "settings":
-      return <EmptyView title="Settings">Provider keys and models will be set here.</EmptyView>;
+      return <SettingsView />;
   }
 }
 

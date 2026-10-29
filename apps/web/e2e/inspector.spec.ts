@@ -13,7 +13,8 @@ async function place(page: Page, template: string, x: number, y: number) {
   await page.locator(".react-flow__pane").click({ position: { x, y } });
 }
 
-const rail = (page: Page) => page.getByRole("complementary", { name: "Inspector and findings" });
+const rail = (page: Page) =>
+  page.getByRole("complementary", { name: "Inspector, findings, and chat" });
 
 /** Clicks a section heading in the rail, which moves focus off the field being edited. */
 async function clickAway(page: Page) {

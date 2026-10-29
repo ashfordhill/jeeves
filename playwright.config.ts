@@ -1,3 +1,7 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 
 // Separate ports from `pnpm dev` so e2e can run while a dev session is open.
@@ -22,7 +26,15 @@ export default defineConfig({
     {
       command: "pnpm --filter @jeeves/server start",
       url: `http://127.0.0.1:${serverPort}/health`,
-      env: { JEEVES_SERVER_PORT: String(serverPort) },
+      env: {
+        JEEVES_SERVER_PORT: String(serverPort),
+        // Chat replays a scripted model; settings go to a throwaway directory, not ~/.jeeves.
+        JEEVES_FAKE_MODEL_SCRIPT: fileURLToPath(
+          new URL("./fixtures/chat/e2e-script.json", import.meta.url),
+        ),
+        JEEVES_HOME: mkdtempSync(join(tmpdir(), "jeeves-e2e-")),
+        OPENAI_API_KEY: "",
+      },
       reuseExistingServer: false,
       timeout: 60_000,
     },

@@ -41,7 +41,7 @@ type DesignState = {
   projectId: string;
   design: DesignDocument;
   findings: { code: string }[];
-  history: { canUndo: boolean; canRedo: boolean };
+  history: { canUndo: boolean; canRedo: boolean; latestEdit: number | null };
   operationId?: number;
 };
 
@@ -116,7 +116,7 @@ describe("projects", () => {
       projectId: id,
       design: { schemaVersion: 1, revision: 0, elements: [], connections: [], annotations: [] },
       findings: [],
-      history: { canUndo: false, canRedo: false },
+      history: { canUndo: false, canRedo: false, latestEdit: null },
     });
     expect((await client.call("GET", `/projects/${id}/layout`)).body).toEqual({
       layout: { schemaVersion: 1, items: {} },
@@ -144,7 +144,7 @@ describe("operations", () => {
     expect(res.status).toBe(200);
     expect(res.body.design.revision).toBe(1);
     expect(res.body.findings).toEqual([]);
-    expect(res.body.history).toEqual({ canUndo: true, canRedo: false });
+    expect(res.body.history).toMatchObject({ canUndo: true, canRedo: false });
     expect(res.body.operationId).toEqual(expect.any(Number));
 
     const reloaded = await client.design(id);
@@ -181,7 +181,7 @@ describe("operations", () => {
     expect(stale.body.code).toBe("REVISION_CONFLICT");
     expect(stale.body.design.revision).toBe(2);
     expect(stale.body.design.elements.map((e: { id: string }) => e.id)).toEqual(["links", "auth"]);
-    expect(stale.body.history).toEqual({ canUndo: true, canRedo: false });
+    expect(stale.body.history).toMatchObject({ canUndo: true, canRedo: false });
     expect((await client.design(id)).design.revision).toBe(2);
   });
 
@@ -232,7 +232,7 @@ describe("operations", () => {
     expect(await client.design(id)).toEqual(before);
     // Nothing was recorded: the one undo step is still the first edit.
     expect((await client.undo(id, 1)).body.design.elements).toEqual([]);
-    expect((await client.design(id)).history).toEqual({ canUndo: false, canRedo: true });
+    expect((await client.design(id)).history).toMatchObject({ canUndo: false, canRedo: true });
   });
 });
 
@@ -258,11 +258,11 @@ describe("undo and redo", () => {
       const undone = (await c.undo(id, 2)).body as DesignState;
       expect(undone.design.revision).toBe(3);
       expect(ids(undone)).toEqual(["links"]);
-      expect(undone.history).toEqual({ canUndo: true, canRedo: true });
+      expect(undone.history).toMatchObject({ canUndo: true, canRedo: true });
 
       const undoneAgain = (await c.undo(id, 3)).body as DesignState;
       expect(ids(undoneAgain)).toEqual([]);
-      expect(undoneAgain.history).toEqual({ canUndo: false, canRedo: true });
+      expect(undoneAgain.history).toMatchObject({ canUndo: false, canRedo: true });
       expect((await c.undo(id, 4)).body.code).toBe("NOTHING_TO_UNDO");
 
       await firstApp.close();
@@ -276,12 +276,12 @@ describe("undo and redo", () => {
       const redone = (await c.redo(id, 4)).body as DesignState;
       expect(redone.design.revision).toBe(5);
       expect(ids(redone)).toEqual(["links"]);
-      expect(redone.history).toEqual({ canUndo: true, canRedo: true });
+      expect(redone.history).toMatchObject({ canUndo: true, canRedo: true });
 
       // A new edit discards the rest of the redo chain.
       const edited = (await c.edit(id, 5, [service("billing")])).body as DesignState;
       expect(ids(edited)).toEqual(["links", "billing"]);
-      expect(edited.history).toEqual({ canUndo: true, canRedo: false });
+      expect(edited.history).toMatchObject({ canUndo: true, canRedo: false });
       const noRedo = await c.redo(id, 6);
       expect(noRedo.status).toBe(422);
       expect(noRedo.body.code).toBe("NOTHING_TO_REDO");
@@ -339,7 +339,7 @@ describe("layout", () => {
     expect((await client.call("GET", `/projects/${id}/layout`)).body.layout).toEqual(moved);
     const state = await client.design(id);
     expect(state.design.revision).toBe(1);
-    expect(state.history).toEqual({ canUndo: true, canRedo: false });
+    expect(state.history).toMatchObject({ canUndo: true, canRedo: false });
     expect((await client.call("GET", `/projects/${id}`)).body.project.revision).toBe(1);
   });
 
