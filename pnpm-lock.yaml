@@ -253,9 +253,80 @@ importers:
 
   packages/providers: {}
 
-  packages/registry: {}
+  packages/registry:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../spec
+      '@jeeves/template-http-service':
+        specifier: workspace:*
+        version: link:../../templates/http-service
+      '@jeeves/template-postgres':
+        specifier: workspace:*
+        version: link:../../templates/postgres
+      '@jeeves/template-rest-api-client':
+        specifier: workspace:*
+        version: link:../../templates/rest-api-client
+      '@jeeves/template-rest-api-server':
+        specifier: workspace:*
+        version: link:../../templates/rest-api-server
+      '@jeeves/template-web-app':
+        specifier: workspace:*
+        version: link:../../templates/web-app
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
-  packages/spec: {}
+  packages/spec:
+    dependencies:
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+
+  templates/http-service:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+
+  templates/postgres:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+
+  templates/rest-api-client:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+
+  templates/rest-api-server:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+
+  templates/web-app:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
 packages:
 
@@ -2064,6 +2135,9 @@ packages:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
 
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
+
 snapshots:
 
   '@asamuzakjp/css-color@5.1.11':
@@ -3383,3 +3457,5 @@ snapshots:
   xmlchars@2.2.0: {}
 
   xtend@4.0.2: {}
+
+  zod@4.5.4: {}

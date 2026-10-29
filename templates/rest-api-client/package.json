@@ -1,0 +1,14 @@
+{
+  "name": "@jeeves/template-rest-api-client",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./manifest.ts",
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@jeeves/spec": "workspace:*",
+    "zod": "4.5.4"
+  }
+}
