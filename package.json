@@ -1,0 +1,30 @@
+{
+  "name": "jeeves",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "dev": "pnpm db:up && pnpm --parallel --filter @jeeves/server --filter @jeeves/web dev",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "pnpm -r --no-bail typecheck",
+    "test": "vitest run",
+    "test:e2e": "pnpm db:up && playwright test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "test:e2e:docker": "pnpm db:up && scripts/e2e-docker.sh"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0"
+  }
+}

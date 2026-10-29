@@ -1,0 +1,20 @@
+# Jeeves's own Postgres (not a generated project's). Host port 54329 avoids clashing with a local 5432.
+name: jeeves
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: jeeves
+      POSTGRES_PASSWORD: jeeves
+      POSTGRES_DB: jeeves
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - jeeves-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jeeves -d jeeves"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+volumes:
+  jeeves-pg:

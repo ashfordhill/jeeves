@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+  - templates/*
+
+# esbuild (via tsx and drizzle-kit) needs its postinstall to fetch the platform binary.
+allowBuilds:
+  esbuild: true
