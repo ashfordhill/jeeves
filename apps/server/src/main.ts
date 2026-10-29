@@ -9,7 +9,9 @@ const { version } = JSON.parse(
 
 const config = loadConfig();
 const db = connectDb(config.databaseUrl);
-const app = buildApp({ pingDb: db.ping, version, logger: true });
+// Local single-user app: bring the schema up to date on every start.
+await db.migrate();
+const app = buildApp({ db: db.db, pingDb: db.ping, version, logger: true });
 
 const shutdown = async () => {
   await app.close();

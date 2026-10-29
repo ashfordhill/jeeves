@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { buildApp } from "./app.ts";
+import type { Db } from "./db/client.ts";
+
+// /health never touches the Drizzle handle, only `pingDb`.
+const db = {} as Db;
 
 describe("GET /health", () => {
   it("reports ok when the database answers", async () => {
-    const app = buildApp({ pingDb: async () => {}, version: "0.0.0-test" });
+    const app = buildApp({ db, pingDb: async () => {}, version: "0.0.0-test" });
     const res = await app.inject({ method: "GET", url: "/health" });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ status: "ok", database: "ok", version: "0.0.0-test" });
@@ -11,6 +15,7 @@ describe("GET /health", () => {
 
   it("returns 503 when the database is unreachable", async () => {
     const app = buildApp({
+      db,
       pingDb: async () => {
         throw new Error("connection refused");
       },

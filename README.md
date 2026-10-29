@@ -17,12 +17,12 @@ pnpm install
 pnpm dev          # starts Postgres in Docker, the API on :4310 and the UI on :4300
 ```
 
-Open http://127.0.0.1:4300. The status bar shows "Server healthy" once the API can reach Postgres. `pnpm db:down` stops Postgres (data stays in the `jeeves-pg` volume).
+Open http://127.0.0.1:4300. The status bar shows "Server healthy" once the API can reach Postgres. `pnpm db:down` stops Postgres (data stays in the `jeeves-pg` volume). The server applies pending database migrations (`apps/server/drizzle/`) every time it starts. After changing `apps/server/src/db/schema.ts`, run `pnpm --filter @jeeves/server db:generate` to add a migration.
 
 ## Test
 
 ```bash
-pnpm check        # Biome lint, type check, Vitest unit tests (no Docker needed)
+pnpm check        # Biome lint, type check, Vitest unit tests (no Docker needed; API tests use in-process PGlite)
 pnpm test:e2e     # Playwright; starts Postgres and both apps itself
 ```
 
