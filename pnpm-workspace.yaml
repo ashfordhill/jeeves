@@ -2,7 +2,13 @@ packages:
   - apps/*
   - packages/*
   - templates/*
+  - templates/*/runtime
 
 # esbuild (via tsx and drizzle-kit) needs its postinstall to fetch the platform binary.
 allowBuilds:
   esbuild: true
+  # Install scripts in testcontainers' dependencies that aren't needed: ssh2's optional native
+  # add-ons (only for Docker over SSH) and protobufjs's postinstall.
+  cpu-features: false
+  ssh2: false
+  protobufjs: false

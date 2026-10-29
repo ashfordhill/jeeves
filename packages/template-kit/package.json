@@ -1,0 +1,19 @@
+{
+  "name": "@jeeves/template-kit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./harness": "./src/harness/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@jeeves/spec": "workspace:*",
+    "testcontainers": "12.2.1",
+    "yaml": "2.9.1",
+    "zod": "4.5.4"
+  }
+}

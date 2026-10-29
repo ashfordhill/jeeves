@@ -22,4 +22,4 @@ Target of `uses-database`.
 Container becomes healthy; each consuming service can connect only to its own database; migrations apply on a clean volume and are idempotent on restart; data survives `docker compose restart`.
 
 ## Open questions
-- Drizzle for template migrations (matches Jeeves's own stack), or node-pg-migrate?
+- ~~Drizzle for template migrations, or node-pg-migrate?~~ Drizzle (S7), matching Jeeves's own stack.

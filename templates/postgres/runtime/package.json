@@ -1,0 +1,31 @@
+{
+  "name": "@jeeves/postgres-runtime",
+  "version": "0.1.0",
+  "description": "Connection pool, readiness check, and Drizzle migration runner for services that use a Jeeves postgres element.",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "bin": {
+    "jeeves-db-migrate": "./src/cli.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "exports": "./dist/index.js",
+    "bin": {
+      "jeeves-db-migrate": "./dist/cli.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}

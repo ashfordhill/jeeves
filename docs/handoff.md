@@ -621,3 +621,112 @@ Coverage of the "Done when" checks (fake provider, `apps/server/src/chat/chat.te
 - S11's planner can reuse `ModelSource` (`apps/server/src/chat/service.ts`) and `providerModels(settings)` with `role: "planner"`. `ProviderError.blocksProvider` is the signal for `waiting_for_provider`.
 - To test with the fake model in e2e, add turns to `fixtures/chat/e2e-script.json` (format in `fixtures/chat/README.md`).
 - `history.latestEdit` is in `DesignState`; S5's toolbar undo doesn't need it, but anything wanting "undo exactly this step" does.
+
+---
+
+## S7: Template contract and first template harness (2026-10-29)
+
+### Built
+
+- **`packages/template-kit`** (new package, `@jeeves/template-kit`), the template contract from PLAN §8:
+  - `src/contract.ts`: `TemplateModule` (manifest, `generate`, agent guide, test pack, runtime package), `GenerateContext`/`GenerateResult`, `OutputFile` with ownership `generated` | `scaffold`, `TestPack`/`TestCheck`, and the runner-facing `TestPackContext`/`ServiceHandle` (endpoint, exec, restart, stop, start). The doc comment there lists the package layout every template follows.
+  - `src/context.ts`: `createGenerateContext(design, lookup, elementId, attachmentId?)` resolves config defaults, the element's directory (`elementDir`: services/frontends/packages/databases per §9; workers go in `services/`, externals in `externals/`), and incoming/outgoing connections with each peer's element, attachment, manifest and dir. Attachments get only the connections on that attachment. `manifestLookup(manifests)` is a `TemplateLookup` that doesn't need `@jeeves/registry` (using the registry from a template package would make a workspace cycle).
+  - `src/compose.ts`: `mergeCompose` deep-merges fragments. A fragment may name another template's service (that's how `uses-database` adds `DATABASE_URL` and `depends_on` to the consumer). Arrays are unioned; two different scalars at one path throw `ComposeConflictError("services.api.environment.DATABASE_URL")`. `composeToYaml` sorts services, volumes, environment and depends_on, so the output doesn't depend on design order.
+  - `src/scaffold.ts`: `renderScaffold(dir, targetDir, vars)` with `{{name}}` placeholders; an unknown name throws.
+  - `src/test-pack.ts`: `runTestPack(pack, ctx, onResult)` runs checks in order and keeps going after a failure.
+  - `@jeeves/template-kit/harness` (Docker; never imported by unit tests):
+    - `buildProject({ dir, design, lookup, modules, stubs })` is a minimal generator. It runs `generate` per element and attachment, writes generated files always and scaffold files only when missing (`writeProjectFiles`), and writes the merged `docker-compose.yml`. Elements whose templates aren't built yet are replaced by `stubs` (a compose service per element ID).
+    - `startProject(dir, { projectName })` runs Testcontainers' `DockerComposeEnvironment` with `docker compose up --wait`, so health checks and one-shot jobs finish first. It returns `service(name)` handles and `down({ volumes })`. Reusing a `projectName` starts the same project and volumes again.
+- **`templates/postgres`**, complete:
+  - `generate.ts`:
+    - Writes `databases/<id>/init/10-consumers.sql` (generated-owned): an idempotent psql script that creates one `LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE` role and one owned database per consumer. It revokes `CONNECT` from `PUBLIC` on each consumer database, on `postgres`, and on `template1`.
+    - Compose gets the `<id>` service (`postgres:17-alpine`, `pg_isready` health check, `<id>-data` volume, port `127.0.0.1::5432`) and a one-shot `<id>-init` job that applies `init/*.sql`.
+    - Each consumer gets `DATABASE_URL=postgres://<c>:<c>-local@<id>:5432/<c>` and `depends_on` on `<id>` (healthy) and `<id>-init` (completed successfully).
+    - Consumers are sorted and deduplicated, and an element ID equal to `<id>-init` is refused.
+  - `scaffold/consumer/`, rendered once into each consumer's directory: `src/db/schema.ts` (Drizzle, commented example), `drizzle.config.ts`, and `migrations/meta/_journal.json` (empty journal).
+  - `runtime/`, the `@jeeves/postgres-runtime` package (its own workspace package, `templates/*/runtime` added to `pnpm-workspace.yaml`):
+    - `databaseConfigFromEnv` reads `DATABASE_URL`, `DATABASE_POOL_MAX` (budget, default 5), `DATABASE_CONNECT_TIMEOUT_MS` and `DATABASE_MIGRATIONS`, and lists every problem in one readable error.
+    - `createDatabase(config, { schema })` gives `{ pool, db (Drizzle), ready(), migrate(), close() }`, with an idle-error handler so a database restart doesn't crash the service.
+    - `runMigrations` runs Drizzle's migrator under a Postgres advisory lock and returns `{ applied, total }`.
+    - The `jeeves-db-migrate` bin runs it one-shot.
+    - `pnpm build` emits `dist/` with declarations (TS 7 `rewriteRelativeImportExtensions`), and `publishConfig` points `exports` and `bin` at `dist/`, so `pnpm pack` produces a package Node can run from `node_modules`.
+  - `test-pack/index.ts`, five checks:
+    - the container is healthy and runs the configured major version
+    - each consumer connects with its own role to its own database and can create tables
+    - a consumer can't connect to other consumers' databases or `postgres` (expects SQLSTATE 42501) and has no elevated role flags
+    - the applied Drizzle migrations equal the consumer's journal entries
+    - a row survives a database restart, and the migrations are unchanged afterwards
+    
+    Consumer credentials come from the project's `docker-compose.yml` (not recomputed), so the checks test what was actually generated.
+  - `agent-guide.md`, `template.ts` (the `TemplateModule`, exported as `@jeeves/template-postgres/template`; `.` still exports only the manifest so the web bundle stays Node-free), `generate.test.ts` (unit), and `conformance/postgres.conformance.ts`.
+- **Root:** `pnpm test:templates` (`vitest.templates.config.ts`, files matching `templates/*/conformance/**/*.conformance.ts`, run serially with long timeouts). The root Vitest projects now include `templates/*/vitest.config.ts` and `templates/*/runtime`, so template unit tests run in `pnpm check`. Dependencies: `testcontainers` 12.2.1 and `yaml` 2.9.1. The optional `ssh2`/`cpu-features`/`protobufjs` build scripts are set to `false` in `allowBuilds`.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 197 files in 44ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  28 passed (28)
+      Tests  192 passed (192)
+```
+
+`pnpm test:templates --reporter verbose` (Docker 29.9.1):
+
+```text
+ ✓ postgres conformance > generates the init job, wiring, and consumer scaffolds
+ ✓ postgres conformance > test pack > the container is healthy and runs the configured major version
+ ✓ postgres conformance > test pack > each consumer connects to its own database with its own role and can create tables
+ ✓ postgres conformance > test pack > a consumer can't connect to other databases or act as a superuser
+ ✓ postgres conformance > test pack > each consumer's database has exactly the migrations in its journal
+ ✓ postgres conformance > test pack > data and migrations survive a database restart
+ ✓ postgres conformance > consumer containers reach their database by service name through DATABASE_URL
+ ✓ postgres conformance > migrations are idempotent: a second run applies nothing
+ ✓ postgres conformance > concurrent migration runs (several replicas starting) apply each migration once
+ ✓ postgres conformance > data survives a restart and a down/up that keeps the volume
+ ✓ postgres conformance > regenerating with a new consumer keeps project files and creates its database on up
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Duration  ~40s
+```
+
+No containers or volumes are left behind afterwards; only Testcontainers' reaper is still running, and it exits on its own. I also ran a mutation check: with the per-database `REVOKE CONNECT … FROM PUBLIC` removed, both isolation runs fail ("links could connect to database "stats"", "audit could connect to database "links""). I then restored it.
+
+`pnpm test:e2e`: 12 passed. I re-ran it because `@jeeves/template-postgres`'s `exports` changed.
+
+How the "Done when" items are covered: healthy container (check 1 plus `up --wait`); per-consumer database and role isolation (checks 2 and 3, plus a psql call from inside a consumer container using its `DATABASE_URL` and the service hostname); migrations applied on a clean volume and idempotent on restart (check 4, the re-run test, three concurrent runs, and runs after restart and after down/up); data survives restart (check 5, plus the `links` row across a restart and across a down/up that keeps volumes).
+
+### Deviations and choices the plan left open
+
+- **New package `packages/template-kit`.** It isn't in §14. The contract can't live in `@jeeves/spec` (the web app imports spec, and the contract needs `node:fs`, `yaml` and Testcontainers), and a template package can't depend on `@jeeves/registry` (cycle). S10's generator should build on it (`createGenerateContext`, `mergeCompose`, `composeToYaml`, `writeProjectFiles`).
+- **Init SQL is applied by a one-shot `<id>-init` compose job on every `up`,** not through `docker-entrypoint-initdb.d`. The entrypoint only runs on an empty volume, so a consumer added by regeneration would never get its database. The script is idempotent (`\gexec` guards, `ALTER ROLE`), and this is tested.
+- **Fixed local-only passwords** (`postgres`/`postgres`; `<consumer>-local`). Generated output must be deterministic, and the port is bound to `127.0.0.1` only. These aren't API keys, but any future cloud target needs real secrets.
+- **The database port is published on an ephemeral loopback port** (`127.0.0.1::5432`), so test packs and tools can reach it and two projects don't clash. Use `docker compose port <id> 5432` to find it.
+- **Drizzle** for template migrations (the brief's open question), with a scaffolded `drizzle.config.ts` in each consumer.
+- **Conformance consumers are stubs** (`postgres:17-alpine` running `sleep`, with `init: true`) because http-service doesn't exist yet. The harness applies migrations through the runtime, standing in for a service's startup.
+- **The conformance suite isn't in CI-style `pnpm check`** because it needs Docker (AGENTS.md: unit tests must not need Docker).
+
+### Known issues
+
+- **One database per consumer:** if a service has `uses-database` to two postgres elements, both set `DATABASE_URL`, and generation fails with a `ComposeConflictError`. The http-service manifest's `uses-database` out port should probably be `multiple: false` so the canvas refuses it up front (S8).
+- **Element ID clash:** an element whose ID equals `<db>-init` is refused at generate time, not by design validation.
+- **Removing a consumer doesn't drop anything:** its role and database stay (per §9, nothing is deleted automatically).
+- **Cold start:** the first `pnpm test:templates` on a machine pulls `postgres:17-alpine` and the Ryuk image.
+
+### For S8 and later
+
+- **S8 (http-service):**
+  - Add `"@jeeves/postgres-runtime"` to the service's `package.json` when `runtimeDependencies` names it.
+  - Create the database in `src/jeeves.generated.ts` with `createDatabase(databaseConfigFromEnv(), { schema })`, call `migrate()` before listening, and use `ready()` for `/ready`.
+  - Add `drizzle-kit` and `drizzle-orm` to the scaffolded service's dependencies (the postgres scaffold's `drizzle.config.ts` expects them).
+  - Swap the conformance stubs for the real http-service module.
+  - `ServiceHandle.stop()`/`start()` exist for the "/ready is 503 with the dependency stopped" check.
+- **S10 (generator):**
+  - Call `TemplateModule.generate` with `createGenerateContext` for each element and attachment, and merge fragments with `mergeCompose`.
+  - `pnpm pack` in `TemplateModule.runtime.dir` gives the vendored tarball (`prepack` builds `dist/`).
+  - Test packs need a `TestPackContext` backed by the compose CLI instead of Testcontainers. Checks only use `ctx.compose`, `ctx.subject`, `ctx.projectDir` and `service()` handles, so that should be a small adapter.
+  - Copy `agentGuide` into `jeeves/elements/<id>.md`.

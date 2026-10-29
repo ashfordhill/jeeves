@@ -1,0 +1,28 @@
+# Working with a postgres element
+
+Your service gets its own database and role on this PostgreSQL instance. Other services sharing
+the instance can't see your data, and you can't see theirs.
+
+## Where things go
+
+- **Tables:** define them with Drizzle in your service's `src/db/schema.ts`.
+- **Migrations:** after changing the schema, run `pnpm exec drizzle-kit generate` in the service
+  directory. It writes SQL and updates `migrations/meta/_journal.json`. Commit both. Hand-written
+  SQL migrations go in the same folder and must be listed in the journal.
+- **Queries:** use the `db` handle from `@jeeves/postgres-runtime`'s `createDatabase`, which the
+  service wiring creates from `DATABASE_URL`. Pending migrations are applied at startup;
+  `jeeves-db-migrate` applies them as a one-shot command.
+
+## Don't
+
+- Don't edit `databases/<id>/init/` or the `docker-compose.yml` entries for the database. They're
+  generated and are overwritten on regeneration.
+- Don't connect as the `postgres` superuser from service code, and don't hard-code credentials:
+  read `DATABASE_URL`.
+- Don't edit or delete a migration that has already been applied. Add a new one instead.
+- Don't patch `@jeeves/postgres-runtime`. If it can't do something you need, say so in your report.
+
+## Tests
+
+The template's checks already prove the database is healthy, isolated, migrated, and persistent.
+Add tests for your own queries and constraints in the service's `test/` folder.

@@ -1,0 +1,147 @@
+import type {
+  Attachment,
+  Connection,
+  DesignDocument,
+  Element,
+  TemplateManifest,
+  TemplateManifestInput,
+} from "@jeeves/spec";
+import type { ComposeFile, ComposeFragment } from "./compose.ts";
+
+/**
+ * The template package contract (PLAN §8). A template package exports one `TemplateModule` from
+ * `templates/<id>/template.ts`; `manifest.ts` stays import-free of Node APIs so the web app can
+ * load it through the registry.
+ *
+ * Package layout:
+ *
+ * | Path             | Part                                                              |
+ * | ---------------- | ----------------------------------------------------------------- |
+ * | `manifest.ts`    | `defineTemplate({...})`, the default export                       |
+ * | `runtime/`       | Its own npm package (`@jeeves/<name>-runtime`), the strict part   |
+ * | `scaffold/`      | Files rendered once into the project, then project-owned          |
+ * | `generate.ts`    | `generate(ctx)`: deterministic files and compose fragments        |
+ * | `test-pack/`     | `TestPack` checks, run against the composed project               |
+ * | `agent-guide.md` | How a coding agent extends this template                          |
+ * | `conformance/`   | `*.conformance.ts` Testcontainers tests (`pnpm test:templates`)   |
+ * | `template.ts`    | Bundles the above into a `TemplateModule`                         |
+ */
+export interface TemplateModule {
+  manifest: TemplateManifestInput;
+  generate(ctx: GenerateContext): GenerateResult;
+  /** Markdown, copied into `jeeves/elements/<id>.md` for the orchestrator. */
+  agentGuide: string;
+  testPack: TestPack;
+  /** The runtime package generated code imports, if the template has one. */
+  runtime?: RuntimePackage;
+}
+
+export interface RuntimePackage {
+  name: string;
+  version: string;
+  /** Absolute path of the package directory (what `pnpm pack` runs in). */
+  dir: string;
+}
+
+/** Who owns a file in the generated project (PLAN §9 "Ownership"). */
+export type FileOwnership =
+  /** Rewritten on every generation; hashed in `lock.json`. */
+  | "generated"
+  /** Written only if missing; project-owned afterwards. */
+  | "scaffold";
+
+export interface OutputFile {
+  /** POSIX path relative to the project root. */
+  path: string;
+  contents: string;
+  ownership: FileOwnership;
+}
+
+/** One end of a connection as seen from the element being generated. */
+export interface ResolvedEnd {
+  element: Element;
+  attachment?: Attachment;
+  /** Undefined when the peer is a "needs a template" element or its template is unknown. */
+  manifest?: TemplateManifest;
+  /** The peer element's directory, when it has a template. */
+  dir?: string;
+}
+
+export interface ResolvedConnection {
+  connection: Connection;
+  /** The end of the connection on this element (and attachment, if any). */
+  self: Endpoint;
+  peer: ResolvedEnd;
+}
+
+type Endpoint = Connection["from"];
+
+/** Everything `generate` may look at. Built by `createGenerateContext`. */
+export interface GenerateContext {
+  design: DesignDocument;
+  element: Element;
+  /** Set when generating an attachment template on `element`. */
+  attachment?: Attachment;
+  manifest: TemplateManifest;
+  /** The element's (or attachment's) config with schema defaults applied. */
+  config: Record<string, unknown>;
+  /** The element's directory, e.g. `databases/links-db`. */
+  dir: string;
+  /** Connections ending at this element (or attachment), in design order. */
+  incoming: ResolvedConnection[];
+  /** Connections starting at this element (or attachment), in design order. */
+  outgoing: ResolvedConnection[];
+}
+
+export interface GenerateResult {
+  files: OutputFile[];
+  /** Merged with every other template's fragment into `docker-compose.yml`. */
+  compose: ComposeFragment;
+  /** Runtime packages an element needs in its `package.json` (vendored by the generator). */
+  runtimeDependencies: { element: string; name: string }[];
+}
+
+/** A template's test pack: ordered checks run against the composed, running project. */
+export interface TestPack {
+  template: string;
+  checks: TestCheck[];
+}
+
+export interface TestCheck {
+  /** Stable kebab-case ID, used in reports. */
+  id: string;
+  title: string;
+  /** Throws (any error) to fail. Checks run in order and may restart services. */
+  run(ctx: TestPackContext): Promise<void>;
+}
+
+/** What a check gets. Conformance tests implement it with Testcontainers; S10 with compose. */
+export interface TestPackContext {
+  projectDir: string;
+  /** The element (or attachment) the pack is checked for, resolved as it was for `generate`. */
+  subject: GenerateContext;
+  /** The project's `docker-compose.yml`, parsed. */
+  compose: ComposeFile;
+  service(name: string): ServiceHandle;
+  log(message: string): void;
+}
+
+export interface ServiceHandle {
+  name: string;
+  /** Host address of a published container port. */
+  endpoint(containerPort: number): Promise<{ host: string; port: number }>;
+  exec(command: string[]): Promise<{ exitCode: number; output: string }>;
+  /** Restarts the container and waits until it is healthy again. */
+  restart(): Promise<void>;
+  stop(): Promise<void>;
+  /** Starts a stopped service and waits until it is healthy. */
+  start(): Promise<void>;
+}
+
+export interface CheckResult {
+  id: string;
+  title: string;
+  status: "passed" | "failed";
+  durationMs: number;
+  error?: string;
+}
