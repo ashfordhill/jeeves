@@ -9,7 +9,9 @@ import { providerModels } from "./chat/models.ts";
 import { ChatService, type ModelSource } from "./chat/service.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
+import { GenerationService, type GeneratorRunner } from "./generate/service.ts";
 import { chatRoutes } from "./routes/chat.ts";
+import { generateRoutes } from "./routes/generate.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { templateRoutes } from "./routes/templates.ts";
@@ -29,6 +31,10 @@ export type AppDeps = {
   settings?: Settings;
   /** Providers for chat (and later the planner). Defaults to the real ones from `settings`. */
   models?: ModelSource;
+  /** Writes projects and runs the baseline; tests pass a fake so they need no Docker. */
+  generator?: GeneratorRunner;
+  /** Parent folder for default output folders (`JEEVES_PROJECTS_DIR`, else ~/jeeves-projects). */
+  projectsDir?: string;
   logger?: boolean;
 };
 
@@ -40,6 +46,8 @@ export function buildApp({
   registry = builtinRegistry(),
   settings = new Settings(jeevesHome()),
   models = providerModels(settings),
+  generator,
+  projectsDir,
   logger = false,
 }: AppDeps): FastifyInstance {
   const app = Fastify({ logger });
@@ -76,7 +84,10 @@ export function buildApp({
   const design = new DesignService(db, registry);
   const chat = new ChatService(db, design, registry, models);
 
+  const generation = new GenerationService(db, design, generator, projectsDir);
+
   app.register(projectRoutes, { service: design });
+  app.register(generateRoutes, { generation });
   app.register(templateRoutes, { registry });
   app.register(chatRoutes, { chat });
   app.register(settingsRoutes, { settings });

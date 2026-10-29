@@ -1,0 +1,80 @@
+{
+  "lockVersion": 1,
+  "generator": "0.1.0",
+  "designRevision": 7,
+  "templates": [
+    "http-service@0.1.0",
+    "postgres@0.1.0",
+    "rest-api-client@0.1.0",
+    "rest-api-server@0.1.0",
+    "web-app@0.1.0"
+  ],
+  "runtimes": [
+    {
+      "name": "@jeeves/postgres-runtime",
+      "version": "0.1.0",
+      "tarball": "vendor/jeeves/jeeves-postgres-runtime-0.1.0.tgz"
+    },
+    {
+      "name": "@jeeves/rest-client",
+      "version": "0.1.0",
+      "tarball": "vendor/jeeves/jeeves-rest-client-0.1.0.tgz"
+    },
+    {
+      "name": "@jeeves/rest-server",
+      "version": "0.1.0",
+      "tarball": "vendor/jeeves/jeeves-rest-server-0.1.0.tgz"
+    },
+    {
+      "name": "@jeeves/service-runtime",
+      "version": "0.1.0",
+      "tarball": "vendor/jeeves/jeeves-service-runtime-0.1.0.tgz"
+    },
+    {
+      "name": "@jeeves/web-runtime",
+      "version": "0.1.0",
+      "tarball": "vendor/jeeves/jeeves-web-runtime-0.1.0.tgz"
+    }
+  ],
+  "elements": [
+    {
+      "id": "links",
+      "template": "http-service@0.1.0",
+      "dir": "services/links",
+      "ownedPaths": [
+        "contracts/links.openapi.yaml",
+        "services/links/"
+      ]
+    },
+    {
+      "id": "links-db",
+      "template": "postgres@0.1.0",
+      "dir": "databases/links-db",
+      "ownedPaths": [
+        "databases/links-db/"
+      ]
+    },
+    {
+      "id": "web",
+      "template": "web-app@0.1.0",
+      "dir": "frontends/web",
+      "ownedPaths": [
+        "frontends/web/"
+      ]
+    }
+  ],
+  "files": {
+    "AGENTS.md": "sha256-86ec609084e9999f21913aa184f3b64065168390f7040e89669bbe0272b9b8ad",
+    "databases/links-db/init/10-consumers.sql": "sha256-7b1733fca04d6e0e152b42b0d84130cf39221d9411bc9c2d986908163a41a29b",
+    "docker-compose.yml": "sha256-898b28d4683bedbddaa025e280d58ffaa28ff58e87da1d27ad361bea58534503",
+    "frontends/web/nginx/default.conf.template": "sha256-64aa3992462d47897f9b2fadfbc01e936b56becb8a63c7aefdb0ea8797e5c0b3",
+    "frontends/web/nginx/jeeves-config.json.template": "sha256-ca3f1458bb044c0689c068bcb35685591d9087545d749feac49139f797abd80c",
+    "frontends/web/src/clients/links.generated.ts": "sha256-2287516c3ff5fdeb4c4b3c5c622db755aab7bf2b9ca936df7a03af510a8e47ed",
+    "frontends/web/src/jeeves.generated.ts": "sha256-bd1a98551013f1175f3229d4553ea374ca70044430fa8cf93af9eadc8c8256df",
+    "jeeves/design.json": "sha256-9442f593c846e5cea0364b880b3fd7ee112b1376d34ba6750a5ad8e62f04377c",
+    "jeeves/elements/links-db.md": "sha256-bda9d36786f4e3dc028303db159d055d24ec9c291fc6c1f10ed066cd62747a90",
+    "jeeves/elements/links.md": "sha256-f24b29d49fbcbca1dd6269d31943b9a1a66dacbd9d4e67416e297c4fb3cf4ecb",
+    "jeeves/elements/web.md": "sha256-3801a0e8362f51c21b86bf79ae62f5ddecab5afdeb115b2f6d3af81756ab8df3",
+    "services/links/src/jeeves.generated.ts": "sha256-6304096668f1a9d4edb0dd905d2916074dd454ba3b7222df9751efa635aef7e5"
+  }
+}

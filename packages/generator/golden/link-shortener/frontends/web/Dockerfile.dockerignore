@@ -1,0 +1,7 @@
+# What Web app's image build may see of the project root (the build context).
+*
+!vendor/jeeves/
+!frontends/web/
+frontends/web/node_modules/
+frontends/web/dist/
+frontends/web/test/

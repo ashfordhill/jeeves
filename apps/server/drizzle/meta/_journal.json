@@ -15,6 +15,13 @@
       "when": 1793250615065,
       "tag": "0001_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793281603216,
+      "tag": "0002_generate",
+      "breakpoints": true
     }
   ]
 }

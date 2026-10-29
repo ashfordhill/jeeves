@@ -190,6 +190,9 @@ importers:
       '@fastify/swagger':
         specifier: 9.9.0
         version: 9.9.0
+      '@jeeves/generator':
+        specifier: workspace:*
+        version: link:../../packages/generator
       '@jeeves/providers':
         specifier: workspace:*
         version: link:../../packages/providers
@@ -289,7 +292,35 @@ importers:
         specifier: 8.2.2
         version: 8.2.2(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
 
-  packages/generator: {}
+  packages/generator:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../spec
+      '@jeeves/template-http-service':
+        specifier: workspace:*
+        version: link:../../templates/http-service
+      '@jeeves/template-kit':
+        specifier: workspace:*
+        version: link:../template-kit
+      '@jeeves/template-postgres':
+        specifier: workspace:*
+        version: link:../../templates/postgres
+      '@jeeves/template-rest-api-client':
+        specifier: workspace:*
+        version: link:../../templates/rest-api-client
+      '@jeeves/template-rest-api-server':
+        specifier: workspace:*
+        version: link:../../templates/rest-api-server
+      '@jeeves/template-web-app':
+        specifier: workspace:*
+        version: link:../../templates/web-app
+      yaml:
+        specifier: 2.9.1
+        version: 2.9.1
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
 
   packages/orchestrator: {}
 

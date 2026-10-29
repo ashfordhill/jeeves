@@ -33,6 +33,8 @@ export default defineConfig({
           new URL("./fixtures/chat/e2e-script.json", import.meta.url),
         ),
         JEEVES_HOME: mkdtempSync(join(tmpdir(), "jeeves-e2e-")),
+        // Generate's default output folders go somewhere throwaway too.
+        JEEVES_PROJECTS_DIR: mkdtempSync(join(tmpdir(), "jeeves-e2e-projects-")),
         OPENAI_API_KEY: "",
       },
       reuseExistingServer: false,

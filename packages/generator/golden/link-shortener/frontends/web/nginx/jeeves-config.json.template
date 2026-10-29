@@ -1,0 +1,8 @@
+{
+  "title": "${APP_TITLE}",
+  "apis": {
+    "links": {
+      "url": "/_api/links"
+    }
+  }
+}

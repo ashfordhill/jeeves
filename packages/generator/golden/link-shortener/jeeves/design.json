@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "revision": 7,
+  "elements": [
+    {
+      "id": "links",
+      "name": "Links service",
+      "template": {
+        "id": "http-service",
+        "version": "0.1.0"
+      },
+      "config": {
+        "port": 8080
+      },
+      "attachments": [
+        {
+          "id": "links-api",
+          "template": {
+            "id": "rest-api-server",
+            "version": "0.1.0"
+          },
+          "config": {
+            "basePath": "/api"
+          },
+          "notes": "POST /links creates a short link from a URL. GET /links/:code returns it with its click count."
+        }
+      ],
+      "notes": "Create short links; redirect GET /:code with 302; count clicks."
+    },
+    {
+      "id": "links-db",
+      "name": "Links DB",
+      "template": {
+        "id": "postgres",
+        "version": "0.1.0"
+      },
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "web",
+      "name": "Web app",
+      "template": {
+        "id": "web-app",
+        "version": "0.1.0"
+      },
+      "config": {
+        "title": "Shorty"
+      },
+      "attachments": [
+        {
+          "id": "web-links-client",
+          "template": {
+            "id": "rest-api-client",
+            "version": "0.1.0"
+          },
+          "config": {},
+          "notes": ""
+        }
+      ],
+      "notes": "One page: paste a URL, get a short link, see recent links with click counts."
+    }
+  ],
+  "connections": [
+    {
+      "id": "links-uses-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "links"
+      },
+      "to": {
+        "element": "links-db"
+      }
+    },
+    {
+      "id": "web-calls-links",
+      "kind": "calls",
+      "from": {
+        "element": "web",
+        "attachment": "web-links-client"
+      },
+      "to": {
+        "element": "links",
+        "attachment": "links-api"
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-analytics",
+      "kind": "note",
+      "text": "Analytics later",
+      "color": "yellow"
+    }
+  ]
+}

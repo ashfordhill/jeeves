@@ -1058,3 +1058,146 @@ The web app's title is `Links & "Co" $5 <beta>`, so the JSON (config script), HT
 - **Orchestrator (S11/S12):**
   - An agent changing a contract should run `pnpm typecheck` in every element that calls that API: the types are regenerated there, and breaking changes show up as type errors.
   - The rest-api-client conformance test shows this: renaming `/request-id` in the contract makes `src/features/relay/index.ts` fail to type-check.
+
+---
+
+## S10: Generator (2026-10-29)
+
+### Built
+
+- **`@jeeves/generator`** (`packages/generator`):
+  - `planProject(design, templates, { projectName })` (`src/plan.ts`) is pure and deterministic. It runs each template's `generate` for every element and attachment (through `createGenerateContext`), merges compose fragments into `docker-compose.yml`, and adds the project documents:
+    - `jeeves/design.json`: the design snapshot.
+    - `jeeves/elements/<id>.md`: name, template, directory, owned paths, implementation notes, resolved config, attachments with their config and notes, connections, then each template's agent guide.
+    - `AGENTS.md`: an element table, ownership rules, and the checks to run.
+    - Root scaffolds (project-owned): `package.json`, `pnpm-workspace.yaml` (`services/*`, `frontends/*`, `packages/*`), `.gitignore` (ignores the derived `src/clients/*.openapi.ts`), and `tests/e2e/README.md`.
+    
+    It returns the files (sorted, with ownership), the `package.json` edits per element (vendored runtime specs, package dependencies, scripts), the runtimes to vendor, the elements with their **owned paths** (the element directory plus project-owned files its templates scaffold outside any element directory, e.g. `contracts/links.openapi.yaml`), and the test-pack subjects. Two templates writing the same path differently is an error.
+  - `generateProject({ dir, design, projectName, vendor?, git? })` (`src/generate.ts`):
+    - Checks ownership first and writes nothing if there's a problem. A file in the previous lock whose hash no longer matches is `edited`; a file Jeeves would generate that exists with other contents and isn't in the lock is `unmanaged`. A deleted generated-owned file is simply generated again.
+    - Vendors runtimes with `pnpm pack` into a scratch folder and copies each tarball only if its bytes changed. `pnpm pack` is deterministic (checked: identical SHA-256 across runs), so an unchanged runtime doesn't touch the project.
+    - Writes generated-owned files whose contents changed, and scaffold files only when missing. It merges missing dependencies and scripts into project-owned `package.json` files (`mergePackageDependencies`/`mergePackageScripts`), and writes `jeeves/lock.json`.
+    - Reports `written`, `scaffolded`, `kept`, `packages`, `vendored`, `removedElements` (in the old lock, not the design; left in place), and `orphaned` (generated before, not now; left in place).
+    - `git init --initial-branch=main` plus one commit when the folder isn't inside a work tree. It uses the person's git identity, or `Jeeves <jeeves@localhost>` when there's none.
+  - `jeeves/lock.json` (`src/lock.ts`, Zod-validated): `lockVersion`, `generator`, `designRevision`, `templates`, `runtimes` (name, version, tarball path), `elements` (id, template, dir, ownedPaths), and `files` (generated-owned path → `sha256-…`). It has no timestamps.
+  - `builtinModules()`/`templateSet()` (`src/modules.ts`) give the five `TemplateModule`s and a manifest lookup.
+  - **Baseline** (`@jeeves/generator/baseline`):
+    - `runBaseline({ dir, design, subjects, onEvent, signal, keepRunning })` runs `pnpm install`, `pnpm -r --no-bail typecheck`, `docker compose up --build --wait --wait-timeout 300`, every template test pack, then `docker compose down` (volumes kept). Down runs even after a failure or a cancel.
+    - Packs run in the order web-app, rest-api-client, rest-api-server, postgres, http-service (S9's advice).
+    - It streams `step`, `log` and `check` events. When `up` fails, it logs container states and the last 40 lines of each failing service.
+    - `ComposeCli` is the compose-CLI `TestPackContext` S7 asked for. `endpoint` uses `docker compose port`, `exec` uses `exec --no-TTY`, `restart`/`start` wait for the health check through `docker inspect`, `stop` returns the exit code, and `run` uses `run --rm --no-deps --no-TTY`. It uses compose's default project name (the folder name), the same one a person gets with `docker compose up` there.
+  - Tests:
+    - `src/plan.test.ts`: 40 golden files in `packages/generator/golden/link-shortener/` (every planned file plus the lock) via `toMatchFileSnapshot`, a determinism check, ownership, owned paths, subjects, and notes contents. Run `pnpm vitest run --project generator -u` after a deliberate change. Biome ignores `packages/generator/golden/**`.
+    - `src/generate.test.ts`: byte-identical output in two folders, a rerun changes nothing, the lock, dependencies, regeneration after adding an element, a hand-edited file blocking with nothing written, an unmanaged file, a deleted file regenerated, a removed element reported, and git (once, and not inside a parent repository).
+    - `conformance/baseline.conformance.ts` (in `pnpm test:templates`) runs the real fixture end to end.
+- **Server:**
+  - Migration `0002_generate`: `projects.output_dir` and a `generations` table (status, steps, checks, log capped at 3000 lines, report, error).
+  - `GenerationService` (`src/generate/service.ts`) runs one generation per project at a time as an in-process background job:
+    - It refuses an empty design (`DESIGN_EMPTY`), error-level findings (`DESIGN_NOT_READY`), and a relative folder (`INVALID_OUTPUT_DIR`; `~` is expanded).
+    - It saves the chosen folder on the project and persists progress every second and at the end.
+    - Cancel aborts it. Restarting the server marks a running generation `interrupted` (`failInterruptedGenerations` in `main.ts`).
+    - The generator is injectable (`AppDeps.generator`), as are default folders (`AppDeps.projectsDir`; `JEEVES_PROJECTS_DIR`, else `~/jeeves-projects/<slug>`).
+  - Routes (`src/routes/generate.ts`):
+    - `GET /projects/:id/generation`
+    - `POST /projects/:id/generations` (202)
+    - `GET /projects/:id/generations/:gid`
+    - `GET …/:gid/events`: NDJSON with a `snapshot`, live `step`/`log`/`check` events, then `done`; a finished generation gets its snapshot and `done` right away
+    - `POST …/:gid/cancel`
+  - Status values: `succeeded`, `failed` (an exception or a red baseline), `blocked` (ownership problems), `cancelled`, `interrupted`.
+- **Web:**
+  - A yellow **Generate** button at the top right of the board.
+  - The output drawer along the board's bottom (`src/generate/`):
+    - Output folder input (prefilled with the saved folder or the default) and a "Run the baseline check" checkbox.
+    - Generate / Generate again / Cancel. Generating is disabled, with the reason and a "Show findings" button, when the design is empty or has errors.
+    - Status: "Green" only when the baseline ran and passed; "Written, baseline not run" otherwise.
+    - The step list with durations, test-pack results (with errors), and what was written (collapsible file lists; removed elements; ownership problems).
+    - The streamed log, which auto-scrolls unless you scroll up.
+    
+    It reconnects to a running generation after a reload. Everything works by mouse.
+- `apps/web/e2e/generate.spec.ts`. Playwright sets `JEEVES_PROJECTS_DIR` to a temp folder.
+- README: a Generate section; PLAN progress line.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 326 files in 69ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  48 passed (48)
+      Tests  352 passed (352)
+```
+
+Generator baseline, `pnpm vitest run --config vitest.templates.config.ts packages/generator --reporter verbose` (Docker 29.9.1):
+
+```text
+ ✓ generator baseline: the link-shortener fixture > generates a project whose baseline is green 54424ms
+ ✓ generator baseline: the link-shortener fixture > stays green after adding an element, with project-owned edits kept 94411ms
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Duration  150.06s
+```
+
+Before writing that test, I ran the same baseline by hand on the fixture and watched each step. The output (abridged):
+
+```text
+STEP install passed · typecheck passed · compose-up passed 5929ms
+CHECK web page-loads / client-routes / runtime-config / sample-call            passed
+CHECK web/web-links-client types / call / timeout (5216ms)                     passed
+CHECK links/links-api openapi-served / handlers / contract-smoke / invalid-requests passed
+CHECK links-db healthy / consumer-own-database / consumer-isolation / migrations-applied / survives-restart passed
+CHECK links health / ready (3758ms) / config-validation / graceful-shutdown (7876ms) passed
+STEP test-packs passed 27026ms "20 checks passed" · compose-down passed
+```
+
+A cold `docker compose up --build --wait` of the fixture took 54 s. `pnpm install` in a generated project takes under 1 s with a warm store, and the type check takes 0.3 s.
+
+`pnpm test:e2e`: 14 passed (12 earlier plus 2 new).
+
+I didn't rerun the template conformance suites (`templates/*/conformance`). No template code changed in this section; only `vitest.templates.config.ts` gained the generator's include.
+
+How the "Done when" items are covered:
+
+- **Deterministic output:** golden files plus the plan determinism test, and two folders compared byte for byte with a no-op rerun (`generate.test.ts`).
+- **Fixture baseline green:** `baseline.conformance.ts`, first test.
+- **Regeneration after adding an element keeps project-owned files:** unit test (a feature file, the contract, and `package.json` edits, including a changed version, survive), and the second conformance test (a new `stats` service on the same database; the edited feature is kept; still green).
+- **Hand-edited generated-owned file:** a unit test (blocked, the folder snapshot unchanged, no `frontends/admin`), the API test (`blocked` status with `problems`), and e2e (the drawer shows "Stopped" and the file's message).
+
+### Deviations and choices the plan left open
+
+- **Generation runs as an in-process job, not pg-boss.** §15 puts pg-boss setup in S11. The job's state is in the `generations` table, and a restart marks it `interrupted` (the same recovery as chat turns). S11 can move it onto pg-boss if it wants one queue.
+- **Test packs run from Jeeves, not from `tests/e2e/` inside the project.** The packs are TypeScript in this repo and use Jeeves's Playwright. Copying them into each project would mean shipping the harness too. `tests/e2e/` is scaffolded for project-owned tests, with a README saying so. The orchestrator (S12) should call `runBaseline` (or its pieces) for "every test pack".
+- **The baseline doesn't run project tests** (`pnpm test`). §9 lists install, type check, compose and test packs; the orchestrator's checks (§10) add project tests.
+- **Runtime distribution:** vendored `pnpm pack` tarballs, as §16 assumed. The lock records name, version and tarball path but not a tarball hash. Tarballs are Jeeves-owned and replaced when their bytes change.
+- **`package.json` and `pnpm-workspace.yaml` at the root are scaffolds** (project-owned), not generated, so agents can add scripts or workspace settings. Element `package.json` files get missing dependencies merged as in S8/S9.
+- **The git commit happens before the baseline**, so `pnpm-lock.yaml` (created by `pnpm install`) is left uncommitted. The orchestrator commits it with the first task. `src/clients/*.openapi.ts` is git-ignored because each `pretypecheck` regenerates it.
+- **Generated projects get `name` from the Jeeves project name** (slugged) for the root `package.json` and the default folder. Compose uses the folder name as its project name.
+- **`docker compose down` after the baseline** (volumes kept), so generating doesn't leave the app running. `runBaseline({ keepRunning: true })` exists; the UI doesn't offer it yet.
+- **An empty design can't be generated** (`DESIGN_EMPTY`). §6 only requires no error findings, but an empty project is never what someone means.
+- **The drawer's primary button uses `color="cyan.9"`.** Axe flagged the theme's default filled cyan (white on `#15aabf`, 2.78:1). The chat's Send button (S6) uses the same default and would fail the same check when enabled. I left it alone; it's a small fix for whoever touches the theme.
+
+### Known issues
+
+- **pnpm resolution:**
+  - The generator finds pnpm through `npm_execpath`, which is set when Jeeves is started with `pnpm dev`/`pnpm start`. Otherwise it uses `JEEVES_PNPM`, then `pnpm` on PATH.
+  - The generated root `package.json` scripts (`pnpm typecheck`) call `pnpm` by name, so a machine where pnpm is only reachable as `corepack pnpm` needs `corepack enable` to use them. The baseline itself doesn't go through those scripts.
+- **Chromium on the host:** web-app and rest-api-client packs launch Playwright's Chromium on the host. Without its system libraries those checks fail with Playwright's own message (see the README's `install-deps` note).
+- **No cross-project port or name clashes are checked.** Two Jeeves projects writing into folders with the same base name share a compose project name.
+- **`orphaned` generated files keep their old contents**, and they're dropped from the lock, so they become project-owned. That's the "never delete" rule; the drawer lists them.
+- **Generation log lines are capped at 3000** (Docker builds are chatty). The full output isn't kept anywhere else.
+- **Cancelling during `pnpm install` or `docker compose up` kills that command.** `compose down` still runs, but a half-built image may stay in Docker's cache.
+
+### For S11 and later
+
+- **Planning input:**
+  - `jeeves/lock.json` `elements[]` has each element's `template`, `dir` and `ownedPaths`. Use `ownedPaths` for §10's "task stays within one element's owned paths", and `readLock(dir)` to read it.
+  - `jeeves/elements/<id>.md` has the notes and guides.
+  - The dependency order for the seed can come from `design.json`'s connections, plus element kinds via the templates.
+- **"Is the project green?":**
+  - `runBaseline({ dir, design, subjects, onEvent, signal })`. `subjects` comes from `planProject(design, templateSet(), …).subjects`; planning is cheap and needs no disk.
+  - To get only the checks, the steps are separate; split `runBaseline` if a task needs just "typecheck + packs" without reinstalling.
+- **Regenerate before orchestrating** a changed design. `generateProject` refuses to overwrite hand edits; agents must never edit generated-owned files (the generated `AGENTS.md` says so).
+- **The `GenerationService` pattern** (in-memory live state plus periodic saves, an NDJSON follow endpoint, `interrupted` on restart) is a template for run events if pg-boss doesn't cover streaming.

@@ -1,5 +1,6 @@
 import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
 import {
+  boolean,
   customType,
   index,
   integer,
@@ -18,6 +19,8 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   /** Current semantic revision; the matching `design_revisions` row holds the document. */
   revision: integer("revision").notNull().default(0),
+  /** Where Generate writes the template project; `null` until chosen (a default is suggested). */
+  outputDir: text("output_dir"),
   createdAt: createdAt(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -146,4 +149,79 @@ export const chatTurns = pgTable(
     finishedAt: timestamp("finished_at", { withTimezone: true }),
   },
   (t) => [index("chat_turns_project_idx").on(t.projectId, t.id)],
+);
+
+export const generationStatuses = [
+  "running",
+  "succeeded",
+  "failed",
+  "blocked",
+  "cancelled",
+  "interrupted",
+] as const;
+export type GenerationStatus = (typeof generationStatuses)[number];
+
+export type GenerationStepId =
+  | "generate"
+  | "install"
+  | "typecheck"
+  | "compose-up"
+  | "test-packs"
+  | "compose-down";
+
+export type GenerationStep = {
+  id: GenerationStepId;
+  title: string;
+  status: "pending" | "running" | "passed" | "failed" | "skipped";
+  durationMs?: number;
+  message?: string;
+};
+
+export type GenerationCheck = {
+  subject: string;
+  template: string;
+  id: string;
+  title: string;
+  status: "passed" | "failed";
+  durationMs: number;
+  error?: string;
+};
+
+export type GenerationLogLine = { step: GenerationStepId; line: string };
+
+/** What the generate step did, or why it stopped (`problems`). */
+export type GenerationReport = {
+  written: string[];
+  scaffolded: string[];
+  kept: string[];
+  packages: string[];
+  vendored: string[];
+  removedElements: { id: string; dir: string }[];
+  orphaned: string[];
+  git: "initialized" | "existing" | "disabled";
+  problems: { path: string; kind: "edited" | "unmanaged"; message: string }[];
+};
+
+/** One Generate run (PLAN §9): writing the template project, then the baseline check. */
+export const generations = pgTable(
+  "generations",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    revision: integer("revision").notNull(),
+    outputDir: text("output_dir").notNull(),
+    baseline: boolean("baseline").notNull(),
+    status: text("status", { enum: generationStatuses }).notNull(),
+    steps: jsonb("steps").$type<GenerationStep[]>().notNull(),
+    checks: jsonb("checks").$type<GenerationCheck[]>().notNull().default([]),
+    /** The last lines of output (capped), for the drawer after a reload. */
+    log: jsonb("log").$type<GenerationLogLine[]>().notNull().default([]),
+    report: jsonb("report").$type<GenerationReport>(),
+    error: text("error"),
+    createdAt: createdAt(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("generations_project_idx").on(t.projectId, t.id)],
 );

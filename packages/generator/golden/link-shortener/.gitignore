@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+.env
+.env.local
+# Client types are regenerated from the contracts by each element's `pretypecheck` script.
+**/src/clients/*.openapi.ts

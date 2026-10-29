@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@fastify/swagger": "9.9.0",
+    "@jeeves/generator": "workspace:*",
     "@jeeves/providers": "workspace:*",
     "@jeeves/registry": "workspace:*",
     "@jeeves/spec": "workspace:*",

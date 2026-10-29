@@ -1,0 +1,7 @@
+# What Links service's image build may see of the project root (the build context).
+*
+!vendor/jeeves/
+!contracts/
+!services/links/
+services/links/node_modules/
+services/links/test/

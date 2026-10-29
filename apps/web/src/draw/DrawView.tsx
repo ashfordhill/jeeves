@@ -1,12 +1,13 @@
 /**
- * The Draw view: loads the current project, then shows the board (with its notice strip and
- * hints) and the inspector rail on the right.
+ * The Draw view: loads the current project, then shows the board (with its notice strip, hints,
+ * and the Generate button and drawer) and the inspector rail on the right.
  */
 import { Button, Loader } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
 import { useEffect } from "react";
+import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { Canvas } from "./Canvas.tsx";
 import "./draw.css";
 import { Rail } from "./inspector/Rail.tsx";
@@ -125,6 +126,8 @@ export function DrawView() {
           <EmptyHint />
           <PendingHint />
           <NoticeStrip />
+          <GenerateButton />
+          <GenerateDrawer />
         </div>
         <Rail />
       </div>

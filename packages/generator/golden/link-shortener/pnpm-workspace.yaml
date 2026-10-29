@@ -1,0 +1,8 @@
+packages:
+  - services/*
+  - frontends/*
+  - packages/*
+
+# Install scripts that generated elements need (Vite's bundler and Drizzle Kit use esbuild).
+allowBuilds:
+  esbuild: true

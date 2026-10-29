@@ -4,6 +4,7 @@ import { fakeModels } from "./chat/models.ts";
 import { failInterruptedTurns } from "./chat/service.ts";
 import { loadConfig } from "./config.ts";
 import { connectDb } from "./db/client.ts";
+import { failInterruptedGenerations } from "./generate/service.ts";
 import { jeevesHome, Settings } from "./settings.ts";
 
 const { version } = JSON.parse(
@@ -15,6 +16,7 @@ const db = connectDb(config.databaseUrl);
 // Local single-user app: bring the schema up to date on every start.
 await db.migrate();
 await failInterruptedTurns(db.db);
+await failInterruptedGenerations(db.db);
 // e2e tests replay a scripted model instead of calling a provider.
 const fakeScript = process.env.JEEVES_FAKE_MODEL_SCRIPT;
 const settings = new Settings(jeevesHome(), process.env, !!fakeScript);

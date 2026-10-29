@@ -70,6 +70,75 @@ export type SettingsView = {
   fakeModel: boolean;
 };
 
+export type GenerationStepId =
+  | "generate"
+  | "install"
+  | "typecheck"
+  | "compose-up"
+  | "test-packs"
+  | "compose-down";
+
+export type GenerationStep = {
+  id: GenerationStepId;
+  title: string;
+  status: "pending" | "running" | "passed" | "failed" | "skipped";
+  durationMs?: number;
+  message?: string;
+};
+
+export type GenerationCheck = {
+  subject: string;
+  template: string;
+  id: string;
+  title: string;
+  status: "passed" | "failed";
+  durationMs: number;
+  error?: string;
+};
+
+export type GenerationLogLine = { step: GenerationStepId; line: string };
+
+/** One Generate run, as `apps/server/src/generate/service.ts` returns it. */
+export type Generation = {
+  id: number;
+  projectId: string;
+  revision: number;
+  outputDir: string;
+  baseline: boolean;
+  status: "running" | "succeeded" | "failed" | "blocked" | "cancelled" | "interrupted";
+  steps: GenerationStep[];
+  checks: GenerationCheck[];
+  log: GenerationLogLine[];
+  report: {
+    written: string[];
+    scaffolded: string[];
+    kept: string[];
+    packages: string[];
+    vendored: string[];
+    removedElements: { id: string; dir: string }[];
+    orphaned: string[];
+    git: "initialized" | "existing" | "disabled";
+    problems: { path: string; kind: "edited" | "unmanaged"; message: string }[];
+  } | null;
+  error: string | null;
+  createdAt: string;
+  finishedAt: string | null;
+};
+
+export type GenerationOverview = {
+  outputDir: string | null;
+  defaultOutputDir: string;
+  latest: Generation | null;
+};
+
+/** Streamed by `GET /projects/:id/generations/:generationId/events`, one JSON object per line. */
+export type GenerationEvent =
+  | { type: "snapshot"; generation: Generation }
+  | { type: "step"; step: GenerationStep }
+  | { type: "log"; line: GenerationLogLine }
+  | { type: "check"; check: GenerationCheck }
+  | { type: "done"; generation: Generation };
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -143,16 +212,7 @@ export const api = {
       const error = (await res.json().catch(() => ({}))) as { message?: string };
       throw new ApiError(res.status, error.message ?? `${res.status} ${res.statusText}`);
     }
-    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-    let buffer = "";
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (value) buffer += value;
-      const lines = buffer.split("\n");
-      buffer = done ? "" : (lines.pop() ?? "");
-      for (const line of lines) if (line.trim()) onEvent(JSON.parse(line) as ChatEvent);
-      if (done) break;
-    }
+    await readLines(res.body, (line) => onEvent(JSON.parse(line) as ChatEvent));
   },
 
   uploadFile: (id: string, file: File, mediaType: string) =>
@@ -168,11 +228,52 @@ export const api = {
 
   fileUrl: (id: string, fileId: string) => `/api/projects/${id}/files/${fileId}`,
 
+  generation: (id: string) => request<GenerationOverview>(`/projects/${id}/generation`),
+
+  startGeneration: (id: string, body: { outputDir: string; baseline: boolean }) =>
+    request<{ generation: Generation }>(`/projects/${id}/generations`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }).then((r) => r.generation),
+
+  /** Follows a generation; `onEvent` gets a snapshot, live events, and finally `done`. */
+  followGeneration: async (
+    id: string,
+    generationId: number,
+    onEvent: (event: GenerationEvent) => void,
+    signal?: AbortSignal,
+  ) => {
+    const res = await fetch(`/api/projects/${id}/generations/${generationId}/events`, {
+      ...(signal && { signal }),
+    });
+    if (!res.ok || !res.body) throw new ApiError(res.status, `${res.status} ${res.statusText}`);
+    await readLines(res.body, (line) => onEvent(JSON.parse(line) as GenerationEvent));
+  },
+
+  cancelGeneration: (id: string, generationId: number) =>
+    request<{ cancelling: boolean }>(`/projects/${id}/generations/${generationId}/cancel`, {
+      method: "POST",
+    }),
+
   settings: () => request<SettingsView>("/settings"),
 
   setModels: (models: Partial<Record<ModelRole, string>>) =>
     request<SettingsView>("/settings/models", { method: "PUT", body: JSON.stringify(models) }),
 };
+
+/** Calls `onLine` for each non-empty line of a newline-delimited stream. */
+async function readLines(body: NonNullable<Response["body"]>, onLine: (line: string) => void) {
+  const reader = body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (value) buffer += value;
+    const lines = buffer.split("\n");
+    buffer = done ? "" : (lines.pop() ?? "");
+    for (const line of lines) if (line.trim()) onLine(line);
+    if (done) break;
+  }
+}
 
 /** Posts a design change (operations, undo, or redo) and sorts the answer into an EditResult. */
 async function change(path: string, payload: unknown): Promise<EditResult> {
