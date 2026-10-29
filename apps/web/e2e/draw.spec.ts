@@ -1,34 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { type APIRequestContext, expect, type Page, test } from "@playwright/test";
-
-/** Each test gets its own project so tests can run in parallel against one database. */
-async function openNewProject(page: Page, request: APIRequestContext, name: string) {
-  const res = await request.post("/api/projects", { data: { name } });
-  expect(res.status()).toBe(201);
-  const { project } = (await res.json()) as { project: { id: string } };
-  await page.goto(`/?project=${project.id}#/draw`);
-  await expect(page.getByRole("toolbar", { name: "Drawing tools" })).toBeVisible();
-  return project.id;
-}
-
-async function designOf(request: APIRequestContext, id: string) {
-  const res = await request.get(`/api/projects/${id}/design`);
-  return (await res.json()) as {
-    design: {
-      revision: number;
-      elements: { id: string; attachments: { id: string }[] }[];
-      connections: { kind: string }[];
-    };
-  };
-}
-
-async function layoutOf(request: APIRequestContext, id: string) {
-  const res = await request.get(`/api/projects/${id}/layout`);
-  return ((await res.json()) as { layout: { items: Record<string, { x: number; y: number }> } })
-    .layout;
-}
-
-const card = (page: Page, name: string) => page.getByRole("article", { name });
+import { expect, test } from "@playwright/test";
+import { card, designOf, layoutOf, openNewProject } from "./helpers.ts";
 
 test("builds a service + REST server + Postgres board that survives a reload", async ({
   page,

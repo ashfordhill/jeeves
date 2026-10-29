@@ -46,3 +46,10 @@ if (!globalThis.IntersectionObserver) {
 if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
+
+// Mantine's autosizing Textarea listens for font loading.
+if (!document.fonts) {
+  Object.defineProperty(document, "fonts", {
+    value: { addEventListener() {}, removeEventListener() {}, ready: Promise.resolve() },
+  });
+}

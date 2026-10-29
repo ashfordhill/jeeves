@@ -1,11 +1,11 @@
 /**
  * Element card: template icon, name, template label, key config chips, and one mini-box per
- * attachment. The card and each mini-box have their own in (left) and out (right) handles.
+ * attachment, plus a findings badge. The card and each mini-box have their own in (left) and out (right) handles.
  * Card shape follows automation-pitch's step tile (3px line, rounded, cream fill).
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type { ConfigValues } from "@jeeves/spec";
-import { IconX } from "@tabler/icons-react";
+import { IconAlertTriangle, IconX } from "@tabler/icons-react";
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { type ElementNode as ElementNodeType, handleId } from "../flow.ts";
 import { useDraw } from "../store.ts";
@@ -54,6 +54,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
   const { element, template, attachments } = data;
   const pending = useDraw((s) => s.pendingEnd);
   const edit = useDraw((s) => s.edit);
+  const findings = useDraw((s) => s.loaded?.findingIndex.byNode.get(id));
   const pendingHere = pending && "element" in pending && pending.element === id;
   const label = template?.displayName ?? "Needs a template";
 
@@ -72,6 +73,17 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
           <span className="element-card-name">{element.name}</span>
           <span className="element-card-template">{label}</span>
         </span>
+        {findings?.length ? (
+          <span
+            className="card-findings"
+            role="img"
+            aria-label={`${findings.length} ${findings.length === 1 ? "finding" : "findings"}`}
+            title={findings.map((f) => f.message).join("\n")}
+          >
+            <IconAlertTriangle size={13} aria-hidden />
+            {findings.length}
+          </span>
+        ) : null}
       </div>
       <Chips chips={cardChips(template, element.config)} />
       {attachments.length > 0 ? (

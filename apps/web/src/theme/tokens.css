@@ -28,7 +28,7 @@
   --blue-deep: #0e6ca8;
   --grid-dot: #aabec8;
   --plus: #1e8a62;
-  --minus: #c4453a;
+  --minus: #b23a30;
   --select-ring: rgba(26, 143, 212, 0.5);
   --banner: #d4f0f8;
   --header-height: 56px;
@@ -76,6 +76,12 @@
 [data-mantine-color-scheme="light"],
 [data-mantine-color-scheme="dark"] {
   --mantine-color-dimmed: var(--ink-soft);
+}
+
+/* Mantine's default error red is below 4.5:1 on cream; use the theme's own. Set on body so it
+   wins over Mantine's :root variables for everything, portaled dropdowns included. */
+body {
+  --mantine-color-error: var(--minus);
 }
 
 html,

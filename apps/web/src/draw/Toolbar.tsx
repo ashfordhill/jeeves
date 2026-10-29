@@ -6,6 +6,8 @@
 import type { TemplateDescription } from "@jeeves/registry";
 import { Popover, Tooltip } from "@mantine/core";
 import {
+  IconArrowBackUp,
+  IconArrowForwardUp,
   IconArrowUpRight,
   IconBoxMultiple,
   IconFrame,
@@ -18,7 +20,7 @@ import {
 } from "@tabler/icons-react";
 import { type DragEvent, type ReactNode, useState } from "react";
 import { templateKey } from "./flow.ts";
-import { type Tool, useDraw } from "./store.ts";
+import { canRedo, canUndo, type Tool, useDraw } from "./store.ts";
 import { TemplateIcon } from "./TemplateIcon.tsx";
 
 export const TOOL_MIME = "application/x-jeeves-tool";
@@ -188,6 +190,39 @@ function PaletteMenu({
   );
 }
 
+function HistoryButtons() {
+  const undoable = useDraw(canUndo);
+  const redoable = useDraw(canRedo);
+  const undo = useDraw((s) => s.undo);
+  const redo = useDraw((s) => s.redo);
+  return (
+    <>
+      <Tooltip label="Undo (Ctrl+Z)" openDelay={400}>
+        <button
+          type="button"
+          className="tool-btn"
+          aria-label="Undo"
+          disabled={!undoable}
+          onClick={() => void undo()}
+        >
+          <IconArrowBackUp size={18} />
+        </button>
+      </Tooltip>
+      <Tooltip label="Redo (Ctrl+Shift+Z)" openDelay={400}>
+        <button
+          type="button"
+          className="tool-btn"
+          aria-label="Redo"
+          disabled={!redoable}
+          onClick={() => void redo()}
+        >
+          <IconArrowForwardUp size={18} />
+        </button>
+      </Tooltip>
+    </>
+  );
+}
+
 export function Toolbar({ onDelete, canDelete }: { onDelete: () => void; canDelete: boolean }) {
   const catalog = useDraw((s) => s.loaded?.catalog);
   const templates = useDraw((s) => s.loaded?.templates);
@@ -270,6 +305,8 @@ export function Toolbar({ onDelete, canDelete }: { onDelete: () => void; canDele
           <IconTrash size={18} />
         </button>
       </Tooltip>
+      <span className="tool-divider" aria-hidden />
+      <HistoryButtons />
     </div>
   );
 }

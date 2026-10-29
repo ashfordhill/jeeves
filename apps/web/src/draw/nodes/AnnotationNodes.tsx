@@ -84,7 +84,7 @@ function useResize(id: string) {
   const setLayoutItems = useDraw((s) => s.setLayoutItems);
   const layoutItem = useDraw((s) => s.loaded?.layout.items[id]);
   return (_: unknown, size: { x: number; y: number; width: number; height: number }) =>
-    setLayoutItems({ [id]: { ...layoutItem, ...size } });
+    setLayoutItems({ [id]: { ...layoutItem, ...size } }, { undoable: true });
 }
 
 export function TextNode({ data, selected }: NodeProps<AnnotationNode>) {

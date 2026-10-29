@@ -3,16 +3,18 @@
  * (saved separately). Adapted from automation-pitch's Board: same paper texture following the
  * camera, handle look, and grab cursors; the tool model is Excalidraw's.
  */
-import { builtinRegistry } from "@jeeves/registry";
 import type { DesignDocument, LayoutItem, OperationInput } from "@jeeves/spec";
+import { IconFocusCentered } from "@tabler/icons-react";
 import {
   applyEdgeChanges,
   applyNodeChanges,
   type Connection,
+  ControlButton,
   Controls,
   type EdgeChange,
   type NodeChange,
   type NodeMouseHandler,
+  type OnSelectionChangeParams,
   ReactFlow,
   useReactFlow,
   useViewport,
@@ -35,10 +37,9 @@ import {
 import { FrameNode, NoteNode, TextNode } from "./nodes/AnnotationNodes.tsx";
 import { ElementNode } from "./nodes/ElementNode.tsx";
 import { attach, deleteOps, placeAnnotation, placeElement } from "./ops.ts";
+import { registry } from "./registry.ts";
 import { type Tool, useDraw } from "./store.ts";
 import { readDraggedTool, Toolbar } from "./Toolbar.tsx";
-
-const registry = builtinRegistry();
 
 const nodeTypes = { element: ElementNode, text: TextNode, note: NoteNode, frame: FrameNode };
 const edgeTypes = { connection: ConnectionEdge, arrow: ArrowEdge };
@@ -95,8 +96,19 @@ export function Canvas() {
   const loaded = useDraw((s) => s.loaded);
   const tool = useDraw((s) => s.tool);
   const pendingEnd = useDraw((s) => s.pendingEnd);
-  const { edit, setTool, setPendingEnd, setNotice, setLayoutItems, setViewport, setEditing } =
-    useDraw.getState();
+  const focusRequest = useDraw((s) => s.focusRequest);
+  const {
+    edit,
+    setTool,
+    setPendingEnd,
+    setNotice,
+    setLayoutItems,
+    setViewport,
+    setEditing,
+    setSelection,
+    undo,
+    redo,
+  } = useDraw.getState();
   const flow = useReactFlow<BoardNode, BoardEdge>();
 
   // Seeded synchronously so React Flow's initial fitView sees the nodes.
@@ -120,6 +132,35 @@ export function Canvas() {
     if (!design) return;
     setEdges((prev) => buildEdges(design, prev));
   }, [design]);
+
+  // Select (and optionally zoom to) what the findings panel or inspector asked for.
+  useEffect(() => {
+    if (!focusRequest) return;
+    const nodeIds = new Set(focusRequest.nodes);
+    const edgeIds = new Set(focusRequest.edges);
+    setNodes((nds) => nds.map((n) => ({ ...n, selected: nodeIds.has(n.id) })));
+    setEdges((eds) => eds.map((e) => ({ ...e, selected: edgeIds.has(e.id) })));
+    if (focusRequest.zoom) {
+      const ends = flow
+        .getEdges()
+        .filter((e) => edgeIds.has(e.id))
+        .flatMap((e) => [e.source, e.target]);
+      const ids = [...new Set([...focusRequest.nodes, ...ends])];
+      if (ids.length > 0)
+        void flow.fitView({
+          nodes: ids.map((id) => ({ id })),
+          duration: 250,
+          maxZoom: 1,
+          padding: 0.4,
+        });
+    }
+  }, [focusRequest, flow]);
+
+  const onSelectionChange = useCallback(
+    ({ nodes: picked, edges: pickedEdges }: OnSelectionChangeParams<BoardNode, BoardEdge>) =>
+      setSelection({ nodes: picked.map((n) => n.id), edges: pickedEdges.map((e) => e.id) }),
+    [setSelection],
+  );
 
   const onNodesChange = useCallback(
     (changes: NodeChange<BoardNode>[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -243,7 +284,7 @@ export function Canvas() {
         const y = Math.round(node.position.y);
         items[node.id] = { ...layout?.items[node.id], x, y };
       }
-      setLayoutItems(items);
+      setLayoutItems(items, { undoable: true });
     },
     [layout, setLayoutItems],
   );
@@ -256,9 +297,35 @@ export function Canvas() {
     if (ops.length > 0) void edit(ops);
   }, [design, selectedNodes, selectedEdges, edit]);
 
+  const hasSelection = selectedNodes.length + selectedEdges.length > 0;
+  const zoomToSelection = useCallback(() => {
+    const ends = edges.filter((e) => e.selected).flatMap((e) => [e.source, e.target]);
+    const ids = [...new Set([...selectedNodes, ...ends])];
+    if (ids.length > 0)
+      void flow.fitView({
+        nodes: ids.map((id) => ({ id })),
+        duration: 250,
+        maxZoom: 1,
+        padding: 0.4,
+      });
+  }, [edges, selectedNodes, flow]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (isTyping(event.target) || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isTyping(event.target)) return;
+      const mod = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
+      if (mod && !event.altKey && (key === "z" || key === "y")) {
+        event.preventDefault();
+        if (key === "y" || event.shiftKey) void redo();
+        else void undo();
+        return;
+      }
+      if (event.shiftKey && event.code === "Digit2") {
+        zoomToSelection();
+        return;
+      }
+      if (mod || event.altKey) return;
       if (event.key === "Escape") {
         setTool({ kind: "select" });
         setNotice(undefined);
@@ -273,7 +340,7 @@ export function Canvas() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [deleteSelection, setTool, setNotice]);
+  }, [deleteSelection, zoomToSelection, setTool, setNotice, undo, redo]);
 
   const onDragOver = useCallback((event: DragEvent) => {
     if (!event.dataTransfer.types.includes("application/x-jeeves-tool")) return;
@@ -319,6 +386,7 @@ export function Canvas() {
         onNodeClick={onNodeClick}
         onNodeDoubleClick={onNodeDoubleClick}
         onNodeDragStop={onNodeDragStop}
+        onSelectionChange={onSelectionChange}
         onMoveEnd={(_, viewport) => setViewport(viewport)}
         defaultViewport={defaultViewport}
         fitView={fitOnOpen}
@@ -335,12 +403,18 @@ export function Canvas() {
       >
         <BoardTexture />
         <FreeArrows design={loaded.design} layout={loaded.layout} />
-        <Controls showInteractive={false} position="bottom-right" />
+        <Controls showInteractive={false} position="bottom-right">
+          <ControlButton
+            onClick={zoomToSelection}
+            disabled={!hasSelection}
+            title="Zoom to selection (Shift+2)"
+            aria-label="Zoom to selection"
+          >
+            <IconFocusCentered size={16} />
+          </ControlButton>
+        </Controls>
       </ReactFlow>
-      <Toolbar
-        onDelete={deleteSelection}
-        canDelete={selectedNodes.length + selectedEdges.length > 0}
-      />
+      <Toolbar onDelete={deleteSelection} canDelete={hasSelection} />
     </div>
   );
 }

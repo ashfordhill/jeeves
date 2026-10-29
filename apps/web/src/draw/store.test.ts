@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeApi, TEST_PROJECT } from "../test-api.ts";
-import { LAYOUT_SAVE_DELAY_MS, useDraw } from "./store.ts";
+import { canRedo, canUndo, LAYOUT_SAVE_DELAY_MS, useDraw } from "./store.ts";
 
 const ref = (id: string) => ({ id, version: "0.1.0" });
 
@@ -64,5 +64,89 @@ describe("draw store", () => {
     expect(api.state.layoutPuts).toBe(1);
     expect(api.state.layout.items.a).toEqual({ x: 10, y: 20 });
     expect(api.state.calls.slice(before)).toEqual([`PUT /projects/${TEST_PROJECT}/layout`]);
+  });
+
+  it("undoes and redoes design edits through the server", async () => {
+    const { edit } = useDraw.getState();
+    await edit([
+      { op: "addElement", element: { id: "links", name: "Links", template: ref("http-service") } },
+    ]);
+    await edit([{ op: "setNotes", id: "links", notes: "Shorten links." }]);
+    expect(useDraw.getState().loaded?.history).toEqual({ canUndo: true, canRedo: false });
+
+    await useDraw.getState().undo();
+    expect(useDraw.getState().loaded?.design.elements[0]?.notes).toBe("");
+    expect(useDraw.getState().loaded?.design.revision).toBe(3);
+    await useDraw.getState().undo();
+    expect(useDraw.getState().loaded?.design.elements).toEqual([]);
+    expect(canUndo(useDraw.getState())).toBe(false);
+
+    await useDraw.getState().redo();
+    await useDraw.getState().redo();
+    expect(useDraw.getState().loaded?.design.elements[0]?.notes).toBe("Shorten links.");
+    expect(canRedo(useDraw.getState())).toBe(false);
+  });
+
+  it("interleaves local layout steps with design steps, newest first", async () => {
+    vi.useFakeTimers();
+    await useDraw.getState().edit([
+      {
+        op: "addElement",
+        element: { id: "links", name: "Links", template: ref("http-service") },
+      },
+    ]);
+    useDraw.getState().setLayoutItems({ links: { x: 0, y: 0 } });
+    useDraw.getState().setLayoutItems({ links: { x: 100, y: 50 } }, { undoable: true });
+
+    // The move is newest, so it's undone first, locally, without touching the revision.
+    await useDraw.getState().undo();
+    expect(useDraw.getState().loaded?.layout.items.links).toEqual({ x: 0, y: 0 });
+    expect(useDraw.getState().loaded?.design.revision).toBe(1);
+
+    await useDraw.getState().undo();
+    expect(useDraw.getState().loaded?.design.elements).toEqual([]);
+
+    await useDraw.getState().redo();
+    expect(useDraw.getState().loaded?.design.elements.map((e) => e.id)).toEqual(["links"]);
+    await useDraw.getState().redo();
+    expect(useDraw.getState().loaded?.layout.items.links).toEqual({ x: 100, y: 50 });
+
+    await vi.advanceTimersByTimeAsync(LAYOUT_SAVE_DELAY_MS + 10);
+    expect(api.state.layout.items.links).toEqual({ x: 100, y: 50 });
+  });
+
+  it("drops the redo chain after a new edit", async () => {
+    await useDraw
+      .getState()
+      .edit([{ op: "addElement", element: { id: "a", name: "A", template: ref("http-service") } }]);
+    await useDraw.getState().undo();
+    expect(canRedo(useDraw.getState())).toBe(true);
+    await useDraw
+      .getState()
+      .edit([{ op: "addElement", element: { id: "b", name: "B", template: ref("postgres") } }]);
+    expect(canRedo(useDraw.getState())).toBe(false);
+  });
+
+  it("reloads and tells the user when undo hits a stale revision", async () => {
+    await useDraw
+      .getState()
+      .edit([{ op: "addElement", element: { id: "a", name: "A", template: ref("http-service") } }]);
+    api.state.design = { ...api.state.design, revision: 9 };
+    await useDraw.getState().undo();
+    expect(useDraw.getState().loaded?.design.revision).toBe(9);
+    expect(useDraw.getState().notice?.message).toMatch(/changed somewhere else/);
+  });
+
+  it("indexes findings by card and keeps selection and focus requests", async () => {
+    await useDraw
+      .getState()
+      .edit([{ op: "addElement", element: { id: "web", name: "Web", template: ref("web-app") } }]);
+    const index = useDraw.getState().loaded?.findingIndex;
+    expect(index?.byNode.get("web")?.map((f) => f.code)).toEqual(["CONFIG_REQUIRED"]);
+
+    useDraw.getState().focus({ nodes: ["web"] }, { zoom: true });
+    const { selection, focusRequest } = useDraw.getState();
+    expect(selection).toEqual({ nodes: ["web"], edges: [] });
+    expect(focusRequest).toMatchObject({ nodes: ["web"], edges: [], zoom: true });
   });
 });

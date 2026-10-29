@@ -18,7 +18,7 @@ export type PaletteEntry = { group: string; templates: { id: string; version: st
 
 export type TemplateCatalog = { templates: TemplateDescription[]; palette: PaletteEntry[] };
 
-/** Outcome of `POST /projects/:id/operations`. */
+/** Outcome of `POST /projects/:id/operations`, `/undo`, or `/redo`. */
 export type EditResult =
   | { ok: true; state: DesignState }
   | { ok: false; reason: "conflict"; message: string; state: DesignState }
@@ -70,22 +70,32 @@ export const api = {
 
   templates: () => request<TemplateCatalog>("/templates"),
 
-  async edit(id: string, baseRevision: number, ops: OperationInput[]): Promise<EditResult> {
-    const res = await fetch(`/api/projects/${id}/operations`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ baseRevision, ops, source: "canvas" }),
-    });
-    const body = (await res.json().catch(() => ({}))) as Partial<DesignState> & {
-      message?: string;
-      errors?: Finding[];
-    };
-    if (res.ok) return { ok: true, state: body as DesignState };
-    const message = body.message ?? `${res.status} ${res.statusText}`;
-    if (res.status === 409)
-      return { ok: false, reason: "conflict", message, state: body as DesignState };
-    if (res.status === 422)
-      return { ok: false, reason: "invalid", message, errors: body.errors ?? [] };
-    throw new ApiError(res.status, message);
-  },
+  edit: (id: string, baseRevision: number, ops: OperationInput[]) =>
+    change(`/projects/${id}/operations`, { baseRevision, ops, source: "canvas" }),
+
+  undo: (id: string, baseRevision: number) =>
+    change(`/projects/${id}/undo`, { baseRevision, source: "canvas" }),
+
+  redo: (id: string, baseRevision: number) =>
+    change(`/projects/${id}/redo`, { baseRevision, source: "canvas" }),
 };
+
+/** Posts a design change (operations, undo, or redo) and sorts the answer into an EditResult. */
+async function change(path: string, payload: unknown): Promise<EditResult> {
+  const res = await fetch(`/api${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const body = (await res.json().catch(() => ({}))) as Partial<DesignState> & {
+    message?: string;
+    errors?: Finding[];
+  };
+  if (res.ok) return { ok: true, state: body as DesignState };
+  const message = body.message ?? `${res.status} ${res.statusText}`;
+  if (res.status === 409)
+    return { ok: false, reason: "conflict", message, state: body as DesignState };
+  if (res.status === 422)
+    return { ok: false, reason: "invalid", message, errors: body.errors ?? [] };
+  throw new ApiError(res.status, message);
+}

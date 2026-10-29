@@ -1,4 +1,7 @@
-/** The Draw view: loads the current project, then shows the board with its notice strip. */
+/**
+ * The Draw view: loads the current project, then shows the board (with its notice strip and
+ * hints) and the inspector rail on the right.
+ */
 import { Button, Loader } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
@@ -6,6 +9,7 @@ import "@xyflow/react/dist/base.css";
 import { useEffect } from "react";
 import { Canvas } from "./Canvas.tsx";
 import "./draw.css";
+import { Rail } from "./inspector/Rail.tsx";
 import { projectFromUrl, useDraw } from "./store.ts";
 
 function NoticeStrip() {
@@ -115,10 +119,15 @@ export function DrawView() {
   }
   return (
     <ReactFlowProvider key={projectId}>
-      <Canvas />
-      <EmptyHint />
-      <PendingHint />
-      <NoticeStrip />
+      <div className="draw-layout">
+        <div className="draw-main">
+          <Canvas />
+          <EmptyHint />
+          <PendingHint />
+          <NoticeStrip />
+        </div>
+        <Rail />
+      </div>
     </ReactFlowProvider>
   );
 }

@@ -1,7 +1,7 @@
 /**
  * App shell: header (brand, Draw / Runs / Settings tabs, project menu), the view stage on
- * paper, and the status bar. Layout and chrome follow automation-pitch.
- * The inspector rail arrives in S5.
+ * paper, and the status bar. Layout and chrome follow automation-pitch. The Draw view lays out
+ * its own inspector rail.
  */
 import { MantineProvider } from "@mantine/core";
 import { DrawView } from "./draw/DrawView.tsx";

@@ -1,6 +1,6 @@
 /**
  * In-memory stand-in for the design API, for unit tests: one project, the builtin registry,
- * and operations applied with the real `applyOperations`.
+ * operations applied with the real `applyOperations`, and the server's linear undo/redo.
  */
 import { builtinRegistry } from "@jeeves/registry";
 import {
@@ -21,6 +21,9 @@ export function fakeApi() {
     layout: emptyLayout() as LayoutDocument,
     layoutPuts: 0,
     calls: [] as string[],
+    /** Snapshots before/after each applied edit, and the edits undone (newest last). */
+    done: [] as { before: DesignDocument; after: DesignDocument }[],
+    undone: [] as { before: DesignDocument; after: DesignDocument }[],
   };
   const project = () => ({
     id: TEST_PROJECT,
@@ -32,7 +35,7 @@ export function fakeApi() {
     projectId: TEST_PROJECT,
     design: state.design,
     findings: validateDesign(state.design, registry),
-    history: { canUndo: state.design.revision > 0, canRedo: false },
+    history: { canUndo: state.done.length > 0, canRedo: state.undone.length > 0 },
   });
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -66,7 +69,21 @@ export function fakeApi() {
       if (!result.ok) {
         return json({ code: "INVALID_OPERATION", message: "invalid", errors: result.errors }, 422);
       }
+      state.done.push({ before: state.design, after: result.design });
+      state.undone = [];
       state.design = result.design;
+      return json({ ...designState(), operationId: state.design.revision });
+    }
+    if (path === `${projectPath}/undo` || path === `${projectPath}/redo`) {
+      if (body.baseRevision !== state.design.revision) {
+        return json({ code: "REVISION_CONFLICT", message: "stale", ...designState() }, 409);
+      }
+      const undo = path.endsWith("/undo");
+      const step = undo ? state.done.pop() : state.undone.pop();
+      if (!step) return json({ code: "NOTHING_TO_UNDO", message: "Nothing to undo." }, 422);
+      (undo ? state.undone : state.done).push(step);
+      const snapshot = undo ? step.before : step.after;
+      state.design = { ...snapshot, revision: state.design.revision + 1 };
       return json({ ...designState(), operationId: state.design.revision });
     }
     if (path === "/templates") {

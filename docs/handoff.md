@@ -349,3 +349,124 @@ I also checked by hand, in screenshots: the link-shortener fixture with a frame,
 - `loaded.findings` is loaded and refreshed on every edit but not shown yet. Put the badges in `ElementNode`, next to `.element-card-head`.
 - Cards are `<article aria-label="<name>, <template>">` and mini-boxes are `<li aria-label="<template>">`. The e2e tests depend on those names.
 - `apps/web/e2e/draw.spec.ts` has the helpers `openNewProject`, `designOf`, and `layoutOf`.
+
+---
+
+## S5: Draw Jeeves canvas, part 2 (inspector, findings, history) (2026-10-28)
+
+### Built
+
+All in `apps/web`. No new dependencies.
+
+- **Rail** (`src/draw/inspector/Rail.tsx`): a 360 px panel on the right of the Draw view with **Inspector** and **Findings** tabs. The Findings tab shows a count (red, or green at 0). The rail collapses to a 48 px strip that keeps an expand button and the findings count; the choice is stored in localStorage (`jeeves.rail`). `DrawView` is now a flex row, `.draw-main` (board, notice, hints) and the rail, rather than Mantine `AppShell`, because only the Draw view needs a rail.
+- **Inspector** (`inspector/Inspector.tsx`) follows the board selection:
+  - **Element:** template header, Name, a template picker (shown only for "needs a template" elements), findings that aren't tied to a field, Configuration, Implementation notes, Attachments, Connections, and Delete. Each attachment has its own config form, notes, and remove button. There's an "Add attachment" menu built from `registry.attachmentsFor`. Each connection row shows the kind and the other end; clicking the other end selects it and zooms to it, and × disconnects.
+  - **Connection:** kind, From and To (click to focus), findings, and Delete.
+  - **Annotation:** text (text and note), color swatches (note), title (frame), label (arrow), and Delete.
+  - **Several items:** "N items selected", Zoom to selection, and Delete N items (one batch, so one undo step).
+  - **Nothing selected:** project name, counts, and a button that shows the findings.
+- **Config form** (`inspector/ConfigForm.tsx`, `configFields.ts`) is built from the template's `configJsonSchema` with Mantine inputs. No form library: the v1 configs are flat objects of scalars, and the JSON-Schema form libraries don't fit Mantine cleanly. Field types:
+  - integer and number: `NumberInput` with stepper buttons and `clampBehavior="none"`
+  - string enum: `NativeSelect`, with the default marked "(default)"
+  - string: `TextInput`
+  - boolean: `Switch`
+  - anything else: a JSON textarea
+- **How fields behave:**
+  - A field shows the effective value (stored, else the default), so steppers and selects start from what the template would use.
+  - A ↺ button beside a field resets a stored value back to the default.
+  - A no-op commit (no change, or setting the default on an unset key) sends nothing.
+  - A value is checked with the template's Zod schema (`checkConfig`, the same function the server uses) before it's sent. A malformed value shows the error at the field and isn't posted.
+  - `CONFIG_REQUIRED` and `CONFIG_INVALID` findings show at their field (matched by `target.path[0]`); "Required" is shown for the former.
+- **Draft fields** (`inspector/fields.tsx`): text, number, and notes fields keep a local draft and commit once, **on blur**. Enter also commits single-line fields, and Ctrl/Cmd+Enter commits textareas. Escape reverts. So one finished field edit is one operation and one undo step, and clicking anywhere else commits by mouse. Drafts follow the stored value when it changes underneath (undo, another tab, chat later).
+- **Findings:**
+  - `src/draw/findings.ts` places each finding: element and attachment findings go to the element's card, and connection findings go to the edge. The store keeps `loaded.findingIndex` up to date on every adopt.
+  - Cards show a red badge (`role="img"`, "N findings") with the messages in its tooltip.
+  - Clicking a finding in the Findings tab selects its card or edge, zooms to it, and switches to the Inspector, where the field is marked.
+- **Undo/redo** (`store.ts`):
+  - Undo and Redo buttons at the end of the toolbar. Shortcuts: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, and Ctrl+Y. The shortcuts are ignored while typing, so text fields keep their native undo.
+  - Design steps call `POST /undo` and `/redo` (`api.undo` / `api.redo`; `api.edit` now shares the same `change()` helper).
+  - Moves and resizes are undone locally (PLAN §6: "Layout has its own client-side undo"). One local stack (`undoSteps` / `redoSteps`) records `design` markers and `layout` steps (before/after items), so undo always reverses whatever happened last. A new edit or move clears redo, the same as the server does.
+  - If the stack is empty (e.g. after a reload), the buttons still follow the server's `canUndo` / `canRedo`. Stale design markers (e.g. undone in another tab) are skipped.
+  - `setLayoutItems(items, { undoable: true })` is what records a step. Drag stop and note/frame resize pass it. Placement doesn't, because the `addElement` undo covers it.
+- **Selection** is mirrored into the store (`selection`, from React Flow's `onSelectionChange`). `focus(selection, { zoom })` posts a `focusRequest` that the canvas applies, setting the nodes' and edges' `selected` flags and running `fitView` on them. **Zoom to selection** is also a button in the zoom controls, and Shift+2.
+- **Conflicts:** edits, undo, and redo share one `settle()`. On a 409 it adopts the server's current design and says "The design changed somewhere else, so the board was reloaded with the latest version. Try that again."
+- **Theme:** Mantine's error color is mapped to `--minus` on `body`, and the light `--minus` is slightly darker (`#b23a30`). Both changes are for axe contrast: Mantine's default red was 3.2:1 on cream, and S4's "not set" chip was 4.4:1 on paper. Rail inputs use the paper/ink tokens, so dark mode stays blue-steel.
+- Small refactor: `src/draw/registry.ts` holds the single browser-side `builtinRegistry()` instance, now shared by the canvas and the inspector. The e2e helpers moved from `draw.spec.ts` to `e2e/helpers.ts`.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 132 files in 30ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  16 passed (16)
+      Tests  144 passed (144)
+```
+
+`pnpm test:e2e`:
+
+```text
+  ✓  1 [chromium] › apps/web/e2e/draw.spec.ts:61:1 › refuses an incompatible connection with an explanation (2.4s)
+  ✓  3 [chromium] › apps/web/e2e/inspector.spec.ts:120:1 › refuses a malformed value at the field and edits attachment config (3.0s)
+  ✓  4 [chromium] › apps/web/e2e/draw.spec.ts:93:1 › dragging a node saves layout without changing the semantic revision (3.0s)
+  ✓  7 [chromium] › apps/web/e2e/inspector.spec.ts:222:1 › reloads the design and says so when another edit got there first (1.5s)
+  ✓  2 [chromium] › apps/web/e2e/draw.spec.ts:5:1 › builds a service + REST server + Postgres board that survives a reload (4.0s)
+  ✓  5 [chromium] › apps/web/e2e/inspector.spec.ts:169:1 › deletes a multi-selection, zooms to it, and undoes moves (4.2s)
+  ✓  8 [chromium] › apps/web/e2e/shell.spec.ts:4:1 › loads the shell, reports a healthy server, and switches views (1.5s)
+  ✓  6 [chromium] › apps/web/e2e/inspector.spec.ts:31:1 › edits config and notes, sees findings appear and clear, and undoes and redoes (4.8s)
+  8 passed (7.8s)
+```
+
+`npx playwright test --repeat-each 3`, run five times: 24 passed each time, so 120 runs with no failures. That was after making the axe helper wait for toolbar tooltips to close (see known issues). I also checked screenshots of the link-shortener fixture by eye: the inspector in light and dark mode, and the Findings tab.
+
+Coverage of the "Done when" checks (`apps/web/e2e/inspector.spec.ts`). Every action is a mouse click; text is typed, then committed by clicking elsewhere:
+
+- **Config and notes edits, findings appearing and clearing:**
+  - A new web app shows "1 finding" on its card and in the Findings tab.
+  - Clicking the finding selects the card and opens the inspector with "Required" at Title.
+  - Typing a title and clicking away clears the badge, the count, and the field error.
+  - The Port stepper button changes 5173 to 5174, and the Notes field saves.
+  - The API confirms each value.
+- **Undo and redo:** three Undo clicks revert notes, port, and title, and the finding comes back. Three Redo clicks restore all three, and Redo is then disabled. The API revisions and documents are checked at each end.
+- **Also covered:**
+  - an enum select, reset to default, and an out-of-range port that shows the Zod message at the field and posts nothing
+  - adding an attachment from the inspector and editing its config
+  - undoing a drag (the saved layout goes back and the revision doesn't change)
+  - rubber-band selection, Zoom to selection, Delete 2 items, and undoing that delete as one step
+  - the 409 path: a rename via the API, then an edit in the inspector, shows the notice, and the board and field show the other edit
+- **axe:** zero violations on the Draw view with an element open in the inspector, and again on the Findings tab at the end.
+
+Unit tests:
+
+- `store.test.ts`: server undo/redo, interleaved layout and design steps, redo dropped after a new edit, a 409 on undo, and the findings index and focus requests.
+- `findings.test.ts`
+- `inspector/configFields.test.ts`: fields from the real manifests, parsing, the JSON fallback, and Zod errors per key.
+- `inspector/Inspector.test.tsx`: renders the rail with the fake API. It covers commit on blur, a refused out-of-range value, and selection from the findings list.
+- `test-api.ts` now implements undo/redo, and `vitest.setup.ts` stubs `document.fonts` for Mantine's autosizing Textarea.
+
+### Deviations and choices the plan left open
+
+- **No form library**, as described above. If a later template needs nested objects or arrays, extend `configFields` rather than relying on the JSON textarea.
+- **The notes editor is a plain Markdown textarea** with no preview. A preview needs a Markdown renderer dependency. Add one if users ask.
+- **The findings panel is a tab in the rail**, not a separate floating panel, and clicking a finding switches to the Inspector. That way the field to fix is right there. The tab's count is always visible, also in the collapsed rail.
+- **Layout undo is local and lives in the same stack as design undo** (see above). Undo history isn't persisted across reloads for layout; design undo is, because it's the server's.
+- **"Reload" on a conflict** adopts the design from the 409 body, which is the current design. Layout isn't refetched, because local layout may have unsaved changes and layout is last-write-wins anyway.
+- The inspector doesn't let you change an existing element's template (only "needs a template" elements get a picker), since a template change that strands attachments is rejected anyway.
+
+### Known issues
+
+- Mantine `Tooltip`s render in a portal outside any landmark, so axe's `region` rule flags one if it's open during a scan. The e2e helper moves the mouse away and waits for none to be open.
+- Items with no layout entry still go on S4's fallback grid at the origin, and can overlap fixture-positioned cards (e.g. an element added by the API to a board with a saved layout). S6's ELK auto-placement should fix this for chat-created elements.
+- Undo while an edit is still in flight checks `canUndo` before that edit returns. In practice the edit chain serializes the requests, so the worst case is a no-op click.
+- Plain arrows with free ends are still not selectable (from S4), so they can't be inspected.
+
+### For S6
+
+- Chat edits should go through the same server operations with `source: "chat"`. The board picks them up when the client adopts a new `DesignState`. The canvas only learns about other writers on its next edit (409) or a reload, so after a chat turn, call `useDraw`'s adopt path with the returned state. Exposing `adopt` from the store (it's internal now) is the simplest way.
+- To highlight changed elements after a turn, use `useDraw.getState().focus({ nodes: changedIds }, { zoom: true })`.
+- A per-turn Undo button can call `useDraw.getState().undo()` when the chat turn is the newest server step. Otherwise it needs a targeted undo the server doesn't have yet (it only undoes the newest applied edit).
+- The rail is a natural home for the chat panel, as a third tab or a docked section. `Rail.tsx` is small.
