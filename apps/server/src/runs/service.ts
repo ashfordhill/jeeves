@@ -3,14 +3,19 @@
  * plan, and executing it one task at a time. Planning and each step are background jobs
  * (`JobQueue`), and all state is in Postgres, so a run survives a restart (`recoverRuns`).
  *
- * Execution goes through a `TaskExecutor`; S11's is a stub that marks tasks done.
+ * Execution goes through a `TaskExecutor`: the coding-agent executor in the app, a stub or a
+ * scripted executor in tests.
  */
 import { readLock } from "@jeeves/generator";
 import {
+  type AttemptEvent,
+  type AttemptOutcome,
   type AttemptUsage,
   allows,
+  type GitStrategy,
   orderProblems,
   type PlannedTask,
+  type PreviousAttempt,
   type RunAction,
   type RunStatus,
   readGeneratedProject,
@@ -18,15 +23,17 @@ import {
   runActions,
   seedPlan,
   type TaskExecutor,
+  type TaskWorkspace,
 } from "@jeeves/orchestrator";
 import { ProviderError } from "@jeeves/providers";
 import type { TemplateLookup } from "@jeeves/spec";
-import { and, asc, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, notInArray, sql } from "drizzle-orm";
 import type { ModelSource } from "../chat/service.ts";
 import type { Db } from "../db/client.ts";
 import {
   attempts,
   generations,
+  projects,
   type RunPlanner,
   type RunUsage,
   runs,
@@ -41,12 +48,21 @@ export const STEP_JOB = "jeeves-run-step";
 export type Run = typeof runs.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type Attempt = typeof attempts.$inferSelect;
+/** An attempt without its log and diff, as listed in a run's detail. */
+export type AttemptSummary = Omit<Attempt, "events" | "diff" | "feedback">;
+
+export type RunSettings = { gitStrategy: GitStrategy; maxRetries: number };
+
+/** Live log lines kept per attempt (in memory and in the database). */
+const EVENT_CAP = 3000;
+const EVENT_TEXT_CAP = 4000;
+const FLUSH_MS = 1000;
 
 export type RunSummary = Run & { taskCount: number; doneCount: number };
 
 export type RunDetail = {
   run: Run;
-  tasks: (Task & { attempts: Attempt[] })[];
+  tasks: (Task & { attempts: AttemptSummary[] })[];
   /** Buttons the run offers now (Start, Pause, …). */
   actions: RunAction[];
   /** Whether pending tasks can be edited, removed, and reordered now. */
@@ -97,6 +113,8 @@ export class RunService {
   private readonly live = new Map<number, AbortController>();
   /** Runs with a plan or step job being handled, so a duplicate job is a no-op. */
   private readonly busy = new Set<number>();
+  /** The live log of attempts in progress, by attempt ID (saved every second). */
+  private readonly events = new Map<number, AttemptEvent[]>();
 
   constructor(
     private readonly db: Db,
@@ -175,8 +193,9 @@ export class RunService {
       .from(tasks)
       .where(eq(tasks.runId, runId))
       .orderBy(asc(tasks.position));
+    const { events: _e, diff: _d, feedback: _f, ...summaryColumns } = getTableColumns(attempts);
     const attemptRows = await this.db
-      .select()
+      .select(summaryColumns)
       .from(attempts)
       .where(eq(attempts.runId, runId))
       .orderBy(asc(attempts.number));
@@ -237,9 +256,16 @@ export class RunService {
         message: `Run ${active.id} is still ${active.status}. Finish or cancel it before planning another.`,
       };
     }
+    const settings = await this.settings(projectId);
     const [run] = await this.db
       .insert(runs)
-      .values({ projectId, status: "planning", outputDir: readiness.outputDir })
+      .values({
+        projectId,
+        status: "planning",
+        outputDir: readiness.outputDir,
+        gitStrategy: settings?.gitStrategy ?? "branch-per-task",
+        maxRetries: settings?.maxRetries ?? 2,
+      })
       .returning();
     if (!run) throw new Error("insert returned no run");
     await this.jobs.send(PLAN_JOB, { runId: run.id });
@@ -472,6 +498,13 @@ export class RunService {
     switch (action) {
       case "start":
       case "resume": {
+        // Resuming tries the task that needed attention again, from where its work stands.
+        if (action === "resume") {
+          await this.db
+            .update(tasks)
+            .set({ status: "pending" })
+            .where(and(eq(tasks.runId, runId), eq(tasks.status, "needs-attention")));
+        }
         if (!(await this.hasPending(runId))) {
           return {
             ok: false,
@@ -558,77 +591,220 @@ export class RunService {
     }
   }
 
+  /**
+   * Runs a task: attempts until one succeeds, retrying failed attempts (with the failure sent
+   * back to the agent) up to the run's retry limit. Then the task needs attention and the run
+   * stops. A provider that needs the person (credentials, quota) moves the run to
+   * `waiting_for_provider` instead, with the task back to pending.
+   */
   private async runTask(run: Run, task: Task, signal: AbortSignal) {
-    const [{ count } = { count: 0 }] = await this.db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(attempts)
-      .where(eq(attempts.taskId, task.id));
-    const number = count + 1;
     const [claimed] = await this.db
       .update(tasks)
       .set({ status: "running", startedAt: task.startedAt ?? new Date() })
       .where(and(eq(tasks.id, task.id), eq(tasks.status, "pending")))
       .returning();
     if (!claimed) return;
+    let current = claimed;
+    for (let retry = 0; ; retry++) {
+      const result = await this.attempt(run, current, signal);
+      if (result.kind !== "failed") return;
+      if (retry < run.maxRetries && !signal.aborted) {
+        const [fresh] = await this.db.select().from(tasks).where(eq(tasks.id, task.id));
+        if (!fresh) return;
+        current = fresh;
+        continue;
+      }
+      const tries = retry + 1;
+      await this.db.update(tasks).set({ status: "needs-attention" }).where(eq(tasks.id, task.id));
+      await this.stop(
+        run.id,
+        "needs-attention",
+        `"${task.title}" failed${tries > 1 ? ` after ${tries} attempts` : ""}: ${firstLine(result.error)}`,
+      );
+      return;
+    }
+  }
+
+  /** One attempt at a task: insert it, run the executor with a live log, record the outcome. */
+  private async attempt(
+    run: Run,
+    task: Task,
+    signal: AbortSignal,
+  ): Promise<{ kind: "succeeded" | "stopped" } | { kind: "failed"; error: string }> {
+    const [last] = await this.db
+      .select()
+      .from(attempts)
+      .where(eq(attempts.taskId, task.id))
+      .orderBy(desc(attempts.number))
+      .limit(1);
+    const number = (last?.number ?? 0) + 1;
+    const previous: PreviousAttempt | null = last
+      ? {
+          status: last.status,
+          error: last.error,
+          feedback: last.feedback,
+          sessionId: last.sessionId,
+        }
+      : null;
     const [attempt] = await this.db
       .insert(attempts)
       .values({ taskId: task.id, runId: run.id, number, status: "running" })
       .returning();
     if (!attempt) throw new Error("insert returned no attempt");
 
-    let outcome: Awaited<ReturnType<TaskExecutor["execute"]>> | undefined;
+    const log: AttemptEvent[] = [];
+    this.events.set(attempt.id, log);
+    let added = 0;
+    let saved = 0;
+    const flush = async () => {
+      if (added === saved) return;
+      saved = added;
+      await this.db
+        .update(attempts)
+        .set({ events: [...log] })
+        .where(eq(attempts.id, attempt.id));
+    };
+    const timer = setInterval(() => void flush().catch(() => {}), FLUSH_MS);
+
+    let outcome: AttemptOutcome | undefined;
     let thrown: unknown;
     try {
       outcome = await this.executor.execute({
         runId: run.id,
         dir: run.outputDir,
-        task: { ...toPlannedTask(claimed), id: claimed.id },
+        task: { ...toPlannedTask(task), id: task.id, workspace: task.workspace },
         attempt: number,
+        strategy: run.gitStrategy,
+        previous,
         signal,
+        saveWorkspace: (workspace: TaskWorkspace) =>
+          this.db
+            .update(tasks)
+            .set({ workspace })
+            .where(eq(tasks.id, task.id))
+            .then(() => {}),
+        saveSession: (sessionId: string) =>
+          this.db
+            .update(attempts)
+            .set({ sessionId })
+            .where(eq(attempts.id, attempt.id))
+            .then(() => {}),
+        onEvent: (event) => {
+          if (log.length >= EVENT_CAP) log.shift();
+          log.push(
+            event.text.length > EVENT_TEXT_CAP
+              ? { ...event, text: `${event.text.slice(0, EVENT_TEXT_CAP)}…` }
+              : event,
+          );
+          added++;
+        },
       });
     } catch (error) {
       thrown = error;
+    } finally {
+      clearInterval(timer);
+      this.events.delete(attempt.id);
     }
+
     const finishedAt = new Date();
+    const record = {
+      events: log,
+      usage: outcome?.usage ?? null,
+      summary: outcome?.summary ?? null,
+      ...(outcome?.sessionId ? { sessionId: outcome.sessionId } : {}),
+      feedback: outcome?.feedback ?? null,
+      checks: outcome?.checks ?? null,
+      changes: outcome?.changes ?? null,
+      diff: outcome?.diff ?? null,
+      commit: outcome?.commit ?? null,
+      finishedAt,
+    };
     if (signal.aborted) {
       await this.db
         .update(attempts)
-        .set({ status: "cancelled", finishedAt, usage: outcome?.usage ?? null })
+        .set({ ...record, status: "cancelled" })
         .where(eq(attempts.id, attempt.id));
       await this.db
         .update(tasks)
         .set({ status: "cancelled", finishedAt })
         .where(eq(tasks.id, task.id));
-      return;
+      return { kind: "stopped" };
     }
     if (outcome?.status === "succeeded") {
       await this.db
         .update(attempts)
-        .set({ status: "succeeded", summary: outcome.summary, usage: outcome.usage, finishedAt })
+        .set({ ...record, status: "succeeded" })
         .where(eq(attempts.id, attempt.id));
-      await this.db.update(tasks).set({ status: "done", finishedAt }).where(eq(tasks.id, task.id));
-      return;
+      await this.db
+        .update(tasks)
+        .set({ status: "done", finishedAt, commit: outcome.commit ?? null })
+        .where(eq(tasks.id, task.id));
+      return { kind: "succeeded" };
     }
     const error = outcome?.error ?? (thrown as Error | undefined)?.message ?? "The attempt failed.";
     await this.db
       .update(attempts)
-      .set({
-        status: "failed",
-        summary: outcome?.summary ?? null,
-        usage: outcome?.usage ?? null,
-        error,
-        finishedAt,
-      })
+      .set({ ...record, status: "failed", error })
       .where(eq(attempts.id, attempt.id));
-    await this.db.update(tasks).set({ status: "needs-attention" }).where(eq(tasks.id, task.id));
+    if (thrown instanceof ProviderError && thrown.blocksProvider) {
+      await this.db.update(tasks).set({ status: "pending" }).where(eq(tasks.id, task.id));
+      await this.stop(
+        run.id,
+        "waiting_for_provider",
+        `The coding agent can't continue (${thrown.kind}): ${thrown.message} Fix it (Settings, or \`codex login\`), then press Resume.`,
+      );
+      return { kind: "stopped" };
+    }
+    if (thrown) {
+      // Not the agent's work failing (git, an unreadable project): no point retrying.
+      await this.db.update(tasks).set({ status: "needs-attention" }).where(eq(tasks.id, task.id));
+      await this.stop(run.id, "needs-attention", `"${task.title}" couldn't run: ${error}`);
+      return { kind: "stopped" };
+    }
+    return { kind: "failed", error };
+  }
+
+  /** Moves a running (or paused) run to a stopped state with a reason. */
+  private async stop(runId: number, status: RunStatus, reason: string) {
     await this.db
       .update(runs)
-      .set({
-        status: "needs-attention",
-        statusReason: `"${task.title}" failed: ${error}`,
-        updatedAt: finishedAt,
-      })
-      .where(and(eq(runs.id, run.id), inArray(runs.status, ["running", "paused"])));
+      .set({ status, statusReason: reason, updatedAt: new Date() })
+      .where(and(eq(runs.id, runId), inArray(runs.status, ["running", "paused"])));
+  }
+
+  /** One attempt with its log, checks, changed files, and diff. */
+  async attemptDetail(
+    projectId: string,
+    runId: number,
+    attemptId: number,
+  ): Promise<Attempt | undefined> {
+    const run = await this.findRun(projectId, runId);
+    if (!run) return undefined;
+    const [row] = await this.db
+      .select()
+      .from(attempts)
+      .where(and(eq(attempts.runId, runId), eq(attempts.id, attemptId)));
+    if (!row) return undefined;
+    const live = this.events.get(attemptId);
+    return live ? { ...row, events: [...live] } : row;
+  }
+
+  async settings(projectId: string): Promise<RunSettings | undefined> {
+    const [row] = await this.db
+      .select({ gitStrategy: projects.gitStrategy, maxRetries: projects.maxRetries })
+      .from(projects)
+      .where(eq(projects.id, projectId));
+    return row;
+  }
+
+  /** Changes the git strategy and retry limit for runs planned from now on. */
+  async saveSettings(projectId: string, patch: Partial<RunSettings>) {
+    const [row] = await this.db
+      .update(projects)
+      .set(patch)
+      .where(eq(projects.id, projectId))
+      .returning({ gitStrategy: projects.gitStrategy, maxRetries: projects.maxRetries });
+    return row;
   }
 
   private async findRun(projectId: string, runId: number): Promise<Run | undefined> {
@@ -673,6 +849,8 @@ export class RunService {
     };
   }
 }
+
+const firstLine = (text: string) => text.split("\n")[0] ?? text;
 
 function toPlannedTask(task: Task): PlannedTask {
   return {

@@ -1,15 +1,25 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { generateProject } from "@jeeves/generator";
 import {
   type AttemptOutcome,
+  createAgentExecutor,
+  FAIL_MARKER,
+  markerChecks,
   STUB_SUMMARY,
   SUBMIT_PLAN,
   stubExecutor,
   type TaskExecutor,
 } from "@jeeves/orchestrator";
-import { createFakeProvider, type Script } from "@jeeves/providers";
+import {
+  codingScriptByTask,
+  createFakeCodingAgent,
+  createFakeProvider,
+  type FakeCodingAgent,
+  type Script,
+} from "@jeeves/providers";
 import { designSchema, type OperationInput } from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { fromPglite } from "pg-boss";
@@ -34,19 +44,26 @@ const linkShortenerOps: OperationInput[] = [
   ...linkShortener.connections.map((connection) => ({ op: "connect" as const, connection })),
 ];
 
-/** Real generation (no `pnpm pack`, no git) and a baseline that passes without Docker. */
-const generator: GeneratorRunner = {
-  generate: (options) =>
-    generateProject({
+/**
+ * Real generation (no `pnpm pack`; git only when asked) and a baseline that passes without
+ * Docker. Like a real baseline, it leaves an uncommitted `pnpm-lock.yaml`.
+ */
+const makeGenerator = (git: boolean): GeneratorRunner => ({
+  generate: async (options) => {
+    const report = await generateProject({
       ...options,
-      git: false,
+      git,
       vendor: async (dir) => {
         mkdirSync(join(dir, "vendor/jeeves"), { recursive: true });
         return [];
       },
-    }),
+    });
+    writeFileSync(join(options.dir, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+    return report;
+  },
   baseline: async () => ({ ok: true, steps: [], checks: [] }),
-};
+});
+const generator = makeGenerator(false);
 
 const acceptance = ["a test proves it"];
 /** The planner splits the Links service's own task in two. */
@@ -128,12 +145,13 @@ type HarnessOptions = {
   executor?: TaskExecutor;
   jobs?: JobQueue;
   db?: Db;
+  generator?: GeneratorRunner;
 };
 
 function harness(options: HarnessOptions = {}) {
   const jobs = options.jobs ?? localJobs();
   const app = buildTestApp(options.db ?? db, {
-    generator,
+    generator: options.generator ?? generator,
     projectsDir,
     models: options.models ?? fakeModels(),
     executor: options.executor ?? stubExecutor(),
@@ -449,23 +467,34 @@ describe("running (stub execution)", () => {
     expect((await h.call("POST", `/projects/${id}/runs`)).status).toBe(202);
   });
 
-  it("a failed attempt stops the run as needs-attention", async () => {
+  it("a failed attempt is retried, then stops the run as needs-attention", async () => {
     const gate = gatedExecutor();
     const h = harness({ executor: gate.executor });
     const id = await h.project();
     await h.generate(id);
     const { run } = await h.planned(id);
+    expect(run.maxRetries).toBe(2);
     await h.act(id, run.id, "start");
-    await gate.finishNext({
+    const failed: AttemptOutcome = {
       status: "failed",
       summary: "Tests failed",
       usage: { inputTokens: 10, outputTokens: 5, known: true },
       error: "2 tests failed",
-    });
+      feedback: "fix them",
+      sessionId: "s1",
+    };
+    for (let i = 0; i < 3; i++) await gate.finishNext(failed);
     const detail = await h.until(id, run.id, "needs-attention");
-    expect(detail.run.statusReason).toBe('"Create and fetch links" failed: 2 tests failed');
+    expect(detail.run.statusReason).toBe(
+      '"Create and fetch links" failed after 3 attempts: 2 tests failed',
+    );
     expect(detail.tasks[0]).toMatchObject({ status: "needs-attention" });
-    expect(detail.usage.attempts).toEqual({ inputTokens: 10, outputTokens: 5, known: true });
+    expect(detail.tasks[0]?.attempts.map((a) => [a.number, a.status, a.sessionId])).toEqual([
+      [1, "failed", "s1"],
+      [2, "failed", "s1"],
+      [3, "failed", "s1"],
+    ]);
+    expect(detail.usage.attempts).toEqual({ inputTokens: 30, outputTokens: 15, known: true });
     expect(detail.actions).toEqual(["resume", "cancel"]);
   });
 });
@@ -537,4 +566,273 @@ describe("restarts", () => {
     await requeuePlanning(db, restarted.jobs);
     await restarted.until(id, created.body.run.id, "planned");
   });
+});
+
+const git = (dir: string, ...args: string[]) =>
+  execFileSync("git", args, { cwd: dir, encoding: "utf8" }).trim();
+
+/** The real executor with a scripted coding agent and marker checks (no Docker, no model). */
+function agentHarness(script: unknown, options: Omit<HarnessOptions, "executor"> = {}) {
+  const agent: FakeCodingAgent = createFakeCodingAgent(codingScriptByTask(script));
+  const executor = createAgentExecutor({
+    agents: () => ({ agent, model: "fake-coder" }),
+    checks: markerChecks(),
+  });
+  const h = harness({ ...options, executor, generator: makeGenerator(true) });
+  return Object.assign(h, {
+    agent,
+    async attempt(projectId: string, runId: number, attemptId: number) {
+      const res = await h.call("GET", `/projects/${projectId}/runs/${runId}/attempts/${attemptId}`);
+      expect(res.status).toBe(200);
+      return res.body.attempt;
+    },
+  });
+}
+
+/** Each task writes one feature file inside its element. */
+const featureFiles: Record<string, string> = {
+  "links.links-api": "services/links/src/features/api.ts",
+  links: "services/links/src/features/redirect.ts",
+  "links-2": "services/links/src/features/clicks.ts",
+  web: "frontends/web/src/pages/Shorten.tsx",
+};
+const passing = (key: string, extra = "") => ({
+  write: { [featureFiles[key] as string]: `export const done = "${key}";\n${extra}` },
+  message: `Implemented ${key}.`,
+});
+const allPassing = Object.keys(featureFiles).map((task) => ({ task, attempts: [passing(task)] }));
+
+describe("executing with the fake coding agent", { timeout: 30_000 }, () => {
+  it("runs every task, checks it, and merges each task branch into the run branch", async () => {
+    const h = agentHarness({ tasks: allPassing });
+    const id = await h.project();
+    const dir = await h.generate(id);
+    const { run } = await h.planned(id);
+    expect(run.gitStrategy).toBe("branch-per-task");
+    await h.act(id, run.id, "start");
+    const done = await h.until(id, run.id, "succeeded");
+
+    expect(done.tasks.map((t) => [t.key, t.status, t.attempts.length])).toEqual([
+      ["links.links-api", "done", 1],
+      ["links", "done", 1],
+      ["links-2", "done", 1],
+      ["web", "done", 1],
+    ]);
+    expect(done.tasks[0]?.workspace).toMatchObject({
+      runBranch: `jeeves/run-${run.id}`,
+      branch: `jeeves/run-${run.id}-links.links-api`,
+    });
+    expect(git(dir, "branch", "--show-current")).toBe(`jeeves/run-${run.id}`);
+    expect(git(dir, "rev-parse", "HEAD")).toBe(done.tasks[3]?.commit);
+    expect(git(dir, "log", "--first-parent", "--format=%s").split("\n").slice(0, 6)).toEqual([
+      `Merge jeeves/run-${run.id}-web`,
+      `Merge jeeves/run-${run.id}-links-2`,
+      `Merge jeeves/run-${run.id}-links`,
+      `Merge jeeves/run-${run.id}-links.links-api`,
+      `Jeeves: uncommitted project changes before run ${run.id}`,
+      "Generate template project from design revision 1",
+    ]);
+    expect(git(dir, "status", "--porcelain")).toBe("");
+    expect(done.usage.attempts).toEqual({ inputTokens: 4000, outputTokens: 800, known: true });
+
+    // The run detail lists attempts without their logs and diffs; the attempt route has them.
+    const summary = done.tasks[0]?.attempts[0] as unknown as Record<string, unknown>;
+    expect(summary).not.toHaveProperty("diff");
+    expect(summary).not.toHaveProperty("events");
+    const attempt = await h.attempt(id, run.id, summary.id as number);
+    expect(attempt).toMatchObject({
+      status: "succeeded",
+      summary: "Implemented links.links-api.",
+      sessionId: expect.stringMatching(/^fake-session-/),
+      changes: [{ path: featureFiles["links.links-api"], status: "added" }],
+      checks: { ok: true, rejectedPaths: [], steps: [{ step: "unit-tests", status: "passed" }] },
+      commit: expect.stringMatching(/^[0-9a-f]{40}$/),
+    });
+    expect(attempt.diff).toContain('+export const done = "links.links-api";');
+    expect(attempt.events.map((e: { kind: string }) => e.kind)).toEqual(
+      expect.arrayContaining(["git", "log", "files", "message", "step", "check"]),
+    );
+    // The brief went to the agent, in the project folder.
+    expect(h.agent.requests[0]).toMatchObject({ workingDirectory: dir, model: "fake-coder" });
+    expect(h.agent.requests[0]?.prompt).toContain("# Task: Create and fetch links");
+    expect(h.agent.requests[0]?.prompt).toContain("POST /api/links returns 201 with a code");
+  });
+
+  it("direct: commits each task on the run branch", async () => {
+    const h = agentHarness({ tasks: allPassing });
+    const id = await h.project();
+    const dir = await h.generate(id);
+    const saved = await h.call("PUT", `/projects/${id}/run-settings`, { gitStrategy: "direct" });
+    expect(saved.body).toEqual({ gitStrategy: "direct", maxRetries: 2 });
+    const { run } = await h.planned(id);
+    await h.act(id, run.id, "start");
+    await h.until(id, run.id, "succeeded");
+    expect(git(dir, "log", "--format=%s").split("\n").slice(0, 4)).toEqual([
+      "web: Shorten form and recent links",
+      "links-2: Count clicks",
+      "links: Redirect short codes",
+      "links.links-api: Create and fetch links",
+    ]);
+    expect(git(dir, "branch", "--list", "jeeves/*").split("\n")).toHaveLength(1);
+  });
+
+  it("a failing task is retried with the check output, then pauses as needs-attention", async () => {
+    const failing = { write: { [featureFiles.links as string]: `// ${FAIL_MARKER}\n` } };
+    const h = agentHarness({
+      tasks: [
+        { task: "links.links-api", attempts: [passing("links.links-api")] },
+        { task: "links", attempts: [failing, failing, failing, passing("links")] },
+        ...allPassing.slice(2),
+      ],
+    });
+    const id = await h.project();
+    const dir = await h.generate(id);
+    const { run } = await h.planned(id);
+    await h.act(id, run.id, "start");
+    const stopped = await h.until(id, run.id, "needs-attention");
+    expect(stopped.run.statusReason).toMatch(
+      /^"Redirect short codes" failed after 3 attempts: Jeeves's checks failed/,
+    );
+    const task = stopped.tasks[1];
+    expect(task?.status).toBe("needs-attention");
+    expect(task?.attempts.map((a) => a.status)).toEqual(["failed", "failed", "failed"]);
+    expect(stopped.tasks.slice(2).map((t) => t.status)).toEqual(["pending", "pending"]);
+    // Retries continue the same session with the failure; nothing of the task is committed.
+    const [first, second] = h.agent.requests.slice(1);
+    expect(second?.resumeSessionId).toBe(first?.resumeSessionId ?? "fake-session-1");
+    expect(second?.prompt).toContain("Jeeves ran its checks on your work and they did not pass");
+    expect(second?.prompt).toContain(`Assertion failed in ${featureFiles.links}`);
+    expect(git(dir, "branch", "--show-current")).toBe(`jeeves/run-${run.id}-links`);
+    expect(git(dir, "log", "-1", "--format=%s")).toBe(`Merge jeeves/run-${run.id}-links.links-api`);
+
+    // The person resumes: attempt 4 passes, and the rest of the plan runs.
+    await h.act(id, run.id, "resume");
+    const done = await h.until(id, run.id, "succeeded");
+    expect(done.tasks[1]?.attempts.map((a) => a.status)).toEqual([
+      "failed",
+      "failed",
+      "failed",
+      "succeeded",
+    ]);
+  });
+
+  it("rejects and reverts a change outside the task's owned paths", async () => {
+    const h = agentHarness({
+      tasks: [
+        {
+          task: "links.links-api",
+          attempts: [
+            {
+              write: {
+                [featureFiles["links.links-api"] as string]: "export const api = 1;\n",
+                "frontends/web/src/pages/Sneaky.tsx": "export {};\n",
+              },
+            },
+          ],
+        },
+      ],
+    });
+    const id = await h.project();
+    const dir = await h.generate(id);
+    await h.call("PUT", `/projects/${id}/run-settings`, { maxRetries: 0 });
+    const { run } = await h.planned(id);
+    await h.act(id, run.id, "start");
+    const stopped = await h.until(id, run.id, "needs-attention");
+    expect(stopped.run.statusReason).toBe(
+      `"Create and fetch links" failed: Changed files outside the task's owned paths (reverted): frontends/web/src/pages/Sneaky.tsx`,
+    );
+    expect(existsSync(join(dir, "frontends/web/src/pages/Sneaky.tsx"))).toBe(false);
+    expect(existsSync(join(dir, featureFiles["links.links-api"] as string))).toBe(true);
+    const attempt = await h.attempt(id, run.id, stopped.tasks[0]?.attempts[0]?.id as number);
+    expect(attempt.checks).toEqual({
+      ok: false,
+      rejectedPaths: ["frontends/web/src/pages/Sneaky.tsx"],
+      steps: [],
+      checks: [],
+    });
+    expect(attempt.feedback).toContain("- frontends/web/src/pages/Sneaky.tsx");
+  });
+
+  it("a provider out of quota moves the run to waiting_for_provider; Resume tries again", async () => {
+    const h = agentHarness({
+      tasks: [
+        { task: "links.links-api", attempts: [{ error: "quota" }, passing("links.links-api")] },
+      ],
+      default: { write: { "services/links/src/features/x.ts": "export {};\n" } },
+    });
+    const id = await h.project();
+    await h.generate(id);
+    const { run } = await h.planned(id);
+    await h.act(id, run.id, "start");
+    const waiting = await h.until(id, run.id, "waiting_for_provider");
+    expect(waiting.run.statusReason).toMatch(/^The coding agent can't continue \(quota\)/);
+    expect(waiting.tasks[0]?.status).toBe("pending");
+    expect(waiting.tasks[0]?.attempts.map((a) => a.status)).toEqual(["failed"]);
+    expect(h.agent.requests).toHaveLength(1);
+    expect(waiting.actions).toEqual(["resume", "cancel"]);
+    await h.act(id, run.id, "resume");
+    await waitFor(async () => (await h.detail(id, run.id)).tasks[0]?.status === "done");
+  });
+
+  it("killing the server mid-task leads to a correct resume", async () => {
+    const dataDir = mkdtempSync(join(tmpdir(), "jeeves-exec-pg-"));
+    const half = featureFiles["links.links-api"] as string;
+    const script = {
+      tasks: [
+        {
+          task: "links.links-api",
+          attempts: [
+            { write: { [half]: "export const created = 1;\n" }, hang: true },
+            { append: { [half]: "export const fetched = 2;\n" } },
+          ],
+        },
+      ],
+      default: { message: "skip" },
+    };
+    try {
+      const first = await openTestDb(dataDir);
+      const firstJobs = await pgBossJobs({ db: fromPglite(first.client) });
+      const h1 = agentHarness(script, { db: first.db, jobs: firstJobs });
+      const id = await h1.project();
+      const dir = await h1.generate(id);
+      await h1.call("PUT", `/projects/${id}/run-settings`, { maxRetries: 0 });
+      const { run } = await h1.planned(id);
+      await h1.act(id, run.id, "start");
+      await waitFor(async () => existsSync(join(dir, half)));
+      // "Kill" the server: jobs dropped, the agent's session never finishes.
+      await firstJobs.stop({ graceful: false });
+      await h1.app.close();
+      await first.close();
+
+      const second = await openTestDb(dataDir);
+      await recoverRuns(second.db);
+      const secondJobs = await pgBossJobs({ db: fromPglite(second.client) });
+      try {
+        const h2 = agentHarness(script, { db: second.db, jobs: secondJobs });
+        const paused = await h2.detail(id, run.id);
+        expect(paused.run.status).toBe("paused");
+        expect(paused.tasks[0]?.attempts.map((a) => a.status)).toEqual(["interrupted"]);
+        // The interrupted work is still in the folder, on the task branch.
+        expect(readFileSync(join(dir, half), "utf8")).toBe("export const created = 1;\n");
+
+        await h2.act(id, run.id, "resume");
+        await waitFor(async () => (await h2.detail(id, run.id)).tasks[0]?.status === "done");
+        const prompt = h2.agent.requests[0]?.prompt ?? "";
+        expect(prompt).toMatch(/^Jeeves task: links\.links-api, attempt 2\n/);
+        expect(prompt).toContain("## Earlier work on this task");
+        expect(prompt).toContain("+export const created = 1;");
+        expect(h2.agent.requests[0]?.resumeSessionId).toBeUndefined();
+        const commit = (await h2.detail(id, run.id)).tasks[0]?.commit as string;
+        expect(git(dir, "show", `${commit}:${half}`)).toBe(
+          "export const created = 1;\nexport const fetched = 2;",
+        );
+        await h2.act(id, run.id, "cancel");
+      } finally {
+        await secondJobs.stop();
+        await second.close();
+      }
+    } finally {
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  }, 60_000);
 });

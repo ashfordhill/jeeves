@@ -2,7 +2,7 @@
 
 Jeeves turns a software design into a working, tested application by combining strict, reusable templates with coding agents. Draw Jeeves is its design canvas. See [PLAN.md](PLAN.md) for the architecture and build plan.
 
-Status: S1–S11 are done (see `docs/handoff.md`). The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit, reorder, and start, pause, or cancel. Task execution is still a stub that marks each task done; coding agents arrive in S12. Settings shows provider key status and the model per role.
+Status: S1–S12 are done (see `docs/handoff.md`). The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit and reorder, then runs each task with Codex, checks the result itself, and commits it to a run branch. Settings shows provider key status and the model per role.
 
 ## Requirements
 
@@ -42,7 +42,19 @@ After generating, open **Runs** and press **Plan a run**. Jeeves reads the gener
 
 Before starting, you can edit a task's title, description, and acceptance tests, move tasks up or down (a task moved ahead of something it depends on gets a warning), and remove tasks. **Start** runs the tasks one at a time, **Pause** stops after the current task, **Resume** continues, and **Cancel run** stops everything. Planning and each step are pg-boss jobs in Jeeves's Postgres, and run state is saved there. If Jeeves restarts mid-task, that attempt is marked interrupted and the run waits, paused, for **Resume**.
 
-Until S12, execution is a stub: each task is marked done after `JEEVES_STUB_TASK_MS` (default 1500 ms).
+**Execution.** Each task runs a [Codex](https://github.com/openai/codex) session in the project folder (sandboxed to it, network on for `pnpm install`) with a brief: the task and its acceptance tests, the element's notes and template guide, the paths it may change, neighbouring API contracts, the checks, and `AGENTS.md`. When the agent stops, Jeeves itself:
+
+1. reverts and rejects changes outside the task's owned paths (and to generated-owned files),
+2. runs `pnpm install`, the type check, `pnpm -r test`, `docker compose up --wait`, and every template test pack (then `docker compose down`),
+3. on success commits the task; on failure sends the check output back to the same Codex session, up to the retry limit (default 2), after which the task needs attention and the run stops.
+
+A Codex credential or quota problem moves the run to **Waiting for provider** instead; fix it and press **Resume**. **Resume** after a failure or a restart tries the task again from the work already in the folder (a new session after a restart is told what's there).
+
+Git: every run works on `jeeves/run-<id>`, branched from what the project had checked out; uncommitted changes there (such as `pnpm-lock.yaml` after Generate) are committed first. The project's git strategy (Runs sidebar, "For new runs") is **branch per task** (`jeeves/run-<id>-<task>`, merged with `--no-ff` after the checks pass) or **direct** (commits on the run branch). Jeeves never pushes or touches your other branches; merge the run branch yourself. Generate is refused while a run is executing.
+
+Click an attempt to see its live log (agent messages, commands, file edits, and each check), the check results, the changed files, and the diff. Token usage is shown per attempt and per run (cost is unknown: Codex doesn't report it).
+
+Codex uses its own login: run `codex login` once (ChatGPT or an API key). The Codex CLI comes with the SDK; `JEEVES_CODEX_PATH` points Jeeves at another `codex` binary. The model is Settings → "Coding" (it must be one your Codex account can use).
 
 ## Test
 
@@ -51,6 +63,8 @@ pnpm check        # Biome lint, type check, Vitest unit tests (no Docker needed;
 pnpm test:e2e     # Playwright; starts Postgres and both apps itself
 pnpm test:templates  # template conformance tests and the generator baseline (Docker, Chromium, network; several minutes)
 ```
+
+In e2e tests the chat and planner replay `fixtures/chat/e2e-script.json`, and tasks run a scripted coding agent (`fixtures/coding/e2e-script.json`) with quick marker checks instead of Docker; see `playwright.config.ts`.
 
 Playwright's Chromium needs system libraries. If it fails with a missing `libnspr4.so` (or similar), either install them once with `sudo pnpm exec playwright install-deps chromium`, or run the suite inside the official Playwright image with `pnpm test:e2e:docker`.
 

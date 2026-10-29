@@ -21,7 +21,17 @@ export const baselineSteps = [
   { id: "test-packs", title: "Run template test packs" },
   { id: "compose-down", title: "Stop the project" },
 ] as const;
-export type BaselineStepId = (typeof baselineSteps)[number]["id"];
+
+/** The orchestrator's checks after each task (PLAN §10): the baseline plus the project's tests. */
+export const taskCheckSteps = [
+  baselineSteps[0],
+  baselineSteps[1],
+  { id: "unit-tests", title: "Unit and project tests" },
+  baselineSteps[2],
+  baselineSteps[3],
+  baselineSteps[4],
+] as const;
+export type BaselineStepId = (typeof taskCheckSteps)[number]["id"];
 
 export type StepStatus = "running" | "passed" | "failed" | "skipped";
 
@@ -55,6 +65,8 @@ export interface BaselineOptions {
   templates?: TemplateSet;
   onEvent?: (event: BaselineEvent) => void;
   signal?: AbortSignal;
+  /** Also run the project's own tests (`pnpm -r --no-bail test`) after the type check. */
+  unitTests?: boolean;
   /** Leave the containers running afterwards. Default false: `docker compose down` (volumes kept). */
   keepRunning?: boolean;
 }
@@ -133,6 +145,12 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     await command(log, pnpm, [...pnpmArgs, "-r", "--no-bail", "typecheck"], "The type check");
     return undefined;
   });
+  if (options.unitTests) {
+    await step("unit-tests", async (log) => {
+      await command(log, pnpm, [...pnpmArgs, "-r", "--no-bail", "test"], "The tests");
+      return undefined;
+    });
+  }
 
   let started = false;
   await step("compose-up", async (log) => {

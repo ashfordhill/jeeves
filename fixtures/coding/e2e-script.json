@@ -1,0 +1,44 @@
+{
+  "tasks": [
+    {
+      "task": "links.links-api",
+      "attempts": [
+        {
+          "writePrompt": "services/links/src/features/links-api.ts",
+          "delayMs": 2000,
+          "message": "Added POST /api/links and GET /api/links/:code with tests."
+        }
+      ]
+    },
+    {
+      "task": "links",
+      "attempts": [
+        {
+          "writePrompt": "services/links/src/features/redirect.ts",
+          "delayMs": 1000,
+          "message": "Added the redirect."
+        }
+      ]
+    },
+    {
+      "task": "links-2",
+      "attempts": [
+        {
+          "writePrompt": "services/links/src/features/clicks.ts",
+          "delayMs": 1000,
+          "message": "Counted clicks."
+        }
+      ]
+    },
+    {
+      "task": "web",
+      "attempts": [
+        {
+          "writePrompt": "frontends/web/src/pages/Shorten.tsx",
+          "delayMs": 1000,
+          "message": "Built the page."
+        }
+      ]
+    }
+  ]
+}

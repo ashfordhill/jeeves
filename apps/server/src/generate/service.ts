@@ -14,7 +14,7 @@ import {
   runBaseline,
 } from "@jeeves/generator/baseline";
 import { blocksGenerate, type DesignDocument } from "@jeeves/spec";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import {
   type GenerationCheck,
@@ -25,6 +25,7 @@ import {
   type GenerationStepId,
   generations,
   projects,
+  runs,
 } from "../db/schema.ts";
 import type { DesignService } from "../design/service.ts";
 
@@ -123,6 +124,25 @@ export class GenerationService {
         status: 409,
         code: "GENERATE_BUSY",
         message: "This project is already generating. Wait for it to finish or cancel it.",
+      };
+    }
+    // Regenerating under a run would change files while an agent works on them (S12).
+    const [executing] = await this.db
+      .select({ id: runs.id, status: runs.status })
+      .from(runs)
+      .where(
+        and(
+          eq(runs.projectId, projectId),
+          inArray(runs.status, ["running", "paused", "needs-attention", "waiting_for_provider"]),
+        ),
+      )
+      .limit(1);
+    if (executing) {
+      return {
+        ok: false,
+        status: 409,
+        code: "RUN_ACTIVE",
+        message: `Run ${executing.id} is ${executing.status.replaceAll("_", " ")}. Finish or cancel it before generating again.`,
       };
     }
     if (state.design.elements.length === 0) {
@@ -340,16 +360,18 @@ export class GenerationService {
   }
 
   private onBaselineEvent(live: Live, event: BaselineEvent) {
+    // Generation doesn't run the project's tests; that step only exists in task checks.
+    if (event.type !== "check" && event.step === "unit-tests") return;
     switch (event.type) {
       case "step":
-        this.setStep(live, event.step, {
+        this.setStep(live, event.step as GenerationStepId, {
           status: event.status,
           ...(event.durationMs !== undefined && { durationMs: event.durationMs }),
           ...(event.message && { message: event.message }),
         });
         break;
       case "log":
-        this.log(live, event.step, event.line);
+        this.log(live, event.step as GenerationStepId, event.line);
         break;
       case "check":
         live.generation = { ...live.generation, checks: [...live.generation.checks, event.check] };

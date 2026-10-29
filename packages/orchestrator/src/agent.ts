@@ -1,0 +1,288 @@
+/**
+ * The real task executor (PLAN §10, Execute): prepare git, brief a coding-agent session, then
+ * check the work itself (owned paths first, then the project checks) and commit it per the git
+ * strategy. One call is one attempt; the run service retries failed attempts with the feedback
+ * this returns.
+ */
+import {
+  type CodingAgentEvent,
+  type CodingAgentProvider,
+  type CodingSessionResult,
+  ProviderError,
+} from "@jeeves/providers";
+import { followUpPrompt, taskBrief } from "./brief.ts";
+import type { ProjectChecks } from "./checks.ts";
+import type {
+  AttemptEvent,
+  AttemptOutcome,
+  AttemptUsage,
+  PreviousAttempt,
+  TaskExecutor,
+} from "./execute.ts";
+import { Git, isOwned, SHARED_PATHS } from "./git.ts";
+import { readGeneratedProject } from "./project.ts";
+
+/** The coding agent and model to use, read again for every attempt (Settings may change). */
+export type CodingAgentSource = () =>
+  | { agent: CodingAgentProvider; model: string }
+  | { error: string };
+
+export type AgentExecutorOptions = {
+  agents: CodingAgentSource;
+  checks: ProjectChecks;
+};
+
+/** Log lines from the checks kept for the agent's feedback. */
+const FEEDBACK_LOG_LINES = 80;
+
+export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): TaskExecutor {
+  return {
+    async execute(input) {
+      const started = Date.now();
+      const emit = (event: Omit<AttemptEvent, "t">) =>
+        input.onEvent?.({ t: Date.now() - started, ...event });
+      const { task, dir, signal } = input;
+
+      const source = agents();
+      if ("error" in source) throw new ProviderError("coding", "auth", source.error);
+      const { agent, model } = source;
+
+      const project = readGeneratedProject(dir);
+      const git = new Git(dir);
+      const { workspace, notes } = await git.prepare({
+        runId: input.runId,
+        taskKey: task.key,
+        strategy: input.strategy,
+        workspace: task.workspace,
+      });
+      for (const text of notes) emit({ kind: "git", text });
+      if (!task.workspace) await input.saveWorkspace?.(workspace);
+      const base = workspace.baseCommit;
+
+      // A retry after failed checks continues the same session with the results; anything else
+      // (first attempt, a restart, an agent crash) starts a new one, told about earlier work.
+      const previous = input.previous;
+      const followUp =
+        previous?.status === "failed" &&
+        previous.feedback &&
+        previous.sessionId &&
+        agent.capabilities.resume
+          ? { sessionId: previous.sessionId, feedback: previous.feedback }
+          : undefined;
+      let prompt: string;
+      if (followUp) {
+        prompt = followUpPrompt(task, input.attempt, followUp.feedback);
+        emit({ kind: "log", text: `Resuming the ${agent.id} session with Jeeves's check results` });
+      } else {
+        const diffStat = previous ? await git.diffStat(base) : "";
+        const earlierWork = diffStat
+          ? { reason: earlierReason(previous), diffStat, diff: await git.diff(base) }
+          : undefined;
+        prompt = taskBrief({ project, task, attempt: input.attempt, earlierWork });
+        if (previous?.feedback) {
+          prompt += `\n\n## What failed last time\n\n${previous.feedback}`;
+        }
+        emit({
+          kind: "log",
+          text: `Starting a ${agent.id} session${model ? ` (${model})` : ""}${earlierWork ? " with a summary of the earlier work" : ""}`,
+        });
+      }
+
+      let session: CodingSessionResult | undefined;
+      let sessionId: string | null = followUp?.sessionId ?? null;
+      let agentError: ProviderError | undefined;
+      try {
+        session = await agent.run(
+          {
+            workingDirectory: dir,
+            prompt,
+            ...(model ? { model } : {}),
+            ...(followUp ? { resumeSessionId: followUp.sessionId } : {}),
+          },
+          {
+            signal,
+            onEvent: (event) => {
+              if (event.type === "session") {
+                sessionId = event.sessionId;
+                void input.saveSession?.(event.sessionId);
+              }
+              const mapped = agentEvent(event);
+              if (mapped) emit(mapped);
+            },
+          },
+        );
+        sessionId = session.sessionId ?? sessionId;
+      } catch (error) {
+        if (signal.aborted) throw error;
+        if (!(error instanceof ProviderError) || error.blocksProvider) throw error;
+        // The agent crashed or the provider had a passing problem: a new session may do better.
+        agentError = error;
+        emit({ kind: "warning", text: error.message });
+      }
+      const usage = toUsage(session);
+
+      // Owned paths first: anything outside them (or a generated-owned file) is reverted.
+      let changes = await git.changes(base);
+      const generated = new Set(Object.keys(project.lock.files));
+      const rejected = changes
+        .map((c) => c.path)
+        .filter(
+          (path) =>
+            generated.has(path) || !(isOwned(path, task.ownedPaths) || SHARED_PATHS.includes(path)),
+        );
+      if (rejected.length > 0) {
+        await git.restore(base, rejected);
+        emit({
+          kind: "git",
+          text: `Reverted changes outside the task's paths: ${rejected.join(", ")}`,
+        });
+        changes = await git.changes(base);
+      }
+      const diff = await git.diff(base);
+      const common = { usage, sessionId, changes, diff };
+
+      if (agentError) {
+        return {
+          ...common,
+          status: "failed",
+          summary: "The coding agent stopped with an error.",
+          error: agentError.message,
+          checks: { ok: false, rejectedPaths: rejected, steps: [], checks: [] },
+        };
+      }
+      if (rejected.length > 0) {
+        const list = rejected.map((p) => `- ${p}`).join("\n");
+        return {
+          ...common,
+          status: "failed",
+          summary: lastWords(session),
+          error: `Changed files outside the task's owned paths (reverted): ${rejected.join(", ")}`,
+          feedback: `You changed files you may not change, so Jeeves reverted them:\n\n${list}\n\nYou may only change ${[...task.ownedPaths, ...SHARED_PATHS].join(", ")}, and never generated-owned files. Redo the work inside those paths, or explain in your final message why it can't be done there.`,
+          checks: { ok: false, rejectedPaths: rejected, steps: [], checks: [] },
+        };
+      }
+      if (changes.length === 0) {
+        return {
+          ...common,
+          status: "failed",
+          summary: lastWords(session),
+          error: "The agent didn't change any files.",
+          feedback: "You didn't change any files. Implement the task, with its tests, then stop.",
+          checks: { ok: false, rejectedPaths: [], steps: [], checks: [] },
+        };
+      }
+
+      emit({ kind: "log", text: `Running Jeeves's checks on ${changes.length} changed file(s)` });
+      const logTail: string[] = [];
+      const result = await checks.run({
+        dir,
+        changed: changes.filter((c) => c.status !== "deleted").map((c) => c.path),
+        signal,
+        onEvent: (event) => {
+          if (event.kind === "log") {
+            logTail.push(event.text);
+            if (logTail.length > FEEDBACK_LOG_LINES) logTail.shift();
+          }
+          emit(event);
+        },
+      });
+      if (signal.aborted) throw new Error("cancelled");
+      const attemptChecks = { ...result, rejectedPaths: [] };
+      if (!result.ok) {
+        const failure = checkFailure(result);
+        return {
+          ...common,
+          status: "failed",
+          summary: lastWords(session),
+          error: failure,
+          feedback: `${failure}\n\nThe last lines of the check output:\n\n\`\`\`text\n${logTail.join("\n")}\n\`\`\``,
+          checks: attemptChecks,
+        };
+      }
+
+      const commit = await git.finish(
+        workspace,
+        `${task.key}: ${task.title}\n\nJeeves run ${input.runId}, task ${task.key}, attempt ${input.attempt}.`,
+      );
+      emit({
+        kind: "git",
+        text:
+          workspace.branch === workspace.runBranch
+            ? `Committed ${commit.slice(0, 10)} on ${workspace.runBranch}`
+            : `Merged ${workspace.branch} into ${workspace.runBranch} (${commit.slice(0, 10)})`,
+      });
+      return {
+        ...common,
+        status: "succeeded",
+        summary: lastWords(session),
+        checks: attemptChecks,
+        commit,
+      } satisfies AttemptOutcome;
+    },
+  };
+}
+
+function earlierReason(previous: PreviousAttempt | null): string {
+  if (previous?.status === "interrupted")
+    return "An earlier attempt was interrupted (Jeeves stopped while it ran).";
+  if (previous?.error) return `An earlier attempt failed: ${previous.error}`;
+  return "An earlier attempt left work in the folder.";
+}
+
+function checkFailure(result: Awaited<ReturnType<ProjectChecks["run"]>>): string {
+  const steps = result.steps
+    .filter((s) => s.status === "failed")
+    .map((s) => `${s.title}${s.message ? `: ${s.message}` : ""}`);
+  const checks = result.checks
+    .filter((c) => c.status === "failed")
+    .map((c) => `${c.subject}: ${c.title}${c.error ? ` (${c.error})` : ""}`);
+  return [
+    `Jeeves's checks failed. ${steps.join("; ")}`,
+    ...(checks.length > 0 ? ["Failed checks:", ...checks.map((c) => `- ${c}`)] : []),
+  ].join("\n");
+}
+
+function lastWords(session: CodingSessionResult | undefined): string {
+  const text = session?.finalMessage.trim() ?? "";
+  if (!text) return "The agent finished without a message.";
+  return text.length > 600 ? `${text.slice(0, 600)}…` : text;
+}
+
+function toUsage(session: CodingSessionResult | undefined): AttemptUsage | null {
+  if (!session?.usage) return null;
+  return {
+    inputTokens: session.usage.inputTokens,
+    outputTokens: session.usage.outputTokens,
+    known: true,
+  };
+}
+
+function agentEvent(event: CodingAgentEvent): Omit<AttemptEvent, "t"> | undefined {
+  switch (event.type) {
+    case "session":
+      return { kind: "log", text: `Session ${event.sessionId}` };
+    case "message":
+      return { kind: "message", text: event.text };
+    case "reasoning":
+      return { kind: "reasoning", text: event.text };
+    case "command":
+      return {
+        kind: "command",
+        text:
+          event.status === "running"
+            ? `$ ${event.command}`
+            : `$ ${event.command} → ${event.exitCode ?? (event.status === "failed" ? "failed" : "done")}`,
+        status:
+          event.status === "running" ? "running" : event.status === "failed" ? "failed" : "passed",
+      };
+    case "files":
+      return { kind: "files", text: event.changes.map((c) => `${c.kind} ${c.path}`).join(", ") };
+    case "todo":
+      return {
+        kind: "todo",
+        text: event.items.map((i) => `${i.done ? "[x]" : "[ ]"} ${i.text}`).join("\n"),
+      };
+    case "warning":
+      return { kind: "warning", text: event.text };
+  }
+}

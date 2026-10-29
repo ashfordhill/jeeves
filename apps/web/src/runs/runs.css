@@ -320,3 +320,182 @@
   border-top: 2px dashed color-mix(in srgb, var(--line) 35%, transparent);
   font-size: 13px;
 }
+
+/* S12: run settings, git summary, and attempt evidence. */
+.runs-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px dashed color-mix(in srgb, var(--line) 45%, transparent);
+  border-radius: 12px;
+}
+
+.runs-settings h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.run-git {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.run-git code,
+.attempt-commit code,
+.attempt-files code {
+  font-size: 12px;
+}
+
+.run-task-attempts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attempt-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.attempt-toggle:hover {
+  background: color-mix(in srgb, var(--line) 12%, transparent);
+}
+
+.attempt-toggle:focus-visible {
+  outline: 3px solid var(--blue);
+}
+
+.attempt-error-text {
+  color: var(--minus);
+  white-space: pre-wrap;
+}
+
+.attempt-details {
+  margin: 8px 0 4px;
+  padding: 8px 10px;
+  border: 2px solid color-mix(in srgb, var(--line) 35%, transparent);
+  border-radius: 10px;
+  background: var(--paper-deep);
+}
+
+.attempt-log,
+.attempt-diff {
+  max-height: 340px;
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  overflow: auto;
+  border-radius: 8px;
+  background: var(--chrome-well);
+  color: var(--chrome-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.attempt-log {
+  list-style: none;
+}
+
+.attempt-log li {
+  display: grid;
+  grid-template-columns: 52px 72px 1fr;
+  gap: 8px;
+}
+
+.attempt-log-time,
+.attempt-log-kind {
+  opacity: 0.75;
+}
+
+.attempt-log-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.attempt-log li[data-status="failed"] .attempt-log-text,
+.attempt-log li[data-kind="warning"] .attempt-log-text {
+  color: #ff9b8f;
+}
+
+.attempt-log li[data-status="passed"] .attempt-log-text {
+  color: #8fe0b8;
+}
+
+.attempt-diff pre {
+  margin: 0;
+  font: inherit;
+  white-space: pre;
+}
+
+.attempt-diff [data-line="add"] {
+  color: #8fe0b8;
+}
+
+.attempt-diff [data-line="del"] {
+  color: #ff9b8f;
+}
+
+.attempt-diff [data-line="hunk"],
+.attempt-diff [data-line="file"] {
+  color: #9fd0f2;
+  font-weight: 700;
+}
+
+.attempt-files,
+.attempt-steps {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.attempt-file-status {
+  display: inline-block;
+  min-width: 64px;
+  font-weight: 700;
+}
+
+.attempt-check {
+  margin: 6px 0 0;
+}
+
+.attempt-check[data-status="passed"]::before {
+  content: "✓ ";
+  color: var(--plus);
+  font-weight: 900;
+}
+
+.attempt-check[data-status="failed"]::before {
+  content: "✗ ";
+  color: var(--minus);
+  font-weight: 900;
+}
+
+.attempt-rejected {
+  margin-top: 8px;
+  color: var(--minus);
+}
+
+.attempt-commit {
+  margin: 8px 0 0;
+}
+
+.attempt-diff-heading {
+  margin: 10px 0 0;
+  font-size: 13px;
+}

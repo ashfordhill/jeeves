@@ -1,11 +1,17 @@
 import { readFileSync } from "node:fs";
-import { stubExecutor } from "@jeeves/orchestrator";
+import {
+  createAgentExecutor,
+  markerChecks,
+  projectChecks,
+  stubExecutor,
+} from "@jeeves/orchestrator";
 import { buildApp } from "./app.ts";
 import { fakeModels } from "./chat/models.ts";
 import { failInterruptedTurns } from "./chat/service.ts";
 import { loadConfig } from "./config.ts";
-import { connectDb } from "./db/client.ts";
+import { connectDb, ensureDatabase } from "./db/client.ts";
 import { failInterruptedGenerations } from "./generate/service.ts";
+import { codexAgents, fakeCodingAgents } from "./runs/agents.ts";
 import { pgBossJobs } from "./runs/jobs.ts";
 import { recoverRuns, requeuePlanning } from "./runs/service.ts";
 import { jeevesHome, Settings } from "./settings.ts";
@@ -15,6 +21,8 @@ const { version } = JSON.parse(
 ) as { version: string };
 
 const config = loadConfig();
+// e2e tests use their own database, so a dev server and a test server never share runs or jobs.
+await ensureDatabase(config.databaseUrl);
 const db = connectDb(config.databaseUrl);
 // Local single-user app: bring the schema up to date on every start.
 await db.migrate();
@@ -35,10 +43,29 @@ const app = buildApp({
   settings,
   models: fakeScript ? fakeModels(fakeScript) : undefined,
   jobs,
-  // Until S12, tasks are marked done after a pause long enough to watch (and to Pause) in the UI.
-  executor: stubExecutor(Number(process.env.JEEVES_STUB_TASK_MS ?? 1500)),
+  executor: executor(),
   logger: true,
 });
+
+/**
+ * Tasks run Codex and then Jeeves's checks. e2e tests script the agent
+ * (`JEEVES_FAKE_CODING_SCRIPT`) and use quick marker checks instead of Docker
+ * (`JEEVES_FAKE_CHECKS`); `JEEVES_STUB_EXECUTOR=1` skips agents altogether.
+ */
+function executor() {
+  if (process.env.JEEVES_STUB_EXECUTOR === "1") {
+    return stubExecutor(Number(process.env.JEEVES_STUB_TASK_MS ?? 1500));
+  }
+  const codingScript = process.env.JEEVES_FAKE_CODING_SCRIPT;
+  return createAgentExecutor({
+    agents: codingScript
+      ? fakeCodingAgents(codingScript)
+      : codexAgents(settings, process.env.JEEVES_CODEX_PATH),
+    checks: process.env.JEEVES_FAKE_CHECKS
+      ? markerChecks(Number(process.env.JEEVES_FAKE_CHECKS) || 0)
+      : projectChecks(),
+  });
+}
 
 const shutdown = async () => {
   await app.close();

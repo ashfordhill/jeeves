@@ -1,6 +1,6 @@
 # Jeeves and Draw Jeeves
 
-Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md` (S1–S11 done).
+Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md` (S1–S12 done).
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 

@@ -1,7 +1,7 @@
 import { MantineProvider } from "@mantine/core";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { RunDetail, RunTask } from "../draw/api.ts";
+import type { AttemptDetail, RunDetail, RunTask } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
 import { fakeApi, TEST_PROJECT } from "../test-api.ts";
 import { RunsView } from "./RunsView.tsx";
@@ -24,6 +24,8 @@ function task(id: number, title: string, element: string, status: RunTask["statu
     source: "planner",
     edited: false,
     status,
+    workspace: null,
+    commit: null,
     attempts: [],
   } satisfies RunTask;
 }
@@ -39,6 +41,8 @@ function detail(tasks: RunTask[], status: RunDetail["run"]["status"] = "planned"
       designRevision: 1,
       planner: { mode: "refined", model: "fake-planner", message: "Split it.", usage: null },
       warnings: [],
+      gitStrategy: "branch-per-task",
+      maxRetries: 2,
       createdAt: "2026-10-29T10:00:00.000Z",
       startedAt: null,
       finishedAt: null,
@@ -59,7 +63,10 @@ function detail(tasks: RunTask[], status: RunDetail["run"]["status"] = "planned"
 function runsApi(ready = true) {
   const design = fakeApi();
   const calls: { method: string; path: string; body: unknown }[] = [];
-  const state = { detail: detail([task(1, "Links API", "links"), task(2, "Web page", "web")]) };
+  const state = {
+    detail: detail([task(1, "Links API", "links"), task(2, "Web page", "web")]),
+    settings: { gitStrategy: "branch-per-task", maxRetries: 2 },
+  };
   const json = (body: unknown, status = 200) =>
     new Response(status === 204 ? null : JSON.stringify(body), {
       status,
@@ -68,9 +75,14 @@ function runsApi(ready = true) {
   const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), "http://localhost");
     const path = url.pathname.replace(/^\/api/, "");
-    if (!path.startsWith(base)) return design.fetch(input, init);
     const method = init?.method ?? "GET";
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+    if (path === `/projects/${TEST_PROJECT}/run-settings`) {
+      calls.push({ method, path: "settings", body });
+      if (method === "PUT") state.settings = { ...state.settings, ...body };
+      return json(state.settings);
+    }
+    if (!path.startsWith(base)) return design.fetch(input, init);
     calls.push({ method, path: path.slice(base.length), body });
     const run = state.detail.run;
     if (path === base && method === "GET") {
@@ -82,6 +94,8 @@ function runsApi(ready = true) {
       });
     }
     if (path === `${base}/7` && method === "GET") return json(state.detail);
+    if (path === `${base}/7/attempts/31` && method === "GET")
+      return json({ attempt: attemptDetail });
     if (path === `${base}/7/start`) {
       state.detail = detail(state.detail.tasks, "running");
       return json({ run: state.detail.run });
@@ -201,6 +215,95 @@ describe("Runs view", () => {
     fireEvent.click(screen.getByRole("button", { name: "Keep it" }));
     expect(api.calls.some((c) => c.path === "/7/cancel")).toBe(false);
     expect(screen.getByRole("button", { name: "Cancel run" })).toBeTruthy();
+  });
+});
+
+const attemptDetail: AttemptDetail = {
+  id: 31,
+  number: 1,
+  status: "failed",
+  summary: "Added the endpoints.",
+  usage: { inputTokens: 1200, outputTokens: 300, known: true },
+  error: "Jeeves's checks failed. Type check: exit code 2",
+  sessionId: "thr_1",
+  checks: {
+    ok: false,
+    rejectedPaths: ["frontends/web/src/x.ts"],
+    steps: [
+      { step: "install", title: "Install dependencies", status: "passed", durationMs: 900 },
+      {
+        step: "typecheck",
+        title: "Type check",
+        status: "failed",
+        durationMs: 300,
+        message: "exit code 2",
+      },
+    ],
+    checks: [],
+  },
+  changes: [{ path: "services/links/src/features/api.ts", status: "added" }],
+  commit: null,
+  startedAt: "2026-10-29T10:00:00.000Z",
+  finishedAt: "2026-10-29T10:01:00.000Z",
+  events: [
+    { t: 10, kind: "log", text: "Starting a codex session" },
+    { t: 900, kind: "command", text: "$ pnpm test → 0", status: "passed" },
+    { t: 1500, kind: "message", text: "Added the endpoints." },
+  ],
+  diff: "diff --git a/x b/x\n+export const api = 1;\n",
+  feedback: "fix it",
+};
+
+describe("Runs view: execution", () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("saves the git strategy and retries for new runs", async () => {
+    const api = runsApi();
+    await renderView(api);
+    const strategy = await screen.findByRole("combobox", { name: "Git strategy" });
+    expect((strategy as HTMLSelectElement).value).toBe("branch-per-task");
+    fireEvent.change(strategy, { target: { value: "direct" } });
+    await waitFor(() =>
+      expect(api.calls).toContainEqual({
+        method: "PUT",
+        path: "settings",
+        body: { gitStrategy: "direct" },
+      }),
+    );
+    expect(await screen.findByText(/work will go to/)).toBeTruthy();
+  });
+
+  it("shows an attempt's log, checks, changed files, and diff on demand", async () => {
+    const api = runsApi();
+    const failed = {
+      ...task(1, "Links API", "links", "needs-attention"),
+      attempts: [attemptDetail],
+    };
+    await renderView({
+      ...api,
+      fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+        const res = await api.fetch(input, init);
+        if (String(input).endsWith("/runs/7")) {
+          const d = detail([failed], "needs-attention");
+          return new Response(JSON.stringify({ ...d, actions: ["resume", "cancel"] }));
+        }
+        return res;
+      },
+    });
+    const card = await screen.findByRole("article", { name: "Links API" });
+    expect(screen.getByRole("button", { name: "Resume" }).hasAttribute("disabled")).toBe(false);
+    fireEvent.click(within(card).getByRole("button", { name: /Attempt 1: failed/ }));
+    expect(await within(card).findByText("Starting a codex session")).toBeTruthy();
+    expect(within(card).getByText("$ pnpm test → 0")).toBeTruthy();
+    fireEvent.click(within(card).getByRole("tab", { name: "Checks" }));
+    expect(await within(card).findByText(/Type check: failed/)).toBeTruthy();
+    expect(within(card).getByText("frontends/web/src/x.ts")).toBeTruthy();
+    fireEvent.click(within(card).getByRole("tab", { name: "Changes (1)" }));
+    expect(await within(card).findByText("services/links/src/features/api.ts")).toBeTruthy();
+    expect(within(card).getByText("+export const api = 1;")).toBeTruthy();
   });
 });
 

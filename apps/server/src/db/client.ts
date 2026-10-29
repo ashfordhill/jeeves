@@ -34,3 +34,22 @@ export function connectDb(databaseUrl: string): DbHandle {
     close: () => pool.end(),
   };
 }
+
+/**
+ * Creates the URL's database when it doesn't exist yet (through the server's `postgres`
+ * database), so e2e tests can use their own database next to the dev one.
+ */
+export async function ensureDatabase(databaseUrl: string): Promise<void> {
+  const url = new URL(databaseUrl);
+  const name = decodeURIComponent(url.pathname.slice(1));
+  if (!name) return;
+  url.pathname = "/postgres";
+  const client = new pg.Client({ connectionString: url.toString(), connectionTimeoutMillis: 2000 });
+  try {
+    await client.connect();
+    const found = await client.query("select 1 from pg_database where datname = $1", [name]);
+    if (found.rowCount === 0) await client.query(`create database "${name.replaceAll('"', '""')}"`);
+  } finally {
+    await client.end().catch(() => {});
+  }
+}

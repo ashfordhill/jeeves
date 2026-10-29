@@ -150,7 +150,9 @@ export type RunStatus =
   | "failed"
   | "succeeded";
 export type RunAction = "start" | "pause" | "resume" | "cancel" | "replan";
-export type Usage = { inputTokens: number; outputTokens: number; known: boolean };
+export type Usage = { inputTokens: number; outputTokens: number; known: boolean; costUsd?: number };
+export type GitStrategy = "direct" | "branch-per-task";
+export type RunSettings = { gitStrategy: GitStrategy; maxRetries: number };
 
 /** One orchestration run, as `apps/server/src/runs/service.ts` returns it. */
 export type Run = {
@@ -167,12 +169,38 @@ export type Run = {
     usage: Usage | null;
   } | null;
   warnings: string[];
+  gitStrategy: GitStrategy;
+  maxRetries: number;
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
 };
 
 export type RunSummary = Run & { taskCount: number; doneCount: number };
+
+export type CheckStatus = "running" | "passed" | "failed" | "skipped";
+
+export type AttemptChecks = {
+  ok: boolean;
+  rejectedPaths: string[];
+  steps: {
+    step: string;
+    title: string;
+    status: CheckStatus;
+    durationMs: number;
+    message?: string;
+  }[];
+  checks: {
+    subject: string;
+    id: string;
+    title: string;
+    status: "passed" | "failed";
+    durationMs: number;
+    error?: string;
+  }[];
+};
+
+export type FileChange = { path: string; status: "added" | "modified" | "deleted" | "renamed" };
 
 export type Attempt = {
   id: number;
@@ -181,8 +209,36 @@ export type Attempt = {
   summary: string | null;
   usage: Usage | null;
   error: string | null;
+  sessionId: string | null;
+  checks: AttemptChecks | null;
+  changes: FileChange[] | null;
+  commit: string | null;
   startedAt: string;
   finishedAt: string | null;
+};
+
+export type AttemptEvent = {
+  t: number;
+  kind:
+    | "message"
+    | "reasoning"
+    | "command"
+    | "files"
+    | "todo"
+    | "warning"
+    | "step"
+    | "check"
+    | "log"
+    | "git";
+  text: string;
+  status?: CheckStatus;
+};
+
+/** One attempt with its live log and diff (`GET …/attempts/:attemptId`). */
+export type AttemptDetail = Attempt & {
+  events: AttemptEvent[];
+  diff: string | null;
+  feedback: string | null;
 };
 
 export type RunTask = {
@@ -199,6 +255,8 @@ export type RunTask = {
   source: "seed" | "planner";
   edited: boolean;
   status: "pending" | "running" | "done" | "needs-attention" | "cancelled";
+  workspace: { runBranch: string; branch: string; baseCommit: string } | null;
+  commit: string | null;
   attempts: Attempt[];
 };
 
@@ -352,6 +410,19 @@ export const api = {
 
   removeTask: (id: string, runId: number, taskId: number) =>
     request<void>(`/projects/${id}/runs/${runId}/tasks/${taskId}`, { method: "DELETE" }),
+
+  attempt: (id: string, runId: number, attemptId: number) =>
+    request<{ attempt: AttemptDetail }>(`/projects/${id}/runs/${runId}/attempts/${attemptId}`).then(
+      (r) => r.attempt,
+    ),
+
+  runSettings: (id: string) => request<RunSettings>(`/projects/${id}/run-settings`),
+
+  saveRunSettings: (id: string, patch: Partial<RunSettings>) =>
+    request<RunSettings>(`/projects/${id}/run-settings`, {
+      method: "PUT",
+      body: JSON.stringify(patch),
+    }),
 
   reorderTasks: (id: string, runId: number, taskIds: number[]) =>
     request<void>(`/projects/${id}/runs/${runId}/order`, {

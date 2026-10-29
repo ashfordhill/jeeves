@@ -1,4 +1,12 @@
-import { attemptStatuses, runStatuses, taskStatuses } from "@jeeves/orchestrator";
+// Sub-paths, so drizzle-kit (CommonJS) doesn't load the providers' ESM-only dependencies.
+import {
+  type AttemptChecks,
+  type AttemptEvent,
+  type FileChange,
+  gitStrategies,
+  type TaskWorkspace,
+} from "@jeeves/orchestrator/execute";
+import { attemptStatuses, runStatuses, taskStatuses } from "@jeeves/orchestrator/states";
 import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
 import {
   boolean,
@@ -22,6 +30,10 @@ export const projects = pgTable("projects", {
   revision: integer("revision").notNull().default(0),
   /** Where Generate writes the template project; `null` until chosen (a default is suggested). */
   outputDir: text("output_dir"),
+  /** The git strategy new runs use (PLAN §10 ruleset). */
+  gitStrategy: text("git_strategy", { enum: gitStrategies }).notNull().default("branch-per-task"),
+  /** Retries after a task's first failed attempt before it needs attention. */
+  maxRetries: integer("max_retries").notNull().default(2),
   createdAt: createdAt(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -227,7 +239,12 @@ export const generations = pgTable(
   (t) => [index("generations_project_idx").on(t.projectId, t.id)],
 );
 
-export type RunUsage = { inputTokens: number; outputTokens: number; known: boolean };
+export type RunUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  known: boolean;
+  costUsd?: number;
+};
 
 /** How the plan was made: refined by the planner model, or the deterministic seed alone (and why). */
 export type RunPlanner = {
@@ -254,6 +271,9 @@ export const runs = pgTable(
     designRevision: integer("design_revision"),
     planner: jsonb("planner").$type<RunPlanner>(),
     warnings: jsonb("warnings").$type<string[]>().notNull().default([]),
+    /** The project's git strategy and retry limit when the run was planned. */
+    gitStrategy: text("git_strategy", { enum: gitStrategies }).notNull().default("branch-per-task"),
+    maxRetries: integer("max_retries").notNull().default(2),
     createdAt: createdAt(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     startedAt: timestamp("started_at", { withTimezone: true }),
@@ -283,6 +303,10 @@ export const tasks = pgTable(
     /** Changed by the person after planning. */
     edited: boolean("edited").notNull().default(false),
     status: text("status", { enum: taskStatuses }).notNull(),
+    /** Branch and base commit, saved before the first attempt's agent starts. */
+    workspace: jsonb("workspace").$type<TaskWorkspace>(),
+    /** The commit holding the task on the run branch, once it's done. */
+    commit: text("commit"),
     createdAt: createdAt(),
     startedAt: timestamp("started_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
@@ -306,6 +330,17 @@ export const attempts = pgTable(
     summary: text("summary"),
     usage: jsonb("usage").$type<RunUsage>(),
     error: text("error"),
+    /** The coding-agent session, so a retry can continue it. */
+    sessionId: text("session_id"),
+    /** What the next attempt tells the agent about this one's failure. */
+    feedback: text("feedback"),
+    checks: jsonb("checks").$type<AttemptChecks>(),
+    changes: jsonb("changes").$type<FileChange[]>(),
+    /** The task's diff against its base commit when the attempt ended (capped). */
+    diff: text("diff"),
+    /** The agent's and the checks' live log (capped). */
+    events: jsonb("events").$type<AttemptEvent[]>().notNull().default([]),
+    commit: text("commit"),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
   },

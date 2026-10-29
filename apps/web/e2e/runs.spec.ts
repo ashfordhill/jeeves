@@ -6,9 +6,10 @@ import { type APIRequestContext, expect, type Page, test } from "@playwright/tes
 import { openNewProject } from "./helpers.ts";
 
 /**
- * S11: planning a generated project with the (scripted) planner, editing the plan, and running
- * it with the stub executor, all by mouse. The planner's answer is the "Refine the seed plan" turn
- * in fixtures/chat/e2e-script.json.
+ * S11–S12: planning a generated project with the (scripted) planner, editing the plan, and
+ * running it with the scripted coding agent (fixtures/coding/e2e-script.json) and quick marker
+ * checks, all by mouse. The planner's answer is the "Refine the seed plan" turn in
+ * fixtures/chat/e2e-script.json.
  */
 
 const fixture = JSON.parse(
@@ -154,6 +155,66 @@ test("plans a generated project, edits the plan, and runs it with Pause and Resu
     runs: { status: string }[];
   };
   expect(runs.runs.map((r) => r.status)).toEqual(["cancelled", "succeeded"]);
+});
+
+test("a failing task shows its evidence, needs attention, and resumes to a commit", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(90_000);
+  const { outputDir } = await generatedProject(page, request, "E2E runs failing");
+  await page.getByRole("tab", { name: "Runs" }).click();
+
+  // No retries, and commits straight onto the run branch.
+  await page.getByRole("combobox", { name: "Retries after a failed attempt" }).selectOption("0");
+  await page.getByRole("combobox", { name: "Git strategy" }).selectOption("direct");
+  await page.getByRole("button", { name: "Plan a run" }).click();
+  await expect(runStatus(page)).toHaveText("Planned", { timeout: 15_000 });
+  await expect(
+    page.getByText(/Direct: commit each task on the run branch · up to 0 retries/),
+  ).toBeVisible();
+
+  // The marker checks fail on this text, which the scripted agent copies from the brief.
+  const first = "Create and fetch short links";
+  await task(page, first)
+    .getByRole("button", { name: `Edit "${first}"` })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Description" })
+    .fill("POST /api/links. JEEVES_FAKE_CHECK_FAIL");
+  await page.getByRole("button", { name: "Save task" }).click();
+
+  await page.getByRole("button", { name: "Start" }).click();
+  // The running attempt opens by itself and streams the agent's log.
+  await expect(task(page, first).getByRole("list", { name: "Attempt log" })).toContainText(
+    "Starting a fake session",
+    { timeout: 10_000 },
+  );
+  await expect(runStatus(page)).toHaveText("Needs attention", { timeout: 15_000 });
+  await expect(page.getByText(/failed: Jeeves's checks failed/).first()).toBeVisible();
+  await expect(task(page, first)).toContainText("Attempt 1: failed");
+
+  const card = task(page, first);
+  await card.getByRole("tab", { name: "Checks" }).click();
+  await expect(card).toContainText("Unit and project tests: failed");
+  await expect(card).toContainText("Owned paths: every change is inside the task's paths");
+  await card.getByRole("tab", { name: /Changes/ }).click();
+  await expect(card).toContainText("services/links/src/features/links-api.ts");
+  await expect(card.locator(".attempt-diff")).toContainText(
+    "+Jeeves task: links.links-api, attempt 1",
+  );
+
+  await page.mouse.move(1, 1);
+  const axe = await new AxeBuilder({ page }).include("#view-panel").analyze();
+  expect(axe.violations).toEqual([]);
+
+  // Resume: the retry gets the check output instead of the brief, so it passes.
+  await page.getByRole("button", { name: "Resume" }).click();
+  await expect(runStatus(page)).toHaveText("Succeeded", { timeout: 30_000 });
+  await expect(task(page, first)).toContainText("Attempt 2: succeeded");
+  await expect(task(page, first)).toContainText(/Committed [0-9a-f]{10}/);
+  await expect(page.getByText(/work goes to jeeves\/run-\d+ in/)).toBeVisible();
+  expect(outputDir).toBeTruthy();
 });
 
 test("explains that a project must be generated before planning", async ({ page, request }) => {

@@ -41,7 +41,7 @@ export type AppDeps = {
   projectsDir?: string;
   /** Background jobs for runs: pg-boss in the app, an in-process queue by default (tests). */
   jobs?: JobQueue;
-  /** Runs each task. S11's stub marks tasks done; S12 runs coding agents. */
+  /** Runs each task attempt: the coding-agent executor in the app; a stub by default (tests). */
   executor?: TaskExecutor;
   logger?: boolean;
 };

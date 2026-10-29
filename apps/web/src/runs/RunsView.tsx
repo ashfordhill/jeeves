@@ -3,11 +3,22 @@
  * remove tasks), then Start, Pause, Resume, or Cancel it, and watch the state of each task.
  * Everything works by mouse; there are no required shortcuts.
  */
-import { ActionIcon, Badge, Button, Loader, Textarea, TextInput } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Loader,
+  NativeSelect,
+  Textarea,
+  TextInput,
+} from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowDown,
   IconArrowUp,
+  IconChevronDown,
+  IconChevronRight,
+  IconGitBranch,
   IconPencil,
   IconPlayerPause,
   IconPlayerPlay,
@@ -16,16 +27,20 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useEffect, useId, useState } from "react";
-import type {
-  Attempt,
-  RunAction,
-  RunDetail,
-  RunStatus,
-  RunSummary,
-  RunTask,
-  Usage,
+import {
+  type Attempt,
+  api,
+  type GitStrategy,
+  type RunAction,
+  type RunDetail,
+  type RunSettings,
+  type RunStatus,
+  type RunSummary,
+  type RunTask,
+  type Usage,
 } from "../draw/api.ts";
 import { projectFromUrl, useDraw } from "../draw/store.ts";
+import { AttemptDetails } from "./AttemptDetails.tsx";
 import "./runs.css";
 import { isLive, useRuns } from "./store.ts";
 
@@ -43,16 +58,17 @@ const statusLabels: Record<RunStatus, string> = {
   succeeded: "Succeeded",
 };
 
+/** Shade 9, so light badges keep 4.5:1 contrast (axe). */
 const statusColors: Record<RunStatus, string> = {
-  planning: "blue",
-  planned: "blue",
-  running: "cyan",
-  paused: "yellow",
-  "needs-attention": "orange",
-  waiting_for_provider: "grape",
-  cancelled: "gray",
-  failed: "red",
-  succeeded: "teal",
+  planning: "blue.9",
+  planned: "blue.9",
+  running: "cyan.9",
+  paused: "yellow.9",
+  "needs-attention": "orange.9",
+  waiting_for_provider: "grape.9",
+  cancelled: "gray.9",
+  failed: "red.9",
+  succeeded: "teal.9",
 };
 
 const taskLabels: Record<RunTask["status"], string> = {
@@ -64,11 +80,11 @@ const taskLabels: Record<RunTask["status"], string> = {
 };
 
 const taskColors: Record<RunTask["status"], string> = {
-  pending: "gray",
-  running: "cyan",
-  done: "teal",
-  "needs-attention": "orange",
-  cancelled: "gray",
+  pending: "gray.9",
+  running: "cyan.9",
+  done: "teal.9",
+  "needs-attention": "orange.9",
+  cancelled: "gray.9",
 };
 
 const attemptLabels: Record<Attempt["status"], string> = {
@@ -89,8 +105,14 @@ function RunBadge({ status }: { status: RunStatus }) {
 
 function usageText(usage: Usage | null): string {
   if (!usage?.known) return "unknown";
-  return `${usage.inputTokens.toLocaleString()} in / ${usage.outputTokens.toLocaleString()} out`;
+  const tokens = `${usage.inputTokens.toLocaleString()} in / ${usage.outputTokens.toLocaleString()} out`;
+  return usage.costUsd === undefined ? tokens : `${tokens} · $${usage.costUsd.toFixed(2)}`;
 }
+
+const strategyLabels: Record<GitStrategy, string> = {
+  "branch-per-task": "Branch per task, merged after checks",
+  direct: "Direct: commit each task on the run branch",
+};
 
 function duration(from: string, to: string | null): string {
   if (!to) return "";
@@ -167,6 +189,7 @@ function RunList() {
         Plan a run
       </Button>
       {hint ? <p className="runs-hint">{hint}</p> : null}
+      <RunSettingsForm />
       {overview && overview.runs.length > 0 ? (
         <ul className="runs-list" aria-label="All runs">
           {overview.runs.map((run) => (
@@ -183,6 +206,48 @@ function RunList() {
         <p className="runs-hint">No runs yet.</p>
       ) : null}
     </aside>
+  );
+}
+
+/** The project's git strategy and retry limit, used by runs planned from now on. */
+function RunSettingsForm() {
+  const projectId = useRuns((s) => s.projectId);
+  const [settings, setSettings] = useState<RunSettings>();
+  const [error, setError] = useState<string>();
+  useEffect(() => {
+    if (!projectId) return;
+    setSettings(undefined);
+    api.runSettings(projectId).then(setSettings, (e: Error) => setError(e.message));
+  }, [projectId]);
+  if (!projectId || !settings) return null;
+  const save = async (patch: Partial<RunSettings>) => {
+    setError(undefined);
+    try {
+      setSettings(await api.saveRunSettings(projectId, patch));
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  return (
+    <section className="runs-settings" aria-labelledby="runs-settings-heading">
+      <h2 id="runs-settings-heading">For new runs</h2>
+      <NativeSelect
+        label="Git strategy"
+        value={settings.gitStrategy}
+        data={(Object.keys(strategyLabels) as GitStrategy[]).map((value) => ({
+          value,
+          label: strategyLabels[value],
+        }))}
+        onChange={(e) => void save({ gitStrategy: e.currentTarget.value as GitStrategy })}
+      />
+      <NativeSelect
+        label="Retries after a failed attempt"
+        value={String(settings.maxRetries)}
+        data={["0", "1", "2", "3", "4", "5"]}
+        onChange={(e) => void save({ maxRetries: Number(e.currentTarget.value) })}
+      />
+      {error ? <p className="run-task-problem">{error}</p> : null}
+    </section>
   );
 }
 
@@ -226,7 +291,9 @@ function RunActions({ detail }: { detail: RunDetail }) {
   const busy = useRuns((s) => s.busy);
   const act = useRuns((s) => s.act);
   const [confirming, setConfirming] = useState(false);
-  const pending = detail.tasks.some((t) => t.status === "pending");
+  const pending = detail.tasks.some(
+    (t) => t.status === "pending" || t.status === "needs-attention",
+  );
   if (confirming) {
     return (
       <div className="run-actions">
@@ -326,6 +393,7 @@ function RunPanel() {
         <RunActions detail={detail} />
       </header>
       {run.statusReason ? <p className="run-reason">{run.statusReason}</p> : null}
+      <GitSummary detail={detail} />
       {run.warnings.length > 0 ? (
         <ul className="run-warnings" aria-label="Warnings">
           {run.warnings.map((w) => (
@@ -361,6 +429,26 @@ function RunPanel() {
         </ol>
       ) : null}
     </section>
+  );
+}
+
+function GitSummary({ detail }: { detail: RunDetail }) {
+  const { run } = detail;
+  const branch = detail.tasks.find((t) => t.workspace)?.workspace?.runBranch;
+  return (
+    <p className="run-git">
+      <IconGitBranch size={16} aria-hidden /> {strategyLabels[run.gitStrategy]} · up to{" "}
+      {run.maxRetries} {run.maxRetries === 1 ? "retry" : "retries"} per task ·{" "}
+      {branch ? (
+        <>
+          work goes to <code>{branch}</code> in <code>{run.outputDir}</code>
+        </>
+      ) : (
+        <>
+          work will go to <code>jeeves/run-{run.id}</code> in <code>{run.outputDir}</code>
+        </>
+      )}
+    </p>
   );
 }
 
@@ -521,19 +609,57 @@ function TaskCard({
         </>
       )}
 
+      {task.commit ? (
+        <p className="run-task-paths">
+          Committed <code>{task.commit.slice(0, 10)}</code>
+        </p>
+      ) : null}
+
       {task.attempts.length > 0 ? (
         <ul className="run-task-attempts" aria-label="Attempts">
           {task.attempts.map((attempt) => (
-            <li key={attempt.id} data-status={attempt.status}>
-              Attempt {attempt.number}: {attemptLabels[attempt.status]}
-              {attempt.finishedAt ? ` · ${duration(attempt.startedAt, attempt.finishedAt)}` : ""}
-              {attempt.summary ? ` · ${attempt.summary}` : ""}
-              {attempt.error ? ` · ${attempt.error}` : ""}
-            </li>
+            <AttemptRow key={attempt.id} attempt={attempt} />
           ))}
         </ul>
       ) : null}
     </article>
+  );
+}
+
+function AttemptRow({ attempt }: { attempt: Attempt }) {
+  const projectId = useRuns((s) => s.projectId);
+  const runId = useRuns((s) => s.selectedId);
+  const running = attempt.status === "running";
+  const [open, setOpen] = useState(running);
+  useEffect(() => {
+    if (running) setOpen(true);
+  }, [running]);
+  const Chevron = open ? IconChevronDown : IconChevronRight;
+  return (
+    <li data-status={attempt.status}>
+      <button
+        type="button"
+        className="attempt-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        <Chevron size={14} aria-hidden />
+        Attempt {attempt.number}: {attemptLabels[attempt.status]}
+        {running ? <Loader size={10} color="currentColor" /> : null}
+      </button>
+      {attempt.finishedAt ? ` · ${duration(attempt.startedAt, attempt.finishedAt)}` : ""}
+      {attempt.usage ? ` · ${usageText(attempt.usage)} tokens` : ""}
+      {attempt.summary ? <span className="attempt-summary"> · {attempt.summary}</span> : null}
+      {attempt.error ? <span className="attempt-error-text"> · {attempt.error}</span> : null}
+      {open && projectId && runId !== undefined ? (
+        <AttemptDetails
+          projectId={projectId}
+          runId={runId}
+          attemptId={attempt.id}
+          running={running}
+        />
+      ) : null}
+    </li>
   );
 }
 

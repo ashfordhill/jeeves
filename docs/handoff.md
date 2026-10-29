@@ -1355,3 +1355,182 @@ I didn't run the planner against real OpenAI: S11's "Done when" uses the fake pr
 - **The planner model** comes from `models("planner")`; the coding model is the `coding` role in Settings.
 - **Running the project's checks:** `@jeeves/generator/baseline` (`runBaseline`, or its steps) and the lock's `ownedPaths` for the diff check.
 - **Git:** generation leaves `pnpm-lock.yaml` uncommitted (S10). Commit it with the first task.
+
+---
+
+## S12: Orchestrator, part 2 (execution and git strategies) (2026-10-29)
+
+### Built
+
+New dependency, pinned: `@openai/codex-sdk` 0.162.1 (providers; released 2026-10-09). It brings the matching `@openai/codex` CLI binary.
+
+- **`packages/providers`**
+  - `coding.ts`: the provider-neutral `CodingAgentProvider` interface. `run({ workingDirectory, prompt, model?, resumeSessionId? }, { signal, onEvent })` runs one session (or one more turn of a resumed one) and returns `{ sessionId, finalMessage, usage }`. Aborting the signal interrupts it. Events are `session`, `message`, `reasoning`, `command`, `files`, `todo`, and `warning`. Capabilities: `resume`, `usage`, `streaming`. Provider problems are thrown as `ProviderError` (the S6 kinds), so `blocksProvider` (auth or quota) works the same as for models.
+  - `codex.ts`: the Codex adapter, on the SDK's `startThread`/`resumeThread` + `runStreamed`. Sessions use `sandboxMode: "workspace-write"` (writes are limited to the project folder), `approvalPolicy: "never"`, `networkAccessEnabled: true` (for `pnpm install`), and `skipGitRepoCheck`. It maps JSONL items to events, with file paths made relative to the project, and maps `turn.completed` usage. `codexError` sorts Codex's text errors into kinds (401/login → auth, usage limit/quota → quota, 429 → rate-limit, spawn/5xx/disconnects → unavailable). The SDK is injectable (`CodexLike`) so tests replay recorded events.
+  - `fake-coding.ts`: `createFakeCodingAgent(script)`. Steps can `write`, `append`, `remove`, or `writePrompt` (write the prompt into a file), set a `message`, `usage`, `delayMs`, `error` (a `ProviderError` kind), or `hang` (apply edits, then wait until interrupted, like a killed agent). `codingScriptByTask(json)` is a stateless script keyed by task key and attempt number. Every orchestrator prompt starts with `Jeeves task: <key>, attempt <n>` (`TASK_MARKER`), which is how it picks.
+- **`packages/orchestrator`**
+  - `execute.ts`: `AttemptInput` gained `strategy`, `previous` (how the last attempt ended, with its feedback and session), the task's `workspace`, `saveWorkspace`/`saveSession` callbacks, and `onEvent` (live log). `AttemptOutcome` gained `feedback`, `sessionId`, `checks`, `changes`, `diff`, and `commit`. `gitStrategies` = `direct`, `branch-per-task`. New sub-path exports `@jeeves/orchestrator/states` and `/execute`, because drizzle-kit (CommonJS) can't load the ESM-only Codex SDK through the package index.
+  - `git.ts` (`Git`):
+    - **Repository:** `git init` plus a commit if the folder isn't a repository. A project folder inside another repository is refused.
+    - **Run branch:** each run works on `jeeves/run-<id>`, made from whatever was checked out. Uncommitted changes found then (such as `pnpm-lock.yaml` from Generate's install) are committed first as "Jeeves: uncommitted project changes before run N".
+    - **Strategies:** `branch-per-task` uses `jeeves/run-<id>-<task key>` (`checkout -B`) and merges it into the run branch with `--no-ff` after the checks pass. `direct` commits on the run branch.
+    - **Diffs and reverts:** `changes(base)` and `diff(base)` (capped at 200k characters) work against the task's base commit, after `git add --all` (so `.gitignore` applies, and commits the agent made itself are included). `restore(base, paths)` reverts rejected files.
+    - **Commits:** the person's git identity, or `Jeeves <jeeves@localhost>`. Nothing is ever pushed.
+  - `brief.ts`: `taskBrief` contains the marker line, the task and description, acceptance tests, the owned paths (plus `pnpm-lock.yaml`), the rejection rule, the checks Jeeves runs, "don't commit or switch branches", the element's `jeeves/elements/<id>.md` (notes and template guide), the contracts of connected elements (read-only), `AGENTS.md`, and, on a resume, an "Earlier work on this task" section with the diff stat and diff. `followUpPrompt` is the retry message: the check failure and the end of the check output.
+  - `checks.ts`:
+    - `projectChecks()` runs `runBaseline` with the new `unitTests: true`. That is install, type check, **`pnpm -r --no-bail test`** (a new `unit-tests` step, `taskCheckSteps`), `docker compose up --build --wait`, every template test pack, and `compose down`. It maps baseline events to the attempt log.
+    - `markerChecks(delayMs)` is for tests: one "project tests" check that fails when a changed file contains `JEEVES_FAKE_CHECK_FAIL`.
+  - `agent.ts` `createAgentExecutor({ agents, checks })` handles one attempt:
+    1. Get the agent and model from the `CodingAgentSource` (an error becomes an `auth` `ProviderError`).
+    2. Prepare git, then save the workspace (branch and base commit) before the agent starts.
+    3. Brief the agent:
+       - A retry after failed checks **resumes the same session** with `followUpPrompt`.
+       - Anything else (first attempt, after a restart, after an agent crash) starts a new session with the full brief. When there's earlier work it gets "Earlier work" and the last failure.
+    4. Run the session, streaming its events.
+    5. **Owned-path check:** changed files outside `ownedPaths` + `pnpm-lock.yaml`, and any generated-owned file (in `lock.files`), are reverted to the base. The attempt fails with the list, and the feedback tells the agent which paths it may change. The other checks don't run.
+    6. No changes at all fails the attempt.
+    7. Run the project checks. On failure the feedback is the failed steps and checks plus the last 80 log lines.
+    8. On success, commit and merge per the strategy.
+
+    Quota and auth errors are thrown, so the run waits for the provider. Other agent errors (a crash, a disconnect) fail the attempt and keep the diff.
+- **Server**
+  - Migration `0004_execution`:
+    - `projects`: `git_strategy` (default `branch-per-task`) and `max_retries` (default 2).
+    - `runs`: the same two, copied from the project when the run is created.
+    - `tasks`: `workspace` (JSON) and `commit`.
+    - `attempts`: `session_id`, `feedback`, `checks`, `changes`, `diff`, `events` (the live log, capped at 3000 events and 4000 characters each), and `commit`.
+  - `RunService`:
+    - `runTask` loops attempts until one succeeds. A failed attempt is retried (with its feedback) up to the run's `maxRetries`. Then the task and run are `needs-attention`, and the status reason is the first line of the error.
+    - Each attempt saves its live log every second (`attemptDetail` serves the in-memory log while it runs).
+    - A thrown `ProviderError` with `blocksProvider` puts the task back to pending and the run in `waiting_for_provider` ("…Fix it (Settings, or `codex login`), then press Resume."). Any other thrown error (git, an unreadable project) is `needs-attention` without retries.
+    - **Resume puts `needs-attention` tasks back to pending** first. Before this, S11's Resume skipped a failed task and went on to the next one, which the new e2e test caught.
+    - Attempts in the run detail leave out `events`, `diff`, and `feedback`. They're in `GET /projects/:id/runs/:runId/attempts/:attemptId`.
+    - `GET|PUT /projects/:id/run-settings` (`{ gitStrategy, maxRetries }`, retries 0–5) apply to runs planned afterwards.
+  - **Generate is refused** (409 `RUN_ACTIVE`) while a run of the project is running, paused, needs attention, or waiting for a provider (S11's known issue).
+  - `src/runs/agents.ts`: `codexAgents(settings, JEEVES_CODEX_PATH)` uses the `coding` role's model from Settings. `fakeCodingAgents(path)` is the fake, used when `JEEVES_FAKE_CODING_SCRIPT` is set.
+  - `main.ts` uses `createAgentExecutor` with `projectChecks()`, or `markerChecks` when `JEEVES_FAKE_CHECKS` is set (its value is a delay in ms). `JEEVES_STUB_EXECUTOR=1` still gives S11's stub.
+  - `ensureDatabase(url)` creates the server's database if it's missing (see Deviations).
+- **Web (Runs view)**
+  - Sidebar **For new runs**: Git strategy and "Retries after a failed attempt" (native selects; they save on change).
+  - The run header shows the strategy, the retry limit, and where the work goes (`jeeves/run-<id>` in the folder).
+  - Each attempt row toggles its **details**. It opens by itself while running. The details (`AttemptDetails.tsx`) have three tabs:
+    - **Log**: the agent's messages, commands, file edits, plan, and Jeeves's git and check lines. It's polled every second while running and auto-scrolls unless you scroll up.
+    - **Checks**: the owned-path result, steps, and test-pack checks.
+    - **Changes**: the changed files, the colored diff, and the commit.
+  - Attempt rows show token usage. Done tasks show their commit. Resume is enabled when a task needs attention.
+  - Run and task badges use shade 9 colors: axe flagged S11's orange "Needs attention" badge (3.61:1) once a run could reach that state in e2e.
+- `fixtures/coding/e2e-script.json` (+ README) holds the e2e coding script. `playwright.config.ts` sets `JEEVES_FAKE_CODING_SCRIPT`, `JEEVES_FAKE_CHECKS=300`, and its own `DATABASE_URL` (`jeeves_e2e`).
+- README (Runs: execution, git, Codex login; Test) and the PLAN progress line.
+
+### Commands and results
+
+`pnpm check`:
+
+```text
+$ biome check .
+Checked 358 files in 86ms. No fixes applied.
+$ pnpm -r --no-bail typecheck
+(all workspace packages: Done)
+$ vitest run
+ Test Files  55 passed (55)
+      Tests  404 passed (404)
+```
+
+The new tests:
+
+- `packages/orchestrator/src/agent.test.ts` (7): real generated fixture projects and real git, with the fake agent and marker checks.
+  - `direct` commits (the lockfile is committed first), and the brief's contents, including a neighbour's contract in the `web` brief.
+  - `branch-per-task` merges.
+  - A red check, then a retry that resumes the session with the check output.
+  - Outside-path and generated-owned changes are rejected and reverted.
+  - An agent that changes nothing fails the attempt.
+  - An interrupted session, then a new session briefed with the earlier diff.
+  - Quota and auth errors are thrown; other errors fail the attempt.
+- `packages/providers/src/codex.test.ts` (5): Codex event mapping, usage, the sandbox options, resume, error kinds, the fake agent, and `codingScriptByTask`.
+- `apps/server/src/routes/runs.test.ts`:
+  - The S11 "failed attempt" test now covers retries (3 attempts, then needs-attention).
+  - Six new tests under "executing with the fake coding agent":
+
+```text
+✓ runs every task, checks it, and merges each task branch into the run branch
+✓ direct: commits each task on the run branch
+✓ a failing task is retried with the check output, then pauses as needs-attention
+✓ rejects and reverts a change outside the task's owned paths
+✓ a provider out of quota moves the run to waiting_for_provider; Resume tries again
+✓ killing the server mid-task leads to a correct resume
+```
+
+  The restart test uses real pg-boss on PGlite. The fake agent writes half the feature and hangs. The first "process" is dropped (`stop({ graceful: false })`), `recoverRuns` runs on the reopened database, and the run comes back `paused` with the attempt `interrupted` and the work still on the task branch. Resume starts a **new** session whose brief has "Earlier work on this task" with the diff, and the commit holds both halves.
+- `apps/web/src/runs/RunsView.test.tsx`: two new tests (saving run settings; an attempt's log, checks, changed files, and diff, with Resume enabled for a task needing attention).
+
+`pnpm test:e2e`: **17 passed** (24.7 s). `runs.spec.ts` has a new test, by mouse: set retries to 0 and the strategy to direct, plan, then put the fail marker in a task's description. Start; the running attempt opens by itself with its live log. The run reaches Needs attention, with the Checks tab showing "Unit and project tests: failed" and owned paths OK, and the Changes tab showing the file and diff. Axe reports no violations. Resume runs attempt 2 (the follow-up prompt, without the marker), and the run succeeds with a commit. The S11 test now runs on the fake agent too (Pause during the first task, Resume to the end).
+
+**Manual run with real Codex on the fixture project.** This went through the real server (`JEEVES_SERVER_PORT=4320`, scratch `JEEVES_HOME` and projects folder, no OpenAI key so the plan is the seed). The coding model was set to `gpt-6-astra` (this machine's Codex default; Codex is logged in with ChatGPT). A small script drove the API.
+
+```text
+16:48:45 project created, link-shortener design applied, coding model = gpt-6-astra
+16:49:48 generation succeeded: generate, install, typecheck, compose-up, test-packs, compose-down all passed
+16:49:49 planned (seed, no planner key): links.links-api, links, web; strategy branch-per-task, 2 retries
+16:49:49 start
+16:55:32 links.links-api done, attempt 1 (5m43s): 1,087,400 in / 9,052 out tokens
+         changed: contracts/links.openapi.yaml, services/links/{migrations/*, src/db/schema.ts,
+         src/features/links/{index,store}.ts, test/links.test.ts, test/README.md}
+         Jeeves's checks: install, typecheck, unit-tests (3.1 s), compose-up, test-packs (20/20), compose-down all passed
+16:59:08 links done, attempt 1 (3m36s): 758,821 / 5,384; it found the API task had already done the
+         redirect and click counting, and added 3 regression tests (services/links/test/links.test.ts)
+17:07:40 web done, attempt 1 (8m32s): 1,306,998 / 18,903; frontends/web/{package.json, src/App.tsx,
+         src/pages/{Home.tsx,recentLinks.ts}, src/styles.css, test/Home.test.tsx}, pnpm-lock.yaml
+run succeeded; total 3,153,219 in / 33,339 out tokens (cost unknown)
+```
+
+The project's git history after the run (`jeeves/run-21`, `main` untouched):
+
+```text
+*   e838641 Merge jeeves/run-21-web
+| * dbfdea2 web: Implement Web app
+*   5829ea5 Merge jeeves/run-21-links
+| * a712989 links: Implement Links service
+*   b0bd006 Merge jeeves/run-21-links.links-api
+| * 6baa205 links.links-api: Implement REST API server (links-api) on Links service
+* 2ecfc22 Jeeves: uncommitted project changes before run 21
+* 64b2f3c Generate template project from design revision 1
+```
+
+Observations from the real run:
+
+- Codex reads outside the project: it read Jeeves's own repo (`/home/ash/github/jeeves/packages/generator/...`) to learn how the checks work. The workspace-write sandbox limits writes, not reads.
+- One summary says "Docker required a temporary configuration workaround": Codex worked around Docker inside its sandbox to run `docker compose` itself. Jeeves's own checks run outside the sandbox and passed.
+- Because the seed plan has no splits, the `links.links-api` task implemented the whole Links service, and the `links` task found little left to do.
+
+**Found while testing:** my scratch server and the e2e server shared the `jeeves` database and pg-boss queues. The scratch server picked up an e2e run's step job and started **real Codex in an e2e temp folder**. I killed that process; it only touched a throwaway folder. Each server's startup recovery also pauses every running run in the database, the other server's included. S11's stub made this harmless; with real agents it isn't. The fix is the separate e2e database (below).
+
+### Deviations and choices the plan left open
+
+- **Retries are separate attempts.** Each agent round is an `attempts` row with its own log, checks, diff, and usage. The executor does one attempt; the service loops. A retry after red checks resumes the Codex session with the check output. After a restart, an agent crash, or a person's Resume without a resumable session, a new session gets the full brief plus the earlier diff.
+- **Owned-path violations are reverted by Jeeves** before anything else runs, so out-of-scope edits never reach a commit. The attempt fails with the list and is retried like a red check. Generated-owned files are rejected even inside an element's folder. `pnpm-lock.yaml` is allowed for every task.
+- **"No changes" fails the attempt.** A model saying "done" without changing anything isn't evidence.
+- **Usage cost is unknown:** Codex reports tokens but no price. `costUsd` exists on the usage type, and the UI shows it when present.
+- **Pause still takes effect between tasks**; retries of the current task continue.
+- **Codex runs with network on and `approvalPolicy: "never"`,** sandboxed to the project folder for writes. `pnpm install` needs the registry.
+- **The coding model setting must be a model the Codex account can use.** S6's default `gpt-5.1-codex` may not be. I used `gpt-6-astra` for the manual run.
+- **`pr-per-task` (stretch) is not built.**
+- **e2e uses its own database** (`DATABASE_URL=…/jeeves_e2e` in `playwright.config.ts`; the server creates it on start with `ensureDatabase`). AGENTS.md says e2e may run while `pnpm dev` is open. On a shared database each server could run the other's jobs, and with S12 that means real Codex runs on test projects.
+- **`runBaseline` gained `unitTests`** and the `unit-tests` step id (`taskCheckSteps`). Generation doesn't use it; the generate service ignores that step id.
+
+### Known issues
+
+- **A killed Jeeves server doesn't kill its Codex process.** The SDK's child isn't tied to the parent, so after a SIGKILL (or Ctrl+C) a running `codex exec` can keep editing the project while the attempt is already marked interrupted. Graceful shutdown doesn't abort running attempts either. A process-group kill on shutdown, and checking for a leftover session before Resume, would fix it.
+- **Two Jeeves servers on one database** still cross-run jobs and pause each other's runs on startup. e2e is isolated now, but two dev servers on the same database aren't.
+- **Codex reads the whole machine** (see above); only writes are sandboxed.
+- **The check log in the feedback is the last 80 lines**, which can miss the first type error in a long output.
+- **The attempt log is capped** at 3000 events of 4000 characters. Diffs are capped at 200k characters, and the brief's diff at 30k.
+- **Each attempt's checks take about 1 minute** (compose build plus 20 pack checks) on the fixture. There's no incremental mode.
+- **Generate is refused only while a run is executing**; regenerating under a `planned` run is still allowed (it gets the S11 warning).
+- The `chat.spec.ts` settings test flake from S11 didn't recur in the e2e runs here.
+
+### For S13
+
+- **Real end-to-end setup:** `codex login`, set Settings → Coding to a model the account has, and have an OpenAI key for the chat and planner. The planner's splits matter: with the seed plan, the first service task tends to implement everything.
+- **Run output:** results are on `jeeves/run-<id>` in the project folder. The person merges it. `docker compose up` there runs the app.
+- **For scripted journeys:** `JEEVES_FAKE_CODING_SCRIPT`, `JEEVES_FAKE_CHECKS`, and `JEEVES_STUB_EXECUTOR` are the switches. `fixtures/coding/README.md` explains the script.
+- Consider fixing the orphaned-Codex issue above before long real runs.
