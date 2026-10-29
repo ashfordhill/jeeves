@@ -60,7 +60,8 @@ The e2e test loads the shell, waits for "Server healthy" (real Postgres), switch
 
 ### Known issues
 
-- On this machine (WSL2, no sudo), Playwright's Chromium can't start natively: `libnspr4.so` is missing. `pnpm test:e2e` therefore fails here until someone runs `sudo pnpm exec playwright install-deps chromium`. `pnpm test:e2e:docker` runs the same suite in `mcr.microsoft.com/playwright:v1.63.0-noble` with host networking and passes.
+- Chromium's system libraries were missing on this machine at first (`libnspr4.so`). The user installed them, and `pnpm test:e2e` now passes natively (1 passed). `pnpm test:e2e:docker` stays as a fallback for machines without them.
+- pnpm is now a standalone install in `~/.local/share/pnpm/bin` (added to PATH in `~/.bashrc`), not the Corepack shim. Non-interactive shells that skip `.bashrc` need that directory on PATH.
 - `drizzle-kit` pulls in deprecated `@esbuild-kit/*` subdependencies (install warning only).
 
 ### For S2
