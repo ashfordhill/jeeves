@@ -55,12 +55,13 @@ To change the app later: edit the design, generate again (project-owned files an
 
 ## Providers and models
 
-Settings lists each provider with its status, and each role picks a provider and a model (type any name; the list only suggests some). Choices are saved to `~/.jeeves/config.json` (`JEEVES_HOME` moves that directory).
+Settings lists each provider's connection status and setup command (CLI logins are exact; API-key providers show the `export …=` prefix to complete). **Design model** and **Implementation model** are in the Models card; the planner is under **Advanced**. Each role picks a provider and a model (type any name; the list only suggests some). Choices are saved to `~/.jeeves/config.json` (`JEEVES_HOME` moves that directory).
 
 | Provider | Roles | Set up |
 | --- | --- | --- |
 | **OpenAI API** | design chat, planner | `OPENAI_API_KEY=sk-… pnpm dev`, or `{ "openai": { "apiKey": "sk-…" } }` in `~/.jeeves/config.json` (keep it `chmod 600`). The environment wins. API usage is billed separately from ChatGPT plans, so the account needs credits |
-| **Codex** | design chat, planner, coding | `codex login` once (a ChatGPT plan or an API key). An empty model means Codex's default from `~/.codex/config.toml` |
+| **Codex** | design chat, planner, coding | `codex login` once (a ChatGPT plan or an API key). An empty model means Codex's default from `~/.codex/config.toml`. The coding role can also set a reasoning effort |
+| **OpenCode** | coding | `npm i -g opencode-ai` (v1) or the OpenCode 2 installer, then `opencode auth login` once (for example DeepSeek). Jeeves detects which CLI version is on PATH. The model is `provider/model` (for example `deepseek/deepseek-flash`) or empty for OpenCode's configured default. OpenCode has **no sandbox**: `--auto` approves its tool calls, and Jeeves's owned-path revert plus the task branch are the guard |
 | **Local model** | coming in S14 | Shown as "coming later" |
 
 As a design chat or planner model, Codex answers each step in one structured reply instead of streaming, and a chat turn takes about a minute. Jeeves never shows or stores keys in designs or generated projects. A Claude adapter needs an Anthropic API key and is planned after v1 (PLAN §12).
@@ -91,7 +92,7 @@ After generating, open **Runs** and press **Plan a run**. Jeeves reads the gener
 
 Before starting, you can edit a task's title, description, and acceptance tests, move tasks up or down (a task moved ahead of something it depends on gets a warning), and remove tasks. **Start** runs the tasks one at a time. **Continuous** proceeds through verified tasks; **Review after each task** pauses after verification and commit while tasks remain. The mode is saved across reloads/restarts and can change while stopped between tasks. **Pause** stops after the current task, **Resume** continues, and **Cancel run** stops everything. Planning and each step are pg-boss jobs in Jeeves's Postgres, and run state is saved there. If Jeeves restarts mid-task, that attempt is marked interrupted and the run waits, paused, for **Resume**.
 
-**Execution.** Each task runs a [Codex](https://github.com/openai/codex) session in the project folder (sandboxed to it, network on for `pnpm install`) with a brief: the task and its acceptance tests, the element's notes and template guide, the paths it may change, neighbouring API contracts, the checks, and `AGENTS.md`. When the agent stops, Jeeves itself:
+**Execution.** Each task runs a [Codex](https://github.com/openai/codex) or [OpenCode](https://opencode.ai) session in the project folder with a brief: the task and its acceptance tests, the element's notes and template guide, the paths it may change, neighbouring API contracts, the checks, and `AGENTS.md`. Codex is sandboxed to the folder with the network on for `pnpm install`; OpenCode has no sandbox, so Jeeves's owned-path revert and the task branch are the guard. When the agent stops, Jeeves itself:
 
 1. reverts and rejects changes outside the task's owned paths (and to generated-owned files),
 2. runs `pnpm install`, the type check, `pnpm -r test`, `docker compose up --wait`, and every template test pack (then `docker compose down`),
@@ -103,7 +104,7 @@ Git: every run works on `jeeves/run-<id>`, branched from what the project had ch
 
 Click an attempt to see its live log (agent messages, commands, file edits, and each check), the check results, the changed files, and the diff. The overview shows progress, current activity, elapsed time, blockers and implementation usage. The sidebar sums initial-build and feature runs, including planning, failures, retries and interrupted work; design chat is excluded. Unknown tokens/cost retain known subtotals and reporting coverage (Codex does not report cost). Open **Usage ledger, provenance and human help** for actual model requests, generated design hash/revision, templates, starting Git revision, execution settings and timestamped interventions. Use **Record note** to log human help or review. Historical usage is imported where available; older missing evidence cannot be reconstructed. New feature runs currently seed declared extensions again, so prior task keys alone never imply acceptance.
 
-Codex uses its own login: run `codex login` once (ChatGPT or an API key). The Codex CLI comes with the SDK; `JEEVES_CODEX_PATH` points Jeeves at another `codex` binary. The model is Settings → "Coding agent" (empty for Codex's default, or one your Codex account can use).
+Codex uses its own login: run `codex login` once (ChatGPT or an API key). The Codex CLI comes with the SDK; `JEEVES_CODEX_PATH` points Jeeves at another `codex` binary. The model is Settings → Implementation model (empty for Codex's default, or one your Codex account can use). OpenCode is detected with `opencode --version`; `JEEVES_OPENCODE_PATH` points Jeeves at another binary. Its model is `provider/model`; the Implementation effort select passes `--variant <effort>` on OpenCode 1 and appends `#<effort>` on OpenCode 2.
 
 ## Test
 

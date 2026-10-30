@@ -160,28 +160,53 @@ test("an unknown capability becomes a needs-a-template element, and files can be
   expect(saved.design.elements).toMatchObject([{ id: "sms", template: null }]);
 });
 
-test("settings show provider status and save a provider and model per role", async ({ page }) => {
+test("settings show connections and save the design and implementation models", async ({
+  page,
+}) => {
   await page.goto("/#/settings");
   await expect(page.getByText(/replaying a scripted fake model/)).toBeVisible();
   await expect(page.getByText("No API key", { exact: true })).toBeVisible();
   await expect(page.getByText("Coming later", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible();
+  await expect(
+    page.locator(".settings-providers").getByText("OpenCode", { exact: true }),
+  ).toBeVisible();
+  const codexSetup = page.getByRole("button", { name: "Copy Codex setup command" });
+  await expect(codexSetup).toContainText("codex login");
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await codexSetup.click();
+  await expect(codexSetup).toContainText("Copied");
 
   // The coding role offers Codex, and the local provider only as "coming later".
-  const codingProvider = page.getByRole("combobox", { name: "Coding agent provider" });
-  await expect(codingProvider).toHaveValue("codex");
+  const implementationProvider = page.getByRole("combobox", {
+    name: "Implementation provider",
+  });
+  await expect(implementationProvider).toHaveValue("codex");
   await expect(
-    codingProvider.getByRole("option", { name: "Local model (coming later)" }),
+    implementationProvider.getByRole("option", { name: "Local model (coming later)" }),
   ).toBeDisabled();
 
-  // Runs share one settings file, so each run saves its own name.
-  const model = `e2e-model-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-  const designChat = page.getByRole("combobox", { name: "Design chat model" });
-  await designChat.fill(model);
+  // Runs share one settings file, so each run saves its own names.
+  const suffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const designModel = `e2e-design-${suffix}`;
+  const implementationModel = `e2e-code-${suffix}`;
+  await page.getByRole("combobox", { name: "Design model" }).fill(designModel);
+  await page.getByRole("combobox", { name: "Implementation model" }).fill(implementationModel);
+  await page.getByRole("combobox", { name: "Implementation effort" }).selectOption("high");
   await page.getByRole("button", { name: "Save models" }).click();
   await expect(page.getByText(/^Saved to /)).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole("combobox", { name: "Design chat model" })).toHaveValue(model);
+  await expect(page.getByRole("combobox", { name: "Design model" })).toHaveValue(designModel);
+  await expect(page.getByRole("combobox", { name: "Implementation model" })).toHaveValue(
+    implementationModel,
+  );
+  await expect(page.getByRole("combobox", { name: "Implementation effort" })).toHaveValue("high");
+
+  // The planner moved behind Advanced and is still reachable by mouse.
+  await page.getByText("Advanced", { exact: true }).click();
+  await expect(page.getByRole("combobox", { name: "Planner provider" })).toBeVisible();
+
   const axe = await new AxeBuilder({ page }).analyze();
   expect(axe.violations).toEqual([]);
 });

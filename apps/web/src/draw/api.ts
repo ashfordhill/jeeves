@@ -68,13 +68,19 @@ export type ChatEvent =
 
 export type ModelRole = "designChat" | "planner" | "coding";
 
-export type ProviderId = "openai" | "codex" | "local";
+export type ProviderId = "openai" | "codex" | "opencode" | "local";
+
+export type ProviderAuth =
+  | { type: "api-key"; envVar: string; configKey: string }
+  | { type: "cli-login"; command: string }
+  | { type: "none" };
 
 export type ProviderStatus = {
   id: ProviderId;
   name: string;
   description: string;
   kinds: ("model" | "coding")[];
+  auth: ProviderAuth;
   /** `false` for a provider that is listed but not built yet. */
   available: boolean;
   suggestedModels: string[];
@@ -85,7 +91,13 @@ export type ProviderStatus = {
   help: string | null;
 };
 
-export type RoleModel = { provider: ProviderId; model: string };
+export type ReasoningEffort = "low" | "medium" | "high" | "xhigh";
+
+export type RoleModel = {
+  provider: ProviderId;
+  model: string;
+  reasoningEffort?: ReasoningEffort;
+};
 
 export type SettingsView = {
   configPath: string;

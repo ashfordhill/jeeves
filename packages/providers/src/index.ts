@@ -7,4 +7,5 @@ export * from "./errors.ts";
 export * from "./fake.ts";
 export * from "./fake-coding.ts";
 export * from "./openai.ts";
+export * from "./opencode.ts";
 export * from "./types.ts";

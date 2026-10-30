@@ -4,9 +4,10 @@
  * tools); the coding role needs a `CodingAgentProvider`. Providers that are planned but not built
  * yet are listed with `available: false`, so the picker can show where things are going.
  */
+import type { ReasoningEffort } from "./coding.ts";
 import type { ModelRole } from "./types.ts";
 
-export type ProviderId = "openai" | "codex" | "local";
+export type ProviderId = "openai" | "codex" | "opencode" | "local";
 
 /** What a provider can fill: `model` roles (design chat, planner) or the `coding` role. */
 export type ProviderKind = "model" | "coding";
@@ -55,6 +56,17 @@ export const providerCatalog: readonly ProviderInfo[] = [
     defaultModelAllowed: true,
   },
   {
+    id: "opencode",
+    name: "OpenCode",
+    description:
+      "OpenCode's CLI with its own provider logins (DeepSeek and others). Coding only; Jeeves's owned paths and git branch are the guard.",
+    kinds: ["coding"],
+    auth: { type: "cli-login", command: "opencode auth login" },
+    available: true,
+    suggestedModels: ["deepseek/deepseek-flash", "deepseek/deepseek-v4-pro"],
+    defaultModelAllowed: true,
+  },
+  {
     id: "local",
     name: "Local model",
     description:
@@ -75,7 +87,12 @@ export function roleKind(role: ModelRole): ProviderKind {
   return role === "coding" ? "coding" : "model";
 }
 
-export type RoleModel = { provider: ProviderId; model: string };
+export type RoleModel = {
+  provider: ProviderId;
+  model: string;
+  /** Coding only; omitted means the provider's default. */
+  reasoningEffort?: ReasoningEffort;
+};
 
 export const DEFAULT_ROLE_MODELS: Record<ModelRole, RoleModel> = {
   designChat: { provider: "openai", model: "gpt-5.4-mini" },

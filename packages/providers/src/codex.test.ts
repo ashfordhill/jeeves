@@ -132,9 +132,11 @@ describe("Codex adapter", () => {
       workingDirectory: "/p",
       prompt: "Fix the tests",
       resumeSessionId: "thr_1",
+      reasoningEffort: "medium",
     });
     expect(calls[0]).toMatchObject({ kind: "resume", id: "thr_1", input: "Fix the tests" });
     expect(calls[0]?.options?.model).toBeUndefined();
+    expect(calls[0]?.options?.modelReasoningEffort).toBe("medium");
     expect(result.sessionId).toBe("thr_1");
   });
 

@@ -12,6 +12,7 @@ import {
   type CodingAgentProvider,
   type CodingSessionResult,
   ProviderError,
+  type ReasoningEffort,
 } from "@jeeves/providers";
 import { followUpPrompt, taskBrief } from "./brief.ts";
 import type { ProjectChecks } from "./checks.ts";
@@ -28,7 +29,7 @@ import { taskRequiredExtensions } from "./seed.ts";
 
 /** The coding agent and model to use, read again for every attempt (Settings may change). */
 export type CodingAgentSource = () =>
-  | { agent: CodingAgentProvider; model: string }
+  | { agent: CodingAgentProvider; model: string; reasoningEffort?: ReasoningEffort }
   | { error: string };
 
 export type AgentExecutorOptions = {
@@ -112,7 +113,7 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         };
       const source = agents();
       if ("error" in source) throw new ProviderError("coding", "auth", source.error);
-      const { agent, model } = source;
+      const { agent, model, reasoningEffort } = source;
 
       const { workspace, notes } = await git.prepare({
         runId: input.runId,
@@ -181,6 +182,7 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
             workingDirectory: dir,
             prompt,
             ...(model ? { model } : {}),
+            ...(reasoningEffort ? { reasoningEffort } : {}),
             ...(followUp ? { resumeSessionId: followUp.sessionId } : {}),
           },
           {

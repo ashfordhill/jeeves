@@ -8,16 +8,27 @@ import {
   codingScriptByTask,
   createCodexAgent,
   createFakeCodingAgent,
+  createOpenCodeAgent,
   providerInfo,
 } from "@jeeves/providers";
 import type { Settings } from "../settings.ts";
 
-/** `codexPath` replaces the `codex` binary bundled with the SDK (`JEEVES_CODEX_PATH`). */
-export function codingAgents(settings: Settings, codexPath?: string): CodingAgentSource {
+/**
+ * `codexPath`/`opencodePath` replace the binaries Jeeves would otherwise use
+ * (`JEEVES_CODEX_PATH`/`JEEVES_OPENCODE_PATH`).
+ */
+export function codingAgents(
+  settings: Settings,
+  codexPath?: string,
+  opencodePath?: string,
+): CodingAgentSource {
   const codex = createCodexAgent(codexPath ? { codexPath } : {});
+  const opencode = createOpenCodeAgent(opencodePath ? { opencodePath } : {});
   return () => {
-    const { provider, model } = settings.roles().coding;
-    if (provider === "codex") return { agent: codex, model };
+    const { provider, model, reasoningEffort } = settings.roles().coding;
+    const effort = reasoningEffort ? { reasoningEffort } : {};
+    if (provider === "codex") return { agent: codex, model, ...effort };
+    if (provider === "opencode") return { agent: opencode, model, ...effort };
     return {
       error: `${providerInfo(provider)?.name ?? provider} can't run coding tasks. Pick another provider in Settings.`,
     };

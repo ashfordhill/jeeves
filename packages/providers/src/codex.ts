@@ -61,6 +61,7 @@ export function createCodexAgent(options: CodexAgentOptions = {}): CodingAgentPr
         networkAccessEnabled: true,
         skipGitRepoCheck: true,
         ...(request.model ? { model: request.model } : {}),
+        ...(request.reasoningEffort ? { modelReasoningEffort: request.reasoningEffort } : {}),
       };
       const thread = request.resumeSessionId
         ? codex.resumeThread(request.resumeSessionId, threadOptions)

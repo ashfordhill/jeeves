@@ -62,7 +62,7 @@ function executor() {
   return createAgentExecutor({
     agents: codingScript
       ? fakeCodingAgents(codingScript)
-      : codingAgents(settings, process.env.JEEVES_CODEX_PATH),
+      : codingAgents(settings, process.env.JEEVES_CODEX_PATH, process.env.JEEVES_OPENCODE_PATH),
     checks: process.env.JEEVES_FAKE_CHECKS
       ? markerChecks(Number(process.env.JEEVES_FAKE_CHECKS) || 0)
       : projectChecks(),

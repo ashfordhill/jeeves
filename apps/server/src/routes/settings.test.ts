@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DEFAULT_ROLE_MODELS } from "@jeeves/providers";
@@ -15,7 +15,12 @@ const home = () => mkdtempSync(join(tmpdir(), "jeeves-settings-"));
 describe("settings", () => {
   it("reports provider status without keys, and stores a provider and model per role", async () => {
     const dir = home();
-    const app = buildTestApp({} as Db, { settings: new Settings(dir, { HOME: dir }) });
+    const app = buildTestApp({} as Db, {
+      settings: new Settings(dir, {
+        HOME: dir,
+        JEEVES_OPENCODE_PATH: join(dir, "missing-opencode"),
+      }),
+    });
 
     const initial = (await app.inject({ method: "GET", url: "/settings" })).json();
     expect(initial.configPath).toBe(join(dir, "config.json"));
@@ -30,6 +35,7 @@ describe("settings", () => {
     ).toEqual([
       ["openai", false, "No API key"],
       ["codex", false, "Not logged in"],
+      ["opencode", false, "Not installed"],
       ["local", false, "Coming later"],
     ]);
 
@@ -108,6 +114,65 @@ describe("settings", () => {
       status: "Logged in",
       help: null,
     });
+  });
+
+  it("detects OpenCode and carries its coding effort into the adapter", () => {
+    const dir = home();
+    const bin = join(dir, "opencode");
+    writeFileSync(bin, "#!/bin/sh\nexit 0\n");
+    chmodSync(bin, 0o755);
+    const settings = new Settings(dir, { JEEVES_OPENCODE_PATH: bin });
+    expect(settings.providerStatus("opencode")).toEqual({
+      ready: true,
+      status: "Installed",
+      help: null,
+    });
+    settings.setRoles({
+      coding: {
+        provider: "opencode",
+        model: "deepseek/deepseek-flash",
+        reasoningEffort: "high",
+      },
+    });
+    expect(settings.roles().coding).toEqual({
+      provider: "opencode",
+      model: "deepseek/deepseek-flash",
+      reasoningEffort: "high",
+    });
+    const source = codingAgents(settings, undefined, bin)();
+    expect("agent" in source && source.agent.id).toBe("opencode");
+    expect("reasoningEffort" in source && source.reasoningEffort).toBe("high");
+  });
+
+  it("accepts and returns a coding reasoning effort over the API", async () => {
+    const dir = home();
+    const app = buildTestApp({} as Db, { settings: new Settings(dir, { HOME: dir }) });
+    const res = await app.inject({
+      method: "PUT",
+      url: "/settings/roles",
+      payload: {
+        coding: {
+          provider: "opencode",
+          model: "deepseek/deepseek-flash",
+          reasoningEffort: "high",
+        },
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().roles.coding).toEqual({
+      provider: "opencode",
+      model: "deepseek/deepseek-flash",
+      reasoningEffort: "high",
+    });
+    expect(
+      (
+        await app.inject({
+          method: "PUT",
+          url: "/settings/roles",
+          payload: { coding: { provider: "opencode", model: "x", reasoningEffort: "max" } },
+        })
+      ).statusCode,
+    ).toBe(400);
   });
 
   it("resolves each role to its provider", () => {

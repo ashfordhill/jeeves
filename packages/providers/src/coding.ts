@@ -5,6 +5,10 @@
  */
 import type { Usage } from "./types.ts";
 
+/** Reasoning effort for coding providers that expose one; empty leaves the provider default. */
+export const reasoningEfforts = ["low", "medium", "high", "xhigh"] as const;
+export type ReasoningEffort = (typeof reasoningEfforts)[number];
+
 export type CodingAgentEvent =
   | { type: "usage"; usage: Usage }
   /** The session's ID, as soon as the provider reports it (used to resume the session). */
@@ -31,6 +35,8 @@ export type CodingSessionRequest = {
   prompt: string;
   /** Model name from Settings (`coding` role); the provider's default when empty. */
   model?: string;
+  /** Provider-specific reasoning effort; omitted means the provider's default. */
+  reasoningEffort?: ReasoningEffort;
   /** Continue an earlier session instead of starting a new one (needs `capabilities.resume`). */
   resumeSessionId?: string;
 };

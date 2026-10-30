@@ -58,6 +58,53 @@
   color: var(--ink-soft);
 }
 
+.settings-connection-help {
+  flex-basis: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-setup {
+  display: inline-flex;
+  flex-basis: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border: 1px dashed color-mix(in srgb, var(--line) 60%, transparent);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.settings-setup:hover {
+  border-color: var(--line);
+}
+
+.settings-copy {
+  flex: none;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.settings-advanced {
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 35%, transparent);
+}
+
+.settings-advanced summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .settings-note {
   margin-bottom: 10px;
 }
@@ -121,8 +168,13 @@
   margin-top: 6px;
 }
 
-@media (max-width: 480px) {
-  .settings-role-fields {
+.settings-role-fields-coding {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.7fr);
+}
+
+@media (max-width: 640px) {
+  .settings-role-fields,
+  .settings-role-fields-coding {
     grid-template-columns: minmax(0, 1fr);
   }
 }
