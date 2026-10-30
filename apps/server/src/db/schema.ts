@@ -253,6 +253,15 @@ export const generations = pgTable(
   (t) => [index("generations_project_idx").on(t.projectId, t.id)],
 );
 
+export type ExecutionMode = "continuous" | "review-after-task";
+export type RunEvidence = {
+  designHash: string;
+  templates: string[];
+  startingCommit: string | null;
+  coding: { provider: string; model: string } | null;
+};
+export type HumanIntervention = { at: string; action: string; note: string; taskId?: number };
+
 export type RunUsage = {
   inputTokens: number;
   outputTokens: number;
@@ -280,6 +289,11 @@ export const runs = pgTable(
     status: text("status", { enum: runStatuses }).notNull(),
     /** Why the run stopped, paused, or failed, in words for the person. */
     statusReason: text("status_reason"),
+    executionMode: text("execution_mode").$type<ExecutionMode>().notNull().default("continuous"),
+    kind: text("kind").$type<"initial-build" | "feature">(),
+    parentRunId: integer("parent_run_id"),
+    evidence: jsonb("evidence").$type<RunEvidence>(),
+    interventions: jsonb("interventions").$type<HumanIntervention[]>().notNull().default([]),
     outputDir: text("output_dir").notNull(),
     /** The design revision the project was generated from (`jeeves/lock.json`). */
     designRevision: integer("design_revision"),
@@ -359,4 +373,34 @@ export const attempts = pgTable(
     finishedAt: timestamp("finished_at", { withTimezone: true }),
   },
   (t) => [index("attempts_task_idx").on(t.taskId, t.number)],
+);
+
+/** One implementation invocation. Never aggregate these together with run/task totals. */
+export const implementationUsage = pgTable(
+  "implementation_usage",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    runId: integer("run_id")
+      .notNull()
+      .references(() => runs.id, { onDelete: "cascade" }),
+    // Replanning can remove pending tasks; the evidence and stable task key survive.
+    taskId: integer("task_id").references(() => tasks.id, { onDelete: "set null" }),
+    attemptId: integer("attempt_id").references(() => attempts.id, { onDelete: "set null" }),
+    taskKey: text("task_key"),
+    kind: text("kind").$type<"planning" | "coding" | "legacy">().notNull(),
+    status: text("status")
+      .$type<"running" | "completed" | "failed" | "interrupted" | "cancelled">()
+      .notNull(),
+    provider: text("provider"),
+    model: text("model"),
+    request: jsonb("request").$type<Record<string, unknown>>(),
+    usage: jsonb("usage").$type<RunUsage>(),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [index("implementation_usage_project_idx").on(t.projectId, t.runId)],
 );

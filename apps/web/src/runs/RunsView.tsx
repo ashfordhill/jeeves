@@ -22,6 +22,7 @@ import { useEffect, useId, useState } from "react";
 import {
   type Attempt,
   api,
+  type ExecutionMode,
   type GitStrategy,
   type RunAction,
   type RunDetail,
@@ -30,6 +31,7 @@ import {
   type RunSummary,
   type RunTask,
   type Usage,
+  type UsageTotals,
 } from "../draw/api.ts";
 import { projectFromUrl, useDraw } from "../draw/store.ts";
 import { StatusBadge, type StatusColor } from "../shell/StatusBadge.tsx";
@@ -97,8 +99,9 @@ function RunBadge({ status }: { status: RunStatus }) {
 }
 
 function usageText(usage: Usage | null): string {
-  if (!usage?.known) return "unknown";
+  if (!usage) return "unknown";
   const tokens = `${usage.inputTokens.toLocaleString()} in / ${usage.outputTokens.toLocaleString()} out`;
+  if (!usage.known) return `${tokens} known; total unknown`;
   return usage.costUsd === undefined ? tokens : `${tokens} · $${usage.costUsd.toFixed(2)}`;
 }
 
@@ -182,7 +185,19 @@ function RunList() {
         Plan a run
       </Button>
       {hint ? <p className="runs-hint">{hint}</p> : null}
-      <RunSettingsForm />
+      {overview?.implementation ? (
+        <section aria-label="Project implementation usage">
+          <strong>Cumulative implementation</strong>
+          <UsageSummary usage={overview.implementation} />
+          <p className="runs-hint">
+            Initial build and feature runs, including failures and planning. Design chat excluded.
+          </p>
+        </section>
+      ) : null}
+      <details>
+        <summary>New run settings</summary>
+        <RunSettingsForm />
+      </details>
       {overview && overview.runs.length > 0 ? (
         <ul className="runs-list" aria-label="All runs">
           {overview.runs.map((run) => (
@@ -260,7 +275,14 @@ function RunListItem({
       aria-current={selected ? "true" : undefined}
       onClick={onSelect}
     >
-      <span className="runs-list-title">Run {run.id}</span>
+      <span className="runs-list-title">
+        Run {run.id} ·{" "}
+        {run.kind === "feature"
+          ? "Feature"
+          : run.kind === "initial-build"
+            ? "Initial build"
+            : "Legacy"}
+      </span>
       <RunBadge status={run.status} />
       <span className="runs-list-meta">
         {run.doneCount}/{run.taskCount} tasks · {new Date(run.createdAt).toLocaleString()}
@@ -357,10 +379,8 @@ function RunPanel() {
           <div className="run-empty">
             <h2>Nothing planned yet</h2>
             <p>
-              Planning reads the generated project, makes one task per element or attachment with
-              implementation notes (databases first, then services, their clients, and frontends),
-              and lets the planner model split tasks and add acceptance tests. You can edit the plan
-              before starting it.
+              Generate standard capabilities, then plan the remaining extensions and frontend work.
+              Review the tasks and execution mode before Start.
             </p>
           </div>
         ) : null}
@@ -386,7 +406,7 @@ function RunPanel() {
         <RunActions detail={detail} />
       </header>
       {run.statusReason ? <p className="run-reason">{run.statusReason}</p> : null}
-      <GitSummary detail={detail} />
+      <RunOverview detail={detail} />
       {run.warnings.length > 0 ? (
         <ul className="run-warnings" aria-label="Warnings">
           {run.warnings.map((w) => (
@@ -401,7 +421,12 @@ function RunPanel() {
           <Loader size="xs" /> Planning: reading the project and asking the planner…
         </p>
       ) : null}
-      <PlanSummary detail={detail} />
+      <details>
+        <summary>Plan and Git details</summary>
+        <PlanSummary detail={detail} />
+        <GitSummary detail={detail} />
+      </details>
+      <RunEvidence detail={detail} />
       {run.status !== "planning" && tasks.length === 0 ? (
         <p className="run-reason">This plan has no tasks.</p>
       ) : null}
@@ -411,6 +436,7 @@ function RunPanel() {
             <li key={task.id}>
               <TaskCard
                 task={task}
+                usage={detail.taskUsage?.[task.id]}
                 number={index + 1}
                 editable={canEdit && task.status === "pending"}
                 first={pendingIds[0] === task.id}
@@ -422,6 +448,183 @@ function RunPanel() {
         </ol>
       ) : null}
     </section>
+  );
+}
+
+function UsageSummary({ usage }: { usage: UsageTotals }) {
+  if (usage.records === 0)
+    return <p className="run-usage">No implementation usage yet. Cost unknown.</p>;
+  return (
+    <p className="run-usage">
+      {usage.inputTokens.toLocaleString()} input / {usage.outputTokens.toLocaleString()} output
+      tokens known · token coverage {usage.tokenRecords}/{usage.records} records
+      {usage.known ? "" : "; total unknown"}
+      <br />
+      Cost {usage.costRecords ? `$${usage.knownCostUsd.toFixed(4)} known` : "unknown"} · cost
+      coverage {usage.costRecords}/{usage.records} records
+    </p>
+  );
+}
+
+function RunOverview({ detail }: { detail: RunDetail }) {
+  const mode = useRuns((s) => s.mode);
+  const busy = useRuns((s) => s.busy);
+  const { run, tasks } = detail;
+  const completed = tasks.filter((t) => t.status === "done").length;
+  const current = tasks.find((t) => t.status === "running");
+  return (
+    <section className="run-overview" aria-label="Implementation progress">
+      <p>
+        <strong>
+          {completed}/{tasks.length} tasks verified
+        </strong>{" "}
+        · {duration(run.createdAt, run.finishedAt ?? new Date().toISOString())} elapsed ·{" "}
+        {run.kind === "feature"
+          ? "Feature run"
+          : run.kind === "initial-build"
+            ? "Initial build"
+            : "Legacy run"}
+      </p>
+      <progress aria-label="Verified tasks" value={completed} max={Math.max(1, tasks.length)} />
+      <p>
+        {current
+          ? `Working on ${current.title}`
+          : run.status === "planning"
+            ? "Preparing tasks"
+            : run.status === "planned"
+              ? "Ready to review and start"
+              : statusLabels[run.status]}
+      </p>
+      {detail.activity ? <p className="run-activity">{detail.activity}</p> : null}
+      {detail.implementation ? <UsageSummary usage={detail.implementation} /> : null}
+      <p>
+        Coding model:{" "}
+        <strong>
+          {detail.coding
+            ? `${detail.coding.provider} / ${detail.coding.model || "provider default"}`
+            : "unavailable"}
+        </strong>
+        . Design model is selected separately in Settings.
+      </p>
+      <NativeSelect
+        label="Execution mode"
+        value={run.executionMode ?? "continuous"}
+        disabled={busy || !detail.editable || tasks.some((t) => t.status === "running")}
+        data={[
+          { value: "continuous", label: "Continuous" },
+          { value: "review-after-task", label: "Review after each task" },
+        ]}
+        onChange={(e) => void mode(e.currentTarget.value as ExecutionMode)}
+      />
+      <p className="runs-hint">
+        Continuous continues after verified tasks and stops on problems. Review mode pauses after
+        verification and commit; Resume continues with the next task.
+      </p>
+      <details open={!run.startedAt}>
+        <summary>Capabilities and verification</summary>
+        <h3>Generated capabilities</h3>
+        {detail.capabilities?.length ? (
+          <ul>
+            {detail.capabilities.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>Template infrastructure and configured connections.</p>
+        )}
+        <p>
+          {tasks.filter((t) => t.status === "pending").length} remaining extension or frontend
+          tasks.
+        </p>
+        <h3>Verification layers</h3>
+        <p>
+          Infrastructure readiness → template conformance → application acceptance. Required fixed
+          checks run independently; deferred checks never count as passes.
+        </p>
+      </details>
+    </section>
+  );
+}
+
+function RunEvidence({ detail }: { detail: RunDetail }) {
+  const addNote = useRuns((s) => s.note);
+  const busy = useRuns((s) => s.busy);
+  const [note, setNote] = useState("");
+  const { run } = detail;
+  return (
+    <details className="run-evidence">
+      <summary>Usage ledger, provenance and human help</summary>
+      <p>
+        Generated design revision {run.designRevision ?? "unknown"} · parent run{" "}
+        {run.parentRunId ?? "none"}
+      </p>
+      {run.evidence ? (
+        <>
+          <p>
+            Design hash <code>{run.evidence.designHash}</code>
+          </p>
+          <p>
+            Starting Git revision <code>{run.evidence.startingCommit ?? "unknown"}</code>
+          </p>
+          <p>Templates: {run.evidence.templates.join(", ")}</p>
+          <p>
+            Planned coding selection:{" "}
+            {run.evidence.coding
+              ? `${run.evidence.coding.provider} / ${run.evidence.coding.model}`
+              : "unknown"}
+            . Each attempt records its actual selection.
+          </p>
+        </>
+      ) : (
+        <p>Historical provenance was not recorded.</p>
+      )}
+      <ul aria-label="Implementation ledger">
+        {detail.ledger?.map((entry) => (
+          <li key={entry.id}>
+            <details>
+              <summary>
+                {entry.kind} · {entry.taskKey ?? "run"} · {entry.status} ·{" "}
+                {entry.provider ?? "unknown provider"} / {entry.model ?? "unknown model"} ·{" "}
+                {usageText(entry.usage)}
+              </summary>
+              <p>
+                {duration(entry.startedAt, entry.finishedAt)} elapsed · attempt{" "}
+                {entry.attemptId ?? "none"}
+              </p>
+              <pre>
+                {entry.request
+                  ? JSON.stringify(entry.request, null, 2)
+                  : "Historical request unavailable."}
+              </pre>
+            </details>
+          </li>
+        ))}
+      </ul>
+      <ul aria-label="Human interventions">
+        {run.interventions?.map((entry, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: persisted interventions are append-only
+          <li key={`${entry.at}-${index}`}>
+            {new Date(entry.at).toLocaleString()} · {entry.action}: {entry.note}
+          </li>
+        ))}
+      </ul>
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (note.trim() && (await addNote(note.trim()))) setNote("");
+        }}
+      >
+        <Textarea
+          label="Human help or review note"
+          value={note}
+          maxLength={4000}
+          onChange={(e) => setNote(e.currentTarget.value)}
+        />
+        <Button type="submit" disabled={busy || !note.trim()}>
+          Record note
+        </Button>
+      </form>
+    </details>
   );
 }
 
@@ -454,7 +657,7 @@ function PlanSummary({ detail }: { detail: RunDetail }) {
         <strong>
           {planner.mode === "refined"
             ? `Refined by the planner (${planner.model})`
-            : "Seed plan: one task per element or attachment with notes"}
+            : "Deterministic task plan"}
         </strong>
         {planner.message ? ` · ${planner.message}` : null}
       </p>
@@ -470,6 +673,7 @@ function PlanSummary({ detail }: { detail: RunDetail }) {
 
 function TaskCard({
   task,
+  usage,
   number,
   editable,
   first,
@@ -477,6 +681,7 @@ function TaskCard({
   problems,
 }: {
   task: RunTask;
+  usage?: UsageTotals;
   number: number;
   editable: boolean;
   first: boolean;
@@ -579,7 +784,8 @@ function TaskCard({
       {editing ? (
         <TaskForm task={task} onDone={() => setEditing(false)} />
       ) : (
-        <>
+        <details className="task-description">
+          <summary>Task details</summary>
           <p className="run-task-description">{task.description}</p>
           <div className="run-task-section">
             <h4>Acceptance tests</h4>
@@ -599,8 +805,9 @@ function TaskCard({
               <code key={p}>{p}</code>
             ))}
           </p>
-        </>
+        </details>
       )}
+      {usage && usage.records > 0 ? <UsageSummary usage={usage} /> : null}
 
       {task.commit ? (
         <p className="run-task-paths">
@@ -623,10 +830,7 @@ function AttemptRow({ attempt }: { attempt: Attempt }) {
   const projectId = useRuns((s) => s.projectId);
   const runId = useRuns((s) => s.selectedId);
   const running = attempt.status === "running";
-  const [open, setOpen] = useState(running);
-  useEffect(() => {
-    if (running) setOpen(true);
-  }, [running]);
+  const [open, setOpen] = useState(false);
   const Chevron = open ? IconChevronDown : IconChevronRight;
   return (
     <li data-status={attempt.status}>
@@ -642,7 +846,7 @@ function AttemptRow({ attempt }: { attempt: Attempt }) {
       </button>
       {attempt.finishedAt ? ` · ${duration(attempt.startedAt, attempt.finishedAt)}` : ""}
       {attempt.usage ? ` · ${usageText(attempt.usage)} tokens` : ""}
-      {attempt.summary ? <span className="attempt-summary"> · {attempt.summary}</span> : null}
+
       {attempt.error ? <span className="attempt-error-text"> · {attempt.error}</span> : null}
       {open && projectId && runId !== undefined ? (
         <AttemptDetails

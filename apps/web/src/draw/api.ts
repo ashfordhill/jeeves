@@ -178,6 +178,27 @@ export type RunStatus =
   | "succeeded";
 export type RunAction = "start" | "pause" | "resume" | "cancel" | "replan";
 export type Usage = { inputTokens: number; outputTokens: number; known: boolean; costUsd?: number };
+export type UsageTotals = Usage & {
+  records: number;
+  tokenRecords: number;
+  costRecords: number;
+  knownCostUsd: number;
+};
+export type ExecutionMode = "continuous" | "review-after-task";
+export type UsageEntry = {
+  id: number;
+  taskId: number | null;
+  taskKey: string | null;
+  attemptId: number | null;
+  kind: "planning" | "coding" | "legacy";
+  status: string;
+  provider: string | null;
+  model: string | null;
+  request: Record<string, unknown> | null;
+  usage: Usage | null;
+  startedAt: string;
+  finishedAt: string | null;
+};
 export type GitStrategy = "direct" | "branch-per-task";
 export type RunSettings = { gitStrategy: GitStrategy; maxRetries: number };
 
@@ -187,6 +208,16 @@ export type Run = {
   projectId: string;
   status: RunStatus;
   statusReason: string | null;
+  executionMode: ExecutionMode;
+  kind: "initial-build" | "feature" | null;
+  parentRunId: number | null;
+  evidence: {
+    designHash: string;
+    templates: string[];
+    startingCommit: string | null;
+    coding: { provider: string; model: string } | null;
+  } | null;
+  interventions: { at: string; action: string; note: string; taskId?: number }[];
   outputDir: string;
   designRevision: number | null;
   planner: {
@@ -296,9 +327,16 @@ export type RunDetail = {
   editable: boolean;
   orderProblems: { taskId: number; message: string }[];
   usage: { planner: Usage | null; attempts: Usage; total: Usage };
+  ledger: UsageEntry[];
+  implementation: UsageTotals;
+  taskUsage: Record<number, UsageTotals>;
+  coding: { provider: string; model: string } | null;
+  capabilities: string[];
+  activity: string | null;
 };
 
 export type RunsOverview = {
+  implementation: UsageTotals;
   runs: RunSummary[];
   readiness: { outputDir: string | null; ready: boolean; reason: string | null };
 };
@@ -433,6 +471,17 @@ export const api = {
     request<{ run: Run }>(`/projects/${id}/runs`, { method: "POST" }).then((r) => r.run),
 
   run: (id: string, runId: number) => request<RunDetail>(`/projects/${id}/runs/${runId}`),
+
+  runMode: (id: string, runId: number, executionMode: ExecutionMode) =>
+    request(`/projects/${id}/runs/${runId}/mode`, {
+      method: "PATCH",
+      body: JSON.stringify({ executionMode }),
+    }),
+  runNote: (id: string, runId: number, note: string) =>
+    request(`/projects/${id}/runs/${runId}/interventions`, {
+      method: "POST",
+      body: JSON.stringify({ note }),
+    }),
 
   runAction: (id: string, runId: number, action: RunAction) =>
     request<{ run: Run }>(`/projects/${id}/runs/${runId}/${action}`, { method: "POST" }),

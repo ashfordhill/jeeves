@@ -499,3 +499,41 @@
   margin: 10px 0 0;
   font-size: 13px;
 }
+
+.run-overview {
+  padding: 14px 18px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--cream);
+}
+.run-overview p {
+  margin: 8px 0;
+}
+.run-overview h3 {
+  margin: 16px 0 6px;
+  font-size: 15px;
+}
+.run-overview progress {
+  width: 100%;
+  accent-color: var(--blue);
+}
+.run-activity {
+  max-height: 4.5em;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.runs-view summary {
+  cursor: pointer;
+  font-weight: 800;
+  margin: 8px 0;
+}
+.run-evidence {
+  overflow-wrap: anywhere;
+}
+.run-evidence pre {
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 12px;
+}

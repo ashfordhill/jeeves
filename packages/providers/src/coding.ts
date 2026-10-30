@@ -6,6 +6,7 @@
 import type { Usage } from "./types.ts";
 
 export type CodingAgentEvent =
+  | { type: "usage"; usage: Usage }
   /** The session's ID, as soon as the provider reports it (used to resume the session). */
   | { type: "session"; sessionId: string }
   | { type: "message"; text: string }

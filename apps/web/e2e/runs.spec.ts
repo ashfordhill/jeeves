@@ -68,6 +68,7 @@ test("plans a generated project, edits the plan, and runs it with Pause and Resu
     "Count clicks",
     "Shorten form and recent links",
   ]);
+  await page.getByText("Plan and Git details", { exact: true }).click();
   await expect(page.getByText(/Refined by the planner \(fake\)/)).toBeVisible();
   await expect(page.getByRole("list", { name: "Warnings" })).toContainText(
     "baseline check hasn't passed",
@@ -166,10 +167,12 @@ test("a failing task shows its evidence, needs attention, and resumes to a commi
   await page.getByRole("tab", { name: "Runs" }).click();
 
   // No retries, and commits straight onto the run branch.
+  await page.getByText("New run settings", { exact: true }).click();
   await page.getByRole("combobox", { name: "Retries after a failed attempt" }).selectOption("0");
   await page.getByRole("combobox", { name: "Git strategy" }).selectOption("direct");
   await page.getByRole("button", { name: "Plan a run" }).click();
   await expect(runStatus(page)).toHaveText("Planned", { timeout: 15_000 });
+  await page.getByText("Plan and Git details", { exact: true }).click();
   await expect(
     page.getByText(/Direct: commit each task on the run branch · up to 0 retries/),
   ).toBeVisible();
@@ -185,7 +188,10 @@ test("a failing task shows its evidence, needs attention, and resumes to a commi
   await page.getByRole("button", { name: "Save task" }).click();
 
   await page.getByRole("button", { name: "Start" }).click();
-  // The running attempt opens by itself and streams the agent's log.
+  // Open the running attempt to inspect its streamed evidence.
+  await task(page, first)
+    .getByRole("button", { name: /Attempt 1: running/ })
+    .click();
   await expect(task(page, first).getByRole("list", { name: "Attempt log" })).toContainText(
     "Starting a fake session",
     { timeout: 10_000 },
@@ -222,4 +228,57 @@ test("explains that a project must be generated before planning", async ({ page,
   await page.getByRole("tab", { name: "Runs" }).click();
   await expect(page.getByText(/Generate the project first/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Plan a run" })).toBeDisabled();
+});
+
+test("review mode persists across reload and shows cumulative usage and human help", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(90_000);
+  const { id } = await generatedProject(page, request, "P5 review mode");
+  await page.getByRole("tab", { name: "Runs" }).click();
+  await page.getByRole("button", { name: "Plan a run" }).click();
+  await expect(runStatus(page)).toHaveText("Planned", { timeout: 15_000 });
+  await expect(page.getByRole("region", { name: "Implementation progress" })).toContainText(
+    "Coding model: fake / fake",
+  );
+  await page.getByRole("combobox", { name: "Execution mode" }).selectOption("review-after-task");
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "Execution mode" })).toHaveValue(
+    "review-after-task",
+  );
+  await expect(task(page, "Redirect short codes").locator(".task-description")).not.toHaveAttribute(
+    "open",
+  );
+  await task(page, "Redirect short codes").getByText("Task details", { exact: true }).click();
+  await expect(task(page, "Redirect short codes").locator(".run-task-description")).toBeVisible();
+  await page.getByRole("button", { name: "Start" }).click();
+  await expect(runStatus(page)).toHaveText("Paused", { timeout: 20_000 });
+  await expect(page.getByText(/passed verification and was committed/)).toBeVisible();
+  await expect(task(page, "Create and fetch short links")).toContainText("Done");
+  await expect(task(page, "Redirect short codes")).toContainText("To do");
+  await page.reload();
+  await expect(runStatus(page)).toHaveText("Paused");
+  await page.getByText("Usage ledger, provenance and human help", { exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Human help or review note" })
+    .fill("Reviewed first task and its checks.");
+  await page.getByRole("button", { name: "Record note" }).click();
+  await expect(page.getByRole("list", { name: "Human interventions" })).toContainText(
+    "Reviewed first task and its checks.",
+  );
+  await expect(page.getByRole("complementary", { name: "Runs" })).toContainText(
+    "Cumulative implementation",
+  );
+  await page.getByRole("button", { name: "Resume" }).click();
+  await expect(runStatus(page)).toHaveText("Paused", { timeout: 20_000 });
+  await expect(task(page, "Redirect short codes")).toContainText("Done");
+  await page.getByRole("combobox", { name: "Execution mode" }).selectOption("continuous");
+  await page.getByRole("button", { name: "Resume" }).click();
+  await expect(runStatus(page)).toHaveText("Succeeded", { timeout: 30_000 });
+  const detail = await (await request.get(`/api/projects/${id}/runs`)).json();
+  expect(detail.implementation).toMatchObject({ records: 5, tokenRecords: 5, costRecords: 0 });
+  await page.screenshot({ path: "/tmp/jeeves-p5-runs.png", fullPage: true });
+  await page.mouse.move(1, 1);
+  expect((await new AxeBuilder({ page }).include("#view-panel").analyze()).violations).toEqual([]);
 });

@@ -6,6 +6,8 @@
  * Execution goes through a `TaskExecutor`: the coding-agent executor in the app, a stub or a
  * scripted executor in tests.
  */
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readLock } from "@jeeves/generator";
 import {
   type AttemptEvent,
@@ -26,14 +28,17 @@ import {
   type TaskWorkspace,
   unverifiedExtensionOperations,
 } from "@jeeves/orchestrator";
-import { ProviderError } from "@jeeves/providers";
+import { type ModelProvider, ProviderError } from "@jeeves/providers";
 import type { TemplateLookup } from "@jeeves/spec";
 import { and, asc, desc, eq, getTableColumns, inArray, notInArray, sql } from "drizzle-orm";
 import { type ModelSource, modelLabel } from "../chat/service.ts";
 import type { Db } from "../db/client.ts";
 import {
   attempts,
+  type ExecutionMode,
   generations,
+  type HumanIntervention,
+  implementationUsage,
   projects,
   type RunPlanner,
   type RunUsage,
@@ -42,6 +47,7 @@ import {
 } from "../db/schema.ts";
 import type { DesignService } from "../design/service.ts";
 import type { JobQueue } from "./jobs.ts";
+import { type UsageTotals, usageTotals } from "./usage.ts";
 
 export const PLAN_JOB = "jeeves-run-plan";
 export const STEP_JOB = "jeeves-run-step";
@@ -71,6 +77,12 @@ export type RunDetail = {
   /** Pending tasks placed before tasks they depend on. */
   orderProblems: { taskId: number; message: string }[];
   usage: { planner: RunUsage | null; attempts: RunUsage; total: RunUsage };
+  ledger: (typeof implementationUsage.$inferSelect)[];
+  implementation: UsageTotals;
+  taskUsage: Record<number, UsageTotals>;
+  coding: { provider: string; model: string } | null;
+  capabilities: string[];
+  activity: string | null;
 };
 
 /** Whether the project can be planned, and what it was generated from. */
@@ -200,15 +212,37 @@ export class RunService {
       .from(attempts)
       .where(eq(attempts.runId, runId))
       .orderBy(asc(attempts.number));
+    const ledger = await this.db
+      .select()
+      .from(implementationUsage)
+      .where(eq(implementationUsage.runId, runId))
+      .orderBy(asc(implementationUsage.id));
+    const coding = this.executor.selection?.() ?? null;
+    const activeTask = taskRows.find((t) => t.status === "running");
+    const activeAttempt =
+      activeTask && attemptRows.find((a) => a.taskId === activeTask.id && a.status === "running");
+    const activity = activeAttempt
+      ? (this.events.get(activeAttempt.id)?.at(-1)?.text ?? activeTask?.title ?? null)
+      : null;
     const pending = taskRows.filter((t) => t.status === "pending");
     const ids = new Map(pending.map((t) => [t.key, t.id]));
-    const attemptUsage = sumUsage(
-      attemptRows.filter((a) => a.status !== "running").map((a) => a.usage),
-    );
+    const attemptUsage = sumUsage(ledger.filter((r) => r.kind !== "planning").map((r) => r.usage));
     // A planner that was never called (no notes, no key) used nothing; one that was may be unknown.
-    const plannerUsage = run.planner?.model ? run.planner.usage : null;
+    const planning = ledger.filter((r) => r.kind === "planning");
+    const plannerUsage = planning.length ? sumUsage(planning.map((r) => r.usage)) : null;
     return {
       run,
+      ledger,
+      implementation: usageTotals(ledger.map((r) => r.usage)),
+      taskUsage: Object.fromEntries(
+        taskRows.map((t) => [
+          t.id,
+          usageTotals(ledger.filter((r) => r.taskId === t.id).map((r) => r.usage)),
+        ]),
+      ),
+      coding,
+      capabilities: capabilities(run),
+      activity,
       tasks: taskRows.map((task) => ({
         ...task,
         attempts: attemptRows.filter((a) => a.taskId === task.id),
@@ -222,13 +256,16 @@ export class RunService {
       usage: {
         planner: plannerUsage,
         attempts: attemptUsage,
-        total: run.planner?.model ? sumUsage([plannerUsage, attemptUsage]) : attemptUsage,
+        total: sumUsage(ledger.map((r) => r.usage)),
       },
     };
   }
 
   /** Creates a run and queues its planning. One active run per project. */
-  async create(projectId: string): Promise<Result<{ run: Run }>> {
+  async create(
+    projectId: string,
+    options: { executionMode?: ExecutionMode; kind?: "initial-build" | "feature" } = {},
+  ): Promise<Result<{ run: Run }>> {
     const readiness = await this.readiness(projectId);
     if (!readiness) return notFound("Project");
     if (!readiness.ready || !readiness.outputDir) {
@@ -258,11 +295,26 @@ export class RunService {
       };
     }
     const settings = await this.settings(projectId);
+    const history = await this.list(projectId);
+    const project = readGeneratedProject(readiness.outputDir);
+    const evidence = {
+      designHash: createHash("sha256").update(JSON.stringify(project.design)).digest("hex"),
+      templates: project.lock.templates,
+      startingCommit: gitRevision(readiness.outputDir),
+      coding: this.executor.selection?.() ?? null,
+    };
     const [run] = await this.db
       .insert(runs)
       .values({
         projectId,
         status: "planning",
+        kind:
+          options.kind ??
+          (history.some((r) => r.status === "succeeded") ? "feature" : "initial-build"),
+        parentRunId: history[0]?.id ?? null,
+        executionMode: options.executionMode ?? "continuous",
+        evidence,
+        designRevision: project.lock.designRevision,
         outputDir: readiness.outputDir,
         gitStrategy: settings?.gitStrategy ?? "branch-per-task",
         maxRetries: settings?.maxRetries ?? 2,
@@ -395,7 +447,7 @@ export class RunService {
     const projectName = current?.name ?? "project";
     try {
       const refined = await refinePlan(
-        source.provider,
+        this.meterPlanner(run, source.provider),
         source.model,
         { projectName, seed, briefs: project.briefs },
         signal,
@@ -442,6 +494,12 @@ export class RunService {
       .set({ ...patch, edited: true })
       .where(and(eq(tasks.id, taskId), eq(tasks.status, "pending")))
       .returning();
+    if (task)
+      await this.intervene(projectId, runId, {
+        action: "edit-task",
+        taskId,
+        note: JSON.stringify(patch),
+      });
     return task ? { ok: true, task } : this.taskNotPending();
   }
 
@@ -452,6 +510,12 @@ export class RunService {
       .delete(tasks)
       .where(and(eq(tasks.id, taskId), eq(tasks.status, "pending")))
       .returning({ id: tasks.id });
+    if (removed)
+      await this.intervene(projectId, runId, {
+        action: "remove-task",
+        taskId,
+        note: "Removed pending task.",
+      });
     return removed ? { ok: true } : this.taskNotPending();
   }
 
@@ -484,11 +548,20 @@ export class RunService {
         await tx.update(tasks).set({ position }).where(eq(tasks.id, id));
       }
     });
+    await this.intervene(projectId, runId, {
+      action: "reorder",
+      note: `Task order: ${taskIds.join(", ")}`,
+    });
     return { ok: true };
   }
 
   /** Start, Pause, Resume, Cancel, or Plan again. */
-  async act(projectId: string, runId: number, action: RunAction): Promise<Result<{ run: Run }>> {
+  async act(
+    projectId: string,
+    runId: number,
+    action: RunAction,
+    note?: string,
+  ): Promise<Result<{ run: Run }>> {
     const run = await this.findRun(projectId, runId);
     if (!run) return notFound();
     if (action === "edit" || !allows(run.status, action)) return wrongState(run, action);
@@ -496,13 +569,27 @@ export class RunService {
     const transition = (status: RunStatus, set: Partial<Run> = {}) =>
       this.db
         .update(runs)
-        .set({ status, statusReason: null, updatedAt: now, ...set })
+        .set({
+          status,
+          statusReason: null,
+          updatedAt: now,
+          ...set,
+          interventions: sql`${runs.interventions} || ${JSON.stringify([{ at: now.toISOString(), action, note: note || actionNames[action] }])}::jsonb`,
+        })
         .where(and(eq(runs.id, runId), eq(runs.status, run.status)))
         .returning();
 
     switch (action) {
       case "start":
       case "resume": {
+        if (run.evidence && !sameDesign(run))
+          return {
+            ok: false,
+            status: 409,
+            code: "RUN_DESIGN_CHANGED",
+            message:
+              "The generated design changed after this run was planned. Cancel and plan a new run to capture the new baseline.",
+          };
         // Resuming tries the task that needed attention again, from where its work stands.
         if (action === "resume") {
           await this.db
@@ -561,6 +648,14 @@ export class RunService {
     try {
       const [run] = await this.db.select().from(runs).where(eq(runs.id, runId));
       if (run?.status !== "running") return;
+      if (run.evidence && !sameDesign(run)) {
+        await this.stop(
+          runId,
+          "needs-attention",
+          "The generated design changed during this run. Cancel and plan a new run.",
+        );
+        return;
+      }
       const [task] = await this.db
         .select()
         .from(tasks)
@@ -594,6 +689,24 @@ export class RunService {
         return;
       }
       await this.runTask(run, task, abort.signal);
+      const [completed] = await this.db
+        .select({ status: tasks.status })
+        .from(tasks)
+        .where(eq(tasks.id, task.id));
+      if (
+        run.executionMode === "review-after-task" &&
+        completed?.status === "done" &&
+        (await this.hasPending(runId))
+      ) {
+        await this.db
+          .update(runs)
+          .set({
+            status: "paused",
+            statusReason: `Review: "${task.title}" passed verification and was committed. Resume continues with the next task.`,
+            updatedAt: new Date(),
+          })
+          .where(and(eq(runs.id, runId), eq(runs.status, "running")));
+      }
       const [after] = await this.db
         .select({ status: runs.status })
         .from(runs)
@@ -676,6 +789,20 @@ export class RunService {
       .returning();
     if (!attempt) throw new Error("insert returned no attempt");
 
+    const [entry] = await this.db
+      .insert(implementationUsage)
+      .values({
+        projectId: run.projectId,
+        runId: run.id,
+        taskId: task.id,
+        attemptId: attempt.id,
+        taskKey: task.key,
+        kind: "coding",
+        status: "running",
+      })
+      .returning();
+    if (!entry) throw new Error("insert returned no usage entry");
+    let measuredUsage: RunUsage | null = null;
     const log: AttemptEvent[] = [];
     this.events.set(attempt.id, log);
     let added = 0;
@@ -706,6 +833,31 @@ export class RunService {
         previous,
         verifiedTaskKeys: verifiedTasks.map((task) => task.key),
         signal,
+        saveInvocation: async (invocation) => {
+          await this.db
+            .update(implementationUsage)
+            .set({
+              provider: invocation.provider,
+              model: invocation.model,
+              request: {
+                prompt: invocation.prompt,
+                startingCommit: invocation.startingCommit,
+                gitStrategy: run.gitStrategy,
+                maxRetries: run.maxRetries,
+                executionMode: run.executionMode,
+                designHash: run.evidence?.designHash,
+              },
+            })
+            .where(eq(implementationUsage.id, entry.id));
+        },
+        saveUsage: async (usage) => {
+          measuredUsage = usage;
+          await this.db
+            .update(implementationUsage)
+            .set({ usage })
+            .where(eq(implementationUsage.id, entry.id));
+          await this.db.update(attempts).set({ usage }).where(eq(attempts.id, attempt.id));
+        },
         saveWorkspace: (workspace: TaskWorkspace) =>
           this.db
             .update(tasks)
@@ -738,7 +890,7 @@ export class RunService {
     const finishedAt = new Date();
     const record = {
       events: log,
-      usage: outcome?.usage ?? null,
+      usage: outcome?.usage ?? measuredUsage,
       summary: outcome?.summary ?? null,
       ...(outcome?.sessionId ? { sessionId: outcome.sessionId } : {}),
       feedback: outcome?.feedback ?? null,
@@ -748,6 +900,19 @@ export class RunService {
       commit: outcome?.commit ?? null,
       finishedAt,
     };
+    await this.db
+      .update(implementationUsage)
+      .set({
+        usage: record.usage,
+        status: signal.aborted
+          ? "cancelled"
+          : outcome?.status === "succeeded"
+            ? "completed"
+            : "failed",
+        error: outcome?.error ?? (thrown as Error | undefined)?.message ?? null,
+        finishedAt,
+      })
+      .where(eq(implementationUsage.id, entry.id));
     if (signal.aborted) {
       await this.db
         .update(attempts)
@@ -816,6 +981,97 @@ export class RunService {
     if (!row) return undefined;
     const live = this.events.get(attemptId);
     return live ? { ...row, events: [...live] } : row;
+  }
+
+  async projectUsage(projectId: string): Promise<UsageTotals> {
+    const rows = await this.db
+      .select({ usage: implementationUsage.usage })
+      .from(implementationUsage)
+      .where(eq(implementationUsage.projectId, projectId));
+    return usageTotals(rows.map((r) => r.usage));
+  }
+
+  /** Only allowlisted run settings and actual model requests are retained; never credentials. */
+  private meterPlanner(run: Run, provider: ModelProvider): ModelProvider {
+    return {
+      id: provider.id,
+      capabilities: provider.capabilities,
+      respond: async (request, options) => {
+        const [entry] = await this.db
+          .insert(implementationUsage)
+          .values({
+            projectId: run.projectId,
+            runId: run.id,
+            kind: "planning",
+            status: "running",
+            provider: provider.id,
+            model: request.model,
+            request: {
+              instructions: request.instructions,
+              items: request.items,
+              tools: request.tools,
+            },
+          })
+          .returning();
+        if (!entry) throw new Error("insert returned no planner usage entry");
+        try {
+          const response = await provider.respond(request, options);
+          await this.db
+            .update(implementationUsage)
+            .set({
+              status: "completed",
+              usage: response.usage ? { ...response.usage, known: true } : null,
+              finishedAt: new Date(),
+            })
+            .where(eq(implementationUsage.id, entry.id));
+          return response;
+        } catch (error) {
+          await this.db
+            .update(implementationUsage)
+            .set({
+              status: options?.signal?.aborted ? "cancelled" : "failed",
+              error: (error as Error).message,
+              finishedAt: new Date(),
+            })
+            .where(eq(implementationUsage.id, entry.id));
+          throw error;
+        }
+      },
+    };
+  }
+
+  async intervene(
+    projectId: string,
+    runId: number,
+    entry: Omit<HumanIntervention, "at">,
+  ): Promise<Result<object>> {
+    const [updated] = await this.db
+      .update(runs)
+      .set({
+        interventions: sql`${runs.interventions} || ${JSON.stringify([{ ...entry, at: new Date().toISOString() }])}::jsonb`,
+      })
+      .where(and(eq(runs.id, runId), eq(runs.projectId, projectId)))
+      .returning({ id: runs.id });
+    return updated ? { ok: true } : notFound();
+  }
+
+  async setMode(
+    projectId: string,
+    runId: number,
+    executionMode: ExecutionMode,
+  ): Promise<Result<object>> {
+    const run = await this.findRun(projectId, runId);
+    if (!run) return notFound();
+    if (!allows(run.status, "edit")) return wrongState(run, "edit");
+    if (this.busy.has(runId))
+      return {
+        ok: false,
+        status: 409,
+        code: "RUN_BUSY",
+        message: "Wait for the current task to finish before changing execution mode.",
+      };
+    await this.db.update(runs).set({ executionMode }).where(eq(runs.id, runId));
+    return this.intervene(projectId, runId, { action: "execution-mode", note: executionMode });
   }
 
   async settings(projectId: string): Promise<RunSettings | undefined> {
@@ -918,6 +1174,14 @@ export function sumUsage(parts: (AttemptUsage | RunUsage | null)[]): RunUsage {
 export async function recoverRuns(db: Db): Promise<void> {
   const now = new Date();
   await db
+    .update(implementationUsage)
+    .set({
+      status: "interrupted",
+      error: "Jeeves restarted during this invocation.",
+      finishedAt: now,
+    })
+    .where(eq(implementationUsage.status, "running"));
+  await db
     .update(attempts)
     .set({ status: "interrupted", error: "Jeeves restarted during this attempt.", finishedAt: now })
     .where(eq(attempts.status, "running"));
@@ -936,4 +1200,39 @@ export async function recoverRuns(db: Db): Promise<void> {
 export async function requeuePlanning(db: Db, jobs: JobQueue): Promise<void> {
   const planning = await db.select({ id: runs.id }).from(runs).where(eq(runs.status, "planning"));
   for (const { id } of planning) await jobs.send(PLAN_JOB, { runId: id });
+}
+
+function gitRevision(dir: string): string | null {
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: dir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function capabilities(run: Run): string[] {
+  try {
+    const lock = readLock(run.outputDir);
+    return Object.entries(lock?.resourceModels ?? {}).flatMap(([service, model]) => [
+      `${service}: accounts and sessions; ${model.resources.map((r) => `${r.name} (${r.operations.join(", ")})`).join("; ")}`,
+    ]);
+  } catch {
+    return [];
+  }
+}
+
+function sameDesign(run: Run): boolean {
+  try {
+    return (
+      createHash("sha256")
+        .update(JSON.stringify(readGeneratedProject(run.outputDir).design))
+        .digest("hex") === run.evidence?.designHash
+    );
+  } catch {
+    return false;
+  }
 }

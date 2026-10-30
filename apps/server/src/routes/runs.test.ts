@@ -18,6 +18,7 @@ import {
   createFakeCodingAgent,
   createFakeProvider,
   type FakeCodingAgent,
+  ProviderError,
   type Script,
 } from "@jeeves/providers";
 import { designSchema, type OperationInput } from "@jeeves/spec";
@@ -117,14 +118,24 @@ async function waitFor<T>(check: () => Promise<T | undefined | false>, timeoutMs
 }
 
 /** An executor whose attempts finish only when the test releases them. */
-function gatedExecutor() {
+function gatedExecutor(measured = false) {
   const waiting: { taskId: number; finish: (outcome: AttemptOutcome) => void }[] = [];
   const executor: TaskExecutor = {
-    execute: ({ task, signal }) =>
-      new Promise((resolve, reject) => {
+    execute: async ({ task, signal, saveUsage, saveInvocation }) => {
+      if (measured) {
+        await saveInvocation?.({
+          provider: "partial",
+          model: "restart-model",
+          prompt: "A durable prompt",
+          startingCommit: "start",
+        });
+        await saveUsage?.({ inputTokens: 17, outputTokens: 4, known: false });
+      }
+      return new Promise((resolve, reject) => {
         waiting.push({ taskId: task.id, finish: resolve });
         signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
-      }),
+      });
+    },
   };
   return {
     executor,
@@ -271,7 +282,7 @@ describe("planning", () => {
     const h = harness();
     const id = await h.project();
     const overview = await h.call("GET", `/projects/${id}/runs`);
-    expect(overview.body).toEqual({
+    expect(overview.body).toMatchObject({
       runs: [],
       readiness: {
         outputDir: null,
@@ -546,7 +557,7 @@ describe("restarts", () => {
       // First "process": real pg-boss on PGlite, crashing while the second task runs.
       const first = await openTestDb(dataDir);
       const firstJobs = await pgBossJobs({ db: fromPglite(first.client) });
-      const gate = gatedExecutor();
+      const gate = gatedExecutor(true);
       const h1 = harness({ db: first.db, jobs: firstJobs, executor: gate.executor });
       const id = await h1.project();
       await h1.generate(id);
@@ -576,6 +587,18 @@ describe("restarts", () => {
           expect.objectContaining({ number: 1, status: "interrupted" }),
         ]);
         expect(after.actions).toEqual(["resume", "cancel"]);
+        expect(after.ledger).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              status: "interrupted",
+              provider: "partial",
+              model: "restart-model",
+              usage: { inputTokens: 17, outputTokens: 4, known: false },
+            }),
+          ]),
+        );
+        expect(after.implementation.known).toBe(false);
+        expect(after.implementation.inputTokens).toBe(134);
 
         await h2.act(id, run.id, "resume");
         const done = await h2.until(id, run.id, "succeeded");
@@ -875,4 +898,185 @@ describe("executing with the fake coding agent", { timeout: 30_000 }, () => {
       rmSync(dataDir, { recursive: true, force: true });
     }
   }, 60_000);
+});
+
+describe("P5 execution modes and implementation evidence", () => {
+  it("pauses review mode only after a verified commit and resumes the next task after reload", async () => {
+    const h = agentHarness({ tasks: allPassing });
+    const id = await h.project();
+    const dir = await h.generate(id);
+    const { run } = await h.planned(id);
+    expect(run.executionMode).toBe("continuous");
+    expect(run.kind).toBe("initial-build");
+    expect(run.evidence).toMatchObject({
+      startingCommit: git(dir, "rev-parse", "HEAD"),
+      designHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+    expect(
+      (
+        await h.call("PATCH", `/projects/${id}/runs/${run.id}/mode`, {
+          executionMode: "review-after-task",
+        })
+      ).status,
+    ).toBe(204);
+    await h.act(id, run.id, "start");
+    const first = await h.until(id, run.id, "paused");
+    expect(first.run.statusReason).toContain("passed verification and was committed");
+    expect(first.tasks[0]?.commit).toBe(git(dir, "rev-parse", "HEAD"));
+    expect(first.tasks.map((t) => t.status)).toEqual(["done", "pending", "pending", "pending"]);
+    expect(first.ledger.filter((e) => e.kind === "coding")[0]).toMatchObject({
+      provider: "fake",
+      model: "fake-coder",
+      status: "completed",
+      request: {
+        prompt: expect.stringContaining("# Task:"),
+        startingCommit: expect.stringMatching(/^[a-f0-9]{40}$/),
+      },
+    });
+    // Another app instance reads the same persisted review pause.
+    const reloaded = harness();
+    await recoverRuns(db);
+    expect((await reloaded.detail(id, run.id)).run.executionMode).toBe("review-after-task");
+    for (let completed = 2; completed <= 4; completed++) {
+      await h.act(id, run.id, "resume");
+      const next = await h.until(id, run.id, completed === 4 ? "succeeded" : "paused");
+      expect(next.tasks.filter((t) => t.status === "done")).toHaveLength(completed);
+      expect(next.tasks[0]?.attempts).toHaveLength(1);
+    }
+    expect(
+      (
+        await h.call("POST", `/projects/${id}/runs/${run.id}/interventions`, {
+          note: "Reviewed downloaded image manually.",
+        })
+      ).status,
+    ).toBe(201);
+    const done = await h.detail(id, run.id);
+    expect(done.run.interventions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "execution-mode", note: "review-after-task" }),
+        expect.objectContaining({
+          action: "human-help",
+          note: "Reviewed downloaded image manually.",
+          at: expect.any(String),
+        }),
+      ]),
+    );
+    expect(done.implementation).toMatchObject({
+      inputTokens: 4100,
+      outputTokens: 820,
+      records: 5,
+      tokenRecords: 5,
+      costRecords: 0,
+    });
+    expect(Object.values(done.taskUsage).map((u) => u.inputTokens)).toEqual([
+      1000, 1000, 1000, 1000,
+    ]);
+  });
+
+  it("retains planning corrections, failures, replans and feature usage without double counting", async () => {
+    const h = harness({
+      models: fakeModels([
+        { text: "invalid", usage: { inputTokens: 7, outputTokens: 3 } },
+        { error: "quota" },
+      ]),
+    });
+    const id = await h.project();
+    await h.generate(id);
+    const { run } = await h.planned(id);
+    const first = await h.detail(id, run.id);
+    expect(first.implementation).toMatchObject({
+      inputTokens: 7,
+      outputTokens: 3,
+      records: 2,
+      tokenRecords: 1,
+      known: false,
+    });
+    expect(first.ledger.map((e) => e.status)).toEqual(["completed", "failed"]);
+    expect(first.ledger[0]?.request).toMatchObject({
+      instructions: expect.any(String),
+      items: expect.any(Array),
+      tools: expect.any(Array),
+    });
+    await h.act(id, run.id, "replan");
+    await h.until(id, run.id, "planned");
+    expect((await h.detail(id, run.id)).implementation).toMatchObject({
+      inputTokens: 14,
+      records: 4,
+      tokenRecords: 2,
+    });
+    await h.act(id, run.id, "start");
+    await h.until(id, run.id, "succeeded");
+    const initialUsage = (await h.call("GET", `/projects/${id}/runs`)).body.implementation;
+    const created = await h.call("POST", `/projects/${id}/runs`);
+    expect(created.body.run).toMatchObject({ kind: "feature", parentRunId: run.id });
+    await h.until(id, created.body.run.id, "planned");
+    await h.act(id, created.body.run.id, "cancel");
+    const total = (await h.call("GET", `/projects/${id}/runs`)).body.implementation;
+    expect(total.records).toBe(initialUsage.records + 2);
+    expect(total.inputTokens).toBe(initialUsage.inputTokens + 7);
+    expect(total.costRecords).toBe(0);
+    expect(total).not.toHaveProperty("costUsd");
+  });
+
+  it("keeps reported usage when a provider fails after reporting it", async () => {
+    const executor: TaskExecutor = {
+      execute: async (input) => {
+        await input.saveInvocation?.({
+          provider: "metered",
+          model: "selected",
+          prompt: "Exact task prompt",
+          startingCommit: "abc",
+        });
+        await input.saveUsage?.({ inputTokens: 53, outputTokens: 11, known: true, costUsd: 0.03 });
+        throw new ProviderError("metered", "quota", "limit reached");
+      },
+    };
+    const h = harness({ executor });
+    const id = await h.project();
+    await h.generate(id);
+    const { run } = await h.planned(id);
+    await h.act(id, run.id, "start");
+    const stopped = await h.until(id, run.id, "waiting_for_provider");
+    expect(stopped.tasks[0]?.attempts[0]?.usage).toMatchObject({ inputTokens: 53, costUsd: 0.03 });
+    expect(stopped.implementation).toMatchObject({
+      inputTokens: 153,
+      outputTokens: 31,
+      records: 2,
+      tokenRecords: 2,
+      costRecords: 1,
+      knownCostUsd: 0.03,
+    });
+    expect(stopped.ledger[1]).toMatchObject({
+      provider: "metered",
+      model: "selected",
+      status: "failed",
+      request: { prompt: "Exact task prompt" },
+    });
+  });
+
+  it("records human task changes and refuses a changed generated baseline", async () => {
+    const h = harness();
+    const id = await h.project();
+    const dir = await h.generate(id);
+    const { run, tasks } = await h.planned(id);
+    await h.call("PATCH", `/projects/${id}/runs/${run.id}/tasks/${tasks[0]?.id}`, {
+      title: "Reviewed title",
+    });
+    expect((await h.detail(id, run.id)).run.interventions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "edit-task",
+          taskId: tasks[0]?.id,
+          note: expect.stringContaining("Reviewed title"),
+        }),
+      ]),
+    );
+    const path = join(dir, "jeeves/design.json");
+    const design = JSON.parse(readFileSync(path, "utf8"));
+    design.revision++;
+    writeFileSync(path, JSON.stringify(design));
+    const started = await h.act(id, run.id, "start");
+    expect(started.status).toBe(409);
+    expect(started.body.code).toBe("RUN_DESIGN_CHANGED");
+  });
 });

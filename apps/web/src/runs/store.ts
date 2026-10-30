@@ -6,6 +6,7 @@ import { create } from "zustand";
 import {
   ApiError,
   api,
+  type ExecutionMode,
   type RunAction,
   type RunDetail,
   type RunsOverview,
@@ -25,6 +26,8 @@ type RunsState = {
   refresh: () => Promise<void>;
   plan: () => Promise<void>;
   act: (action: RunAction) => Promise<void>;
+  mode: (mode: ExecutionMode) => Promise<void>;
+  note: (note: string) => Promise<boolean>;
   editTask: (taskId: number, patch: TaskPatch) => Promise<boolean>;
   removeTask: (taskId: number) => Promise<void>;
   moveTask: (taskId: number, delta: -1 | 1) => Promise<void>;
@@ -136,6 +139,11 @@ export const useRuns = create<RunsState>((set, get) => {
         set({ busy: false });
       }
     },
+
+    mode: async (mode) => {
+      await perform((id, run) => api.runMode(id, run, mode));
+    },
+    note: (note) => perform((id, run) => api.runNote(id, run, note)),
 
     act: async (action) => {
       await perform((projectId, runId) => api.runAction(projectId, runId, action));

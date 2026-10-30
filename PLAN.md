@@ -486,3 +486,5 @@ These are reversible implementation choices; the section agent may change them i
 - 2026-10-29: P3 implements the approved production editor, v2 endpoint compatibility, deterministic resources/sessions/contracts/clients/tests, immutable resource migrations and safe regeneration. Verification evidence and limits are in the P3 handoff; P4 is next.
 
 - 2026-10-29: P4 adds independent disposable-fixture verification, protected fixed acceptance, nonempty smoke coverage, PNG/redirect response evidence and extension-derived task planning. P5 Runs/usage is next; qrwty acceptance remains unbuilt. See the P4 handoff for verification evidence and limitations.
+
+- 2026-10-29: P5 adds persisted continuous/review execution, simplified Runs, a cumulative implementation ledger, provenance and timestamped human help. qrwty is next; P5 checks and historical-evidence limits are in its handoff.

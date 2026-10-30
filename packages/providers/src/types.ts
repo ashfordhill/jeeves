@@ -42,7 +42,12 @@ export type ModelRequest = {
 export type ToolCall = { callId: string; name: string; arguments: string };
 
 /** Token usage as reported by the provider. `null` on a response means "unknown". */
-export type Usage = { inputTokens: number; outputTokens: number; cachedInputTokens?: number };
+export type Usage = {
+  inputTokens: number;
+  outputTokens: number;
+  cachedInputTokens?: number;
+  costUsd?: number;
+};
 
 export type StopReason = "end" | "tool-calls" | "max-tokens";
 

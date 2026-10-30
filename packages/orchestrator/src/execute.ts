@@ -102,6 +102,14 @@ export type AttemptInput = {
   saveWorkspace?: (workspace: TaskWorkspace) => Promise<void>;
   /** Persists the agent session's ID as soon as it's known. */
   saveSession?: (sessionId: string) => Promise<void>;
+  saveInvocation?: (invocation: {
+    provider: string;
+    model: string;
+    prompt: string;
+    startingCommit: string;
+  }) => Promise<void>;
+  /** Cumulative usage for this invocation, saved before checks/commit. */
+  saveUsage?: (usage: AttemptUsage) => Promise<void>;
   onEvent?: (event: AttemptEvent) => void;
 };
 
@@ -122,6 +130,7 @@ export type AttemptOutcome = {
 };
 
 export interface TaskExecutor {
+  selection?: () => { provider: string; model: string } | null;
   execute(input: AttemptInput): Promise<AttemptOutcome>;
 }
 

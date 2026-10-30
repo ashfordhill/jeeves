@@ -80,6 +80,7 @@ export function createCodexAgent(options: CodexAgentOptions = {}): CodingAgentPr
                 outputTokens: event.usage.output_tokens,
                 cachedInputTokens: event.usage.cached_input_tokens,
               };
+              emit({ type: "usage", usage });
               break;
             case "turn.failed":
               throw codexError(event.error.message);

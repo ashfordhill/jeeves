@@ -16,6 +16,11 @@ const taskPatch = plannedTaskEditSchema
   .strict()
   .refine((patch) => Object.keys(patch).length > 0, "Nothing to change.");
 const orderBody = z.strictObject({ taskIds: z.array(z.int().positive()).max(500) });
+const runOptions = z.strictObject({
+  executionMode: z.enum(["continuous", "review-after-task"]).optional(),
+  kind: z.enum(["initial-build", "feature"]).optional(),
+});
+const noteBody = z.strictObject({ note: z.string().trim().min(1).max(4000) });
 const attemptParams = runParams.extend({ attemptId: z.coerce.number().int().positive() });
 const settingsBody = z
   .strictObject({
@@ -46,14 +51,46 @@ export const runRoutes: FastifyPluginAsyncZod<{ runs: RunService }> = async (app
   app.get("/projects/:id/runs", { schema: { params: projectParams } }, async (req, reply) => {
     const readiness = await runs.readiness(req.params.id);
     if (!readiness) return notFound(reply);
-    return { runs: await runs.list(req.params.id), readiness };
+    return {
+      runs: await runs.list(req.params.id),
+      readiness,
+      implementation: await runs.projectUsage(req.params.id),
+    };
   });
 
-  app.post("/projects/:id/runs", { schema: { params: projectParams } }, async (req, reply) => {
-    const created = await runs.create(req.params.id);
-    return created.ok ? reply.code(202).send({ run: created.run }) : fail(reply, created);
-  });
+  app.post(
+    "/projects/:id/runs",
+    { schema: { params: projectParams, body: runOptions.nullish() } },
+    async (req, reply) => {
+      const created = await runs.create(req.params.id, req.body ?? undefined);
+      return created.ok ? reply.code(202).send({ run: created.run }) : fail(reply, created);
+    },
+  );
 
+  app.patch(
+    "/projects/:id/runs/:runId/mode",
+    {
+      schema: {
+        params: runParams,
+        body: z.strictObject({ executionMode: z.enum(["continuous", "review-after-task"]) }),
+      },
+    },
+    async (req, reply) => {
+      const result = await runs.setMode(req.params.id, req.params.runId, req.body.executionMode);
+      return result.ok ? reply.code(204).send() : fail(reply, result);
+    },
+  );
+  app.post(
+    "/projects/:id/runs/:runId/interventions",
+    { schema: { params: runParams, body: noteBody } },
+    async (req, reply) => {
+      const result = await runs.intervene(req.params.id, req.params.runId, {
+        action: "human-help",
+        note: req.body.note,
+      });
+      return result.ok ? reply.code(201).send({ ok: true }) : fail(reply, result);
+    },
+  );
   app.get("/projects/:id/runs/:runId", { schema: { params: runParams } }, async (req, reply) => {
     const detail = await runs.get(req.params.id, req.params.runId);
     return detail ?? notFound(reply, "Run");
@@ -118,10 +155,10 @@ export const runRoutes: FastifyPluginAsyncZod<{ runs: RunService }> = async (app
 
   app.post(
     "/projects/:id/runs/:runId/:action",
-    { schema: { params: actionParams } },
+    { schema: { params: actionParams, body: noteBody.nullish() } },
     async (req, reply) => {
       const { id, runId, action } = req.params;
-      const result = await runs.act(id, runId, action);
+      const result = await runs.act(id, runId, action, req.body?.note);
       return result.ok ? { run: result.run } : fail(reply, result);
     },
   );

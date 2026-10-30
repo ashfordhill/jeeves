@@ -122,6 +122,7 @@ describe("Codex adapter", () => {
       { type: "command", command: "pnpm test", status: "failed", exitCode: 1, output: "1 failed" },
       { type: "files", changes: [{ path: "src/a.ts", kind: "add" }] },
       { type: "message", text: "Implemented it." },
+      { type: "usage", usage: { inputTokens: 5000, outputTokens: 300, cachedInputTokens: 4000 } },
     ]);
   });
 

@@ -41,6 +41,10 @@ const FEEDBACK_LOG_LINES = 80;
 
 export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): TaskExecutor {
   return {
+    selection: () => {
+      const source = agents();
+      return "error" in source ? null : { provider: source.agent.id, model: source.model };
+    },
     async execute(input) {
       const started = Date.now();
       const emit = (event: Omit<AttemptEvent, "t">) =>
@@ -123,6 +127,13 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         });
       }
 
+      await input.saveInvocation?.({
+        provider: agent.id,
+        model,
+        prompt,
+        startingCommit: await git.head(),
+      });
+      let usageWrites = Promise.resolve();
       let session: CodingSessionResult | undefined;
       let sessionId: string | null = followUp?.sessionId ?? null;
       let agentError: ProviderError | undefined;
@@ -141,6 +152,11 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
                 sessionId = event.sessionId;
                 void input.saveSession?.(event.sessionId);
               }
+              if (event.type === "usage") {
+                usageWrites = usageWrites.then(() =>
+                  input.saveUsage?.({ ...event.usage, known: true }),
+                );
+              }
               const mapped = agentEvent(event);
               if (mapped) emit(mapped);
             },
@@ -153,8 +169,11 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         // The agent crashed or the provider had a passing problem: a new session may do better.
         agentError = error;
         emit({ kind: "warning", text: error.message });
+      } finally {
+        await usageWrites;
       }
       const usage = toUsage(session);
+      if (usage) await input.saveUsage?.(usage);
 
       // Owned paths first: anything outside them (or a generated-owned file) is reverted.
       let changes = await git.changes(base);
@@ -292,11 +311,14 @@ function toUsage(session: CodingSessionResult | undefined): AttemptUsage | null 
     inputTokens: session.usage.inputTokens,
     outputTokens: session.usage.outputTokens,
     known: true,
+    ...(session.usage.costUsd === undefined ? {} : { costUsd: session.usage.costUsd }),
   };
 }
 
 function agentEvent(event: CodingAgentEvent): Omit<AttemptEvent, "t"> | undefined {
   switch (event.type) {
+    case "usage":
+      return undefined;
     case "session":
       return { kind: "log", text: `Session ${event.sessionId}` };
     case "message":

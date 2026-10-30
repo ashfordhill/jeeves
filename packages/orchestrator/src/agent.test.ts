@@ -357,3 +357,71 @@ describe("agent executor", () => {
     ).rejects.toMatchObject({ kind: "auth", message: "Codex isn't set up." });
   });
 });
+
+describe("durable invocation evidence", () => {
+  it.each(["provider", "checks"])(
+    "saves actual prompts and usage before a later %s failure",
+    async (failure) => {
+      const dir = await project();
+      const fake = createFakeCodingAgent([{ write: { [feature]: "export const done = 1;\n" } }]);
+      const saved: unknown[] = [];
+      let invocation:
+        | { prompt: string; provider: string; model: string; startingCommit: string }
+        | undefined;
+      const executor = createAgentExecutor({
+        agents: () => ({
+          model: "metered-model",
+          agent: {
+            id: "metered",
+            capabilities: fake.capabilities,
+            run: async (request, options) => {
+              const session = await fake.run(request, options);
+              if (failure === "provider") {
+                options?.onEvent?.({
+                  type: "usage",
+                  usage: { inputTokens: 50, outputTokens: 9, costUsd: 0.01 },
+                });
+                throw new ProviderError("metered", "quota", "provider stopped");
+              }
+              return session;
+            },
+          },
+        }),
+        checks: {
+          run: async () => {
+            expect(saved).toEqual([{ inputTokens: 1000, outputTokens: 200, known: true }]);
+            throw new Error("checks stopped");
+          },
+        },
+      });
+      await expect(
+        executor.execute({
+          dir,
+          runId: 1,
+          attempt: 1,
+          strategy: "direct",
+          previous: null,
+          task: { ...linksTask(dir), id: 1, workspace: null },
+          signal: new AbortController().signal,
+          saveInvocation: async (value) => {
+            invocation = value;
+          },
+          saveUsage: async (value) => {
+            saved.push(value);
+          },
+        }),
+      ).rejects.toThrow(`${failure} stopped`);
+      expect(invocation).toMatchObject({
+        provider: "metered",
+        model: "metered-model",
+        prompt: fake.requests[0]?.prompt,
+        startingCommit: git(dir, "rev-parse", "HEAD"),
+      });
+      expect(saved).toEqual([
+        failure === "provider"
+          ? { inputTokens: 50, outputTokens: 9, costUsd: 0.01, known: true }
+          : { inputTokens: 1000, outputTokens: 200, known: true },
+      ]);
+    },
+  );
+});
