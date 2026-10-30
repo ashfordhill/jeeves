@@ -26,7 +26,7 @@ test("QR-03/QR-04/QR-07: redirect, destination edit, scan counts and errors", as
     const second = await fetch(`${publicOrigin}/q/${id}`, { redirect: "manual" });
     assert.equal(second.status, 302);
     await second.arrayBuffer();
-    assert.equal(destinationA.requests(), 2);
+    assert.equal(destinationA.requests(), 1, "the redirect does not contact the destination");
     assert.equal(await countScans(id), 2, "every redirect request is one scan");
 
     const before = await alice.image(id);
@@ -42,8 +42,8 @@ test("QR-03/QR-04/QR-07: redirect, destination edit, scan counts and errors", as
     assert.equal(third.status, 302);
     assert.equal(third.headers.get("location"), destinationB.url);
     await third.arrayBuffer();
-    assert.equal(destinationB.requests(), 1);
-    assert.equal(destinationA.requests(), 2, "the original destination is not contacted again");
+    assert.equal(destinationB.requests(), 0, "a 302 does not contact the new destination");
+    assert.equal(destinationA.requests(), 1, "the original destination is not contacted again");
     assert.equal(await countScans(id), 3);
 
     const unknown = await fetch(`${publicOrigin}/q/00000000-0000-4000-8000-000000000000`, {
@@ -69,7 +69,7 @@ test("QR-03/QR-04/QR-07: redirect, destination edit, scan counts and errors", as
     assert.equal(stillB.status, 302);
     assert.equal(stillB.headers.get("location"), destinationB.url);
     await stillB.arrayBuffer();
-    assert.equal(destinationB.requests(), 2);
+    assert.equal(destinationB.requests(), 0);
   } finally {
     await destinationA.close();
     await destinationB.close();

@@ -19,11 +19,13 @@ export class Client {
   csrfToken = "";
   email = "";
   password = "";
+  readonly base: string;
+  readonly origin: string;
 
-  constructor(
-    readonly base = serviceUrl,
-    readonly origin = publicOrigin,
-  ) {}
+  constructor(base = serviceUrl, origin = publicOrigin) {
+    this.base = base;
+    this.origin = origin;
+  }
 
   static async register(base = serviceUrl, origin = publicOrigin): Promise<Client> {
     const client = new Client(base, origin);

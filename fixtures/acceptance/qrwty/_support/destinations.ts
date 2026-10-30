@@ -4,11 +4,10 @@ import { createServer, type Server } from "node:http";
 export class Destination {
   private count = 0;
   private readonly server: Server;
+  readonly url: string;
 
-  private constructor(
-    readonly url: string,
-    server: Server,
-  ) {
+  private constructor(url: string, server: Server) {
+    this.url = url;
     this.server = server;
     server.on("request", (request, response) => {
       void request.resume();

@@ -87,7 +87,9 @@ export const testPack: TestPack = {
 /** `GET /ping` when the contract has it, else the first GET whose examples make a request. */
 export function sampleCallFor(contractFile: string): SampleCall | undefined {
   const contract = loadContract(contractFile);
-  const gets = contract.operations.filter((o) => o.method === "get" && o.smoke !== false);
+  const gets = contract.operations.filter(
+    (o) => o.method === "get" && o.smoke !== false && !o.security?.length,
+  );
   gets.sort((a, b) => Number(b.operationId === "ping") - Number(a.operationId === "ping"));
   for (const operation of gets) {
     const request = exampleRequest(operation);

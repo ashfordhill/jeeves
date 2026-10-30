@@ -34,6 +34,8 @@ export interface Operation {
   >;
   /** `x-jeeves-smoke` on the operation: opt in (or out) of contract smoke tests. */
   smoke?: boolean;
+  /** OpenAPI security requirements; session-protected operations need a real session. */
+  security?: unknown[];
 }
 
 export interface Contract {
@@ -105,6 +107,10 @@ export function parseContract(text: string, source = "contract"): Contract {
         ...requestBodyOf(document, raw.requestBody),
         responses: responsesOf(document, raw.responses),
         ...(typeof raw["x-jeeves-smoke"] === "boolean" && { smoke: raw["x-jeeves-smoke"] }),
+        ...(() => {
+          const security = asArray(raw.security ?? document.security);
+          return security.length > 0 ? { security } : {};
+        })(),
       });
     }
   }

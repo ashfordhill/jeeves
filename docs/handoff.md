@@ -2041,3 +2041,62 @@ QR-01–QR-09 are still unbuilt and unrun; these changes make the reviewed check
 - No template, generator or qrwty application code changed in this package.
 
 **Next: P11 only**, in a fresh context, with the user. Read AGENTS.md, PLAN §15, the latest two handoffs and the P11 section of `docs/build-plan.md`. Confirm provider credits first. Do not start the additive feature.
+
+---
+
+## Improvements P11: qrwty proving run (2026-10-30)
+
+**Status:** P11 complete. The qrwty proving run (run **26**) succeeded with QR-01–QR-09 passing in the final attempt's checks. The app is merged to `main` in `~/github/qrwty` at `563c426` and running at exactly `http://127.0.0.1:5173`. No additive feature was started. The Jeeves working tree was clean on entry apart from the untracked review document `docs/reviews/`, which was left untouched. Earlier handoff entries are unchanged; this package receives its own local P11 commit under the standing authorization.
+
+### Setup and baseline
+
+- Settings: coding `codex` / `gpt-6.1-sol` / reasoning effort **medium**; design chat and planner remain Codex with their default model. `pnpm dev` served the API at `127.0.0.1:4310` and the web app at `127.0.0.1:4300`.
+- `pnpm qrwty:bootstrap` reused the qrwty project, applied design revision 1, and generated into `~/github/qrwty` with the six fixed suites. `rm -rf ~/jeeves-projects/qrwty` removed the stale P6 output first.
+- Generation **44** (baseline on, no pack override) was green: `generate`/`env`/`install`/`typecheck`/`compose-up`/`test-packs`/`behavior`/`compose-down` all passed, `appUrls` showed `http://127.0.0.1:5173`, the three extension operations were deferred application acceptance, and generated session/QR standard behavior passed. The drawer's app link is the real generation 44 report.
+- The first baseline attempt (generation 43) failed the web-app sample-call check because `readSession` is session-protected. The fixed pack now parses OpenAPI `security` and `sampleCallFor` skips protected GETs; generation 44 passed. This was a P11 precursor fix, not a claimed earlier pass.
+
+### Run 26
+
+| Field | Value |
+| --- | --- |
+| Project / run | qrwty / **26** |
+| Design | revision **1**, hash `538b792a3d59dfee94a9cd75accee20de0aa8d99283dfbd722db30409df7dfab` |
+| Templates | http-service@0.1.0, postgres@0.1.0, rest-api-client@0.1.0, rest-api-server@0.1.0, web-app@0.1.0 |
+| Starting commit | `93898e1b4b6d31b19505ddb436f87f816f648584` |
+| Coding selection | Codex `gpt-6.1-sol`, reasoning effort **medium** |
+| Mode | review-after-task (4 tasks, 9 acceptance IDs in capabilities) |
+| Elapsed | 2026-10-30 19:06:01Z → 19:40:23Z, **34m22s** |
+| Usage | **12,487,382 input / 83,501 output tokens**, known `false`; **cost unknown** (Codex reports no price); 12 usage records, 11 with tokens |
+| Attempts | qr-image **5**, redirect **4**, activity **1**, qrwty-web **2** (12 total) |
+| Merge | `563c426` (`Merge branch 'jeeves/run-26'`) on `main` |
+
+Per task:
+- `qr-image`: attempts 5. Three failed on the fixed-suite Node strip-only defect, one failed on the regenerated design hash, attempt 5 passed; usage 683,181+1,086,649+1,519,932+0+195,478 input and 5,830+6,747+7,612+0+788 output.
+- `redirect`: attempts 4. Three failed on the fixed-suite destination-request expectations, attempt 4 passed; usage 376,893+673,519+827,078+1,108,621 input and 3,658+4,904+5,273+5,816 output.
+- `activity`: attempt 1 passed; 458,176 input / 4,097 output.
+- `qrwty-web`: attempt 1 failed, attempt 2 passed; 2,299,244+3,258,611 input and 16,662+22,114 output.
+
+Final attempt acceptance (all passed):
+`QR-01` core, `QR-02`/`QR-06` qr-image, `QR-03`/`QR-04`/`QR-07` redirect, `QR-05`/`QR-06` activity, `QR-08` restart, `QR-09` browser.
+Earlier attempts correctly showed core and restart skipped while their operations were not yet required, and browser skipped until the frontend task; those skips carried their acceptance IDs and waiting reasons.
+
+### Human interventions and fixes during the run
+
+Nine timestamped interventions are in the run detail. Human-help entries:
+1. The fixed support files `fixtures/acceptance/qrwty/_support/api.ts` and `destinations.ts` used TypeScript constructor parameter properties, which Node's strip-only TypeScript loader rejects. Replaced them with explicit fields, regenerated the generated-owned acceptance support/lock, preserved the agent's staged work, and resumed.
+2. The redirect fixed suite expected the HTTP client to follow the 302 and contact the destination (`1`/`2` requests). A 302 never contacts the destination; corrected the protected assertions to `1`/`0` destination requests and the scan counts to 2/3, regenerated the test/lock, and resumed.
+The remaining notes record the start, each review pause (qr-image, redirect, activity), and the resumes. The run's task branches and the harness fixes are committed on `jeeves/run-26` and merged as `563c426`; the Jeeves repository has the matching fixture/template fixes in this P11 commit.
+
+### Final manual journey
+
+After merging and `docker compose up --build --wait` (all three services healthy, `qrwty-web` on `127.0.0.1:5173`), a fresh browser session registered, created a QR (`56033e3e-aee6-486e-928b-872780406e2d`), selected it with `qr-select`, edited its destination, downloaded a **512×512** PNG, and saw the activity view. An independent jsQR decode of the downloaded image returned `http://127.0.0.1:5173/q/56033e3e-aee6-486e-928b-872780406e2d`; a manual `fetch` of that URL returned 302 to the edited destination `https://example.test/p11-edited`; the activity total was **1 request**; logout returned to the auth form; there were no unexpected console/page errors. The PNG is `/tmp/opencode/qrwty-p11-qr.png` and the screenshot is `/tmp/opencode/qrwty-p11-ui.png`. A physical phone scan and opening the loopback URL from another device were **not** performed by the agent; the PNG was decoded independently, and the phone/loopback check remains a human step.
+
+### Checks and limits
+
+- `pnpm check`: **515 tests / 71 files passed** (26.98 s), 137 warning-level / 57 info diagnostics, no errors. The P11 commit includes the support/redirect fixture fixes and the `security`-aware sample-call change.
+- `git diff --check`: passed. The qrwty repository is clean on `main` after the merge; its `.env` stays git-ignored.
+- Codex reported tokens but no dollar cost, so the usage ledger's cost is unknown, not zero. The retry counts (and 12.5M input tokens) are dominated by the two harness defects; future runs should not repeat them.
+- The app binds to loopback, so a phone can scan the PNG on screen but cannot open `127.0.0.1:5173` from another device. The independent decode verifies the image content; the fixed QR-09 browser suite verifies the UI journey.
+- The additive feature (candidate: optional campaign label and owner filter) is not approved or started. Any reuse of the completed work needs a fresh design/regeneration and independent acceptance per the P5 rules.
+
+**Next:** agree the additive feature separately, then prove regeneration, preserved extension code and cumulative feature usage. Do not claim that feature yet.

@@ -205,4 +205,14 @@ describe("parseContract", () => {
   it("is a ContractError", () => {
     expect(() => parseContract("nope")).toThrow(ContractError);
   });
+
+  it("retains document and operation security, including an explicit opt-out", () => {
+    const contract = parseContract(
+      "openapi: 3.1.0\nsecurity:\n  - session: []\npaths:\n  /a:\n    get: { operationId: a }\n  /b:\n    get: { operationId: b, security: [] }\n",
+    );
+    expect(contract.operations.find((o) => o.operationId === "a")?.security).toEqual([
+      { session: [] },
+    ]);
+    expect(contract.operations.find((o) => o.operationId === "b")?.security).toBeUndefined();
+  });
 });
