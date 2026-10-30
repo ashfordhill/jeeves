@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ThreadEvent, ThreadOptions } from "@openai/codex-sdk";
 import { afterAll, describe, expect, it } from "vitest";
-import { type CodexLike, codexError, createCodexAgent } from "./codex.ts";
+import { CODEX, type CodexLike, codexError, createCodexAgent } from "./codex.ts";
 import type { CodingAgentEvent } from "./coding.ts";
 import { ProviderError } from "./errors.ts";
 import { codingScriptByTask, createFakeCodingAgent } from "./fake-coding.ts";
@@ -151,7 +151,69 @@ describe("Codex adapter", () => {
     expect(codexError("exceeded retry limit, last status: 429 Too Many Requests").kind).toBe(
       "rate-limit",
     );
+    expect(codexError("unexpected status 503 Service Unavailable").kind).toBe("unavailable");
+    expect(codexError("HTTP 502 Bad Gateway").kind).toBe("unavailable");
+    expect(codexError("Codex Exec exited with code 1: 500 lines of logs").kind).toBe("other");
     expect(codexError("Codex Exec exited with code 1: something odd").kind).toBe("other");
+  });
+
+  it("backs off once inside the attempt for a rate limit and reports the retry", async () => {
+    let calls = 0;
+    const codex: CodexLike = {
+      startThread() {
+        return {
+          id: "thr_1",
+          async runStreamed() {
+            calls++;
+            if (calls === 1) throw new ProviderError(CODEX, "rate-limit", "Codex: slow down");
+            return {
+              events: (async function* () {
+                for (const event of turn) yield event;
+              })(),
+            };
+          },
+        };
+      },
+      resumeThread() {
+        throw new Error("not used");
+      },
+    };
+    const events: CodingAgentEvent[] = [];
+    const result = await createCodexAgent({ codex, retryDelayMs: 0 }).run(
+      { workingDirectory: "/p", prompt: "Go" },
+      { onEvent: (event) => events.push(event) },
+    );
+    expect(calls).toBe(2);
+    expect(result).toMatchObject({ sessionId: "thr_1", finalMessage: "Implemented it." });
+    expect(events).toContainEqual({
+      type: "warning",
+      text: "Codex is rate-limit; retrying once in 0 s.",
+    });
+  });
+
+  it("still fails after the one backoff when the provider stays unavailable", async () => {
+    let calls = 0;
+    const codex: CodexLike = {
+      startThread() {
+        return {
+          id: null,
+          async runStreamed() {
+            calls++;
+            throw new ProviderError(CODEX, "unavailable", "Codex: stream disconnected");
+          },
+        };
+      },
+      resumeThread() {
+        throw new Error("not used");
+      },
+    };
+    await expect(
+      createCodexAgent({ codex, retryDelayMs: 0 }).run({
+        workingDirectory: "/p",
+        prompt: "Go",
+      }),
+    ).rejects.toMatchObject({ kind: "unavailable" });
+    expect(calls).toBe(2);
   });
 });
 

@@ -112,6 +112,8 @@ export type AttemptInput = {
   }) => Promise<void>;
   /** Cumulative usage for this invocation, saved before checks/commit. */
   saveUsage?: (usage: AttemptUsage) => Promise<void>;
+  /** Records an automatic action on the run (for example restoring generated files). */
+  saveIntervention?: (entry: { action: string; note: string; taskId?: number }) => Promise<void>;
   onEvent?: (event: AttemptEvent) => void;
 };
 

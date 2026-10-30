@@ -27,6 +27,13 @@ export type HealthResponse = {
   version: string;
 };
 
+declare module "fastify" {
+  interface FastifyInstance {
+    /** The run service, exposed so server shutdown can abort live work. */
+    runs: RunService;
+  }
+}
+
 export type AppDeps = {
   db: Db;
   pingDb: () => Promise<void>;
@@ -96,6 +103,7 @@ export function buildApp({
 
   const generation = new GenerationService(db, design, generator, projectsDir);
   const runs = new RunService(db, design, models, registry, jobs, executor);
+  app.decorate("runs", runs);
   app.addHook("onReady", () => runs.init());
 
   app.register(projectRoutes, { service: design });

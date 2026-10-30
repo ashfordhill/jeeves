@@ -557,6 +557,23 @@ describe("running (stub execution)", () => {
     expect((await h.call("POST", `/projects/${id}/runs`)).status).toBe(202);
   });
 
+  it("stopAll aborts a live attempt and leaves it resumable", async () => {
+    const gate = gatedExecutor();
+    const h = harness({ executor: gate.executor });
+    const id = await h.project();
+    await h.generate(id);
+    const { run } = await h.planned(id);
+    await h.act(id, run.id, "start");
+    await waitFor(async () => gate.started() === 1);
+    await h.app.runs.stopAll(1000);
+    await (h.jobs as LocalJobs).idle();
+    const detail = await h.detail(id, run.id);
+    expect(detail.tasks[0]).toMatchObject({ status: "pending" });
+    expect(detail.tasks[0]?.attempts).toEqual([expect.objectContaining({ status: "interrupted" })]);
+    // No further task started after the stop.
+    expect(detail.tasks[1]?.status).toBe("pending");
+  });
+
   it("a failed attempt is retried, then stops the run as needs-attention", async () => {
     const gate = gatedExecutor();
     const h = harness({ executor: gate.executor });
@@ -758,6 +775,43 @@ describe("executing with the fake coding agent", { timeout: 30_000 }, () => {
     expect(h.agent.requests[0]).toMatchObject({ workingDirectory: dir, model: "fake-coder" });
     expect(h.agent.requests[0]?.prompt).toContain("# Task: Create and fetch links");
     expect(h.agent.requests[0]?.prompt).toContain("POST /api/links returns 201 with a code");
+  });
+
+  it("a timed-out coding session is not resumed by its retry", async () => {
+    const previous = process.env.JEEVES_AGENT_TIMEOUT_MIN;
+    process.env.JEEVES_AGENT_TIMEOUT_MIN = "0.005";
+    const half = featureFiles["links.links-api"] as string;
+    try {
+      const h = agentHarness({
+        tasks: [
+          {
+            task: "links.links-api",
+            attempts: [
+              { write: { [half]: "export const created = 1;\n" }, hang: true },
+              { append: { [half]: "export const fetched = 2;\n" } },
+            ],
+          },
+        ],
+        default: { message: "skip" },
+      });
+      const id = await h.project();
+      await h.generate(id);
+      await h.call("PUT", `/projects/${id}/run-settings`, { maxRetries: 1 });
+      const { run } = await h.planned(id);
+      await h.act(id, run.id, "start");
+      const stopped = await h.until(id, run.id, "needs-attention");
+      const task = stopped.tasks[0];
+      expect(task?.status).toBe("done");
+      expect(task?.attempts.map((a) => a.status)).toEqual(["failed", "succeeded"]);
+      expect(task?.attempts[0]?.sessionId).toBeNull();
+      const retry = h.agent.requests[1];
+      expect(retry?.resumeSessionId).toBeUndefined();
+      expect(retry?.prompt).toContain("## Earlier work on this task");
+      expect(retry?.prompt).not.toContain("Jeeves ran its checks on your work");
+    } finally {
+      if (previous === undefined) delete process.env.JEEVES_AGENT_TIMEOUT_MIN;
+      else process.env.JEEVES_AGENT_TIMEOUT_MIN = previous;
+    }
   });
 
   it("direct: commits each task on the run branch", async () => {

@@ -70,6 +70,9 @@ function executor() {
 }
 
 const shutdown = async () => {
+  // Stop live planning/task work first, so aborted agents and their process groups die before the
+  // job queue and database close. Recover on the next start restores interrupted attempts.
+  await app.runs.stopAll();
   await app.close();
   await jobs.stop();
   await db.close();

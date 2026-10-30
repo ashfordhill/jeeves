@@ -5,7 +5,7 @@
  * this returns.
  */
 
-import { acceptanceCoverageProblems } from "@jeeves/generator";
+import { acceptanceCoverageProblems, readLock } from "@jeeves/generator";
 import { assertGeneratedIntegrity } from "@jeeves/generator/baseline";
 import {
   type CodingAgentEvent,
@@ -37,7 +37,14 @@ export type AgentExecutorOptions = {
 };
 
 /** Log lines from the checks kept for the agent's feedback. */
-const FEEDBACK_LOG_LINES = 80;
+const FEEDBACK_LOG_LINES = 200;
+/** A single coding session may run this long by default; `JEEVES_AGENT_TIMEOUT_MIN` overrides it. */
+const AGENT_TIMEOUT_MINUTES = 45;
+
+function agentTimeoutMinutes(env: NodeJS.ProcessEnv = process.env): number {
+  const value = Number(env.JEEVES_AGENT_TIMEOUT_MIN);
+  return Number.isFinite(value) && value > 0 ? value : AGENT_TIMEOUT_MINUTES;
+}
 
 export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): TaskExecutor {
   return {
@@ -50,6 +57,26 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
       const emit = (event: Omit<AttemptEvent, "t">) =>
         input.onEvent?.({ t: Date.now() - started, ...event });
       const { task, dir, signal } = input;
+      const git = new Git(dir);
+
+      // An orphaned agent may have died with edits to generated-owned files. Restore them before
+      // the integrity check, so a resume can continue instead of stopping as needs-attention.
+      if (input.previous?.status === "interrupted") {
+        const lock = readLock(dir);
+        if (lock) {
+          const restored = await git.restoreGenerated(Object.keys(lock.files));
+          const paths = [...restored.restored, ...restored.removed];
+          if (paths.length > 0) {
+            const text = `Restored generated-owned files after an interrupted attempt: ${paths.join(", ")}`;
+            emit({ kind: "warning", text });
+            await input.saveIntervention?.({
+              action: "restore-generated",
+              note: text,
+              taskId: task.id,
+            });
+          }
+        }
+      }
 
       const project = readGeneratedProject(dir);
       assertGeneratedIntegrity(dir, project.lock);
@@ -87,7 +114,6 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
       if ("error" in source) throw new ProviderError("coding", "auth", source.error);
       const { agent, model } = source;
 
-      const git = new Git(dir);
       const { workspace, notes } = await git.prepare({
         runId: input.runId,
         taskKey: task.key,
@@ -137,6 +163,18 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
       let session: CodingSessionResult | undefined;
       let sessionId: string | null = followUp?.sessionId ?? null;
       let agentError: ProviderError | undefined;
+      let timeoutMessage: string | undefined;
+      const timeoutMinutes = agentTimeoutMinutes();
+      const sessionAbort = new AbortController();
+      const forwardAbort = () => sessionAbort.abort();
+      if (signal.aborted) sessionAbort.abort();
+      else signal.addEventListener("abort", forwardAbort, { once: true });
+      let timedOut = false;
+      const timeoutTimer = setTimeout(() => {
+        timedOut = true;
+        sessionAbort.abort();
+      }, timeoutMinutes * 60_000);
+      timeoutTimer.unref();
       try {
         session = await agent.run(
           {
@@ -146,7 +184,7 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
             ...(followUp ? { resumeSessionId: followUp.sessionId } : {}),
           },
           {
-            signal,
+            signal: sessionAbort.signal,
             onEvent: (event) => {
               if (event.type === "session") {
                 sessionId = event.sessionId;
@@ -165,12 +203,22 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         sessionId = session.sessionId ?? sessionId;
       } catch (error) {
         if (signal.aborted) throw error;
-        if (!(error instanceof ProviderError) || error.blocksProvider) throw error;
-        // The agent crashed or the provider had a passing problem: a new session may do better.
-        agentError = error;
-        emit({ kind: "warning", text: error.message });
+        if (!timedOut) {
+          if (!(error instanceof ProviderError) || error.blocksProvider) throw error;
+          // The agent crashed or the provider had a passing problem: a new session may do better.
+          agentError = error;
+          emit({ kind: "warning", text: error.message });
+        }
       } finally {
+        clearTimeout(timeoutTimer);
+        signal.removeEventListener("abort", forwardAbort);
         await usageWrites;
+      }
+      if (timedOut) {
+        timeoutMessage = `The coding session exceeded ${Number(timeoutMinutes.toFixed(3))} minutes and was stopped.`;
+        // The killed session is not resumed: the retry starts fresh, with the diff as earlier work.
+        sessionId = null;
+        emit({ kind: "warning", text: timeoutMessage });
       }
       const usage = toUsage(session);
       if (usage) await input.saveUsage?.(usage);
@@ -197,6 +245,16 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
       const diff = await git.diff(base);
       const common = { usage, sessionId, changes, diff };
 
+      if (timeoutMessage) {
+        return {
+          ...common,
+          status: "failed",
+          summary: lastWords(session),
+          error: timeoutMessage,
+          feedback: timeoutMessage,
+          checks: { ok: false, rejectedPaths: rejected, steps: [], checks: [] },
+        };
+      }
       if (agentError) {
         return {
           ...common,

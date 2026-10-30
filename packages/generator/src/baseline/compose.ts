@@ -1,7 +1,61 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ServiceHandle } from "@jeeves/template-kit";
 import { type RunResult, runCommand } from "../exec.ts";
 
 const HEALTH_TIMEOUT_MS = 120_000;
+
+/** Compose variables written as `${NAME:?...}` are required before Docker is called. */
+export function requiredComposeVariables(contents: string): string[] {
+  const names = new Set<string>();
+  for (const match of contents.matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*):\?/g)) {
+    if (match[1]) names.add(match[1]);
+  }
+  return [...names];
+}
+
+/** Reads the simple `KEY=value` form Compose accepts; quotes and trailing comments are stripped. */
+export function parseEnvFile(contents: string): Record<string, string> {
+  const values: Record<string, string> = {};
+  for (const line of contents.split(/\r?\n/)) {
+    const match = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
+    if (!match?.[1]) continue;
+    let value = match[2]?.trim() ?? "";
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    )
+      value = value.slice(1, -1);
+    else value = value.replace(/\s+#.*$/, "").trim();
+    values[match[1]] = value;
+  }
+  return values;
+}
+
+/** Required variables absent from both the project's `.env` and the process environment. */
+export function missingComposeEnvironment(
+  dir: string,
+  env: NodeJS.ProcessEnv = process.env,
+): string[] {
+  const composePath = join(dir, "docker-compose.yml");
+  if (!existsSync(composePath)) return [];
+  const required = requiredComposeVariables(readFileSync(composePath, "utf8"));
+  const envPath = join(dir, ".env");
+  const file = existsSync(envPath) ? parseEnvFile(readFileSync(envPath, "utf8")) : {};
+  return required.filter((name) => {
+    const value = env[name] !== undefined ? env[name] : file[name];
+    return !value;
+  });
+}
+
+/** Fails before Docker with the variables and the exact file to add them to. */
+export function assertComposeEnvironment(dir: string, env: NodeJS.ProcessEnv = process.env): void {
+  const missing = missingComposeEnvironment(dir, env);
+  if (missing.length)
+    throw new Error(
+      `Missing required environment: ${missing.join(", ")}. Add them to ${join(dir, ".env")}.`,
+    );
+}
 
 /**
  * Runs `docker compose` in a generated project. The project name is compose's default (the

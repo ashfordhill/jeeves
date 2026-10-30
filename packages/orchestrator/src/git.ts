@@ -118,6 +118,43 @@ export class Git {
   }
 
   /**
+   * After an interrupted attempt: restore changed generated-owned files from HEAD and remove
+   * untracked generated test output. Only changed paths are reported; an orphaned agent's edits
+   * then don't block the resume.
+   */
+  async restoreGenerated(paths: string[]): Promise<{ restored: string[]; removed: string[] }> {
+    const targets = ["tests/generated", "tests/acceptance"];
+    // Staged additions under the generated test folders would defeat `git clean`; unstage them.
+    const staged = (await this.run(["diff", "--cached", "--name-only", "-z", "--", ...targets]))
+      .split("\0")
+      .filter(Boolean);
+    if (staged.length > 0) await this.run(["reset", "--quiet", "--", ...targets]);
+    const status = (
+      await this.run(["status", "--porcelain", "-z", "--no-renames", "--", ...paths, ...targets])
+    )
+      .split("\0")
+      .filter(Boolean);
+    const changed = new Set(status.map((entry) => entry.slice(3)));
+    // Only paths that exist in HEAD can be restored; a lock path generated but not yet committed
+    // (the first `git.prepare` can be interrupted before its baseline commit) is left alone.
+    const inHead = new Set(
+      (await this.run(["ls-tree", "-r", "--name-only", "-z", "HEAD", "--", ...paths]))
+        .split("\0")
+        .filter(Boolean),
+    );
+    const restored = paths.filter((path) => changed.has(path) && inHead.has(path));
+    if (restored.length > 0)
+      await this.run(["restore", "--source=HEAD", "--staged", "--worktree", "--", ...restored]);
+    const removed = (
+      await this.run(["ls-files", "--others", "--exclude-standard", "-z", "--", ...targets])
+    )
+      .split("\0")
+      .filter(Boolean);
+    if (removed.length > 0) await this.run(["clean", "-fd", "--", ...targets]);
+    return { restored, removed };
+  }
+
+  /**
    * Checks out the task's branch, creating the run branch (and for `branch-per-task` the task
    * branch) the first time. Uncommitted changes found when the run branch is made are committed
    * there first, so the task's diff only shows the agent's work.

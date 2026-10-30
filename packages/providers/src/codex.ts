@@ -37,6 +37,8 @@ export type CodexAgentOptions = {
   codexPath?: string;
   /** Replaces the SDK (tests). */
   codex?: CodexLike;
+  /** How long to wait before one retry of a rate-limited/unavailable turn (default 60 s). */
+  retryDelayMs?: number;
 };
 
 const OUTPUT_TAIL = 4000;
@@ -45,6 +47,7 @@ export function createCodexAgent(options: CodexAgentOptions = {}): CodingAgentPr
   const codex: CodexLike =
     options.codex ??
     new Codex(options.codexPath ? { codexPathOverride: options.codexPath } : undefined);
+  const retryDelayMs = options.retryDelayMs ?? 60_000;
   return {
     id: CODEX,
     capabilities: { resume: true, usage: true, streaming: true },
@@ -64,55 +67,68 @@ export function createCodexAgent(options: CodexAgentOptions = {}): CodingAgentPr
         : codex.startThread(threadOptions);
       const emit = onEvent ?? (() => {});
       let sessionId = request.resumeSessionId ?? null;
-      let finalMessage = "";
-      let usage: Usage | null = null;
-      try {
-        const { events } = await thread.runStreamed(request.prompt, signal ? { signal } : {});
-        for await (const event of events) {
-          switch (event.type) {
-            case "thread.started":
-              sessionId = event.thread_id;
-              emit({ type: "session", sessionId });
-              break;
-            case "turn.completed":
-              usage = {
-                inputTokens: event.usage.input_tokens,
-                outputTokens: event.usage.output_tokens,
-                cachedInputTokens: event.usage.cached_input_tokens,
-              };
-              emit({ type: "usage", usage });
-              break;
-            case "turn.failed":
-              throw codexError(event.error.message);
-            case "error":
-              throw codexError(event.message);
-            case "item.started":
-            case "item.completed": {
-              const mapped = mapItem(
-                event.item,
-                event.type === "item.completed",
-                request.workingDirectory,
-              );
-              if (mapped) emit(mapped);
-              if (event.type === "item.completed" && event.item.type === "agent_message") {
-                finalMessage = event.item.text;
+      for (let attempt = 0; ; attempt++) {
+        let finalMessage = "";
+        let usage: Usage | null = null;
+        try {
+          const { events } = await thread.runStreamed(request.prompt, signal ? { signal } : {});
+          for await (const event of events) {
+            switch (event.type) {
+              case "thread.started":
+                sessionId = event.thread_id;
+                emit({ type: "session", sessionId });
+                break;
+              case "turn.completed":
+                usage = {
+                  inputTokens: event.usage.input_tokens,
+                  outputTokens: event.usage.output_tokens,
+                  cachedInputTokens: event.usage.cached_input_tokens,
+                };
+                emit({ type: "usage", usage });
+                break;
+              case "turn.failed":
+                throw codexError(event.error.message);
+              case "error":
+                throw codexError(event.message);
+              case "item.started":
+              case "item.completed": {
+                const mapped = mapItem(
+                  event.item,
+                  event.type === "item.completed",
+                  request.workingDirectory,
+                );
+                if (mapped) emit(mapped);
+                if (event.type === "item.completed" && event.item.type === "agent_message") {
+                  finalMessage = event.item.text;
+                }
+                break;
               }
-              break;
+              default:
+                break;
             }
-            default:
-              break;
           }
+          return { sessionId: thread.id ?? sessionId, finalMessage, usage };
+        } catch (error) {
+          if (signal?.aborted)
+            throw new ProviderError(CODEX, "other", "The Codex session was interrupted.", {
+              cause: error,
+            });
+          const failure =
+            error instanceof ProviderError
+              ? error
+              : codexError(error instanceof Error ? error.message : String(error), error);
+          // A passing rate limit or a provider outage gets one backoff inside this attempt.
+          if (attempt === 0 && (failure.kind === "rate-limit" || failure.kind === "unavailable")) {
+            emit({
+              type: "warning",
+              text: `Codex is ${failure.kind}; retrying once in ${Math.round(retryDelayMs / 1000)} s.`,
+            });
+            await wait(retryDelayMs, signal);
+            continue;
+          }
+          throw failure;
         }
-      } catch (error) {
-        if (error instanceof ProviderError) throw error;
-        if (signal?.aborted) {
-          throw new ProviderError(CODEX, "other", "The Codex session was interrupted.", {
-            cause: error,
-          });
-        }
-        throw codexError(error instanceof Error ? error.message : String(error), error);
       }
-      return { sessionId: thread.id ?? sessionId, finalMessage, usage };
     },
   };
 }
@@ -175,6 +191,24 @@ function relativeTo(root: string, path: string): string {
   return path.startsWith(prefix) ? path.slice(prefix.length) : path;
 }
 
+/** Waits before one retry; an abort ends the wait immediately. */
+function wait(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted)
+      return reject(new ProviderError(CODEX, "other", "The Codex session was interrupted."));
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new ProviderError(CODEX, "other", "The Codex session was interrupted."));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    timer.unref();
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
 /** Maps a Codex failure message to a `ProviderError` kind (Codex reports errors as text). */
 export function codexError(message: string, cause?: unknown): ProviderError {
   const text = message.toLowerCase();
@@ -187,7 +221,9 @@ export function codexError(message: string, cause?: unknown): ProviderError {
     kind = "rate-limit";
   } else if (/enoent|spawn|unsupported platform/.test(text)) {
     kind = "unavailable";
-  } else if (/\b5\d\d\b|stream disconnected|network|timed out|connection/.test(text)) {
+  } else if (
+    /\b(?:status|http)\s*5\d\d\b|stream disconnected|network|timed out|connection/.test(text)
+  ) {
     kind = "unavailable";
   }
   return new ProviderError(CODEX, kind, `Codex: ${message.trim()}`, cause ? { cause } : undefined);

@@ -66,9 +66,11 @@ function attempts(dir: string, script: CodingScript, strategy: GitStrategy = "di
   let previous: PreviousAttempt | null = null;
   let attempt = 0;
   const events: AttemptEvent[] = [];
+  const interventions: { action: string; note: string; taskId?: number }[] = [];
   return {
     agent,
     events,
+    interventions,
     get workspace() {
       return workspace;
     },
@@ -88,6 +90,9 @@ function attempts(dir: string, script: CodingScript, strategy: GitStrategy = "di
         signal,
         saveWorkspace: async (ws) => {
           workspace = ws;
+        },
+        saveIntervention: async (entry) => {
+          interventions.push(entry);
         },
         onEvent: (e) => events.push(e),
       };
@@ -331,6 +336,71 @@ describe("agent executor", () => {
     expect(git(dir, "show", `HEAD:${feature}`)).toBe(
       "export const half = 1;\nexport const rest = 2;",
     );
+  });
+
+  it("stops a coding session at the wall-clock limit and retries with the diff", async () => {
+    const dir = await project();
+    const previous = process.env.JEEVES_AGENT_TIMEOUT_MIN;
+    process.env.JEEVES_AGENT_TIMEOUT_MIN = "0.005";
+    try {
+      const run = attempts(dir, [
+        { write: { [feature]: "export const partial = 1;\n" }, delayMs: 5000 },
+        { append: { [feature]: "export const rest = 2;\n" } },
+      ]);
+      const first = await run.next();
+      expect(first).toMatchObject({
+        status: "failed",
+        error: "The coding session exceeded 0.005 minutes and was stopped.",
+        feedback: "The coding session exceeded 0.005 minutes and was stopped.",
+        changes: [{ path: feature, status: "added" }],
+      });
+      const second = await run.next();
+      expect(second.status).toBe("succeeded");
+      expect(run.agent.requests[1]?.prompt).toContain("## Earlier work on this task");
+      expect(run.agent.requests[1]?.resumeSessionId).toBeUndefined();
+    } finally {
+      if (previous === undefined) delete process.env.JEEVES_AGENT_TIMEOUT_MIN;
+      else process.env.JEEVES_AGENT_TIMEOUT_MIN = previous;
+    }
+  });
+
+  it("restores generated-owned files before an interrupted resume's integrity check", async () => {
+    const dir = await project();
+    const generated = "frontends/web/src/jeeves.generated.ts";
+    const before = readFileSync(join(dir, generated), "utf8");
+    const run = attempts(dir, [
+      {
+        write: { [feature]: "export const half = 1;\n" },
+        append: { [generated]: "// orphaned write\n" },
+        hang: true,
+      },
+      { append: { [feature]: "export const rest = 2;\n" } },
+    ]);
+    const abort = new AbortController();
+    const first = run.next(abort.signal);
+    await expect
+      .poll(() => readFileSync(join(dir, generated), "utf8").includes("orphaned write"))
+      .toBe(true);
+    const orphan = "tests/generated/links/orphan.test.ts";
+    mkdirSync(join(dir, "tests/generated/links"), { recursive: true });
+    writeFileSync(join(dir, orphan), "// orphaned test\n");
+    git(dir, "add", orphan);
+    abort.abort();
+    await expect(first).rejects.toBeInstanceOf(ProviderError);
+
+    run.interrupted();
+    const second = await run.next();
+    expect(second.status).toBe("succeeded");
+    expect(readFileSync(join(dir, generated), "utf8")).toBe(before);
+    expect(existsSync(join(dir, orphan))).toBe(false);
+    expect(run.interventions).toEqual([
+      expect.objectContaining({
+        action: "restore-generated",
+        taskId: 1,
+        note: expect.stringContaining(generated),
+      }),
+    ]);
+    expect(run.interventions[0]?.note).not.toContain("services/links/src/jeeves.generated.ts");
   });
 
   it("quota and auth errors are thrown for the run to wait; other agent errors fail the attempt", async () => {

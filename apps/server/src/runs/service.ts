@@ -128,6 +128,8 @@ export class RunService {
   private readonly busy = new Set<number>();
   /** The live log of attempts in progress, by attempt ID (saved every second). */
   private readonly events = new Map<number, AttemptEvent[]>();
+  /** True during server shutdown: aborted attempts stay resumable instead of becoming cancelled. */
+  private stopping = false;
 
   constructor(
     private readonly db: Db,
@@ -142,6 +144,19 @@ export class RunService {
   async init(): Promise<void> {
     await this.jobs.work(PLAN_JOB, ({ runId }) => this.plan(runId));
     await this.jobs.work(STEP_JOB, ({ runId }) => this.step(runId));
+  }
+
+  /**
+   * Stops live planning and task work for server shutdown: abort every controller and wait up to
+   * `timeoutMs` for the jobs to unwind. Interrupted attempts stay resumable on the next start.
+   */
+  async stopAll(timeoutMs = 10_000): Promise<void> {
+    this.stopping = true;
+    for (const controller of this.live.values()) controller.abort();
+    const deadline = Date.now() + timeoutMs;
+    while (this.live.size > 0 && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
   }
 
   async readiness(projectId: string): Promise<Readiness | undefined> {
@@ -331,7 +346,7 @@ export class RunService {
    * project fail the run.
    */
   async plan(runId: number): Promise<void> {
-    if (this.busy.has(runId)) return;
+    if (this.stopping || this.busy.has(runId)) return;
     this.busy.add(runId);
     const abort = new AbortController();
     this.live.set(runId, abort);
@@ -342,6 +357,7 @@ export class RunService {
       try {
         planned = await this.makePlan(run, abort.signal);
       } catch (error) {
+        if (this.stopping) return;
         await this.db
           .update(runs)
           .set({
@@ -649,7 +665,7 @@ export class RunService {
    * running. Pause and Cancel take effect between tasks; Cancel also aborts the task in progress.
    */
   async step(runId: number): Promise<void> {
-    if (this.busy.has(runId)) return;
+    if (this.stopping || this.busy.has(runId)) return;
     this.busy.add(runId);
     const abort = new AbortController();
     this.live.set(runId, abort);
@@ -728,8 +744,9 @@ export class RunService {
         .select({ status: runs.status })
         .from(runs)
         .where(eq(runs.id, runId));
-      if (after?.status === "running") await this.jobs.send(STEP_JOB, { runId });
+      if (after?.status === "running" && !this.stopping) await this.jobs.send(STEP_JOB, { runId });
     } catch (error) {
+      if (this.stopping) return;
       await this.db
         .update(runs)
         .set({
@@ -908,6 +925,12 @@ export class RunService {
             .where(eq(implementationUsage.id, entry.id));
           await this.db.update(attempts).set({ usage }).where(eq(attempts.id, attempt.id));
         },
+        saveIntervention: (intervention) =>
+          this.intervene(run.projectId, run.id, {
+            action: intervention.action,
+            note: intervention.note,
+            taskId: intervention.taskId ?? task.id,
+          }).then(() => {}),
         saveWorkspace: (workspace: TaskWorkspace) =>
           this.db
             .update(tasks)
@@ -942,7 +965,9 @@ export class RunService {
       events: log,
       usage: outcome?.usage ?? measuredUsage,
       summary: outcome?.summary ?? null,
-      ...(outcome?.sessionId ? { sessionId: outcome.sessionId } : {}),
+      // A timeout returns a null session on purpose: the killed session must not be resumed, and
+      // the attempt row is the service's source of `previous.sessionId` for the retry.
+      ...(outcome ? { sessionId: outcome.sessionId ?? null } : {}),
       feedback: outcome?.feedback ?? null,
       checks: outcome?.checks ?? null,
       changes: outcome?.changes ?? null,
@@ -954,24 +979,35 @@ export class RunService {
       .update(implementationUsage)
       .set({
         usage: record.usage,
-        status: signal.aborted
-          ? "cancelled"
-          : outcome?.status === "succeeded"
-            ? "completed"
-            : "failed",
+        status:
+          signal.aborted && this.stopping
+            ? "interrupted"
+            : signal.aborted
+              ? "cancelled"
+              : outcome?.status === "succeeded"
+                ? "completed"
+                : "failed",
         error: outcome?.error ?? (thrown as Error | undefined)?.message ?? null,
         finishedAt,
       })
       .where(eq(implementationUsage.id, entry.id));
     if (signal.aborted) {
-      await this.db
-        .update(attempts)
-        .set({ ...record, status: "cancelled" })
-        .where(eq(attempts.id, attempt.id));
-      await this.db
-        .update(tasks)
-        .set({ status: "cancelled", finishedAt })
-        .where(eq(tasks.id, task.id));
+      if (this.stopping) {
+        await this.db
+          .update(attempts)
+          .set({ ...record, status: "interrupted" })
+          .where(eq(attempts.id, attempt.id));
+        await this.db.update(tasks).set({ status: "pending" }).where(eq(tasks.id, task.id));
+      } else {
+        await this.db
+          .update(attempts)
+          .set({ ...record, status: "cancelled" })
+          .where(eq(attempts.id, attempt.id));
+        await this.db
+          .update(tasks)
+          .set({ status: "cancelled", finishedAt })
+          .where(eq(tasks.id, task.id));
+      }
       return { kind: "stopped" };
     }
     if (outcome?.status === "succeeded") {

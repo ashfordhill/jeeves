@@ -10,7 +10,7 @@ import { readLock } from "../lock.ts";
 import { type TemplateSet, templateSet } from "../modules.ts";
 import type { Subject } from "../plan.ts";
 import { assertGeneratedIntegrity, verifyBehavior } from "./behavior.ts";
-import { ComposeCli } from "./compose.ts";
+import { assertComposeEnvironment, ComposeCli } from "./compose.ts";
 
 export { ComposeCli } from "./compose.ts";
 
@@ -22,6 +22,36 @@ export const baselineSteps = [
   { id: "behavior", title: "Independent behavior and application acceptance" },
   { id: "compose-down", title: "Stop the project" },
 ] as const;
+
+/** Default wall-clock limits for the bounded check steps; `JEEVES_CHECK_TIMEOUT_MIN` scales them. */
+export const STEP_TIMEOUT_MINUTES = {
+  install: 15,
+  typecheck: 10,
+  "unit-tests": 20,
+  "test-packs": 20,
+} as const;
+export type TimedStepId = keyof typeof STEP_TIMEOUT_MINUTES;
+
+/** One test-only or emergency multiplier; a missing or invalid value leaves the defaults. */
+export function checkTimeoutMultiplier(env: NodeJS.ProcessEnv = process.env): number {
+  const value = Number(env.JEEVES_CHECK_TIMEOUT_MIN);
+  return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
+export function stepTimeoutMs(step: TimedStepId, env: NodeJS.ProcessEnv = process.env): number {
+  return STEP_TIMEOUT_MINUTES[step] * checkTimeoutMultiplier(env) * 60_000;
+}
+
+/** A step that ran out of wall-clock time, killed with its whole process group. */
+export class StepTimeout extends Error {
+  constructor(
+    readonly step: string,
+    readonly minutes: number,
+  ) {
+    super(`${step} exceeded ${Number(minutes.toFixed(3))} min`);
+    this.name = "StepTimeout";
+  }
+}
 
 /** The orchestrator's checks after each task (PLAN §10): the baseline plus the project's tests. */
 export const taskCheckSteps = [
@@ -131,14 +161,23 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     }
     const started = Date.now();
     emit({ type: "step", step: id, status: "running" });
-    const log = (line: string) => emit({ type: "log", step: id, line });
+    const stepOutput: string[] = [];
+    const log = (line: string) => {
+      stepOutput.push(line);
+      if (stepOutput.length > 200) stepOutput.shift();
+      emit({ type: "log", step: id, line });
+    };
     let status: StepStatus = "passed";
     let message: string | undefined;
     try {
       message = await body(log);
     } catch (error) {
       status = "failed";
-      message = (error as Error).message;
+      // A timeout already says what happened; other failures carry the step's own last lines so
+      // the retry shows the assertion rather than the later compose-down noise.
+      const detail = (error as Error).message;
+      const tail = stepOutput.slice(-120).join("\n");
+      message = error instanceof StepTimeout ? detail : [detail, tail].filter(Boolean).join("\n");
       result.ok = false;
     }
     const durationMs = Date.now() - started;
@@ -151,33 +190,56 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     cmd: string,
     args: string[],
     what: string,
+    timeoutStep?: TimedStepId,
   ) => {
     log(
       `$ ${[cmd === pnpm ? "pnpm" : cmd, ...(cmd === pnpm ? args.slice(pnpmArgs.length) : args)].join(" ")}`,
     );
-    const run = await runCommand(cmd, args, { cwd: dir, onLine: log, ...(signal && { signal }) });
+    const timeoutMs = timeoutStep ? stepTimeoutMs(timeoutStep) : undefined;
+    const run = await runCommand(cmd, args, {
+      cwd: dir,
+      onLine: log,
+      ...(signal && { signal }),
+      ...(timeoutMs && { timeoutMs }),
+    });
+    if (run.timedOut && timeoutStep && timeoutMs)
+      throw new StepTimeout(timeoutStep, timeoutMs / 60_000);
     if (run.exitCode !== 0) throw new Error(`${what} failed (exit code ${run.exitCode})`);
   };
 
   await step("install", async (log) => {
     if (lock) assertGeneratedIntegrity(dir, lock);
-    await command(log, pnpm, [...pnpmArgs, "install"], "pnpm install");
+    await command(log, pnpm, [...pnpmArgs, "install"], "pnpm install", "install");
     return undefined;
   });
   await step("typecheck", async (log) => {
-    await command(log, pnpm, [...pnpmArgs, "-r", "--no-bail", "typecheck"], "The type check");
+    await command(
+      log,
+      pnpm,
+      [...pnpmArgs, "-r", "--no-bail", "typecheck"],
+      "The type check",
+      "typecheck",
+    );
     return undefined;
   });
   if (options.unitTests) {
     await step("unit-tests", async (log) => {
-      await command(log, pnpm, [...pnpmArgs, "-r", "--no-bail", "test"], "The tests");
+      await command(log, pnpm, [...pnpmArgs, "-r", "--no-bail", "test"], "The tests", "unit-tests");
       return undefined;
     });
   }
 
   let started = false;
   await step("compose-up", async (log) => {
+    assertComposeEnvironment(dir);
     started = true;
+    const running = await compose.run(["ps", "-q"]);
+    if (running.exitCode === 0 && running.output.trim()) {
+      log("$ docker compose down --remove-orphans");
+      const down = await compose.run(["down", "--remove-orphans"], log);
+      if (down.exitCode !== 0)
+        throw new Error(`docker compose down failed (exit code ${down.exitCode})`);
+    }
     log("$ docker compose up --build --wait");
     const up = await compose.run(["up", "--build", "--wait", "--wait-timeout", "300"], log);
     if (up.exitCode === 0) return undefined;
@@ -203,7 +265,9 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     // Resolve the generated project's .env references without logging credentials.
     const file = JSON.parse(await compose.ok(["config", "--format", "json"])) as ComposeFile;
     const failed: string[] = [];
+    const packTimeoutMs = stepTimeoutMs("test-packs");
     for (const subject of orderSubjects(options.subjects)) {
+      const packStarted = Date.now();
       const key = subject.attachment ? `${subject.element}/${subject.attachment}` : subject.element;
       const [id = "", version = ""] = subject.template.split("@");
       const pack = templates.module({ id, version }).testPack;
@@ -225,10 +289,12 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
       log(`${pack.template} test pack for ${key}`);
       for (const check of pack.checks) {
         if (signal?.aborted) throw new Error("Cancelled");
+        const remaining = packTimeoutMs - (Date.now() - packStarted);
+        if (remaining <= 0) throw new StepTimeout("test-packs", packTimeoutMs / 60_000);
         const begin = Date.now();
         let outcome: CheckOutcome;
         try {
-          await check.run(ctx);
+          await withTimeout(check.run(ctx), remaining, packTimeoutMs / 60_000);
           outcome = {
             subject: key,
             template: subject.template,
@@ -238,6 +304,7 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
             durationMs: Date.now() - begin,
           };
         } catch (error) {
+          if (error instanceof StepTimeout) throw error;
           outcome = {
             subject: key,
             template: subject.template,
@@ -307,6 +374,24 @@ function orderSubjects(subjects: Subject[]): Subject[] {
   return [...subjects].sort((a, b) => rank(a) - rank(b));
 }
 
+/** Races one pack check against its deadline; a hung check must not hold the whole run open. */
+function withTimeout<T>(work: Promise<T>, timeoutMs: number, minutes: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new StepTimeout("test-packs", minutes)), timeoutMs);
+    timer.unref();
+    work.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 export {
   assertExecutedTests,
   assertGeneratedIntegrity,
@@ -315,3 +400,9 @@ export {
   freePort,
   verifyBehavior,
 } from "./behavior.ts";
+export {
+  assertComposeEnvironment,
+  missingComposeEnvironment,
+  parseEnvFile,
+  requiredComposeVariables,
+} from "./compose.ts";
