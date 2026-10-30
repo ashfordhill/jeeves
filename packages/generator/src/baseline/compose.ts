@@ -11,10 +11,23 @@ export class ComposeCli {
   constructor(
     readonly dir: string,
     private readonly signal?: AbortSignal,
+    private readonly isolation?: { file: string; name: string },
   ) {}
 
   run(args: string[], onLine?: (line: string) => void): Promise<RunResult> {
-    return runCommand("docker", ["compose", ...args], {
+    const flags = this.isolation
+      ? [
+          "--project-directory",
+          this.dir,
+          "--env-file",
+          "/dev/null",
+          "-f",
+          this.isolation.file,
+          "-p",
+          this.isolation.name,
+        ]
+      : [];
+    return runCommand("docker", ["compose", ...flags, ...args], {
       cwd: this.dir,
       ...(onLine && { onLine }),
       ...(this.signal && { signal: this.signal }),

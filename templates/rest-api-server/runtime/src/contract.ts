@@ -24,7 +24,14 @@ export interface Operation {
   parameters: Parameter[];
   requestBody?: { required: boolean; schema?: Json; example?: unknown };
   /** By status code (`"200"`, `"4XX"`, `"default"`): the JSON body schema, if any. */
-  responses: Record<string, { schema?: Json }>;
+  responses: Record<
+    string,
+    {
+      schema?: Json;
+      content?: Json;
+      headers?: Record<string, { required: boolean; schema: Json }>;
+    }
+  >;
   /** `x-jeeves-smoke` on the operation: opt in (or out) of contract smoke tests. */
   smoke?: boolean;
 }
@@ -143,9 +150,25 @@ function responsesOf(document: Json, raw: unknown): Operation["responses"] {
   const responses: Operation["responses"] = {};
   for (const [status, value] of Object.entries(isObject(raw) ? raw : {})) {
     if (!isObject(value)) continue;
-    const media = jsonMedia(resolve(document, value).content);
-    responses[status.toUpperCase()] =
-      media && isObject(media.schema) ? { schema: media.schema } : {};
+    const response = resolve(document, value);
+    const media = jsonMedia(response.content);
+    const headers = Object.fromEntries(
+      Object.entries(isObject(response.headers) ? response.headers : {}).map(([name, raw]) => {
+        const header = resolve(document, isObject(raw) ? raw : {});
+        return [
+          name.toLowerCase(),
+          {
+            required: header.required === true,
+            schema: isObject(header.schema) ? header.schema : {},
+          },
+        ];
+      }),
+    );
+    responses[status.toUpperCase()] = {
+      ...(media && isObject(media.schema) && { schema: media.schema }),
+      ...(isObject(response.content) && { content: response.content }),
+      ...(Object.keys(headers).length && { headers }),
+    };
   }
   return responses;
 }

@@ -90,3 +90,76 @@ test("explains why an empty design can't be generated", async ({ page, request }
   await expect(drawer(page).getByRole("note")).toHaveText(/Add at least one element/);
   await expect(drawer(page).getByRole("button", { name: "Generate project" })).toBeDisabled();
 });
+
+test("shows template conformance separately from deferred application acceptance by mouse", async ({
+  page,
+  request,
+}) => {
+  const id = await openNewProject(page, request, "E2E verification layers");
+  await page.route(`**/api/projects/${id}/generation`, (route) =>
+    route.fulfill({
+      json: {
+        defaultOutputDir: "/tmp/verification-display",
+        outputDir: "/tmp/verification-display",
+        latest: {
+          id: 99,
+          projectId: id,
+          revision: 0,
+          outputDir: "/tmp/verification-display",
+          baseline: true,
+          status: "succeeded",
+          createdAt: new Date().toISOString(),
+          finishedAt: new Date().toISOString(),
+          report: null,
+          error: null,
+          log: [],
+          steps: [
+            {
+              id: "compose-up",
+              title: "Infrastructure readiness: start with Docker Compose",
+              status: "passed",
+              durationMs: 100,
+            },
+          ],
+          checks: [
+            {
+              subject: "api",
+              template: "resources",
+              id: "qr",
+              title: "Independent standard behavior: qr",
+              layer: "template",
+              status: "passed",
+              durationMs: 100,
+            },
+            {
+              subject: "project",
+              template: "acceptance",
+              id: "deferred",
+              title: "Remaining extension acceptance",
+              layer: "application",
+              status: "skipped",
+              durationMs: 0,
+              reason: "Deferred until implementation: api/downloadQr, api/followQr",
+            },
+          ],
+        },
+      },
+    }),
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
+  await expect(
+    drawer(page).getByRole("heading", { name: "Template conformance: 1 of 1 passed" }),
+  ).toBeVisible();
+  const acceptance = drawer(page).getByRole("region", { name: "Application acceptance" });
+  await expect(acceptance.getByRole("heading")).toHaveText(
+    "Application acceptance: 0 of 1 passed; 1 skipped",
+  );
+  await expect(acceptance).toContainText("api/downloadQr, api/followQr");
+  await page.mouse.move(1, 1);
+  expect((await new AxeBuilder({ page }).include("#generate-drawer").analyze()).violations).toEqual(
+    [],
+  );
+  await drawer(page).getByRole("button", { name: "Hide generate output" }).click();
+  await expect(drawer(page)).toHaveCount(0);
+});

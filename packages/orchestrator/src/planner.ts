@@ -117,6 +117,13 @@ export type CheckedPlan = { ok: true; tasks: PlannedTask[] } | { ok: false; erro
  * the model's order within each target). Owned paths and dependencies come from the seed.
  */
 export function checkSubmittedPlan(seed: PlannedTask[], plan: SubmittedPlan): CheckedPlan {
+  if (seed.some((task) => task.key.includes(".extension.")))
+    return {
+      ok: false,
+      errors: [
+        "Structured extension tasks and fixed acceptance references cannot be redefined by a planner.",
+      ],
+    };
   const seedByTarget = new Map(seed.map((t) => [targetKey(t), t]));
   const allowed = [...seedByTarget.keys()].map((k) => `"${k}"`).join(", ");
   const errors: string[] = [];
@@ -171,6 +178,15 @@ export async function refinePlan(
   input: PlannerInput,
   signal?: AbortSignal,
 ): Promise<RefineResult> {
+  if (input.seed.some((task) => task.key.includes(".extension.")))
+    return {
+      ok: true,
+      tasks: input.seed,
+      summary:
+        "Tasks derive from fixed extension IDs, contracts and acceptance references. No planner call was needed.",
+      usage: { inputTokens: 0, outputTokens: 0, known: true },
+      rounds: 0,
+    };
   const items: ModelItem[] = [
     { type: "message", role: "user", content: [{ type: "text", text: plannerMessage(input) }] },
   ];

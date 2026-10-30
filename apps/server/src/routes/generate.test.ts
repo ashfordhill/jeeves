@@ -153,6 +153,7 @@ describe("generate", () => {
       ["typecheck", "passed"],
       ["compose-up", "passed"],
       ["test-packs", "passed"],
+      ["behavior", "skipped"],
       ["compose-down", "passed"],
     ]);
     expect(done.generation.checks).toHaveLength(1);
@@ -178,7 +179,7 @@ describe("generate", () => {
     expect(done?.type === "done" && done.generation.status).toBe("succeeded");
     expect(
       done?.type === "done" && done.generation.steps.filter((s) => s.status === "skipped").length,
-    ).toBe(5);
+    ).toBe(6);
   });
 
   it("reports a hand-edited generated file as blocked, with nothing written", async () => {

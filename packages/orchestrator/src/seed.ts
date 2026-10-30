@@ -3,7 +3,12 @@
  * whose implementation notes aren't empty, in dependency order.
  */
 import type { Lock } from "@jeeves/generator";
-import type { DesignDocument, ElementKind, TemplateLookup } from "@jeeves/spec";
+import {
+  type DesignDocument,
+  type ElementKind,
+  resourceConfigSchema,
+  type TemplateLookup,
+} from "@jeeves/spec";
 
 export type PlannedTask = {
   /** Unique within a plan: `<element>`, `<element>.<attachment>`, plus `-2`, `-3`… for splits. */
@@ -101,6 +106,32 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
       source: "seed" as const,
     };
     for (const attachment of element.attachments) {
+      if (attachment.template.id === "rest-api-server" && attachment.config.model) {
+        const model = resourceConfigSchema.parse(attachment.config.model);
+        const dir = lock.elements.find((e) => e.id === element.id)?.dir ?? `services/${element.id}`;
+        for (const extension of model.extensions)
+          tasks.push({
+            ...base,
+            key: extensionTaskKey(element.id, attachment.id, extension.id),
+            attachment: attachment.id,
+            title: `Implement ${extension.operationId} (${extension.id})`,
+            description: [
+              `Extension ID: ${extension.id}; operation ID: ${extension.operationId}`,
+              `${extension.method} ${extension.path} (${extension.access})`,
+              extension.notes,
+              `Fixed contract in contracts/${element.id}.openapi.yaml:\n${JSON.stringify(extension.contract, null, 2)}`,
+              `Fixed acceptance references: ${extension.acceptance.join(", ")}. Tests under tests/acceptance/${element.id}/ are protected. Add supplemental tests within the allowed paths.`,
+              "Standard CRUD, sessions, service boundaries, contracts, and migrations are already generated. Implement only this extension.",
+            ].join("\n\n"),
+            acceptance: [...extension.acceptance],
+            ownedPaths: [
+              `${dir}/src/features/${extension.id}/`,
+              `${dir}/tests/`,
+              `${dir}/package.json`,
+            ],
+          });
+        continue;
+      }
       if (!attachment.notes.trim()) continue;
       const capability = templates.get(attachment.template)?.displayName ?? attachment.template.id;
       tasks.push({
@@ -111,7 +142,10 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
         description: attachment.notes.trim(),
       });
     }
-    if (element.notes.trim()) {
+    if (
+      element.notes.trim() &&
+      !element.attachments.some((a) => a.template.id === "rest-api-server" && a.config.model)
+    ) {
       tasks.push({
         ...base,
         key: element.id,
@@ -122,6 +156,43 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
     }
   }
   return tasks;
+}
+
+/** Stable keys survive task edits/restarts; expected behavior always comes from the design. */
+export const extensionTaskKey = (element: string, attachment: string, extension: string) =>
+  `${element}.${attachment}.extension.${extension}`;
+
+export function requiredExtensions(
+  design: DesignDocument,
+  keys: string[],
+): Record<string, string[]> {
+  const required: Record<string, string[]> = {};
+  for (const element of design.elements)
+    for (const attachment of element.attachments) {
+      if (attachment.template.id !== "rest-api-server" || !attachment.config.model) continue;
+      const model = resourceConfigSchema.parse(attachment.config.model);
+      required[element.id] = model.extensions
+        .filter((e) => keys.includes(extensionTaskKey(element.id, attachment.id, e.id)))
+        .map((e) => e.operationId);
+    }
+  return required;
+}
+
+export function unverifiedExtensionOperations(
+  design: DesignDocument,
+  completed: string[],
+): string[] {
+  const verified = requiredExtensions(design, completed);
+  return design.elements.flatMap((element) =>
+    element.attachments
+      .filter((a) => a.template.id === "rest-api-server" && a.config.model)
+      .flatMap((a) =>
+        resourceConfigSchema
+          .parse(a.config.model)
+          .extensions.filter((e) => !verified[element.id]?.includes(e.operationId))
+          .map((e) => `${element.id}/${e.operationId}`),
+      ),
+  );
 }
 
 export type OrderProblem = { key: string; message: string };
@@ -146,4 +217,23 @@ export function orderProblems(
     }
   });
   return problems;
+}
+
+export function taskRequiredExtensions(
+  design: DesignDocument,
+  key: string,
+  completed: string[] = [],
+): Record<string, string[]> {
+  const selected = requiredExtensions(design, [...completed, key]);
+  if (Object.values(requiredExtensions(design, [key])).some((ids) => ids.length)) return selected;
+  return Object.fromEntries(
+    design.elements.flatMap((element) =>
+      element.attachments
+        .filter((a) => a.template.id === "rest-api-server" && a.config.model)
+        .map((a) => [
+          element.id,
+          resourceConfigSchema.parse(a.config.model).extensions.map((e) => e.operationId),
+        ]),
+    ),
+  );
 }

@@ -1,6 +1,12 @@
 import type { DesignDocument } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
-import { elementOrder, orderProblems, type PlannedTask, seedPlan } from "./seed.ts";
+import {
+  elementOrder,
+  orderProblems,
+  type PlannedTask,
+  seedPlan,
+  taskRequiredExtensions,
+} from "./seed.ts";
 import { fixtureDesign, lockOf, templates } from "./test-support.ts";
 
 const design = fixtureDesign();
@@ -8,6 +14,23 @@ const seed = (d: DesignDocument) =>
   seedPlan({ design: d, lock: lockOf(d), templates: templates.lookup });
 
 describe("seedPlan", () => {
+  it("derives extension work from IDs/contracts and omits generated CRUD and stale service notes", () => {
+    const d = fixtureDesign("resources");
+    const tasks = seed(d);
+    expect(tasks.map((t) => t.key)).toEqual(["links.links-api.extension.activity", "web"]);
+    expect(tasks[0]).toMatchObject({
+      acceptance: ["ACT-01"],
+      ownedPaths: [
+        "services/links/src/features/activity/",
+        "services/links/tests/",
+        "services/links/package.json",
+      ],
+    });
+    expect(tasks[0]?.description).toContain("qrActivity");
+    expect(tasks[0]?.description).toContain("/api/qr/{id}/activity");
+    expect(taskRequiredExtensions(d, tasks[0]!.key)).toEqual({ links: ["qrActivity"] });
+    expect(taskRequiredExtensions(d, "web")).toEqual({ links: ["qrActivity"] });
+  });
   it("makes one task per element and attachment with notes, in dependency order", () => {
     const tasks = seed(design);
     expect(tasks.map((t) => t.key)).toEqual(["links.links-api", "links", "web"]);

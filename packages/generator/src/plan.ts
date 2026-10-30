@@ -19,6 +19,11 @@ import {
   vendoredRuntimeSpec,
 } from "@jeeves/template-kit";
 import {
+  type AcceptanceRegistration,
+  acceptanceFiles,
+  type FixedAcceptance,
+} from "./acceptance.ts";
+import {
   agentsFile,
   designFile,
   elementNotesFile,
@@ -60,6 +65,7 @@ export interface PlannedElement {
 
 /** Everything generation will write, computed without touching the disk (deterministic). */
 export interface ProjectPlan {
+  fixedAcceptance?: AcceptanceRegistration[];
   resourceModels?: Record<string, ResourceConfig>;
   resourceStores?: Record<string, { connection: string; database: string }>;
   /** Sorted by path. */
@@ -75,6 +81,7 @@ export interface ProjectPlan {
 }
 
 export interface PlanOptions {
+  fixedAcceptance?: FixedAcceptance[];
   /** Used for the root `package.json` name and the docs; the design has no name of its own. */
   projectName: string;
   resourceHistory?: {
@@ -239,7 +246,10 @@ export function planProject(
       .filter((r) => r.result.resourceModel)
       .map((r) => [r.subject.element, r.result.resourceModel!]),
   );
+  const acceptance = acceptanceFiles(options.fixedAcceptance ?? [], resourceModels);
+  for (const file of acceptance.files) add(file, "fixed acceptance");
   return {
+    ...(acceptance.registrations.length && { fixedAcceptance: acceptance.registrations }),
     ...(Object.keys(resourceModels).length && {
       resourceModels,
       resourceStores: Object.fromEntries(

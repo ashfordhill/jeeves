@@ -168,7 +168,7 @@ function registerApi(
           request,
           log: request.log,
         });
-        const invalid = validator?.response(result.status, result.body) ?? [];
+        const invalid = validator?.response(result.status, result.body, result.headers) ?? [];
         if (invalid.length > 0) {
           request.log.error(
             { operationId: operation.operationId, status: result.status, problems: invalid },

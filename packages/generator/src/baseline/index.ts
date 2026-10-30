@@ -1,15 +1,15 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type { DesignDocument } from "@jeeves/spec";
 import {
+  CheckSkipped,
   type ComposeFile,
   createGenerateContext,
   type TestPackContext,
 } from "@jeeves/template-kit";
-import { parse } from "yaml";
 import { pnpmCommand, runCommand } from "../exec.ts";
+import { readLock } from "../lock.ts";
 import { type TemplateSet, templateSet } from "../modules.ts";
 import type { Subject } from "../plan.ts";
+import { assertGeneratedIntegrity, verifyBehavior } from "./behavior.ts";
 import { ComposeCli } from "./compose.ts";
 
 export { ComposeCli } from "./compose.ts";
@@ -17,8 +17,9 @@ export { ComposeCli } from "./compose.ts";
 export const baselineSteps = [
   { id: "install", title: "Install dependencies" },
   { id: "typecheck", title: "Type check" },
-  { id: "compose-up", title: "Start with docker compose" },
+  { id: "compose-up", title: "Infrastructure readiness: start with Docker Compose" },
   { id: "test-packs", title: "Run template test packs" },
+  { id: "behavior", title: "Independent behavior and application acceptance" },
   { id: "compose-down", title: "Stop the project" },
 ] as const;
 
@@ -30,6 +31,7 @@ export const taskCheckSteps = [
   baselineSteps[2],
   baselineSteps[3],
   baselineSteps[4],
+  baselineSteps[5],
 ] as const;
 export type BaselineStepId = (typeof taskCheckSteps)[number]["id"];
 
@@ -41,7 +43,9 @@ export interface CheckOutcome {
   template: string;
   id: string;
   title: string;
-  status: "passed" | "failed";
+  status: "passed" | "failed" | "skipped";
+  reason?: string;
+  layer?: "infrastructure" | "template" | "application";
   durationMs: number;
   error?: string;
 }
@@ -67,6 +71,8 @@ export interface BaselineOptions {
   signal?: AbortSignal;
   /** Also run the project's own tests (`pnpm -r --no-bail test`) after the type check. */
   unitTests?: boolean;
+  /** Only these extension operations are due; omitted on task checks means all extensions. */
+  requiredExtensions?: Record<string, string[]>;
   /** Leave the containers running afterwards. Default false: `docker compose down` (volumes kept). */
   keepRunning?: boolean;
 }
@@ -94,6 +100,18 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
   const templates = options.templates ?? templateSet();
   const compose = new ComposeCli(dir, signal);
   const [pnpm, ...pnpmArgs] = pnpmCommand();
+  const lock = readLock(dir);
+  const models = lock?.resourceModels ?? {};
+  const required =
+    options.requiredExtensions ??
+    (options.unitTests
+      ? Object.fromEntries(
+          Object.entries(models).map(([id, model]) => [
+            id,
+            model.extensions.map((e) => e.operationId),
+          ]),
+        )
+      : {});
   const result: BaselineResult = { ok: true, steps: [], checks: [] };
   if (signal?.aborted) result.ok = false;
 
@@ -138,6 +156,7 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
   };
 
   await step("install", async (log) => {
+    if (lock) assertGeneratedIntegrity(dir, lock);
     await command(log, pnpm, [...pnpmArgs, "install"], "pnpm install");
     return undefined;
   });
@@ -177,13 +196,17 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
   });
 
   await step("test-packs", async (log) => {
-    const file = parse(readFileSync(join(dir, "docker-compose.yml"), "utf8")) as ComposeFile;
+    // Resolve the generated project's .env references without logging credentials.
+    const file = JSON.parse(await compose.ok(["config", "--format", "json"])) as ComposeFile;
     const failed: string[] = [];
     for (const subject of orderSubjects(options.subjects)) {
       const key = subject.attachment ? `${subject.element}/${subject.attachment}` : subject.element;
       const [id = "", version = ""] = subject.template.split("@");
       const pack = templates.module({ id, version }).testPack;
       const ctx: TestPackContext = {
+        deferredOperations: models[subject.element]?.extensions
+          .filter((e) => !required[subject.element]?.includes(e.operationId))
+          .map((e) => e.operationId),
         projectDir: dir,
         subject: createGenerateContext(
           options.design,
@@ -216,12 +239,15 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
             template: subject.template,
             id: check.id,
             title: check.title,
-            status: "failed",
+            status: error instanceof CheckSkipped ? "skipped" : "failed",
             durationMs: Date.now() - begin,
-            error: (error as Error).message ?? String(error),
+            ...(error instanceof CheckSkipped
+              ? { reason: error.message }
+              : { error: (error as Error).message ?? String(error) }),
           };
-          failed.push(`${key}: ${check.title}`);
+          if (!(error instanceof CheckSkipped)) failed.push(`${key}: ${check.title}`);
         }
+        outcome.layer = "template";
         result.checks.push(outcome);
         emit({ type: "check", check: outcome });
       }
@@ -229,8 +255,24 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     if (failed.length > 0) {
       throw new Error(`${failed.length} check(s) failed: ${failed.join("; ")}`);
     }
-    return `${result.checks.length} checks passed`;
+    return `${result.checks.filter((c) => c.status === "passed").length} checks passed; ${result.checks.filter((c) => c.status === "skipped").length} skipped with reasons`;
   });
+
+  if (lock && Object.keys(models).length)
+    await step("behavior", async (log) => {
+      await verifyBehavior({
+        dir,
+        lock,
+        required,
+        signal,
+        log,
+        onCheck: (check) => {
+          result.checks.push(check);
+          emit({ type: "check", check });
+        },
+      });
+      return "Independent standard behavior and required fixed acceptance passed in disposable fixtures";
+    });
 
   // Stopping runs even after a failure or a cancel, so containers aren't left behind.
   if (started && !options.keepRunning) {
@@ -259,3 +301,10 @@ function orderSubjects(subjects: Subject[]): Subject[] {
   // Array.prototype.sort is stable, so design order holds within a template.
   return [...subjects].sort((a, b) => rank(a) - rank(b));
 }
+
+export {
+  assertExecutedTests,
+  assertGeneratedIntegrity,
+  fixtureCompose,
+  verifyBehavior,
+} from "./behavior.ts";

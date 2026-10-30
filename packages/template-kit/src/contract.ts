@@ -166,6 +166,8 @@ export interface TestCheck {
 
 /** What a check gets. Conformance tests implement it with Testcontainers; S10 with compose. */
 export interface TestPackContext {
+  /** Extensions left for later tasks; never includes the current or completed work. */
+  deferredOperations?: string[];
   projectDir: string;
   /** The element (or attachment) the pack is checked for, resolved as it was for `generate`. */
   subject: GenerateContext;
@@ -199,7 +201,11 @@ export interface ServiceHandle {
 export interface CheckResult {
   id: string;
   title: string;
-  status: "passed" | "failed";
+  status: "passed" | "failed" | "skipped";
+  reason?: string;
   durationMs: number;
   error?: string;
 }
+
+/** An inapplicable check is recorded visibly, with a reason, rather than counted as passed. */
+export class CheckSkipped extends Error {}

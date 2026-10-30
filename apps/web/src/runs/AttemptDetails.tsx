@@ -192,7 +192,9 @@ function ChecksView({ detail }: { detail: AttemptDetail }) {
         <ul className="attempt-steps" aria-label="Test-pack checks">
           {checks.checks.map((c) => (
             <li key={`${c.subject}/${c.id}`} className="attempt-check" data-status={c.status}>
+              {c.layer === "application" ? "Application acceptance" : "Template conformance"} ·{" "}
               {c.subject}: {c.title}: {c.status}
+              {c.reason ? ` · ${c.reason}` : ""}
               {c.error ? ` · ${c.error}` : ""}
             </li>
           ))}

@@ -8,7 +8,7 @@ import {
 } from "@jeeves/spec";
 import type { GenerateContext, OutputFile } from "@jeeves/template-kit";
 import { z } from "zod";
-import { resourceTests } from "./resource-tests.ts";
+import { resourceTests, sessionTests } from "./resource-tests.ts";
 
 const q = JSON.stringify;
 export const fingerprint = (value: unknown) =>
@@ -319,8 +319,9 @@ export function resourceFiles(ctx: GenerateContext, model: ResourceConfig): Outp
     });
   files.push(
     ...model.resources
-      .filter((r) => r.access === "owner")
+      .filter((r) => r.access === "owner" && r.operations.length > 0)
       .map((r) => resourceTests(ctx.element.id, r, model)),
   );
+  files.push(sessionTests(ctx.element.id));
   return files;
 }

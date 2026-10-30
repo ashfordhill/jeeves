@@ -32,6 +32,15 @@ const valid: SubmittedPlan = {
   ],
 };
 
+it("does not call a planner for structured extension tasks", async () => {
+  const design = fixtureDesign("resources");
+  const seed = seedPlan({ design, lock: lockOf(design), templates: templates.lookup });
+  const provider = createFakeProvider([]);
+  const result = await refinePlan(provider, "fake", { projectName: "Resources", seed, briefs: {} });
+  expect(provider.requests).toHaveLength(0);
+  expect(result).toMatchObject({ ok: true, tasks: seed, rounds: 0 });
+});
+
 describe("checkSubmittedPlan", () => {
   it("puts tasks back in seed order, keeps splits in the model's order, and keeps seed paths", () => {
     const checked = checkSubmittedPlan(seed, valid);

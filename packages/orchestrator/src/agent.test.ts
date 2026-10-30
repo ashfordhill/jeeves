@@ -106,6 +106,71 @@ function attempts(dir: string, script: CodingScript, strategy: GitStrategy = "di
 const feature = "services/links/src/features/links.ts";
 
 describe("agent executor", () => {
+  it("rejects attempts to add fixed acceptance tests, even with broad task-owned paths", async () => {
+    const dir = await project();
+    const agent = createFakeCodingAgent([
+      {
+        write: {
+          "tests/acceptance/weaken.test.ts": "// weakened",
+          "tests/generated": "// blocks protected directory",
+          [feature]: "export {};",
+        },
+      },
+    ]);
+    const executor = createAgentExecutor({
+      agents: () => ({ agent, model: "fake" }),
+      checks: markerChecks(),
+    });
+    const task = linksTask(dir);
+    const result = await executor.execute({
+      runId: 99,
+      dir,
+      task: { ...task, ownedPaths: [...task.ownedPaths, "tests/"], id: 1, workspace: null },
+      attempt: 1,
+      strategy: "direct",
+      previous: null,
+      signal: new AbortController().signal,
+    });
+    expect(result.status).toBe("failed");
+    expect(result.checks?.rejectedPaths).toEqual([
+      "tests/acceptance/weaken.test.ts",
+      "tests/generated",
+    ]);
+    expect(existsSync(join(dir, "tests/acceptance/weaken.test.ts"))).toBe(false);
+  });
+
+  it("requires fixed acceptance coverage before spending an agent call", async () => {
+    const dir = join(root, `p${++count}`);
+    const d = fixtureDesign("resources");
+    const generated = await generateProject({
+      dir,
+      design: d,
+      projectName: "Resources",
+      vendor: async () => [],
+    });
+    if (!generated.ok) throw new Error("generation failed");
+    const task = seedPlan({ design: d, lock: generated.lock, templates: templates.lookup })[0]!;
+    let called = false;
+    const executor = createAgentExecutor({
+      agents: () => {
+        called = true;
+        throw new Error("must not call");
+      },
+      checks: markerChecks(),
+    });
+    const result = await executor.execute({
+      runId: 99,
+      dir,
+      task: { ...task, id: 1, workspace: null },
+      attempt: 1,
+      strategy: "direct",
+      previous: null,
+      signal: new AbortController().signal,
+    });
+    expect(called).toBe(false);
+    expect(result.error).toContain("qrActivity: uncovered required acceptance ACT-01");
+    expect(result.usage).toBe(null);
+  });
   it("direct: a passing task is committed on the run branch, lockfile first", async () => {
     const dir = await project();
     const run = attempts(dir, [{ write: { [feature]: "export const links = 1;\n" } }]);

@@ -174,12 +174,12 @@ function harness(options: HarnessOptions = {}) {
     app,
     call,
     jobs,
-    async project(name = "Shorty") {
+    async project(name = "Shorty", ops = linkShortenerOps) {
       const created = await call("POST", "/projects", { name });
       const id = created.body.project.id as string;
       const edited = await call("POST", `/projects/${id}/operations`, {
         baseRevision: 0,
-        ops: linkShortenerOps,
+        ops,
       });
       expect(edited.status).toBe(200);
       return id;
@@ -227,6 +227,46 @@ const taskSummary = (detail: RunDetail) =>
   detail.tasks.map((t) => [t.key, t.title, t.status] as const);
 
 describe("planning", () => {
+  it("keeps structured tasks deterministic and reports required operations removed from the plan", async () => {
+    let plannerCalled = false;
+    const h = harness({
+      models: () => {
+        plannerCalled = true;
+        return { error: "unused" };
+      },
+    });
+    const resourceDesign = designSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL("../../../../fixtures/designs/resources.json", import.meta.url),
+          "utf8",
+        ),
+      ),
+    );
+    const ops: OperationInput[] = [
+      ...resourceDesign.elements.map((element) => ({ op: "addElement" as const, element })),
+      ...resourceDesign.connections.map((connection) => ({ op: "connect" as const, connection })),
+    ];
+    const id = await h.project("Structured", ops);
+    await h.generate(id);
+    const detail = await h.planned(id);
+    expect(plannerCalled).toBe(false);
+    expect(detail.tasks.map((task) => task.key)).toEqual([
+      "links.links-api.extension.activity",
+      "web",
+    ]);
+    const extension = detail.tasks[0]!;
+    expect(extension.acceptance).toEqual(["ACT-01"]);
+    expect(
+      (await h.call("DELETE", `/projects/${id}/runs/${detail.run.id}/tasks/${extension.id}`))
+        .status,
+    ).toBe(204);
+    expect((await h.act(id, detail.run.id, "start")).status).toBe(200);
+    const stopped = await h.until(id, detail.run.id, "needs-attention");
+    expect(stopped.run.statusReason).toContain(
+      "Unverified required extension operations: links/qrActivity",
+    );
+  });
   it("can't plan a project that hasn't been generated", async () => {
     const h = harness();
     const id = await h.project();

@@ -1,8 +1,26 @@
 import { describe, expect, it } from "vitest";
-import type { TestPackContext } from "./contract.ts";
+import { CheckSkipped, type TestPackContext } from "./contract.ts";
 import { runTestPack } from "./test-pack.ts";
 
 describe("runTestPack", () => {
+  it("records inapplicable checks with their reason and does not count them as passed", async () => {
+    const results = await runTestPack(
+      {
+        template: "t",
+        checks: [
+          {
+            id: "skip",
+            title: "Skip",
+            run: async () => {
+              throw new CheckSkipped("No input is applicable");
+            },
+          },
+        ],
+      },
+      {} as TestPackContext,
+    );
+    expect(results[0]).toMatchObject({ status: "skipped", reason: "No input is applicable" });
+  });
   it("runs every check in order and keeps going after a failure", async () => {
     const order: string[] = [];
     const results = await runTestPack(

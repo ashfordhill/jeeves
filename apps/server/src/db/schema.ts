@@ -191,6 +191,7 @@ export type GenerationStepId =
   | "typecheck"
   | "compose-up"
   | "test-packs"
+  | "behavior"
   | "compose-down";
 
 export type GenerationStep = {
@@ -206,7 +207,9 @@ export type GenerationCheck = {
   template: string;
   id: string;
   title: string;
-  status: "passed" | "failed";
+  status: "passed" | "failed" | "skipped";
+  reason?: string;
+  layer?: "infrastructure" | "template" | "application";
   durationMs: number;
   error?: string;
 };

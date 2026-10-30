@@ -24,6 +24,7 @@ import {
   seedPlan,
   type TaskExecutor,
   type TaskWorkspace,
+  unverifiedExtensionOperations,
 } from "@jeeves/orchestrator";
 import { ProviderError } from "@jeeves/providers";
 import type { TemplateLookup } from "@jeeves/spec";
@@ -385,6 +386,10 @@ export class RunService {
         "No element or attachment has implementation notes, so there's nothing to implement. Add notes in the Draw view and generate again.",
       );
     }
+    if (project.lock.resourceModels)
+      return seedOnly(
+        "Tasks derive from explicit extensions and remaining frontend notes. Generated standard behavior needs no planner call.",
+      );
     const source = this.models("planner");
     if ("error" in source) return seedOnly(`The planner model wasn't used: ${source.error}`);
     const projectName = current?.name ?? "project";
@@ -563,6 +568,25 @@ export class RunService {
         .orderBy(asc(tasks.position))
         .limit(1);
       if (!task) {
+        if (readLock(run.outputDir)?.resourceModels) {
+          const project = readGeneratedProject(run.outputDir);
+          const done = await this.db
+            .select({ key: tasks.key })
+            .from(tasks)
+            .where(and(eq(tasks.runId, runId), eq(tasks.status, "done")));
+          const missing = unverifiedExtensionOperations(
+            project.design,
+            done.map((task) => task.key),
+          );
+          if (missing.length) {
+            await this.stop(
+              runId,
+              "needs-attention",
+              `Unverified required extension operations: ${missing.join(", ")}. Cancel and replan to restore their implementation tasks.`,
+            );
+            return;
+          }
+        }
         await this.db
           .update(runs)
           .set({ status: "succeeded", finishedAt: new Date(), updatedAt: new Date() })
@@ -669,6 +693,10 @@ export class RunService {
     let outcome: AttemptOutcome | undefined;
     let thrown: unknown;
     try {
+      const verifiedTasks = await this.db
+        .select({ key: tasks.key })
+        .from(tasks)
+        .where(and(eq(tasks.runId, run.id), eq(tasks.status, "done")));
       outcome = await this.executor.execute({
         runId: run.id,
         dir: run.outputDir,
@@ -676,6 +704,7 @@ export class RunService {
         attempt: number,
         strategy: run.gitStrategy,
         previous,
+        verifiedTaskKeys: verifiedTasks.map((task) => task.key),
         signal,
         saveWorkspace: (workspace: TaskWorkspace) =>
           this.db

@@ -9,6 +9,7 @@ import {
   runtimeTarballName,
   VENDOR_DIR,
 } from "@jeeves/template-kit";
+import { acceptancePath, type FixedAcceptance } from "./acceptance.ts";
 import { LOCK_PATH } from "./documents.ts";
 import { pnpmCommand, runCommand } from "./exec.ts";
 import { hashContents, type Lock, lockFor, lockToJson, readLock } from "./lock.ts";
@@ -19,6 +20,7 @@ import { type PlannedElement, type ProjectPlan, planProject } from "./plan.ts";
 export type Vendor = (dir: string, runtimes: RuntimePackage[]) => Promise<string[]>;
 
 export interface GenerateProjectOptions {
+  fixedAcceptance?: FixedAcceptance[];
   /** Absolute output directory; created if missing. */
   dir: string;
   design: DesignDocument;
@@ -82,7 +84,8 @@ export async function generateProject(
   const migrationFiles = Object.keys(previous?.files ?? {}).filter(
     (p) => p.includes("/resource-migrations/") && p.endsWith(".sql"),
   );
-  for (const path of migrationFiles) {
+  const fixedPaths = (previous?.fixedAcceptance ?? []).map(acceptancePath);
+  for (const path of [...migrationFiles, ...fixedPaths]) {
     if (
       !existsSync(join(dir, path)) ||
       hashContents(readFileSync(join(dir, path))) !== previous?.files[path]
@@ -94,13 +97,19 @@ export async function generateProject(
           {
             path,
             kind: "edited",
-            message: `Immutable migration ${path} is missing or changed; restore it before regeneration.`,
+            message: `Protected generated artifact ${path} is missing or changed; restore it before regeneration.`,
           },
         ],
       };
   }
   const plan = planProject(design, templates, {
     projectName: options.projectName,
+    fixedAcceptance:
+      options.fixedAcceptance ??
+      previous?.fixedAcceptance?.map((suite) => ({
+        ...suite,
+        source: readFileSync(join(dir, acceptancePath(suite)), "utf8"),
+      })),
     ...(previous?.resourceModels && {
       resourceHistory: {
         models: previous.resourceModels,

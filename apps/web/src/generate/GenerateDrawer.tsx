@@ -87,9 +87,7 @@ function Steps({ generation }: { generation: Generation }) {
           <StepIcon status={step.status} />
           <span className="generate-step-title">{step.title}</span>
           <span className="generate-step-time">{seconds(step.durationMs)}</span>
-          {step.message && step.status !== "skipped" ? (
-            <span className="generate-step-message">{step.message}</span>
-          ) : null}
+          {step.message ? <span className="generate-step-message">{step.message}</span> : null}
         </li>
       ))}
     </ol>
@@ -98,27 +96,40 @@ function Steps({ generation }: { generation: Generation }) {
 
 function Checks({ checks }: { checks: GenerationCheck[] }) {
   if (checks.length === 0) return null;
-  const failed = checks.filter((c) => c.status === "failed").length;
   return (
-    <section className="generate-section" aria-label="Template test packs">
-      <h3>
-        Template test packs: {checks.length - failed} of {checks.length} passed
-      </h3>
-      <ul className="generate-checks">
-        {checks.map((check) => (
-          <li key={`${check.subject}/${check.id}`} data-status={check.status}>
-            {check.status === "passed" ? (
-              <IconCheck size={14} aria-label="passed" />
-            ) : (
-              <IconX size={14} aria-label="failed" />
-            )}
-            <span className="generate-check-subject">{check.subject}</span>
-            <span>{check.title}</span>
-            {check.error ? <pre className="generate-check-error">{check.error}</pre> : null}
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      {(["template", "application"] as const).map((layer) => {
+        const group = checks.filter((check) => (check.layer ?? "template") === layer);
+        if (!group.length) return null;
+        const passed = group.filter((check) => check.status === "passed").length;
+        const skipped = group.filter((check) => check.status === "skipped").length;
+        const label = layer === "template" ? "Template conformance" : "Application acceptance";
+        return (
+          <section key={layer} className="generate-section" aria-label={label}>
+            <h3>
+              {label}: {passed} of {group.length} passed{skipped ? `; ${skipped} skipped` : ""}
+            </h3>
+            <ul className="generate-checks">
+              {group.map((check) => (
+                <li key={`${check.subject}/${check.id}`} data-status={check.status}>
+                  {check.status === "passed" ? (
+                    <IconCheck size={14} aria-label="passed" />
+                  ) : check.status === "skipped" ? (
+                    <IconMinus size={14} aria-label="skipped" />
+                  ) : (
+                    <IconX size={14} aria-label="failed" />
+                  )}
+                  <span className="generate-check-subject">{check.subject}</span>
+                  <span>{check.title}</span>
+                  {check.reason ? <span>{check.reason}</span> : null}
+                  {check.error ? <pre className="generate-check-error">{check.error}</pre> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+    </>
   );
 }
 

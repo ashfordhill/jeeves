@@ -32,7 +32,11 @@ afterEach(async () => {
  * Generates the attachment's files into a temp project, then runs the service in-process with
  * the given features and a `TestPackContext` pointing at it.
  */
-async function runPack(options: { features: Feature[]; extraPaths?: string }) {
+async function runPack(options: {
+  features: Feature[];
+  extraPaths?: string;
+  contractText?: string;
+}) {
   const design = serverDesign();
   const subject = createGenerateContext(design, lookup, "links", "links-api");
   const dir = mkdtempSync(join(tmpdir(), "jeeves-rest-pack-"));
@@ -47,6 +51,7 @@ async function runPack(options: { features: Feature[]; extraPaths?: string }) {
     const text = files[0]?.contents ?? "";
     writeFileSync(contract, text.replace("paths:\n", `paths:\n${options.extraPaths}`));
   }
+  if (options.contractText) writeFileSync(contract, options.contractText);
   const service = await runService(
     defineService({ name: "links", plugins: [restServer({ contract, basePath: "/api" })] }),
     {
@@ -119,7 +124,52 @@ describe("rest-api-server test pack", () => {
     expect(results.handlers?.status).toBe("passed");
     expect(results["contract-smoke"]?.status).toBe("failed");
     // The server itself refuses the bad response, and the check sees the undocumented 500.
-    expect(results["contract-smoke"]?.error).toBe("getLink → 500: / status 500 isn't documented");
+    expect(results["contract-smoke"]?.error).toContain(
+      "getLink → 500: / status 500 isn't documented",
+    );
+  });
+
+  it("fails eligible operations missing examples, even when another request passed", async () => {
+    const results = await runPack({
+      features: [ping],
+      extraPaths: getLinkPath.replace("          example: jv\n", ""),
+    });
+    expect(results["contract-smoke"]?.error).toContain(
+      "getLink: eligible operation is missing required request examples",
+    );
+  });
+
+  it("fails a required empty smoke check instead of reporting success", async () => {
+    const results = await runPack({
+      features: [],
+      contractText: 'openapi: 3.1.0\ninfo: {title: Empty, version: "1"}\npaths: {}\n',
+    });
+    expect(results["contract-smoke"]?.status).toBe("failed");
+    expect(results["contract-smoke"]?.error).toContain("ran zero requests");
+  });
+
+  it("checks redirect headers without following Location", async () => {
+    const path = `  /redirect:
+    get:
+      operationId: redirect
+      responses:
+        "302":
+          description: Redirect
+          headers:
+            Location: {required: true, schema: {type: string, format: uri}}
+            Cache-Control: {required: true, schema: {type: string, const: no-store}}
+`;
+    const redirect = defineFeature({
+      name: "redirect",
+      operations: {
+        redirect: () => ({
+          status: 302,
+          headers: { Location: "http://127.0.0.1:1/must-not-follow", "Cache-Control": "no-store" },
+        }),
+      },
+    });
+    const results = await runPack({ features: [ping, redirect], extraPaths: path });
+    expect(results["contract-smoke"]?.status).toBe("passed");
   });
 });
 

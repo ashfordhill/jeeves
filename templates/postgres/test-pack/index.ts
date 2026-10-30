@@ -120,10 +120,16 @@ async function checkMigrations(ctx: TestPackContext): Promise<void> {
   }
 }
 
-/** The consumer's `DATABASE_URL` from the compose file, pointed at the published port. */
+/** The consumer's resolved credentials, pointed at the published port. */
 async function consumerUrl(ctx: TestPackContext, consumer: Consumer): Promise<string> {
-  const raw = ctx.compose.services[consumer.id]?.environment?.DATABASE_URL;
-  if (!raw) throw new Error(`docker-compose.yml gives ${consumer.id} no DATABASE_URL`);
+  const env = ctx.compose.services[consumer.id]?.environment ?? {};
+  const raw =
+    env.DATABASE_URL ??
+    (env.DATABASE_HOST && env.DATABASE_USER && env.DATABASE_PASSWORD && env.DATABASE_NAME
+      ? `postgres://${encodeURIComponent(env.DATABASE_USER)}:${encodeURIComponent(env.DATABASE_PASSWORD)}@${env.DATABASE_HOST}/${encodeURIComponent(env.DATABASE_NAME)}`
+      : undefined);
+  if (!raw)
+    throw new Error(`docker-compose.yml gives ${consumer.id} no resolved database credentials`);
   const url = new URL(raw);
   if (url.hostname !== ctx.subject.element.id) {
     throw new Error(`${consumer.id}'s DATABASE_URL points at ${url.hostname}`);

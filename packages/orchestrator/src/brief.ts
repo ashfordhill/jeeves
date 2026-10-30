@@ -21,6 +21,7 @@ export const REQUIRED_CHECKS = [
   "pnpm -r --no-bail test",
   "docker compose up --build --wait",
   "every template test pack for every element (they must stay green)",
+  "independent generated behavior and fixed acceptance in disposable fixtures (current and completed extensions)",
 ];
 
 /** The checks an agent can run inside the project; the test packs only run from Jeeves. */
@@ -58,16 +59,18 @@ export function taskBrief({ project, task, attempt, earlierWork }: BriefInput): 
     "",
     "## Acceptance tests",
     "",
-    task.acceptance.length > 0
-      ? `Add automated tests that prove each of these, next to the element's code, and make them pass:\n\n${task.acceptance.map((a) => `- ${a}`).join("\n")}`
-      : "None were listed. Add tests for what you build.",
+    task.key.includes(".extension.")
+      ? `Pass the fixed project acceptance references ${task.acceptance.join(", ")}. Their expected behavior is protected under tests/acceptance/. You may add supplemental tests; do not edit fixed or generated tests.`
+      : task.acceptance.length > 0
+        ? `Add automated tests that prove each of these, next to the element's code, and make them pass:\n\n${task.acceptance.map((a) => `- ${a}`).join("\n")}`
+        : "None were listed. Add tests for what you build.",
     "",
     "## Where you may change files",
     "",
     ...task.ownedPaths.map((p) => `- \`${p}\``),
     ...SHARED_PATHS.map((p) => `- \`${p}\` (updated by \`pnpm install\`)`),
     "",
-    "Jeeves rejects and reverts changes anywhere else, and to generated-owned files (listed in `jeeves/lock.json`, e.g. `*.generated.ts`). If the task needs a change elsewhere, stop and say so in your final message.",
+    "Jeeves rejects and reverts changes anywhere else, and to tests/generated/, tests/acceptance/, jeeves/, and generated-owned files (listed in `jeeves/lock.json`, e.g. `*.generated.ts`). If the task needs a change elsewhere, stop and say so in your final message.",
     "",
     "## Checks",
     "",
@@ -91,10 +94,18 @@ export function taskBrief({ project, task, attempt, earlierWork }: BriefInput): 
   }
 
   const neighbours = neighbourIds(project, task.element);
+  if (lock.files[`contracts/${task.element}.openapi.yaml`]) neighbours.add(task.element);
   const contracts = lock.elements
     .filter((e) => neighbours.has(e.id))
     .flatMap((e) =>
-      e.ownedPaths.filter((p) => p.startsWith("contracts/")).map((p) => ({ id: e.id, path: p })),
+      [
+        ...new Set([
+          ...e.ownedPaths,
+          ...Object.keys(lock.files).filter((p) => p === `contracts/${e.id}.openapi.yaml`),
+        ]),
+      ]
+        .filter((p) => p.startsWith("contracts/"))
+        .map((p) => ({ id: e.id, path: p })),
     );
   for (const { id, path } of contracts) {
     const file = join(dir, path);

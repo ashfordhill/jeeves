@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { resourceConfigSchema } from "@jeeves/spec";
 import { runtimeTarballName, VENDOR_DIR } from "@jeeves/template-kit";
 import { z } from "zod";
+import { fixedAcceptanceSchema } from "./acceptance.ts";
 import { LOCK_PATH } from "./documents.ts";
 import { GENERATOR_VERSION, type ProjectPlan } from "./plan.ts";
 
@@ -13,6 +14,7 @@ import { GENERATOR_VERSION, type ProjectPlan } from "./plan.ts";
  */
 export const lockSchema = z.object({
   lockVersion: z.literal(1),
+  fixedAcceptance: z.array(fixedAcceptanceSchema.omit({ source: true })).optional(),
   resourceFingerprints: z.record(z.string(), z.string()).optional(),
   resourceStores: z
     .record(z.string(), z.object({ connection: z.string(), database: z.string() }))
@@ -44,6 +46,7 @@ export function hashContents(contents: string | Buffer): string {
 export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
   return {
     lockVersion: 1,
+    ...(plan.fixedAcceptance && { fixedAcceptance: plan.fixedAcceptance }),
     ...(plan.resourceModels && {
       resourceModels: plan.resourceModels,
       resourceStores: plan.resourceStores,

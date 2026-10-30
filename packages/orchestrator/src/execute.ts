@@ -68,7 +68,9 @@ export type CheckRecord = {
   subject: string;
   id: string;
   title: string;
-  status: "passed" | "failed";
+  status: "passed" | "failed" | "skipped";
+  reason?: string;
+  layer?: "infrastructure" | "template" | "application";
   durationMs: number;
   error?: string;
 };
@@ -86,6 +88,7 @@ export type FileChange = { path: string; status: "added" | "modified" | "deleted
 
 export type AttemptInput = {
   runId: number;
+  verifiedTaskKeys?: string[];
   /** The generated project's folder. */
   dir: string;
   task: PlannedTask & { id: number; workspace: TaskWorkspace | null };

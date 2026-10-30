@@ -8,7 +8,7 @@ import {
   type OperationStatus,
   type Parameter,
 } from "@jeeves/rest-server";
-import type { TestPack, TestPackContext } from "@jeeves/template-kit";
+import { CheckSkipped, type TestPack, type TestPackContext } from "@jeeves/template-kit";
 import { contractPath } from "../generate.ts";
 
 /**
@@ -54,7 +54,9 @@ export const testPack: TestPack = {
             `The running service doesn't serve ${stale.map((o) => o.operationId).join(", ")}; rebuild its image`,
           );
         }
-        const missing = report.filter((o) => !o.implemented);
+        const deferred = new Set(ctx.deferredOperations ?? []);
+        const missing = report.filter((o) => !o.implemented && !deferred.has(o.operationId));
+        if (deferred.size) ctx.log(`Deferred extension handlers: ${[...deferred].join(", ")}`);
         if (missing.length > 0) {
           throw new Error(
             `No handler for ${missing.map((o) => `${o.operationId} (${o.method} ${o.path})`).join(", ")}`,
@@ -67,18 +69,38 @@ export const testPack: TestPack = {
       title: "documented examples get schema-valid responses",
       async run(ctx) {
         const contract = contractOf(ctx);
+        if (ctx.subject.config.model)
+          throw new CheckSkipped(
+            "Stateful operations are checked by independent generated and fixed acceptance suites in disposable fixtures.",
+          );
         const validators = createValidators(contract);
         const failures: string[] = [];
         let ran = 0;
         for (const operation of contract.operations) {
           const eligible = operation.smoke ?? operation.method === "get";
           const request = eligible ? exampleRequest(operation) : undefined;
-          if (!request) continue;
+          if (!eligible) {
+            ctx.log(
+              `Smoke inapplicable for ${operation.operationId}: ${operation.smoke === false ? "explicit x-jeeves-smoke: false" : "mutation requires an isolated example (opt in with x-jeeves-smoke)"}`,
+            );
+            continue;
+          }
+          if (!request) {
+            failures.push(
+              `${operation.operationId}: eligible operation is missing required request examples`,
+            );
+            continue;
+          }
           ran += 1;
           const response = await call(ctx, operation.method.toUpperCase(), request.path, request);
+          if (response.status >= 400) {
+            failures.push(
+              `${operation.operationId}: smoke expected a successful response, got ${response.status}`,
+            );
+          }
           const problems = validators
             .get(operation.operationId)
-            ?.response(response.status, response.body);
+            ?.response(response.status, response.body, response.headers);
           if (problems && problems.length > 0) {
             failures.push(
               `${operation.operationId} → ${response.status}: ${problems.map((p) => `${p.path || "/"} ${p.message}`).join("; ")}`,
@@ -86,6 +108,10 @@ export const testPack: TestPack = {
           }
         }
         ctx.log(`ran ${ran} contract smoke request(s)`);
+        if (ran === 0)
+          failures.push(
+            `Required contract smoke ran zero requests; uncovered operation IDs: ${contract.operations.map((o) => o.operationId).join(", ") || "(contract has no operations)"}`,
+          );
         if (failures.length > 0) throw new Error(failures.join("\n"));
       },
     },
@@ -93,6 +119,10 @@ export const testPack: TestPack = {
       id: "invalid-requests",
       title: "invalid requests get 400 with a structured error",
       async run(ctx) {
+        if (ctx.subject.config.model)
+          throw new CheckSkipped(
+            "Input and session validation run in the independent disposable-fixture suites.",
+          );
         const contract = contractOf(ctx);
         let ran = 0;
         for (const operation of contract.operations) {
@@ -111,7 +141,7 @@ export const testPack: TestPack = {
             );
           }
         }
-        if (ran === 0) ctx.log("no operation takes input that can be made invalid");
+        if (ran === 0) throw new CheckSkipped("No operation takes input that can be made invalid.");
       },
     },
   ],
@@ -134,6 +164,7 @@ function env(ctx: TestPackContext): Record<string, string> {
 }
 
 function basePath(ctx: TestPackContext): string {
+  if (ctx.subject.config.model) return "/"; // Resource/session/extension contracts contain full paths.
   return String(ctx.subject.config.basePath).replace(/\/+$/, "") || "/";
 }
 
@@ -143,7 +174,7 @@ async function call(
   method: string,
   path: string,
   request: Omit<PlannedRequest, "path"> = {},
-): Promise<{ status: number; body: unknown }> {
+): Promise<{ status: number; body: unknown; headers: Record<string, string> }> {
   const port = Number(env(ctx).PORT ?? 8080);
   const { host, port: published } = await ctx.service(ctx.subject.element.id).endpoint(port);
   const absolute = path.startsWith("/") ? path : `${basePath(ctx).replace(/\/$/, "")}/${path}`;
@@ -156,15 +187,19 @@ async function call(
   const response = await fetch(url, {
     method,
     headers,
+    redirect: "manual",
     ...(request.body !== undefined && { body: JSON.stringify(request.body) }),
     signal: AbortSignal.timeout(10_000),
   });
-  const text = await response.text();
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (response.headers.get("content-type")?.split(";")[0] === "image/png")
+    return { status: response.status, body: bytes, headers: Object.fromEntries(response.headers) };
+  const text = new TextDecoder().decode(bytes);
   let body: unknown = text === "" ? undefined : text;
   try {
     body = text === "" ? undefined : JSON.parse(text);
   } catch {}
-  return { status: response.status, body };
+  return { status: response.status, body, headers: Object.fromEntries(response.headers) };
 }
 
 /** A request built from the contract's examples, or undefined when a required one is missing. */
@@ -178,6 +213,7 @@ export function exampleRequest(operation: Operation): PlannedRequest | undefined
       continue;
     }
     const value = String(p.example);
+    if (p.in === "cookie") return undefined;
     if (p.in === "path") path = path.replace(`{${p.name}}`, encodeURIComponent(value));
     else if (p.in === "query") query[p.name] = value;
     else if (p.in === "header") headers[p.name] = value;

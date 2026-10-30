@@ -1,4 +1,4 @@
-import type { CheckResult, TestPack, TestPackContext } from "./contract.ts";
+import { type CheckResult, CheckSkipped, type TestPack, type TestPackContext } from "./contract.ts";
 
 /**
  * Runs a pack's checks in order. A failed check doesn't stop the run: later checks still report,
@@ -20,9 +20,11 @@ export async function runTestPack(
       result = {
         id: check.id,
         title: check.title,
-        status: "failed",
+        status: error instanceof CheckSkipped ? "skipped" : "failed",
         durationMs: 0,
-        error: error instanceof Error ? error.message : String(error),
+        ...(error instanceof CheckSkipped
+          ? { reason: error.message }
+          : { error: error instanceof Error ? error.message : String(error) }),
       };
     }
     result.durationMs = Math.round(performance.now() - started);

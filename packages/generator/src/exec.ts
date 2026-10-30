@@ -14,6 +14,8 @@ export function pnpmCommand(env: NodeJS.ProcessEnv = process.env): [string, ...s
 export interface RunOptions {
   cwd: string;
   env?: NodeJS.ProcessEnv;
+  /** Independent fixtures can opt out of ambient credentials and database configuration. */
+  inheritEnv?: boolean;
   /** Each line of stdout and stderr, as it arrives. */
   onLine?: (line: string) => void;
   signal?: AbortSignal;
@@ -38,7 +40,7 @@ export function runCommand(
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       cwd: options.cwd,
-      env: { ...process.env, ...options.env },
+      env: { ...(options.inheritEnv === false ? {} : process.env), ...options.env },
       stdio: ["ignore", "pipe", "pipe"],
       ...(options.signal && { signal: options.signal }),
       ...(options.timeoutMs && { timeout: options.timeoutMs }),

@@ -4,6 +4,9 @@
  * strategy. One call is one attempt; the run service retries failed attempts with the feedback
  * this returns.
  */
+
+import { acceptanceCoverageProblems } from "@jeeves/generator";
+import { assertGeneratedIntegrity } from "@jeeves/generator/baseline";
 import {
   type CodingAgentEvent,
   type CodingAgentProvider,
@@ -21,6 +24,7 @@ import type {
 } from "./execute.ts";
 import { Git, isOwned, SHARED_PATHS } from "./git.ts";
 import { readGeneratedProject } from "./project.ts";
+import { taskRequiredExtensions } from "./seed.ts";
 
 /** The coding agent and model to use, read again for every attempt (Settings may change). */
 export type CodingAgentSource = () =>
@@ -43,11 +47,42 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         input.onEvent?.({ t: Date.now() - started, ...event });
       const { task, dir, signal } = input;
 
+      const project = readGeneratedProject(dir);
+      assertGeneratedIntegrity(dir, project.lock);
+      const required = taskRequiredExtensions(project.design, task.key, input.verifiedTaskKeys);
+      const uncovered = acceptanceCoverageProblems(
+        project.lock.resourceModels ?? {},
+        project.lock.fixedAcceptance ?? [],
+        required,
+      );
+      if (uncovered.length)
+        return {
+          status: "failed",
+          summary: "Fixed acceptance must be supplied before coding.",
+          usage: null,
+          error: uncovered.join("\n"),
+          feedback: uncovered.join("\n"),
+          changes: [],
+          diff: "",
+          checks: {
+            ok: false,
+            rejectedPaths: [],
+            steps: [],
+            checks: uncovered.map((error, index) => ({
+              subject: task.element,
+              id: `coverage-${index}`,
+              title: "Required fixed acceptance",
+              layer: "application",
+              status: "failed",
+              durationMs: 0,
+              error,
+            })),
+          },
+        };
       const source = agents();
       if ("error" in source) throw new ProviderError("coding", "auth", source.error);
       const { agent, model } = source;
 
-      const project = readGeneratedProject(dir);
       const git = new Git(dir);
       const { workspace, notes } = await git.prepare({
         runId: input.runId,
@@ -128,7 +163,9 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         .map((c) => c.path)
         .filter(
           (path) =>
-            generated.has(path) || !(isOwned(path, task.ownedPaths) || SHARED_PATHS.includes(path)),
+            generated.has(path) ||
+            /^(?:tests\/(?:generated|acceptance)(?:\/|$)|jeeves(?:\/|$))/.test(path) ||
+            !(isOwned(path, task.ownedPaths) || SHARED_PATHS.includes(path)),
         );
       if (rejected.length > 0) {
         await git.restore(base, rejected);
@@ -176,6 +213,7 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
       const logTail: string[] = [];
       const result = await checks.run({
         dir,
+        requiredExtensions: required,
         changed: changes.filter((c) => c.status !== "deleted").map((c) => c.path),
         signal,
         onEvent: (event) => {
