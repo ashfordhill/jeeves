@@ -15,3 +15,9 @@ export function decodeQr(png: Buffer): string {
 export function sha256(bytes: Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
+
+/** The decoded PNG's pixel dimensions, from the image itself rather than its metadata claims. */
+export function pngSize(png: Buffer): { width: number; height: number } {
+  const image = PNG.sync.read(png);
+  return { width: image.width, height: image.height };
+}

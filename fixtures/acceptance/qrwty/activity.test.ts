@@ -27,6 +27,7 @@ test("QR-05/QR-06: fixed UTC buckets, zero days, bounds and owner isolation", as
     ],
   });
 
+  // Computed once per test. A run that crosses 00:00 UTC can flake, so treat this as a known limit.
   const day = today();
   const emptyToday = await alice.activity(id, day, day);
   assertStatus(emptyToday, 200);
@@ -51,6 +52,8 @@ test("QR-05/QR-06: fixed UTC buckets, zero days, bounds and owner isolation", as
 
   assertStatus(await alice.activity(id, "2026-01-04", "2026-01-01"), 400);
   assertStatus(await alice.activity(id, "2025-01-01", "2027-01-01"), 400);
+  assertStatus(await alice.activity(id, "2025-01-01", "2026-01-01"), 200);
+  assertStatus(await alice.activity(id, "2025-01-01", "2026-01-02"), 400);
   assertStatus(await alice.activity(id, "not-a-date", "2026-01-01"), 400);
 
   assertStatus(await bob.activity(id, "2026-01-01", "2026-01-04"), 404);

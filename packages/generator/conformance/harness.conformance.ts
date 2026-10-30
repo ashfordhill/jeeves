@@ -13,7 +13,15 @@ import { fixtureDesign } from "../src/test-support.ts";
 // A minimal technical fixture, not qrwty: it proves the new fixture controls and browser runner.
 const design = fixtureDesign("resources");
 const model = design.elements[0]!.attachments[0]!.config.model as ResourceConfig;
-model.acceptanceCases.push("HARNESS-01", "HARNESS-02");
+model.acceptanceCases.push("HARNESS-01", "HARNESS-02", "HARNESS-03");
+// A second operation makes a multi-operation suite only partially due in extension checks.
+model.extensions.push({
+  ...structuredClone(model.extensions[0]!),
+  id: "follow",
+  operationId: "followQr",
+  path: "/api/qr/{id}/follow",
+  acceptance: ["HARNESS-03"],
+});
 
 const fixtureSuite = `
 import assert from "node:assert/strict";
@@ -94,6 +102,15 @@ const suites: FixedAcceptance[] = [
     requires: "extensions",
     runner: "node",
     source: fixtureSuite,
+  },
+  {
+    id: "pair",
+    service: "links",
+    operationIds: ["qrActivity", "followQr"],
+    acceptanceIds: ["HARNESS-03"],
+    requires: "extensions",
+    runner: "node",
+    source: 'import test from "node:test"; test("pair fixture", () => {});\n',
   },
   {
     id: "browser",
@@ -203,7 +220,9 @@ describe("fixed acceptance fixture controls", () => {
         .filter((check) => check.layer === "application")
         .map((check) => [check.id, check.status, check.acceptanceIds]),
     ).toEqual([
+      ["deferred", "skipped", undefined],
       ["fixture", "passed", ["ACT-01", "HARNESS-01"]],
+      ["pair", "skipped", ["HARNESS-03"]],
       ["browser", "passed", ["HARNESS-02"]],
     ]);
     const containers = execFileSync(
@@ -228,6 +247,11 @@ describe("fixed acceptance fixture controls", () => {
       status: "skipped",
       acceptanceIds: ["HARNESS-02"],
       reason: expect.stringContaining("Waiting for the frontend"),
+    });
+    expect(checks.find((check) => check.id === "pair")).toMatchObject({
+      status: "skipped",
+      acceptanceIds: ["HARNESS-03"],
+      reason: "Waiting for operations followQr before running this suite.",
     });
   }, 300_000);
 });

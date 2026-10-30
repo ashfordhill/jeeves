@@ -36,6 +36,28 @@ they are.
 - **Dependencies:** add npm packages to this service's `package.json` with exact versions. A
   declared extension may already have its production dependency added by generation.
 
+## Structured extension pitfalls
+
+- `sessionPrincipal(request.request)` returns `{ id, csrfToken }`; `principal.id` is the owner id.
+  Compare it with the resource's `owner_id` column (generated for owner resources), never with an
+  id from the request body or query.
+- Postgres returns `date`/`timestamptz` columns as JavaScript `Date`. The response validator
+  rejects that for a schema with `format: "date"`. Select text and bucket in UTC:
+
+  ```sql
+  SELECT to_char(date_trunc('day', "occurred_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS "date",
+         count(*)::int AS "count"
+  ```
+
+  `col::text` is enough for a plain date; use `AT TIME ZONE 'UTC'` when truncating a timestamp.
+- Binary responses: set the content type explicitly and return a `Buffer` as `body`; Fastify sends
+  the bytes unchanged. For example
+  `{ status: 200, headers: { "content-type": "image/png" }, body: png }`. In a raw route added
+  through `register(app)`, the Fastify reply is
+  `reply.type("image/png").header("content-disposition", name).send(png)`.
+- Fastify adds a HEAD route for every GET and calls the same handler. If HEAD must not have a side
+  effect, check `request.request.method` or register the route with `exposeHeadRoute: false`.
+
 ## Don't
 
 - Don't edit `src/jeeves.generated.ts`, `docker-compose.yml`, or anything in `vendor/`. They're

@@ -19,6 +19,7 @@ For a structured service, read the generated resource descriptor for physical ta
 ```ts
 import { sessionPrincipal, publicOrigin } from "@jeeves/rest-server";
 import { withTransaction } from "@jeeves/postgres-runtime";
+import { defineFeature } from "@jeeves/service-runtime";
 import { database } from "../../jeeves.generated.ts";
 import qr from "../../generated/resources/qr.ts";
 import scan from "../../generated/resources/scan.ts";
@@ -54,6 +55,41 @@ export default defineFeature({
 `sessionPrincipal(request.request)` for owner identity and `publicOrigin()` for stable public URLs.
 Use descriptors for names; never use the API resource name as a SQL identifier. The generated
 contract documents standard error bodies, so return `{ error, message }` for 400/401/404 responses.
+
+`sessionPrincipal(request.request)` returns `{ id, csrfToken }`; `principal.id` is the owner id.
+Compare it with the resource's `owner_id` column (generated for owner resources) and never take the
+owner from a request body or query.
+
+### Dates and binary bodies
+
+- Postgres returns `date` and `timestamptz` columns as JavaScript `Date` objects. The response
+  validator rejects a `Date` for a schema with `format: "date"`. Select text and aggregate in UTC:
+
+  ```sql
+  SELECT to_char(date_trunc('day', "occurred_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS "date",
+         count(*)::int AS "count"
+  FROM "scan" GROUP BY 1 ORDER BY 1
+  ```
+
+  `col::text` also works for a plain date column; always use `AT TIME ZONE 'UTC'` when truncating
+  a timestamp.
+- Binary responses: set `content-type` explicitly and return a `Buffer` as `body`. Fastify sends
+  the bytes unchanged, and the response validator checks the PNG:
+
+  ```ts
+  return {
+    status: 200,
+    headers: { "content-type": "image/png", "content-disposition": `attachment; filename="${id}.png"` },
+    body: png,
+  };
+  ```
+
+  In a raw route added through `register(app)`, the equivalent Fastify reply is
+  `reply.type("image/png").header("content-disposition", name).send(png)`.
+
+- Fastify registers a HEAD route for every GET and calls the same handler. If a request must not
+  count twice (the public redirect inserts a scan), check `request.request.method` and skip the
+  insert for HEAD; never assume only GET reaches the handler.
 
 ## How to add or change an operation (legacy mode)
 

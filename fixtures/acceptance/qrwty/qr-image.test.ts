@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { assertStatus, Client, publicOrigin } from "./_support/api.ts";
 import { Destination } from "./_support/destinations.ts";
-import { decodeQr, sha256 } from "./_support/qr.ts";
+import { decodeQr, pngSize, sha256 } from "./_support/qr.ts";
 
 test("QR-02/QR-06: decoded image URL, deterministic bytes and owner isolation", async () => {
   const destinationA = await Destination.start("/a");
@@ -17,10 +17,11 @@ test("QR-02/QR-06: decoded image URL, deterministic bytes and owner isolation", 
     const image = await alice.image(id);
     assert.equal(image.status, 200);
     assert.match(image.headers.get("content-type") ?? "", /^image\/png/);
-    assert.match(image.headers.get("content-disposition") ?? "", /attachment/i);
+    assert.match(image.headers.get("content-disposition") ?? "", /^attachment/i);
     const first = Buffer.from(await image.arrayBuffer());
     assert.ok(first.length > 0);
     assert.equal(decodeQr(first), `${publicOrigin}/q/${id}`);
+    assert.deepEqual(pngSize(first), { width: 512, height: 512 });
     assert.ok(!decodeQr(first).includes(destinationA.url), "the destination is never encoded");
     const digest = sha256(first);
 

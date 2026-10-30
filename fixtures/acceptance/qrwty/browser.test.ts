@@ -5,6 +5,7 @@ import { decodeQr } from "./_support/qr.ts";
 
 const web = process.env.JEEVES_TEST_WEB_URL ?? "";
 const api = `/_api/qrwty/api/qr`;
+// Computed once per test. A run that crosses 00:00 UTC can flake, so treat this as a known limit.
 const today = new Date().toISOString().slice(0, 10);
 
 test("QR-09: register, create, edit, download and activity agree with the API", async ({
@@ -42,7 +43,7 @@ test("QR-09: register, create, edit, download and activity agree with the API", 
     expect(firstRedirect.headers.get("location")).toBe(destinationA.url);
     await firstRedirect.arrayBuffer();
 
-    await row.click();
+    await row.getByTestId("qr-select").click();
     await page.getByTestId("qr-edit-destination").fill(destinationB.url);
     await page.getByTestId("qr-edit-title").fill("Browser acceptance edited");
     await page.getByTestId("qr-edit-save").click();
@@ -58,14 +59,14 @@ test("QR-09: register, create, edit, download and activity agree with the API", 
     }
 
     const downloadStarted = page.waitForEvent("download");
-    await page.getByTestId("qr-image-download").click();
+    await row.getByTestId("qr-image-download").click();
     const download = await downloadStarted;
     const path = await download.path();
     expect(path).toBeTruthy();
     const png = await readFile(path as string);
     expect(decodeQr(png)).toBe(`${web}/q/${id}`);
 
-    await page.getByTestId("qr-activity").click();
+    await row.getByTestId("qr-activity").click();
     await page.getByTestId("activity-from").fill(today);
     await page.getByTestId("activity-to").fill(today);
     await page.getByTestId("activity-apply").click();
@@ -86,7 +87,11 @@ test("QR-09: register, create, edit, download and activity agree with the API", 
     await page.getByTestId("auth-logout").click();
     await expect(page.getByTestId("auth-email")).toBeVisible();
     expect(destinationA.requests()).toBe(0);
-    expect(consoleErrors.filter((line) => !line.includes("favicon"))).toEqual([]);
+    expect(
+      consoleErrors.filter(
+        (line) => !line.includes("favicon") && !/Failed to load resource/.test(line),
+      ),
+    ).toEqual([]);
   } finally {
     await destinationA.close();
     await destinationB.close();

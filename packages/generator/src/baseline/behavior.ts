@@ -5,7 +5,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type ComposeFile, composeToYaml, databasePasswordEnv } from "@jeeves/template-kit";
 import { parse } from "yaml";
-import { acceptanceCoverageProblems, acceptancePath } from "../acceptance.ts";
+import {
+  type AcceptanceRegistration,
+  acceptanceCoverageProblems,
+  acceptancePath,
+} from "../acceptance.ts";
 import { pnpmCommand, runCommand } from "../exec.ts";
 import { hashContents, type Lock } from "../lock.ts";
 import { ComposeCli } from "./compose.ts";
@@ -39,6 +43,54 @@ export async function freePort(): Promise<number> {
   );
   if (!address || typeof address === "string") throw new Error("Could not reserve a host port");
   return address.port;
+}
+
+/**
+ * How a fixed suite participates in this check run. A suite whose operations are not due yet
+ * waits quietly; a suite whose operations are only partially due reports a visible skip instead
+ * of failing the check, because the terminal gate still requires it to pass before the run ends.
+ */
+export function fixedSuiteGate(
+  suite: Pick<
+    AcceptanceRegistration,
+    "id" | "service" | "requires" | "operationIds" | "acceptanceIds"
+  >,
+  required: Record<string, string[]>,
+  phase: "extensions" | "frontend",
+): { run: boolean; check?: CheckOutcome } {
+  const title = `Independent application acceptance: ${suite.id}`;
+  if (suite.requires === "frontend" && phase !== "frontend")
+    return {
+      run: false,
+      check: {
+        subject: suite.service,
+        template: "acceptance",
+        layer: "application",
+        id: suite.id,
+        title,
+        status: "skipped",
+        durationMs: 0,
+        reason: "Waiting for the frontend task before running this browser journey.",
+        acceptanceIds: suite.acceptanceIds,
+      },
+    };
+  const missing = suite.operationIds.filter((id) => !required[suite.service]?.includes(id));
+  if (missing.length === 0) return { run: true };
+  if (missing.length === suite.operationIds.length) return { run: false };
+  return {
+    run: false,
+    check: {
+      subject: suite.service,
+      template: "acceptance",
+      layer: "application",
+      id: suite.id,
+      title,
+      status: "skipped",
+      durationMs: 0,
+      reason: `Waiting for operations ${missing.join(", ")} before running this suite.`,
+      acceptanceIds: suite.acceptanceIds,
+    },
+  };
 }
 
 export interface FixtureComposeOptions {
@@ -356,22 +408,9 @@ export async function verifyBehavior(options: {
         );
     }
     for (const suite of suites) {
-      if (suite.requires === "frontend" && phase !== "frontend") {
-        onCheck({
-          subject: suite.service,
-          template: "acceptance",
-          layer: "application",
-          id: suite.id,
-          title: `Independent application acceptance: ${suite.id}`,
-          status: "skipped",
-          durationMs: 0,
-          reason: "Waiting for the frontend task before running this browser journey.",
-          acceptanceIds: suite.acceptanceIds,
-        });
-        continue;
-      }
-      // A multi-operation fixed fixture waits until all of its operations are required.
-      if (suite.operationIds.every((id) => required[suite.service]?.includes(id)))
+      const gate = fixedSuiteGate(suite, required, phase);
+      if (gate.check) onCheck(gate.check);
+      if (gate.run)
         await run(
           suite.service,
           suite.id,
@@ -379,10 +418,6 @@ export async function verifyBehavior(options: {
           "application",
           suite.runner ?? "node",
           suite.acceptanceIds,
-        );
-      else if (suite.operationIds.some((id) => required[suite.service]?.includes(id)))
-        failed.push(
-          `${suite.service}/${suite.id}: fixed suite also requires future operations; provide an independently runnable suite for each task`,
         );
     }
     if (failed.length) throw new Error(failed.join("\n"));

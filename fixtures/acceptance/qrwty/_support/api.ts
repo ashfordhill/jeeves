@@ -136,6 +136,7 @@ export function assertStatus(response: { status: number; body?: unknown }, statu
 }
 
 export function today(): string {
+  // Computed once per test. A run that crosses 00:00 UTC can flake, so treat this as a known limit.
   return new Date().toISOString().slice(0, 10);
 }
 

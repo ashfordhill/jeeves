@@ -1892,3 +1892,31 @@ New runs conservatively seed declared extensions again. Automatic cross-run reus
 - The terminal gate requires a passing suite record; a suite that is skipped with a reason is shown in the failure message but does not satisfy the case. This is deliberate to prevent false green runs.
 - A fixed-suite authoring UI/server route was not added; bootstrap remains the reviewed path.
 - **Next:** start the qrwty proving run in a fresh context: verify port 5173 is free, run `pnpm dev`, open exactly `http://127.0.0.1:5173`, Generate with the baseline, plan the four tasks, and run in Review-after-task mode. Do not claim QR-01–QR-09 until the fixed suites and browser journey actually pass.
+
+---
+
+## Improvements P7: qrwty harness correctness (2026-10-30)
+
+**Status:** P7 implemented. No real model/provider call, paid inference, qrwty implementation, QR-01–QR-09 execution or deployment was performed. The working tree was clean on entry apart from the untracked review document `docs/reviews/`, which was left untouched and is not part of this package. Earlier handoff entries are unchanged. This package receives its own local P7 commit under the standing authorization.
+
+### Implementation
+
+- **Multi-operation suites wait instead of failing:** `fixedSuiteGate` in `packages/generator/src/baseline/behavior.ts` now reports a visible `skipped` check with the suite's acceptance IDs and `Waiting for operations <missing> before running this suite.` when only some of its operations are required. A suite with none of its operations due still waits quietly, and a suite with all operations required runs. The terminal gate in `apps/server/src/runs/service.ts` is unchanged: skipped records never count as passes, so QR-01/QR-08 remain required by the end of the run. The previous `requires future operations` failure is gone.
+- **Browser suite matches the notes (QR-09):** the suite selects a row through a new `data-testid="qr-select"` button, looks up `qr-image-download` and `qr-activity` inside the selected row, and ignores Chromium's `Failed to load resource` console lines caused by expected 401 responses while still rejecting every other console error line. The qrwty web notes now require the select control, say the edit/download/activity actions are shown only for the selected row, require the selection to survive a successful save, and document the new hook. The three `today` helpers carry a comment that a run crossing 00:00 UTC can flake.
+- **QR image expectations:** `qr-image.test.ts` asserts a 512x512 PNG via a new `pngSize` helper (pngjs) and requires `content-disposition` to start with `attachment`. It still decodes the URL and checks byte stability; it does not assert error-correction level or margin.
+- **Activity boundary pinned:** the `activity` extension notes now define a valid range as `to >= from` and `(to - from)` at most 365 days (at most 366 dates inclusive). `activity.test.ts` asserts 2025-01-01 to 2026-01-01 is 200 and 2025-01-01 to 2026-01-02 is 400.
+- **Agent-guide hints:** both service guides now document `sessionPrincipal(...).id` as the owner id compared with `owner_id`, Postgres `Date` values versus `format: "date"` with UTC `to_char`/`date_trunc` examples, binary `Buffer` responses with explicit `content-type` (plus the Fastify reply form), and Fastify's implicit HEAD route. The rest-api-server structured example now imports `defineFeature` from the real scaffold package `@jeeves/service-runtime`. The `redirect` extension notes say HEAD must not insert a scan.
+- **Harness coverage:** `harness.conformance.ts` registers a second extension and a two-operation `pair` suite; the existing Docker run now proves a partially required suite yields one skipped check carrying `HARNESS-03` instead of failing, and that the skip is visible before the frontend task.
+
+### Commands and measured evidence
+
+- **Final `pnpm check`: passed.** Biome checked **408 files** (134 warning-level / 57 info diagnostics, no errors; 131 warnings were already present on HEAD and 3 are in the new test/conformance code), all workspace type checks passed, **485 unit tests / 66 files passed (26.16 s)**. New unit coverage is `packages/generator/src/behavior.test.ts` (partial-required skip carrying QR-01, all-operations-required run, quiet wait, frontend skip). Unit tests need no Docker, Postgres service or network.
+- **Focused qrwty fixture:** `pnpm vitest run packages/generator/src/qrwty.test.ts packages/generator/src/behavior.test.ts`: **7 passed / 2 files (751 ms)**; `designSchema`/`validateDesign` still report zero findings for the edited fixture.
+- **Harness conformance:** `pnpm exec vitest run --config vitest.templates.config.ts packages/generator/conformance/harness.conformance.ts`: **2 passed (71.73 s)**. It proves the disposable fixture DB/restart and browser runner still work and that the partially required `pair` suite is skipped with its acceptance ID.
+- **`git diff --check`: passed.** The golden `jeeves/elements/links.md` and `jeeves/lock.json` were updated for the changed guide text and hash.
+
+### Limits and next steps
+
+QR-01–QR-09 are still unbuilt and unrun; these changes make the reviewed checks correct, not passing. The HEAD warning is guidance for the redirect handler, not an application fix. The 512x512/margin/EC expectations are only enforced through the PNG dimensions and decode; margin and EC level are not asserted. The browser suite still depends on the agent building the exact documented hooks and keeping the selected row's actions visible after a save.
+
+**Next: P8 only**, in a fresh context. Read AGENTS.md, PLAN §15, the latest two handoffs and only the P8 section of `docs/build-plan.md`. Do not start P9.
