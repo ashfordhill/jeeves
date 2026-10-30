@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="390" viewBox="0 0 1100 390">
+  <rect width="1100" height="390" fill="#faf6ea"/>
+  <text x="0" y="42" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#16283f">qrwty — Jeeves design (revision 1)</text>
+  
+  <g>
+    <rect x="0" y="90" width="280" height="200" rx="16" fill="#fff8e7" stroke="#16283f" stroke-width="2.5"/>
+    <text x="18" y="128" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16283f">qrwty web</text>
+    <text x="18" y="158" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#0b6e86">web-app · port 5173</text><text x="18" y="179" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">REST API client</text><text x="18" y="200" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">Auth / QR list / edit</text><text x="18" y="221" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">Image download / activity</text><text x="18" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">Public link /q/{id}</text>
+  </g>
+  
+  <g>
+    <rect x="400" y="90" width="280" height="200" rx="16" fill="#fff8e7" stroke="#16283f" stroke-width="2.5"/>
+    <text x="418" y="128" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16283f">qrwty API</text>
+    <text x="418" y="158" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#0b6e86">http-service · port 8080</text><text x="418" y="179" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">REST API server · /api</text><text x="418" y="200" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">Resources: qr, scan</text><text x="418" y="221" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">Extensions: image, redirect, activity</text><text x="418" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">Session auth · owner scoped</text>
+  </g>
+  
+  <g>
+    <rect x="800" y="90" width="280" height="200" rx="16" fill="#e8e3f7" stroke="#16283f" stroke-width="2.5"/>
+    <text x="818" y="128" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#16283f">qrwty DB</text>
+    <text x="818" y="158" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#0b6e86">postgres · 17</text><text x="818" y="179" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">qr · scan · app_user</text><text x="818" y="200" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">opaque server sessions</text><text x="818" y="221" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">isolated consumer role</text><text x="818" y="242" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">persistent volume</text>
+  </g>
+  
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#16283f"/></marker></defs>
+  <line x1="280" y1="190" x2="400" y2="190" stroke="#16283f" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="340" y="172" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#4d6077">calls</text>
+  
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#16283f"/></marker></defs>
+  <line x1="680" y1="190" x2="800" y2="190" stroke="#16283f" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="740" y="172" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#4d6077">uses database</text>
+  <text x="0" y="352" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#4d6077">QR-01–QR-09 passed · Jeeves run 26 · Codex gpt-6.1-sol (medium) · 2026-10-30</text>
+</svg>

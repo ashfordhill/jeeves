@@ -1,0 +1,6 @@
+flowchart LR
+  web["qrwty web\nweb-app · :5173\nREST API client"]
+  api["qrwty API\nhttp-service · :8080\nREST API server /api\nqr · scan\nimage · redirect · activity"]
+  db[("qrwty DB\nPostgreSQL 17\nqr · scan · app_user · session")]
+  web -->|calls| api
+  api -->|uses database| db

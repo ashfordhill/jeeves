@@ -4,6 +4,13 @@ Status: implemented and accepted in the P11 proving run on 2026-10-30 (run 26). 
 
 The proving run used design revision 1 (`538b792a…dfab`), Codex `gpt-6.1-sol` at medium effort, and four review-after-task tasks. It merged as `563c426` in `~/github/qrwty`; the app is reachable at exactly `http://127.0.0.1:5173`. The run made 12 attempts: qr-image 5, redirect 4, activity 1 and qrwty-web 2. Two harness defects were fixed during the run (Node strip-only constructor parameter properties in the fixed support files, and redirect tests that expected a 302 client to contact the destination); both fixes and the intervention notes are in the handoff.
 
+## Diagram
+
+- Live Jeeves board for project `qrwty`: [http://127.0.0.1:4300/?project=7dd44cfd-7fbc-4d5a-be79-41c8f58a8993#/draw](http://127.0.0.1:4300/?project=7dd44cfd-7fbc-4d5a-be79-41c8f58a8993#/draw)
+- Importable Excalidraw scene: [qrwty.excalidraw](qrwty.excalidraw) (three elements, two connections, run evidence)
+- Previews: [qrwty.svg](qrwty.svg), [qrwty.png](qrwty.png); Mermaid source: [qrwty.mmd](qrwty.mmd)
+- The same qrwty app is also running on a second port: **http://127.0.0.1:5174** (separate Compose project `qrwty-5174`, public origin set to that port).
+
 ## Product loop
 
 A signed-in user creates a private QR resource with an HTTP/HTTPS destination, downloads a QR image containing a stable public redirect URL, and later changes the destination without changing the QR identity or image. Following that URL records a request and redirects to the current destination. The owner sees request totals and activity over time. Repeated requests, including by the same client, count separately; these are not verified unique visitors.
