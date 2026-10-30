@@ -3,3 +3,5 @@ export * from "./config.ts";
 export * from "./database.ts";
 export * from "./dependency.ts";
 export * from "./migrate.ts";
+
+export * from "./resource-migrate.ts";

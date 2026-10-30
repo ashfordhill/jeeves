@@ -3,7 +3,13 @@
  * Response shapes mirror apps/server/src/routes/*.ts.
  */
 import type { TemplateDescription } from "@jeeves/registry";
-import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
+import type {
+  DesignDocument,
+  Finding,
+  LayoutDocument,
+  OperationInput,
+  SubtypeReview,
+} from "@jeeves/spec";
 
 export type Project = { id: string; name: string; revision: number; updatedAt: string };
 
@@ -27,7 +33,12 @@ export type EditResult =
 
 export type FileInfo = { id: string; name: string; mediaType: string; size: number };
 
-export type ChatQuestion = { question: string; choices: string[]; allowFreeText: boolean };
+export type ChatQuestion = {
+  question: string;
+  choices: string[];
+  allowFreeText: boolean;
+  subtypeReview?: SubtypeReview;
+};
 export type ChatActivity = { tool: string; ok: boolean; summary: string };
 
 /** One chat turn, as `apps/server/src/chat/service.ts` returns it. */

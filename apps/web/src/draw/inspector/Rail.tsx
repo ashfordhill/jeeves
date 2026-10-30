@@ -2,7 +2,7 @@
  * The right-hand rail of the Draw view: Inspector, Findings, and Chat tabs. It can be collapsed to a
  * thin strip (remembered per browser) that still shows the findings count.
  */
-import { Tabs } from "@mantine/core";
+import { Button, Tabs } from "@mantine/core";
 import {
   IconLayoutSidebarRightCollapse,
   IconLayoutSidebarRightExpand,
@@ -33,6 +33,8 @@ function FindingsCount({ count }: { count: number }) {
 }
 
 export function Rail() {
+  const notice = useDraw((s) => s.notice);
+  const edit = useDraw((s) => s.edit);
   const tab = useDraw((s) => s.railTab);
   const setRailTab = useDraw((s) => s.setRailTab);
   const count = useDraw((s) => s.loaded?.findings.length ?? 0);
@@ -113,6 +115,24 @@ export function Rail() {
           </button>
         </div>
         <Tabs.Panel value="inspector" className="rail-panel">
+          {notice?.actions?.length ? (
+            <section className="inspector-section" aria-label="Connection choices">
+              <h3>Connection choices</h3>
+              {notice.actions.map((action) => (
+                <Button
+                  key={action.label}
+                  variant="default"
+                  size="xs"
+                  onClick={() => {
+                    useDraw.getState().setNotice(undefined);
+                    void edit(action.ops);
+                  }}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </section>
+          ) : null}
           <Inspector />
         </Tabs.Panel>
         <Tabs.Panel value="findings" className="rail-panel">

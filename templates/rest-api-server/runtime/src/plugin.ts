@@ -7,6 +7,11 @@ import { createValidators, type Problem } from "./validation.ts";
 export interface RestServerOptions {
   /** Absolute path of the OpenAPI 3.1 file (`contracts/<service>.openapi.yaml`). */
   contract: string;
+  beforeOperation?: (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    operationId: string,
+  ) => Promise<boolean>;
   /** Where the API's paths are served, e.g. `/api`. */
   basePath: string;
   /**
@@ -125,6 +130,11 @@ function registerApi(
       method: operation.method.toUpperCase() as "GET",
       url: operation.routePath,
       handler: async (request: FastifyRequest, reply: FastifyReply) => {
+        if (
+          options.beforeOperation &&
+          !(await options.beforeOperation(request, reply, operation.operationId))
+        )
+          return;
         if (options.auth === "bearer" && !bearerMatches(request, options.token)) {
           reply.header("www-authenticate", "Bearer");
           return send(reply, 401, {

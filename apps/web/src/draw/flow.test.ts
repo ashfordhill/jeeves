@@ -62,11 +62,11 @@ describe("buildNodes", () => {
 });
 
 describe("buildEdges", () => {
-  it("routes attachment connections through the mini-box handles", () => {
+  it("routes legacy attachment connections through outer handles", () => {
     const edges = buildEdges(design);
     expect(edges.map((e) => [e.id, e.source, e.sourceHandle, e.target, e.targetHandle])).toEqual([
       ["links-uses-db", "links", "out", "links-db", "in"],
-      ["web-calls-links", "web", "out:web-links-client", "links", "in:links-api"],
+      ["web-calls-links", "web", "out", "links", "in"],
     ]);
     expect(attachmentFromHandle("in:links-api")).toBe("links-api");
     expect(attachmentFromHandle("out")).toBeUndefined();

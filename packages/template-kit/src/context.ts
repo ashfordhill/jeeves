@@ -1,4 +1,5 @@
 import {
+  capabilityEndpoint,
   compareVersions,
   type DesignDocument,
   type ElementKind,
@@ -75,11 +76,19 @@ export function createGenerateContext(
     const incoming: ResolvedConnection[] = [];
     const outgoing: ResolvedConnection[] = [];
     for (const connection of design.connections) {
-      if (isSelf(connection.to)) {
-        incoming.push({ connection, self: connection.to, peer: peerOf(connection.from) });
+      if (isSelf(capabilityEndpoint(connection, "to"))) {
+        incoming.push({
+          connection,
+          self: capabilityEndpoint(connection, "to"),
+          peer: peerOf(capabilityEndpoint(connection, "from")),
+        });
       }
-      if (isSelf(connection.from)) {
-        outgoing.push({ connection, self: connection.from, peer: peerOf(connection.to) });
+      if (isSelf(capabilityEndpoint(connection, "from"))) {
+        outgoing.push({
+          connection,
+          self: capabilityEndpoint(connection, "from"),
+          peer: peerOf(capabilityEndpoint(connection, "to")),
+        });
       }
     }
     return { incoming, outgoing };

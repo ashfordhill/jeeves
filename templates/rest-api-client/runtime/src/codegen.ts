@@ -66,3 +66,5 @@ export function generateClientTypes(elementDir: string): GeneratedTypes[] {
   if (problems.length > 0) throw new Error(problems.join("\n"));
   return results;
 }
+
+export { contractTypes } from "./types.ts";

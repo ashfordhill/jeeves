@@ -87,7 +87,7 @@ describe("planConnect", () => {
     expect(fix && applies(fix.ops)).toBe(true);
   });
 
-  it("suggests the existing server attachment when connecting a client to the service itself", () => {
+  it("infers the single compatible pair from outer services", () => {
     const withClient = design([
       ...([
         {
@@ -113,19 +113,17 @@ describe("planConnect", () => {
       { element: "web", attachment: "web-client" },
       { element: "links" },
     );
-    expect(plan.ok).toBe(false);
-    if (plan.ok !== false) return;
-    const fix = plan.fixes[0];
-    expect(fix?.ops).toEqual([
-      expect.objectContaining({
-        op: "connect",
-        connection: expect.objectContaining({
-          kind: "calls",
-          to: { element: "links", attachment: "links-api" },
-        }),
-      }),
-    ]);
-    expect(fix && applyOperations(withClient, fix.ops, registry).ok).toBe(true);
+    expect(plan.ok).toBe(true);
+    if (plan.ok !== true) return;
+    expect(plan.ops[0]).toMatchObject({
+      op: "connect",
+      connection: {
+        from: { element: "web" },
+        to: { element: "links" },
+        config: { fromCapability: "web-client", toCapability: "links-api" },
+      },
+    });
+    expect(applyOperations(withClient, plan.ops, registry).ok).toBe(true);
   });
 
   it("draws a plain arrow when an annotation is involved", () => {

@@ -24,6 +24,10 @@ export interface GenerateProjectOptions {
   design: DesignDocument;
   projectName: string;
   templates?: TemplateSet;
+  reviewedMigrations?: Record<
+    string,
+    { fromFingerprint: string; toFingerprint: string; sql: string }
+  >;
   /** Defaults to `pnpm pack` per runtime (`packRuntimes`). */
   vendor?: Vendor;
   /** `git init` and commit when the directory isn't in a repository yet. Default true. */
@@ -74,8 +78,42 @@ export async function generateProject(
   const { dir, design } = options;
   const log = options.log ?? (() => {});
   const templates = options.templates ?? templateSet();
-  const plan = planProject(design, templates, { projectName: options.projectName });
   const previous = readLock(dir);
+  const migrationFiles = Object.keys(previous?.files ?? {}).filter(
+    (p) => p.includes("/resource-migrations/") && p.endsWith(".sql"),
+  );
+  for (const path of migrationFiles) {
+    if (
+      !existsSync(join(dir, path)) ||
+      hashContents(readFileSync(join(dir, path))) !== previous?.files[path]
+    )
+      return {
+        ok: false,
+        reason: "ownership",
+        problems: [
+          {
+            path,
+            kind: "edited",
+            message: `Immutable migration ${path} is missing or changed; restore it before regeneration.`,
+          },
+        ],
+      };
+  }
+  const plan = planProject(design, templates, {
+    projectName: options.projectName,
+    ...(previous?.resourceModels && {
+      resourceHistory: {
+        models: previous.resourceModels,
+        stores: previous.resourceStores,
+        files: migrationFiles.map((path) => ({
+          path,
+          ownership: "generated",
+          contents: readFileSync(join(dir, path), "utf8"),
+        })),
+      },
+    }),
+    ...(options.reviewedMigrations && { reviewedMigrations: options.reviewedMigrations }),
+  });
 
   const problems = ownershipProblems(dir, plan, previous);
   if (problems.length > 0) return { ok: false, reason: "ownership", problems };
@@ -104,6 +142,17 @@ export async function generateProject(
     writeFileSync(path, file.contents);
   }
 
+  for (const [id, model] of Object.entries(previous?.resourceModels ?? {}))
+    for (const extension of model.extensions) {
+      if (plan.resourceModels?.[id]?.extensions.some((e) => e.id === extension.id)) continue;
+      const path = `services/${id}/src/features/${extension.id}/index.ts`;
+      if (existsSync(join(dir, path))) {
+        kept.push(path);
+        log(
+          `Removed extension ${id}/${extension.id}: project-owned implementation retained at ${path}`,
+        );
+      }
+    }
   const packages: string[] = [];
   for (const edit of plan.packageEdits) {
     const path = join(dir, edit.path);

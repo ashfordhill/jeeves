@@ -17,7 +17,7 @@ describe("operation JSON Schema", () => {
       (v) => (v as { properties: { op: { const: string } } }).properties.op.const,
     );
     expect(ops.sort()).toEqual([...operationTypes].sort());
-    expect(ops).toHaveLength(12);
+    expect(ops).toHaveLength(13);
   });
 
   it("is plain JSON", () => {
@@ -54,7 +54,7 @@ describe("design schema", () => {
         .success,
     ).toBe(false);
     expect(designSchema.safeParse({ ...base, extra: true }).success).toBe(false);
-    expect(designSchema.safeParse({ ...base, schemaVersion: 2 }).success).toBe(false);
+    expect(designSchema.safeParse({ ...base, schemaVersion: 3 }).success).toBe(false);
   });
 });
 

@@ -28,6 +28,14 @@ export const operationSchema = z.discriminatedUnion("op", [
   /** Also removes the element's connections and unbinds arrows pointing at it. */
   z.strictObject({ op: z.literal("removeElement"), id: idSchema }),
   z.strictObject({
+    op: z.literal("changeSubtype"),
+    id: idSchema,
+    template: templateRefSchema.nullable(),
+    confirmation: z
+      .strictObject({ revision: z.int().nonnegative(), discarded: z.array(z.string()) })
+      .optional(),
+  }),
+  z.strictObject({
     op: z.literal("addAttachment"),
     element: idSchema,
     attachment: attachmentSchema,

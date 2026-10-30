@@ -43,6 +43,9 @@ export const connectionSchema = z.strictObject({
   kind: connectionKindSchema,
   from: endpointSchema,
   to: endpointSchema,
+  config: z
+    .strictObject({ fromCapability: idSchema.optional(), toCapability: idSchema.optional() })
+    .optional(),
 });
 export type Connection = z.infer<typeof connectionSchema>;
 
@@ -70,7 +73,7 @@ export const annotationSchema = z.discriminatedUnion("kind", [
 export type Annotation = z.infer<typeof annotationSchema>;
 
 export const designSchema = z.strictObject({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.union([z.literal(1), z.literal(2)]),
   /** Semantic revision. Bumped once per applied operation batch, never by layout changes. */
   revision: z.int().nonnegative(),
   elements: z.array(elementSchema).default([]),
@@ -80,8 +83,38 @@ export const designSchema = z.strictObject({
 export type DesignDocument = z.output<typeof designSchema>;
 export type DesignDocumentInput = z.input<typeof designSchema>;
 
+/** Explicit, lossless v1 conversion. A layout save must never persist this conversion. */
+export function upgradeDesign(input: DesignDocument): DesignDocument {
+  if (input.schemaVersion === 2) return structuredClone(input);
+  return {
+    ...structuredClone(input),
+    schemaVersion: 2,
+    connections: input.connections.map((c) => ({
+      ...c,
+      from: { element: c.from.element },
+      to: { element: c.to.element },
+      ...((c.config || c.from.attachment || c.to.attachment) && {
+        config: {
+          ...c.config,
+          ...(c.from.attachment && { fromCapability: c.from.attachment }),
+          ...(c.to.attachment && { toCapability: c.to.attachment }),
+        },
+      }),
+    })),
+  };
+}
+
+/** Effective capability, for validation/generation only; semantic v2 endpoints stay outer. */
+export function capabilityEndpoint(c: Connection, side: "from" | "to"): Endpoint {
+  const capability = c.config?.[side === "from" ? "fromCapability" : "toCapability"];
+  return {
+    element: c[side].element,
+    ...((capability ?? c[side].attachment) && { attachment: capability ?? c[side].attachment }),
+  };
+}
+
 export function emptyDesign(): DesignDocument {
-  return { schemaVersion: 1, revision: 0, elements: [], connections: [], annotations: [] };
+  return { schemaVersion: 2, revision: 0, elements: [], connections: [], annotations: [] };
 }
 
 /** Every ID in the design with what it names, in document order. */

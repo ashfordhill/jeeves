@@ -21,6 +21,41 @@ async function send(page: Page, text: string) {
   await chat.getByRole("button", { name: "Send" }).click();
 }
 
+test("chat subtype review requires a human click and preserves the design on Cancel", async ({
+  page,
+  request,
+}) => {
+  const id = await openNewProject(page, request, "P3 chat review");
+  const chat = await openChat(page);
+  await send(page, "Make me a link shortener like bit.ly");
+  await expect(chat.getByText(/I drew a link shortener/)).toBeVisible();
+  await expect(chat.getByText("Applied 5 changes as one undo step")).toBeVisible();
+  const before = (await designOf(request, id)).design;
+  await send(page, "review subtype of links");
+  let review = chat.locator(".chat-question").last();
+  await expect(review).toContainText("component: links-api");
+  await review.getByRole("button", { name: "Cancel", exact: true }).click();
+  expect((await designOf(request, id)).design).toEqual(before);
+  await send(page, "review subtype of links");
+  await expect(chat.locator(".chat-question")).toHaveCount(2);
+  review = chat.locator(".chat-question").last();
+  await review.getByRole("button", { name: "Confirm subtype change", exact: true }).click();
+  await expect
+    .poll(async () => (await designOf(request, id)).design.revision)
+    .toBe(before.revision + 1);
+  expect((await designOf(request, id)).design.elements[0]?.attachments).toEqual([]);
+  await page
+    .getByRole("toolbar", { name: "Drawing tools" })
+    .getByRole("button", { name: "Undo", exact: true })
+    .click();
+  await expect
+    .poll(async () => (await designOf(request, id)).design)
+    .toEqual({
+      ...before,
+      revision: before.revision + 2,
+    });
+});
+
 test("a chat message draws a link shortener as one undo step", async ({ page, request }) => {
   const id = await openNewProject(page, request, "E2E chat");
   const chat = await openChat(page);

@@ -1,10 +1,13 @@
 # Agents working on Jeeves
 
-Jeeves is built one section at a time by separate agents (PLAN.md §15). If you were told "work section N":
+Jeeves is built one section or improvement package at a time (PLAN.md §15). For work on an S section or P improvement package:
 
 1. Read [PLAN.md §15 "How to work a section"](PLAN.md#15-build-sections) and do exactly what it says.
 2. Read the latest entries in [docs/handoff.md](docs/handoff.md) before writing code.
 3. When you finish, append your own entry to `docs/handoff.md`. Never edit earlier entries.
+4. After the required checks and handoff are complete, create a local Git commit for that section or improvement package, using its ID in the commit title (for example, `P4: ...` or `S15: ...`). The user has given standing authorization for local commits: do not ask for permission. Keep each completed package in its own commit, stage only its scoped changes, and preserve unrelated work.
+
+The improvement-package ordering in `docs/improvements.md` supersedes the historical S14-next sequence.
 
 ## Repo conventions
 

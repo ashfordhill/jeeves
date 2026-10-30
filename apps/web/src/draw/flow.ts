@@ -111,6 +111,8 @@ export function buildNodes(
     nodes.push({
       id: element.id,
       type: "element",
+      ...(item.width && { width: item.width }),
+      ...(item.height && { height: item.height }),
       position: { x: item.x, y: item.y },
       data: {
         element,
@@ -149,9 +151,9 @@ export function buildEdges(
     id: connection.id,
     type: "connection",
     source: connection.from.element,
-    sourceHandle: handleId("out", connection.from.attachment),
+    sourceHandle: handleId("out"),
     target: connection.to.element,
-    targetHandle: handleId("in", connection.to.attachment),
+    targetHandle: handleId("in"),
     data: { connection },
     markerEnd: ARROW_HEAD,
     ...(selected.has(connection.id) ? { selected: true } : {}),

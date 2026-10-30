@@ -3,6 +3,7 @@ import type {
   Connection,
   DesignDocument,
   Element,
+  ResourceConfig,
   TemplateManifest,
   TemplateManifestInput,
 } from "@jeeves/spec";
@@ -94,6 +95,11 @@ export interface ResolvedAttachment {
 /** Everything `generate` may look at. Built by `createGenerateContext`. */
 export interface GenerateContext {
   design: DesignDocument;
+  /** Previous emitted resource snapshot and immutable SQL, supplied only during regeneration. */
+  previousModel?: ResourceConfig;
+  generatedContracts?: Record<string, string>;
+  previousMigrations?: OutputFile[];
+  reviewedMigration?: { fromFingerprint: string; toFingerprint: string; sql: string };
   element: Element;
   /** Set when generating an attachment template on `element`. */
   attachment?: Attachment;
@@ -111,6 +117,7 @@ export interface GenerateContext {
 }
 
 export interface GenerateResult {
+  resourceModel?: ResourceConfig;
   files: OutputFile[];
   /** Merged with every other template's fragment into `docker-compose.yml`. */
   compose: ComposeFragment;

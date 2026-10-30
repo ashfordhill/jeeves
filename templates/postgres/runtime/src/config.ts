@@ -21,7 +21,9 @@ type Env = Record<string, string | undefined>;
 /** Reads `DATABASE_URL`, `DATABASE_POOL_MAX`, `DATABASE_CONNECT_TIMEOUT_MS`, `DATABASE_MIGRATIONS`. */
 export function databaseConfigFromEnv(env: Env = process.env): DatabaseConfig {
   const problems: string[] = [];
-  const url = env.DATABASE_URL ?? "";
+  let url = env.DATABASE_URL ?? "";
+  if (!url && env.DATABASE_HOST && env.DATABASE_USER && env.DATABASE_NAME && env.DATABASE_PASSWORD)
+    url = `postgres://${encodeURIComponent(env.DATABASE_USER)}:${encodeURIComponent(env.DATABASE_PASSWORD)}@${env.DATABASE_HOST}:5432/${encodeURIComponent(env.DATABASE_NAME)}`;
   if (!url) problems.push("DATABASE_URL is required");
   else if (!/^postgres(ql)?:\/\//.test(url)) {
     problems.push("DATABASE_URL must start with postgres:// or postgresql://");

@@ -11,8 +11,11 @@ import {
   type FindingCode,
   findingCatalog,
   findingCodes,
+  idSchema,
   type OperationInput,
   operationSchema,
+  subtypeDiscards,
+  templateRefSchema,
   validateDesign,
 } from "@jeeves/spec";
 import { z } from "zod";
@@ -25,6 +28,7 @@ const argsSchemas = {
     version: z.string().optional().describe("Exact version; latest if omitted"),
   }),
   getDesign: z.strictObject({}),
+  reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
   applyOperations: z.strictObject({
     ops: z
       .array(operationSchema)
@@ -51,9 +55,11 @@ const descriptions: Record<ToolName, string> = {
     "List every template in the registry: element templates (with their kind) and attachment templates.",
   describeTemplate:
     "Full details of one template: config JSON Schema with defaults, presets, ports (connection kinds, direction, required), and attachment slots.",
+  reviewSubtype:
+    "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
-    "Edit the design. Ops: addElement, updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
+    "Edit the design. Ops: addElement, changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
   validateDesign: "The current findings (readiness problems) of the design, with pending edits.",
   explainFinding: "What a finding code means and how to resolve it.",
   askUser:
@@ -152,6 +158,30 @@ export class Workspace {
       case "getDesign":
         this.log(tool, true, "Read the design");
         return { design: this.working, findings: validateDesign(this.working, this.registry) };
+      case "reviewSubtype": {
+        const { id, template } = args as z.infer<typeof argsSchemas.reviewSubtype>;
+        const element = this.working.elements.find((e) => e.id === id);
+        if (!element) return { ok: false, error: "Unknown element" };
+        if (this.pending.length)
+          return {
+            ok: false,
+            error:
+              "Finish pending edits before proposing a revision-bound subtype review in a new turn.",
+          };
+        const discarded = subtypeDiscards(this.working, element);
+        this.question = {
+          question: `Change subtype of ${element.name}? Discard: ${discarded.join("; ") || "no customized data"}.`,
+          choices: ["Confirm subtype change", "Cancel"],
+          allowFreeText: false,
+          subtypeReview: { id, template, revision: this.working.revision, discarded },
+        };
+        this.log(tool, true, "Requested human subtype review");
+        return {
+          ok: true,
+          review: this.question,
+          note: "End your turn. The human applies or cancels this review directly in the UI.",
+        };
+      }
       case "applyOperations":
         return this.applyOperations(args);
       case "validateDesign": {
@@ -196,7 +226,9 @@ export class Workspace {
   }
 
   private applyOperations({ ops }: { ops: OperationInput[] }) {
-    const result = applyOperations(this.working, ops, this.registry);
+    const result = applyOperations(this.working, ops, this.registry, {
+      allowSubtypeConfirmation: false,
+    });
     if (!result.ok) {
       this.log("applyOperations", false, `Edit refused: ${result.errors[0]?.message ?? "invalid"}`);
       return { ok: false, errors: result.errors, note: "Nothing was changed." };

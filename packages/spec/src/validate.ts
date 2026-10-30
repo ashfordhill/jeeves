@@ -3,6 +3,7 @@ import {
   type Attachment,
   type Connection,
   type ConnectionKind,
+  capabilityEndpoint,
   type DesignDocument,
   designIds,
   type Element,
@@ -157,6 +158,54 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
 
   for (const element of design.elements) {
     validateElement(element, lookup, findings);
+    for (const attachment of element.attachments) {
+      const model = attachment.config.model as
+        | { storeConnection?: string; resources?: unknown[] }
+        | undefined;
+      if (attachment.template.id !== "rest-api-server") continue;
+      if (attachment.config.auth === "session" && !model)
+        findings.push(
+          finding(
+            "CONFIG_REQUIRED",
+            "Session authentication requires a structured resource model.",
+            { element: element.id, attachment: attachment.id, path: ["model"] },
+          ),
+        );
+      if (!model) continue;
+      if (attachment.config.basePath !== undefined && attachment.config.basePath !== "/api")
+        findings.push(
+          finding(
+            "CONFIG_INVALID",
+            "Structured resource CRUD uses the fixed /api base path; extension paths are absolute.",
+            { element: element.id, attachment: attachment.id, path: ["basePath"] },
+          ),
+        );
+      const target = { element: element.id, attachment: attachment.id };
+      const store = design.connections.find(
+        (c) =>
+          c.id === model.storeConnection &&
+          c.kind === "uses-database" &&
+          c.from.element === element.id,
+      );
+      if (
+        !store ||
+        design.elements.find((e) => e.id === store.to.element)?.template?.id !== "postgres"
+      )
+        findings.push(
+          finding(
+            "CONFIG_REQUIRED",
+            "Resources need an explicitly selected Postgres storeConnection.",
+            { ...target, path: ["model", "storeConnection"] },
+          ),
+        );
+      if (attachment.config.auth !== "session")
+        findings.push(
+          finding("CONFIG_REQUIRED", "Resource services require session authentication.", {
+            ...target,
+            path: ["auth"],
+          }),
+        );
+    }
   }
 
   const resolved = new Map<string, ResolvedEndpoint>();
@@ -164,11 +213,11 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
   const portUse = new Map<string, number>();
   for (const connection of design.connections) {
     validateConnection(design, connection, lookup, resolved, findings);
-    const fromKey = `${endpointKey(connection.from)}|${connection.kind}|out`;
-    const toKey = `${endpointKey(connection.to)}|${connection.kind}|in`;
+    const fromKey = `${endpointKey(capabilityEndpoint(connection, "from"))}|${connection.kind}|out`;
+    const toKey = `${endpointKey(capabilityEndpoint(connection, "to"))}|${connection.kind}|in`;
     for (const [key, endpoint, direction] of [
-      [fromKey, connection.from, "out"],
-      [toKey, connection.to, "in"],
+      [fromKey, capabilityEndpoint(connection, "from"), "out"],
+      [toKey, capabilityEndpoint(connection, "to"), "in"],
     ] as const) {
       connected.add(key);
       const count = (portUse.get(key) ?? 0) + 1;
@@ -380,8 +429,19 @@ function validateConnection(
   findings: Finding[],
 ): void {
   const target = { connection: connection.id };
+  if (design.schemaVersion === 2 && (connection.from.attachment || connection.to.attachment))
+    findings.push(
+      finding(
+        "PORT_INCOMPATIBLE",
+        "Version 2 endpoints must name outer elements; select components in connection config.",
+        target,
+      ),
+    );
   const ends: (ResolvedEndpoint | undefined)[] = [];
-  for (const endpoint of [connection.from, connection.to]) {
+  for (const endpoint of [
+    capabilityEndpoint(connection, "from"),
+    capabilityEndpoint(connection, "to"),
+  ]) {
     const key = endpointKey(endpoint);
     const end = resolved.get(key) ?? resolveEndpoint(design, endpoint, lookup);
     if (end) {
@@ -403,8 +463,10 @@ function validateConnection(
   const duplicate = design.connections.find(
     (other) =>
       other.kind === connection.kind &&
-      endpointKey(other.from) === endpointKey(connection.from) &&
-      endpointKey(other.to) === endpointKey(connection.to),
+      endpointKey(capabilityEndpoint(other, "from")) ===
+        endpointKey(capabilityEndpoint(connection, "from")) &&
+      endpointKey(capabilityEndpoint(other, "to")) ===
+        endpointKey(capabilityEndpoint(connection, "to")),
   );
   if (duplicate && duplicate !== connection) {
     findings.push(

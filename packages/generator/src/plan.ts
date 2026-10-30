@@ -1,4 +1,10 @@
-import { type DesignDocument, formatTemplateRef } from "@jeeves/spec";
+import {
+  blocksGenerate,
+  type DesignDocument,
+  formatTemplateRef,
+  type ResourceConfig,
+  validateDesign,
+} from "@jeeves/spec";
 import {
   type ComposeFile,
   type ComposeFragment,
@@ -54,6 +60,8 @@ export interface PlannedElement {
 
 /** Everything generation will write, computed without touching the disk (deterministic). */
 export interface ProjectPlan {
+  resourceModels?: Record<string, ResourceConfig>;
+  resourceStores?: Record<string, { connection: string; database: string }>;
   /** Sorted by path. */
   files: OutputFile[];
   compose: ComposeFile;
@@ -69,6 +77,15 @@ export interface ProjectPlan {
 export interface PlanOptions {
   /** Used for the root `package.json` name and the docs; the design has no name of its own. */
   projectName: string;
+  resourceHistory?: {
+    models: Record<string, ResourceConfig>;
+    files: OutputFile[];
+    stores?: Record<string, { connection: string; database: string }>;
+  };
+  reviewedMigrations?: Record<
+    string,
+    { fromFingerprint: string; toFingerprint: string; sql: string }
+  >;
 }
 
 export class GenerationError extends Error {}
@@ -83,10 +100,28 @@ export function planProject(
   options: PlanOptions,
 ): ProjectPlan {
   const { lookup } = templates;
+  const findings = validateDesign(design, lookup);
+  if (blocksGenerate(findings))
+    throw new GenerationError(findings.map((f) => f.message).join("\n"));
+  for (const id of Object.keys(options.resourceHistory?.models ?? {})) {
+    if (
+      !design.elements
+        .find((e) => e.id === id)
+        ?.attachments.some((a) => a.template.id === "rest-api-server" && a.config.model)
+    )
+      throw new GenerationError(
+        `Reviewed migration required: removal of resource model on ${id}. Storage and custom files retained.`,
+      );
+  }
   const results: { subject: Subject; result: GenerateResult }[] = [];
   const elements: PlannedElement[] = [];
   const runtimes = new Map<string, RuntimePackage>();
   const used = new Set<string>();
+  const pendingClients: {
+    subject: Subject;
+    ctx: ReturnType<typeof createGenerateContext>;
+    module: ReturnType<TemplateSet["module"]>;
+  }[] = [];
 
   for (const element of design.elements) {
     if (!element.template) {
@@ -111,15 +146,53 @@ export function planProject(
       used.add(formatTemplateRef(target.ref));
       if (module.runtime) runtimes.set(module.runtime.name, module.runtime);
       const ctx = createGenerateContext(design, lookup, element.id, target.attachment);
+      if (options.resourceHistory?.models[element.id])
+        ctx.previousModel = options.resourceHistory.models[element.id];
+      ctx.previousMigrations = options.resourceHistory?.files.filter((f) =>
+        f.path.startsWith(`${ctx.dir}/resource-migrations/`),
+      );
+      ctx.reviewedMigration = options.reviewedMigrations?.[element.id];
       const subject: Subject = {
         element: element.id,
         ...(target.attachment !== undefined && { attachment: target.attachment }),
         template: formatTemplateRef(target.ref),
       };
-      results.push({ subject, result: module.generate(ctx) });
+      if (module.manifest.id === "rest-api-client") pendingClients.push({ subject, ctx, module });
+      else results.push({ subject, result: module.generate(ctx) });
     }
   }
 
+  for (const [id, store] of Object.entries(options.resourceHistory?.stores ?? {})) {
+    const connection = design.connections.find((c) => c.id === store.connection);
+    if (!connection || connection.from.element !== id || connection.to.element !== store.database)
+      throw new GenerationError(
+        `Reviewed migration/data transfer required: ${id} resource store changed from ${store.database}.`,
+      );
+  }
+  const generatedContracts = Object.fromEntries(
+    results
+      .flatMap((r) => r.result.files)
+      .filter((f) => f.path.startsWith("contracts/") && f.ownership === "generated")
+      .map((f) => [f.path, f.contents]),
+  );
+  for (const { subject, ctx, module } of pendingClients)
+    results.push({ subject, result: module.generate({ ...ctx, generatedContracts }) });
+  // Keep the pre-existing subject order for locks, documentation and baseline reports.
+  results.sort(
+    (a, b) =>
+      design.elements.findIndex((e) => e.id === a.subject.element) -
+        design.elements.findIndex((e) => e.id === b.subject.element) ||
+      (a.subject.attachment
+        ? design.elements
+            .find((e) => e.id === a.subject.element)!
+            .attachments.findIndex((t) => t.id === a.subject.attachment) + 1
+        : 0) -
+        (b.subject.attachment
+          ? design.elements
+              .find((e) => e.id === b.subject.element)!
+              .attachments.findIndex((t) => t.id === b.subject.attachment) + 1
+          : 0),
+  );
   const fragments: ComposeFragment[] = results.map((r) => r.result.compose);
   const compose = mergeCompose(fragments);
 
@@ -161,7 +234,21 @@ export function planProject(
   ];
   for (const file of docs) add(file, "jeeves");
 
+  const resourceModels = Object.fromEntries(
+    results
+      .filter((r) => r.result.resourceModel)
+      .map((r) => [r.subject.element, r.result.resourceModel!]),
+  );
   return {
+    ...(Object.keys(resourceModels).length && {
+      resourceModels,
+      resourceStores: Object.fromEntries(
+        Object.entries(resourceModels).map(([id, model]) => {
+          const connection = design.connections.find((c) => c.id === model.storeConnection)!;
+          return [id, { connection: connection.id, database: connection.to.element }];
+        }),
+      ),
+    }),
     files: [...files.values()].sort((a, b) => (a.path < b.path ? -1 : 1)),
     compose,
     packageEdits: packageEdits(results, elements, runtimes),

@@ -1,4 +1,6 @@
 import { posix } from "node:path";
+import { contractTypes } from "@jeeves/rest-client/codegen";
+import { parseContract } from "@jeeves/rest-server";
 import type { GenerateContext, GenerateResult, RestClientTarget } from "@jeeves/template-kit";
 import {
   apiEnvName,
@@ -43,7 +45,10 @@ export function clientSource(ctx: GenerateContext): string {
   const id = target.target.id;
   const q = (value: unknown) => JSON.stringify(value);
   const contract = posix.relative(`${ctx.dir}/src/clients`, contractPath(id));
-  const basePath = target.server.basePath.replace(/\/+$/, "");
+  const basePath = (target.server.attachment.config.model ? "" : target.server.basePath).replace(
+    /\/+$/,
+    "",
+  );
   const name = target.target.name.replaceAll("*/", "* /");
   const options =
     host === "service"
@@ -93,6 +98,18 @@ export function generate(ctx: GenerateContext): GenerateResult {
   if (target.server.auth === "bearer") environment[apiEnvName(id, "TOKEN")] = bearerToken(id);
   return {
     files: [
+      ...(ctx.generatedContracts?.[contractPath(id)]
+        ? [
+            {
+              path: `${ctx.dir}/src/clients/${id}.openapi.ts`,
+              contents: contractTypes(
+                parseContract(ctx.generatedContracts[contractPath(id)]!).document,
+                posix.relative(ctx.dir, contractPath(id)),
+              ),
+              ownership: "generated" as const,
+            },
+          ]
+        : []),
       {
         path: clientModulePath(ctx.dir, id),
         contents: clientSource(ctx),

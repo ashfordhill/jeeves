@@ -80,12 +80,15 @@ export function wiringSource(ctx: GenerateContext): string {
   const q = (value: unknown) => JSON.stringify(value);
   // Names come from the design; keep them from closing a comment early.
   const c = (text: string) => text.replaceAll("*/", "* /");
+  const resourceModel = ctx.attachments.find((a) => a.manifest.id === "rest-api-server")?.config
+    .model;
   const imports = [
     'import { fileURLToPath } from "node:url";',
     wiring.database && 'import { postgresDependency } from "@jeeves/postgres-runtime";',
-    wiring.restServer && 'import { restServer } from "@jeeves/rest-server";',
+    wiring.restServer && !resourceModel && 'import { restServer } from "@jeeves/rest-server";',
     'import { defineService } from "@jeeves/service-runtime";',
     ...wiring.clients.map((c) => `import { ${c.exportName} } from ${q(c.module)};`),
+    resourceModel && 'import { generatedApi } from "./generated/routes.ts";',
     wiring.database && 'import * as schema from "./db/schema.ts";',
   ].filter(Boolean);
 
@@ -101,6 +104,7 @@ export function wiringSource(ctx: GenerateContext): string {
       `  name: ${q(wiring.database.id)},`,
       "  schema,",
       '  migrationsFolder: path("../migrations"),',
+      ...(resourceModel ? ['  resourceMigrationsFolder: path("../resource-migrations"),'] : []),
       "});",
     );
     dependencies.push("database");
@@ -108,15 +112,17 @@ export function wiringSource(ctx: GenerateContext): string {
   const plugins: string[] = [];
   if (wiring.restServer) {
     const contract = posix.relative(`${ctx.dir}/src`, contractPath(element.id));
-    plugins.push(
-      [
-        "restServer({",
-        `      contract: path(${q(contract)}),`,
-        `      basePath: ${q(wiring.restServer.basePath)},`,
-        `      auth: ${q(wiring.restServer.auth)},`,
-        "    }),",
-      ].join("\n"),
-    );
+    if (resourceModel) plugins.push(`generatedApi(() => database.pool, path(${q(contract)})),`);
+    else
+      plugins.push(
+        [
+          "restServer({",
+          `      contract: path(${q(contract)}),`,
+          `      basePath: ${q(wiring.restServer.basePath)},`,
+          `      auth: ${q(wiring.restServer.auth)},`,
+          "    }),",
+        ].join("\n"),
+      );
   }
   for (const client of wiring.clients) {
     // The plugin checks the client's environment at startup and forwards request IDs.

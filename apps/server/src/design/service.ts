@@ -7,6 +7,7 @@ import {
   type Finding,
   type LayoutDocument,
   type OperationInput,
+  upgradeDesign,
   validateDesign,
 } from "@jeeves/spec";
 import { and, asc, desc, eq } from "drizzle-orm";
@@ -118,7 +119,7 @@ export class DesignService {
         current.document,
         input.ops as OperationInput[],
         this.registry,
-        { baseRevision: input.baseRevision },
+        { baseRevision: input.baseRevision, allowSubtypeConfirmation: input.source !== "chat" },
       );
       if (!result.ok) return { ok: false, reason: "invalid", errors: result.errors };
 
@@ -211,7 +212,7 @@ export class DesignService {
       }
 
       const snapshot = kind === "undo" ? target.before : target.after;
-      const design: DesignDocument = { ...snapshot, revision: project.revision + 1 };
+      const design: DesignDocument = { ...upgradeDesign(snapshot), revision: project.revision + 1 };
       // Findings are recomputed: the registry may have changed since the snapshot was taken.
       const findings = validateDesign(design, this.registry);
       await tx
@@ -293,7 +294,8 @@ export class DesignService {
         ),
       );
     if (!row) throw new Error(`project ${project.id} has no revision ${project.revision}`);
-    return row;
+    const document = upgradeDesign(row.document);
+    return { document, findings: validateDesign(document, this.registry) };
   }
 
   private async state(db: Db | Tx, project: Project): Promise<DesignState> {

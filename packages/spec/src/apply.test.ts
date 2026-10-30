@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import type { DesignDocument } from "./design.ts";
 import { type OperationInput, type OperationType, operationTypes } from "./operations.ts";
+import { subtypeDiscards } from "./subtype.ts";
 import { sampleDesign, t, testLookup } from "./test-support.ts";
 
 function apply(ops: OperationInput[], doc: DesignDocument = sampleDesign()) {
@@ -16,6 +17,25 @@ function applied(ops: OperationInput[], doc?: DesignDocument): DesignDocument {
 
 /** One passing case per operation type. Typed as a full record so new op types need a test. */
 const opCases: Record<OperationType, () => void> = {
+  changeSubtype() {
+    const doc = sampleDesign();
+    const discarded = subtypeDiscards(doc, doc.elements[0]!);
+    const changed = applied(
+      [
+        {
+          op: "changeSubtype",
+          id: "api",
+          template: null,
+          confirmation: { revision: doc.revision, discarded },
+        },
+      ],
+      doc,
+    );
+    expect(changed.elements[0]).toMatchObject({ template: null, config: {}, attachments: [] });
+    expect(
+      changed.connections.every((c) => c.from.element !== "api" && c.to.element !== "api"),
+    ).toBe(true);
+  },
   addElement() {
     const doc = applied([
       {
@@ -272,13 +292,23 @@ describe("applyOperations", () => {
     const result = apply([{ op: "setNotes", id: "api", notes: "still editable" }], broken);
     expect(result.ok && result.findings.map((f) => f.code)).toEqual(["UNKNOWN_TEMPLATE"]);
     // Fixing it is an ordinary edit too.
-    const fixed = apply([{ op: "updateElement", id: "api-db", template: t("db") }], broken);
+    const fixed = apply(
+      [
+        {
+          op: "changeSubtype",
+          id: "api-db",
+          template: t("db"),
+          confirmation: { revision: broken.revision, discarded: subtypeDiscards(broken, db!) },
+        },
+      ],
+      broken,
+    );
     expect(fixed.ok && fixed.findings).toEqual([]);
   });
 
   it("refuses a template change that strands attachments", () => {
     const result = apply([{ op: "updateElement", id: "api", template: null }]);
-    expect(!result.ok && result.errors.map((e) => e.code)).toContain("ATTACHMENT_INCOMPATIBLE");
+    expect(!result.ok && result.errors.map((e) => e.code)).toContain("INVALID_OPERATION");
   });
 
   it("round-trips through JSON", () => {

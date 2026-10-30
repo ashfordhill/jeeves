@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import { resourceConfigSchema } from "@jeeves/spec";
 import type { ComposeService, GenerateContext, GenerateResult } from "@jeeves/template-kit";
 import {
   apiEnvName,
@@ -69,6 +70,27 @@ export function runtimeConfigTemplate(ctx: GenerateContext): string {
 
 /** `nginx/default.conf.template`: serves the build and forwards each API path to its service. */
 export function nginxTemplate(ctx: GenerateContext): string {
+  const publicPaths = new Set<string>();
+  const publicProxies = restClientTargets(ctx).flatMap((t) => {
+    const raw = t.server.attachment.config.model;
+    if (!raw) return [];
+    return resourceConfigSchema
+      .parse(raw)
+      .extensions.filter((e) => e.access === "public")
+      .flatMap((e) => {
+        const pattern = e.path.replace(/\{[^}]+\}/g, "[^/]+");
+        if (publicPaths.has(pattern)) throw new Error(`Public REST routes collide at ${e.path}`);
+        publicPaths.add(pattern);
+        return [
+          "",
+          `    # Public contract extension ${e.operationId} on ${t.target.id}.`,
+          `    location ~ ^${pattern}$ {`,
+          `        set $jeeves_upstream ${envRef(apiEnvName(t.target.id, "URL"))};`,
+          "        proxy_pass $jeeves_upstream;",
+          "    }",
+        ];
+      });
+  });
   const proxies = restClientTargets(ctx).flatMap((t) => {
     const id = t.target.id;
     return [
@@ -111,6 +133,7 @@ export function nginxTemplate(ctx: GenerateContext): string {
     '        add_header Cache-Control "public, max-age=31536000, immutable";',
     "    }",
     ...proxies,
+    ...publicProxies,
     "",
     "    # Client-side routes: any other path gets the app.",
     "    location / {",

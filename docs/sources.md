@@ -218,3 +218,14 @@ The assistant then noted that Anthropic doesn't allow third-party products to us
 ("2" approved folding the provider picker into S13 and recording it in the plan; "3" was whether to build the local adapter now.) The OpenAI API account then turned out to have no credits, and the user chose "Codex as chat model": route the design chat and planner through the Codex login instead of the API.
 
 Interpretation recorded in PLAN.md: each role picks a provider and model in Settings; Codex backs the design chat and planner on a ChatGPT plan; local models are S14; a Claude adapter stays after v1 until there's an Anthropic API key.
+
+
+### SRC-18 — Improvement architecture approval and fresh-agent handoff (2026-10-29)
+
+Context: after completing P1–P2, the assistant asked the user to approve three concrete recommendations: (1) the owner-scoped resource schema in `docs/improvements.md`; (2) retaining React Flow with outer-only connections; (3) qrwty as one API service, frontend, and Postgres, using email/password authentication with server-managed sessions.
+
+User message, verbatim:
+
+> approved. so it sounds like we may want to clear context here and allow a new agent to pick up where you left off. can you also write me the prompt to send to the next agent once you're ready for that?
+
+Interpretation: all three listed architecture decisions are approved. Record the approvals, hand off P3 implementation to a fresh agent, and provide a continuation prompt. Do not repeat the architectural approval requests. The post-milestone additive feature has not been selected or approved; earlier acceptance/test results do not establish completed qrwty functionality.

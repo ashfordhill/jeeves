@@ -1,13 +1,17 @@
 /**
  * Element card: template icon, name, template label, key config chips, and one mini-box per
- * attachment, plus a findings badge. The card and each mini-box have their own in (left) and out (right) handles.
+ * attachment, plus a findings badge. Only the outer card has connection handles.
  * Card shape follows automation-pitch's step tile (3px line, rounded, cream fill).
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type { ConfigValues } from "@jeeves/spec";
 import { IconAlertTriangle, IconX } from "@tabler/icons-react";
-import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { Handle, type NodeProps, NodeResizer, Position } from "@xyflow/react";
+import { useCallback } from "react";
 import { type ElementNode as ElementNodeType, handleId } from "../flow.ts";
+import { attach } from "../ops.ts";
+import { registry } from "../registry.ts";
+import { SubtypeControl } from "../SubtypeControl.tsx";
 import { useDraw } from "../store.ts";
 import { TemplateIcon } from "../TemplateIcon.tsx";
 
@@ -52,6 +56,18 @@ function Chips({ chips, compact }: { chips: Chip[]; compact?: boolean }) {
 
 export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) {
   const { element, template, attachments } = data;
+  const onResizeEnd = useCallback(
+    (_: unknown, size: { x: number; y: number; width: number; height: number }) => {
+      const layout = useDraw.getState().loaded?.layout.items[id];
+      useDraw
+        .getState()
+        .setLayoutItems(
+          { [id]: { ...layout, x: size.x, y: size.y, width: size.width, height: size.height } },
+          { undoable: true },
+        );
+    },
+    [id],
+  );
   const pending = useDraw((s) => s.pendingEnd);
   const edit = useDraw((s) => s.edit);
   const findings = useDraw((s) => s.loaded?.findingIndex.byNode.get(id));
@@ -60,10 +76,11 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
 
   return (
     <article
-      className={`element-card${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
+      className={`element-card${template?.elementKind === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
       data-element-id={id}
       aria-label={`${element.name}, ${label}`}
     >
+      <NodeResizer isVisible={selected} minWidth={260} minHeight={100} onResizeEnd={onResizeEnd} />
       <Handle type="target" position={Position.Left} id={handleId("in")} className="card-handle" />
       <div className="element-card-head">
         <span className="element-card-icon">
@@ -85,6 +102,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
           </span>
         ) : null}
       </div>
+      {template?.elementKind !== "database" ? <SubtypeControl element={element} /> : null}
       <Chips chips={cardChips(template, element.config)} />
       {attachments.length > 0 ? (
         <ul className="attachment-list" aria-label={`Attachments of ${element.name}`}>
@@ -95,12 +113,6 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
               data-attachment-id={attachment.id}
               aria-label={attachmentTemplate?.displayName ?? attachment.template.id}
             >
-              <Handle
-                type="target"
-                position={Position.Left}
-                id={handleId("in", attachment.id)}
-                className="card-handle"
-              />
               <TemplateIcon name={attachmentTemplate?.card.icon} size={16} />
               <span className="attachment-box-name">
                 {attachmentTemplate?.displayName ?? attachment.template.id}
@@ -119,15 +131,40 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
                   <IconX size={12} aria-hidden />
                 </button>
               ) : null}
-              <Handle
-                type="source"
-                position={Position.Right}
-                id={handleId("out", attachment.id)}
-                className="card-handle"
-              />
             </li>
           ))}
         </ul>
+      ) : null}
+      {selected && element.template ? (
+        <fieldset className="compatible-components nodrag nopan" aria-label="Compatible components">
+          {registry
+            .attachmentsFor(element.template)
+            .filter(
+              (t) =>
+                registry.canAttach(useDraw.getState().loaded!.design, id, {
+                  id: t.id,
+                  version: t.version,
+                }).ok,
+            )
+            .map((t) => (
+              <button
+                type="button"
+                key={t.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const loaded = useDraw.getState().loaded;
+                  if (!loaded) return;
+                  const plan = attach(loaded.design, registry, id, {
+                    id: t.id,
+                    version: t.version,
+                  });
+                  if (plan.ok) void edit(plan.ops);
+                }}
+              >
+                Add {t.displayName}
+              </button>
+            ))}
+        </fieldset>
       ) : null}
       <Handle
         type="source"

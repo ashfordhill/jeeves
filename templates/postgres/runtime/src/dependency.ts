@@ -2,6 +2,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type pg from "pg";
 import { type DatabaseConfig, DatabaseConfigError, databaseConfigFromEnv } from "./config.ts";
 import { createDatabase, type Database, type ReadyResult } from "./database.ts";
+import { runResourceMigrations } from "./resource-migrate.ts";
 
 export interface PostgresDependencyOptions<TSchema extends Record<string, unknown>> {
   /** The postgres element's ID; `/ready` reports under this name. */
@@ -9,6 +10,7 @@ export interface PostgresDependencyOptions<TSchema extends Record<string, unknow
   schema?: TSchema;
   /** Absolute path of the service's migrations folder; defaults to `DATABASE_MIGRATIONS`. */
   migrationsFolder?: string;
+  resourceMigrationsFolder?: string;
 }
 
 /**
@@ -52,6 +54,8 @@ export function postgresDependency<TSchema extends Record<string, unknown>>(
     async start(log) {
       config ??= databaseConfigFromEnv();
       database = createDatabase(config, options.schema ? { schema: options.schema } : {});
+      if (options.resourceMigrationsFolder)
+        await runResourceMigrations(database.pool, options.resourceMigrationsFolder);
       const result = await database.migrate(options.migrationsFolder ?? config.migrationsFolder);
       log.info(`${options.name}: applied ${result.applied} migration(s), ${result.total} recorded`);
     },

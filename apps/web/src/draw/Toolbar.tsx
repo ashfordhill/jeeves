@@ -253,6 +253,13 @@ export function Toolbar({ onDelete, canDelete }: { onDelete: () => void; canDele
         icon={<IconHandStop size={18} />}
       />
       <span className="tool-divider" aria-hidden />
+      <ToolButton
+        label="Service"
+        hint="Place a service, then choose its subtype"
+        tool={{ kind: "service" }}
+        icon={<IconBoxMultiple size={18} />}
+        draggable
+      />
       <PaletteMenu
         label="Elements"
         icon={<IconBoxMultiple size={18} />}

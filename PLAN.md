@@ -1,14 +1,14 @@
 # Jeeves and Draw Jeeves
 
-Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md` (S1–S13 done).
+Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md`: S1–S12 implemented; S13 acceptance is partial (provider credits stopped the first coding task). The current improvement specification is [docs/improvements.md](docs/improvements.md); its ordered delivery and explicit review checkpoints supersede conflicting future-work statements below. The original S1–S14 sections remain the historical build sequence.
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
 Related documents:
 
-- [docs/sources.md](docs/sources.md): the user's original requests and answers, verbatim (SRC-01 to SRC-15)
+- [docs/sources.md](docs/sources.md): the user's original requests and answers, verbatim (SRC-01 to SRC-18)
 - [docs/templates/](docs/templates/README.md): one brief per template
-- [docs/examples/](docs/examples/): prototype project briefs (qrwty, inventory labeling, storefront, grocery review), which are **not** part of this build
+- [docs/examples/](docs/examples/): prototype project briefs (qrwty, inventory labeling, storefront, grocery review), with qrwty now the first proving application; other briefs remain future work
 - [docs/reference/automation-pitch.md](docs/reference/automation-pitch.md): editor and style reuse notes
 - [docs/archive/PLAN-v1.md](docs/archive/PLAN-v1.md): the previous, much larger plan, kept for reference only
 - `docs/handoff.md`: append-only log written by each build agent (created in S1)
@@ -26,9 +26,9 @@ flowchart LR
     Orchestrate --> Run["4. Run<br/>local Docker, tests green"]
 ```
 
-1. **Design.** A person places elements, attaches capabilities, draws typed arrows, and fills in attributes, including free-text implementation notes. The design chat agent can do all of this too ("I want an app like bit.ly, make me a diagram"). It accepts Markdown and image files (PNG, JPEG, SVG) as input.
-2. **Generate.** The design compiles deterministically into a **template project**: a repository on disk where every element is an instantiated template, wired together, with a `docker-compose.yml`. A freshly generated project builds, starts, and passes every template test pack before any AI writes code. No implementation happens in this step.
-3. **Orchestrate.** Jeeves reads the template project and its implementation notes, breaks the work into tasks, and runs coding agents (Codex first) on them one at a time. After each task Jeeves runs the tests itself; it does not trust the agent's own report. Git and PR behavior follow a per-project ruleset.
+1. **Design.** A person places a Service rectangle, chooses its subtype, selects compatible components inside it, and connects outer service/database elements. Structured resources define standard behavior; implementation notes describe explicit remaining extensions. The design chat agent can do all of this too ("I want an app like bit.ly, make me a diagram"). It accepts Markdown and image files (PNG, JPEG, SVG) as input.
+2. **Generate.** The design compiles deterministically into a **template project**: a repository on disk where every element is an instantiated template, wired together, with a `docker-compose.yml`. The current generator creates runnable infrastructure and extension scaffolds. The approved resource pattern will also generate standard application behavior, persistence, contracts, clients, and fixed tests. Infrastructure readiness and demonstrated application acceptance are reported separately.
+3. **Orchestrate.** Currently Jeeves seeds work from implementation notes and a planner. The target derives narrow tasks from explicit unresolved extensions under fixed tests, then runs coding agents (Codex first) on them one at a time. After each task Jeeves runs the tests itself; it does not trust the agent's own report. Git and PR behavior follow a per-project ruleset.
 4. **Run.** The result runs in local Docker with its template tests and the new tests green.
 
 **Where the "orchestration harness" fits** (SRC-01): Jeeves is the orchestrator. It owns the plan, task order, state, verification, and git strategy. Each coding agent (Codex) is the harness for one task. Jeeves never relies on an agent session as its record of state.
@@ -47,20 +47,20 @@ flowchart LR
 | Capabilities such as a REST server or REST client are attachments shown as mini-boxes on an element | SRC-15 |
 | Arrows are typed (e.g. service uses database, client calls server) | SRC-03, SRC-15 |
 | Elements carry editable attributes, including free-text implementation notes, editable by the user or the chat agent | SRC-03, SRC-15 |
-| Draw Jeeves outputs a template project, not an implementation | SRC-15 |
+| Generate deterministically implements behavior described by structured resources; coding agents implement explicit remaining extensions | Current improvement plan; [specification](docs/improvements.md) |
 | Jeeves (the orchestrator) decomposes the template project into agent tasks | SRC-15 |
 | Ticket mode is dropped. PR and review behavior is a per-project git-strategy ruleset | SRC-15 |
 | Templates are option (b): a versioned runtime library plus a thin scaffold, extended through plugin points | SRC-15 |
-| Excalidraw is inspiration only. No Excalidraw file import | SRC-15 |
+| Retain React Flow after the editor comparison; Excalidraw file import remains out of scope | SRC-18; [review](docs/editor-provider-review.md) |
 | Visual style follows automation-pitch | SRC-15 |
 | Chat accepts files: Markdown/text and images (PNG, JPEG, SVG) | SRC-15 |
 | OpenAI and Codex first, behind provider interfaces so Claude or others can be added | SRC-01 |
-| Provider-agnostic: each role (design chat, planner, coding) picks a provider and model in Settings, like a model picker in an editor. Subscription logins (Codex with a ChatGPT plan) are first-class next to API keys; local models are next (S14) | SRC-17 |
+| Provider-agnostic: each role (design chat, planner, coding) picks a provider and model in Settings, like a model picker in an editor. Subscription logins (Codex with a ChatGPT plan) are first-class next to API keys; local models remain planned (S14), deferred behind the qrwty proof | SRC-17 |
 | No Temporal. Open-source, free building blocks only; avoid writing what a library already does | SRC-15 |
 | Jeeves itself is built by sequential, manually started agents, one section each (§15), not by Jeeves | SRC-15, SRC-16 |
-| Prototype apps (qrwty, inventory labeling, storefront, grocery review) are out of this build; each has a brief in `docs/examples/` | SRC-15 |
+| qrwty is the first proving application; hardware/location/maps are excluded from its initial milestone. Other prototype briefs remain future work | Current improvement plan |
 | TypeScript for Jeeves and for v1 templates | SRC-16 (confirming the plan's recommendation) |
-| React Flow, adapted from automation-pitch, rather than forking Excalidraw (§5) | SRC-16 |
+| React Flow is the implemented and approved engine, with service/subtype/component hierarchy and outer-only connections to be implemented (§5) | SRC-16, SRC-18 |
 | v1 builds five small reference templates (§8); the other catalog briefs are filled in and built later | SRC-16 |
 | Changing an app after v1 = edit the design, regenerate, orchestrate new or changed elements; no support for repos Jeeves didn't generate | SRC-16 |
 
@@ -68,7 +68,7 @@ flowchart LR
 
 - Ticket mode and editing apps that Jeeves didn't generate
 - Cloud deployment (Google Cloud comes after v1)
-- Building the prototype apps, hardware or device templates, and capacity targets
+- Hardware or device templates, capacity targets, and prototype apps other than the approved qrwty milestone
 - Jeeves orchestrating its own development
 - Multi-user editing, hosted Jeeves, and accounts
 - Excalidraw import and arbitrary third-party template catalogs
@@ -80,11 +80,11 @@ flowchart LR
 | --- | --- |
 | **Element** | A design-level box on the board, backed by a template: microservice, frontend, library, database pattern, worker, or external service |
 | **Attachment** | A capability added to an element, drawn as a mini-box on its card (e.g. REST API server, REST API client). Backed by an attachment template |
-| **Connection** | A typed arrow between elements or attachments: `uses-database`, `calls`, `depends-on` |
+| **Connection** | A typed arrow between outer elements (legacy designs also support attachment endpoints): `uses-database`, `calls`, `depends-on` |
 | **Annotation** | A presentation-only item: text, sticky note, frame, or plain arrow. Never affects generation |
 | **Attributes** | An element's template config (schema-validated) plus its implementation notes (free text) |
 | **Template** | A versioned package: manifest, runtime library, scaffold, test pack, and agent guide (§8) |
-| **Template project** | The repository produced by Generate; runnable and tested, but with no feature implementation |
+| **Template project** | The repository produced by Generate; runnable with generated standard behavior and project-owned extension points (currently infrastructure/scaffolds only) |
 | **Task** | One unit of agent work created by the orchestrator. Never shown on the board |
 | **Run** | One orchestration of a template project: a plan of tasks, their attempts, and evidence |
 
@@ -94,17 +94,17 @@ flowchart LR
 
 **Look and feel.** Follow automation-pitch: Mantine, the Nunito font, the paper texture, friendly rounded cards, the cursors and optional sounds, and its inspector and shell patterns. Its README's lessons apply: prioritize ease of use and comprehension, and use the inspector when inline editing would hurt readability.
 
-**Toolbar (Excalidraw-inspired).** Select, Hand (pan), Element palette, Attachment palette, Connector (arrow), Text, Sticky note, and Frame. The element palette is generated from the template registry and grouped (Services, Frontends, Data, Libraries, External). Both click-to-place and drag-to-place work. Dropping an attachment onto a compatible element adds a mini-box. Every action is reachable with the mouse, and keyboard shortcuts exist but are never required (SRC-01).
+**Toolbar (Excalidraw-inspired).** Select, Hand (pan), Element palette, Attachment palette, Connector (arrow), Text, Sticky note, and Frame. Target interaction: place a generic Service rectangle, then choose its subtype on the box or in the inspector. Database shapes are separate top-level elements. Selecting a service exposes compatible optional components inside it. P3 implements this hierarchy alongside the existing template palettes. Every action is reachable with the mouse, and keyboard shortcuts exist but are never required (SRC-01).
 
-**Element card.** Shows the name, a template icon, two or three key config chips, attachment mini-boxes (each with its own connection handles), and a findings badge.
+**Element card.** Shows the name, a template icon, two or three key config chips, component mini-boxes, with connection handles only on the outer shape (legacy UI still has attachment handles), and a findings badge.
 
-**Connections.** Ports come from template manifests. An incompatible drop is refused with a short explanation and, if one exists, a suggested compatible element or attachment. Cycles are allowed: services may call each other.
+**Connections.** Capabilities come from template manifests, but arrows attach only to outer elements. Infer one compatible capability pair; expose an explicit choice when ambiguous. Reconnection uses the same validation. Legacy attachment endpoints migrate as specified in [the improvement specification](docs/improvements.md). An incompatible drop is refused with a short explanation and, if one exists, a suggested compatible element or attachment. Cycles are allowed: services may call each other.
 
 **Inspector** (anchored on the right). A schema-driven config form, an implementation-notes field (Markdown), attachments, connections, and findings for the selected element.
 
 **Other panels.** Chat (docked, collapsible), Findings (all readiness issues; clicking one selects the element), and a **Generate** button with an output drawer.
 
-**Why React Flow and not an Excalidraw fork.** Excalidraw renders freeform geometry to a `<canvas>`. Cards that contain forms, typed ports, and nested mini-boxes would fight its renderer and element model. React Flow nodes are ordinary React components, which is what these cards are. automation-pitch already uses React Flow with the style the user wants. We take Excalidraw's toolbar and tool model, arrows, text, notes, frames, and infinite grid, not its code.
+**Engine review completed.** The user approved retaining React Flow after [the runnable prototype and comparison](docs/editor-provider-review.md). P3 implements the approved hierarchy and outer-only connections in production. The prototype itself remains temporary.
 
 ## 6. Design document and editing
 
@@ -216,6 +216,8 @@ The output directory is chosen per project. Layout:
 **Input:** a green template project.
 
 **Plan.**
+Current implementation (retained until structured resources/extensions land):
+
 1. Deterministic seed: one task per element (and per attachment) whose notes are non-empty, ordered by dependencies: databases, then services that expose servers, then their clients, then frontends.
 2. The planner model, configurable per project, refines the seed. It may split a large element into several tasks and adds acceptance tests to each. Every task stays within one element's owned paths plus contracts that element owns.
 3. The plan appears in the **Runs** view, where the user can edit, reorder, or remove tasks, then press Start.
@@ -239,7 +241,9 @@ The output directory is chosen per project. Layout:
 
 **Run states:** `planned`, `running`, `paused`, `needs-attention`, `waiting_for_provider`, `cancelled`, `failed`, `succeeded`.
 
-**Cost:** reported token usage and cost are recorded per attempt and per run and shown in Runs. Unknown usage is shown as unknown.
+**Usage target:** implementation totals persist at project, run, task, and attempt levels, including retries, failures, and post-baseline planning. Initial and feature runs stay distinguishable with a cumulative project total. Design chat is separate and excluded; missing usage is unknown. Preserve model/settings, design and template revisions, starting code revision, prompts, verification, elapsed time, and human interventions without credentials. The current attempt/run display is only part of this target.
+
+**Execution target:** show continuous execution (compatibility default) or pause after each verified task before Start. Runs prioritize progress, current activity, blockers, and usage; task text, paths, logs, diffs, and detailed checks sit behind disclosures. These controls are specified, not yet implemented.
 
 **Later:** after v1, changes to an app flow through the same path: edit the design, regenerate, and orchestrate only the new or changed elements. This is how Jeeves covers what ticket mode was for.
 
@@ -254,7 +258,7 @@ The output directory is chosen per project. Layout:
 | Agent work | Jeeves-run checks after every task; owned-path diff check |
 | Jeeves UI | Playwright e2e for Draw Jeeves and Runs, accessibility checks with axe (as in automation-pitch) |
 
-A model's "done" never counts as evidence. Model-dependent features (chat, planner, agents) are tested against a **fake provider** that replays scripted responses, so CI never needs API keys. A separate, manually run smoke test uses the real providers.
+A model's "done" never counts as evidence. Model-dependent features (chat, planner, agents) are tested against a **fake provider** that replays scripted responses, so CI never needs API keys. A separate, manually run smoke test uses the real providers. Infrastructure readiness, template conformance, and application acceptance are distinct results. Required smoke checks must exercise requests; zero requests, missing eligible examples, and uncovered required operations cannot silently pass. Standard/generated acceptance checks stay outside agent-owned paths. S13 has not yet demonstrated a completed application on real models.
 
 ## 12. Providers
 
@@ -274,6 +278,8 @@ Two interfaces in `packages/providers`:
 For model roles, Codex runs each model call as a fresh read-only session and answers in structured output (a message plus tool calls), so Jeeves's own tool loop is unchanged; replies arrive whole rather than streamed.
 
 Each provider declares its capabilities, and unsupported features are reported rather than silently dropped. API keys live in `~/.jeeves/config.json` or environment variables, never in designs or generated projects.
+
+**Settings target.** Connection status and supported setup actions first; separate design and implementation model choices second; planner/role overrides under secondary controls. Credentials being present does not verify account access, quota, or inference. Official-source investigation and supported login paths are recorded in [the provider review](docs/editor-provider-review.md#provider-and-settings-recommendation).
 
 **Claude.** A Claude adapter (Anthropic API for model roles, the Claude Agent SDK for coding) is after v1. Both need an Anthropic API key: Anthropic doesn't allow third-party products to use claude.ai subscription logins, including through the Agent SDK.
 
@@ -315,7 +321,7 @@ AGENTS.md              Points build agents to §15 (created in S1)
 
 ## 15. Build sections
 
-Each section is one agent's job, sized for a clean context. Run them **in order, one at a time**. Do not start a section until the previous one's "Done when" checks pass.
+The sections below record the original build sequence; the current next-work order and architectural review checkpoints are in [docs/improvements.md](docs/improvements.md#ordered-delivery-and-review-checkpoints). S13 is partial and S14 is deferred behind the qrwty proving workflow. Each section is one agent's job, sized for a clean context. Run them **in order, one at a time**. Do not start a section until the previous one's "Done when" checks pass.
 
 ### How to work a section
 
@@ -324,7 +330,8 @@ Each section is one agent's job, sized for a clean context. Run them **in order,
 3. Build what's listed. Stay inside "Not in this section".
 4. Make every "Done when" check pass. Run `pnpm check` (lint, type check, unit tests) and any e2e tests the section names, and include the real output in the handoff.
 5. Append a `docs/handoff.md` entry: section, date, what was built, commands run and their results, deviations from the plan and why, known issues, and what the next section should know.
-6. If the plan is wrong or ambiguous in a way that blocks you, stop and say so in the handoff and to the user rather than guessing at product decisions.
+6. Create a local Git commit for the completed section or improvement package after its checks and handoff. Use its ID in the title, keep subsequent packages in separate commits, and preserve unrelated working-tree changes. Local commits have standing user authorization; do not ask for permission.
+7. If the plan is wrong or ambiguous in a way that blocks you, stop and say so in the handoff and to the user rather than guessing at product decisions.
 
 ### S1: Repository foundation and editor extraction
 
@@ -453,7 +460,7 @@ Each section is one agent's job, sized for a clean context. Run them **in order,
 
 ### After v1 (not scheduled)
 
-Google Cloud deployment; a Claude provider adapter (Anthropic API key, see §12); `pr-per-task` if it wasn't done in S12; parallel tasks; filling in and building the stub templates; using Jeeves on the prototype briefs in `docs/examples/`.
+Google Cloud deployment; a Claude provider adapter (Anthropic API key, see §12); `pr-per-task` if it wasn't done in S12; parallel tasks; filling in and building the stub templates; using Jeeves on prototype briefs other than the current qrwty milestone.
 
 ## 16. Open questions
 
@@ -471,3 +478,9 @@ These are reversible implementation choices; the section agent may change them i
 - 2026-10-28: Plan review and rewrite (SRC-15). Ticket mode dropped; orchestration redefined as implementing generated template projects; templates are option (b); elements are design-level, with attachments as mini-boxes; automation-pitch style; chat file input; Temporal dropped in favor of pg-boss on Postgres; v1 is local Docker only; prototypes and the template catalog moved to their own briefs; Jeeves is built in thirteen sequential single-agent sections.
 - 2026-10-28: User confirmed TypeScript for v1 templates, React Flow over an Excalidraw fork, five reference templates in v1, that Jeeves is not built by Jeeves, and design-edit-regenerate as the post-v1 change path (SRC-16).
 - 2026-10-29: Provider-agnostic model selection (SRC-17). Each role picks a provider and model in Settings; Codex can back the design chat and planner on a ChatGPT plan; local models get their own section (S14); a Claude adapter stays after v1 because it needs an Anthropic API key.
+
+- 2026-10-29: Current improvement plan records structured deterministic behavior, service/subtype/component interaction with outer-only connections, explicit architectural reviews, truthful S13 evidence, independent acceptance checks, implementation usage, and qrwty as the first proving application. See [docs/improvements.md](docs/improvements.md). Resource schema, engine recommendation, and qrwty auth/boundaries require review before implementation.
+
+- 2026-10-29: User approved the owner-scoped resource pattern, retaining React Flow with outer-only connections, and qrwty as one API service + web frontend + Postgres with email/password and server-managed sessions (SRC-18). P3 implementation is next; these architectural reviews are complete.
+
+- 2026-10-29: P3 implements the approved production editor, v2 endpoint compatibility, deterministic resources/sessions/contracts/clients/tests, immutable resource migrations and safe regeneration. Verification evidence and limits are in the P3 handoff; P4 is next.

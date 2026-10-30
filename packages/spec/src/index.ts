@@ -8,4 +8,6 @@ export * from "./ids.ts";
 export * from "./layout.ts";
 export * from "./manifest.ts";
 export * from "./operations.ts";
+export * from "./resources.ts";
+export * from "./subtype.ts";
 export * from "./validate.ts";

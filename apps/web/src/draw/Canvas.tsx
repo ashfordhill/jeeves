@@ -34,6 +34,7 @@ import {
   NOTE_SIZE,
   templateKey,
 } from "./flow.ts";
+import { uniqueId, uniqueName } from "./ids.ts";
 import { FrameNode, NoteNode, TextNode } from "./nodes/AnnotationNodes.tsx";
 import { ElementNode } from "./nodes/ElementNode.tsx";
 import { attach, deleteOps, placeAnnotation, placeElement } from "./ops.ts";
@@ -47,6 +48,7 @@ const edgeTypes = { connection: ConnectionEdge, arrow: ArrowEdge };
 /** Offset from the pointer to a new item's top-left, so it lands roughly centered. */
 const PLACE_OFFSET: Record<string, { x: number; y: number }> = {
   element: { x: 130, y: 40 },
+  service: { x: 130, y: 40 },
   text: { x: 20, y: 14 },
   note: { x: NOTE_SIZE.width / 2, y: NOTE_SIZE.height / 2 },
   frame: { x: FRAME_SIZE.width / 2, y: 24 },
@@ -76,14 +78,9 @@ function isTyping(target: EventTarget | null): boolean {
 }
 
 /** Which item a click on a node meant: the node itself, or an attachment mini-box inside it. */
-function endFromClick(design: DesignDocument, node: BoardNode, event: MouseEvent): CanvasEnd {
+function endFromClick(_design: DesignDocument, node: BoardNode, _event: MouseEvent): CanvasEnd {
   if (node.type !== "element") return { annotation: node.id };
-  const box = (event.target as Element).closest("[data-attachment-id]");
-  const attachment = box?.getAttribute("data-attachment-id") ?? undefined;
-  const owned = design.elements
-    .find((e) => e.id === node.id)
-    ?.attachments.some((a) => a.id === attachment);
-  return owned && attachment ? { element: node.id, attachment } : { element: node.id };
+  return { element: node.id };
 }
 
 function endFromHandle(design: DesignDocument, nodeId: string, handle: string | null): CanvasEnd {
@@ -190,7 +187,18 @@ export function Canvas() {
     async (placing: Tool, at: { x: number; y: number }) => {
       if (!design || !templates) return;
       let placed: { id: string; ops: OperationInput[] } | undefined;
-      if (placing.kind === "element") {
+      if (placing.kind === "service") {
+        const id = uniqueId(design, "service");
+        placed = {
+          id,
+          ops: [
+            {
+              op: "addElement",
+              element: { id, name: uniqueName(design, "Service"), template: null },
+            },
+          ],
+        };
+      } else if (placing.kind === "element") {
         const template = templates.get(templateKey(placing.template));
         if (template) placed = placeElement(design, template);
       } else if (placing.kind === "text" || placing.kind === "note" || placing.kind === "frame") {
@@ -380,6 +388,32 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        edgesReconnectable
+        onReconnect={(edge, connection) => {
+          if (!design || !design.connections.some((c) => c.id === edge.id)) return;
+          const draft = {
+            ...design,
+            connections: design.connections.filter((c) => c.id !== edge.id),
+          };
+          const plan = planConnect(
+            draft,
+            registry,
+            { element: connection.source },
+            { element: connection.target },
+          );
+          const disconnect: OperationInput = { op: "disconnect", id: edge.id };
+          if (plan.ok === true) void runPlan({ ...plan, ops: [disconnect, ...plan.ops] });
+          else if (plan.ok === "choose")
+            void runPlan({
+              ...plan,
+              choices: plan.choices.map((c) => ({ ...c, ops: [disconnect, ...c.ops] })),
+            });
+          else
+            void runPlan({
+              ...plan,
+              fixes: plan.fixes.map((c) => ({ ...c, ops: [disconnect, ...c.ops] })),
+            });
+        }}
         onDragOver={onDragOver}
         onDrop={onDrop}
         onPaneClick={onPaneClick}

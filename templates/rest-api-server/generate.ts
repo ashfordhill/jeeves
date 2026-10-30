@@ -1,7 +1,18 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { createValidators, parseContract } from "@jeeves/rest-server";
+import { resourceConfigSchema } from "@jeeves/spec";
 import type { GenerateContext, GenerateResult } from "@jeeves/template-kit";
 import { bearerToken, contractPath, renderScaffold, renderText } from "@jeeves/template-kit";
+import { stringify } from "yaml";
+import {
+  DestructiveModelError,
+  fingerprint,
+  modelMigration,
+  resourceContract,
+  resourceFiles,
+} from "./resources.ts";
 
 export { bearerToken, contractPath };
 
@@ -14,6 +25,73 @@ const FEATURES = fileURLToPath(new URL("./scaffold/features", import.meta.url));
  */
 export function generate(ctx: GenerateContext): GenerateResult {
   const { element, config, dir } = ctx;
+  if (config.model) {
+    const model = resourceConfigSchema.parse(config.model);
+    const files = resourceFiles(ctx, model);
+    const history = ctx.previousMigrations ?? [];
+    const changed =
+      !ctx.previousModel ||
+      fingerprint(ctx.previousModel.resources) !== fingerprint(model.resources);
+    if (ctx.previousModel && ctx.previousModel.storeConnection !== model.storeConnection)
+      throw new DestructiveModelError([`${element.id}: resource storeConnection changed`]);
+    files.push(...history);
+    if (changed) {
+      let sql: string;
+      if (ctx.reviewedMigration) {
+        const review = ctx.reviewedMigration;
+        if (
+          !ctx.previousModel ||
+          review.fromFingerprint !== fingerprint(ctx.previousModel.resources) ||
+          review.toFingerprint !== fingerprint(model.resources) ||
+          !review.sql.trim()
+        )
+          throw new Error("Reviewed migration fingerprints do not match previous/next resources");
+        sql = review.sql;
+      } else sql = modelMigration(model, ctx.previousModel);
+      const number = String(history.length + 1).padStart(4, "0");
+      files.push({
+        path: `${dir}/resource-migrations/${number}.sql`,
+        contents: `-- Immutable Jeeves resource migration ${number}\n${sql.trim() || "-- Metadata-only change; storage identities retained."}\n`,
+        ownership: "generated",
+      });
+    }
+    files.push({
+      path: `${dir}/resource-migrations/manifest.json`,
+      ownership: "generated",
+      contents:
+        JSON.stringify(
+          files
+            .filter((f) => f.path.endsWith(".sql"))
+            .map((f) => ({ file: f.path.split("/").at(-1), sha256: fingerprintText(f.contents) })),
+          null,
+          2,
+        ) + "\n",
+    });
+    const contract = stringify(resourceContract(model, element.name));
+    createValidators(parseContract(contract));
+    files.push({
+      path: contractPath(element.id),
+      contents: contract,
+      ownership: "generated",
+    });
+    return {
+      files,
+      resourceModel: model,
+      compose: {
+        services: {
+          [element.id]: {
+            environment: {
+              PUBLIC_ORIGIN:
+                "${" +
+                element.id.toUpperCase().replaceAll("-", "_") +
+                "_PUBLIC_ORIGIN:?Set the deployment public origin}",
+            },
+          },
+        },
+      },
+      runtimeDependencies: [{ element: element.id, name: "@jeeves/rest-server" }],
+    };
+  }
   const vars = { serviceName: element.name, basePath: String(config.basePath) };
   const files = [
     {
@@ -36,3 +114,5 @@ export function generate(ctx: GenerateContext): GenerateResult {
     runtimeDependencies: [{ element: element.id, name: "@jeeves/rest-server" }],
   };
 }
+
+const fingerprintText = (text: string) => createHash("sha256").update(text).digest("hex");

@@ -6,6 +6,7 @@ import {
   designSchema,
   isStructural,
   layoutSchema,
+  upgradeDesign,
   validateDesign,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
@@ -40,7 +41,7 @@ describe("fixture designs", () => {
       registry,
       { baseRevision: 0 },
     );
-    expect(result.ok && { ...result.design, revision: doc.revision }).toEqual(doc);
+    expect(result.ok && { ...result.design, revision: doc.revision }).toEqual(upgradeDesign(doc));
   });
 
   it("incomplete has only readiness findings, which block Generate", () => {

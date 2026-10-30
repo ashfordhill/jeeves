@@ -2,18 +2,22 @@ import { z } from "zod";
 import {
   type Annotation,
   annotationSchema,
+  capabilityEndpoint,
   type DesignDocument,
   designIds,
   type Element,
+  upgradeDesign,
 } from "./design.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
+import { sameSubtype, subtypeDiscards } from "./subtype.ts";
 import { validateDesign } from "./validate.ts";
 
 export interface ApplyOptions {
   /** Revision the caller based its edits on. A mismatch is a `REVISION_CONFLICT`. */
   baseRevision?: number;
+  allowSubtypeConfirmation?: boolean;
 }
 
 export type ApplyResult =
@@ -65,10 +69,10 @@ export function applyOperations(
     };
   }
 
-  const draft = structuredClone(design);
+  const draft = upgradeDesign(design);
   try {
     parsed.data.forEach((op, index) => {
-      applyOne(draft, op, index);
+      applyOne(draft, op, index, options);
     });
   } catch (error) {
     if (error instanceof OpError) return { ok: false, errors: [error.finding] };
@@ -88,7 +92,12 @@ function findingKey(f: Finding): string {
   return `${f.code} ${JSON.stringify(f.target)}`;
 }
 
-function applyOne(design: DesignDocument, op: Operation, index: number): void {
+function applyOne(
+  design: DesignDocument,
+  op: Operation,
+  index: number,
+  options: ApplyOptions,
+): void {
   const missing = (what: string, id: string) =>
     new OpError(finding("UNKNOWN_REFERENCE", `There is no ${what} "${id}".`, { op: index }));
   const ensureFree = (id: string) => {
@@ -122,9 +131,52 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
     }
     case "updateElement": {
       const element = findElement(op.id);
+      if (
+        op.template !== undefined &&
+        !sameSubtype(element.template, op.template) &&
+        subtypeDiscards(design, element).length
+      ) {
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Use changeSubtype to review discarded configuration, components and connections.",
+            { op: index },
+          ),
+        );
+      }
       if (op.name !== undefined) element.name = op.name;
       if (op.template !== undefined) element.template = op.template;
       if (op.config !== undefined) element.config = op.config;
+      return;
+    }
+    case "changeSubtype": {
+      const element = findElement(op.id);
+      if (sameSubtype(element.template, op.template)) return;
+      const discarded = subtypeDiscards(design, element);
+      if (
+        discarded.length &&
+        (options.allowSubtypeConfirmation === false ||
+          op.confirmation?.revision !== design.revision ||
+          JSON.stringify(op.confirmation.discarded) !== JSON.stringify(discarded))
+      ) {
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            `Subtype change requires confirmation at revision ${design.revision}. Discarded: ${discarded.join("; ")}. Review and confirm this change in the editor.`,
+            { op: index },
+          ),
+        );
+      }
+      unbindArrows(
+        design,
+        element.attachments.map((a) => a.id),
+      );
+      element.template = op.template;
+      element.config = {};
+      element.attachments = [];
+      design.connections = design.connections.filter(
+        (c) => c.from.element !== element.id && c.to.element !== element.id,
+      );
       return;
     }
     case "removeElement": {
@@ -152,14 +204,19 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
       const { element } = findAttachment(op.id);
       element.attachments = element.attachments.filter((a) => a.id !== op.id);
       design.connections = design.connections.filter(
-        (c) => c.from.attachment !== op.id && c.to.attachment !== op.id,
+        (c) =>
+          capabilityEndpoint(c, "from").attachment !== op.id &&
+          capabilityEndpoint(c, "to").attachment !== op.id,
       );
       unbindArrows(design, [op.id]);
       return;
     }
     case "connect": {
       ensureFree(op.connection.id);
-      design.connections.push(op.connection);
+      design.connections.push(
+        upgradeDesign({ ...design, schemaVersion: 1, connections: [op.connection] })
+          .connections[0] as typeof op.connection,
+      );
       return;
     }
     case "disconnect": {

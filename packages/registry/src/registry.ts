@@ -146,7 +146,19 @@ export function createRegistry(inputs: readonly TemplateManifestInput[]): Regist
   };
 
   const canConnect: Registry["canConnect"] = (design, kind, from, to) => {
-    const connection: Connection = { id: PROBE_ID, kind, from, to };
+    const connection: Connection =
+      design.schemaVersion === 2
+        ? {
+            id: PROBE_ID,
+            kind,
+            from: { element: from.element },
+            to: { element: to.element },
+            config: {
+              ...(from.attachment && { fromCapability: from.attachment }),
+              ...(to.attachment && { toCapability: to.attachment }),
+            },
+          }
+        : { id: PROBE_ID, kind, from, to };
     const problem = probe(design, (d) => d.connections.push(connection), "connection");
     if (!problem) return { ok: true };
     const suggestions =

@@ -14,7 +14,7 @@ import {
   IconSend,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
 import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
@@ -127,6 +127,42 @@ function UndoTurn({ operationId }: { operationId: number }) {
 
 function QuestionCard({ question, active }: { question: ChatQuestion; active: boolean }) {
   const send = useChat((s) => s.send);
+  const edit = useDraw((s) => s.edit);
+  const revision = useDraw((s) => s.loaded?.design.revision);
+  const [resolved, setResolved] = useState(false);
+  const review = question.subtypeReview;
+  if (review)
+    return (
+      <fieldset
+        className="chat-question"
+        disabled={!active || resolved || revision !== review.revision}
+      >
+        <legend>{question.question}</legend>
+        <Button
+          size="xs"
+          variant="default"
+          onClick={async () => {
+            const { revision, discarded, id, template } = review;
+            if (
+              await edit([
+                { op: "changeSubtype", id, template, confirmation: { revision, discarded } },
+              ])
+            )
+              setResolved(true);
+          }}
+        >
+          Confirm subtype change
+        </Button>{" "}
+        <Button size="xs" variant="default" onClick={() => setResolved(true)}>
+          Cancel
+        </Button>
+        {resolved ? (
+          <p>Review closed.</p>
+        ) : revision !== review.revision ? (
+          <p>The design changed; request a fresh review.</p>
+        ) : null}
+      </fieldset>
+    );
   return (
     <fieldset className="chat-question" disabled={!active}>
       <legend>{question.question}</legend>

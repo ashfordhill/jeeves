@@ -86,3 +86,8 @@ export function restClientTargets(ctx: GenerateContext): RestClientTarget[] {
   }
   return targets;
 }
+
+/** Secret reference used by new structured-resource consumers; never a credential in output. */
+export function databasePasswordEnv(id: string): string {
+  return `DB_${id.toUpperCase().replaceAll("-", "_")}_PASSWORD`;
+}

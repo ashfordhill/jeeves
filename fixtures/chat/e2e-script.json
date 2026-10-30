@@ -1,6 +1,28 @@
 {
   "turns": [
     {
+      "match": "review subtype of links",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "reviewSubtype",
+              "arguments": {
+                "id": "links",
+                "template": {
+                  "id": "web-app",
+                  "version": "0.1.0"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "text": "Review the listed discards before changing the subtype."
+        }
+      ]
+    },
+    {
       "match": "Refine the seed plan",
       "steps": [
         {

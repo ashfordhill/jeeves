@@ -29,6 +29,7 @@ import { type FindingIndex, indexFindings } from "./findings.ts";
 import { templateKey } from "./flow.ts";
 
 export type Tool =
+  | { kind: "service" }
   | { kind: "select" }
   | { kind: "hand" }
   | { kind: "connect" }

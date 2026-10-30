@@ -2,4 +2,5 @@
 // API on an @jeeves/service-runtime service; features implement its operations by operationId.
 export * from "./contract.ts";
 export * from "./plugin.ts";
+export * from "./resources.ts";
 export * from "./validation.ts";

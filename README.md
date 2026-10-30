@@ -2,7 +2,7 @@
 
 Jeeves turns a software design into a working, tested application by combining strict, reusable templates with coding agents. Draw Jeeves is its design canvas. See [PLAN.md](PLAN.md) for the architecture and build plan.
 
-Status: S1–S13 are done (see `docs/handoff.md`); S14 (local models) is next. The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit and reorder, then runs each task with Codex, checks the result itself, and commits it to a run branch. Settings picks the provider and model for each role (design chat, planner, coding).
+Status: S1–S12 are implemented; S13 is partial (see `docs/handoff.md`). The real-provider journey stopped on the first coding task when credits ran out; a completed application has not been demonstrated. The next work is the [deterministic behavior and qrwty plan](docs/improvements.md); S14 local models are deferred. The Draw view has a working board with an inspector, findings, undo/redo, and a design chat (the rail's Chat tab) that edits the board for you. **Generate** writes a runnable template project for the design and checks that it's green. **Runs** plans the generated project into tasks that you can edit and reorder, then runs each task with Codex, checks the result itself, and commits it to a run branch. Settings picks the provider and model for each role (design chat, planner, coding).
 
 ## Requirements
 
@@ -19,9 +19,17 @@ pnpm dev          # starts Postgres in Docker, the API on :4310 and the UI on :4
 
 Open http://127.0.0.1:4300. The status bar shows "Server healthy" once the API can reach Postgres. `pnpm db:down` stops Postgres (data stays in the `jeeves-pg` volume). The server applies pending database migrations (`apps/server/drizzle/`) every time it starts. After changing `apps/server/src/db/schema.ts`, run `pnpm --filter @jeeves/server db:generate` to add a migration.
 
+## Structured resources and the production editor
+
+P3 implements the [approved resource and editor architecture](docs/improvements.md#p3-implementation-notes). Place a **Service**, choose its subtype, then add compatible components. Postgres has a distinct database shape. All connections attach to outer elements; ambiguous capabilities appear as inspector choices. Subtype changes show the exact discarded data and require a human confirmation. Moving/resizing saves layout without changing the design revision.
+
+A REST server component can declare a validated resource model using its inspector JSON field or design chat. See [the complete example](fixtures/designs/resources.json). Set session authentication, select the owning service's Postgres connection ID in `model.storeConnection`, and provide fixed extension contracts and acceptance references. Generate produces standard owner-scoped CRUD, account/session routes, contracts, clients, migrations, and isolated HTTP tests. Extension implementation remains project-owned. Configure the generated Compose environment references (for the example, `DB_LINKS_PASSWORD` and `LINKS_PUBLIC_ORIGIN`) in the generated project's ignored `.env` before starting it. Use the deployment's fixed public origin.
+
+Regeneration preserves custom files and immutable SQL. Destructive changes stop before writes with affected resource/field IDs; reviewed SQL is available through the generator API. Converting an existing custom API contract to generated ownership requires an explicit project migration. Resource-model JSON authoring is supported; a dedicated field-by-field resource builder is not included. The qrwty application and its fixed acceptance proof follow P4/P5.
+
 ## User guide: from a brief to a running app
 
-This is the path S13 tested end to end (`docs/handoff.md`, S13).
+This is the supported workflow. S13 exercised it through generation and planning, then stopped during the first implementation task because of provider credits (`docs/handoff.md`, S13). The final application steps remain unverified on real providers.
 
 1. **Pick providers.** Open **Settings**. Each role (design chat, planner, coding agent) has a provider and a model. With only a ChatGPT plan, choose **Codex** for all three and leave the model empty to use Codex's default; run `codex login` first. With an OpenAI API key that has credits, the design chat and planner can use **OpenAI API** instead (it streams replies and is quicker per call). See [Providers and models](#providers-and-models).
 2. **Describe the app.** In **Draw**, open the project menu (top right) → **New project**, then **Rename project** (the name becomes the generated folder's name). Open the rail's **Chat** tab, **Attach** a Markdown brief (or a PNG/SVG sketch), and ask for a design, e.g. "Make me a design for the app in the attached brief." The assistant reads the template catalog, places elements, attachments, and connections, and writes implementation notes for each. The whole turn is one undo step.
@@ -104,3 +112,7 @@ packages/*        spec, registry, providers (OpenAI + fake model), template-kit 
 templates/        template packages; the five v1 templates are complete (S7–S9): postgres, http-service, rest-api-server, web-app, rest-api-client
 docs/             sources, template briefs, handoff log, reference notes
 ```
+
+## Current architecture review
+
+The [resource pattern and generated output](docs/improvements.md) and [editor/provider recommendation](docs/editor-provider-review.md) were approved by the user on 2026-10-29, along with qrwty service boundaries and email/password with server sessions. P3 resource generation and production editor interactions are implemented; P4 verification/task derivation is next. The isolated comparison runs at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it loads both real editor engines and makes no project writes. It is a development entry and is excluded from the normal production build. New Runs controls and the [qrwty acceptance milestone](docs/examples/qrwty.md) remain outstanding.

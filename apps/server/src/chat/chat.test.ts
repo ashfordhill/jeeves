@@ -204,6 +204,7 @@ describe("design chat", () => {
       "listTemplates",
       "describeTemplate",
       "getDesign",
+      "reviewSubtype",
       "applyOperations",
       "validateDesign",
       "explainFinding",

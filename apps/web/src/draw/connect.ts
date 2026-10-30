@@ -53,7 +53,21 @@ function connectOp(
     `${from.attachment ?? from.element}-to-${to.attachment ?? to.element}`,
     reserved,
   );
-  return { op: "connect", connection: { id, kind, from, to } };
+  return {
+    op: "connect",
+    connection: {
+      id,
+      kind,
+      from: { element: from.element },
+      to: { element: to.element },
+      ...((from.attachment || to.attachment) && {
+        config: {
+          ...(from.attachment && { fromCapability: from.attachment }),
+          ...(to.attachment && { toCapability: to.attachment }),
+        },
+      }),
+    },
+  };
 }
 
 export function planConnect(
@@ -78,6 +92,35 @@ export function planConnect(
     };
   }
 
+  // A visible outer end can offer several attachment capabilities. Never guess between them.
+  const candidates = (end: Endpoint): Endpoint[] =>
+    end.attachment
+      ? [end]
+      : [
+          end,
+          ...(design.elements.find((e) => e.id === end.element)?.attachments ?? []).map((a) => ({
+            element: end.element,
+            attachment: a.id,
+          })),
+        ];
+  const pairs = candidates(from).flatMap((f) =>
+    candidates(to).flatMap((t) =>
+      registry
+        .connectionKinds(design, f, t)
+        .filter((k) => k !== "depends-on")
+        .map((kind) => ({ f, t, kind })),
+    ),
+  );
+  if (pairs.length === 1 && pairs[0])
+    return { ok: true, ops: [connectOp(design, pairs[0].kind, pairs[0].f, pairs[0].t)] };
+  if (pairs.length > 1)
+    return {
+      ok: "choose",
+      choices: pairs.map(({ f, t, kind }) => ({
+        label: `${connectionLabels[kind]} · ${f.attachment ?? f.element} → ${t.attachment ?? t.element}`,
+        ops: [connectOp(design, kind, f, t)],
+      })),
+    };
   const kinds = registry.connectionKinds(design, from, to);
   if (kinds.length === 1 && kinds[0])
     return { ok: true, ops: [connectOp(design, kinds[0], from, to)] };

@@ -1,19 +1,40 @@
-# qrwty (prototype project brief)
+# qrwty proving application
 
-Status: stub for the user to fill in. Not part of the Jeeves v1 build. When Jeeves and Draw Jeeves work, this file is given to the Draw Jeeves chat as a prompt, and the user reviews the design Jeeves proposes.
+Status: milestone scope, authentication, and concrete service boundaries approved by the user on 2026-10-29 (SRC-18 in `docs/sources.md`). Implementation and acceptance remain outstanding. This supersedes the old hardware-first acceptance journey retained below as historical context. Use [the improvement specification](../improvements.md) as the approved implementation specification.
 
-Repository: `~/github/qrwty` (new implementation). Prototype/behavior reference: `~/github/qr-code-tracking`. Product URL: https://qrwty.io/ (currently a broken sales page, per the user).
+## Product loop
 
-## To fill in
+A signed-in user creates a private QR resource with an HTTP/HTTPS destination, downloads a QR image containing a stable public redirect URL, and later changes the destination without changing the QR identity or image. Following that URL records a request and redirects to the current destination. The owner sees request totals and activity over time. Repeated requests, including by the same client, count separately; these are not verified unique visitors.
 
-- Goal in one paragraph
-- Users and the main journeys
-- Must-have features for a first version
-- Hardware: terminal, printer, location source (see [inventory-labeling.md](inventory-labeling.md) for the shared device platform)
-- Scale targets (redirects/day, peak rps, latency, availability), if known
-- Elements you expect on the board (services, frontends, databases, attachments)
+## Approved architecture
 
-## Notes carried over from the earlier plan
+Approved: one HTTP service containing accounts/sessions, owner-scoped QR CRUD, public redirects, QR image generation, and activity queries; one web frontend with a generated REST client; one separate Postgres element. Keep Login/Authentication inside the cohesive service. Approved authentication: email/password registration and login with opaque server-managed sessions, HttpOnly cookies, explicit logout, session expiry, CSRF protection for mutations, and no caller-supplied owner IDs. The explicit approval supersedes the earlier illustrative authentication sketch; do not reopen the external identity provider choice without a material new issue. Authentication behavior must come from a reviewed template/runtime rather than ad hoc model code.
+
+The browser calls the same-origin web proxy; service-to-Postgres wiring uses an isolated consumer database/role. Define a deployment public origin for stable QR payloads. The public redirect URL is `/q/{id}`. Extension contract requirements: image returns `image/png` with attachment download headers; redirect returns 302 with `Location` and `Cache-Control: no-store`; missing public IDs return 404 and add no event; activity returns `{total, days: [{date, count}]}` using UTC dates and a bounded explicit date range. Owner endpoints return 401 without a session and 404 for absent or another owner's resource. Final request/response schemas and examples are fixed before agent tasks start.
+
+## Fixed acceptance cases
+
+These cases belong to the project acceptance harness outside agent-owned paths. Use two independent users, an isolated database, and two local destination servers so tests never depend on public websites. Use an independent QR decoder against the actual downloaded image; comparing a mocked encoder input does not count.
+
+| ID | Exercise and required evidence |
+| --- | --- |
+| QR-01 | Register/login Alice and Bob; create a resource as Alice; record returned ID and persisted destination. Logout invalidates the session. Unauthenticated creation/read/update/image/activity returns 401. |
+| QR-02 | Download the real image, record its SHA-256, decode its pixels independently, and assert its URL is the configured public origin plus `/q/{id}`. The destination URL must not be embedded. |
+| QR-03 | Request the decoded URL without automatic redirect following, assert 302, no-store, and original Location. Follow it to destination server A and verify A received the request. Assert one event for each redirect request, counting any second request explicitly. |
+| QR-04 | Edit destination to server B. Assert identical resource/redirect ID and byte-identical downloaded QR image. Request the original decoded URL again; assert B is reached and A is not. Verify no cached permanent redirect masks the change. |
+| QR-05 | Make repeated requests, including from the same client; assert total increases for every redirect request. Fixed test-only clock/data fixtures spanning UTC days verify bucket boundaries, zero days, bounded date range validation, and totals. Do not expose fixture/clock controls in the production app. |
+| QR-06 | As Bob, list/read/update/download/activity cannot see Alice's resource; ID guessing and relationship manipulation do not bypass ownership. Lists contain only the current user's resources. Rejected requests do not change destination or scans. |
+| QR-07 | Malformed payloads, unknown fields, invalid IDs, non-HTTP URLs, credential-bearing URLs, caller-supplied owner IDs, and missing IDs return documented 400/404 responses. Unknown redirects add no event; failed unauthorized updates preserve the destination. |
+| QR-08 | Restart the service and Postgres with the same volumes. Login again, read the saved resource, decode the image again, follow the original URL to B, and verify persisted history plus exactly the new event. |
+| QR-09 | Drive account creation/login, resource create/edit, image download, and activity views in the browser by mouse. Check the visible totals agree with API/persisted evidence. |
+
+Infrastructure readiness, template conformance, and these application cases have separate recorded results. Record the approved design/revision, template versions, baseline git revision, model/settings, prompts, all attempts/retries/failures, implementation usage, elapsed time, verification output, and human interventions. Never report unrecorded usage as zero.
+
+After QR-01–QR-09 pass, agree one additive feature (candidate: an optional campaign label and owner filter), change the design, regenerate, and demonstrate preserved extension code, existing acceptance still green, feature-specific acceptance, persistence/migration behavior, and accumulated project implementation usage. This feature is a candidate, not an approved requirement.
+
+Excluded from this milestone: printing devices, location capture, maps, billing, custom domains, messaging/Kubernetes/cloud/enterprise deployment. Scale benchmarking and model comparisons follow demonstrated acceptance from identical generated baselines.
+
+## Historical product background (outside the current milestone)
 
 These were written during architecture planning. They are background, not decisions.
 

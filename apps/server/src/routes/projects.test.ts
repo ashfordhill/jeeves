@@ -7,10 +7,13 @@ import {
   type LayoutDocument,
   layoutSchema,
   type OperationInput,
+  upgradeDesign,
 } from "@jeeves/spec";
+import { and, eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
+import { designRevisions, projects } from "../db/schema.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 
 const fixture = (name: string): unknown =>
@@ -93,6 +96,39 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
+  it("converts legacy endpoints on read but records v2 only on a semantic save", async () => {
+    const id = await client.createProject("Legacy conversion");
+    const legacy = { ...linkShortener, revision: 1 };
+    await db
+      .insert(designRevisions)
+      .values({ projectId: id, revision: 1, document: legacy, findings: [] });
+    await db.update(projects).set({ revision: 1 }).where(eq(projects.id, id));
+    const state = await client.design(id);
+    expect(state.design).toEqual(upgradeDesign(legacy));
+    expect(
+      (
+        await client.call("PUT", "/projects/" + id + "/layout", {
+          schemaVersion: 1,
+          items: { links: { x: 10, y: 20 } },
+        })
+      ).status,
+    ).toBe(200);
+    const original = await db
+      .select()
+      .from(designRevisions)
+      .where(and(eq(designRevisions.projectId, id), eq(designRevisions.revision, 1)));
+    expect(original[0]?.document).toEqual(legacy);
+    const saved = await client.edit(id, 1, [
+      { op: "setNotes", id: "links", notes: "Semantic save after conversion" },
+    ]);
+    expect(saved.status).toBe(200);
+    expect(saved.body.design.schemaVersion).toBe(2);
+    expect(saved.body.design.connections).toEqual(upgradeDesign(legacy).connections);
+    expect((await client.undo(id, 2)).body.design).toEqual({
+      ...upgradeDesign(legacy),
+      revision: 3,
+    });
+  });
   it("creates, lists, renames, and deletes a project", async () => {
     const id = await client.createProject("Draft");
     expect((await client.call("GET", "/projects")).body.projects).toContainEqual(
@@ -114,7 +150,7 @@ describe("projects", () => {
     const id = await client.createProject();
     expect(await client.design(id)).toEqual({
       projectId: id,
-      design: { schemaVersion: 1, revision: 0, elements: [], connections: [], annotations: [] },
+      design: { schemaVersion: 2, revision: 0, elements: [], connections: [], annotations: [] },
       findings: [],
       history: { canUndo: false, canRedo: false, latestEdit: null },
     });
@@ -148,7 +184,7 @@ describe("operations", () => {
     expect(res.body.operationId).toEqual(expect.any(Number));
 
     const reloaded = await client.design(id);
-    expect(reloaded.design).toEqual({ ...linkShortener, revision: 1 });
+    expect(reloaded.design).toEqual({ ...upgradeDesign(linkShortener), revision: 1 });
     expect((await client.call("GET", `/projects/${id}`)).body.project.revision).toBe(1);
   });
 
@@ -313,7 +349,7 @@ describe("undo and redo", () => {
     const res = await client.undo(id, 1);
     expect(res.status).toBe(200);
     expect(res.body.design).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       revision: 2,
       elements: [],
       connections: [],

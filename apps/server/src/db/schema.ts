@@ -7,7 +7,13 @@ import {
   type TaskWorkspace,
 } from "@jeeves/orchestrator/execute";
 import { attemptStatuses, runStatuses, taskStatuses } from "@jeeves/orchestrator/states";
-import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
+import type {
+  DesignDocument,
+  Finding,
+  LayoutDocument,
+  OperationInput,
+  SubtypeReview,
+} from "@jeeves/spec";
 import {
   boolean,
   customType,
@@ -126,7 +132,12 @@ export const chatTurnStatuses = ["running", "done", "failed"] as const;
 export type ChatTurnStatus = (typeof chatTurnStatuses)[number];
 
 /** A question the chat agent asked with `askUser`; the person answers with a new message. */
-export type ChatQuestion = { question: string; choices: string[]; allowFreeText: boolean };
+export type ChatQuestion = {
+  question: string;
+  choices: string[];
+  allowFreeText: boolean;
+  subtypeReview?: SubtypeReview;
+};
 
 /** One line of "what the agent did" in a turn, e.g. a tool call and its outcome. */
 export type ChatActivity = { tool: string; ok: boolean; summary: string };

@@ -14,7 +14,7 @@ import type {
   Finding,
   OperationInput,
 } from "@jeeves/spec";
-import { Button, Menu, NativeSelect } from "@mantine/core";
+import { Button, Menu } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -28,6 +28,7 @@ import { connectionLabels } from "../connect.ts";
 import { templateKey } from "../flow.ts";
 import { attach, deleteOps } from "../ops.ts";
 import { registry } from "../registry.ts";
+import { SubtypeControl } from "../SubtypeControl.tsx";
 import { type Selection, useDraw } from "../store.ts";
 import { TemplateIcon } from "../TemplateIcon.tsx";
 import { ConfigForm } from "./ConfigForm.tsx";
@@ -253,7 +254,6 @@ function ElementInspector({ element }: { element: Element }) {
   const connections = loaded.design.connections.filter(
     (c) => c.from.element === element.id || c.to.element === element.id,
   );
-  const elementTemplates = loaded.catalog.templates.filter((t) => t.kind === "element");
 
   return (
     <section className="inspector-body" aria-label={`Inspector: ${element.name}`}>
@@ -275,28 +275,7 @@ function ElementInspector({ element }: { element: Element }) {
         }}
       />
 
-      {!element.template ? (
-        <NativeSelect
-          label="Template"
-          description="No template provides this yet. Pick one if it fits."
-          data={[
-            { value: "", label: "Needs a template" },
-            ...elementTemplates.map((t) => ({ value: templateKey(t), label: t.displayName })),
-          ]}
-          value=""
-          onChange={(e) => {
-            const picked = elementTemplates.find((t) => templateKey(t) === e.currentTarget.value);
-            if (picked)
-              void edit([
-                {
-                  op: "updateElement",
-                  id: element.id,
-                  template: { id: picked.id, version: picked.version },
-                },
-              ]);
-          }}
-        />
-      ) : null}
+      {template?.elementKind !== "database" ? <SubtypeControl element={element} /> : null}
 
       {elementFindings.some((f) => !f.target.path) ? (
         <Section title="Findings">

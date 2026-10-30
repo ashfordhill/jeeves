@@ -1665,3 +1665,124 @@ New and changed tests:
 - Add the provider in `catalog.ts` (`available: true`) and in `providerModels`/`codingAgents`. Follow the `providerStatus` pattern for a reachability check.
 - `codex-model.ts` shows how to wrap an agent-style backend. An OpenAI-compatible Chat Completions adapter should use native tools instead, like `openai.ts`.
 - To compare quality, rerun this section's brief, `fixtures/briefs/reading-list.md`. The step 1b output above is the bar for the design chat.
+
+
+---
+
+## Improvements P1–P2: specification and editor/provider review (2026-10-29)
+
+**Status:** the first two packages are complete as review artifacts. Resource runtime/generator implementation, production editor changes, Runs/usage changes, and qrwty are still pending the architectural review explicitly required by the user's plan. No architectural choice has been inferred from passing prototype tests.
+
+### Built
+
+- `docs/improvements.md`: confirmed service/subtype/component interaction, outer-only connections, a concrete minimal resource schema and qrwty config example, generated SQL/handler/file examples, operation and migration compatibility, REST/Postgres connection definitions, independent verification, extension-derived tasks, Runs modes, usage/evidence ledger, ordered delivery and review checkpoints.
+- `docs/editor-provider-review.md`: actual React Flow/Excalidraw interaction comparison, a recommendation to retain React Flow, official-source provider authentication/execution investigation, and a concrete Settings layout. Credentials/configuration, login, available models, inference success, and quota are distinguished. Anthropic subscription login is not offered as a supported third-party integration.
+- `docs/examples/qrwty.md`: current scope and proposed service/auth boundaries, plus fixed QR-01–QR-09 acceptance cases. The acceptance must independently decode the downloaded image, follow the actual URL, change destinations with stable identity/image, test owner isolation and request activity, and prove restart persistence. Historical hardware/product background remains below a clear historical heading.
+- PLAN/README corrections: S13 is partial, not demonstrated end-to-end application acceptance; qrwty is the proving milestone; local-model S14 is deferred; original section descriptions/decision history remain clearly historical. New work is governed by `docs/improvements.md`.
+- Isolated runnable development entry `apps/web/editor-review.html` and `src/editor-review/`: both real engines, generic Service rectangles, inline/inspector subtype selection, compatible internal components, customized-subtype discard confirmation, distinct Postgres shape, native selection/resize/arrows/reconnection. Temporary state only, no project API calls. Open `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`.
+- Exact dev dependency `@excalidraw/excalidraw@0.18.0`; its package supports React 19 and predates the two-week dependency cutoff. Production imports and normal build entry stay unchanged; the normal built bundle contains no Excalidraw/comparison code.
+- Two browser tests exercise actual mouse gestures and controls in both engines. Excalidraw test verifies native outer bindings, reconnection, actual outer width after native resize, and an arrow bound to `service-component-0`. That last assertion demonstrates the adapter needed to enforce outer-only endpoints. React Flow test covers inline subtype, compatible components, cancel/confirm, only outer handles, connections, resize, and validated reconnection.
+
+### Commands and evidence
+
+The shell initially did not expose `pnpm`; commands used `PATH=/home/ash/.local/share/pnpm/bin:$PATH` with the repository's pinned pnpm 12.16.1.
+
+- `pnpm check`: Biome checked 366 files with no fixes; all workspace TypeScript checks passed; 56 unit test files / **410 tests passed**. Unit tests use no Docker/network.
+- `pnpm test:e2e`: **19 passed (25.4 s)**. Existing 17 scripted-provider journeys plus two real-engine comparison tests. Jeeves's database was running; e2e uses its isolated database/ports per the existing configuration. These results do not establish real-model application quality.
+- `pnpm --filter @jeeves/web build`: passed. Existing large-chunk warning; comparison entry excluded from normal output. Inspected the Excalidraw screenshot to confirm actual rendering, then strengthened resize verification to assert the service width rather than any scene change.
+- `pnpm lint` and `git diff --check`: passed.
+- `pnpm peers check`: reports older React/ReactDOM peer ranges in Excalidraw's transitive Radix packages. The parent Excalidraw dependency declares React 19 support; tested interactions pass. This remains an isolated dev-prototype limitation.
+- Early prototype tests exposed locator/click issues with native toolbar radio overlays and shape selection under Excalidraw's style panel. Fixed clicks on actual toolbar labels and verified actual outer geometry; the final full run passed.
+- Template/Docker conformance tests were not run: no template/runtime/generator behavior changed. No paid inference, real application build, external repo change, deployment, or benchmark was performed.
+
+### Compatibility and limitations
+
+No design/database migration has been applied. Current product behavior is retained; proposed v2 connection conversion and immutable model migrations are documented for the next implementation. Existing handoff entries are untouched.
+
+The comparison is a spike: no production history, saving, semantic validation bridge, or complete subtype-discard semantics. Excalidraw native geometry permits arbitrary drawing/bindings; React Flow's smooth-step routing does not avoid obstacles. Dense-board routing and a complete engine migration have not been demonstrated. React Flow resize gestures emit browser ResizeObserver notification warnings despite passing measured geometry assertions. Remove the dev spike/dependency after review if it is no longer useful.
+
+Current REST parsing checks JSON body schemas only; QR PNG content and redirect headers require explicit new verification. Existing empty REST smoke checks still silently pass; P4 must change this while distinguishing template conformance from application acceptance. Do not describe this as fixed by the specification.
+
+### Precise next steps
+
+1. Obtain the resource-pattern and editor recommendations review requested in P1/P2: `docs/improvements.md` and `docs/editor-provider-review.md`. Recommendation: retain React Flow and use the small owner-scoped resource pattern.
+2. After approval, implement P3 in the existing spec/validated operations, registry, templates, and generator. Keep one source of truth, preserve custom-code ownership, add explicit REST/Postgres definitions, and test legacy migration/regeneration including destructive-change reporting.
+3. P4: protect generated/fixed behavior tests from agents, fail uncovered/empty required smoke checks with operation IDs, handle PNG/redirect verification, and seed tasks from extensions instead of rediscovering architecture.
+4. P5: implement simplified Runs, persisted continuous/review-after-task modes (continuous default), cumulative implementation usage including all failures/retries/planning, provenance, and human interventions; exclude design chat.
+5. Before qrwty implementation, review the proposed one HTTP service + web frontend + Postgres and email/password with opaque server sessions. Login/auth in a sketch is not authorization for separate services. Fix extension request/response contracts and acceptance before model tasks. Run QR-01–QR-09 through Jeeves, then agree one additive feature and demonstrate regeneration/preserved code/cumulative usage. Model comparisons come afterward.
+
+
+---
+
+## Improvements: approvals and fresh-context handoff (2026-10-29)
+
+The user explicitly **approved all three recommendations** after P1–P2 (SRC-18 in `docs/sources.md`):
+
+1. The owner-scoped structured resource pattern and generated-output approach in `docs/improvements.md`.
+2. Retaining React Flow, implementing the service/subtype/component hierarchy and outer-only connections in the production editor.
+3. qrwty boundaries of one API service + web frontend + Postgres, with email/password authentication and opaque server-managed sessions.
+
+The earlier P1–P2 handoff's pending-approval statements are historical and now superseded. Current specification/PLAN/README/review/qrwty statuses have been updated. Do not ask the user for these approvals again. Routine implementation choices within the approved architecture can proceed; material departures still warrant review. The additive feature after qrwty acceptance remains undecided.
+
+**Next agent: implement P3** in `docs/improvements.md`, including production editor support for the approved structures. Read AGENTS.md, PLAN §15 workflow, the current improvement specification, editor/provider review, qrwty brief, and the two latest handoff entries. Work in this repository; preserve the existing uncommitted P1–P2 work. The comparison is an isolated dev spike, not production implementation. Keep one validated source of truth, runtime/template separation, generated-file drift checks, and project-owned code preservation. Test resource validation/generation, owner isolation, REST/Postgres wiring, mouse-only editing, legacy conversion, and regeneration/migrations. P4 verification/task derivation, P5 Runs/usage, and the actual qrwty proving build follow P3; do not expand into local models or benchmarks first.
+
+Last implementation validation remains: `pnpm check` passed (410 unit tests / 56 files), `pnpm test:e2e` passed (19 tests), and web production build passed. This follow-up changes documentation only. The pnpm executable is `/home/ash/.local/share/pnpm/bin/pnpm` if absent from PATH. No provider-credit availability was rechecked; old credit failures are historical evidence, not an assertion about current balances. Do not expose secrets while checking setup.
+
+The requested fresh-agent prompt is supplied in the conversation. No implementation has been started after approval, and no git commit was created; all previous changes remain in the working tree.
+
+Documentation-only follow-up validation: `pnpm lint` passed (366 files); `git diff --check` passed. Full tests were not repeated because executable files did not change.
+
+
+---
+
+## Improvements P3: production editor and deterministic resources (2026-10-29)
+
+**Status:** P3 implemented and verified within the approved architecture. P4 verification/task derivation is next, followed by P5 Runs/usage and the actual qrwty proof. No real-provider coding, qrwty build, QR decoding/acceptance run, local-model work, or benchmark was performed. Existing uncommitted P1–P2 work was preserved; no commit was created. Earlier handoff entries are unchanged.
+
+### Implementation
+
+- **One validated model:** `packages/spec/src/resources.ts` defines strict Zod resource, field, relationship, extension-contract and session-contract schemas, with JSON Schema export. REST server config stores the model in `config.model`; manual JSON forms and chat use the existing revisioned, atomic `updateAttachment` operation. Duplicate names/IDs/operations/routes, reserved fields/routes, unknown relationships, required cycles, internal CRUD and missing acceptance references are rejected. Generation compiles contract validators before writes.
+- **Production editor:** generic Service placement, inline/inspector subtype selection, compatible internal components, outer handles only, distinct Postgres shape, native resize/reconnection and capability choices in the inspector. New REST connection inference requires a unique compatible pair. Legacy dependency connections remain readable. Subtype changes list discarded configuration/components/connections and require exact revision-bound confirmation through `changeSubtype`. Cancel preserves the design. Chat's `reviewSubtype` creates a human Confirm/Cancel card; model tools cannot self-approve it. Confirm uses the same operations/history route as manual editing.
+- **Semantic/layout compatibility:** new designs use v2. `upgradeDesign` lifts v1 attachment endpoints to their parent elements and preserves attachment IDs as `connection.config.fromCapability/toCapability`, including distinct old component connections. IDs, notes, configs and template refs remain intact. Read conversion does not write a revision. Layout saves leave original stored semantic JSON untouched; the next semantic edit/undo writes v2. API tests check this against the stored revision and undo snapshot.
+- **Generated standard behavior:** REST templates emit stable-ID storage/validation descriptors in `src/generated/resources/`, route registration, CRUD/session OpenAPI, generated client types and clients, migrations, and independent HTTP tests under `tests/generated/<service>/`. The versioned runtime supplies the fixed parameterized repositories/handlers. Owner IDs and creation times come from the server; unknown/identity fields are rejected. Read/update use principal predicates, another owner's ID returns 404, relationship ownership is checked in the mutation query, internal resources expose no public CRUD, and keyset lists are owner-filtered and bounded. URL validation accepts absolute credential-free HTTP/HTTPS destinations without fetching them.
+- **Selected authentication:** email/password registration/login and opaque random sessions, hashed session tokens in Postgres, expiry, logout invalidation, HttpOnly/SameSite cookies (Secure on HTTPS), origin plus CSRF-token checks for mutations. Account request/response contracts are Zod-derived and appear in the same generated client contract. `PUBLIC_ORIGIN` is deployment configuration, independent of request Host. This is reusable runtime behavior; qrwty's UI/extensions remain unbuilt.
+- **REST/Postgres wiring:** outer capabilities resolve through template-kit, without a client importing server-generator internals. Clients consume generated contracts; generation-time and pretypecheck type output now match byte-for-byte. Web calls use the existing same-origin proxy; explicitly public extension paths also receive full-path proxy locations. Postgres supplies one isolated consumer role/database and required secret environment references for resource consumers. The runtime constructs/encodes credentials from separate environment fields. Legacy non-resource consumers retain existing wiring.
+- **Safe regeneration:** lock snapshots include models, fingerprints, selected store identity and generated hashes. Resource/field API renames retain stable physical SQL identities. Nullable additions and widening/relaxation emit new numbered SQL; migration files never get rewritten. The resource migration runner verifies file/applied hashes, serializes with a transaction advisory lock, and applies its journal before existing project-owned Drizzle migrations. Drops, narrowing, new required fields, relationship/ownership changes and store moves stop before writes, reporting affected objects. Reviewed SQL can be supplied through `generateProject.reviewedMigrations` only for matching previous/next fingerprints. Removed extension files are reported and retained; removed operation handlers are not registered. Generated drift checks and scaffold-once code ownership remain enforced.
+
+### Verification and evidence
+
+Commands now resolve plain `pnpm`: at the user's request, `~/.bashrc` permanently includes the installation directory, and `~/.local/bin/pnpm`/`pnpx` links make the already-running application's inherited PATH work. Fresh-shell and current-command resolution both reported pnpm **12.16.1**. No credentials were changed.
+
+- **`pnpm check`: passed**, including all workspace type checks and **444 unit tests / 61 files**. Unit tests require no Docker/Postgres/internet; existing local HTTP/process/Git tests required execution outside the restricted sandbox. Biome passes with style warnings (primarily non-null fixture accesses/string style); they are not verification failures.
+- **`pnpm test:e2e`: 22 passed (28.6 s)**. Existing 19 journeys remain green; two new production editor tests cover subtype cancel/confirm/undo/reload, outer capabilities, ambiguity, native reconnection and semantic/layout separation. A new scripted-chat test covers human subtype review cancellation/confirmation/undo. Existing axe checks pass. ResizeObserver notifications and the existing React Flow attribution warning still appear during browser tests.
+- **Focused resource Docker suite:** `pnpm exec vitest run --config vitest.templates.config.ts packages/generator/conformance/resources.conformance.ts`: **5 passed (103.38 s)** on final runtime/contract behavior. It generates and type-checks a real service/frontend/consumer/Postgres project; runs the emitted independent QR and related-memo HTTP tests; checks owner/parent isolation, no internal routes, session login/expiry/logout, bounded pagination, same-origin and public-path forwarding, an actual generated service-client request and unavailable-target error, isolated consumer roles, service/Postgres restart persistence and repeated migration application, then rename/nullable-field regeneration with custom code/data retained. This is template behavior evidence, not QR-01–QR-09 application acceptance.
+- **Full template suite during implementation:** 75 passed / 1 failed (8 files, 76 tests). All **72 pre-existing conformance cases passed**. The intermediate resource suite failed its newly added parent-fixture generated test; the subsequent focused suite passes both emitted tests and all five final resource cases. The complete long-running suite was not repeated after the focused fix; there is no claim of a final all-green full-suite invocation.
+- **Web production build:** passed (existing large-chunk warning). The isolated editor comparison remains excluded from the normal entry.
+- **`git diff --check`: passed**. No dependency additions were needed for P3; the pre-existing Excalidraw spike/dependency and lockfile changes are retained.
+
+Intermediate checks caught and corrected: stale assertions expecting v1/attachment handles, the generated-client type header causing false ownership drift after typecheck, test fixture parent setup, stale published ports after container restarts, a missing JSON body on a generated logout request, resize callback/closing-modal pointer timing, and browser tests observing a streamed reply or an old review card before the saved result. Final counts above are from completed runs, not inferred from those failures.
+
+### Compatibility implications and limits
+
+- Resource SQL lives at `services/<owner>/resource-migrations/`, rather than the illustrative database directory: it follows the existing consumer-owned migration lifecycle and isolated database/role. Stable-ID hashed physical table/column names make API renames storage-preserving. The existing template/runtime versions remain pinned; additions preserve old generated behavior, demonstrated by legacy golden/unit and conformance coverage.
+- Old designs do not acquire resource models from their notes. Opting an existing custom contract into generated resource ownership stops on the unmanaged contract until the project is explicitly migrated; custom contracts are never overwritten silently. Store transfers and removal of an entire emitted model remain manual migration work. Reviewed SQL is a generator-library API, not a new browser SQL approval workflow.
+- Nested resource authoring currently uses the existing validated JSON form and chat. A separate field-by-field resource designer was not added. Required wiring/configuration remains visible through findings. New generation supports one explicitly selected Postgres store per HTTP service.
+- Extension skeletons deliberately register no handler and report 501 until implemented. Retained removed-extension operation handlers are inactive; unrelated project-owned feature hooks remain custom code. Generated tests are hashed and outside agent-owned paths, but **P4 still must execute/enforce these tests in run verification**. Internal/read-only relationship fixtures and resources without create require explicit isolated fixture IDs; missing fixture configuration fails the generated tests.
+- P4's required nonempty smoke coverage, binary/image and redirect-header evidence, fixed project acceptance harness and extension-derived task seeding are still outstanding. P5's simplified Runs/review modes/usage ledger are unchanged. Provider/Settings simplification from the review is also outstanding. Passing template tests is not evidence of a finished qrwty application.
+
+### Precise next steps / fresh-chat boundary
+
+1. Start a fresh chat for **P4 only**. Read AGENTS.md, PLAN §15, `docs/improvements.md` (including P3 notes), and the latest two handoffs. Preserve this uncommitted work. Use `fixtures/designs/resources.json`, the resource conformance test, `lock.resourceModels/resourceFingerprints/resourceStores`, generated contracts, and `tests/generated/` as concrete inputs.
+2. Integrate independent generated/fixed tests into verification using disposable fixtures; fail required empty/uncovered smoke checks with operation IDs; explicitly handle PNG and redirect headers. Preserve generated-file and fixed acceptance ownership. Derive tasks from extension IDs, operation IDs and acceptance references instead of planning standard CRUD or new service boundaries.
+3. After P4, use another fresh chat for P5 Runs/usage. Then build qrwty through Jeeves with the already approved one API + web + Postgres and session authentication. Complete its three fixed extension contracts and QR-01–QR-09 harness before model implementation. No architecture reapproval is needed. The later additive feature remains undecided; local models and benchmarks stay deferred.
+
+
+---
+
+## Improvements: local commit policy and P1–P3 checkpoint (2026-10-29)
+
+The user requested a local commit for each completed improvement package, following the S-history convention, and explicitly gave standing authorization: **do not ask permission for local commits**. AGENTS.md, PLAN §15's completion workflow, and `docs/improvements.md` now require the package/section commit after checks and handoff, with its ID in the title and unrelated working-tree changes preserved.
+
+P1/P2 were already combined with P3 in the uncommitted working tree. This checkpoint therefore commits the completed P1–P3 work together under `P3: Deterministic resources and production editor (includes P1-P2)`, without fabricating separate historical package commits. Earlier statements that no commit existed describe their original handoff time and are superseded by this checkpoint. Subsequent packages, starting with P4, must have separate completion commits.
+
+Validation of the implementation remains the completed P3 evidence above: `pnpm check` passed (444 unit tests), 22 browser tests passed, five focused resource Docker checks passed, and the web production build passed. This follow-up changes instructions/documentation only; `pnpm lint` and `git diff --check` are the relevant follow-up checks. P4 remains the next implementation package, in a fresh chat.

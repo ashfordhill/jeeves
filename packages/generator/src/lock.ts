@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { resourceConfigSchema } from "@jeeves/spec";
 import { runtimeTarballName, VENDOR_DIR } from "@jeeves/template-kit";
 import { z } from "zod";
 import { LOCK_PATH } from "./documents.ts";
@@ -12,6 +13,11 @@ import { GENERATOR_VERSION, type ProjectPlan } from "./plan.ts";
  */
 export const lockSchema = z.object({
   lockVersion: z.literal(1),
+  resourceFingerprints: z.record(z.string(), z.string()).optional(),
+  resourceStores: z
+    .record(z.string(), z.object({ connection: z.string(), database: z.string() }))
+    .optional(),
+  resourceModels: z.record(z.string(), resourceConfigSchema).optional(),
   generator: z.string(),
   designRevision: z.int().nonnegative(),
   templates: z.array(z.string()),
@@ -38,6 +44,16 @@ export function hashContents(contents: string | Buffer): string {
 export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
   return {
     lockVersion: 1,
+    ...(plan.resourceModels && {
+      resourceModels: plan.resourceModels,
+      resourceStores: plan.resourceStores,
+      resourceFingerprints: Object.fromEntries(
+        Object.entries(plan.resourceModels).map(([id, model]) => [
+          id,
+          hashContents(JSON.stringify(model.resources)).replace("sha256-", ""),
+        ]),
+      ),
+    }),
     generator: GENERATOR_VERSION,
     designRevision,
     templates: plan.templates,

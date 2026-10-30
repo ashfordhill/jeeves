@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 2,
+  "revision": 7,
+  "elements": [
+    {
+      "id": "links",
+      "name": "Links service",
+      "template": {
+        "id": "http-service",
+        "version": "0.1.0"
+      },
+      "config": {
+        "port": 8080
+      },
+      "attachments": [
+        {
+          "id": "links-api",
+          "template": {
+            "id": "rest-api-server",
+            "version": "0.1.0"
+          },
+          "config": {
+            "auth": "session",
+            "basePath": "/api",
+            "model": {
+              "storeConnection": "links-uses-db",
+              "resources": [
+                {
+                  "id": "qr",
+                  "name": "qr",
+                  "access": "owner",
+                  "fields": [
+                    {
+                      "id": "destination",
+                      "name": "destination",
+                      "type": "http-url",
+                      "required": true
+                    },
+                    {
+                      "id": "title",
+                      "name": "title",
+                      "type": "text",
+                      "required": false,
+                      "maxLength": 120
+                    }
+                  ],
+                  "belongsTo": [],
+                  "operations": ["create", "read", "list", "update"]
+                },
+                {
+                  "id": "scan",
+                  "name": "scan",
+                  "access": "internal",
+                  "fields": [
+                    {
+                      "id": "occurred-at",
+                      "name": "occurredAt",
+                      "type": "timestamp",
+                      "generated": "created-at"
+                    }
+                  ],
+                  "belongsTo": [
+                    {
+                      "id": "qr",
+                      "resource": "qr",
+                      "required": true
+                    }
+                  ],
+                  "operations": []
+                }
+              ],
+              "acceptanceCases": ["ACT-01"],
+              "extensions": [
+                {
+                  "id": "activity",
+                  "operationId": "qrActivity",
+                  "method": "GET",
+                  "path": "/api/qr/{id}/activity",
+                  "access": "owner",
+                  "acceptance": ["ACT-01"],
+                  "notes": "Return UTC daily request counts for the owner.",
+                  "contract": {
+                    "parameters": [
+                      {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "Activity",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["total"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "total": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "401": {
+                        "description": "Unauthenticated"
+                      },
+                      "404": {
+                        "description": "Not found"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "notes": "POST /links creates a short link from a URL. GET /links/:code returns it with its click count."
+        }
+      ],
+      "notes": "Create short links; redirect GET /:code with 302; count clicks."
+    },
+    {
+      "id": "links-db",
+      "name": "Links DB",
+      "template": {
+        "id": "postgres",
+        "version": "0.1.0"
+      },
+      "config": {}
+    },
+    {
+      "id": "web",
+      "name": "Web app",
+      "template": {
+        "id": "web-app",
+        "version": "0.1.0"
+      },
+      "config": {
+        "title": "Shorty"
+      },
+      "attachments": [
+        {
+          "id": "web-links-client",
+          "template": {
+            "id": "rest-api-client",
+            "version": "0.1.0"
+          },
+          "config": {}
+        }
+      ],
+      "notes": "One page: paste a URL, get a short link, see recent links with click counts."
+    }
+  ],
+  "connections": [
+    {
+      "id": "links-uses-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "links"
+      },
+      "to": {
+        "element": "links-db"
+      }
+    },
+    {
+      "id": "web-calls-links",
+      "kind": "calls",
+      "from": {
+        "element": "web"
+      },
+      "to": {
+        "element": "links"
+      },
+      "config": {
+        "fromCapability": "web-links-client",
+        "toCapability": "links-api"
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-analytics",
+      "kind": "note",
+      "text": "Analytics later",
+      "color": "yellow"
+    }
+  ]
+}
