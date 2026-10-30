@@ -11,32 +11,6 @@
 
 One page: paste a URL, get a short link, see recent links with click counts.
 
-## Config
-
-```json
-{
-  "title": "Shorty",
-  "port": 5173
-}
-```
-
-## Attachments
-
-### `web-links-client` (`rest-api-client@0.1.0`)
-
-```json
-{
-  "timeoutMs": 5000,
-  "retries": 0
-}
-```
-
-_No implementation notes._
-
-## Connections
-
-- Web app (`web`, attachment `web-links-client`) **calls** Links service (`links`, attachment `links-api`)
-
 ---
 
 <!-- Agent guide for web-app@0.1.0 -->
@@ -135,8 +109,26 @@ if (error) {
 `npm run typecheck` (or `pnpm typecheck`) first regenerates `src/clients/<target>.openapi.ts`
 from the contract (its `pretypecheck` script runs `jeeves-rest-client-types`), then type-checks.
 After the target's contract changes, run it: calls that no longer match show up as type errors.
-If the operation you need isn't in the contract, add it to the contract (and implement it in the
-target service) rather than calling an undocumented path.
+
+- **Legacy contract (project-owned):** if the operation you need isn't in the contract, add it to
+  the contract (and implement it in the target service) rather than calling an undocumented path.
+- **Generated resource contract:** the contract is generated-owned. Do **not** add operations or
+  edit it. Use the declared operations; if something is missing, stop and say so.
+
+## Binary responses
+
+An image operation returns `image/png`. Ask the client for a blob (or use an authenticated
+same-origin `fetch` if the generated types cannot express it):
+
+```ts
+const { data } = await qrwtyClient.GET("/api/qr/{id}/image", {
+  params: { path: { id } },
+  parseAs: "blob",
+});
+```
+
+Do not decode or generate the image in the browser.
+
 
 ## Don't
 
@@ -149,3 +141,29 @@ target service) rather than calling an undocumented path.
 The generated client type-checks against the target's contract, a documented GET (`/ping` when
 there is one) succeeds through the client inside compose, and a call that gets no answer fails
 with a typed timeout error.
+
+## Config
+
+```json
+{
+  "title": "Shorty",
+  "port": 5173
+}
+```
+
+## Attachments
+
+### `web-links-client` (`rest-api-client@0.1.0`)
+
+```json
+{
+  "timeoutMs": 5000,
+  "retries": 0
+}
+```
+
+_No implementation notes._
+
+## Connections
+
+- Web app (`web`, attachment `web-links-client`) **calls** Links service (`links`, attachment `links-api`)

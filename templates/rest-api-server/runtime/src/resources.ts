@@ -45,6 +45,16 @@ const authenticated = new WeakMap<FastifyRequest, Principal>();
 export function sessionPrincipal(request: FastifyRequest): Principal | undefined {
   return authenticated.get(request);
 }
+let validatedPublicOrigin: string | undefined;
+/**
+ * The deployment public origin the resource server validated at startup. Extensions must use this
+ * value, not `process.env.PUBLIC_ORIGIN`, so a QR payload can't be built from a bad value.
+ */
+export function publicOrigin(): string {
+  if (!validatedPublicOrigin)
+    throw new Error("The resource server hasn't validated PUBLIC_ORIGIN yet");
+  return validatedPublicOrigin;
+}
 const quote = (name: string) => {
   if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) throw new Error(`Unsafe generated identifier ${name}`);
   return `"${name}"`;
@@ -172,17 +182,23 @@ export function resourceHandlers(
             },
           };
         }
-        const fieldParams = writable.map((f) => param(input[f.name] ?? null));
-        const parents = r.belongsTo.map((b) => {
+        const assigned =
+          op === "create" ? writable : writable.filter((f) => Object.hasOwn(input, f.name));
+        const fieldParams = assigned.map((f) => param(input[f.name] ?? null));
+        const parents = r.belongsTo.flatMap((b) => {
+          const index = assigned.findIndex((f) => f.column === b.column);
+          if (index < 0) return [];
           const parent = resources.find((p) => p.id === b.resource)!;
-          const p = fieldParams[writable.findIndex((f) => f.column === b.column)];
-          return `EXISTS (SELECT 1 FROM ${quote(parent.table)} parent WHERE parent.id = ${p} AND ${ownerPredicate(parent, "parent")})`;
+          const p = fieldParams[index];
+          return [
+            `EXISTS (SELECT 1 FROM ${quote(parent.table)} parent WHERE parent.id = ${p} AND ${ownerPredicate(parent, "parent")})`,
+          ];
         });
         const condition = parents.length ? ` AND ${parents.join(" AND ")}` : "";
         const sql =
           op === "create"
             ? `INSERT INTO ${quote(r.table)} (id,owner_id${writable.length ? `,${writable.map((f) => quote(f.column)).join(",")}` : ""}) SELECT ${param(randomUUID())},$1${fieldParams.length ? `,${fieldParams.join(",")}` : ""} WHERE TRUE${condition} RETURNING ${projection}`
-            : `UPDATE ${quote(r.table)} SET ${writable.length ? writable.map((f, i) => `${quote(f.column)} = ${fieldParams[i]}`).join(",") : "id = id"} WHERE owner_id = $1 AND id = ${param(request.params.id)}${condition} RETURNING ${projection}`;
+            : `UPDATE ${quote(r.table)} SET ${assigned.length ? assigned.map((f, i) => `${quote(f.column)} = ${fieldParams[i]}`).join(",") : "id = id"} WHERE owner_id = $1 AND id = ${param(request.params.id)}${condition} RETURNING ${projection}`;
         const result = await database().query(sql, values);
         return result.rows[0]
           ? { status: op === "create" ? 201 : 200, body: serialize(result.rows[0]) }
@@ -212,6 +228,7 @@ export function resourceServer(options: ResourceServerOptions): ServicePlugin {
         )
           throw new Error();
         origin = url.origin;
+        validatedPublicOrigin = origin;
         return [];
       } catch {
         return [

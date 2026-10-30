@@ -71,6 +71,8 @@ export type CheckRecord = {
   status: "passed" | "failed" | "skipped";
   reason?: string;
   layer?: "infrastructure" | "template" | "application";
+  /** Fixed acceptance cases this check verified. */
+  acceptanceIds?: string[];
   durationMs: number;
   error?: string;
 };

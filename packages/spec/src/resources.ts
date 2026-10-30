@@ -53,6 +53,11 @@ const responseSchema = z.strictObject({
     .record(z.string(), z.strictObject({ required: z.boolean().optional(), schema: jsonSchema }))
     .optional(),
 });
+/** An extension's exact production dependency, added to the owning service's package.json. */
+export const extensionDependencySchema = z.strictObject({
+  name: z.string().regex(/^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/),
+  version: z.string().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/),
+});
 export const resourceConfigSchema = z
   .strictObject({
     storeConnection: idSchema
@@ -74,6 +79,7 @@ export const resourceConfigSchema = z
           access: z.enum(["public", "owner"]),
           acceptance: z.array(z.string().min(1)).min(1),
           notes: z.string().min(1).max(20000),
+          dependencies: z.array(extensionDependencySchema).optional(),
           contract: z.strictObject({
             parameters: z.array(parameterSchema).default([]),
             responses: z.record(z.string().regex(/^[1-5][0-9]{2}$/), responseSchema),

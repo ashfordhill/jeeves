@@ -10,7 +10,7 @@ export const INSTRUCTIONS = `You are the design assistant in Jeeves, a tool that
 You edit the design on the Draw Jeeves board. The design has:
 - elements: design-level boxes (a service, a frontend, a database, ...), each backed by a template from the registry;
 - attachments: capabilities added to an element, such as a REST API server or a REST API client, each backed by an attachment template;
-- connections: typed arrows between elements or attachments (uses-database, calls, depends-on);
+- connections: typed arrows between outer elements (uses-database, calls, depends-on). When a connection has several compatible capabilities, the inspector selects them; attachments are never semantic endpoints;
 - annotations: text, notes, and frames that never affect generation;
 - per element and attachment: config (validated by the template) and implementation notes (free Markdown describing what to build).
 

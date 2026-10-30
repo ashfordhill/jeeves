@@ -46,6 +46,8 @@ export interface CheckOutcome {
   status: "passed" | "failed" | "skipped";
   reason?: string;
   layer?: "infrastructure" | "template" | "application";
+  /** Fixed acceptance cases this check verifies, for traceability. */
+  acceptanceIds?: string[];
   durationMs: number;
   error?: string;
 }
@@ -73,6 +75,8 @@ export interface BaselineOptions {
   unitTests?: boolean;
   /** Only these extension operations are due; omitted on task checks means all extensions. */
   requiredExtensions?: Record<string, string[]>;
+  /** Which work is implemented when checks run; frontend suites wait until `frontend`. */
+  phase?: "extensions" | "frontend";
   /** Leave the containers running afterwards. Default false: `docker compose down` (volumes kept). */
   keepRunning?: boolean;
 }
@@ -264,6 +268,7 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
         dir,
         lock,
         required,
+        ...(options.phase && { phase: options.phase }),
         signal,
         log,
         onCheck: (check) => {
@@ -305,6 +310,8 @@ function orderSubjects(subjects: Subject[]): Subject[] {
 export {
   assertExecutedTests,
   assertGeneratedIntegrity,
+  assertPlaywrightTests,
   fixtureCompose,
+  freePort,
   verifyBehavior,
 } from "./behavior.ts";

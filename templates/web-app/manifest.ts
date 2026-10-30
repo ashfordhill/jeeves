@@ -14,6 +14,11 @@ export default defineTemplate({
       title: "Port",
       description: "The dev server's port, and the port nginx serves on in the container.",
     }),
+    hostPort: z.int().min(1).max(65535).optional().meta({
+      title: "Host port",
+      description:
+        "Publish the app on this fixed loopback port instead of an ephemeral one. The deployment public origin must use it.",
+    }),
   }),
   ports: [{ kind: "depends-on", direction: "out", label: "Depends on" }],
   attachmentSlots: [{ template: "rest-api-client" }],

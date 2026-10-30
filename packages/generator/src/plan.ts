@@ -20,6 +20,7 @@ import {
 } from "@jeeves/template-kit";
 import {
   type AcceptanceRegistration,
+  acceptanceCaseCoverageProblems,
   acceptanceFiles,
   type FixedAcceptance,
 } from "./acceptance.ts";
@@ -229,24 +230,34 @@ export function planProject(
     element.ownedPaths = [`${element.dir}/`, ...new Set(outside)].sort();
   }
 
-  const summaries: SubjectSummary[] = results.map(({ subject }) => ({
-    ...subject,
-    module: templates.module(parseRef(subject.template)),
-  }));
-  const docs = [
-    designFile(design),
-    agentsFile(design, elements, options.projectName),
-    ...elements.map((element) => elementNotesFile(design, element, summaries)),
-    ...rootScaffoldFiles(options.projectName),
-  ];
-  for (const file of docs) add(file, "jeeves");
-
   const resourceModels = Object.fromEntries(
     results
       .filter((r) => r.result.resourceModel)
       .map((r) => [r.subject.element, r.result.resourceModel!]),
   );
   const acceptance = acceptanceFiles(options.fixedAcceptance ?? [], resourceModels);
+  // A supplied fixed suite set must account for every case the design declares.
+  if (options.fixedAcceptance?.length) {
+    const uncovered = acceptanceCaseCoverageProblems(resourceModels, acceptance.registrations);
+    if (uncovered.length)
+      throw new GenerationError(`Fixed acceptance is incomplete:\n${uncovered.join("\n")}`);
+  }
+
+  const summaries: SubjectSummary[] = results.map(({ subject }) => ({
+    ...subject,
+    module: templates.module(parseRef(subject.template)),
+  }));
+  const docs = [
+    designFile(design),
+    agentsFile(design, elements, options.projectName, {
+      resourceModels,
+      fixedAcceptance: acceptance.registrations,
+    }),
+    ...elements.map((element) => elementNotesFile(design, element, summaries)),
+    ...rootScaffoldFiles(options.projectName),
+  ];
+  for (const file of docs) add(file, "jeeves");
+
   for (const file of acceptance.files) add(file, "fixed acceptance");
   return {
     ...(acceptance.registrations.length && { fixedAcceptance: acceptance.registrations }),
@@ -254,7 +265,11 @@ export function planProject(
       resourceModels,
       resourceStores: Object.fromEntries(
         Object.entries(resourceModels).map(([id, model]) => {
-          const connection = design.connections.find((c) => c.id === model.storeConnection)!;
+          const connection = design.connections.find((c) => c.id === model.storeConnection);
+          if (!connection)
+            throw new GenerationError(
+              `${id}: resource store connection ${model.storeConnection ?? "(missing)"} is not in the design`,
+            );
           return [id, { connection: connection.id, database: connection.to.element }];
         }),
       ),

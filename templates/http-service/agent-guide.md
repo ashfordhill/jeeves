@@ -16,18 +16,36 @@ they are.
   - `env: { NAME: z.string() }` declares environment variables the feature needs; they're
     validated with the service's own at startup and arrive typed in `ctx.env`.
   - `start(ctx)` is a startup task (runs before the port opens); `stop()` runs on shutdown.
-- **Database** (when the design connects one): `import { database } from "../../jeeves.generated.ts"`
-  and query `database.db` (Drizzle). See the postgres guide for schema and migrations.
-- **Tests:** `test/*.test.ts`, run with `pnpm test`. `createService(service, { env, features,
+- **Database** (when the design connects one):
+  - `import { database } from "../../jeeves.generated.ts"` and query `database.pool` with
+    parameterized SQL. `database.db` (Drizzle) only knows the project-owned
+    `src/db/schema.ts`; generated resource tables are raw SQL and are **not** in that schema.
+  - For a structured resource model, import the generated descriptor for the physical table and
+    column names: `import qr from "../../generated/resources/qr.ts"`. Never derive SQL names from
+    the API resource name.
+  - Use `withTransaction(database.pool, async (client) => { ... })` from
+    `@jeeves/postgres-runtime` when a handler must commit related rows atomically.
+  - Owner extensions use `sessionPrincipal(request.request)` from `@jeeves/rest-server`, never an
+    owner ID from the request body.
+  - Use `publicOrigin()` from `@jeeves/rest-server` for the deployment public origin; it is
+    validated at startup. Never read `process.env.PUBLIC_ORIGIN` in a feature.
+  - Explain schema and migration changes in the postgres guide; generated resource migrations
+    are generated-owned.
+- **Tests:** `tests/*.test.ts`, run with `pnpm test`. `createService(service, { env, features,
   logger: false })` builds the service in-process; call it with `app.inject(...)`.
-- **Dependencies:** add npm packages to this service's `package.json` with exact versions.
+- **Dependencies:** add npm packages to this service's `package.json` with exact versions. A
+  declared extension may already have its production dependency added by generation.
 
 ## Don't
 
 - Don't edit `src/jeeves.generated.ts`, `docker-compose.yml`, or anything in `vendor/`. They're
   generated from the design and overwritten. Change the design and regenerate instead.
+- Don't edit `src/generated/`, `resource-migrations/`, `contracts/<service>.openapi.yaml` when
+  the service has a structured resource model, or any fixed acceptance test. Implement only the
+  declared extension named by your task.
 - Don't patch `@jeeves/service-runtime`. If it can't do something you need, say so in your report.
-- Don't read `process.env` directly in features; declare `env` on the feature.
+- Don't read `process.env` directly in features; declare `env` on the feature (or use the
+  validated `publicOrigin()`).
 - Don't use TypeScript syntax Node can't strip (enums, namespaces, parameter properties): the
   service runs its `.ts` sources directly. `pnpm typecheck` catches these.
 - Don't log secrets or request bodies with personal data.

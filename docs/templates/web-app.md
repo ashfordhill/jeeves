@@ -7,6 +7,7 @@ Element, kind `frontend`. Accepts the `rest-api-client` attachment.
 
 ## Config
 - `port` (default 5173 in development, served by nginx in the container)
+- `hostPort` (optional fixed loopback host port; without it the app publishes an ephemeral port)
 - `title`
 
 ## Runtime package `@jeeves/web-runtime`

@@ -17,6 +17,8 @@ export type ChecksInput = {
   /** Files the task changed (relative to `dir`). */
   changed: string[];
   requiredExtensions?: Record<string, string[]>;
+  /** Whether the frontend task is the one being checked; frontend suites wait otherwise. */
+  phase?: "extensions" | "frontend";
   signal: AbortSignal;
   onEvent: (event: Omit<AttemptEvent, "t">) => void;
 };
@@ -30,7 +32,7 @@ const titles = new Map<string, string>(taskCheckSteps.map((s) => [s.id, s.title]
 /** The real checks, through the generator's baseline (Docker and pnpm needed). */
 export function projectChecks(): ProjectChecks {
   return {
-    async run({ dir, signal, onEvent, requiredExtensions }) {
+    async run({ dir, signal, onEvent, requiredExtensions, phase }) {
       const { design } = readGeneratedProject(dir);
       const name = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")).name ?? "project";
       const { subjects } = planProject(design, templateSet(), { projectName: String(name) });
@@ -41,6 +43,7 @@ export function projectChecks(): ProjectChecks {
         signal,
         unitTests: true,
         requiredExtensions,
+        ...(phase && { phase }),
         onEvent: (event) => {
           if (event.type === "log") onEvent({ kind: "log", text: event.line });
           else if (event.type === "step") {
@@ -65,7 +68,7 @@ export function projectChecks(): ProjectChecks {
         ok: result.ok,
         steps: result.steps.map((s) => ({ ...s, title: titles.get(s.step) ?? s.step })),
         checks: result.checks.map(
-          ({ subject, id, title, status, durationMs, error, reason, layer }) => ({
+          ({ subject, id, title, status, durationMs, error, reason, layer, acceptanceIds }) => ({
             subject,
             id,
             title,
@@ -73,6 +76,7 @@ export function projectChecks(): ProjectChecks {
             durationMs,
             ...(reason && { reason }),
             ...(layer && { layer }),
+            ...(acceptanceIds?.length && { acceptanceIds }),
             ...(error ? { error } : {}),
           }),
         ),

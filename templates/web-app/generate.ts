@@ -147,6 +147,7 @@ export function nginxTemplate(ctx: GenerateContext): string {
 export function generate(ctx: GenerateContext): GenerateResult {
   const { element, config, dir } = ctx;
   const port = Number(config.port);
+  const hostPort = config.hostPort === undefined ? undefined : Number(config.hostPort);
   const title = String(config.title);
   const json = (text: string) => JSON.stringify(text).slice(1, -1);
   const files = renderScaffold(SCAFFOLD, dir, {
@@ -186,8 +187,9 @@ export function generate(ctx: GenerateContext): GenerateResult {
       // Compose would read "$NAME" in a value as a variable.
       APP_TITLE: title.replaceAll("$", "$$$$"),
     },
-    // An ephemeral host port on loopback: reachable for tests and tools, never from the network.
-    ports: [`127.0.0.1::${port}`],
+    // A fixed host port keeps the browser origin (and CSRF/QR public origin) stable; otherwise an
+    // ephemeral loopback port, reachable for tests and tools and never from the network.
+    ports: [hostPort ? `127.0.0.1:${hostPort}:${port}` : `127.0.0.1::${port}`],
     healthcheck: healthcheck(port),
     restart: "unless-stopped",
     ...(Object.keys(dependsOn).length > 0 && { depends_on: dependsOn }),

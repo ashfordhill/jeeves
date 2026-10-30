@@ -64,7 +64,7 @@
     }
   ],
   "files": {
-    "AGENTS.md": "sha256-86ec609084e9999f21913aa184f3b64065168390f7040e89669bbe0272b9b8ad",
+    "AGENTS.md": "sha256-27b6aac44d2846388c0c1216f07376b6b097255cfbf50c86a81e798bbc09929d",
     "databases/links-db/init/10-consumers.sql": "sha256-7b1733fca04d6e0e152b42b0d84130cf39221d9411bc9c2d986908163a41a29b",
     "docker-compose.yml": "sha256-898b28d4683bedbddaa025e280d58ffaa28ff58e87da1d27ad361bea58534503",
     "frontends/web/nginx/default.conf.template": "sha256-64aa3992462d47897f9b2fadfbc01e936b56becb8a63c7aefdb0ea8797e5c0b3",
@@ -72,9 +72,9 @@
     "frontends/web/src/clients/links.generated.ts": "sha256-2287516c3ff5fdeb4c4b3c5c622db755aab7bf2b9ca936df7a03af510a8e47ed",
     "frontends/web/src/jeeves.generated.ts": "sha256-bd1a98551013f1175f3229d4553ea374ca70044430fa8cf93af9eadc8c8256df",
     "jeeves/design.json": "sha256-9442f593c846e5cea0364b880b3fd7ee112b1376d34ba6750a5ad8e62f04377c",
-    "jeeves/elements/links-db.md": "sha256-bda9d36786f4e3dc028303db159d055d24ec9c291fc6c1f10ed066cd62747a90",
-    "jeeves/elements/links.md": "sha256-f24b29d49fbcbca1dd6269d31943b9a1a66dacbd9d4e67416e297c4fb3cf4ecb",
-    "jeeves/elements/web.md": "sha256-3801a0e8362f51c21b86bf79ae62f5ddecab5afdeb115b2f6d3af81756ab8df3",
+    "jeeves/elements/links-db.md": "sha256-f0707bae7cca0f7009e6a4af7e8f833d04a1cd430584254efd19dcb23df4eac6",
+    "jeeves/elements/links.md": "sha256-37c06a1a5285dad2a643dceeef74f6fb9d4c686c5935f9386104a57e8dbb0c18",
+    "jeeves/elements/web.md": "sha256-c4ab49a0ae8f7464589b15257bc1534c03e151936dcb2c72e76911d107b0768c",
     "services/links/src/jeeves.generated.ts": "sha256-6304096668f1a9d4edb0dd905d2916074dd454ba3b7222df9751efa635aef7e5"
   }
 }

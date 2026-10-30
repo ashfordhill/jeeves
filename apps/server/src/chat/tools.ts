@@ -86,7 +86,7 @@ const explanations: Record<FindingCode, string> = {
   ATTACHMENT_INCOMPATIBLE:
     "The element's template has no slot for this attachment, or the slot is full. See attachmentSlots in describeTemplate.",
   PORT_INCOMPATIBLE:
-    "Neither end has a port for this connection kind and direction, or a port's accepts rule refuses the other end. Connect from or to the attachment that has the port (e.g. a REST API client calls a REST API server).",
+    "Neither end has a port for this connection kind and direction, or a port's accepts rule refuses the other end. Connections join outer elements; if several compatible capabilities fit, choose the capability in the inspector (fromCapability/toCapability). Attachments are never connection endpoints.",
   PORT_MULTIPLICITY: "The port allows a single connection and already has one.",
   DUPLICATE_CONNECTION: "The same connection already exists.",
   NEEDS_TEMPLATE:

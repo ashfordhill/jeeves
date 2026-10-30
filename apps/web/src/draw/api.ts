@@ -119,6 +119,7 @@ export type GenerationCheck = {
   status: "passed" | "failed" | "skipped";
   reason?: string;
   layer?: "infrastructure" | "template" | "application";
+  acceptanceIds?: string[];
   durationMs: number;
   error?: string;
 };
@@ -255,6 +256,7 @@ export type AttemptChecks = {
     status: "passed" | "failed" | "skipped";
     reason?: string;
     layer?: "infrastructure" | "template" | "application";
+    acceptanceIds?: string[];
     durationMs: number;
     error?: string;
   }[];

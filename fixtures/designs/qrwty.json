@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 2,
+  "revision": 0,
+  "elements": [
+    {
+      "id": "qrwty",
+      "name": "qrwty API",
+      "template": {
+        "id": "http-service",
+        "version": "0.1.0"
+      },
+      "config": {
+        "port": 8080,
+        "logLevel": "info"
+      },
+      "attachments": [
+        {
+          "id": "qrwty-api",
+          "template": {
+            "id": "rest-api-server",
+            "version": "0.1.0"
+          },
+          "config": {
+            "auth": "session",
+            "basePath": "/api",
+            "model": {
+              "storeConnection": "qrwty-uses-db",
+              "resources": [
+                {
+                  "id": "qr",
+                  "name": "qr",
+                  "access": "owner",
+                  "fields": [
+                    {
+                      "id": "destination",
+                      "name": "destination",
+                      "type": "http-url",
+                      "required": true
+                    },
+                    {
+                      "id": "title",
+                      "name": "title",
+                      "type": "text",
+                      "required": false,
+                      "maxLength": 120
+                    }
+                  ],
+                  "belongsTo": [],
+                  "operations": ["create", "read", "list", "update"]
+                },
+                {
+                  "id": "scan",
+                  "name": "scan",
+                  "access": "internal",
+                  "fields": [
+                    {
+                      "id": "occurred-at",
+                      "name": "occurredAt",
+                      "type": "timestamp",
+                      "generated": "created-at"
+                    }
+                  ],
+                  "belongsTo": [
+                    {
+                      "id": "scan-qr",
+                      "resource": "qr",
+                      "required": true
+                    }
+                  ],
+                  "operations": []
+                }
+              ],
+              "acceptanceCases": [
+                "QR-01",
+                "QR-02",
+                "QR-03",
+                "QR-04",
+                "QR-05",
+                "QR-06",
+                "QR-07",
+                "QR-08",
+                "QR-09"
+              ],
+              "extensions": [
+                {
+                  "id": "qr-image",
+                  "operationId": "downloadQr",
+                  "method": "GET",
+                  "path": "/api/qr/{id}/image",
+                  "access": "owner",
+                  "acceptance": ["QR-02", "QR-06"],
+                  "dependencies": [
+                    {
+                      "name": "qrcode",
+                      "version": "1.5.4"
+                    }
+                  ],
+                  "notes": "Implement the owner-scoped PNG download. Use sessionPrincipal(request.request) and publicOrigin() from @jeeves/rest-server; never read process.env.PUBLIC_ORIGIN. Read the QR from the generated qr descriptor's physical table by id and its owner_id column, returning 404 if it is absent or another owner's. Encode publicOrigin() + '/q/' + id as a 512x512 PNG with margin 4 and error-correction level M using the qrcode dependency already in package.json. Never encode destination. Set Content-Type: image/png and a Content-Disposition attachment header. Use deterministic encoder options (no timestamp or random metadata) so the bytes stay identical after destination edits and restarts. Do not generate the QR in the browser.",
+                  "contract": {
+                    "parameters": [
+                      {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "PNG QR code containing the stable public redirect URL",
+                        "headers": {
+                          "Content-Disposition": {
+                            "required": true,
+                            "schema": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "content": {
+                          "image/png": {
+                            "schema": {
+                              "type": "string",
+                              "format": "binary"
+                            }
+                          }
+                        }
+                      },
+                      "400": {
+                        "description": "Invalid id",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                },
+                                "details": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "404": {
+                        "description": "QR not found",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "redirect",
+                  "operationId": "followQr",
+                  "method": "GET",
+                  "path": "/q/{id}",
+                  "access": "public",
+                  "acceptance": ["QR-03", "QR-04", "QR-07"],
+                  "notes": "Implement the public redirect. Query the current destination by id; if it is missing, return 404 and insert nothing. In one transaction (withTransaction from @jeeves/postgres-runtime), insert one scan row for the qr and commit, then return 302 with the destination in Location and Cache-Control: no-store. Every request counts, including repeated requests from the same client. Do not follow or cache the destination. Use the generated qr and scan descriptors for the physical table and column names, and parameterized SQL. Public access means no session lookup. Do not expose fixture or clock controls.",
+                  "contract": {
+                    "parameters": [
+                      {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    ],
+                    "responses": {
+                      "302": {
+                        "description": "Redirect to the current destination",
+                        "headers": {
+                          "Location": {
+                            "required": true,
+                            "schema": {
+                              "type": "string",
+                              "format": "uri"
+                            }
+                          },
+                          "Cache-Control": {
+                            "required": true,
+                            "schema": {
+                              "type": "string",
+                              "const": "no-store"
+                            }
+                          }
+                        }
+                      },
+                      "400": {
+                        "description": "Invalid id",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "404": {
+                        "description": "Unknown redirect",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": "activity",
+                  "operationId": "qrActivity",
+                  "method": "GET",
+                  "path": "/api/qr/{id}/activity",
+                  "access": "owner",
+                  "acceptance": ["QR-05", "QR-06"],
+                  "notes": "Implement the owner-scoped activity query. Use sessionPrincipal(request.request); check the QR belongs to the authenticated principal and return 404 for an absent or another owner's id. Require from and to as inclusive UTC dates, reject from > to and ranges longer than 366 days with 400. Return {total, days:[{date,count}]}; include every UTC day in the range, including zero-count days. Aggregate scan rows by UTC day using the generated qr/scan descriptors and parameterized SQL. Do not expose fixture or clock controls.",
+                  "contract": {
+                    "parameters": [
+                      {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      {
+                        "name": "from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                          "type": "string",
+                          "format": "date"
+                        }
+                      },
+                      {
+                        "name": "to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                          "type": "string",
+                          "format": "date"
+                        }
+                      }
+                    ],
+                    "responses": {
+                      "200": {
+                        "description": "Activity over the requested UTC date range",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["total", "days"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "total": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "days": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "required": ["date", "count"],
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "date": {
+                                        "type": "string",
+                                        "format": "date"
+                                      },
+                                      "count": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "400": {
+                        "description": "Invalid date range",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "404": {
+                        "description": "QR not found",
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "required": ["error", "message"],
+                              "additionalProperties": false,
+                              "properties": {
+                                "error": {
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "notes": ""
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "id": "qrwty-db",
+      "name": "qrwty DB",
+      "template": {
+        "id": "postgres",
+        "version": "0.1.0"
+      },
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "qrwty-web",
+      "name": "qrwty web",
+      "template": {
+        "id": "web-app",
+        "version": "0.1.0"
+      },
+      "config": {
+        "title": "qrwty",
+        "port": 5173,
+        "hostPort": 5173
+      },
+      "attachments": [
+        {
+          "id": "qrwty-client",
+          "template": {
+            "id": "rest-api-client",
+            "version": "0.1.0"
+          },
+          "config": {},
+          "notes": ""
+        }
+      ],
+      "notes": "Build the qrwty user interface in this web app. Use the generated `qrwtyClient` from\n`useApis()` and the existing runtime config. Do not generate QR codes in the browser and do not\nedit generated clients, contracts, or server code.\n\nAuth\n- On load, call GET /auth/session. If 401, show a register/login form; if 200, show the app.\n- Register and login with email + password. Store the returned csrfToken in memory (not localStorage).\n- Logout calls POST /auth/logout with the csrf token and clears the local state.\n- Every mutation sends `x-csrf-token` and uses the same-origin client. Handle 401 by returning to auth.\n\nQR list\n- GET /api/qr?limit=25, newest first. Show title (or \"Untitled\"), destination, created time, and\n  the public link `window.location.origin + \"/q/\" + id`.\n- Support the next cursor with a Load more button; empty state; loading and error states.\n\nCreate\n- Form: destination (required, absolute HTTP/HTTPS, no credentials) and optional title (max 120).\n- POST /api/qr; on 201 clear the form, refresh the list, and show the public link.\n- Inline 400 errors; 401 returns to auth.\n\nEdit\n- Select a QR, edit destination and title, PATCH /api/qr/{id}. Send destination and title; the server preserves an\n  omitted optional title and clears it when the request sends null.\n- On success refresh the row; 400/404 inline; 401 returns to auth.\n\nImage\n- Download GET /api/qr/{id}/image through the same-origin client with `parseAs: \"blob\"` (or an\n  authenticated same-origin fetch if the generated client cannot type it).\n- Trigger a browser download with the returned blob; do not build the image from the destination.\n- Show the stable public link beside the download action.\n\nActivity\n- Activity view: from/to date controls defaulting to the last 30 UTC days, a total, and a table of\n  every returned day including zero-count days.\n- GET /api/qr/{id}/activity?from=...&to=...; handle 400 for an invalid or too-wide range.\n- Do not claim unique visitors; label the number as requests.\n\nQuality\n- Every action works by mouse. No keyboard-only controls.\n- No console.error for expected 400/401/404 flows.\n- Keep supplemental tests in the app's `tests/` folder: auth gate, list/create, image download,\n  activity rendering.\n- Do not add a chart library for the first proof; a table is enough.\n\nTest hooks (fixed browser acceptance relies on these exact attributes)\n- Email input: `data-testid=\"auth-email\"`; password input: `data-testid=\"auth-password\"`.\n- Register button: `data-testid=\"auth-register\"`; login button: `data-testid=\"auth-login\"`.\n- Logout button: `data-testid=\"auth-logout\"`.\n- Create form: `data-testid=\"qr-create-form\"`, destination `data-testid=\"qr-destination\"`,\n  title `data-testid=\"qr-title\"`, submit `data-testid=\"qr-create\"`.\n- Each list row: `data-testid=\"qr-row\"` with `data-qr-id` set to the resource id.\n- Edit form on the selected row: destination `data-testid=\"qr-edit-destination\"`, title\n  `data-testid=\"qr-edit-title\"`, save `data-testid=\"qr-edit-save\"`.\n- Download image link or button: `data-testid=\"qr-image-download\"` (a link with `download` is fine).\n- Activity button: `data-testid=\"qr-activity\"`; from `data-testid=\"activity-from\"`; to\n  `data-testid=\"activity-to\"`; apply `data-testid=\"activity-apply\"`; total\n  `data-testid=\"activity-total\"`; table rows `data-testid=\"activity-day\"` with\n  `data-date` and `data-count` attributes.\n- The public link shown for a row: `data-testid=\"qr-public-link\"` with its href and text equal to\n  `window.location.origin + \"/q/\" + id`."
+    }
+  ],
+  "connections": [
+    {
+      "id": "qrwty-uses-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "qrwty"
+      },
+      "to": {
+        "element": "qrwty-db"
+      }
+    },
+    {
+      "id": "qrwty-web-calls-api",
+      "kind": "calls",
+      "from": {
+        "element": "qrwty-web"
+      },
+      "to": {
+        "element": "qrwty"
+      },
+      "config": {
+        "fromCapability": "qrwty-client",
+        "toCapability": "qrwty-api"
+      }
+    }
+  ],
+  "annotations": []
+}

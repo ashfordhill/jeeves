@@ -1,8 +1,11 @@
+import { createValidators, parseContract } from "@jeeves/rest-server";
+import { resourceConfigSchema } from "@jeeves/spec";
 import { createGenerateContext } from "@jeeves/template-kit";
 import { describe, expect, it } from "vitest";
-import { parse } from "yaml";
+import { parse, stringify } from "yaml";
 import { lookup, serverDesign } from "./conformance/fixtures/design.ts";
 import { generate } from "./generate.ts";
+import { resourceContract } from "./resources.ts";
 
 const generateFor = (config: Record<string, unknown> = {}) =>
   generate(createGenerateContext(serverDesign(config), lookup, "links", "links-api"));
@@ -22,6 +25,34 @@ describe("rest-api-server generate", () => {
     expect(runtimeDependencies).toEqual([{ element: "links", name: "@jeeves/rest-server" }]);
   });
 
+  it("injects JSON error bodies for description-only extension responses", () => {
+    const model = resourceConfigSchema.parse({
+      resources: [],
+      acceptanceCases: ["A-01"],
+      extensions: [
+        {
+          id: "lookup",
+          operationId: "lookup",
+          method: "GET",
+          path: "/lookup",
+          access: "public",
+          acceptance: ["A-01"],
+          notes: "Return a record or a JSON 404.",
+          contract: {
+            parameters: [],
+            responses: {
+              "200": { description: "Success" },
+              "404": { description: "Not found" },
+            },
+          },
+        },
+      ],
+    });
+    const contract = stringify(resourceContract(model, "Test"));
+    const validators = createValidators(parseContract(contract));
+    const lookup = validators.get("lookup")!;
+    expect(lookup.response(404, { error: "NOT_FOUND", message: "No such record" })).toEqual([]);
+  });
   it("gives the service a local bearer token only when auth is bearer", () => {
     expect(generateFor().compose).toEqual({});
     expect(generateFor({ auth: "bearer" }).compose.services?.links?.environment).toEqual({

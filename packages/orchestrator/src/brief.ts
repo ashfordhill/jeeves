@@ -70,7 +70,7 @@ export function taskBrief({ project, task, attempt, earlierWork }: BriefInput): 
     ...task.ownedPaths.map((p) => `- \`${p}\``),
     ...SHARED_PATHS.map((p) => `- \`${p}\` (updated by \`pnpm install\`)`),
     "",
-    "Jeeves rejects and reverts changes anywhere else, and to tests/generated/, tests/acceptance/, jeeves/, and generated-owned files (listed in `jeeves/lock.json`, e.g. `*.generated.ts`). If the task needs a change elsewhere, stop and say so in your final message.",
+    "Jeeves rejects and reverts changes anywhere else, and to tests/generated/, tests/acceptance/, jeeves/, the generated contract, src/generated/, resource-migrations/, and every other generated-owned file (listed in `jeeves/lock.json`). If the task needs a change elsewhere, stop and say so in your final message.",
     "",
     "## Checks",
     "",

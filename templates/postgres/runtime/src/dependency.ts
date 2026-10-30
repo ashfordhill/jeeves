@@ -4,6 +4,28 @@ import { type DatabaseConfig, DatabaseConfigError, databaseConfigFromEnv } from 
 import { createDatabase, type Database, type ReadyResult } from "./database.ts";
 import { runResourceMigrations } from "./resource-migrate.ts";
 
+/**
+ * Runs project-owned extension work in one transaction on the generated resource tables. The
+ * callback gets the checked-out client; use descriptor column names and parameterized SQL.
+ */
+export async function withTransaction<T>(
+  pool: pg.Pool,
+  work: (client: pg.PoolClient) => Promise<T>,
+): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await work(client);
+    await client.query("COMMIT");
+    return result;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export interface PostgresDependencyOptions<TSchema extends Record<string, unknown>> {
   /** The postgres element's ID; `/ready` reports under this name. */
   name: string;

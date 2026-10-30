@@ -194,6 +194,7 @@ function ChecksView({ detail }: { detail: AttemptDetail }) {
             <li key={`${c.subject}/${c.id}`} className="attempt-check" data-status={c.status}>
               {c.layer === "application" ? "Application acceptance" : "Template conformance"} ·{" "}
               {c.subject}: {c.title}: {c.status}
+              {c.acceptanceIds?.length ? ` · ${c.acceptanceIds.join(", ")}` : ""}
               {c.reason ? ` · ${c.reason}` : ""}
               {c.error ? ` · ${c.error}` : ""}
             </li>

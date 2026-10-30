@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type DesignDocument, type ResourceConfig, validateDesign } from "@jeeves/spec";
 import { afterEach, describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import { generateProject } from "./generate.ts";
 import { hashContents, readLock } from "./lock.ts";
 import { templateSet } from "./modules.ts";
@@ -33,6 +34,58 @@ const snapshot = (dir: string): Record<string, string> =>
   );
 
 describe("deterministic resource generation", () => {
+  it("documents JSON error bodies for description-only extension responses", () => {
+    const plan = planProject(fixtureDesign("resources"), templateSet(), {
+      projectName: "Resources",
+    });
+    const contract = parse(
+      plan.files.find((f) => f.path === "contracts/links.openapi.yaml")!.contents,
+    ) as {
+      paths: Record<
+        string,
+        Record<string, { responses: Record<string, { content?: Record<string, unknown> }> }>
+      >;
+    };
+    const activity = contract.paths["/api/qr/{id}/activity"]!.get!;
+    for (const status of ["401", "404"]) {
+      expect(activity.responses[status]!.content).toHaveProperty("application/json");
+    }
+  });
+  it("treats a new generated timestamp field as additive", async () => {
+    const dir = temp();
+    const d = fixtureDesign("resources");
+    await generate(dir, d);
+    model(d).resources[0]!.fields.push({
+      id: "updated-at",
+      name: "updatedAt",
+      type: "timestamp",
+      generated: "created-at",
+    });
+    d.revision++;
+    expect((await generate(dir, d)).ok).toBe(true);
+    const sql = contents(dir, "services/links/resource-migrations/0002.sql");
+    expect(sql).toContain("ADD COLUMN");
+    expect(sql).toContain("timestamptz");
+    expect(sql).toContain("DEFAULT now()");
+  });
+  it("generates ownership text from the structured plan instead of calling the contract project-owned", () => {
+    const plan = planProject(fixtureDesign("resources"), templateSet(), {
+      projectName: "Resources",
+    });
+    const agents = plan.files.find((f) => f.path === "AGENTS.md")!.contents;
+    expect(agents).toContain("contracts/links.openapi.yaml");
+    expect(agents).toContain("services/links/src/generated/**");
+    expect(agents).toContain("services/links/resource-migrations/**");
+    expect(agents).toContain("tests/generated/links/**");
+    expect(agents).toContain("tests/acceptance/links/**");
+    expect(agents).toContain("Implement only the declared extension");
+    expect(agents).not.toContain("API contracts in `contracts/`");
+    const notes = plan.files.find((f) => f.path === "jeeves/elements/links.md")!.contents;
+    expect(notes.indexOf("Agent guide for rest-api-server@0.1.0")).toBeLessThan(
+      notes.indexOf("## Attachments"),
+    );
+    expect(notes).toContain("Generated standard behavior (do not reimplement)");
+  });
   it("generates contracts, standard routes, clients, secret wiring and stable storage", () => {
     const design = fixtureDesign("resources");
     expect(validateDesign(design, templateSet().lookup)).toEqual([]);

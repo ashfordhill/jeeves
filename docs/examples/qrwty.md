@@ -1,6 +1,6 @@
 # qrwty proving application
 
-Status: milestone scope, authentication, and concrete service boundaries approved by the user on 2026-10-29 (SRC-18 in `docs/sources.md`). Implementation and acceptance remain outstanding. This supersedes the old hardware-first acceptance journey retained below as historical context. Use [the improvement specification](../improvements.md) as the approved implementation specification.
+Status: milestone scope, authentication, and concrete service boundaries approved by the user on 2026-10-29 (SRC-18 in `docs/sources.md`). Implementation and acceptance remain outstanding. This supersedes the old hardware-first acceptance journey retained below as historical context. Use [the improvement specification](../improvements.md) as the approved implementation specification. The reviewed design is committed at [`fixtures/designs/qrwty.json`](../../fixtures/designs/qrwty.json), its suites at [`fixtures/acceptance/qrwty/`](../../fixtures/acceptance/qrwty/), and `pnpm qrwty:bootstrap` registers them through the Jeeves API.
 
 ## Product loop
 

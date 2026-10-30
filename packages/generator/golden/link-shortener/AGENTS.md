@@ -14,19 +14,17 @@ the extension points the templates give you, not to change the templates.
 | `links-db` | Links DB | `postgres@0.1.0` | `databases/links-db/` | [notes](jeeves/elements/links-db.md) |
 | `web` | Web app | `web-app@0.1.0` | `frontends/web/` | [notes](jeeves/elements/web.md) |
 
-Each element's notes file holds what to build (the implementation notes from the design) and the
-template's agent guide (where code goes and what not to touch). Read it before changing the
-element.
+Each element's notes file holds what to build (the implementation notes from the design), the
+generated standard behavior it must not reimplement, and the template's agent guide (where code
+goes and what not to touch). Read it before changing the element.
 
 ## Ownership
 
 - **Generated-owned files** are listed with their hashes in `jeeves/lock.json`. Never edit
-  them: `docker-compose.yml`, every `*.generated.ts`, `jeeves/`, and `AGENTS.md` among
-  them. They are rewritten from the design, and a hand edit stops the next regeneration.
+  them. For this project that includes `docker-compose.yml`, `jeeves/`, `AGENTS.md`, every `*.generated.ts`, every `src/clients/*.openapi.ts`.
 - **`vendor/jeeves/`** holds the template runtimes. Never edit or replace them.
-- **Everything else is project-owned**: feature code, tests, `package.json` files, Dockerfiles,
-  and API contracts in `contracts/`. Change it freely, within the element you were asked to work
-  on.
+- **Everything else is project-owned**: feature code, supplemental tests, `package.json`
+  files, Dockerfiles, and API contracts in `contracts/`. Change it freely, within the element you were asked to work on.
 - Stay inside the element's directory, plus the contracts that element owns. If the task needs a
   change elsewhere, stop and say so.
 
@@ -41,8 +39,9 @@ pnpm test
 docker compose up --build --wait
 ```
 
-The template test packs run against the composed project and must stay green. Add tests for what
-you build next to the element (`test/`), or in `tests/e2e/` for flows across elements.
+The template test packs run against the composed project and must stay green. Add supplemental
+tests for what you build next to the element (`tests/`), or in `tests/e2e/` for flows across
+elements.
 
 ## Dependencies
 

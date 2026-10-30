@@ -52,6 +52,7 @@ describe("structured resources", () => {
         access: "owner",
         acceptance: ["A1"],
         notes: "Implement extra",
+        dependencies: [],
         contract: { parameters: [], responses: { "200": { description: "Success" } } },
       });
       if (kind !== "missing-acceptance") value.acceptanceCases.push("A1");

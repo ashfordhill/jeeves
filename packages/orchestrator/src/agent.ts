@@ -229,10 +229,14 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
       }
 
       emit({ kind: "log", text: `Running Jeeves's checks on ${changes.length} changed file(s)` });
+      const element = project.design.elements.find((e) => e.id === task.element);
+      const phase: "frontend" | "extensions" =
+        element?.template?.id === "web-app" ? "frontend" : "extensions";
       const logTail: string[] = [];
       const result = await checks.run({
         dir,
         requiredExtensions: required,
+        phase,
         changed: changes.filter((c) => c.status !== "deleted").map((c) => c.path),
         signal,
         onEvent: (event) => {

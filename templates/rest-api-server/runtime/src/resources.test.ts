@@ -182,6 +182,19 @@ describe("generated resource runtime", () => {
     expect(update[0]).toContain("WHERE owner_id = $1 AND id =");
     expect(update[1]![0]).toBe(bob);
   });
+  it("applies PATCH as a partial update and preserves an omitted optional title", async () => {
+    const { app, query, row } = await setup();
+    const response = await app.inject({
+      method: "PATCH",
+      url: "/api/qr/" + row.id,
+      headers: headers(),
+      payload: { destination: "https://elsewhere.test" },
+    });
+    expect(response.statusCode).toBe(200);
+    const update = query.mock.calls.find(([sql]) => sql.startsWith("UPDATE"))!;
+    expect(update[0]).toContain("destination");
+    expect(update[0].split("WHERE")[0]).not.toContain("title");
+  });
   it("enforces CSRF, validates IDs/cursors, and bounds list pagination", async () => {
     const { app, query } = await setup();
     expect(

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  acceptanceCaseCoverageProblems,
   acceptanceCoverageProblems,
   acceptanceFiles,
   acceptancePath,
@@ -121,6 +122,50 @@ describe("independent fixed acceptance", () => {
     const bad = structuredClone(plan.compose);
     bad.services.links!.volumes = ["/production:/data"];
     expect(() => fixtureCompose(bad, readableLock())).toThrow("Writable bind");
+  });
+  it("publishes the fixture web app on its reserved port and makes it the public origin", () => {
+    const fixture = fixtureCompose(
+      plan.compose,
+      {
+        ...readableLock(),
+        resourceModels: plan.resourceModels,
+        elements: [
+          { id: "web", template: "web-app@0.1.0", dir: "frontends/web", ownedPaths: [] },
+          { id: "links", template: "http-service@0.1.0", dir: "services/links", ownedPaths: [] },
+        ],
+      },
+      { publicOrigin: "http://127.0.0.1:7777", webPorts: { web: 7777 } },
+    );
+    expect(fixture.services.web?.ports).toEqual(["127.0.0.1:7777:5173"]);
+    expect(fixture.services.links?.environment?.PUBLIC_ORIGIN).toBe("http://127.0.0.1:7777");
+  });
+  it("emits generated-owned support files and exact test dependencies", async () => {
+    const dir = temp();
+    const withSupport: FixedAcceptance = {
+      ...suite,
+      files: [{ path: "_support/qr.ts", contents: "export const decoded = true;\n" }],
+      dependencies: [{ name: "jsqr", version: "1.4.0" }],
+    };
+    const options = { dir, design, projectName: "Verification", git: false, vendor: fakeVendor };
+    expect((await generateProject({ ...options, fixedAcceptance: [withSupport] })).ok).toBe(true);
+    expect(readFileSync(join(dir, "tests/acceptance/links/_support/qr.ts"), "utf8")).toBe(
+      "export const decoded = true;\n",
+    );
+    expect(
+      JSON.parse(readFileSync(join(dir, "package.json"), "utf8")).devDependencies,
+    ).toMatchObject({ jsqr: "1.4.0" });
+    expect(readLock(dir)!.fixedAcceptance?.[0]?.files).toEqual([{ path: "_support/qr.ts" }]);
+    expect((await generateProject(options)).ok).toBe(true);
+    expect(readFileSync(join(dir, "tests/acceptance/links/_support/qr.ts"), "utf8")).toBe(
+      "export const decoded = true;\n",
+    );
+    expect(readLock(dir)!.fixedAcceptance).toHaveLength(1);
+  });
+  it("requires every declared acceptance case to have a registered suite", () => {
+    expect(acceptanceCaseCoverageProblems(plan.resourceModels!, [])).toEqual([
+      "links/ACT-01: no fixed acceptance suite is registered",
+    ]);
+    expect(acceptanceCaseCoverageProblems(plan.resourceModels!, plan.fixedAcceptance!)).toEqual([]);
   });
   it("rejects empty and skipped independent suites even when their command exited zero", () => {
     expect(() => assertExecutedTests("# tests 0\n# pass 0")).toThrow("nonempty");

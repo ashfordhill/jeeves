@@ -67,7 +67,9 @@ export function modelMigration(next: ResourceConfig, previous?: ResourceConfig):
       }
     }
     for (const f of r.fields.filter((f) => !old.fields.some((o) => o.id === f.id))) {
-      if (required(f)) affected.push(`${r.id}.${f.id}: new required field needs a backfill`);
+      // A generated timestamp has DEFAULT now(), so adding it needs no backfill.
+      if (required(f) && f.type !== "timestamp")
+        affected.push(`${r.id}.${f.id}: new required field needs a backfill`);
       else sql.push(`ALTER TABLE "${tableName(r)}" ADD COLUMN ${fieldSql(f)};`);
     }
   }
@@ -133,6 +135,24 @@ const error = {
     },
   },
 };
+
+/**
+ * A description-only 400/401/404 makes a handler that returns the generated `{error, message}`
+ * body fail response validation and become a 500. Give every standard error status a JSON body.
+ */
+export function withDefaultErrorBodies(
+  responses: ResourceConfig["extensions"][number]["contract"]["responses"],
+): ResourceConfig["extensions"][number]["contract"]["responses"] {
+  const result = structuredClone(responses);
+  for (const [status, response] of Object.entries(result)) {
+    if (!/^(?:400|401|403|404|409|422|500)$/.test(status)) continue;
+    response.content ??= {};
+    response.content["application/json"] ??= {
+      schema: structuredClone(error.content["application/json"].schema),
+    };
+  }
+  return result;
+}
 export function resourceContract(model: ResourceConfig, title: string) {
   const credentials = z.toJSONSchema(sessionCredentialsSchema, { io: "input" });
   const identity = z.toJSONSchema(sessionIdentitySchema, { io: "input" });
@@ -279,6 +299,7 @@ export function resourceContract(model: ResourceConfig, title: string) {
     paths[e.path]!.get = {
       operationId: e.operationId,
       ...e.contract,
+      responses: withDefaultErrorBodies(e.contract.responses),
       security: e.access === "owner" ? [{ session: [] }] : [],
       "x-jeeves-acceptance": e.acceptance,
     };

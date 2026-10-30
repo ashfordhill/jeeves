@@ -8,7 +8,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readLock } from "@jeeves/generator";
+import { acceptanceCaseCoverageProblems, readLock } from "@jeeves/generator";
 import {
   type AttemptEvent,
   type AttemptOutcome,
@@ -396,6 +396,14 @@ export class RunService {
 
   private async makePlan(run: Run, signal: AbortSignal) {
     const project = readGeneratedProject(run.outputDir);
+    const uncovered = acceptanceCaseCoverageProblems(
+      project.lock.resourceModels ?? {},
+      project.lock.fixedAcceptance ?? [],
+    );
+    if (uncovered.length)
+      throw new Error(
+        `Every declared acceptance case needs a registered fixed suite before planning:\n${uncovered.join("\n")}`,
+      );
     const current = await this.design.getProject(run.projectId);
     const warnings: string[] = [];
     const generatedFrom = project.lock.designRevision;
@@ -681,6 +689,15 @@ export class RunService {
             );
             return;
           }
+          const acceptance = await this.acceptanceGate(runId, project.lock);
+          if (acceptance.missing.length) {
+            await this.stop(
+              runId,
+              "needs-attention",
+              `Unverified acceptance cases: ${acceptance.missing.join(", ")}. Every declared case needs a passing fixed suite; skipped suites do not count.${acceptance.skipped.length ? ` Skipped: ${acceptance.skipped.join("; ")}.` : ""}`,
+            );
+            return;
+          }
         }
         await this.db
           .update(runs)
@@ -726,6 +743,39 @@ export class RunService {
       this.live.delete(runId);
       this.busy.delete(runId);
     }
+  }
+
+  /**
+   * The terminal acceptance gate: every acceptance case declared by the generated model must have
+   * a passing fixed-suite record in this run. A skipped suite is reported, never counted as a pass.
+   */
+  private async acceptanceGate(
+    runId: number,
+    lock: ReturnType<typeof readGeneratedProject>["lock"],
+  ): Promise<{ missing: string[]; skipped: string[] }> {
+    const cases = Object.values(lock.resourceModels ?? {}).flatMap(
+      (model) => model.acceptanceCases,
+    );
+    if (cases.length === 0) return { missing: [], skipped: [] };
+    const rows = await this.db
+      .select({ checks: attempts.checks })
+      .from(attempts)
+      .where(eq(attempts.runId, runId));
+    const passed = new Set<string>();
+    const skipped = new Map<string, string>();
+    for (const row of rows)
+      for (const check of row.checks?.checks ?? [])
+        for (const id of check.acceptanceIds ?? []) {
+          if (check.status === "passed") passed.add(id);
+          else if (check.status === "skipped" && !skipped.has(id))
+            skipped.set(id, check.reason ?? "skipped");
+        }
+    return {
+      missing: cases.filter((id) => !passed.has(id)),
+      skipped: [...skipped]
+        .filter(([id]) => !passed.has(id))
+        .map(([id, reason]) => `${id}: ${reason}`),
+    };
   }
 
   /**
@@ -1219,6 +1269,14 @@ function capabilities(run: Run): string[] {
     const lock = readLock(run.outputDir);
     return Object.entries(lock?.resourceModels ?? {}).flatMap(([service, model]) => [
       `${service}: accounts and sessions; ${model.resources.map((r) => `${r.name} (${r.operations.join(", ")})`).join("; ")}`,
+      ...(model.extensions.length
+        ? [
+            `${service}: extensions ${model.extensions.map((e) => `${e.id} (${e.operationId}, ${e.path})`).join("; ")}`,
+          ]
+        : []),
+      ...(model.acceptanceCases.length
+        ? [`${service}: acceptance ${model.acceptanceCases.join(", ")}`]
+        : []),
     ]);
   } catch {
     return [];

@@ -51,8 +51,26 @@ const linkShortenerOps: OperationInput[] = [
  */
 const makeGenerator = (git: boolean): GeneratorRunner => ({
   generate: async (options) => {
+    const structured = options.design.elements.some((element) =>
+      element.attachments.some(
+        (attachment) => attachment.template.id === "rest-api-server" && attachment.config.model,
+      ),
+    );
     const report = await generateProject({
       ...options,
+      fixedAcceptance:
+        options.fixedAcceptance ??
+        (structured
+          ? [
+              {
+                id: "activity",
+                service: "links",
+                operationIds: ["qrActivity"],
+                acceptanceIds: ["ACT-01"],
+                source: 'import test from "node:test"; test("fixed activity",()=>{});\n',
+              },
+            ]
+          : undefined),
       git,
       vendor: async (dir) => {
         mkdirSync(join(dir, "vendor/jeeves"), { recursive: true });
@@ -277,6 +295,27 @@ describe("planning", () => {
     expect(stopped.run.statusReason).toContain(
       "Unverified required extension operations: links/qrActivity",
     );
+  });
+  it("stops a structured run when declared acceptance cases have no passing suite record", async () => {
+    const h = harness();
+    const resourceDesign = designSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL("../../../../fixtures/designs/resources.json", import.meta.url),
+          "utf8",
+        ),
+      ),
+    );
+    const ops: OperationInput[] = [
+      ...resourceDesign.elements.map((element) => ({ op: "addElement" as const, element })),
+      ...resourceDesign.connections.map((connection) => ({ op: "connect" as const, connection })),
+    ];
+    const id = await h.project("Structured terminal gate", ops);
+    await h.generate(id);
+    const detail = await h.planned(id);
+    expect((await h.act(id, detail.run.id, "start")).status).toBe(200);
+    const stopped = await h.until(id, detail.run.id, "needs-attention");
+    expect(stopped.run.statusReason).toContain("Unverified acceptance cases: ACT-01");
   });
   it("can't plan a project that hasn't been generated", async () => {
     const h = harness();

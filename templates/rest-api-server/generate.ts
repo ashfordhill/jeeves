@@ -77,6 +77,13 @@ export function generate(ctx: GenerateContext): GenerateResult {
     return {
       files,
       resourceModel: model,
+      packageDependencies: model.extensions.flatMap((extension) =>
+        (extension.dependencies ?? []).map((dependency) => ({
+          element: element.id,
+          name: dependency.name,
+          version: dependency.version,
+        })),
+      ),
       compose: {
         services: {
           [element.id]: {

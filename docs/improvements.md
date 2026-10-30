@@ -1,6 +1,6 @@
 # Deterministic application behavior and the qrwty proof
 
-Status: architecture approved by the user on 2026-10-29 (see SRC-18 in `docs/sources.md`). The owner-scoped resource pattern, retaining React Flow with outer-only connections, and qrwty boundaries/authentication are approved for implementation. P1–P5 are implemented; the qrwty proving application is next. P3–P5 evidence and implementation limits are recorded in `docs/handoff.md`. The qrwty application itself remains unbuilt. This document supersedes conflicting future-work statements in PLAN.md. Historical handoffs remain evidence of what actually happened.
+Status: architecture approved by the user on 2026-10-29 (see SRC-18 in `docs/sources.md`). The owner-scoped resource pattern, retaining React Flow with outer-only connections, and qrwty boundaries/authentication are approved for implementation. P1–P6 are implemented; the qrwty proving application is next. P3–P6 evidence and implementation limits are recorded in `docs/handoff.md`. The qrwty application itself remains unbuilt. This document supersedes conflicting future-work statements in PLAN.md. Historical handoffs remain evidence of what actually happened.
 
 ## Evidence and scope
 
@@ -88,7 +88,8 @@ Concrete qrwty resource config:
 }
 ```
 
-Resource/field/relationship IDs are scoped to the owning service and immutable after generation. Routes in extensions are full paths; generated CRUD paths are `/api/<resource>` and `/api/<resource>/{id}` for this proposal: POST creates, GET on the collection lists, GET by ID reads, and PATCH by ID updates. Validate operation ID/path collisions, relationship targets, forbidden cycles where required ownership cannot be established, field names, duplicate IDs, operation applicability, and missing acceptance references before generation. Extension request/response contracts must be fixed and validated before model coding; the small example above defines task boundaries, not enough information to invent arbitrary response schemas. Store those contracts with the same validated config, using the existing OpenAPI subset rather than a new contract language. The current REST runtime only extracts JSON body schemas; image content and redirect-header verification must be added explicitly, rather than treating a non-JSON response as schema coverage.
+Resource/field/relationship IDs are scoped to the owning service and immutable after generation. Routes in extensions are full paths; generated CRUD paths are `/api/<resource>` and `/api/<resource>/{id}` for this proposal: POST creates, GET on the collection lists, GET by ID reads, and PATCH by ID updates. Validate operation ID/path collisions, relationship targets, forbidden cycles where required ownership cannot be established, field names, duplicate IDs, operation applicability, and missing acceptance references before generation. Extension request/response contracts must be fixed and validated before model coding; the small example above defines task boundaries, not enough information to invent arbitrary response schemas. Store those contracts with the same validated config, using the existing OpenAPI subset rather than a new contract language. P4 added PNG framing/checksum and redirect-header verification; the qrwty fixed suites add independent QR decoding, URL identity, and request counts. (The earlier sentence that the runtime only extracted JSON body schemas is historical.)
+
 
 ### Generated output example
 
@@ -97,14 +98,14 @@ For `qr`, `destination`, and `title`, Generate writes:
 ```text
 services/qrwty/src/generated/resources/qr.ts   validators, owner-scoped repository, handlers
 services/qrwty/src/generated/routes.ts         register create/read/list/update + extensions
-databases/qrwty-db/migrations/0001.sql         immutable, hashed schema change
-contracts/qrwty.openapi.yaml                  CRUD + fixed extension contracts
-frontends/web/src/generated/qrwty-client.ts   types and calls from the contract
-tests/generated/qrwty/qr.test.ts              independent CRUD/isolation/validation checks
-tests/acceptance/qrwty.test.ts                fixed project examples, protected from agents
-services/qrwty/src/features/qr-image.ts        scaffold once; explicit implementation task
-services/qrwty/src/features/redirect.ts        scaffold once; explicit implementation task
-services/qrwty/src/features/activity.ts        scaffold once; explicit implementation task
+services/qrwty/resource-migrations/0001.sql    immutable, hashed schema change
+contracts/qrwty.openapi.yaml                   CRUD + fixed extension contracts
+frontends/web/src/clients/qrwty.openapi.ts     types from the contract
+tests/generated/qrwty/qr.test.ts               independent CRUD/isolation/validation checks
+tests/acceptance/qrwty/core.test.ts            fixed project examples, protected from agents
+services/qrwty/src/features/qr-image/index.ts  scaffold once; explicit implementation task
+services/qrwty/src/features/redirect/index.ts  scaffold once; explicit implementation task
+services/qrwty/src/features/activity/index.ts  scaffold once; explicit implementation task
 ```
 
 Illustrative SQL and handler behavior (P3 uses stable-ID physical names for storage):
@@ -135,7 +136,7 @@ const row = await db.query(
 // Missing or another owner's ID => 404. No session => 401 before accessing storage.
 ```
 
-Create returns 201 with `{id, destination, title, createdAt}`. Read/update return the same shape; title is nullable. List returns `{items, nextCursor}` with fixed keyset pagination (newest creation timestamp then ID; bounded page size), always scoped to the principal. Update requires destination and accepts optional title; ID/owner/createdAt/unknown keys are rejected. `http-url` accepts absolute HTTP/HTTPS URLs without embedded credentials and validates without fetching the destination. Invalid payloads return structured 400 responses. The QR identity is immutable and the redirect path derives from that ID. Only the server constructs the public origin from deployment configuration; request Host headers cannot change downloaded QR identity.
+Create returns 201 with `{id, destination, title, createdAt}`. Read/update return the same shape; title is nullable. List returns `{items, nextCursor}` with fixed keyset pagination (newest creation timestamp then ID; bounded page size), always scoped to the principal. Update requires destination and accepts optional title; ID/owner/createdAt/unknown keys are rejected. PATCH is a partial update: omitted optional fields keep their stored value. `http-url` accepts absolute HTTP/HTTPS URLs without embedded credentials and validates without fetching the destination. Invalid payloads return structured 400 responses. The QR identity is immutable and the redirect path derives from that ID. Only the server constructs the public origin from deployment configuration; request Host headers cannot change downloaded QR identity.
 
 ### Operations and migration compatibility
 
@@ -143,7 +144,7 @@ Add validated resource/config operations to the existing operations union, or in
 
 Proposed design format v2 adds outer-only connection endpoints plus capability selection on connection configuration. v1 reads remain supported through an explicit deterministic conversion: lift each attachment endpoint to its parent and retain the attachment ID as the chosen capability. Preserve IDs, configs, notes, and semantic content; record conversion on the next semantic save, never on a layout save. Old template versions remain pinned and runnable. No resource declarations are inferred from old notes. Repeated old calls to different components stay distinct. Missing/ambiguous capability references produce findings instead of guessed wiring.
 
-Regeneration preserves current drift detection and scaffold-once behavior. Generated validators, contracts, wiring, clients, and tests are generated-owned. Extension implementation stays project-owned. Migration files are immutable after emission; resource IDs and a model fingerprint in the lock drive new numbered migrations. Renames use stable IDs. Adding nullable fields is additive; required fields without a backfill, drops, type narrowing, ownership changes, or relationship changes that can lose data are reported with affected objects and block automatic application until a reviewed migration/backfill is provided. Never silently drop storage or rewrite an applied migration. Removing an extension reports retained custom files and never deletes them automatically.
+Regeneration preserves current drift detection and scaffold-once behavior. Generated validators, contracts, wiring, clients, and tests are generated-owned. Extension implementation stays project-owned. Migration files are immutable after emission; resource IDs and a model fingerprint in the lock drive new numbered migrations. Renames use stable IDs. Adding nullable fields or generated timestamps with defaults is additive; required fields without a backfill, drops, type narrowing, ownership changes, or relationship changes that can lose data are reported with affected objects and block automatic application until a reviewed migration/backfill is provided. Never silently drop storage or rewrite an applied migration. Removing an extension reports retained custom files and never deletes them automatically.
 
 ## Initial connection definitions
 
@@ -158,7 +159,8 @@ Connection definitions live alongside existing manifest/registry validation and 
 
 Report infrastructure readiness, template conformance, and application acceptance separately. Container startup or empty-contract success does not establish application behavior. A required smoke check with zero requests fails with an explanation. Eligible operations missing examples and uncovered required operations are listed by ID. A truly inapplicable check is visibly skipped with its reason. Stateful examples run in isolated fixtures; tests cannot accidentally create production data.
 
-Generated standard behavior tests and fixed project acceptance tests are outside agent-owned paths. Agents may add supplemental tests; they cannot redefine expected behavior. Derive tasks from explicit extension IDs, contract operation IDs, acceptance references, and unresolved behavior. The current notes-based seed and unconstrained planner are compatibility behavior until this is implemented. Do not ask a planner to rediscover service boundaries or standard CRUD. Any post-baseline planner calls count as implementation usage.
+Generated standard behavior tests and fixed project acceptance tests are outside agent-owned paths. Agents may add supplemental tests; they cannot redefine expected behavior. Derive tasks from explicit extension IDs, contract operation IDs, acceptance references, and unresolved behavior. P4 replaced the earlier notes-based seed and unconstrained planner for structured designs; legacy notes-based designs retain compatibility behavior. Do not ask a planner to rediscover service boundaries or standard CRUD. Any post-baseline planner calls count as implementation usage.
+
 
 ## Runs and implementation evidence
 
@@ -185,7 +187,7 @@ Every delivery runs `pnpm check` and relevant browser/template checks, exercises
 
 ## P3 implementation notes
 
-The authoritative resource schema is `packages/spec/src/resources.ts`. Store it as `rest-api-server.config.model`, with `auth: "session"` and the fixed CRUD base path `/api`. The config adds `storeConnection`, `acceptanceCases`, and a required OpenAPI `contract` on every extension. The earlier qrwty JSON above illustrates intent; it must be completed with these values before generation. `fixtures/designs/resources.json` is a complete technical example, not the qrwty acceptance application.
+The authoritative resource schema is `packages/spec/src/resources.ts`. Store it as `rest-api-server.config.model`, with `auth: "session"` and the fixed CRUD base path `/api`. The config adds `storeConnection`, `acceptanceCases`, and a required OpenAPI `contract` on every extension. The earlier qrwty JSON above illustrates intent; the reviewed application fixture is `fixtures/designs/qrwty.json` with fixed suites in `fixtures/acceptance/qrwty/`. `fixtures/designs/resources.json` is a complete technical example, not the qrwty acceptance application.
 
 The production toolbar has a generic Service tool. Subtypes can be chosen inline or in the inspector; compatible components are offered inside a selected service. Connections render only at outer shapes. Multiple REST capabilities produce explicit inspector choices. Changing subtype uses a revision-bound discard list, both in the editor modal and the design-chat `reviewSubtype` human confirmation card. Model tools cannot self-confirm. Nested resource config uses the existing validated JSON form and the same `updateAttachment` operation as chat.
 
@@ -226,3 +228,16 @@ The Runs overview leads with progress, current activity, elapsed time, blockers,
 Evidence includes generated design revision/hash, template versions, starting Git revision, planned coding selection, and each invocation's actual provider/model and prompt/request. Coding records also retain the invocation's starting Git revision and the run's Git/retry/mode settings. Attempt records retain checks/diffs/commits and timings. Actions, task edits/removals/reorders, mode changes and explicit human-help/review notes have timestamps. Only the selected execution settings and model requests enter evidence; provider credentials/configuration objects and environment variables are not copied.
 
 Migration `0005_runs_evidence` imports surviving historical attempt/planner usage. Historical prompts, provenance, previously overwritten planner rounds and removed attempts cannot be reconstructed and are not invented; old run kinds remain unknown. New runs record all later calls. Existing protected tests and disposable verification fixtures are unchanged. Declared extensions are conservatively seeded again on a new run; automatic cross-run reuse/change detection is still separate work for the additive-feature proof. No prior verification is assumed solely from a stable task key.
+
+
+## P6 implementation notes
+
+The qrwty fixture (`fixtures/designs/qrwty.json`, schema v2) matches the reviewed design with zero findings. It declares the two resources, nine acceptance cases, three extension contracts, `qrcode@1.5.4`, and `hostPort: 5173`; `fixtures/designs/qrwty.layout.json` fixes the board. Its web notes include the complete UI brief plus `data-testid` hooks used by the fixed browser suite.
+
+Fixed acceptance now supports `requires` (`extensions`/`frontend`), a `node` or `playwright` runner, generated-owned support files, and exact test dependencies. `fixtures/acceptance/qrwty/` contains `core`, `qr-image`, `redirect`, `activity`, `restart`, and `browser` suites; the Node suites use independent `jsqr`/`pngjs` decoding, local destination servers, and controlled DB/Compose fixture access. A frontend suite is visibly skipped until the frontend task. Check outcomes carry `acceptanceIds`, Runs lists extensions and acceptance cases before Start, and a run stops `needs-attention` unless every declared case has a passing suite in that run. Planning rejects a lock whose declared cases have no registered suite.
+
+The disposable fixture publishes the web app on a reserved loopback port, sets every resource service's `PUBLIC_ORIGIN` to that web origin, and passes compose/project/service/web URLs plus a DB element to fixed suites. A restart may republish the service's ephemeral host port, so suites rediscover it through Compose. The real qrwty project uses `127.0.0.1:5173` and a bootstrap-written `.env` (`DB_QRWTY_PASSWORD`, `QRWTY_PUBLIC_ORIGIN`).
+
+Generated ownership text is now derived from the plan: structured contracts, `src/generated/**`, `resource-migrations/**`, `tests/generated/**`, and `tests/acceptance/**` are generated-owned, and element notes put the agent guide before the large model JSON. The http-service, rest-api-server, and rest-api-client guides describe `database.pool`, descriptors, `withTransaction`, `sessionPrincipal`, `publicOrigin()`, binary `parseAs: "blob"`, and extension-only work. PATCH is a true partial update; extension error bodies are documented; adding a generated timestamp is additive.
+
+`pnpm qrwty:bootstrap` applies the fixture through the validated operations API, generates the six suites into the UI's default output folder, writes `.env`, and regenerates without `fixedAcceptance` to prove the lock retains all six. QR-01–QR-09 have not been run; that is the next milestone. No real provider was called.

@@ -29,7 +29,7 @@ Regeneration preserves custom files and immutable SQL. Destructive changes stop 
 
 P4 runs generated session/CRUD tests and fixed project acceptance in disposable Compose fixtures with fresh volumes. Generate reports infrastructure readiness, template conformance and deferred application acceptance separately. Required empty smoke coverage, missing examples and missing fixed acceptance references fail with operation IDs. PNG data and documented redirect headers are verified explicitly; QR decoding remains part of qrwty's later proof.
 
-For structured services, Runs seeds one narrow task per declared extension, using its operation contract and acceptance references. It bypasses the planner for generated CRUD and service boundaries. Legacy designs retain notes-based planning. Before coding, supply reviewed fixed suites via `generateProject({ fixedAcceptance: [...] })`; each has `id`, `service`, `operationIds`, `acceptanceIds`, and Node `node:test` `source`. These become protected files in `tests/acceptance/`, survive regeneration, and run independently of agent-owned tests. See [P4 implementation notes](docs/improvements.md#p4-implementation-notes) for fixture requirements and limits.
+For structured services, Runs seeds one narrow task per declared extension, using its operation contract and acceptance references. It bypasses the planner for generated CRUD and service boundaries. Legacy designs retain notes-based planning. Fixed suites are registered before coding by `pnpm qrwty:bootstrap` (or `generateProject({ fixedAcceptance: [...] })`); each has `id`, `service`, `operationIds`, `acceptanceIds`, optional `requires` (`extensions` or `frontend`), a `node`/`playwright` runner, exact test dependencies, support files, and source. They become protected files in `tests/acceptance/`, survive regeneration, and run independently of agent-owned tests. A run cannot finish successfully until every declared acceptance case has a passing suite. See [P4 implementation notes](docs/improvements.md#p4-implementation-notes) and the [qrwty bootstrap](docs/examples/qrwty.md).
 
 ## User guide: from a brief to a running app
 
@@ -74,6 +74,16 @@ The **Generate** button (top right of the board) opens the output drawer. Pick a
 With **Run the baseline check** on, Jeeves then runs `pnpm install`, `pnpm -r typecheck`, `docker compose up --build --wait`, and every template's test pack (Playwright's Chromium is used for web apps), then `docker compose down` (volumes are kept). The drawer streams the output. A design needs no error-level findings to generate.
 
 Generating again is safe: files Jeeves owns (listed with hashes in `jeeves/lock.json`) are rewritten, project-owned files are never touched, and missing dependencies are added to each element's `package.json`. If a generated-owned file was edited by hand, Jeeves stops without writing anything and names the file. Removed elements are reported, never deleted.
+
+### qrwty bootstrap
+
+The qrwty proving application uses a committed design and reviewed acceptance suites instead of hand-authoring the large resource model. With the API server running (`pnpm dev`), run:
+
+```sh
+pnpm qrwty:bootstrap
+```
+
+It creates or reuses the `qrwty` project through the API, applies `fixtures/designs/qrwty.json` through the validated operations endpoint, generates into the UI's default output folder with the six fixed suites from `fixtures/acceptance/qrwty/`, and writes the generated project's `.env` with `DB_QRWTY_PASSWORD` and `QRWTY_PUBLIC_ORIGIN=http://127.0.0.1:5173`. A second generation without `fixedAcceptance` proves the suites survive in the lock. Open the generated app at exactly `http://127.0.0.1:5173` (not `localhost`), because the browser/CSRF origin and the QR payload origin must match. If that port is occupied, change `hostPort` and `QRWTY_PUBLIC_ORIGIN` together before bootstrapping.
 
 ## Runs
 

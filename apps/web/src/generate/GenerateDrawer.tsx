@@ -121,6 +121,11 @@ function Checks({ checks }: { checks: GenerationCheck[] }) {
                   )}
                   <span className="generate-check-subject">{check.subject}</span>
                   <span>{check.title}</span>
+                  {check.acceptanceIds?.length ? (
+                    <span className="generate-check-acceptance">
+                      {check.acceptanceIds.join(", ")}
+                    </span>
+                  ) : null}
                   {check.reason ? <span>{check.reason}</span> : null}
                   {check.error ? <pre className="generate-check-error">{check.error}</pre> : null}
                 </li>

@@ -1,11 +1,61 @@
 # Working with a rest-api-server attachment
 
 The service serves a contract-first REST API with `@jeeves/rest-server`. The contract is
-`contracts/<service>.openapi.yaml` (OpenAPI 3.1, project-owned). Every operation in it becomes a
-route under the attachment's base path; requests are validated before your handler runs and
-responses after.
+`contracts/<service>.openapi.yaml` (OpenAPI 3.1). Every operation in it becomes a route under the
+attachment's base path; requests are validated before your handler runs and responses after.
 
-## How to add or change an operation
+## Two modes
+
+**Legacy contract scaffold (no `config.model`).** The contract is project-owned. Change it first,
+then implement handlers.
+
+**Structured resource model (`config.model`).** Generation owns the contract, CRUD routes,
+resource descriptors, migrations, generated tests, and fixed acceptance tests. Do **not** edit the
+contract or any generated file, and do not add CRUD routes. Implement only the extension named by
+your task in `src/features/<extension-id>/`.
+
+For a structured service, read the generated resource descriptor for physical table/column names:
+
+```ts
+import { sessionPrincipal, publicOrigin } from "@jeeves/rest-server";
+import { withTransaction } from "@jeeves/postgres-runtime";
+import { database } from "../../jeeves.generated.ts";
+import qr from "../../generated/resources/qr.ts";
+import scan from "../../generated/resources/scan.ts";
+
+export default defineFeature({
+  name: "redirect",
+  operations: {
+    followQr: async (request) => {
+      const id = String(request.params.id);
+      const [row] = (
+        await database.pool.query(
+          `SELECT "id", ${qr.fields.map((f) => `"${f.column}" AS "${f.name}"`).join(", ")} FROM "${qr.table}" WHERE id = $1`,
+          [id],
+        )
+      ).rows;
+      if (!row) return { status: 404, body: { error: "NOT_FOUND", message: "No such QR" } };
+      await withTransaction(database.pool, async (client) => {
+        await client.query(
+          `INSERT INTO "${scan.table}" (id, "${scan.belongsTo[0]!.column}") VALUES (gen_random_uuid(), $1)`,
+          [id],
+        );
+      });
+      return {
+        status: 302,
+        headers: { location: String(row.destination), "cache-control": "no-store" },
+      };
+    },
+  },
+});
+```
+
+`sessionPrincipal`/`publicOrigin` are exported by `@jeeves/rest-server`. Use
+`sessionPrincipal(request.request)` for owner identity and `publicOrigin()` for stable public URLs.
+Use descriptors for names; never use the API resource name as a SQL identifier. The generated
+contract documents standard error bodies, so return `{ error, message }` for 400/401/404 responses.
+
+## How to add or change an operation (legacy mode)
 
 1. **Change the contract first.** Add the path and method with a unique `operationId`, its
    parameters, request body, and every response it can return (including 4xx), each with a
@@ -31,7 +81,7 @@ responses after.
 
    `params`, `query`, `headers`, and `body` are already validated (and query and path values
    coerced to their schema types). Return `{ status, body?, headers? }`.
-3. **Test it** in the service's `test/` folder with `app.inject`.
+3. **Test it** in the service's `tests/` folder with `app.inject`.
 
 Clients are generated from the contract, so a breaking change shows up as type errors in the
 services and frontends that call this API. Prefer adding fields and operations to changing or
@@ -44,18 +94,21 @@ removing them.
 - 501 `NOT_IMPLEMENTED` for operations with no handler (listed at startup and at
   `/_jeeves/operations`). A handler for an operation that isn't in the contract stops startup.
 - 500 `RESPONSE_INVALID` when a handler returns an undocumented status or a body that doesn't
-  match its schema. Fix the handler or the contract, whichever is wrong.
+  match its schema. Fix the handler or the contract, whichever is wrong. Use a JSON
+  `{ error, message }` body for standard 400/401/404 statuses.
 - `/openapi.json` serves the contract.
 
 ## Don't
 
 - Don't register API routes by hand with `app.get(...)` under the base path; put them in the
-  contract.
-- Don't edit `src/jeeves.generated.ts`, `docker-compose.yml`, or `@jeeves/rest-server`.
-- Don't rely on `auth: bearer` for real security: it's one shared local token until an auth
-  template exists.
+  contract (legacy) or in the declared extension.
+- Don't edit `src/jeeves.generated.ts`, `docker-compose.yml`, `src/generated/`, resource
+  migrations, fixed acceptance tests, or `@jeeves/rest-server`.
+- Don't rely on `auth: bearer` for real security: it's one shared local token. Structured services
+  select `auth: session` and get opaque server-side sessions and CSRF checks.
 
 ## Checks Jeeves runs
 
 `/openapi.json` serves the contract, every operation has a handler, examples get schema-valid
-responses, and invalid requests get a structured 400.
+responses, and invalid requests get a structured 400. Structured services additionally run
+independent owner-isolation and fixed acceptance suites.

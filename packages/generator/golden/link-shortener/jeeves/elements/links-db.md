@@ -11,18 +11,6 @@
 
 _No implementation notes._
 
-## Config
-
-```json
-{
-  "version": "17"
-}
-```
-
-## Connections
-
-- Links service (`links`) **uses-database** Links DB (`links-db`)
-
 ---
 
 <!-- Agent guide for postgres@0.1.0 -->
@@ -55,3 +43,15 @@ the instance can't see your data, and you can't see theirs.
 
 The template's checks already prove the database is healthy, isolated, migrated, and persistent.
 Add tests for your own queries and constraints in the service's `test/` folder.
+
+## Config
+
+```json
+{
+  "version": "17"
+}
+```
+
+## Connections
+
+- Links service (`links`) **uses-database** Links DB (`links-db`)

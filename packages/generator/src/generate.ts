@@ -9,7 +9,12 @@ import {
   runtimeTarballName,
   VENDOR_DIR,
 } from "@jeeves/template-kit";
-import { acceptancePath, type FixedAcceptance } from "./acceptance.ts";
+import {
+  acceptanceDependencies,
+  acceptancePath,
+  acceptanceSupportPath,
+  type FixedAcceptance,
+} from "./acceptance.ts";
 import { LOCK_PATH } from "./documents.ts";
 import { pnpmCommand, runCommand } from "./exec.ts";
 import { hashContents, type Lock, lockFor, lockToJson, readLock } from "./lock.ts";
@@ -84,7 +89,10 @@ export async function generateProject(
   const migrationFiles = Object.keys(previous?.files ?? {}).filter(
     (p) => p.includes("/resource-migrations/") && p.endsWith(".sql"),
   );
-  const fixedPaths = (previous?.fixedAcceptance ?? []).map(acceptancePath);
+  const fixedPaths = (previous?.fixedAcceptance ?? []).flatMap((suite) => [
+    acceptancePath(suite),
+    ...(suite.files ?? []).map((file) => acceptanceSupportPath(suite, file)),
+  ]);
   for (const path of [...migrationFiles, ...fixedPaths]) {
     if (
       !existsSync(join(dir, path)) ||
@@ -109,6 +117,10 @@ export async function generateProject(
       previous?.fixedAcceptance?.map((suite) => ({
         ...suite,
         source: readFileSync(join(dir, acceptancePath(suite)), "utf8"),
+        files: (suite.files ?? []).map((file) => ({
+          ...file,
+          contents: readFileSync(join(dir, acceptanceSupportPath(suite, file)), "utf8"),
+        })),
       })),
     ...(previous?.resourceModels && {
       resourceHistory: {
@@ -163,6 +175,20 @@ export async function generateProject(
       }
     }
   const packages: string[] = [];
+  const testDependencies = acceptanceDependencies(plan.fixedAcceptance ?? []).map((dep) => ({
+    name: dep.name,
+    spec: dep.version,
+    dev: true,
+  }));
+  if (testDependencies.length > 0) {
+    const path = join(dir, "package.json");
+    const text = readFileSync(path, "utf8");
+    const merged = mergePackageDependencies(text, testDependencies);
+    if (merged !== text) {
+      writeFileSync(path, merged);
+      packages.push("package.json");
+    }
+  }
   for (const edit of plan.packageEdits) {
     const path = join(dir, edit.path);
     if (!existsSync(path)) {
