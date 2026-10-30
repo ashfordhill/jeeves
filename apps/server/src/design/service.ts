@@ -92,6 +92,20 @@ export class DesignService {
     return project;
   }
 
+  /** Partial update for the project menu and the qrwty bootstrap (name and output folder). */
+  async updateProject(
+    id: string,
+    patch: { name?: string; outputDir?: string },
+  ): Promise<Project | undefined> {
+    if (Object.keys(patch).length === 0) return this.getProject(id);
+    const [project] = await this.db
+      .update(projects)
+      .set({ ...patch, updatedAt: new Date() })
+      .where(eq(projects.id, id))
+      .returning();
+    return project;
+  }
+
   /** Deletes the project with its revisions, history, and layout. */
   async deleteProject(id: string): Promise<boolean> {
     const deleted = await this.db

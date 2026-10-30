@@ -78,6 +78,10 @@ const makeGenerator = (git: boolean): GeneratorRunner => ({
       },
     });
     writeFileSync(join(options.dir, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+    writeFileSync(
+      join(options.dir, ".env"),
+      "DB_LINKS_PASSWORD=test-password\nLINKS_PUBLIC_ORIGIN=http://127.0.0.1:1\n",
+    );
     return report;
   },
   baseline: async () => ({ ok: true, steps: [], checks: [] }),

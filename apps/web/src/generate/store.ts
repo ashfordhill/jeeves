@@ -3,7 +3,13 @@
  * kept up to date from the server's event stream while one runs.
  */
 import { create } from "zustand";
-import { ApiError, api, type Generation, type GenerationEvent } from "../draw/api.ts";
+import {
+  type AcceptancePack,
+  ApiError,
+  api,
+  type Generation,
+  type GenerationEvent,
+} from "../draw/api.ts";
 
 /** Lines kept in the browser; the server keeps the same number. */
 const LOG_CAP = 3000;
@@ -14,6 +20,8 @@ type GenerateState = {
   outputDir: string;
   defaultOutputDir: string;
   baseline: boolean;
+  acceptancePack: string;
+  packs: AcceptancePack[];
   generation: Generation | null;
   starting: boolean;
   error?: string;
@@ -21,6 +29,7 @@ type GenerateState = {
   setOpen: (open: boolean) => void;
   setOutputDir: (dir: string) => void;
   setBaseline: (baseline: boolean) => void;
+  setAcceptancePack: (pack: string) => void;
   start: () => Promise<void>;
   cancel: () => Promise<void>;
 };
@@ -56,19 +65,33 @@ export const useGenerate = create<GenerateState>((set, get) => {
     outputDir: "",
     defaultOutputDir: "",
     baseline: true,
+    acceptancePack: "",
+    packs: [],
     generation: null,
     starting: false,
 
     load: async (projectId) => {
       following?.abort();
-      set({ projectId, generation: null, outputDir: "", defaultOutputDir: "", error: undefined });
+      set({
+        projectId,
+        generation: null,
+        outputDir: "",
+        defaultOutputDir: "",
+        error: undefined,
+        packs: [],
+        acceptancePack: "",
+      });
       try {
-        const overview = await api.generation(projectId);
+        const [overview, packs] = await Promise.all([
+          api.generation(projectId),
+          api.acceptancePacks().catch(() => []),
+        ]);
         if (get().projectId !== projectId) return;
         set({
           outputDir: overview.outputDir ?? overview.defaultOutputDir,
           defaultOutputDir: overview.defaultOutputDir,
           generation: overview.latest,
+          packs,
         });
         if (overview.latest?.status === "running") void follow(projectId, overview.latest.id);
       } catch (error) {
@@ -79,15 +102,17 @@ export const useGenerate = create<GenerateState>((set, get) => {
     setOpen: (open) => set({ open }),
     setOutputDir: (outputDir) => set({ outputDir }),
     setBaseline: (baseline) => set({ baseline }),
+    setAcceptancePack: (acceptancePack) => set({ acceptancePack }),
 
     start: async () => {
-      const { projectId, outputDir, baseline } = get();
+      const { projectId, outputDir, baseline, acceptancePack } = get();
       if (!projectId) return;
       set({ starting: true, error: undefined });
       try {
         const generation = await api.startGeneration(projectId, {
           outputDir: outputDir.trim(),
           baseline,
+          ...(acceptancePack ? { acceptancePack } : {}),
         });
         set({ generation, starting: false, outputDir: generation.outputDir });
         void follow(projectId, generation.id);

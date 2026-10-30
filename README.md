@@ -81,10 +81,10 @@ Generating again is safe: files Jeeves owns (listed with hashes in `jeeves/lock.
 The qrwty proving application uses a committed design and reviewed acceptance suites instead of hand-authoring the large resource model. With the API server running (`pnpm dev`), run:
 
 ```sh
-pnpm qrwty:bootstrap
+pnpm qrwty:bootstrap [--output-dir ~/github/qrwty] [--api http://127.0.0.1:4310] [--public-origin http://127.0.0.1:5173]
 ```
 
-It creates or reuses the `qrwty` project through the API, applies `fixtures/designs/qrwty.json` through the validated operations endpoint, generates into the UI's default output folder with the six fixed suites from `fixtures/acceptance/qrwty/`, and writes the generated project's `.env` with `DB_QRWTY_PASSWORD` and `QRWTY_PUBLIC_ORIGIN=http://127.0.0.1:5173`. A second generation without `fixedAcceptance` proves the suites survive in the lock. Open the generated app at exactly `http://127.0.0.1:5173` (not `localhost`), because the browser/CSRF origin and the QR payload origin must match. If that port is occupied, change `hostPort` and `QRWTY_PUBLIC_ORIGIN` together before bootstrapping.
+It creates or reuses the `qrwty` project through the API, applies `fixtures/designs/qrwty.json` through the validated operations endpoint, points the project at the output folder (default `~/github/qrwty`), merges the folder's `.env` (existing variables are kept) with `DB_QRWTY_PASSWORD` and `QRWTY_PUBLIC_ORIGIN`, and runs **Generate** through the server with the `qrwty` acceptance pack and no baseline. It then reads `jeeves/lock.json` back and proves six suites are registered. If the folder was already a git work tree with uncommitted changes, it commits `Generate qrwty template project (design revision N)`. The repository's existing `README.md` and `.docs/` are left alone, and the generated `.gitignore` ignores `.env`. Open the app at exactly `http://127.0.0.1:5173` (not `localhost`), because the browser/CSRF origin and the QR payload origin must match. `--public-origin` must equal the fixture's web `hostPort`. Run Generate in the UI with the baseline before planning a run.
 
 ## Runs
 

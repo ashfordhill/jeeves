@@ -2001,3 +2001,43 @@ QR-01–QR-09 are still unbuilt and unrun; these changes make the reviewed check
 - No template, generator or qrwty code changed in this package.
 
 **Next: P10 only**, in a fresh context. Read AGENTS.md, PLAN §15, the latest two handoffs and only the P10 section of `docs/build-plan.md`. Do not start P11.
+
+---
+
+## Improvements P10: Generate packs, env preflight, app URL and bootstrap (2026-10-30)
+
+**Status:** P10 implemented. No coding-model run, qrwty implementation, QR-01–QR-09 execution or deployment was performed. The manual bootstrap wrote the reviewed fixture into `~/github/qrwty` and committed it; the baseline was not run (the plan's bootstrap uses `baseline:false`). The working tree was clean on entry apart from the untracked review document `docs/reviews/`, which was left untouched and is not part of this package. Earlier handoff entries are unchanged. This package receives its own local P10 commit under the standing authorization.
+
+### Implementation
+
+- **Acceptance packs:** `apps/server/src/generate/acceptance-packs.ts` scans `fixtures/acceptance/<id>/manifest.ts`, validates the exported suites with the generator schema, and exposes only `{id, suites:[{id, acceptanceIds}]}`. `GET /generate/acceptance-packs` returns the list; `POST /projects/:id/generations` accepts `acceptancePack`, forwards the full reviewed suites as `fixedAcceptance`, and returns 422 `UNKNOWN_ACCEPTANCE_PACK` for an unknown id. Omitting it leaves the lock's existing suites alone. The Generate drawer has a **Fixed acceptance pack** select (None / qrwty), shows the suite ids and acceptance IDs it would register, and disables it while running.
+- **Environment preflight:** Generate now has an `env` step between writing files and the baseline. It uses the P8 `missingComposeEnvironment` helper; missing `${VAR:?}` values fail that first step with `Missing required environment: <names>. Add them to <dir>/.env.` and stop before Docker. The drawer shows the env step failure; the run is not reported as a template bug.
+- **App URL:** after a green baseline the generation report carries `appUrls`: a web app with a numeric `hostPort` gets `http://127.0.0.1:<port>`; otherwise the entry is the `docker compose port <element> 5173` hint. The drawer renders **Open the app** with the link or hint and says the baseline ran `docker compose down` afterwards (start with `docker compose up --wait`). `GET /projects/:id/generation` returns the same `appUrls` for Runs to use later.
+- **Project output folder:** `PATCH /projects/:id` now accepts `outputDir` as well as `name`, so the bootstrap can point the project at `~/github/qrwty` without a Generate-only side effect.
+- **Bootstrap rewrite:** `scripts/qrwty-bootstrap.ts` accepts `--output-dir` (default `~/github/qrwty`), `--api` (default `http://127.0.0.1:4310`) and `--public-origin` (default `http://127.0.0.1:5173`), asserts the origin matches the fixture's web `hostPort`, applies the design and layout through the operations API with a `designSchema.parse` round-trip comparison, PATCHes the output folder, merges `.env` **before** Generate (existing keys, including the DB password, are preserved), and runs Generate through the server with `{baseline:false, acceptancePack:"qrwty"}`. It only treats the target as a repository when `git rev-parse --show-toplevel` equals that folder (so a subdirectory of another repo cannot commit its parent). It removes the second in-process generation, reads `jeeves/lock.json` back for the six suites/nine cases, and commits `Generate qrwty template project (design revision N)` when the target was an existing dirty work tree.
+- **Docs:** README's qrwty bootstrap section now documents the folder/flags, the server-owned generation, the `.env` merge, the existing `README.md`/`.docs` files, and the git-ignored `.env`.
+
+### Commands and measured evidence
+
+- **Final `pnpm check`: passed.** Biome checked the workspace (137 warning-level / 57 info diagnostics, no errors), every workspace type check passed, **514 unit tests / 71 files passed (24.42 s)**. New tests cover pack listing/forwarding/unknown ids, the env step failing before the baseline, both the hostPort URL and compose-port hint (plus overview), and `PATCH outputDir`. Unit tests need no Docker, Postgres service or network.
+- **Final browser:** `pnpm test:e2e --workers=2`: **26 passed (1.0 m)**, including the qrwty pack selected through the native select (the control is mouse-operable; Playwright uses `selectOption` for a native `<select>`), generating the qrwty design without a baseline with six registered suites, and the drawer's mocked green-baseline app link. The real green-baseline URL/hint is covered by the server test.
+- **`git diff --check`: passed.** No dependency or lockfile changes.
+- **Manual bootstrap into `~/github/qrwty`:** `pnpm qrwty:bootstrap` printed:
+  `Design revision 1; 0 finding(s), no errors.`
+  `Wrote /home/ash/github/qrwty/.env (merged)`
+  `Generation succeeded into /home/ash/github/qrwty.`
+  `Lock has 6 fixed suites (activity, browser, core, qr-image, redirect, restart) covering 9 acceptance cases.`
+  `Committed the generated qrwty project.`
+  `git -C ~/github/qrwty status --short` is empty; `git log --oneline` shows `Generate qrwty template project (design revision 1)` on top of `Initial commit`; `.env` contains `DB_QRWTY_PASSWORD` (redacted) and `QRWTY_PUBLIC_ORIGIN=http://127.0.0.1:5173` and is git-ignored. A second bootstrap run left the `.env` SHA-256 unchanged (`27bec3…a1e`) and created no extra commit; a third run with a temporary `KEEP_ME=1` line preserved it and still created no commit, proving existing keys and the DB password survive.
+- The bootstrap's baseline commit includes the repository's pre-existing untracked, empty `.docs/architecture-1.excalidraw` so the tree is clean; its contents were not changed, and `README.md` was left alone.
+
+### Deviations, limits and next steps
+
+- The plan called the step `env`; `GenerationStepId` gained that id in the server and web types. It is skipped when the baseline is off.
+- App URLs are attached only after a green baseline; the bootstrap itself does not run the baseline, so the drawer shows them after the P11 UI Generate.
+- The pack registry is repository-only and scans on request; there is no HTTP upload or pack editor. An unknown pack is rejected before any files are written.
+- The bootstrap commits all uncommitted changes in an existing target work tree (`git add --all`) to leave a clean tree, as the P10 acceptance manual requires. `README.md`/`.docs` contents are not modified. A non-default `--output-dir` must itself be the repository root; a subdirectory of another repository is refused by the generator rather than committed into the parent.
+- The layout is applied on every bootstrap (including reuse), so a missing or stale layout is repaired. `README.md`/`.docs` contents are never changed.
+- No template, generator or qrwty application code changed in this package.
+
+**Next: P11 only**, in a fresh context, with the user. Read AGENTS.md, PLAN §15, the latest two handoffs and the P11 section of `docs/build-plan.md`. Confirm provider credits first. Do not start the additive feature.

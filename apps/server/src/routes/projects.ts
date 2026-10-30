@@ -7,6 +7,10 @@ import type { ChangeResult, DesignService } from "../design/service.ts";
 
 const projectParams = z.object({ id: z.uuid() });
 const projectBody = z.strictObject({ name: z.string().trim().min(1).max(120) });
+const projectPatch = z.strictObject({
+  name: z.string().trim().min(1).max(120).optional(),
+  outputDir: z.string().trim().min(1).max(1000).optional(),
+});
 const source = z.enum(operationSources).default("api");
 
 /**
@@ -41,9 +45,9 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
 
   app.patch(
     "/projects/:id",
-    { schema: { params: projectParams, body: projectBody } },
+    { schema: { params: projectParams, body: projectPatch } },
     async (req, reply) => {
-      const project = await service.renameProject(req.params.id, req.body.name);
+      const project = await service.updateProject(req.params.id, req.body);
       return project ? { project } : notFound(reply);
     },
   );

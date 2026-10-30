@@ -108,6 +108,7 @@ export type SettingsView = {
 
 export type GenerationStepId =
   | "generate"
+  | "env"
   | "install"
   | "typecheck"
   | "compose-up"
@@ -138,6 +139,13 @@ export type GenerationCheck = {
 
 export type GenerationLogLine = { step: GenerationStepId; line: string };
 
+export type AppUrl = { element: string; url?: string; hint?: string };
+
+export type AcceptancePack = {
+  id: string;
+  suites: { id: string; acceptanceIds: string[] }[];
+};
+
 /** One Generate run, as `apps/server/src/generate/service.ts` returns it. */
 export type Generation = {
   id: number;
@@ -159,6 +167,7 @@ export type Generation = {
     orphaned: string[];
     git: "initialized" | "existing" | "disabled";
     problems: { path: string; kind: "edited" | "unmanaged"; message: string }[];
+    appUrls?: AppUrl[];
   } | null;
   error: string | null;
   createdAt: string;
@@ -168,6 +177,7 @@ export type Generation = {
 export type GenerationOverview = {
   outputDir: string | null;
   defaultOutputDir: string;
+  appUrls: AppUrl[];
   latest: Generation | null;
 };
 
@@ -454,7 +464,12 @@ export const api = {
 
   generation: (id: string) => request<GenerationOverview>(`/projects/${id}/generation`),
 
-  startGeneration: (id: string, body: { outputDir: string; baseline: boolean }) =>
+  acceptancePacks: () => request<AcceptancePack[]>("/generate/acceptance-packs"),
+
+  startGeneration: (
+    id: string,
+    body: { outputDir: string; baseline: boolean; acceptancePack?: string },
+  ) =>
     request<{ generation: Generation }>(`/projects/${id}/generations`, {
       method: "POST",
       body: JSON.stringify(body),

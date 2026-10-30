@@ -187,6 +187,7 @@ export type GenerationStatus = (typeof generationStatuses)[number];
 
 export type GenerationStepId =
   | "generate"
+  | "env"
   | "install"
   | "typecheck"
   | "compose-up"
@@ -217,6 +218,9 @@ export type GenerationCheck = {
 
 export type GenerationLogLine = { step: GenerationStepId; line: string };
 
+/** A web app the person can open after a green baseline, or how to find its port. */
+export type AppUrl = { element: string; url?: string; hint?: string };
+
 /** What the generate step did, or why it stopped (`problems`). */
 export type GenerationReport = {
   written: string[];
@@ -228,6 +232,7 @@ export type GenerationReport = {
   orphaned: string[];
   git: "initialized" | "existing" | "disabled";
   problems: { path: string; kind: "edited" | "unmanaged"; message: string }[];
+  appUrls?: AppUrl[];
 };
 
 /** One Generate run (PLAN §9): writing the template project, then the baseline check. */

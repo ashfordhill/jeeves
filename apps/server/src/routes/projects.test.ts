@@ -140,6 +140,15 @@ describe("projects", () => {
     expect(renamed.body.project).toMatchObject({ id, name: "Shorty" });
     expect((await client.call("GET", `/projects/${id}`)).body.project.name).toBe("Shorty");
 
+    const located = await client.call("PATCH", `/projects/${id}`, {
+      outputDir: "/tmp/shorty",
+    });
+    expect(located.body.project).toMatchObject({ name: "Shorty", outputDir: "/tmp/shorty" });
+    expect((await client.call("PATCH", `/projects/${id}`, {})).body.project).toMatchObject({
+      name: "Shorty",
+      outputDir: "/tmp/shorty",
+    });
+
     expect((await client.call("DELETE", `/projects/${id}`)).status).toBe(204);
     expect((await client.call("GET", `/projects/${id}`)).status).toBe(404);
     expect((await client.call("GET", `/projects/${id}/design`)).status).toBe(404);

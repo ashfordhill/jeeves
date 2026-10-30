@@ -26,6 +26,15 @@ const linkShortenerOps: OperationInput[] = [
   ...linkShortener.elements.map((element) => ({ op: "addElement" as const, element })),
   ...linkShortener.connections.map((connection) => ({ op: "connect" as const, connection })),
 ];
+const qrwty = designSchema.parse(
+  JSON.parse(
+    readFileSync(new URL("../../../../fixtures/designs/qrwty.json", import.meta.url), "utf8"),
+  ),
+);
+const qrwtyOps: OperationInput[] = [
+  ...qrwty.elements.map((element) => ({ op: "addElement" as const, element })),
+  ...qrwty.connections.map((connection) => ({ op: "connect" as const, connection })),
+];
 
 /** Real generation (without `pnpm pack` or git) and a scripted baseline, so no Docker. */
 function testRunner(overrides: Partial<GeneratorRunner> = {}): GeneratorRunner {
@@ -129,6 +138,7 @@ describe("generate", () => {
     expect(res.body).toEqual({
       outputDir: null,
       defaultOutputDir: join(projectsDir, "shorty-links"),
+      appUrls: [],
       latest: null,
     });
   });
@@ -149,6 +159,7 @@ describe("generate", () => {
     expect(done.generation.status).toBe("succeeded");
     expect(done.generation.steps.map((s) => [s.id, s.status])).toEqual([
       ["generate", "passed"],
+      ["env", "passed"],
       ["install", "passed"],
       ["typecheck", "passed"],
       ["compose-up", "passed"],
@@ -158,6 +169,9 @@ describe("generate", () => {
     ]);
     expect(done.generation.checks).toHaveLength(1);
     expect(done.generation.report?.scaffolded).toContain("services/links/src/main.ts");
+    expect(done.generation.report?.appUrls).toEqual([
+      { element: "web", hint: "docker compose port web 5173" },
+    ]);
     expect(existsSync(join(outputDir, "docker-compose.yml"))).toBe(true);
     expect(existsSync(join(outputDir, "jeeves/lock.json"))).toBe(true);
 
@@ -179,7 +193,117 @@ describe("generate", () => {
     expect(done?.type === "done" && done.generation.status).toBe("succeeded");
     expect(
       done?.type === "done" && done.generation.steps.filter((s) => s.status === "skipped").length,
-    ).toBe(6);
+    ).toBe(7);
+  });
+
+  it("lists and registers a selected acceptance pack, and rejects an unknown one", async () => {
+    const h = harness();
+    const packs = await h.call("GET", "/generate/acceptance-packs");
+    expect(packs.status).toBe(200);
+    expect(packs.body).toEqual([
+      {
+        id: "qrwty",
+        suites: [
+          { id: "activity", acceptanceIds: ["QR-05", "QR-06"] },
+          { id: "browser", acceptanceIds: ["QR-09"] },
+          { id: "core", acceptanceIds: ["QR-01"] },
+          { id: "qr-image", acceptanceIds: ["QR-02", "QR-06"] },
+          { id: "redirect", acceptanceIds: ["QR-03", "QR-04", "QR-07"] },
+          { id: "restart", acceptanceIds: ["QR-08"] },
+        ],
+      },
+    ]);
+
+    const id = await h.project("qrwty pack", qrwtyOps);
+    const outputDir = join(projectsDir, "qrwty-pack");
+    const unknown = await h.call("POST", `/projects/${id}/generations`, {
+      outputDir,
+      baseline: false,
+      acceptancePack: "invented",
+    });
+    expect(unknown.status).toBe(422);
+    expect(unknown.body.code).toBe("UNKNOWN_ACCEPTANCE_PACK");
+
+    const started = await h.call("POST", `/projects/${id}/generations`, {
+      outputDir,
+      baseline: false,
+      acceptancePack: "qrwty",
+    });
+    const done = (await h.events(id, started.body.generation.id)).at(-1);
+    if (done?.type !== "done") throw new Error("no done event");
+    expect(done.generation.status).toBe("succeeded");
+    const lock = JSON.parse(readFileSync(join(outputDir, "jeeves/lock.json"), "utf8"));
+    expect(lock.fixedAcceptance.map((suite: { id: string }) => suite.id).sort()).toEqual([
+      "activity",
+      "browser",
+      "core",
+      "qr-image",
+      "redirect",
+      "restart",
+    ]);
+    expect(existsSync(join(outputDir, "tests/acceptance/qrwty/core.test.ts"))).toBe(true);
+  });
+
+  it("stops before the baseline when required compose variables are missing", async () => {
+    const previousOrigin = process.env.QRWTY_PUBLIC_ORIGIN;
+    const previousPassword = process.env.DB_QRWTY_PASSWORD;
+    process.env.QRWTY_PUBLIC_ORIGIN = "";
+    process.env.DB_QRWTY_PASSWORD = "";
+    try {
+      let baselineCalled = false;
+      const h = harness(
+        testRunner({
+          baseline: async () => {
+            baselineCalled = true;
+            return { ok: true, steps: [], checks: [] };
+          },
+        }),
+      );
+      const id = await h.project("qrwty env", qrwtyOps);
+      const outputDir = join(projectsDir, "qrwty-env");
+      const started = await h.call("POST", `/projects/${id}/generations`, {
+        outputDir,
+        baseline: true,
+      });
+      const done = (await h.events(id, started.body.generation.id)).at(-1);
+      if (done?.type !== "done") throw new Error("no done event");
+      expect(done.generation.status).toBe("failed");
+      expect(baselineCalled).toBe(false);
+      const env = done.generation.steps.find((step) => step.id === "env");
+      expect(env).toMatchObject({ status: "failed" });
+      expect(env?.message).toContain("Missing required environment:");
+      expect(env?.message).toContain("QRWTY_PUBLIC_ORIGIN");
+      expect(env?.message).toContain(join(outputDir, ".env"));
+      expect(done.generation.error).not.toContain("template bug");
+    } finally {
+      if (previousOrigin === undefined) delete process.env.QRWTY_PUBLIC_ORIGIN;
+      else process.env.QRWTY_PUBLIC_ORIGIN = previousOrigin;
+      if (previousPassword === undefined) delete process.env.DB_QRWTY_PASSWORD;
+      else process.env.DB_QRWTY_PASSWORD = previousPassword;
+    }
+  });
+
+  it("reports the web app URL after a green baseline and in the overview", async () => {
+    const h = harness();
+    const id = await h.project("qrwty green", qrwtyOps);
+    const outputDir = join(projectsDir, "qrwty-green");
+    mkdirSync(outputDir, { recursive: true });
+    writeFileSync(
+      join(outputDir, ".env"),
+      "DB_QRWTY_PASSWORD=secret\nQRWTY_PUBLIC_ORIGIN=http://127.0.0.1:5173\n",
+    );
+    const started = await h.call("POST", `/projects/${id}/generations`, {
+      outputDir,
+      baseline: true,
+    });
+    const done = (await h.events(id, started.body.generation.id)).at(-1);
+    if (done?.type !== "done") throw new Error("no done event");
+    expect(done.generation.status).toBe("succeeded");
+    expect(done.generation.report?.appUrls).toEqual([
+      { element: "qrwty-web", url: "http://127.0.0.1:5173" },
+    ]);
+    const overview = await h.call("GET", `/projects/${id}/generation`);
+    expect(overview.body.appUrls).toEqual([{ element: "qrwty-web", url: "http://127.0.0.1:5173" }]);
   });
 
   it("reports a hand-edited generated file as blocked, with nothing written", async () => {

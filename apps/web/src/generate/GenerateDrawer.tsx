@@ -3,7 +3,7 @@
  * The drawer picks the output folder, starts a generation (optionally with the baseline check),
  * and shows the steps, template test-pack results, what was written, and the streamed log.
  */
-import { Button, Checkbox, Loader, TextInput } from "@mantine/core";
+import { Button, Checkbox, Loader, NativeSelect, TextInput } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconCheck,
@@ -156,6 +156,35 @@ function FileList({ title, paths }: { title: string; paths: string[] }) {
   );
 }
 
+function AppLinks({ generation }: { generation: Generation }) {
+  const urls = generation.report?.appUrls ?? [];
+  if (urls.length === 0) return null;
+  return (
+    <section className="generate-section" aria-label="Open the app">
+      <h3>Open the app</h3>
+      <ul className="generate-app-links">
+        {urls.map((entry) =>
+          entry.url ? (
+            <li key={entry.element}>
+              <a href={entry.url} target="_blank" rel="noreferrer">
+                {entry.url}
+              </a>
+            </li>
+          ) : (
+            <li key={entry.element}>
+              <code>{entry.hint}</code>
+            </li>
+          ),
+        )}
+      </ul>
+      <p className="generate-help">
+        The baseline check ran <code>docker compose down</code> afterwards. Start it with{" "}
+        <code>docker compose up --wait</code> in the output folder.
+      </p>
+    </section>
+  );
+}
+
 function Report({ generation }: { generation: Generation }) {
   const report = generation.report;
   if (!report) return null;
@@ -220,6 +249,7 @@ export function GenerateDrawer() {
   const setRailTab = useDraw((s) => s.setRailTab);
   const state = useGenerate();
   const { open, generation } = state;
+  const pack = state.packs.find((candidate) => candidate.id === state.acceptancePack);
 
   useEffect(() => {
     if (projectId) void useGenerate.getState().load(projectId);
@@ -269,6 +299,24 @@ export function GenerateDrawer() {
             disabled={running}
             onChange={(e) => state.setBaseline(e.currentTarget.checked)}
           />
+          <NativeSelect
+            label="Fixed acceptance pack"
+            description="Reviewed repository suites to register as generated-owned tests. None keeps the project's existing lock."
+            value={state.acceptancePack}
+            disabled={running}
+            data={[
+              { value: "", label: "None" },
+              ...state.packs.map((pack) => ({ value: pack.id, label: pack.id })),
+            ]}
+            onChange={(event) => state.setAcceptancePack(event.currentTarget.value)}
+          />
+          {pack ? (
+            <p className="generate-help">
+              {pack.suites
+                .map((suite) => `${suite.id} (${suite.acceptanceIds.join(", ")})`)
+                .join(", ")}
+            </p>
+          ) : null}
           {blockedReason && !running ? (
             <p className="generate-warning" role="note">
               <IconAlertTriangle size={14} aria-hidden /> {blockedReason}{" "}
@@ -314,6 +362,7 @@ export function GenerateDrawer() {
           {generation ? <Steps generation={generation} /> : null}
           {generation ? <Checks checks={generation.checks} /> : null}
           {generation ? <Report generation={generation} /> : null}
+          {generation ? <AppLinks generation={generation} /> : null}
         </div>
         {generation ? (
           <Log generation={generation} />

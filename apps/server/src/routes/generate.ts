@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { acceptancePacks } from "../generate/acceptance-packs.ts";
 import type { GenerationService } from "../generate/service.ts";
 import { notFound } from "./projects.ts";
 
@@ -11,6 +12,7 @@ const generationParams = z.object({
 const startBody = z.strictObject({
   outputDir: z.string().trim().max(1000).optional(),
   baseline: z.boolean().default(true),
+  acceptancePack: z.string().trim().max(100).optional(),
 });
 
 /**
@@ -31,6 +33,8 @@ export const generateRoutes: FastifyPluginAsyncZod<{ generation: GenerationServi
     const overview = await generation.overview(req.params.id);
     return overview ?? notFound(reply);
   });
+
+  app.get("/generate/acceptance-packs", async () => acceptancePacks());
 
   app.post(
     "/projects/:id/generations",

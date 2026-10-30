@@ -13,6 +13,9 @@ import { openNewProject } from "./helpers.ts";
 const fixture = JSON.parse(
   readFileSync(new URL("../../../fixtures/designs/link-shortener.json", import.meta.url), "utf8"),
 ) as { elements: unknown[]; connections: unknown[] };
+const qrwtyFixture = JSON.parse(
+  readFileSync(new URL("../../../fixtures/designs/qrwty.json", import.meta.url), "utf8"),
+) as { elements: unknown[]; connections: unknown[] };
 
 const drawer = (page: import("@playwright/test").Page) =>
   page.getByRole("region", { name: "Generate" });
@@ -82,6 +85,99 @@ test("generates the fixture into a folder, then stops on a hand-edited generated
 
   await drawer(page).getByRole("button", { name: "Hide generate output" }).click();
   await expect(drawer(page)).toHaveCount(0);
+});
+
+test("registers the qrwty acceptance pack selected by mouse", async ({ page, request }) => {
+  const id = await openNewProject(page, request, "E2E qrwty pack");
+  const ops = [
+    ...qrwtyFixture.elements.map((element) => ({ op: "addElement", element })),
+    ...qrwtyFixture.connections.map((connection) => ({ op: "connect", connection })),
+  ];
+  expect(
+    (
+      await request.post(`/api/projects/${id}/operations`, {
+        data: { baseRevision: 0, ops },
+      })
+    ).status(),
+  ).toBe(200);
+  await page.reload();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
+
+  const outputDir = join(mkdtempSync(join(tmpdir(), "jeeves-e2e-qrwty-")), "qrwty");
+  await drawer(page).getByRole("textbox", { name: "Output folder" }).fill(outputDir);
+  const pack = drawer(page).getByRole("combobox", { name: "Fixed acceptance pack" });
+  await expect(pack.getByRole("option", { name: "qrwty" })).toHaveCount(1);
+  await pack.click();
+  await pack.selectOption("qrwty");
+  await expect(drawer(page)).toContainText("core (QR-01)");
+  await expect(drawer(page)).toContainText("browser (QR-09)");
+  await drawer(page)
+    .getByRole("checkbox", { name: /Run the baseline check/ })
+    .click();
+  await drawer(page).getByRole("button", { name: "Generate project" }).click();
+  await expect(drawer(page).getByRole("status")).toHaveText(/Written, baseline not run/, {
+    timeout: 60_000,
+  });
+  const lock = JSON.parse(readFileSync(join(outputDir, "jeeves/lock.json"), "utf8")) as {
+    fixedAcceptance: { id: string }[];
+  };
+  expect(lock.fixedAcceptance.map((suite) => suite.id).sort()).toEqual([
+    "activity",
+    "browser",
+    "core",
+    "qr-image",
+    "redirect",
+    "restart",
+  ]);
+  await page.mouse.move(1, 1);
+  expect((await new AxeBuilder({ page }).include("#generate-drawer").analyze()).violations).toEqual(
+    [],
+  );
+});
+
+test("shows the app URL after a green baseline", async ({ page, request }) => {
+  const id = await openNewProject(page, request, "E2E app URL");
+  await page.route(`**/api/projects/${id}/generation`, (route) =>
+    route.fulfill({
+      json: {
+        defaultOutputDir: "/tmp/app-url",
+        outputDir: "/tmp/app-url",
+        appUrls: [{ element: "web", url: "http://127.0.0.1:5173" }],
+        latest: {
+          id: 101,
+          projectId: id,
+          revision: 0,
+          outputDir: "/tmp/app-url",
+          baseline: true,
+          status: "succeeded",
+          createdAt: new Date().toISOString(),
+          finishedAt: new Date().toISOString(),
+          report: {
+            written: [],
+            scaffolded: [],
+            kept: [],
+            packages: [],
+            vendored: [],
+            removedElements: [],
+            orphaned: [],
+            git: "initialized",
+            problems: [],
+            appUrls: [{ element: "web", url: "http://127.0.0.1:5173" }],
+          },
+          error: null,
+          log: [],
+          steps: [],
+          checks: [],
+        },
+      },
+    }),
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
+  const link = drawer(page).getByRole("link", { name: "http://127.0.0.1:5173" });
+  await expect(link).toHaveAttribute("href", "http://127.0.0.1:5173");
+  await expect(drawer(page)).toContainText("docker compose up --wait");
+  await drawer(page).getByRole("button", { name: "Hide generate output" }).click();
 });
 
 test("explains why an empty design can't be generated", async ({ page, request }) => {

@@ -1,6 +1,7 @@
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
 import {
+  type FixedAcceptance,
   type GenerateProjectOptions,
   type GenerateProjectResult,
   generateProject,
@@ -11,12 +12,14 @@ import {
   type BaselineOptions,
   type BaselineResult,
   baselineSteps,
+  missingComposeEnvironment,
   runBaseline,
 } from "@jeeves/generator/baseline";
 import { blocksGenerate, type DesignDocument } from "@jeeves/spec";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import {
+  type AppUrl,
   type GenerationCheck,
   type GenerationLogLine,
   type GenerationReport,
@@ -28,6 +31,7 @@ import {
   runs,
 } from "../db/schema.ts";
 import type { DesignService } from "../design/service.ts";
+import { acceptancePack } from "./acceptance-packs.ts";
 
 export type Generation = typeof generations.$inferSelect;
 
@@ -95,6 +99,7 @@ export class GenerationService {
     return {
       outputDir: project.outputDir,
       defaultOutputDir: join(this.projectsDir, packageName(project.name)),
+      appUrls: latest?.report?.appUrls ?? [],
       latest: latest ? (this.live.get(latest.id)?.generation ?? latest) : null,
     };
   }
@@ -111,12 +116,25 @@ export class GenerationService {
 
   async start(
     projectId: string,
-    input: { outputDir?: string; baseline: boolean },
+    input: { outputDir?: string; baseline: boolean; acceptancePack?: string },
   ): Promise<StartResult> {
     const state = await this.design.getDesign(projectId);
     const project = await this.design.getProject(projectId);
     if (!state || !project) {
       return { ok: false, status: 404, code: "NOT_FOUND", message: "Project not found." };
+    }
+    let fixedAcceptance: FixedAcceptance[] | undefined;
+    const packId = input.acceptancePack?.trim();
+    if (packId) {
+      fixedAcceptance = await acceptancePack(packId);
+      if (!fixedAcceptance) {
+        return {
+          ok: false,
+          status: 422,
+          code: "UNKNOWN_ACCEPTANCE_PACK",
+          message: `Unknown fixed acceptance pack "${packId}".`,
+        };
+      }
     }
     if (this.busy.has(projectId)) {
       return {
@@ -179,7 +197,14 @@ export class GenerationService {
 
     this.busy.add(projectId);
     try {
-      return await this.launch(projectId, project.name, state.design, dir, input.baseline);
+      return await this.launch(
+        projectId,
+        project.name,
+        state.design,
+        dir,
+        input.baseline,
+        fixedAcceptance,
+      );
     } catch (error) {
       this.busy.delete(projectId);
       throw error;
@@ -192,10 +217,16 @@ export class GenerationService {
     design: DesignDocument,
     dir: string,
     baseline: boolean,
+    fixedAcceptance?: FixedAcceptance[],
   ): Promise<StartResult> {
     await this.db.update(projects).set({ outputDir: dir }).where(eq(projects.id, projectId));
     const steps: GenerationStep[] = [
       { id: "generate", title: "Write the template project", status: "pending" },
+      {
+        id: "env",
+        title: "Environment readiness",
+        status: baseline ? "pending" : "skipped",
+      },
       ...baselineSteps.map((s) => ({
         id: s.id,
         title: s.title,
@@ -217,7 +248,7 @@ export class GenerationService {
 
     const live: Live = { generation, listeners: new Set(), abort: new AbortController() };
     this.live.set(generation.id, live);
-    void this.run(live, projectName, design).catch((error: unknown) =>
+    void this.run(live, projectName, design, fixedAcceptance).catch((error: unknown) =>
       this.finish(live, "failed", (error as Error).message ?? String(error)).catch(() => {}),
     );
     return { ok: true, generation };
@@ -288,7 +319,12 @@ export class GenerationService {
       .where(eq(generations.id, live.generation.id));
   }
 
-  private async run(live: Live, projectName: string, design: DesignDocument) {
+  private async run(
+    live: Live,
+    projectName: string,
+    design: DesignDocument,
+    fixedAcceptance?: FixedAcceptance[],
+  ) {
     const { outputDir: dir } = live.generation;
     const signal = live.abort.signal;
     const timer = setInterval(() => void this.save(live).catch(() => {}), FLUSH_MS);
@@ -296,12 +332,19 @@ export class GenerationService {
       const started = Date.now();
       this.setStep(live, "generate", { status: "running" });
       this.log(live, "generate", `Generating design revision ${design.revision} into ${dir}`);
+      if (fixedAcceptance)
+        this.log(
+          live,
+          "generate",
+          `Registering fixed acceptance: ${fixedAcceptance.map((suite) => suite.id).join(", ")}`,
+        );
       let generated: GenerateProjectResult;
       try {
         generated = await this.runner.generate({
           dir,
           design,
           projectName,
+          ...(fixedAcceptance && { fixedAcceptance }),
           log: (line) => this.log(live, "generate", line),
         });
       } catch (error) {
@@ -338,6 +381,17 @@ export class GenerationService {
         return await this.finish(live, "cancelled");
       }
 
+      this.setStep(live, "env", { status: "running" });
+      const missing = missingComposeEnvironment(dir);
+      if (missing.length > 0) {
+        const message = `Missing required environment: ${missing.join(", ")}. Add them to ${join(dir, ".env")}.`;
+        this.log(live, "env", message);
+        this.setStep(live, "env", { status: "failed", durationMs: 0, message });
+        this.skipRemaining(live);
+        return await this.finish(live, "failed", message);
+      }
+      this.setStep(live, "env", { status: "passed", durationMs: 0 });
+
       const baseline = await this.runner.baseline({
         dir,
         design,
@@ -347,6 +401,14 @@ export class GenerationService {
       });
       if (signal.aborted) return await this.finish(live, "cancelled");
       const failed = baseline.steps.find((s) => s.status === "failed");
+      if (baseline.ok)
+        live.generation = {
+          ...live.generation,
+          report: {
+            ...reportOf(generated),
+            appUrls: appUrlsFor(design),
+          },
+        };
       return await this.finish(
         live,
         baseline.ok ? "succeeded" : "failed",
@@ -459,4 +521,16 @@ function summary(result: Extract<GenerateProjectResult, { ok: true }>): string {
     parts.push(`${result.removedElements.length} removed element(s) left in place`);
   }
   return parts.join(", ");
+}
+
+/** Where each web app opens after a green baseline, or the compose command that finds its port. */
+export function appUrlsFor(design: DesignDocument): AppUrl[] {
+  return design.elements
+    .filter((element) => element.template?.id === "web-app")
+    .map((element) => {
+      const port = (element.config as { hostPort?: unknown }).hostPort;
+      return typeof port === "number" && Number.isInteger(port) && port > 0
+        ? { element: element.id, url: `http://127.0.0.1:${port}` }
+        : { element: element.id, hint: `docker compose port ${element.id} 5173` };
+    });
 }
