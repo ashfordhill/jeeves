@@ -1,5 +1,7 @@
 # Product and architecture review through P34
 
+**Later user review:** the [QRWTY authoring audit](qrwty-authoring-review-2026-10-31.md) records direct browser/source findings and the user's revised priority. Its proposed architecture, developer-testing and page-flow work supersedes automatic continuation into the P35 recommendation below. This document retains the earlier foundation assessment.
+
 Reviewed 2026-10-31 against the current original `PLAN.md` (§§1–11 and its historical scope), the completed P12–P34 evidence, the read-only Excalidraw/automation-pitch comparison from P20, and automation-pitch's `.docs/VISUAL_IMPROVEMENTS.md`. The complete change log was inspected during P20; this pass revisited its compact-inspector, selection, stable-camera, clipping and draft/Save lessons. Automation-pitch has no tracked/untracked changes. Reference images and observations are [retained with P20](evidence/p20/reference-observations.md); no user diagram was uploaded to a reference product.
 
 The useful product proposition is an **executable architecture workspace**: one intentional model, versioned behavior, explicit configuration, generated ownership, visible extension seams and verification for a named revision. C4 scope helps people reason about the application; deterministic contracts make the resulting repository reproducible. Model assistance fills declared gaps. Novelty or popularity is not evidence that an architecture is correct, and focused passing checks do not certify bug-free templates.

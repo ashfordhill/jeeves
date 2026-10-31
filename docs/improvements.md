@@ -1,5 +1,7 @@
 # Deterministic application behavior and the qrwty proof
 
+**Current priority (2026-10-31):** P12–P34 are complete. The user's latest direction refocuses on QRWTY authoring, useful architecture detail, page flow, less UI prose and convenient developer testing. Read the [current audit and proposed sequence](qrwty-authoring-review-2026-10-31.md) before specifying another implementation package. This supersedes historical next-package pointers below and automatic continuation into the proposed P35 business-action forms. Visual page layout/theme authoring remains future companion work. This turn delivered a review, not the proposed runtime/editor changes.
+
 Status: architecture approved by the user on 2026-10-29 (see SRC-18 in `docs/sources.md`). The owner-scoped resource pattern, retaining React Flow with outer-only connections, and qrwty boundaries/authentication are approved for implementation. P1–P6 are implemented; the qrwty proving application is next. P3–P6 evidence and implementation limits are recorded in `docs/handoff.md`. The qrwty application itself remains unbuilt. This document supersedes conflicting future-work statements in PLAN.md. Historical handoffs remain evidence of what actually happened.
 
 ## Evidence and scope
