@@ -1,11 +1,12 @@
 /** Actual diagram generation proof; all service/database/frontend state is disposable. */
+import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseEnv } from "node:util";
-import { designSchema } from "@jeeves/spec";
+import { applyOperations, designSchema, localExecutionFor } from "@jeeves/spec";
 import {
   CheckSkipped,
   type ComposeFile,
@@ -23,8 +24,10 @@ import { generateProject } from "../src/generate.ts";
 import { templateSet } from "../src/modules.ts";
 import { createStarterDesign } from "../src/starters.ts";
 
-const starterMode = process.argv[2] === "--starter";
-if (process.argv.length > (starterMode ? 3 : 2)) throw new Error("Only --starter is supported");
+const upgradeMode = process.argv[2] === "--upgrade-starter";
+const starterMode = process.argv[2] === "--starter" || upgradeMode;
+if (process.argv.length > (starterMode ? 3 : 2))
+  throw new Error("Only --starter or --upgrade-starter is supported");
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 const scratch = mkdtempSync(join(tmpdir(), "jeeves-generated-workspace-")),
   dir = join(scratch, "app");
@@ -33,7 +36,10 @@ const cancellation = new AbortController(),
 process.on("SIGINT", cancel);
 process.on("SIGTERM", cancel);
 const log = (line: string) => console.log(line);
-const evidence = join(repository, `.jeeves-work/evidence/${starterMode ? "p26" : "p25"}`);
+const evidence = join(
+  repository,
+  `.jeeves-work/evidence/${upgradeMode ? "p29" : starterMode ? "p26" : "p25"}`,
+);
 const artifacts = ["product-ui/0.3.0", "resource-workspace/0.1.0"].map((path) => {
   const root = join(repository, "artifacts", path);
   const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8")) as {
@@ -49,7 +55,7 @@ const artifacts = ["product-ui/0.3.0", "resource-workspace/0.1.0"].map((path) =>
 });
 const webPort = await freePort(),
   origin = `http://127.0.0.1:${webPort}`;
-const design = starterMode
+let design = starterMode
   ? createStarterDesign(
       { id: "resource-workspace", version: "0.1.0" },
       { title: "Fieldwork", hostPort: webPort },
@@ -89,6 +95,79 @@ try {
   const extraSource =
     "export function ProjectExtras() { return <p>Fieldwork inventory help · project content</p>; }\n";
   writeFileSync(extraPath, extraSource);
+  if (upgradeMode) {
+    const previous = generated;
+    const service = design.elements.find((element) => element.id === "inventory")!;
+    const upgraded = applyOperations(
+      design,
+      [
+        {
+          op: "upgradeTemplate",
+          id: service.id,
+          from: service.template!,
+          to: { id: "http-service", version: "0.3.0" },
+          revision: design.revision,
+        },
+      ],
+      templates.lookup,
+    );
+    if (!upgraded.ok) throw new Error(JSON.stringify(upgraded.errors));
+    const expected = structuredClone(design);
+    expected.revision++;
+    expected.elements.find((element) => element.id === service.id)!.template!.version = "0.3.0";
+    assert.deepEqual(upgraded.design, expected);
+    design = upgraded.design;
+    const next = await generateProject({
+      dir,
+      design,
+      projectName: "Generated resource workspace proof",
+      git: false,
+      log,
+    });
+    if (!next.ok) throw new Error("Reviewed starter upgrade was refused");
+    assert.deepEqual(next.plan.compose, previous.plan.compose);
+    const outputs = (files: typeof next.plan.files) =>
+      files.filter(
+        (file) =>
+          /^(services|frontends|databases|contracts)\//.test(file.path) &&
+          !file.path.endsWith("AGENTS.md"),
+      );
+    assert.deepEqual(outputs(next.plan.files), outputs(previous.plan.files));
+    assert.deepEqual(next.lock.runtimes, previous.lock.runtimes);
+    assert.equal(readFileSync(extraPath, "utf8"), extraSource);
+    if (readFileSync(join(dir, ".env"), "utf8") !== privateEnvironment)
+      throw new Error("Reviewed upgrade changed private local setup");
+    log(
+      "PASS reviewed HTTP upgrade preserves application configuration, wiring, source, runtime/contract/Compose bytes and private setup",
+    );
+    const policy = applyOperations(
+      design,
+      [
+        {
+          op: "addAttachment",
+          element: service.id,
+          attachment: {
+            id: "inventory-execution",
+            template: { id: "local-execution", version: "0.1.0" },
+            config: { preset: "balanced" },
+          },
+        },
+      ],
+      templates.lookup,
+    );
+    if (!policy.ok) throw new Error(JSON.stringify(policy.errors));
+    design = policy.design;
+    const configured = await generateProject({
+      dir,
+      design,
+      projectName: "Generated resource workspace proof",
+      git: false,
+      log,
+    });
+    if (!configured.ok) throw new Error("Newly available local policy generation was refused");
+    generated = configured;
+    assert.equal(seedPlan({ design, lock: generated.lock, templates: templates.lookup }).length, 0);
+  }
   const [pnpm, ...prefix] = pnpmCommand();
   for (const args of [
     ["install", "--no-frozen-lockfile"],
@@ -122,6 +201,11 @@ try {
     publicOrigin: origin,
     webPorts: { "inventory-web": webPort },
   });
+  // Retain explicitly selected local policies on this isolated consumer for their read-only pack.
+  for (const element of design.elements) {
+    const execution = localExecutionFor(element);
+    if (execution) isolated.services[element.id]!.restart = execution.restart;
+  }
   const composeFile = join(scratch, "compose.yml"),
     name = `jeeves-workspace-${randomUUID()}`;
   writeFileSync(composeFile, composeToYaml(isolated), { mode: 0o600 });
@@ -225,7 +309,7 @@ try {
   if (privateEnvironment && readFileSync(join(dir, ".env"), "utf8") !== privateEnvironment)
     throw new Error("Starter regeneration changed private local setup");
   log(
-    `PASS ${starterMode ? "editable starter" : "generated resource workspace"} (${packChecks} template checks, ${skippedChecks} explicitly inapplicable; zero implementation tasks; ${journeys.join(", ")}); archive hashes preserved, generated composition integrity and project extras retained, no model calls`,
+    `PASS ${upgradeMode ? "reviewed starter upgrade" : starterMode ? "editable starter" : "generated resource workspace"} (${packChecks} template checks, ${skippedChecks} explicitly inapplicable; zero implementation tasks; ${journeys.join(", ")}); archive hashes preserved, generated composition integrity and project extras retained, no model calls`,
   );
 } catch (error) {
   failure = error;

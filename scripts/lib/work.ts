@@ -25,6 +25,8 @@ export const profiles = {
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
+  "template-upgrade":
+    "Reviewed starter template upgrade, preserved output and newly selected policy in a disposable Inventory app",
   "local-execution":
     "Disposable local limits, process restart, request drain and bounded shutdown proof",
   "resource-starter":
@@ -111,6 +113,7 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "template-upgrade":
     case "local-execution":
     case "resource-starter":
     case "generated-workspace":
@@ -126,9 +129,13 @@ export function planWork(root: string, name: string, selections: string[]): Work
           loader,
           join(
             root,
-            `packages/generator/scripts/verify-${name === "resource-starter" ? "generated-workspace" : name}.ts`,
+            `packages/generator/scripts/verify-${name === "resource-starter" || name === "template-upgrade" ? "generated-workspace" : name}.ts`,
           ),
-          ...(name === "resource-starter" ? ["--starter"] : []),
+          ...(name === "resource-starter"
+            ? ["--starter"]
+            : name === "template-upgrade"
+              ? ["--upgrade-starter"]
+              : []),
         ],
         cwd: root,
       });

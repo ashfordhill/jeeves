@@ -143,6 +143,8 @@ templates/        versioned service/data/frontend templates and REST, durable-ev
 docs/             sources, template briefs, handoff log, reference notes
 ```
 
+Existing editable templates can use [reviewed compatible upgrades](docs/templates/compatible-upgrades.md) to gain new attachment choices while preserving the application. Protected recipes retain separate release boundaries.
+
 ## Current architecture review
 
-The [review through P28](docs/architecture-product-review-2026-10-31.md) compares current capability with the original PLAN, Excalidraw and automation-pitch visual improvements, and separates proven local behavior from remaining enterprise needs. The [qrwty acceptance milestone](docs/examples/qrwty.md) is complete for its documented envelope. The historical editor comparison remains available at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it makes no project writes and is excluded from production builds.
+The [review through P29](docs/architecture-product-review-2026-10-31.md) compares current capability with the original PLAN, Excalidraw and automation-pitch visual improvements, and separates proven local behavior from remaining enterprise needs. The [qrwty acceptance milestone](docs/examples/qrwty.md) is complete for its documented envelope. The historical editor comparison remains available at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it makes no project writes and is excluded from production builds.

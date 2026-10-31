@@ -1,8 +1,18 @@
-import { type Element, subtypeDiscards, type TemplateRef } from "@jeeves/spec";
+import { builtinRegistry } from "@jeeves/registry";
+import {
+  type Element,
+  reviewTemplateUpgrade,
+  subtypeDiscards,
+  type TemplateRef,
+  type TemplateUpgradeReview,
+} from "@jeeves/spec";
 import { Button, Modal } from "@mantine/core";
 import { useState } from "react";
 import { templateKey } from "./flow.ts";
 import { useDraw } from "./store.ts";
+import { TemplateUpgradeDialog } from "./TemplateUpgradeDialog.tsx";
+
+const registry = builtinRegistry();
 
 /** Both inline and inspector controls submit the exact same reviewed operation. */
 export function SubtypeControl({
@@ -17,6 +27,7 @@ export function SubtypeControl({
   const [review, setReview] = useState<
     { template: TemplateRef | null; revision: number; discarded: string[] } | undefined
   >();
+  const [upgrade, setUpgrade] = useState<{ target: TemplateRef; review: TemplateUpgradeReview }>();
   if (!loaded) return null;
   const options = loaded.catalog.templates.filter(
     (t) => t.kind === "element" && t.elementKind !== "database",
@@ -43,6 +54,14 @@ export function SubtypeControl({
           onChange={(e) => {
             const picked = options.find((t) => templateKey(t) === e.currentTarget.value);
             const template = picked ? { id: picked.id, version: picked.version } : null;
+            if (element.template && template?.id === element.template.id) {
+              if (template.version !== element.template.version)
+                setUpgrade({
+                  target: template,
+                  review: reviewTemplateUpgrade(loaded.design, element.id, template, registry),
+                });
+              return;
+            }
             const discarded = subtypeDiscards(loaded.design, element);
             if (discarded.length)
               setReview({ template, discarded, revision: loaded.design.revision });
@@ -58,6 +77,14 @@ export function SubtypeControl({
           ))}
         </select>
       </label>
+      {upgrade ? (
+        <TemplateUpgradeDialog
+          name={element.name}
+          target={upgrade.target}
+          review={upgrade.review}
+          onClose={() => setUpgrade(undefined)}
+        />
+      ) : null}
       <Modal opened={!!review} onClose={() => setReview(undefined)} title="Change service subtype?">
         <p>This change discards:</p>
         <ul>

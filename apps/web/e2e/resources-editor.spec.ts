@@ -141,6 +141,14 @@ test("outer connections infer a single pair, expose ambiguity, and validate nati
           .connections[0].to.element,
     )
     .toBe(await peer.getAttribute("data-element-id"));
+  // The API can commit before the editor receives its response. Wait for the actual reconnected
+  // edge to render before calculating its click position; otherwise we click the old path.
+  await expect(
+    page.getByRole("group", {
+      name: `Edge from ${await source.getAttribute("data-element-id")} to ${await peer.getAttribute("data-element-id")}`,
+      exact: true,
+    }),
+  ).toBeVisible();
   {
     const edge = page.locator(".react-flow__edge-interaction");
     const point = await edge.evaluate((node) => {

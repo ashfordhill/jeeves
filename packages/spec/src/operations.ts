@@ -29,6 +29,14 @@ export const operationSchema = z.discriminatedUnion("op", [
     /** Replaces the whole stored config. */
     config: configValuesSchema.optional(),
   }),
+  /** A reviewed same-template upgrade preserves configuration, capabilities and wiring. */
+  z.strictObject({
+    op: z.literal("upgradeTemplate"),
+    id: idSchema,
+    from: templateRefSchema,
+    to: templateRefSchema,
+    revision: z.int().nonnegative(),
+  }),
   /** Also removes the element's connections and unbinds arrows pointing at it. */
   z.strictObject({ op: z.literal("removeElement"), id: idSchema }),
   z.strictObject({

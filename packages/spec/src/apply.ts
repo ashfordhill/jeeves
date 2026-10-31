@@ -13,6 +13,7 @@ import { type Finding, finding, isStructural } from "./findings.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
 import { sameSubtype, subtypeDiscards } from "./subtype.ts";
+import { reviewTemplateUpgrade } from "./template-upgrade.ts";
 import { validateDesign } from "./validate.ts";
 
 export interface ApplyOptions {
@@ -70,10 +71,20 @@ export function applyOperations(
     };
   }
 
+  if (design.recipe && parsed.data.some((op) => op.op === "upgradeTemplate"))
+    return {
+      ok: false,
+      errors: [
+        finding(
+          "INVALID_OPERATION",
+          "A protected recipe requires a separately reviewed recipe upgrade; detaching it in this batch does not authorize a template upgrade.",
+        ),
+      ],
+    };
   const draft = upgradeDesign(design);
   try {
     parsed.data.forEach((op, index) => {
-      applyOne(draft, op, index, options);
+      applyOne(draft, op, index, options, lookup);
     });
   } catch (error) {
     if (error instanceof OpError) return { ok: false, errors: [error.finding] };
@@ -98,6 +109,7 @@ function applyOne(
   op: Operation,
   index: number,
   options: ApplyOptions,
+  lookup: TemplateLookup,
 ): void {
   const missing = (what: string, id: string) =>
     new OpError(finding("UNKNOWN_REFERENCE", `There is no ${what} "${id}".`, { op: index }));
@@ -143,6 +155,18 @@ function applyOne(
     case "updateElement": {
       const element = findElement(op.id);
       if (
+        op.template &&
+        element.template?.id === op.template.id &&
+        !sameSubtype(element.template, op.template)
+      )
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Use upgradeTemplate for a reviewed same-template version change.",
+            { op: index },
+          ),
+        );
+      if (
         op.template !== undefined &&
         !sameSubtype(element.template, op.template) &&
         subtypeDiscards(design, element).length
@@ -160,9 +184,35 @@ function applyOne(
       if (op.config !== undefined) element.config = op.config;
       return;
     }
+    case "upgradeTemplate": {
+      const element = findElement(op.id);
+      if (op.revision !== design.revision || !sameSubtype(element.template, op.from))
+        throw new OpError(
+          finding(
+            "REVISION_CONFLICT",
+            "This template upgrade review is stale. Close and review the current design before upgrading.",
+            { op: index, element: op.id },
+          ),
+        );
+      const review = reviewTemplateUpgrade(design, op.id, op.to, lookup);
+      if (!review.ok)
+        throw new OpError(
+          finding("INVALID_OPERATION", review.reason, { op: index, element: op.id }),
+        );
+      element.template = { ...op.to };
+      return;
+    }
     case "changeSubtype": {
       const element = findElement(op.id);
       if (sameSubtype(element.template, op.template)) return;
+      if (element.template && op.template?.id === element.template.id)
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Use upgradeTemplate for a reviewed same-template version change. Unsupported versions cannot use the destructive subtype path.",
+            { op: index },
+          ),
+        );
       const discarded = subtypeDiscards(design, element);
       if (
         discarded.length &&

@@ -52,3 +52,35 @@ it("chat resource config edits use the same validation as manual attachment edit
   expect(refused.ok).toBe(false);
   expect(workspace.working.elements[0]!.attachments[0]!.config).toEqual(config);
 });
+
+it("chat routes same-template review to a compatible upgrade without an unusable discard confirmation", () => {
+  const before = design();
+  const workspace = new Workspace(registry, before);
+  const result = JSON.parse(
+    workspace.run(
+      "reviewSubtype",
+      JSON.stringify({ id: "links", template: { id: "http-service", version: "0.3.0" } }),
+    ),
+  );
+  expect(result).toMatchObject({
+    ok: true,
+    upgrade: {
+      ok: true,
+      from: { id: "http-service", version: "0.1.0" },
+      to: { id: "http-service", version: "0.3.0" },
+    },
+  });
+  expect(workspace.question).toBeUndefined();
+  expect(workspace.pending).toEqual([]);
+  const { id, from, to, revision } = result.upgrade;
+  expect(
+    JSON.parse(
+      workspace.run(
+        "applyOperations",
+        JSON.stringify({ ops: [{ op: "upgradeTemplate", id, from, to, revision }] }),
+      ),
+    ).ok,
+  ).toBe(true);
+  expect(workspace.working.elements[0]!.attachments).toEqual(before.elements[0]!.attachments);
+  expect(workspace.working.elements[0]!.template).toEqual(to);
+});

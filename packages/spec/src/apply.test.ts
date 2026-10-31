@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
-import type { DesignDocument } from "./design.ts";
+import { type DesignDocument, upgradeDesign } from "./design.ts";
 import { type OperationInput, type OperationType, operationTypes } from "./operations.ts";
 import { subtypeDiscards } from "./subtype.ts";
 import { sampleDesign, t, testLookup } from "./test-support.ts";
@@ -35,6 +35,35 @@ const opCases: Record<OperationType, () => void> = {
     expect(doc.recipe).toEqual(binding);
     expect(applied([{ op: "setRecipe", recipe: null }], doc)).not.toHaveProperty("recipe");
     expect(sampleDesign()).not.toHaveProperty("recipe");
+  },
+  upgradeTemplate() {
+    const document = sampleDesign();
+    document.elements[0]!.template = { id: "http-service", version: "0.1.0" };
+    const result = applyOperations(
+      document,
+      [
+        {
+          op: "upgradeTemplate",
+          id: "api",
+          from: { id: "http-service", version: "0.1.0" },
+          to: { id: "http-service", version: "0.2.0" },
+          revision: document.revision,
+        },
+      ],
+      {
+        get: (ref) =>
+          ref.id === "http-service" && ["0.1.0", "0.2.0"].includes(ref.version)
+            ? { ...testLookup.get(t("svc"))!, id: ref.id, version: ref.version }
+            : testLookup.get(ref),
+        versions: (id) => (id === "http-service" ? ["0.1.0", "0.2.0"] : testLookup.versions(id)),
+      },
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const expected = upgradeDesign(document);
+    expected.revision++;
+    expected.elements[0]!.template!.version = "0.2.0";
+    expect(result.design).toEqual(expected);
   },
   changeSubtype() {
     const doc = sampleDesign();

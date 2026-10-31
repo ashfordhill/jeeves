@@ -14,6 +14,7 @@ import {
   idSchema,
   type OperationInput,
   operationSchema,
+  reviewTemplateUpgrade,
   subtypeDiscards,
   templateRefSchema,
   validateDesign,
@@ -59,7 +60,7 @@ const descriptions: Record<ToolName, string> = {
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
-    "Edit the design. Ops: addElement, changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
+    "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
   validateDesign: "The current findings (readiness problems) of the design, with pending edits.",
   explainFinding: "What a finding code means and how to resolve it.",
   askUser:
@@ -172,6 +173,19 @@ export class Workspace {
             error:
               "Finish pending edits before proposing a revision-bound subtype review in a new turn.",
           };
+        if (element.template && template?.id === element.template.id) {
+          const upgrade = reviewTemplateUpgrade(this.working, id, template, this.registry);
+          this.log(
+            tool,
+            upgrade.ok,
+            upgrade.ok ? "Read compatible template upgrade" : "Template upgrade unavailable",
+          );
+          return {
+            ok: upgrade.ok,
+            upgrade,
+            note: "Same-template versions use upgradeTemplate, preserving the application. Use the returned exact id/from/to/revision in applyOperations when this upgrade is requested; never use destructive subtype confirmation for a version change.",
+          };
+        }
         const discarded = subtypeDiscards(this.working, element);
         this.question = {
           question: `Change subtype of ${element.name}? Discard: ${discarded.join("; ") || "no customized data"}.`,
