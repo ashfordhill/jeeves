@@ -38,3 +38,7 @@ To update a reference, deliberately inspect a new revision and its licenses, upd
 ## Verification during product expansion
 
 The user has deferred a comprehensive certification-style test campaign. Run focused checks while changing behavior and one required `pnpm work run check` before each package handoff. Select relevant boundary checks when schemas, authentication, migrations, rendering or browser behavior change. Re-run only after new changes, failures or unresolved concerns justify it. Record exact results and remaining gaps; do not spend implementation time expanding a combinatorial suite or claim a template is bug-free.
+
+## Reviewed qrwty snapshot adoption
+
+`pnpm --filter @jeeves/server exec tsx ../../packages/generator/scripts/generate-qrwty.ts /absolute/generated/checkout studio` (or `analytics`) applies the named reviewed fixture and fixed acceptance pack through the generator, preserves existing vendor bytes and explicitly adopts the required REST runtime pin. It does not copy project feature/UI implementations, change a live editor, create a database or run Compose. Use a disposable checkout and review before local adoption; `generate-qrwty-studio.ts` remains the P17-compatible alias. This is controlled consumer adoption, not yet the automatic product-recipe system.

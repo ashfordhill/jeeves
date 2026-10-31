@@ -110,3 +110,20 @@ Done when:
 - Focused command/revision/export checks cover invalid settings, owner/CSRF isolation, idempotent/conflicting retry, bounded history, pinned bytes and persistence. The old-to-new disposable migration retains existing identities, data and legacy output; the composed consumer passes its protected existing and new fixed acceptance.
 - Jeeves's required check gate, qrwty type/unit checks and frontend build pass. Relevant strict browser workflows verify Studio save/export/draft recovery and failure states, with desktop/phone visual evidence; no broad browser-error suppression or Worker transport.
 - Review both diffs, generated hashes, immutable artifacts and adoption evidence. Append the P17 handoff and create scoped local commits in each repository. Record remaining testing/architecture limits and continue to a bounded owner-wide analytics package, then deterministic recipe and C4/configuration delivery.
+
+## P18: owner-wide analytics and bounded aggregation
+
+Outcome: a useful qrwty Analytics workspace showing scan activity across the signed-in owner's links, with explicit counting semantics and reusable deterministic aggregation/presentation. Preserve per-QR activity, redirects, saved artwork and printed URLs. This is a focused product/component slice, not an analytics infrastructure migration.
+
+Scope:
+
+- Add one owner-only GET aggregate operation to a reviewed additive `qrwty-analytics` design/acceptance pack. The request supplies UTC start/end dates only; require valid calendar dates, ordered bounds and at most 90 inclusive days. Return zero-filled daily scan counts, total scans, total owned links, distinct active links and the top ten owned links, ordered deterministically. Counts mean recorded redirect events, not people or successful destination loads. No visitor fingerprinting, geo enrichment or external service.
+- Extract `@jeeves/analytics@0.1.0`: a browser-safe strict UTC range contract/presets and a server-only owned-parent/child-event aggregate using validated descriptors, parameterized SQL, a read-only consistent transaction and fixed query timeout. No arbitrary diagram/user SQL. Bound result sizes and reject unsafe numeric counts. State that response/range limits are not a capacity guarantee. Prove the same component with non-QR inventory/event descriptors.
+- Extract accessible count-chart/metric presentation into a new product-ui artifact version. The consuming application owns labels, navigation and loading/error state. qrwty adds Analytics navigation, 7/30/90-day presets, explicit custom date apply, loading/error/retry and empty states, top-link navigation to Studio and an accessible daily table. Old results must not be labeled as a newly selected range; stale requests must not replace newer results. Every action works by mouse. Inspect desktop/phone rendering and accessibility.
+- Generate contracts/acceptance through Jeeves, pin immutable new artifacts and retain all previous ones. Implement in a disposable checkout first. Adopt only after focused actual HTTP/Postgres ownership/date/count checks, relevant strict browser checks, consumer types/build and the required Jeeves gate. No new database migration is needed. Preserve the unfinished live Service element and all unrelated work.
+
+Done when:
+
+- Focused tests cover calendar/range boundaries, zero-fill/count safety, authorization and owner isolation, cross-midnight UTC counting, top-ten ordering and non-QR descriptor use. The protected composed suite proves the new endpoint alongside existing QR-01–QR-14; no exhaustive load/chaos matrix.
+- Analytics mouse journeys, failure/retry, range labeling, responsive views and accessibility pass. Exact artifacts, ownership hashes, live read-only adoption evidence and limits are recorded.
+- Append the P18 handoff, review scoped diffs and commit each repository. Next: deterministic product recipes so these working components can assemble a complete application without a model implementation run; intentional C4/configuration views follow.
