@@ -2754,3 +2754,56 @@ New template runtimes/generation/load tests, automatic topology/provisioning, ge
 C4 code diagrams, page flows, developer tester access, broader chat-context work and
 live QRWTY adoption are separate follow-ups. Keep the one-agent/current-branch flow;
 P36 finishes with its own scoped local commit.
+
+## 2026-10-31 — JEEVES-2 editor and backend-design research review
+
+The user asked to review and execute the instructions in
+`Z:\home\ash\.opencode\jeeves-feedback\JEEVES-2.md`, resolved to the local
+`/home/ash/.opencode/jeeves-feedback/JEEVES-2.md`. The file requests review of its
+annotated screenshot, substantial C4 diagram research, planning notes and then
+clarifying questions before major product decisions. Completed that research and
+planning scope in the current `main` checkout with one agent, starting clean at
+`e0f6165`. No new branch/worktree or delegation.
+
+Added `docs/reviews/jeeves-feedback-2-2026-10-31.md` and retained the original
+feedback/screenshot in the dated review assets. Text normalization changes only
+line endings/trailing whitespace; the screenshot is byte-identical. The review
+maps every marked control and textual request to proposed behavior, distinguishes
+the circled Undo/Redo ambiguity, and records the current code seams. Updated the
+PLAN/improvements/continuing-execution entry points to this review without changing
+historical handoffs or claiming an approved/implemented P37.
+
+Attempted Google Images through the web tool and a browser; Google blocked automated
+access. Used available image search and original sources instead. Visually inspected
+17 primary-source C4/Structurizr diagrams/variants (ten banking/AWS examples, seven
+cookbook variants), read Medusa's architecture documentation and official OpenAPI,
+Swagger, Scalar, Fastify and FastAPI documentation. Source links and per-view lessons
+are in the review; temporary captures are in `/tmp/jeeves-feedback-research/`.
+These are illustrative models, not independent enterprise capacity proofs.
+
+Recommendations: remove marked permanent chrome, use a left-edge chat drawer,
+selection-driven concise inspectors, useful C1 actors/purpose, stable type-family
+colors and role-first type selection with versions in advanced settings. Keep the
+existing OpenAPI 3.1/Fastify/Ajv foundation; present a complete endpoint list and
+evaluate an embedded reference viewer. Keep code, data and traffic meanings clear
+while connecting their navigation. Read the live QRWTY owner-analytics handler only
+as source evidence for its real QR/scan/Postgres/library relationship.
+
+Asked three product questions: focused C4 implementation versus a combined backend
+canvas; moving crossed-out controls into contextual menus versus removing functions;
+and responsibility-group versus endpoint-card C3 presentation. They remain pending
+at this handoff. The recommended answers are not approvals. Next work is to record
+the user's answers and specify a bounded package, beginning with editor simplification
+if consistent with those answers. Do not automatically implement the entire proposal.
+
+Verification: `pnpm work run check` → `pnpm check` **passed in 40.4s**, profile
+`2026-10-31T18-45-05-722Z-check-a8e53984`, unchanged source fingerprints during the run.
+Biome checked **685 files**, **511 warnings/75 infos/no errors**; all workspace/script
+typechecks passed; **665 tests / 99 files passed**, Vitest **32.98s**. Checked **60 local
+document targets**, original asset equality and `git diff --check`. The final handoff
+is documentation-only. No new application tests were needed for this review.
+
+No application/runtime/template/lockfile changes, dependency installs, live design
+edits, account/data changes, provider calls or runtime/browser certification campaigns.
+CATALOG availability and boundaries remain unchanged. Complete this review with its
+own scoped documentation commit; implementation remains a separate package.

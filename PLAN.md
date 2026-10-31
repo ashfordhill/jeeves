@@ -6,6 +6,11 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Current editor package:** [P36](docs/build-plan-p36-architecture.md) adds a shared C1/C2/C3 workspace, editable responsibilities, a planned SaaS capability library and the modular [catalog](CATALOG.md). See [P36 evidence](docs/evidence/p36/README.md) for verification and boundaries. P12–P35 remain complete; [P35 evidence](docs/evidence/p35/README.md) records the session correction. Per the latest user instructions, broader template runtimes, generation and load-test implementation are deferred. Assess the visuals and catalog before choosing the next bounded package; chat improvements, developer testing, page flow and live adoption remain separate.
 
+**Latest review:** [JEEVES-2 research and planning](docs/reviews/jeeves-feedback-2-2026-10-31.md)
+records the requested editor simplification, C4/API research and three unresolved
+product choices. Resolve those choices and specify the next bounded package before
+major implementation; the recommendations are not an approved P37 specification.
+
 Related documents:
 
 - [docs/sources.md](docs/sources.md): the user's original requests and answers, verbatim (SRC-01 to SRC-18)
