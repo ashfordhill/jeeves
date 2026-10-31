@@ -2,6 +2,7 @@
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
 import { localExecutionFor } from "./local-execution.ts";
+import { localHttpPoolFor } from "./local-http-pool.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { resourceConfigSchema } from "./resources.ts";
 import { workspaceModel } from "./workspace.ts";
@@ -25,6 +26,7 @@ export interface ArchitectureViewNode {
   acceptance: string[];
   provenance?: string;
   execution?: ReturnType<typeof localExecutionFor>;
+  pool?: ReturnType<typeof localHttpPoolFor>;
 }
 export interface ArchitectureViewEdge {
   id: string;
@@ -41,6 +43,7 @@ export interface ArchitectureProjection {
   description: string;
   container?: string;
   execution?: ReturnType<typeof localExecutionFor>;
+  pool?: ReturnType<typeof localHttpPoolFor>;
   nodes: ArchitectureViewNode[];
   edges: ArchitectureViewEdge[];
   resources: {
@@ -163,6 +166,7 @@ export function architectureViews(
       support: role === "external" ? "external" : support,
       binding: { element: element.id },
       execution: localExecutionFor(element),
+      pool: localHttpPoolFor(element),
       acceptance: [],
       ...(support === "recipe" && provision
         ? { provenance: `${provision.id}@${provision.version}` }
@@ -249,7 +253,7 @@ function componentView(
     return node.id;
   };
   for (const attachment of element.attachments) {
-    if (attachment.template.id === "local-execution") continue;
+    if (["local-execution", "local-http-pool"].includes(attachment.template.id)) continue;
     const template = lookup.get(attachment.template);
     const version = `${attachment.template.id}@${attachment.template.version}`;
     if (template?.kind === "attachment" && attachment.template.id === "rest-api-server") {
@@ -490,6 +494,7 @@ function componentView(
     level: "components",
     container: element.id,
     execution: localExecutionFor(element),
+    pool: localHttpPoolFor(element),
     name: element.name,
     description:
       "Cohesive responsibilities within this application. Resource contracts are listed separately; shown dependency edges reference existing container wiring.",

@@ -6,6 +6,7 @@ import { generateV03 } from "./generate-v03.ts";
 import manifest from "./manifest.ts";
 import manifestV02 from "./manifest-v02.ts";
 import manifestV03 from "./manifest-v03.ts";
+import manifestV04 from "./manifest-v04.ts";
 import runtimePackage from "./runtime/package.json" with { type: "json" };
 import { testPack } from "./test-pack/index.ts";
 
@@ -32,4 +33,9 @@ export const httpServiceV03Template: TemplateModule = {
   ...httpServiceV02Template,
   manifest: manifestV03,
   generate: generateV03,
+};
+
+export const httpServiceV04Template: TemplateModule = {
+  ...httpServiceV03Template,
+  manifest: manifestV04,
 };

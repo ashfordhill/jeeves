@@ -341,6 +341,9 @@ importers:
       '@jeeves/template-local-execution':
         specifier: workspace:*
         version: link:../../templates/local-execution
+      '@jeeves/template-local-http-pool':
+        specifier: workspace:*
+        version: link:../../templates/local-http-pool
       '@jeeves/template-postgres':
         specifier: workspace:*
         version: link:../../templates/postgres
@@ -449,6 +452,9 @@ importers:
       '@jeeves/template-local-execution':
         specifier: workspace:*
         version: link:../../templates/local-execution
+      '@jeeves/template-local-http-pool':
+        specifier: workspace:*
+        version: link:../../templates/local-http-pool
       '@jeeves/template-postgres':
         specifier: workspace:*
         version: link:../../templates/postgres
@@ -558,6 +564,18 @@ importers:
 
   templates/local-execution:
     dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      '@jeeves/template-kit':
+        specifier: workspace:*
+        version: link:../../packages/template-kit
+
+  templates/local-http-pool:
+    dependencies:
+      '@jeeves/http-pool':
+        specifier: workspace:*
+        version: link:../../packages/http-pool
       '@jeeves/spec':
         specifier: workspace:*
         version: link:../../packages/spec

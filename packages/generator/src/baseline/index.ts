@@ -13,6 +13,7 @@ import type { Subject } from "../plan.ts";
 import { recipeCoverage } from "../recipes.ts";
 import { assertGeneratedIntegrity, verifyBehavior } from "./behavior.ts";
 import { assertComposeEnvironment, ComposeCli } from "./compose.ts";
+import { poolCheckContexts } from "./pool-context.ts";
 
 export { ComposeCli } from "./compose.ts";
 
@@ -311,7 +312,16 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
         const begin = Date.now();
         let outcome: CheckOutcome;
         try {
-          await withTimeout(check.run(ctx), remaining, packTimeoutMs / 60_000);
+          await withTimeout(
+            (async () => {
+              for (const physical of poolCheckContexts(options.design, ctx)) {
+                if (physical !== ctx) physical.log(`Checking ${check.id}`);
+                await check.run(physical);
+              }
+            })(),
+            remaining,
+            packTimeoutMs / 60_000,
+          );
           outcome = {
             subject: key,
             template: subject.template,

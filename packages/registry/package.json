@@ -17,6 +17,7 @@
     "zod": "4.5.4",
     "@jeeves/template-durable-events": "workspace:*",
     "@jeeves/template-resource-workspace": "workspace:*",
-    "@jeeves/template-local-execution": "workspace:*"
+    "@jeeves/template-local-execution": "workspace:*",
+    "@jeeves/template-local-http-pool": "workspace:*"
   }
 }

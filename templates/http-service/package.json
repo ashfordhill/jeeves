@@ -7,7 +7,8 @@
     ".": "./manifest.ts",
     "./template": "./template.ts",
     "./v02": "./manifest-v02.ts",
-    "./v03": "./manifest-v03.ts"
+    "./v03": "./manifest-v03.ts",
+    "./v04": "./manifest-v04.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

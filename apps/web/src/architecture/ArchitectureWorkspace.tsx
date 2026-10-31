@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../draw/api.ts";
 import { ExecutionPolicySummary } from "../draw/inspector/LocalExecutionEditor.tsx";
+import { LocalHttpPoolSummary } from "../draw/inspector/LocalHttpPoolEditor.tsx";
 import { useDraw } from "../draw/store.ts";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog, evidenceLabel } from "./ArchitectureEvidence.tsx";
@@ -192,6 +193,7 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
           color={notice.tone === "error" ? "red" : "blue"}
           role="alert"
           withCloseButton
+          closeButtonLabel="Dismiss architecture message"
           onClose={() => useDraw.getState().setNotice(undefined)}
         >
           {notice.message}
@@ -293,6 +295,16 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
                   : "No objects in this scope. Add an executable element on the board or describe the context."}
               </p>
             )}
+            {node?.pool || projection.pool ? (
+              <section aria-label="Local HTTP pool">
+                <h2>Local HTTP pool</h2>
+                <LocalHttpPoolSummary binding={(node?.pool ?? projection.pool)!} />
+                <p className="architecture-evidence-note">
+                  Declared deployment policy · one logical application. Generate checks the
+                  supported source shape; verification supplies applied evidence.
+                </p>
+              </section>
+            ) : null}
             {node?.execution || projection.execution ? (
               <section aria-label="Local execution policy">
                 <h2>Local execution · {(node?.execution ?? projection.execution)!.preset}</h2>

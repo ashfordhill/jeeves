@@ -9,9 +9,14 @@ export async function proveResourceWorkspace(
   problems: PageProblems,
   origin: string,
   evidence: string,
-  options: { beforePaper?: () => Promise<void>; stateLabel?: string } = {},
+  options: {
+    beforePaper?: () => Promise<void>;
+    stateLabel?: string;
+    onStage?: (stage: string) => void;
+  } = {},
 ) {
   mkdirSync(evidence, { recursive: true });
+  options.onStage?.("account restoration and registration");
   const api = `${origin}/_api/inventory`;
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route(
@@ -84,6 +89,7 @@ export async function proveResourceWorkspace(
         })
       ).status(),
     ).toBe(201);
+  options.onStage?.("stock item creation");
   await page.getByRole("link", { name: "Stock items", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "No stock items yet", exact: true }),
@@ -116,6 +122,7 @@ export async function proveResourceWorkspace(
     warehouseId: warehouse.id,
   });
   expect(item.recordedAt).toBeTruthy();
+  options.onStage?.("record paging and edit");
   for (let i = 1; i <= 10; i++)
     expect(
       (
@@ -169,6 +176,7 @@ export async function proveResourceWorkspace(
   await expect(page.getByText("10 records on this page", { exact: true })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.screenshot({ path: join(evidence, "workspace-midnight.png"), animations: "disabled" });
+  options.onStage?.("Paper regeneration and narrow form");
   if (options.beforePaper) {
     await options.beforePaper();
     // The hash route is unchanged: explicitly load the newly generated application bundle.
@@ -190,6 +198,7 @@ export async function proveResourceWorkspace(
   await expect(dialog.getByRole("button", { name: "Next choices", exact: true })).toBeEnabled();
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
+  options.onStage?.("session revocation");
   // Revoke the browser's session outside the mounted UI, then exercise its protected read.
   const expired = problems.expectHttp({
     scenario: "revoked session clears private workspace",
@@ -205,15 +214,19 @@ export async function proveResourceWorkspace(
   await expect(page.getByRole("region", { name: "Stock items records", exact: true })).toHaveCount(
     0,
   );
+  options.onStage?.("re-login and explicit logout");
   await signIn(alice, false);
   await expect(page.getByText("10 records on this page", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Welcome back", exact: true })).toBeVisible();
+  options.onStage?.("second account isolation");
   await signIn(`bob-${suffix}@example.test`, true);
   await expect(
     page.getByRole("heading", { name: "No stock items yet", exact: true }),
   ).toBeVisible();
+  options.onStage?.("second account loaded; independent owner check");
   expect((await page.request.get(`${api}/api/stockItem/${item.id}`)).status()).toBe(404);
+  options.onStage?.("second account switches collection");
   await page.getByRole("link", { name: "Warehouses", exact: true }).click();
   await expect(page.getByRole("heading", { name: "No warehouses yet", exact: true })).toBeVisible();
   expect(await page.evaluate("localStorage.length + sessionStorage.length")).toBe(0);

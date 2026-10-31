@@ -25,10 +25,17 @@ export const profiles = {
   "browser-preview":
     "Build and serve production assets through selected strict Playwright specs (or all)",
   "browser-docker": "All Playwright specs using the existing Docker runner",
+  "browser-stream": "Bounded no-store stream diagnostic in pinned Firefox; no Docker",
+  "browser-stream-chromium":
+    "Same diagnostic in pinned Chromium; currently fails on the upstream completed-stream defect",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
   "template-upgrade":
     "Reviewed starter template upgrade, preserved output and newly selected policy in a disposable Inventory app",
+  "generated-http-pool-browser":
+    "Focused generated trio browser journey; template packs explicitly not selected",
+  "generated-http-pool":
+    "Diagram-generated trio pool with reviewed source, per-instance template packs and resource browser journey",
   "local-http-pool":
     "Compiled local HTTP pool with shared generated resources, readiness/loss/recovery and no replay; disposable consumer",
   "local-execution":
@@ -125,15 +132,41 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "browser-stream":
+    case "browser-stream-chromium": {
+      none();
+      const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
+      commands.push({
+        executable: process.execPath,
+        args: [
+          "--import",
+          loader,
+          join(root, "packages/generator/scripts/verify-browser-stream.ts"),
+          name === "browser-stream" ? "firefox" : "chromium",
+        ],
+        cwd: root,
+      });
+      break;
+    }
     case "template-upgrade":
     case "local-execution":
     case "local-http-pool":
+    case "generated-http-pool":
+    case "generated-http-pool-browser":
     case "resource-starter":
     case "generated-workspace":
     case "resource-workspace":
     case "generated-events":
     case "qr-studio-recipe": {
       none();
+      const workspaceMode = (
+        {
+          "resource-starter": "--starter",
+          "template-upgrade": "--upgrade-starter",
+          "generated-http-pool": "--pooled-starter",
+          "generated-http-pool-browser": "--pooled-browser",
+        } as Record<string, string>
+      )[name];
       const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
       commands.push({
         executable: process.execPath,
@@ -142,13 +175,9 @@ export function planWork(root: string, name: string, selections: string[]): Work
           loader,
           join(
             root,
-            `packages/generator/scripts/verify-${name === "resource-starter" || name === "template-upgrade" ? "generated-workspace" : name}.ts`,
+            `packages/generator/scripts/verify-${workspaceMode ? "generated-workspace" : name}.ts`,
           ),
-          ...(name === "resource-starter"
-            ? ["--starter"]
-            : name === "template-upgrade"
-              ? ["--upgrade-starter"]
-              : []),
+          ...(workspaceMode ? [workspaceMode] : []),
         ],
         cwd: root,
       });

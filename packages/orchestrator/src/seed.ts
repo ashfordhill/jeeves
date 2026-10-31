@@ -119,7 +119,7 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
     };
     for (const attachment of element.attachments) {
       // Execution policies are fully supplied configuration, including their explanatory notes.
-      if (attachment.template.id === "local-execution") continue;
+      if (["local-execution", "local-http-pool"].includes(attachment.template.id)) continue;
       if (attachment.template.id === "durable-events") {
         const config = deliveryConfigSchema.parse(attachment.config);
         const dir = lock.elements.find((e) => e.id === element.id)?.dir ?? `services/${element.id}`;

@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseEnv } from "node:util";
-import { applyOperations, designSchema, localExecutionFor } from "@jeeves/spec";
+import { applyOperations, designSchema, localExecutionFor, localHttpPoolFor } from "@jeeves/spec";
 import {
   CheckSkipped,
   type ComposeFile,
@@ -19,15 +19,21 @@ import { seedPlan } from "../../orchestrator/src/seed.ts";
 import { proveResourceWorkspace } from "../../resource-workspace/conformance/browser-proof.ts";
 import { assertGeneratedIntegrity, fixtureCompose, freePort } from "../src/baseline/behavior.ts";
 import { ComposeCli, missingComposeEnvironment } from "../src/baseline/compose.ts";
+import { poolCheckContexts } from "../src/baseline/pool-context.ts";
 import { pnpmCommand, runCommand } from "../src/exec.ts";
 import { generateProject } from "../src/generate.ts";
 import { templateSet } from "../src/modules.ts";
 import { createStarterDesign } from "../src/starters.ts";
 
-const upgradeMode = process.argv[2] === "--upgrade-starter";
+const poolBrowserOnly = process.argv[2] === "--pooled-browser";
+const poolMode = process.argv[2] === "--pooled-starter" || poolBrowserOnly;
+const upgradeMode = process.argv[2] === "--upgrade-starter" || poolMode;
+const upgradeVersion = poolMode ? "0.4.0" : "0.3.0";
 const starterMode = process.argv[2] === "--starter" || upgradeMode;
 if (process.argv.length > (starterMode ? 3 : 2))
-  throw new Error("Only --starter or --upgrade-starter is supported");
+  throw new Error(
+    "Only --starter, --upgrade-starter, --pooled-starter or --pooled-browser is supported",
+  );
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 const scratch = mkdtempSync(join(tmpdir(), "jeeves-generated-workspace-")),
   dir = join(scratch, "app");
@@ -38,7 +44,7 @@ process.on("SIGTERM", cancel);
 const log = (line: string) => console.log(line);
 const evidence = join(
   repository,
-  `.jeeves-work/evidence/${upgradeMode ? "p29" : starterMode ? "p26" : "p25"}`,
+  `.jeeves-work/evidence/${poolMode ? "p32" : upgradeMode ? "p29" : starterMode ? "p26" : "p25"}`,
 );
 const artifacts = ["product-ui/0.3.0", "resource-workspace/0.1.0"].map((path) => {
   const root = join(repository, "artifacts", path);
@@ -105,7 +111,7 @@ try {
           op: "upgradeTemplate",
           id: service.id,
           from: service.template!,
-          to: { id: "http-service", version: "0.3.0" },
+          to: { id: "http-service", version: upgradeVersion },
           revision: design.revision,
         },
       ],
@@ -114,7 +120,8 @@ try {
     if (!upgraded.ok) throw new Error(JSON.stringify(upgraded.errors));
     const expected = structuredClone(design);
     expected.revision++;
-    expected.elements.find((element) => element.id === service.id)!.template!.version = "0.3.0";
+    expected.elements.find((element) => element.id === service.id)!.template!.version =
+      upgradeVersion;
     assert.deepEqual(upgraded.design, expected);
     design = upgraded.design;
     const next = await generateProject({
@@ -152,6 +159,19 @@ try {
             config: { preset: "balanced" },
           },
         },
+        ...(poolMode
+          ? [
+              {
+                op: "addAttachment" as const,
+                element: service.id,
+                attachment: {
+                  id: "inventory-pool",
+                  template: { id: "local-http-pool", version: "0.1.0" },
+                  config: { replicas: 3 },
+                },
+              },
+            ]
+          : []),
       ],
       templates.lookup,
     );
@@ -204,7 +224,11 @@ try {
   // Retain explicitly selected local policies on this isolated consumer for their read-only pack.
   for (const element of design.elements) {
     const execution = localExecutionFor(element);
-    if (execution) isolated.services[element.id]!.restart = execution.restart;
+    if (execution)
+      for (const id of localHttpPoolFor(element)?.instances ?? [element.id])
+        isolated.services[id]!.restart = execution.restart;
+    if (localHttpPoolFor(element))
+      isolated.services[element.id]!.restart = sourceCompose.services[element.id]!.restart;
   }
   const composeFile = join(scratch, "compose.yml"),
     name = `jeeves-workspace-${randomUUID()}`;
@@ -213,6 +237,9 @@ try {
   compose = new ComposeCli(dir, cancellation.signal, isolation);
   const up = await compose.run(["up", "--build", "--wait", "--wait-timeout", "300"], log);
   if (up.exitCode !== 0) throw new Error(`Consumer startup failed: ${up.output.slice(-5000)}`);
+  const effectiveCompose = poolMode
+    ? (JSON.parse(await compose.ok(["config", "--format", "json"])) as ComposeFile)
+    : isolated;
   let packChecks = 0,
     skippedChecks = 0;
   const order = [
@@ -223,7 +250,11 @@ try {
     "postgres",
     "http-service",
   ];
-  for (const subject of [...generated.plan.subjects].sort(
+  if (poolBrowserOnly)
+    log(
+      "Browser-only profile: template packs are not selected; this is not a full pool verification.",
+    );
+  for (const subject of (poolBrowserOnly ? [] : [...generated.plan.subjects]).sort(
     (a, b) => order.indexOf(a.template.split("@")[0]!) - order.indexOf(b.template.split("@")[0]!),
   )) {
     const [id, version] = subject.template.split("@");
@@ -231,13 +262,16 @@ try {
     const context = {
       projectDir: dir,
       subject: createGenerateContext(design, templates.lookup, subject.element, subject.attachment),
-      compose: isolated,
+      compose: effectiveCompose,
       service: (name: string) => compose!.service(name),
       log,
     };
     for (const check of pack.checks) {
       try {
-        await check.run(context);
+        for (const physical of poolCheckContexts(design, context)) {
+          physical.log(`RUN ${subject.template}/${check.id}`);
+          await check.run(physical);
+        }
         packChecks++;
         log(`PASS ${subject.template}/${check.id}`);
       } catch (error) {
@@ -247,51 +281,64 @@ try {
       }
     }
   }
-  const journeys = await withPage(async (page, problems) => {
-    try {
-      return await proveResourceWorkspace(page, problems, origin, evidence, {
-        stateLabel: "State",
-        beforePaper: async () => {
-          design.elements
-            .find((element) => element.id === "inventory-web")!
-            .attachments.find(
-              (attachment) => attachment.id === "inventory-workspace",
-            )!.config.preset = "paper";
-          const next = await generateProject({
-            dir,
-            design,
-            projectName: "Generated resource workspace proof",
-            git: false,
-          });
-          if (!next.ok) throw new Error("Preset regeneration refused");
-          generated = next;
-          if (
-            JSON.parse(readFileSync(join(frontend, "src/workspace.generated.json"), "utf8"))
-              .preset !== "paper"
-          )
-            throw new Error("Generated descriptor did not adopt the selected preset");
-          const rebuild = await compose!.run(
-            ["up", "--build", "--no-deps", "--wait", "--wait-timeout", "120", "inventory-web"],
-            log,
-          );
-          if (rebuild.exitCode !== 0)
-            throw new Error("Preset deployment failed in disposable fixture");
-        },
-      });
-    } catch (error) {
-      mkdirSync(evidence, { recursive: true });
-      await page.screenshot({ path: join(evidence, "failure.png") });
+  const journeys = await withPage(
+    async (page, problems) => {
+      let browserStage = "initial";
+      page.on("requestfailed", (request) =>
+        log(
+          `Browser request failed during ${browserStage}: ${request.method()} ${request.url()} ${request.failure()?.errorText}`,
+        ),
+      );
       try {
-        problems.assert("Resource workspace failure diagnostics");
-      } catch (diagnostics) {
-        throw new AggregateError(
-          [error, diagnostics],
-          "Resource workspace behavior and browser diagnostics failed",
-        );
+        return await proveResourceWorkspace(page, problems, origin, evidence, {
+          stateLabel: "State",
+          onStage: (stage) => {
+            browserStage = stage;
+            log(`Browser stage: ${stage}`);
+          },
+          beforePaper: async () => {
+            design.elements
+              .find((element) => element.id === "inventory-web")!
+              .attachments.find(
+                (attachment) => attachment.id === "inventory-workspace",
+              )!.config.preset = "paper";
+            const next = await generateProject({
+              dir,
+              design,
+              projectName: "Generated resource workspace proof",
+              git: false,
+            });
+            if (!next.ok) throw new Error("Preset regeneration refused");
+            generated = next;
+            if (
+              JSON.parse(readFileSync(join(frontend, "src/workspace.generated.json"), "utf8"))
+                .preset !== "paper"
+            )
+              throw new Error("Generated descriptor did not adopt the selected preset");
+            const rebuild = await compose!.run(
+              ["up", "--build", "--no-deps", "--wait", "--wait-timeout", "120", "inventory-web"],
+              log,
+            );
+            if (rebuild.exitCode !== 0)
+              throw new Error("Preset deployment failed in disposable fixture");
+          },
+        });
+      } catch (error) {
+        mkdirSync(evidence, { recursive: true });
+        await page.screenshot({ path: join(evidence, "failure.png") });
+        try {
+          problems.assert("Resource workspace failure diagnostics");
+        } catch (diagnostics) {
+          throw new AggregateError(
+            [error, diagnostics],
+            "Resource workspace behavior and browser diagnostics failed",
+          );
+        }
+        throw error;
       }
-      throw error;
-    }
-  });
+    },
+    { browser: poolMode ? "firefox" : "chromium" },
+  );
   assertGeneratedIntegrity(dir, generated.lock);
   const regenerated = await generateProject({
     dir,
@@ -309,7 +356,7 @@ try {
   if (privateEnvironment && readFileSync(join(dir, ".env"), "utf8") !== privateEnvironment)
     throw new Error("Starter regeneration changed private local setup");
   log(
-    `PASS ${upgradeMode ? "reviewed starter upgrade" : starterMode ? "editable starter" : "generated resource workspace"} (${packChecks} template checks, ${skippedChecks} explicitly inapplicable; zero implementation tasks; ${journeys.join(", ")}); archive hashes preserved, generated composition integrity and project extras retained, no model calls`,
+    `PASS ${poolMode ? `generated trio HTTP pool${poolBrowserOnly ? " browser-only" : ""}` : upgradeMode ? "reviewed starter upgrade" : starterMode ? "editable starter" : "generated resource workspace"} (${packChecks} template checks, ${skippedChecks} explicitly inapplicable; zero implementation tasks; ${journeys.join(", ")}); archive hashes preserved, generated composition integrity and project extras retained, no model calls`,
   );
 } catch (error) {
   failure = error;

@@ -35,6 +35,7 @@ import { ConfigForm } from "./ConfigForm.tsx";
 import { DeliveryConfiguration } from "./DeliveryEditor.tsx";
 import { DraftTextarea, DraftTextInput } from "./fields.tsx";
 import { LocalExecutionConfiguration } from "./LocalExecutionEditor.tsx";
+import { LocalHttpPoolConfiguration } from "./LocalHttpPoolEditor.tsx";
 import { ResourceConfiguration } from "./ResourceEditor.tsx";
 import { WorkspaceConfiguration } from "./WorkspaceEditor.tsx";
 
@@ -154,6 +155,8 @@ function AttachmentPanel({
       ) : null}
       {attachment.template.id === "resource-workspace" ? (
         <WorkspaceConfiguration element={element} attachment={attachment} />
+      ) : attachment.template.id === "local-http-pool" ? (
+        <LocalHttpPoolConfiguration element={element} attachment={attachment} />
       ) : attachment.template.id === "local-execution" ? (
         <LocalExecutionConfiguration attachment={attachment} />
       ) : attachment.template.id === "durable-events" ? (
@@ -189,7 +192,7 @@ function AttachmentPanel({
           onCommit={(config) => void edit([{ op: "updateAttachment", id: attachment.id, config }])}
         />
       ) : null}
-      {attachment.template.id !== "local-execution" ? (
+      {!["local-execution", "local-http-pool"].includes(attachment.template.id) ? (
         <NotesField id={attachment.id} notes={attachment.notes} label={`${name} notes`} />
       ) : null}
     </li>

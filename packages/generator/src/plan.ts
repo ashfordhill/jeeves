@@ -4,6 +4,7 @@ import {
   type DesignDocument,
   deliveryModels as deriveDeliveryModels,
   formatTemplateRef,
+  type LocalHttpPoolBinding,
   type ResourceConfig,
   validateDesign,
   type WorkspaceBinding,
@@ -37,7 +38,9 @@ import {
   rootScaffoldFiles,
   type SubjectSummary,
 } from "./documents.ts";
+import { composeHttpPools } from "./http-pools.ts";
 import type { TemplateSet } from "./modules.ts";
+import { poolSourceHashes } from "./pool-source.ts";
 import {
   applyRecipe,
   type RecipeArtifact,
@@ -78,6 +81,8 @@ export interface PlannedElement {
 
 /** Everything generation will write, computed without touching the disk (deterministic). */
 export interface ProjectPlan {
+  httpPools?: Record<string, LocalHttpPoolBinding>;
+  poolSourceHashes?: Record<string, Record<string, string>>;
   recipe?: RecipeRegistration;
   artifacts?: RecipeArtifact[];
   fixedAcceptance?: AcceptanceRegistration[];
@@ -253,6 +258,7 @@ export function planProject(
   );
   const fragments: ComposeFragment[] = results.map((r) => r.result.compose);
   const compose = mergeCompose(fragments);
+  const httpPools = composeHttpPools(design, compose);
 
   const files = new Map<string, OutputFile>();
   const add = (file: OutputFile, from: string) => {
@@ -336,6 +342,10 @@ export function planProject(
     }),
   );
   const plan: ProjectPlan = {
+    ...(Object.keys(httpPools).length && {
+      httpPools,
+      poolSourceHashes: poolSourceHashes(httpPools, [...files.values()], edits),
+    }),
     ...(Object.keys(workspaces).length && { workspaceBindings: workspaces }),
     ...(Object.keys(frozenDependencies).length && { frozenDependencies }),
     ...(artifacts.length && { artifacts }),

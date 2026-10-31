@@ -16,7 +16,7 @@ test("local execution presets edit by mouse and appear as container policy with 
   const read = async () => (await (await request.get(`/api/projects/${id}/design`)).json()).design;
   await expect.poll(async () => (await read()).elements[0].attachments.length).toBe(1);
   const before = await read();
-  expect(before.elements[0].template.version).toBe("0.3.0");
+  expect(before.elements[0].template.version).toBe("0.4.0");
   await page.getByRole("button", { name: "Configure local execution", exact: true }).click();
   let dialog = page.getByRole("dialog", { name: "Configure local execution" });
   await expect(dialog.getByLabel("Execution preset")).toHaveValue("balanced");

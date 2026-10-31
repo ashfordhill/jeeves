@@ -35,6 +35,7 @@ import {
 } from "./lock.ts";
 import { type TemplateSet, templateSet } from "./modules.ts";
 import { type PlannedElement, type ProjectPlan, planProject } from "./plan.ts";
+import { assertPoolSourcePreflight } from "./pool-source.ts";
 import { assertRecipeDependencies, loadRecipe, RecipeError, recipeEnvironment } from "./recipes.ts";
 import { starterEnvironment } from "./starter-environment.ts";
 
@@ -183,6 +184,7 @@ export async function generateProject(
     ...(options.reviewedMigrations && { reviewedMigrations: options.reviewedMigrations }),
   });
 
+  assertPoolSourcePreflight(dir, plan);
   assertFrozenDependencies(dir, plan.frozenDependencies, false);
   const problems = ownershipProblems(dir, plan, previous);
   if (problems.length > 0) return { ok: false, reason: "ownership", problems };

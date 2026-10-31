@@ -1,4 +1,4 @@
-import { type Browser, chromium, type Page } from "@playwright/test";
+import { type Browser, chromium, firefox, type Page } from "@playwright/test";
 import { observePageProblems, type PageProblems } from "./page-problems.ts";
 
 export { assertNoPageProblems, observePageProblems, type PageProblems } from "./page-problems.ts";
@@ -7,13 +7,14 @@ export { assertNoPageProblems, observePageProblems, type PageProblems } from "./
 // harness, so templates' generate code doesn't load Playwright.
 
 /**
- * Opens a fresh page in headless Chromium, runs `fn`, and closes everything. Console errors and
+ * Opens a fresh page in the selected headless engine (Chromium by default). Console errors and
  * page errors are collected from the start, so `fn` can assert there were none.
  */
 export async function withPage<T>(
   fn: (page: Page, problems: PageProblems) => Promise<T>,
+  options: { browser?: "chromium" | "firefox" } = {},
 ): Promise<T> {
-  const browser: Browser = await chromium.launch();
+  const browser: Browser = await (options.browser === "firefox" ? firefox : chromium).launch();
   try {
     // Explicit contexts also allow accessibility tools to open their analysis page.
     const context = await browser.newContext();

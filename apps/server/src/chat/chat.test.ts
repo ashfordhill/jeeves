@@ -211,7 +211,7 @@ describe("design chat", () => {
       "askUser",
     ]);
     expect(first.instructions).toMatch(/Never invent template IDs/);
-    expect(textOf(first.items[0])).toMatch(/^\[Jeeves\] Context.*http-service@0\.3\.0/s);
+    expect(textOf(first.items[0])).toMatch(/^\[Jeeves\] Context.*http-service@0\.4\.0/s);
     expect(textOf(first.items[0])).toMatch(/The design is empty/);
     expect(textOf(first.items[1])).toBe("Make me a link shortener like bit.ly");
 

@@ -13,12 +13,14 @@ import {
 } from "../acceptance.ts";
 import { pnpmCommand, runCommand } from "../exec.ts";
 import { assertFrozenDependencies, hashContents, type Lock } from "../lock.ts";
+import { assertPoolSourceIntegrity } from "../pool-source.ts";
 import { assertRecipeDependencies, loadRecipe } from "../recipes.ts";
 import { ComposeCli } from "./compose.ts";
 import type { CheckOutcome } from "./index.ts";
 
 /** Reject missing, edited, and symlinked expectations before any application tests run. */
 export function assertGeneratedIntegrity(dir: string, lock: Lock): void {
+  assertPoolSourceIntegrity(dir, lock);
   assertFrozenDependencies(dir, lock.frozenDependencies);
   if (lock.recipe) assertRecipeDependencies(dir, loadRecipe(lock.recipe));
   for (const [path, hash] of Object.entries(lock.files)) {

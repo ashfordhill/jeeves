@@ -1,7 +1,12 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { deliveryModelSchema, resourceConfigSchema, workspaceBindingSchema } from "@jeeves/spec";
+import {
+  deliveryModelSchema,
+  localHttpPoolBindingSchema,
+  resourceConfigSchema,
+  workspaceBindingSchema,
+} from "@jeeves/spec";
 import { runtimeTarballName, VENDOR_DIR } from "@jeeves/template-kit";
 import { z } from "zod";
 import { acceptanceRegistrationSchema } from "./acceptance.ts";
@@ -14,6 +19,8 @@ import { GENERATOR_VERSION, type ProjectPlan } from "./plan.ts";
  */
 export const lockSchema = z.object({
   lockVersion: z.literal(1),
+  httpPools: z.record(z.string(), localHttpPoolBindingSchema).optional(),
+  poolSourceHashes: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   recipe: z
     .object({
       id: z.string(),
@@ -56,6 +63,7 @@ export function hashContents(contents: string | Buffer): string {
 export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
   return {
     lockVersion: 1,
+    ...(plan.httpPools && { httpPools: plan.httpPools, poolSourceHashes: plan.poolSourceHashes }),
     ...(plan.recipe && { recipe: plan.recipe }),
     ...(plan.fixedAcceptance && { fixedAcceptance: plan.fixedAcceptance }),
     ...(plan.resourceModels && {

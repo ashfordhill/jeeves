@@ -13,6 +13,7 @@ import {
 } from "./design.ts";
 import { type Finding, type FindingTarget, finding } from "./findings.ts";
 import { formatTemplateRef, type TemplateRef } from "./ids.ts";
+import { localHttpPoolProblems } from "./local-http-pool.ts";
 import {
   type ElementManifest,
   findPort,
@@ -161,6 +162,13 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
 
   for (const element of design.elements) {
     validateElement(element, lookup, findings);
+    for (const message of localHttpPoolProblems(design, element))
+      findings.push(
+        finding("CONFIG_REQUIRED", message, {
+          element: element.id,
+          attachment: element.attachments.find((a) => a.template.id === "local-http-pool")?.id,
+        }),
+      );
     for (const attachment of element.attachments) {
       const model = attachment.config.model as
         | { storeConnection?: string; resources?: unknown[] }

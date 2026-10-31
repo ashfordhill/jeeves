@@ -4,9 +4,11 @@ import {
   httpServiceTemplate,
   httpServiceV02Template,
   httpServiceV03Template,
+  httpServiceV04Template,
 } from "@jeeves/template-http-service/template";
 import { manifestLookup, type TemplateModule } from "@jeeves/template-kit";
 import { localExecutionTemplate } from "@jeeves/template-local-execution/template";
+import { localHttpPoolTemplate } from "@jeeves/template-local-http-pool/template";
 import { postgresTemplate } from "@jeeves/template-postgres/template";
 import { resourceWorkspaceTemplate } from "@jeeves/template-resource-workspace/template";
 import { restApiClientTemplate } from "@jeeves/template-rest-api-client/template";
@@ -19,6 +21,8 @@ export function builtinModules(): TemplateModule[] {
     httpServiceTemplate,
     httpServiceV02Template,
     httpServiceV03Template,
+    httpServiceV04Template,
+    localHttpPoolTemplate,
     localExecutionTemplate,
     durableEventsTemplate,
     restApiServerTemplate,

@@ -11,6 +11,7 @@ export * from "./findings.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";
 export * from "./local-execution.ts";
+export * from "./local-http-pool.ts";
 export * from "./manifest.ts";
 export * from "./operations.ts";
 export * from "./resources.ts";

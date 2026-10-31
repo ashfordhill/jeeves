@@ -7,6 +7,9 @@ export const compatibleTemplateUpgrades = [
   { id: "http-service", from: "0.1.0", to: "0.2.0" },
   { id: "http-service", from: "0.2.0", to: "0.3.0" },
   { id: "http-service", from: "0.1.0", to: "0.3.0" },
+  { id: "http-service", from: "0.1.0", to: "0.4.0" },
+  { id: "http-service", from: "0.2.0", to: "0.4.0" },
+  { id: "http-service", from: "0.3.0", to: "0.4.0" },
   { id: "web-app", from: "0.1.0", to: "0.2.0" },
 ] as const;
 export type TemplateUpgradeReview =
