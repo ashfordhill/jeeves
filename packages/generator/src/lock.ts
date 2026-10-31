@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { resourceConfigSchema } from "@jeeves/spec";
+import { deliveryModelSchema, resourceConfigSchema } from "@jeeves/spec";
 import { runtimeTarballName, VENDOR_DIR } from "@jeeves/template-kit";
 import { z } from "zod";
 import { acceptanceRegistrationSchema } from "./acceptance.ts";
@@ -26,6 +26,8 @@ export const lockSchema = z.object({
   resourceStores: z
     .record(z.string(), z.object({ connection: z.string(), database: z.string() }))
     .optional(),
+  frozenDependencies: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  deliveryModels: z.record(z.string(), deliveryModelSchema).optional(),
   resourceModels: z.record(z.string(), resourceConfigSchema).optional(),
   generator: z.string(),
   designRevision: z.int().nonnegative(),
@@ -65,6 +67,8 @@ export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
         ]),
       ),
     }),
+    ...(plan.deliveryModels && { deliveryModels: plan.deliveryModels }),
+    ...(plan.frozenDependencies && { frozenDependencies: plan.frozenDependencies }),
     generator: GENERATOR_VERSION,
     designRevision,
     templates: plan.templates,
@@ -102,4 +106,37 @@ export function readLock(dir: string): Lock | undefined {
     throw new LockError(`${LOCK_PATH} isn't a Jeeves lock: ${z.prettifyError(parsed.error)}`);
   }
   return parsed.data;
+}
+
+/** A project-owned package may add libraries, but cannot replace a released component binding. */
+export function assertFrozenDependencies(
+  dir: string,
+  requirements: Record<string, Record<string, string>> = {},
+  requirePresent = true,
+): void {
+  for (const [path, dependencies] of Object.entries(requirements)) {
+    const file = join(dir, path);
+    if (!existsSync(file) && !requirePresent) continue;
+    const pkg = JSON.parse(readFileSync(file, "utf8")) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+      optionalDependencies?: Record<string, string>;
+    };
+    for (const [name, spec] of Object.entries(dependencies)) {
+      const value = pkg.dependencies?.[name];
+      if (
+        !requirePresent &&
+        value === undefined &&
+        !pkg.devDependencies?.[name] &&
+        !pkg.optionalDependencies?.[name]
+      )
+        continue;
+      if (
+        value !== spec ||
+        pkg.devDependencies?.[name] !== undefined ||
+        pkg.optionalDependencies?.[name] !== undefined
+      )
+        throw new LockError(`${path}: ${name} must keep the pinned production dependency ${spec}`);
+    }
+  }
 }

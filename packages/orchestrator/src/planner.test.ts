@@ -32,6 +32,15 @@ const valid: SubmittedPlan = {
   ],
 };
 
+it("does not call a planner for event handler contracts", async () => {
+  const design = fixtureDesign("event-orders");
+  const seed = seedPlan({ design, lock: lockOf(design), templates: templates.lookup });
+  const provider = createFakeProvider([]);
+  const result = await refinePlan(provider, "fake", { projectName: "Events", seed, briefs: {} });
+  expect(provider.requests).toHaveLength(0);
+  expect(result).toMatchObject({ ok: true, tasks: seed, rounds: 0 });
+});
+
 it("does not call a planner for structured extension tasks", async () => {
   const design = fixtureDesign("resources");
   const seed = seedPlan({ design, lock: lockOf(design), templates: templates.lookup });

@@ -25,7 +25,14 @@ import {
 } from "./acceptance.ts";
 import { LOCK_PATH } from "./documents.ts";
 import { pnpmCommand, runCommand } from "./exec.ts";
-import { hashContents, type Lock, lockFor, lockToJson, readLock } from "./lock.ts";
+import {
+  assertFrozenDependencies,
+  hashContents,
+  type Lock,
+  lockFor,
+  lockToJson,
+  readLock,
+} from "./lock.ts";
 import { type TemplateSet, templateSet } from "./modules.ts";
 import { type PlannedElement, type ProjectPlan, planProject } from "./plan.ts";
 import { assertRecipeDependencies, loadRecipe, RecipeError, recipeEnvironment } from "./recipes.ts";
@@ -95,6 +102,7 @@ export async function generateProject(
   const log = options.log ?? (() => {});
   const templates = options.templates ?? templateSet();
   const previous = readLock(dir);
+  assertFrozenDependencies(dir, previous?.frozenDependencies);
   if (
     previous?.recipe &&
     (previous.recipe.id !== design.recipe?.id || previous.recipe.version !== design.recipe?.version)
@@ -126,7 +134,10 @@ export async function generateProject(
     acceptancePath(suite),
     ...(suite.files ?? []).map((file) => acceptanceSupportPath(suite, file)),
   ]);
-  for (const path of [...migrationFiles, ...fixedPaths]) {
+  const eventFiles = Object.keys(previous?.files ?? {}).filter(
+    (p) => p.includes("/event-migrations/") || p.includes("/src/delivery/"),
+  );
+  for (const path of [...migrationFiles, ...fixedPaths, ...eventFiles]) {
     if (
       !existsSync(join(dir, path)) ||
       hashContents(readFileSync(join(dir, path))) !== previous?.files[path]
@@ -155,6 +166,7 @@ export async function generateProject(
           contents: readFileSync(join(dir, acceptanceSupportPath(suite, file)), "utf8"),
         })),
       })),
+    ...(previous?.deliveryModels && { deliveryHistory: previous.deliveryModels }),
     ...(previous?.resourceModels && {
       resourceHistory: {
         models: previous.resourceModels,
@@ -169,6 +181,7 @@ export async function generateProject(
     ...(options.reviewedMigrations && { reviewedMigrations: options.reviewedMigrations }),
   });
 
+  assertFrozenDependencies(dir, plan.frozenDependencies, false);
   const problems = ownershipProblems(dir, plan, previous);
   if (problems.length > 0) return { ok: false, reason: "ownership", problems };
   recipeEnvironment(dir, design);
@@ -330,7 +343,7 @@ export function ownershipProblems(
       problems.push({
         path: file.path,
         kind: "unmanaged",
-        message: `${file.path} conflicts with the pinned recipe artifact. Choose a new output directory.`,
+        message: `${file.path} conflicts with the pinned component or recipe artifact. Choose a new output directory.`,
       });
   }
   return problems.sort((a, b) => (a.path < b.path ? -1 : 1));

@@ -1,4 +1,5 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
+import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { resourceConfigSchema } from "./resources.ts";
@@ -8,6 +9,7 @@ export interface ArchitectureBinding {
   element: string;
   attachment?: string;
   extension?: string;
+  event?: string;
   resource?: string;
 }
 export interface ArchitectureViewNode {
@@ -304,6 +306,33 @@ function componentView(
           },
         );
       }
+    } else if (template?.kind === "attachment" && attachment.template.id === "durable-events") {
+      const parsed = deliveryConfigSchema.safeParse(attachment.config);
+      attachmentNodes.set(
+        attachment.id,
+        add(
+          attachment.id,
+          attachment.id,
+          "Durable event delivery",
+          `Transactional outbox, fenced leases and retries. One worker in this service process. Preset: ${parsed.success ? parsed.data.preset : "invalid configuration"}.`,
+          version,
+          "template",
+        ),
+      );
+      if (parsed.success)
+        for (const event of parsed.data.events)
+          add(
+            `${attachment.id}:event:${event.id}`,
+            attachment.id,
+            `${label(event.id)} handler`,
+            short(event.notes) || "Project-owned domain effect; fixed acceptance required.",
+            `${event.type}@${event.version}`,
+            "extension",
+            {
+              binding: { element: element.id, attachment: attachment.id, event: event.id },
+              acceptance: event.acceptance,
+            },
+          );
     } else if (template?.kind === "attachment" && attachment.template.id === "rest-api-client") {
       attachmentNodes.set(
         attachment.id,
@@ -363,17 +392,24 @@ function componentView(
     const insideSide = connection.from.element === element.id ? "from" : "to";
     const inside = capabilityEndpoint(connection, insideSide);
     const outside = capabilityEndpoint(connection, insideSide === "from" ? "to" : "from");
-    const boundAttachment =
-      inside.attachment ??
-      (connection.kind === "uses-database"
-        ? element.attachments.find((attachment) => {
-            const model = resourceConfigSchema.safeParse(attachment.config.model);
-            return model.success && model.data.storeConnection === connection.id;
-          })?.id
-        : undefined);
-    const component = boundAttachment && attachmentNodes.get(boundAttachment);
+    const boundAttachments = inside.attachment
+      ? [inside.attachment]
+      : connection.kind === "uses-database"
+        ? element.attachments
+            .filter((attachment) => {
+              if (attachment.template.id === "durable-events")
+                return deliveryStore(design, element.id)?.connection === connection.id;
+              const model = resourceConfigSchema.safeParse(attachment.config.model);
+              return model.success && model.data.storeConnection === connection.id;
+            })
+            .map((a) => a.id)
+        : [];
+    const components = boundAttachments.flatMap((id) => {
+      const node = attachmentNodes.get(id);
+      return node ? [node] : [];
+    });
     const other = design.elements.find((item) => item.id === outside.element);
-    if (!component || !other || other.id === element.id) continue;
+    if (!components.length || !other || other.id === element.id) continue;
     const otherId = elementKey(other.id);
     if (!nodes.some((node) => node.id === otherId))
       nodes.push({
@@ -386,13 +422,14 @@ function componentView(
         binding: { element: other.id },
         acceptance: [],
       });
-    edges.push({
-      id: `connection:${connection.id}`,
-      from: insideSide === "from" ? component : otherId,
-      to: insideSide === "from" ? otherId : component,
-      description: connectionDescription(connection.kind),
-      connection: connection.id,
-    });
+    for (const component of components)
+      edges.push({
+        id: `connection:${connection.id}:${component}`,
+        from: insideSide === "from" ? component : otherId,
+        to: insideSide === "from" ? otherId : component,
+        description: connectionDescription(connection.kind),
+        connection: connection.id,
+      });
   }
   return {
     level: "components",

@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { TemplateModule } from "@jeeves/template-kit";
 import { generate } from "./generate.ts";
 import manifest from "./manifest.ts";
+import manifestV02 from "./manifest-v02.ts";
 import runtimePackage from "./runtime/package.json" with { type: "json" };
 import { testPack } from "./test-pack/index.ts";
 
@@ -19,3 +20,8 @@ export const httpServiceTemplate: TemplateModule = {
 };
 
 export default httpServiceTemplate;
+
+export const httpServiceV02Template: TemplateModule = {
+  ...httpServiceTemplate,
+  manifest: manifestV02,
+};

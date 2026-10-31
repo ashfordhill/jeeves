@@ -4,6 +4,7 @@ export * from "./apply.ts";
 export * from "./architecture.ts";
 export * from "./architecture-view.ts";
 export * from "./config.ts";
+export * from "./delivery.ts";
 export * from "./design.ts";
 export * from "./findings.ts";
 export * from "./ids.ts";

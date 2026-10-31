@@ -11,6 +11,7 @@ import {
 } from "../compose.ts";
 import { createGenerateContext, elementDir } from "../context.ts";
 import type { GenerateResult, OutputFile, RuntimePackage, TemplateModule } from "../contract.ts";
+import { frozenRuntime } from "../frozen-runtime.ts";
 import {
   type DependencyEntry,
   mergePackageDependencies,
@@ -172,6 +173,12 @@ export function vendorRuntimes(dir: string, modules: TemplateModule[]): string[]
   for (const { runtime } of modules) {
     if (!runtime || seen.has(runtime.name)) continue;
     seen.add(runtime.name);
+    const frozen = frozenRuntime(runtime);
+    if (frozen) {
+      writeFileSync(join(dir, frozen.path), frozen.contents);
+      paths.push(frozen.path);
+      continue;
+    }
     execFileSync(
       pnpmCommand[0],
       [...pnpmCommand.slice(1), "pack", "--pack-destination", destination],

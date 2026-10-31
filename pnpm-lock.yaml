@@ -254,6 +254,9 @@ importers:
       '@fontsource-variable/nunito':
         specifier: 5.3.0
         version: 5.3.0
+      '@jeeves/durable-events':
+        specifier: workspace:*
+        version: link:../../packages/durable-events
       '@jeeves/registry':
         specifier: workspace:*
         version: link:../../packages/registry
@@ -323,6 +326,9 @@ importers:
       '@jeeves/spec':
         specifier: workspace:*
         version: link:../spec
+      '@jeeves/template-durable-events':
+        specifier: workspace:*
+        version: link:../../templates/durable-events
       '@jeeves/template-http-service':
         specifier: workspace:*
         version: link:../../templates/http-service
@@ -419,6 +425,9 @@ importers:
       '@jeeves/spec':
         specifier: workspace:*
         version: link:../spec
+      '@jeeves/template-durable-events':
+        specifier: workspace:*
+        version: link:../../templates/durable-events
       '@jeeves/template-http-service':
         specifier: workspace:*
         version: link:../../templates/http-service
@@ -461,6 +470,18 @@ importers:
       zod:
         specifier: 4.5.4
         version: 4.5.4
+
+  templates/durable-events:
+    dependencies:
+      '@jeeves/durable-events':
+        specifier: workspace:*
+        version: link:../../packages/durable-events
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      '@jeeves/template-kit':
+        specifier: workspace:*
+        version: link:../../packages/template-kit
 
   templates/http-service:
     dependencies:

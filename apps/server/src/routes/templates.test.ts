@@ -10,15 +10,19 @@ describe("templates", () => {
     const res = await app.inject({ method: "GET", url: "/templates" });
     expect(res.statusCode).toBe(200);
     const body = res.json();
-    expect(body.templates.map((t: { id: string }) => t.id).sort()).toEqual([
-      "http-service",
-      "postgres",
-      "rest-api-client",
-      "rest-api-server",
-      "web-app",
+    expect(
+      body.templates.map((t: { id: string; version: string }) => `${t.id}@${t.version}`).sort(),
+    ).toEqual([
+      "durable-events@0.1.0",
+      "http-service@0.1.0",
+      "http-service@0.2.0",
+      "postgres@0.1.0",
+      "rest-api-client@0.1.0",
+      "rest-api-server@0.1.0",
+      "web-app@0.1.0",
     ]);
     expect(body.palette).toEqual([
-      { group: "Services", templates: [{ id: "http-service", version: "0.1.0" }] },
+      { group: "Services", templates: [{ id: "http-service", version: "0.2.0" }] },
       { group: "Frontends", templates: [{ id: "web-app", version: "0.1.0" }] },
       { group: "Data", templates: [{ id: "postgres", version: "0.1.0" }] },
     ]);

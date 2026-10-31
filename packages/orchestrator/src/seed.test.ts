@@ -7,6 +7,7 @@ import {
   type PlannedTask,
   seedPlan,
   taskRequiredExtensions,
+  unverifiedExtensionOperations,
 } from "./seed.ts";
 import { fixtureDesign, lockOf, templates } from "./test-support.ts";
 
@@ -15,6 +16,29 @@ const seed = (d: DesignDocument) =>
   seedPlan({ design: d, lock: lockOf(d), templates: templates.lookup });
 
 describe("seedPlan", () => {
+  it("seeds bounded event handlers without notes and retains their verification requirement", () => {
+    const d = fixtureDesign("event-orders");
+    const attachment = d.elements[0]!.attachments[0]!;
+    (attachment.config.events as { notes: string }[])[0]!.notes = "";
+    const tasks = seed(d);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]).toMatchObject({
+      key: "orders.order-delivery.event.order-placed",
+      acceptance: ["ORDER-01"],
+      ownedPaths: [
+        "services/orders/src/event-handlers/order-placed.ts",
+        "services/orders/tests/",
+        "services/orders/package.json",
+      ],
+    });
+    expect(taskRequiredExtensions(d, tasks[0]!.key)).toEqual({
+      orders: ["event:order-delivery:order-placed"],
+    });
+    expect(unverifiedExtensionOperations(d, [])).toEqual([
+      "orders/event:order-delivery:order-placed",
+    ]);
+    expect(unverifiedExtensionOperations(d, [tasks[0]!.key])).toEqual([]);
+  });
   it("derives extension work from IDs/contracts and omits generated CRUD and stale service notes", () => {
     const d = fixtureDesign("resources");
     const tasks = seed(d);

@@ -353,7 +353,7 @@ export function applyRecipe(
   return {
     ...plan,
     recipe: recipe.registration,
-    artifacts: recipe.artifacts,
+    artifacts: [...(plan.artifacts ?? []), ...recipe.artifacts],
     files: [...files.values()].sort((a, b) => a.path.localeCompare(b.path)),
   };
 }

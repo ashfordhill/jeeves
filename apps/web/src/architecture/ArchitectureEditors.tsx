@@ -22,7 +22,7 @@ const errorText = () =>
   useDraw.getState().notice?.message ??
   "The design could not be saved. Close this dialog and reopen it to review the latest version.";
 
-function ArchitectureDialog({
+export function ArchitectureDialog({
   title,
   size,
   onClose,

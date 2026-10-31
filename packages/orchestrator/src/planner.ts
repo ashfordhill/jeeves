@@ -117,7 +117,7 @@ export type CheckedPlan = { ok: true; tasks: PlannedTask[] } | { ok: false; erro
  * the model's order within each target). Owned paths and dependencies come from the seed.
  */
 export function checkSubmittedPlan(seed: PlannedTask[], plan: SubmittedPlan): CheckedPlan {
-  if (seed.some((task) => task.key.includes(".extension.")))
+  if (seed.some((task) => task.key.includes(".extension.") || task.key.includes(".event.")))
     return {
       ok: false,
       errors: [
@@ -178,7 +178,7 @@ export async function refinePlan(
   input: PlannerInput,
   signal?: AbortSignal,
 ): Promise<RefineResult> {
-  if (input.seed.some((task) => task.key.includes(".extension.")))
+  if (input.seed.some((task) => task.key.includes(".extension.") || task.key.includes(".event.")))
     return {
       ok: true,
       tasks: input.seed,

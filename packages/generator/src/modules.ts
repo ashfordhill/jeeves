@@ -1,5 +1,9 @@
 import { formatTemplateRef, type TemplateLookup, type TemplateRef } from "@jeeves/spec";
-import { httpServiceTemplate } from "@jeeves/template-http-service/template";
+import { durableEventsTemplate } from "@jeeves/template-durable-events/template";
+import {
+  httpServiceTemplate,
+  httpServiceV02Template,
+} from "@jeeves/template-http-service/template";
 import { manifestLookup, type TemplateModule } from "@jeeves/template-kit";
 import { postgresTemplate } from "@jeeves/template-postgres/template";
 import { restApiClientTemplate } from "@jeeves/template-rest-api-client/template";
@@ -10,6 +14,8 @@ import { webAppTemplate } from "@jeeves/template-web-app/template";
 export function builtinModules(): TemplateModule[] {
   return [
     httpServiceTemplate,
+    httpServiceV02Template,
+    durableEventsTemplate,
     restApiServerTemplate,
     postgresTemplate,
     webAppTemplate,

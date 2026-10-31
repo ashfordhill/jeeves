@@ -53,6 +53,7 @@ export function SubtypeControl({
           {options.map((t) => (
             <option key={templateKey(t)} value={templateKey(t)}>
               {t.displayName}
+              {options.filter((option) => option.id === t.id).length > 1 ? ` · ${t.version}` : ""}
             </option>
           ))}
         </select>

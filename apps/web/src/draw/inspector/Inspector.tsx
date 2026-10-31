@@ -32,6 +32,7 @@ import { SubtypeControl } from "../SubtypeControl.tsx";
 import { type Selection, useDraw } from "../store.ts";
 import { TemplateIcon } from "../TemplateIcon.tsx";
 import { ConfigForm } from "./ConfigForm.tsx";
+import { DeliveryConfiguration } from "./DeliveryEditor.tsx";
 import { DraftTextarea, DraftTextInput } from "./fields.tsx";
 
 const NOTE_COLORS = ["yellow", "blue", "green", "pink", "gray"] as const;
@@ -148,7 +149,9 @@ function AttachmentPanel({
       {own.some((f) => !f.target.path) ? (
         <FindingList findings={own.filter((f) => !f.target.path)} />
       ) : null}
-      {template ? (
+      {attachment.template.id === "durable-events" ? (
+        <DeliveryConfiguration attachment={attachment} />
+      ) : template ? (
         <ConfigForm
           schema={template.configJsonSchema}
           manifest={registry.get(attachment.template)}

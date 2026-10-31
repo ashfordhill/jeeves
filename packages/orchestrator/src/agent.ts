@@ -86,6 +86,7 @@ export function createAgentExecutor({ agents, checks }: AgentExecutorOptions): T
         project.lock.resourceModels ?? {},
         project.lock.fixedAcceptance ?? [],
         required,
+        project.lock.deliveryModels,
       );
       if (uncovered.length)
         return {

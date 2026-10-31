@@ -19,6 +19,7 @@
     "@jeeves/template-rest-api-server": "workspace:*",
     "@jeeves/template-web-app": "workspace:*",
     "yaml": "2.9.1",
-    "zod": "4.5.4"
+    "zod": "4.5.4",
+    "@jeeves/template-durable-events": "workspace:*"
   }
 }

@@ -415,6 +415,7 @@ export class RunService {
     const uncovered = acceptanceCaseCoverageProblems(
       project.lock.resourceModels ?? {},
       project.lock.fixedAcceptance ?? [],
+      project.lock.deliveryModels,
     );
     if (uncovered.length)
       throw new Error(
@@ -464,9 +465,9 @@ export class RunService {
           : "No element or attachment has implementation notes, so there's nothing to implement. Add notes in the Draw view and generate again.",
       );
     }
-    if (project.lock.resourceModels)
+    if (project.lock.resourceModels || project.lock.deliveryModels)
       return seedOnly(
-        "Tasks derive from explicit extensions and remaining frontend notes. Generated standard behavior needs no planner call.",
+        "Tasks derive from explicit extension/event contracts and remaining frontend notes. Generated standard behavior needs no planner call.",
       );
     const source = this.models("planner");
     if ("error" in source) return seedOnly(`The planner model wasn't used: ${source.error}`);
@@ -689,7 +690,8 @@ export class RunService {
         .orderBy(asc(tasks.position))
         .limit(1);
       if (!task) {
-        if (readLock(run.outputDir)?.resourceModels) {
+        const generatedLock = readLock(run.outputDir);
+        if (generatedLock?.resourceModels || generatedLock?.deliveryModels) {
           const project = readGeneratedProject(run.outputDir);
           const done = await this.db
             .select({ key: tasks.key })
@@ -772,9 +774,12 @@ export class RunService {
     runId: number,
     lock: ReturnType<typeof readGeneratedProject>["lock"],
   ): Promise<{ missing: string[]; skipped: string[] }> {
-    const cases = Object.values(lock.resourceModels ?? {}).flatMap(
-      (model) => model.acceptanceCases,
-    );
+    const cases = [
+      ...Object.values(lock.resourceModels ?? {}).flatMap((model) => model.acceptanceCases),
+      ...Object.values(lock.deliveryModels ?? {}).flatMap((model) =>
+        model.config.events.flatMap((event) => event.acceptance),
+      ),
+    ];
     if (cases.length === 0) return { missing: [], skipped: [] };
     const rows = await this.db
       .select({ checks: attempts.checks })
@@ -1312,6 +1317,10 @@ function capabilities(run: Run): string[] {
             `${lock.recipe.id}@${lock.recipe.version}: product implementation supplied; frontend ${provided?.frontends.join(", ")}. Verification evidence is recorded separately.`,
           ]
         : []),
+      ...Object.entries(lock?.deliveryModels ?? {}).map(
+        ([service, model]) =>
+          `${service}: durable event delivery (${model.config.preset}, worker in service); project handlers ${model.config.events.map((event) => `${event.type}@${event.version} [${event.acceptance.join(", ")}]`).join("; ")}`,
+      ),
       ...Object.entries(lock?.resourceModels ?? {}).flatMap(([service, model]) => [
         `${service}: accounts and sessions; ${model.resources.map((r) => `${r.name} (${r.operations.join(", ")})`).join("; ")}`,
         ...(model.extensions.length

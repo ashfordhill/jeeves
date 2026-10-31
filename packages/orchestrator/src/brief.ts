@@ -59,7 +59,7 @@ export function taskBrief({ project, task, attempt, earlierWork }: BriefInput): 
     "",
     "## Acceptance tests",
     "",
-    task.key.includes(".extension.")
+    task.key.includes(".extension.") || task.key.includes(".event.")
       ? `Pass the fixed project acceptance references ${task.acceptance.join(", ")}. Their expected behavior is protected under tests/acceptance/. You may add supplemental tests; do not edit fixed or generated tests.`
       : task.acceptance.length > 0
         ? `Add automated tests that prove each of these, next to the element's code, and make them pass:\n\n${task.acceptance.map((a) => `- ${a}`).join("\n")}`

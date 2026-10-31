@@ -5,6 +5,7 @@ import {
   createGenerateContext,
   type TestPackContext,
 } from "@jeeves/template-kit";
+import { behaviorRequirements } from "../acceptance.ts";
 import { pnpmCommand, runCommand } from "../exec.ts";
 import { readLock } from "../lock.ts";
 import { type TemplateSet, templateSet } from "../modules.ts";
@@ -142,10 +143,9 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     options.requiredExtensions ??
     (options.unitTests
       ? Object.fromEntries(
-          Object.entries(models).map(([id, model]) => [
-            id,
-            model.extensions.map((e) => e.operationId),
-          ]),
+          Object.entries(behaviorRequirements(models, lock?.deliveryModels)).map(
+            ([id, behaviors]) => [id, behaviors.map((e) => e.id)],
+          ),
         )
       : {});
   const required = Object.fromEntries(
@@ -339,7 +339,7 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
     return `${result.checks.filter((c) => c.status === "passed").length} checks passed; ${result.checks.filter((c) => c.status === "skipped").length} skipped with reasons`;
   });
 
-  if (lock && Object.keys(models).length)
+  if (lock && (Object.keys(models).length || Object.keys(lock.deliveryModels ?? {}).length))
     await step("behavior", async (log) => {
       await verifyBehavior({
         dir,

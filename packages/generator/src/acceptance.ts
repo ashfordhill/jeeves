@@ -1,4 +1,4 @@
-import { idSchema, type ResourceConfig } from "@jeeves/spec";
+import { type DeliveryModel, eventBehaviorId, idSchema, type ResourceConfig } from "@jeeves/spec";
 import type { OutputFile } from "@jeeves/template-kit";
 import { z } from "zod";
 
@@ -16,6 +16,7 @@ const dependency = z.strictObject({
 export const fixedAcceptanceSchema = z.strictObject({
   id: slug,
   service: slug,
+  /** REST operation IDs or namespaced event:<attachment>:<event> behavior IDs. Events are not routes. */
   operationIds: z.array(z.string().min(1)).min(1),
   acceptanceIds: z.array(z.string().min(1)).min(1),
   /** `frontend` suites wait for the frontend task; extension suites run when their ops are due. */
@@ -43,20 +44,27 @@ export const acceptanceSupportPath = (
 export function acceptanceFiles(
   inputs: FixedAcceptance[],
   models: Record<string, ResourceConfig>,
+  deliveries: Record<string, DeliveryModel> = {},
 ): { registrations: AcceptanceRegistration[]; files: OutputFile[] } {
+  const requirements = behaviorRequirements(models, deliveries);
   const suites = inputs.map((input) => fixedAcceptanceSchema.parse(input));
   const paths = suites.map(acceptancePath);
   if (new Set(paths).size !== paths.length) throw new Error("Duplicate fixed acceptance suite");
   const shared = new Map<string, string>();
   for (const suite of suites) {
-    const model = models[suite.service];
-    if (!model)
-      throw new Error(`Fixed acceptance ${suite.id}: no resource service ${suite.service}`);
+    const behaviors = requirements[suite.service];
+    if (!behaviors)
+      throw new Error(`Fixed acceptance ${suite.id}: no behavior service ${suite.service}`);
     for (const id of suite.operationIds)
-      if (!model.extensions.some((e) => e.operationId === id))
-        throw new Error(`Fixed acceptance ${suite.id}: unknown extension operation ${id}`);
+      if (!behaviors.some((e) => e.id === id))
+        throw new Error(`Fixed acceptance ${suite.id}: unknown extension operation or event ${id}`);
     for (const id of suite.acceptanceIds)
-      if (!model.acceptanceCases.includes(id))
+      if (
+        ![
+          ...(models[suite.service]?.acceptanceCases ?? []),
+          ...behaviors.flatMap((e) => e.acceptance),
+        ].includes(id)
+      )
         throw new Error(`Fixed acceptance ${suite.id}: unknown acceptance reference ${id}`);
     const files = suite.files ?? [];
     for (const file of files) {
@@ -101,12 +109,27 @@ export function acceptanceFiles(
 export function acceptanceCaseCoverageProblems(
   models: Record<string, ResourceConfig>,
   suites: AcceptanceRegistration[],
+  deliveries: Record<string, DeliveryModel> = {},
 ): string[] {
   const problems: string[] = [];
   for (const [service, model] of Object.entries(models))
     for (const ref of model.acceptanceCases)
       if (!suites.some((suite) => suite.service === service && suite.acceptanceIds.includes(ref)))
         problems.push(`${service}/${ref}: no fixed acceptance suite is registered`);
+  for (const [service, model] of Object.entries(deliveries))
+    for (const event of model.config.events)
+      for (const ref of event.acceptance)
+        if (
+          !suites.some(
+            (suite) =>
+              suite.service === service &&
+              suite.operationIds.includes(eventBehaviorId(model.attachment, event.id)) &&
+              suite.acceptanceIds.includes(ref),
+          )
+        )
+          problems.push(
+            `${service}/${event.id}/${ref}: no fixed event acceptance suite is registered`,
+          );
   return problems;
 }
 
@@ -115,11 +138,13 @@ export function acceptanceCoverageProblems(
   models: Record<string, ResourceConfig>,
   suites: AcceptanceRegistration[],
   required: Record<string, string[]>,
+  deliveries: Record<string, DeliveryModel> = {},
 ): string[] {
+  const requirements = behaviorRequirements(models, deliveries);
   const problems: string[] = [];
   for (const [service, ids] of Object.entries(required)) {
     for (const id of ids) {
-      const extension = models[service]?.extensions.find((e) => e.operationId === id);
+      const extension = requirements[service]?.find((e) => e.id === id);
       if (!extension) {
         problems.push(`${service}/${id}: unknown required extension operation`);
         continue;
@@ -155,4 +180,26 @@ export function acceptanceDependencies(
       byName.set(dependency.name, dependency.version);
     }
   return [...byName].map(([name, version]) => ({ name, version }));
+}
+
+/** One acceptance namespace, with explicit non-HTTP event identities. */
+export function behaviorRequirements(
+  models: Record<string, ResourceConfig>,
+  deliveries: Record<string, DeliveryModel> = {},
+): Record<string, { id: string; acceptance: string[] }[]> {
+  return Object.fromEntries(
+    [...new Set([...Object.keys(models), ...Object.keys(deliveries)])].map((service) => [
+      service,
+      [
+        ...(models[service]?.extensions ?? []).map((e) => ({
+          id: e.operationId,
+          acceptance: e.acceptance,
+        })),
+        ...(deliveries[service]?.config.events ?? []).map((e) => ({
+          id: eventBehaviorId(deliveries[service]!.attachment, e.id),
+          acceptance: e.acceptance,
+        })),
+      ],
+    ]),
+  );
 }

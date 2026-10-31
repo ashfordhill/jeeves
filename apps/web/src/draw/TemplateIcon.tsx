@@ -7,6 +7,7 @@ import {
   IconDatabase,
   IconPlugConnected,
   IconQuestionMark,
+  IconRepeat,
   IconServer,
 } from "@tabler/icons-react";
 
@@ -16,6 +17,7 @@ const ICONS: Record<string, Icon> = {
   database: IconDatabase,
   "plug-connected": IconPlugConnected,
   server: IconServer,
+  repeat: IconRepeat,
 };
 
 export function TemplateIcon({ name, size = 20 }: { name: string | undefined; size?: number }) {

@@ -25,6 +25,8 @@ export const profiles = {
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
+  "generated-events":
+    "Generated non-QR event service, lifecycle and fixed acceptance; disposable Postgres",
   "durable-events":
     "Focused transactional delivery proof in disposable PostgreSQL; no live consumer",
   "qrwty-product": "Isolated composed consumer verification; requires an absolute checkout path",
@@ -101,16 +103,13 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "generated-events":
     case "qr-studio-recipe": {
       none();
       const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
       commands.push({
         executable: process.execPath,
-        args: [
-          "--import",
-          loader,
-          join(root, "packages/generator/scripts/verify-qr-studio-recipe.ts"),
-        ],
+        args: ["--import", loader, join(root, `packages/generator/scripts/verify-${name}.ts`)],
         cwd: root,
       });
       break;

@@ -1,5 +1,6 @@
 import { validateArchitecture } from "./architecture.ts";
 import { checkConfig } from "./config.ts";
+import { deliveryStore } from "./delivery.ts";
 import {
   type Attachment,
   type Connection,
@@ -207,6 +208,18 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
           }),
         );
     }
+  }
+
+  for (const element of design.elements) {
+    const attachment = element.attachments.find((a) => a.template.id === "durable-events");
+    if (attachment && !deliveryStore(design, element.id))
+      findings.push(
+        finding(
+          "CONFIG_REQUIRED",
+          "Durable events require one Postgres connection from this service.",
+          { element: element.id, attachment: attachment.id },
+        ),
+      );
   }
 
   const resolved = new Map<string, ResolvedEndpoint>();

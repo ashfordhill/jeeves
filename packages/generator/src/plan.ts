@@ -1,6 +1,8 @@
 import {
   blocksGenerate,
+  type DeliveryModel,
   type DesignDocument,
+  deliveryModels as deriveDeliveryModels,
   formatTemplateRef,
   type ResourceConfig,
   validateDesign,
@@ -12,6 +14,7 @@ import {
   createGenerateContext,
   type DependencyEntry,
   elementDir,
+  frozenRuntime,
   type GenerateResult,
   mergeCompose,
   type OutputFile,
@@ -77,6 +80,8 @@ export interface ProjectPlan {
   artifacts?: RecipeArtifact[];
   fixedAcceptance?: AcceptanceRegistration[];
   resourceModels?: Record<string, ResourceConfig>;
+  deliveryModels?: Record<string, DeliveryModel>;
+  frozenDependencies?: Record<string, Record<string, string>>;
   resourceStores?: Record<string, { connection: string; database: string }>;
   /** Sorted by path. */
   files: OutputFile[];
@@ -94,6 +99,7 @@ export interface PlanOptions {
   fixedAcceptance?: FixedAcceptance[];
   /** Used for the root `package.json` name and the docs; the design has no name of its own. */
   projectName: string;
+  deliveryHistory?: Record<string, DeliveryModel>;
   resourceHistory?: {
     models: Record<string, ResourceConfig>;
     files: OutputFile[];
@@ -267,10 +273,16 @@ export function planProject(
       .filter((r) => r.result.resourceModel)
       .map((r) => [r.subject.element, r.result.resourceModel!]),
   );
-  const acceptance = acceptanceFiles(options.fixedAcceptance ?? [], resourceModels);
+  const deliveryModels = deriveDeliveryModels(design);
+  assertDeliveryHistory(options.deliveryHistory ?? {}, deliveryModels);
+  const acceptance = acceptanceFiles(options.fixedAcceptance ?? [], resourceModels, deliveryModels);
   // A supplied fixed suite set must account for every case the design declares.
   if (options.fixedAcceptance?.length) {
-    const uncovered = acceptanceCaseCoverageProblems(resourceModels, acceptance.registrations);
+    const uncovered = acceptanceCaseCoverageProblems(
+      resourceModels,
+      acceptance.registrations,
+      deliveryModels,
+    );
     if (uncovered.length)
       throw new GenerationError(`Fixed acceptance is incomplete:\n${uncovered.join("\n")}`);
   }
@@ -291,7 +303,24 @@ export function planProject(
   for (const file of docs) add(file, "jeeves");
 
   for (const file of acceptance.files) add(file, "fixed acceptance");
+  const artifacts = [...runtimes.values()].flatMap((r) => {
+    const file = frozenRuntime(r);
+    return file ? [file] : [];
+  });
+  const edits = packageEdits(results, elements, runtimes);
+  const frozenNames = new Set([...runtimes.values()].filter((r) => r.artifact).map((r) => r.name));
+  const frozenDependencies = Object.fromEntries(
+    edits.flatMap((edit) => {
+      const entries = edit.dependencies
+        .filter((d) => frozenNames.has(d.name))
+        .map((d) => [d.name, d.spec]);
+      return entries.length ? [[edit.path, Object.fromEntries(entries)]] : [];
+    }),
+  );
   const plan: ProjectPlan = {
+    ...(Object.keys(frozenDependencies).length && { frozenDependencies }),
+    ...(artifacts.length && { artifacts }),
+    ...(Object.keys(deliveryModels).length && { deliveryModels }),
     ...(acceptance.registrations.length && { fixedAcceptance: acceptance.registrations }),
     ...(Object.keys(resourceModels).length && {
       resourceModels,
@@ -308,7 +337,7 @@ export function planProject(
     }),
     files: [...files.values()].sort((a, b) => (a.path < b.path ? -1 : 1)),
     compose,
-    packageEdits: packageEdits(results, elements, runtimes),
+    packageEdits: edits,
     runtimes: [...runtimes.values()].sort((a, b) => (a.name < b.name ? -1 : 1)),
     elements,
     templates: [...used].sort(),
@@ -364,4 +393,36 @@ function packageEdits(
     }
   }
   return [...edits.values()].sort((a, b) => (a.path < b.path ? -1 : 1));
+}
+
+/** Queued data and handler identity are durable contracts, not disposable scaffold metadata. */
+export function assertDeliveryHistory(
+  previous: Record<string, DeliveryModel>,
+  next: Record<string, DeliveryModel>,
+): void {
+  for (const [service, old] of Object.entries(previous)) {
+    const current = next[service];
+    if (
+      !current ||
+      old.attachment !== current.attachment ||
+      old.connection !== current.connection ||
+      old.database !== current.database
+    )
+      throw new GenerationError(
+        `${service}: durable event attachment/store removal or movement requires a reviewed data and ownership migration`,
+      );
+    for (const event of old.config.events) {
+      const found = current.config.events.find((e) => e.id === event.id);
+      const contract = (e: typeof event) =>
+        JSON.stringify({
+          type: e.type,
+          version: e.version,
+          fields: [...e.fields].sort((a, b) => a.name.localeCompare(b.name)),
+        });
+      if (!found || contract(event) !== contract(found))
+        throw new GenerationError(
+          `${service}/${event.id}: published event contract cannot be removed or redefined; append a new event version`,
+        );
+    }
+  }
 }

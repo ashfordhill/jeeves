@@ -82,6 +82,8 @@ export function wiringSource(ctx: GenerateContext): string {
   const c = (text: string) => text.replaceAll("*/", "* /");
   const resourceModel = ctx.attachments.find((a) => a.manifest.id === "rest-api-server")?.config
     .model;
+  const delivery = ctx.attachments.some((a) => a.manifest.id === "durable-events");
+  if (delivery && !wiring.database) throw new Error("Durable events require a Postgres connection");
   const imports = [
     'import { fileURLToPath } from "node:url";',
     wiring.database && 'import { postgresDependency } from "@jeeves/postgres-runtime";',
@@ -89,6 +91,7 @@ export function wiringSource(ctx: GenerateContext): string {
     'import { defineService } from "@jeeves/service-runtime";',
     ...wiring.clients.map((c) => `import { ${c.exportName} } from ${q(c.module)};`),
     resourceModel && 'import { generatedApi } from "./generated/routes.ts";',
+    delivery && 'import { createDeliveryBinding } from "./delivery/adapter.ts";',
     wiring.database && 'import * as schema from "./db/schema.ts";',
   ].filter(Boolean);
 
@@ -110,6 +113,11 @@ export function wiringSource(ctx: GenerateContext): string {
     dependencies.push("database");
   }
   const plugins: string[] = [];
+  if (delivery) {
+    body.push("", "export const delivery = createDeliveryBinding(() => database.pool);");
+    dependencies.push("delivery.dependency");
+    plugins.push("delivery.plugin,");
+  }
   if (wiring.restServer) {
     const contract = posix.relative(`${ctx.dir}/src`, contractPath(element.id));
     if (resourceModel) plugins.push(`generatedApi(() => database.pool, path(${q(contract)})),`);

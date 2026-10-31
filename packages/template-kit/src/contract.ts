@@ -42,6 +42,8 @@ export interface RuntimePackage {
   version: string;
   /** Absolute path of the package directory (what `pnpm pack` runs in). */
   dir: string;
+  /** Absolute archive path and SHA-256 of an immutable published component. */
+  artifact?: { path: string; sha256: string };
 }
 
 /** Who owns a file in the generated project (PLAN §9 "Ownership"). */

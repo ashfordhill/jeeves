@@ -27,9 +27,11 @@ function board(): DesignDocument {
 }
 
 describe("builtin registry", () => {
-  it("loads the five v1 templates", () => {
+  it("retains published templates alongside new versions and capabilities", () => {
     expect(registry.list().map((m) => `${m.id}@${m.version}`)).toEqual([
+      "durable-events@0.1.0",
       "http-service@0.1.0",
+      "http-service@0.2.0",
       "postgres@0.1.0",
       "rest-api-client@0.1.0",
       "rest-api-server@0.1.0",
@@ -235,6 +237,6 @@ describe("createRegistry", () => {
   });
 
   it("is what builtinRegistry uses", () => {
-    expect(createRegistry(builtinManifests).list()).toHaveLength(5);
+    expect(createRegistry(builtinManifests).list()).toHaveLength(7);
   });
 });

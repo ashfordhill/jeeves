@@ -74,7 +74,7 @@ describe("independent fixed acceptance", () => {
     ).toEqual([]);
     expect(() =>
       acceptanceFiles([{ ...suite, operationIds: ["invented"] }], plan.resourceModels!),
-    ).toThrow("unknown extension operation invented");
+    ).toThrow("unknown extension operation or event invented");
     expect(() => acceptanceFiles([suite, suite], plan.resourceModels!)).toThrow("Duplicate");
   });
   it("hashes fixed suites, preserves them on regeneration, and blocks edited expectations", async () => {

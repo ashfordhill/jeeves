@@ -9,15 +9,17 @@ import {
   type AcceptanceRegistration,
   acceptanceCoverageProblems,
   acceptancePath,
+  behaviorRequirements,
 } from "../acceptance.ts";
 import { pnpmCommand, runCommand } from "../exec.ts";
-import { hashContents, type Lock } from "../lock.ts";
+import { assertFrozenDependencies, hashContents, type Lock } from "../lock.ts";
 import { assertRecipeDependencies, loadRecipe } from "../recipes.ts";
 import { ComposeCli } from "./compose.ts";
 import type { CheckOutcome } from "./index.ts";
 
 /** Reject missing, edited, and symlinked expectations before any application tests run. */
 export function assertGeneratedIntegrity(dir: string, lock: Lock): void {
+  assertFrozenDependencies(dir, lock.frozenDependencies);
   if (lock.recipe) assertRecipeDependencies(dir, loadRecipe(lock.recipe));
   for (const [path, hash] of Object.entries(lock.files)) {
     let current = dir;
@@ -234,11 +236,10 @@ export async function verifyBehavior(options: {
   assertGeneratedIntegrity(dir, lock);
   const models = lock.resourceModels ?? {};
   const suites = lock.fixedAcceptance ?? [];
-  const missing = acceptanceCoverageProblems(models, suites, required);
-  const deferred = Object.entries(models).flatMap(([service, model]) =>
-    model.extensions
-      .filter((e) => !required[service]?.includes(e.operationId))
-      .map((e) => `${service}/${e.operationId}`),
+  const missing = acceptanceCoverageProblems(models, suites, required, lock.deliveryModels);
+  const deferred = Object.entries(behaviorRequirements(models, lock.deliveryModels)).flatMap(
+    ([service, behaviors]) =>
+      behaviors.filter((e) => !required[service]?.includes(e.id)).map((e) => `${service}/${e.id}`),
   );
   if (deferred.length)
     onCheck({
@@ -311,7 +312,12 @@ export async function verifyBehavior(options: {
     const web = webApps[0] ? serviceUrls[webApps[0].id] : undefined;
     if (webApps.length && !web) throw new Error("The fixture web app didn't publish a port");
     const origin = web ?? webUrl ?? "http://127.0.0.1:1";
-    const databases = new Set(Object.values(lock.resourceStores ?? {}).map((s) => s.database));
+    const databases = new Set(
+      [
+        ...Object.values(lock.resourceStores ?? {}),
+        ...Object.values(lock.deliveryModels ?? {}),
+      ].map((s) => s.database),
+    );
     const dbService = databases.size === 1 ? [...databases][0] : undefined;
     const run = async (
       service: string,

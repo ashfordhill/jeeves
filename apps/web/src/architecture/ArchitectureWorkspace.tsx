@@ -66,7 +66,7 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
   };
   const editOnBoard = (item: ArchitectureViewNode) => {
     if (!item.binding) return;
-    useDraw.getState().setSelection({ nodes: [item.binding.element], edges: [] });
+    useDraw.getState().focus({ nodes: [item.binding.element], edges: [] });
     useDraw.getState().setRailTab("inspector");
     onClose();
   };

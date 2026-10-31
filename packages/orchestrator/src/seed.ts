@@ -5,7 +5,9 @@
 import { type Lock, recipeCoverage } from "@jeeves/generator";
 import {
   type DesignDocument,
+  deliveryConfigSchema,
   type ElementKind,
+  eventBehaviorId,
   resourceConfigSchema,
   type TemplateLookup,
 } from "@jeeves/spec";
@@ -107,6 +109,31 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
       source: "seed" as const,
     };
     for (const attachment of element.attachments) {
+      if (attachment.template.id === "durable-events") {
+        const config = deliveryConfigSchema.parse(attachment.config);
+        const dir = lock.elements.find((e) => e.id === element.id)?.dir ?? `services/${element.id}`;
+        for (const event of config.events)
+          tasks.push({
+            ...base,
+            key: eventTaskKey(element.id, attachment.id, event.id),
+            attachment: attachment.id,
+            title: `Implement ${event.type}@${event.version} handler`,
+            description: [
+              event.notes ||
+                "Specify and implement the domain effect against the fixed acceptance references.",
+              `Behavior: ${eventBehaviorId(attachment.id, event.id)}; payload contract: ${JSON.stringify(event.fields)}`,
+              "Delivery, retries, migrations and payload validation are generated. Implement only this event handler; context.effect commits database effects with a durable receipt. External effects require destination idempotency with context.id. Respect context.signal.",
+              `Fixed acceptance references: ${event.acceptance.join(", ")}. Tests under tests/acceptance/${element.id}/ are protected. Producer authorization and command idempotency remain explicit project work.`,
+            ].join("\n\n"),
+            acceptance: [...event.acceptance],
+            ownedPaths: [
+              `${dir}/src/event-handlers/${event.id}.ts`,
+              `${dir}/tests/`,
+              `${dir}/package.json`,
+            ],
+          });
+        continue;
+      }
       if (attachment.template.id === "rest-api-server" && attachment.config.model) {
         const model = resourceConfigSchema.parse(attachment.config.model);
         const dir = lock.elements.find((e) => e.id === element.id)?.dir ?? `services/${element.id}`;
@@ -166,6 +193,9 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
 export const extensionTaskKey = (element: string, attachment: string, extension: string) =>
   `${element}.${attachment}.extension.${extension}`;
 
+export const eventTaskKey = (element: string, attachment: string, event: string) =>
+  `${element}.${attachment}.event.${event}`;
+
 export function requiredExtensions(
   design: DesignDocument,
   keys: string[],
@@ -173,11 +203,21 @@ export function requiredExtensions(
   const required: Record<string, string[]> = {};
   for (const element of design.elements)
     for (const attachment of element.attachments) {
-      if (attachment.template.id !== "rest-api-server" || !attachment.config.model) continue;
-      const model = resourceConfigSchema.parse(attachment.config.model);
-      required[element.id] = model.extensions
-        .filter((e) => keys.includes(extensionTaskKey(element.id, attachment.id, e.id)))
-        .map((e) => e.operationId);
+      let selected: string[];
+      if (attachment.template.id === "durable-events")
+        selected = deliveryConfigSchema
+          .parse(attachment.config)
+          .events.filter((e) => keys.includes(eventTaskKey(element.id, attachment.id, e.id)))
+          .map((e) => eventBehaviorId(attachment.id, e.id));
+      else if (attachment.template.id === "rest-api-server" && attachment.config.model)
+        selected = resourceConfigSchema
+          .parse(attachment.config.model)
+          .extensions.filter((e) =>
+            keys.includes(extensionTaskKey(element.id, attachment.id, e.id)),
+          )
+          .map((e) => e.operationId);
+      else continue;
+      required[element.id] = [...(required[element.id] ?? []), ...selected];
     }
   return required;
 }
@@ -187,15 +227,8 @@ export function unverifiedExtensionOperations(
   completed: string[],
 ): string[] {
   const verified = requiredExtensions(design, completed);
-  return design.elements.flatMap((element) =>
-    element.attachments
-      .filter((a) => a.template.id === "rest-api-server" && a.config.model)
-      .flatMap((a) =>
-        resourceConfigSchema
-          .parse(a.config.model)
-          .extensions.filter((e) => !verified[element.id]?.includes(e.operationId))
-          .map((e) => `${element.id}/${e.operationId}`),
-      ),
+  return Object.entries(allRequiredBehaviors(design)).flatMap(([service, ids]) =>
+    ids.filter((id) => !verified[service]?.includes(id)).map((id) => `${service}/${id}`),
   );
 }
 
@@ -230,14 +263,22 @@ export function taskRequiredExtensions(
 ): Record<string, string[]> {
   const selected = requiredExtensions(design, [...completed, key]);
   if (Object.values(requiredExtensions(design, [key])).some((ids) => ids.length)) return selected;
-  return Object.fromEntries(
-    design.elements.flatMap((element) =>
-      element.attachments
-        .filter((a) => a.template.id === "rest-api-server" && a.config.model)
-        .map((a) => [
-          element.id,
-          resourceConfigSchema.parse(a.config.model).extensions.map((e) => e.operationId),
-        ]),
-    ),
+  return allRequiredBehaviors(design);
+}
+
+function allRequiredBehaviors(design: DesignDocument): Record<string, string[]> {
+  const keys = design.elements.flatMap((element) =>
+    element.attachments.flatMap((a) => {
+      if (a.template.id === "durable-events")
+        return deliveryConfigSchema
+          .parse(a.config)
+          .events.map((e) => eventTaskKey(element.id, a.id, e.id));
+      if (a.template.id === "rest-api-server" && a.config.model)
+        return resourceConfigSchema
+          .parse(a.config.model)
+          .extensions.map((e) => extensionTaskKey(element.id, a.id, e.id));
+      return [];
+    }),
   );
+  return requiredExtensions(design, keys);
 }
