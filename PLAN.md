@@ -4,7 +4,7 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
-**Current completion:** [P35 — independent sessions for local generated applications](docs/evidence/p35/README.md) is implemented and verified; P12–P35 are complete. Next, specify the bounded useful QRWTY architecture package in the [authoring queue](docs/build-plan-qrwty-authoring.md#queued-work-after-p35--specify-before-coding). Developer testing, page flow and live adoption remain queued; older next-package statements do not authorize them.
+**Next implementation:** [P36 — useful application architecture, proved with QRWTY](docs/build-plan-p36-architecture.md) is specified, not implemented. P12–P35 are complete; [P35 evidence](docs/evidence/p35/README.md) records the versioned session correction. Implement P36 only, verify, append the handoff, commit and stop. Developer testing, page flow and live adoption remain queued; older next-package statements do not authorize them.
 
 Related documents:
 

@@ -1,6 +1,6 @@
 # QRWTY authoring, architecture and testing review
 
-**Implementation handoff:** [P35 — independent sessions for local generated applications](build-plan-qrwty-authoring.md) is now the specified next package. It addresses the reproduced cookie collision first, preserves the queued authoring work below, and supersedes the earlier unimplemented P35 forms proposal. This audit remains evidence and product direction; P35 implementation has not started.
+**Implementation handoff:** [P35 independent sessions](evidence/p35/README.md) is now implemented and verified; live QRWTY has not adopted it. [P36 — useful application architecture, proved with QRWTY](build-plan-p36-architecture.md) is the specified next package, not yet implemented. Developer testing, page flow and composable adoption remain queued below. This audit remains the product direction and original evidence; the old P35 forms proposal stays superseded.
 
 Reviewed 2026-10-31 in response to the user's request to refocus Jeeves on composing applications such as QRWTY with minimal bespoke code. This is an audit and proposed delivery plan, not an implemented feature package. The earlier proposal to continue automatically into P35 business-action forms should be reconsidered against this product priority.
 

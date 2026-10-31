@@ -1,8 +1,8 @@
 # QRWTY authoring: fresh-agent execution handoff
 
-Updated 2026-10-31. **P35 is implemented and verified:** see [release evidence](evidence/p35/README.md) and the latest handoff. P12–P35 are complete. The next bounded authoring package to specify is useful QRWTY architecture, listed in the queue below. The old P35 business-action-forms idea was never implemented and is superseded; P35 now names the bounded session correction below. The [authoring review](qrwty-authoring-review-2026-10-31.md) remains the product direction and evidence, while this file is the implementation specification.
+Updated 2026-10-31. **P35 is implemented and verified:** see [release evidence](evidence/p35/README.md) and the latest handoff. P12–P35 are complete. The next package is now specified separately: [P36 — useful application architecture, proved with QRWTY](build-plan-p36-architecture.md). Implement P36 only when starting that work. The old P35 business-action-forms idea was never implemented and is superseded; P35 now names the bounded session correction below. The [authoring review](qrwty-authoring-review-2026-10-31.md) remains the product direction and evidence, while this file is the implementation specification.
 
-The P35 execution instruction was to implement **P35 only**, run its checks, append the handoff and create its local commit. Do not automatically proceed into the older delivery roadmap or implement all of the review at once. Later packages are queued below but are not yet implementation specifications. The specification below records that bounded release contract; completion does not authorize the queued packages.
+The P35 execution instruction was to implement **P35 only**, run its checks, append the handoff and create its local commit. Do not automatically proceed into the older delivery roadmap or implement all of the review at once. P36 now has its own implementation specification; subsequent packages remain queued. The specification below records that bounded release contract; completion does not authorize the queued packages.
 
 ## Read first and preserve
 
@@ -79,11 +79,11 @@ The final report must say whether the live QRWTY app has adopted the release; un
 
 ## Queued work after P35 — specify before coding
 
-The next agent must retain this direction without implementing these broader items in P35:
+P35 is complete. P36 now specifies the first item; retain the remaining order without implementing the whole queue at once:
 
 | Order | Intended package | Completion evidence to specify |
 | --- | --- | --- |
-| 1 | Useful QRWTY architecture | Explicit responsibility descriptions and operation/resource/dependency bindings; concise cards; direct selected-object configuration; populated context and readable fit. Mouse Save/Cancel/undo/reload; no invented dependencies or loss of endpoint detail. |
+| 1 | [P36 — useful QRWTY architecture](build-plan-p36-architecture.md), specified | Explicit responsibility descriptions and operation/resource/dependency bindings; concise cards; direct selected-object configuration; populated context and readable fit. Mouse Save/Cancel/undo/reload; no invented dependencies or loss of endpoint detail. |
 | 2 | Persistent developer testing | Open test app with reusable tester/visitor, isolated persistent data, empty/sample scenarios and scoped reset. Real sessions and cross-owner tests remain active. No repeated registration or interference with normal QRWTY. |
 | 3 | Page flow and public entry | One finite page/transition model drives the graph and generated router/screens. Public landing, separate login/register, guarded workspace, valid return targets, Back/refresh and content configuration. Preserve `/q/:id`. |
 | 4 | Composable QR product and reviewed adoption | QR/Studio/analytics capabilities generate an editable QRWTY-equivalent product without implementation-model calls. Prove content/navigation/behavior edits and safe adoption in a disposable copy before applying to the existing application. |
