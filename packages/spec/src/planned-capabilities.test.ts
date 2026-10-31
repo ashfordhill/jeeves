@@ -4,7 +4,11 @@ import { architectureExample, architectureExamples } from "./architecture-exampl
 import { architectureViews } from "./architecture-view.ts";
 import { designSchema, emptyDesign } from "./design.ts";
 import { blocksGenerate, isStructural } from "./findings.ts";
-import { plannedCapabilities, plannedConfigSchema } from "./planned-capabilities.ts";
+import {
+  plannedCapabilities,
+  plannedCapability,
+  plannedConfigSchema,
+} from "./planned-capabilities.ts";
 import { sampleDesign, testLookup } from "./test-support.ts";
 import { validateDesign } from "./validate.ts";
 
@@ -52,6 +56,80 @@ describe("planned architecture authoring", () => {
       expect(schema.safeParse({}).success, capability.id).toBe(true);
       expect(schema.safeParse({ invented: "setting" }).success).toBe(false);
     }
+  });
+  it.each([
+    ["third-party-service", "external"],
+    ["analytics-store", "database"],
+    ["serverless-function", "worker"],
+  ] as const)("%s is a valid C2 boundary that still blocks generation", (id, role) => {
+    expect(plannedCapability(id)).toMatchObject({ role, scope: "container" });
+    const result = applyOperations(
+      emptyDesign(),
+      [{ op: "addElement", element: { id, name: id, template: null, planned: id } }],
+      testLookup,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.findings.filter(isStructural)).toEqual([]);
+    expect(blocksGenerate(result.findings)).toBe(true);
+    const view = architectureViews(result.design, testLookup, "SaaS").containers;
+    expect(view.nodes.find((node) => node.binding?.element === id)).toMatchObject({
+      support: "planned",
+    });
+  });
+  it.each(["third-party-service", "analytics-store", "serverless-function", "browser-client"])(
+    "%s validates every option and rejects invalid types, ranges and unknown fields",
+    (id) => {
+      const schema = plannedConfigSchema(id);
+      for (const field of plannedCapability(id)!.fields) {
+        if (field.options) {
+          for (const option of field.options)
+            expect(schema.safeParse({ [field.key]: option }).success, `${id}.${field.key}`).toBe(
+              true,
+            );
+          expect(schema.safeParse({ [field.key]: "Invented choice" }).success).toBe(false);
+        } else if (typeof field.default === "number") {
+          for (const invalid of [-1, 0.5, 1_000_000_001, "30"])
+            expect(schema.safeParse({ [field.key]: invalid }).success).toBe(false);
+          expect(schema.safeParse({ [field.key]: 0 }).success).toBe(true);
+        } else if (typeof field.default === "boolean") {
+          expect(schema.safeParse({ [field.key]: !field.default }).success).toBe(true);
+          expect(schema.safeParse({ [field.key]: "true" }).success).toBe(false);
+        } else {
+          expect(schema.safeParse({ [field.key]: "x".repeat(2000) }).success).toBe(true);
+          expect(schema.safeParse({ [field.key]: "x".repeat(2001) }).success).toBe(false);
+          expect(schema.safeParse({ [field.key]: 123 }).success).toBe(false);
+        }
+      }
+    },
+  );
+  it("keeps old web rendering settings readable without rewriting the saved document", () => {
+    const result = applyOperations(
+      emptyDesign(),
+      [
+        {
+          op: "addElement",
+          element: {
+            id: "web",
+            name: "Web",
+            template: null,
+            planned: "browser-client",
+            config: { rendering: "Hybrid", responsive: false, access: "Sign-in required" },
+          },
+        },
+      ],
+      testLookup,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.findings.filter(isStructural)).toEqual([]);
+    const saved = result.design.elements[0]!.config;
+    expect(saved).toEqual({ rendering: "Hybrid", responsive: false, access: "Sign-in required" });
+    expect(plannedConfigSchema("browser-client").parse(saved)).toMatchObject({
+      rendering: "Hybrid",
+      audience: "Customers",
+      kind: "Single-page app",
+    });
   });
   it("refuses malformed capability config and missing endpoints without changing the input", () => {
     const { design } = architectureExample("link-platform");

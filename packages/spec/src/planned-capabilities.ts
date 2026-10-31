@@ -115,6 +115,8 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "browser",
     "Browser experience connected to your application APIs.",
     [
+      choice("audience", "Audience", ["Customers", "Internal staff & admins", "Both"]),
+      choice("kind", "Kind", ["Single-page app", "Server-rendered site", "Static marketing site"]),
       choice("rendering", "Rendering", ["Client rendered", "Server rendered", "Hybrid"]),
       toggle("responsive", "Responsive layout"),
       choice("access", "Entry access", ["Public + signed-in areas", "Sign-in required", "Public"]),
@@ -185,6 +187,26 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
         "Best effort",
       ]),
       toggle("deadLetter", "Dead-letter handling"),
+    ],
+  ),
+  capability(
+    "serverless-function",
+    "Serverless function",
+    "Application",
+    "worker",
+    "cpu",
+    "Runs bounded work on an HTTP, queue, schedule or storage event trigger.",
+    [
+      choice("trigger", "Trigger", ["HTTP", "Queue", "Schedule", "Storage event"]),
+      {
+        ...number("timeoutSeconds", "Timeout target (seconds)", 30),
+        description: "A design target; the selected platform must support and enforce it.",
+      },
+      choice("coldStart", "Cold-start tolerance", [
+        "Seconds acceptable",
+        "Sub-second target",
+        "No cold starts acceptable",
+      ]),
     ],
   ),
   capability(
@@ -311,6 +333,20 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     ],
   ),
   capability(
+    "analytics-store",
+    "Analytics store / warehouse",
+    "Data & storage",
+    "database",
+    "database",
+    "Retains analytical data for internal dashboards and customer-facing reports.",
+    [
+      choice("family", "Store family", ["Columnar warehouse", "Time-series", "Data lake"]),
+      choice("load", "Load", ["Streaming", "Micro-batch", "Nightly batch"]),
+      number("retention", "Retention target (days; 0 = indefinite)", 90),
+      choice("access", "Access", ["Internal dashboards", "Customer-facing reports"]),
+    ],
+  ),
+  capability(
     "distributed-cache",
     "Cache",
     "Data & storage",
@@ -387,6 +423,35 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
       number("retention", "Retention (days)", 7),
       choice("schema", "Schema evolution", ["Backward compatible", "Explicit versioned topics"]),
       toggle("replay", "Consumer replay"),
+    ],
+  ),
+  capability(
+    "third-party-service",
+    "Third-party service",
+    "Integrations",
+    "external",
+    "world",
+    "Connects to an external provider with explicit data sharing and failure behavior.",
+    [
+      choice("category", "Category", [
+        "Payments",
+        "E-mail delivery",
+        "SMS",
+        "Push notifications",
+        "Maps & geocoding",
+        "Analytics vendor",
+        "CRM & support",
+        "AI model API",
+        "Other",
+      ]),
+      choice("authentication", "Authentication", ["API key", "OAuth client", "mTLS"]),
+      toggle("webhooks", "Inbound webhooks", false),
+      text("dataShared", "Data shared"),
+      choice("unavailable", "Behavior when unavailable", [
+        "Fail request",
+        "Degrade",
+        "Queue and retry",
+      ]),
     ],
   ),
   capability(

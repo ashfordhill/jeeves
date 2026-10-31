@@ -75,6 +75,9 @@ workload requirements. This broader example is independent of the QR Studio reci
   [media processing](#c3-media), [analytics](#c3-analytics).
 - Optional later choices: [traffic distribution](#c2-traffic) or
   [edge delivery](#c2-edge), justified by measured workload and availability needs.
+  [Serverless functions](#c2-serverless), [analytical storage](#c2-analytics-store)
+  and [third-party providers](#c2-third-party) are reusable planning choices for a
+  broader SaaS design; the current example does not instantiate them.
 
 ### Community and discussion
 
@@ -119,7 +122,7 @@ attachments are not automatically separate deployable containers.
 
 | Offering | Availability and responsibility | C3 choices / reuse |
 | --- | --- | --- |
-| Web application | Implemented `web-app`; also a planned web block for broader rendering/access choices. | [Client adapters and screens](#c3-client); all C1 offerings. |
+| Web application | Implemented `web-app`; also a planned web block with customer/staff/both audience and single-page/server-rendered/static marketing kind, alongside rendering/access choices. | [Client adapters and screens](#c3-client); all C1 offerings. |
 | Mobile application | Planned client with platform and offline intent. | Shared API contracts and [accounts](#c3-accounts); [social](#social-and-content-platform) or any system needing a mobile client. |
 | Desktop application | Planned desktop client with platform/update intent. | Shared API contracts; can front a [resource workspace](#resource-workspace). |
 
@@ -146,6 +149,13 @@ work outside the request path. It can host [domain jobs](#c3-domain),
 [media processing](#c3-media), [moderation](#c3-moderation) and
 [analytics](#c3-analytics). Used by the links, community and social examples.
 
+<a id="c2-serverless"></a>
+The **serverless function** is a planned worker boundary for bounded HTTP-, queue-,
+schedule- or storage-triggered work, with timeout and cold-start tolerance targets.
+It can reuse the same [domain jobs](#c3-domain), [media](#c3-media) and
+[analytics](#c3-analytics) responsibilities in links, community or social systems.
+These targets do not provision a function platform or verify its latency.
+
 The implemented [`durable-events`](templates/durable-events/README.md) attachment
 supplies a bounded event mechanism inside a compatible HTTP service. It is a
 different deployment shape from a separate planned worker or general queue broker.
@@ -166,6 +176,17 @@ remain in the responsible [application components](#c3-domain).
 | PostgreSQL | Implemented `postgres`: relational storage for supported consumers. | [Accounts](#c3-accounts), [resources](#c3-resources) and domain data across all current C1 offerings. |
 | Relational database | Planned family/topology/isolation/recovery choices. Replicas and sharding are design declarations. | Same domain families; a high write target does not automatically imply sharding. |
 | Document database | Planned document, partitioning and consistency intent. | Domain data where aggregate/document access patterns justify it; no supplied implementation. |
+
+<a id="c2-analytics-store"></a>
+### Analytics store / warehouse
+
+**Planned data store.** Columnar warehouse, time-series or data-lake intent, with
+streaming/micro-batch/nightly loading, retention and internal-dashboard or
+customer-report access choices. Reusable by [analytics components](#c3-analytics)
+in the [links](#links-and-qr-platform), [community](#community-and-discussion) and
+[social](#social-and-content-platform) offerings. [Workers](#c2-worker) can load it
+from [events](#c2-messaging); transactional [data](#c2-data) retains its own boundary.
+This is analytical storage, separate from an external analytics vendor.
 
 <a id="c2-cache"></a>
 ### Cache
@@ -226,6 +247,7 @@ traffic. Private responses and application authorization need explicit handling.
 
 | Offering | Availability and responsibility | Related C3 / C1 |
 | --- | --- | --- |
+| <a id="c2-third-party"></a>Third-party service | Planned generic external boundary: payment, e-mail, SMS, push, maps, analytics vendor, CRM/support, AI API or other provider. Records authentication method, inbound webhooks, data shared and behavior when unavailable. | [Domain components](#c3-domain), notification delivery, [media](#c3-media) and [analytics](#c3-analytics) across C1 offerings; distinct from the specialized billing and identity blocks below. |
 | Identity provider | Planned sign-in, federation, MFA and tenancy choices. | [Accounts and access](#c3-accounts) in any system; distinct from current supplied local account behavior. |
 | Notification service | Planned delivery-channel and delivery-policy intent. | Domain events in [community](#community-and-discussion), social or resource applications. |
 | Billing provider | Planned subscription/payment-provider integration boundary. | [Domain components](#c3-domain) for any paid SaaS; no new payment implementation. |
@@ -246,7 +268,7 @@ Declared uses/arrows describe intent; actual generated wiring keeps its own iden
 | <a id="c3-domain"></a>Domain module / extension | Planned domain-module options; existing REST extensions expose concrete contracts and acceptance references, with implementation supplied by a recipe or project. | [API](#c2-application) or planned [worker](#c2-worker); link management, discussions, social relationships or other application responsibilities. |
 | <a id="c3-feeds"></a>Feed module | Planned audience, ordering and freshness intent. | [API](#c2-application) / [worker](#c2-worker), with selected [cache](#c2-cache) or [data](#c2-data) dependencies; [social](#social-and-content-platform), potentially community activity. |
 | <a id="c3-moderation"></a>Moderation module | Planned review, reporting and enforcement responsibility. | [API](#c2-application) / [worker](#c2-worker); [community](#community-and-discussion) and [social](#social-and-content-platform). |
-| <a id="c3-analytics"></a>Analytics module | Planned aggregation, freshness and retention intent. The QR recipe supplies its own bounded analytics operations. | [API](#c2-application) / [worker](#c2-worker), [data](#c2-data) / [streams](#c2-messaging); [links](#links-and-qr-platform), [QR Studio](#qr-studio), reusable for other activity data. |
+| <a id="c3-analytics"></a>Analytics module | Planned aggregation, freshness and retention intent. The QR recipe supplies its own bounded analytics operations. | [API](#c2-application) / [worker](#c2-worker), [data](#c2-data) / [analytics store](#c2-analytics-store) / [streams](#c2-messaging); [links](#links-and-qr-platform), [QR Studio](#qr-studio), reusable for other activity data. |
 | <a id="c3-media"></a>Media module | Planned transform, delivery and storage intent. Specific rendering, QR encoding and file correctness remain implementation or recipe behavior. | [API](#c2-application) / [worker](#c2-worker), [object storage](#c2-storage); links, QR Studio, community and social offerings. |
 
 The implemented [durable-events attachment](#c2-worker) also exposes event contracts

@@ -1,5 +1,10 @@
 import { builtinRegistry } from "@jeeves/registry";
-import { architectureExample, architectureExamples, plannedCapabilities } from "@jeeves/spec";
+import {
+  architectureExample,
+  architectureExamples,
+  type PlannedCapability,
+  plannedCapabilities,
+} from "@jeeves/spec";
 import { Alert, Badge, Button, Group, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
@@ -36,6 +41,13 @@ export function CapabilityCatalog({
   }
   const matches = (name: string, description: string) =>
     `${name} ${description}`.toLowerCase().includes(query.toLowerCase());
+  const matchesCapability = (item: PlannedCapability) =>
+    matches(
+      item.name,
+      `${item.description} ${item.fields
+        .map((field) => `${field.label} ${field.options?.join(" ") ?? ""}`)
+        .join(" ")}`,
+    );
   const create = async (id: string) => {
     setCreating(true);
     setError(undefined);
@@ -131,8 +143,7 @@ export function CapabilityCatalog({
                 ))}
             {plannedCapabilities
               .filter(
-                (item) =>
-                  (group === "All" || group === item.group) && matches(item.name, item.description),
+                (item) => (group === "All" || group === item.group) && matchesCapability(item),
               )
               .map((item) => (
                 <button
@@ -163,8 +174,7 @@ export function CapabilityCatalog({
               ))}
           </div>
           {!plannedCapabilities.some(
-            (item) =>
-              (group === "All" || group === item.group) && matches(item.name, item.description),
+            (item) => (group === "All" || group === item.group) && matchesCapability(item),
           ) &&
           ![...latest.values()].some(
             (item) =>

@@ -3109,3 +3109,59 @@ Next: **P41**, missing SaaS containers in the C2 planning catalog, followed by t
 recorded package order. Existing example content/technology refresh remains P43;
 narrow views remain mouse-zoomable overviews. Follow the current-branch, one-agent,
 scoped-local-commit policy. No runtime expansion or live adoption is implied.
+
+## 2026-10-31 — P41: missing SaaS containers in the C2 planning catalog
+
+Completed [P41](build-plan-c4-saas.md#p41--c2-catalog-missing-saas-containers) in the
+existing `main` checkout, starting clean at `07a8548`. Read AGENTS, PLAN §1–§15,
+latest handoffs and the approved C4 decisions. One agent, sequential work, no
+branches/worktrees/delegation or repeated external research.
+
+Added planned third-party service (external), analytics store / warehouse (database)
+and serverless function (worker) families with every specified option. The planned
+web application adds audience and kind, retaining its existing rendering/access
+settings. All use the existing schema-driven inspector, P39 descriptions/technology,
+family colors/icons, external styling, database cylinders and role-based boundaries.
+Library search now includes option labels/choices; category/Implemented filters still
+combine with search. A small screenshot-driven adjustment gives family/status badges
+space to wrap in the shared planned inspector. CATALOG.md documents the new boundaries,
+web options and reusable links; existing architecture examples were not changed.
+
+Verification and twelve inspected captures are in [P41 evidence](evidence/p41/README.md):
+
+- Final **`pnpm work run browser-preview`** command lists nine suites: **32 tests
+  passed**, Playwright **27.5s** / profile **29.3s**, no retries, strict diagnostics,
+  unchanged fingerprints; `2026-10-31T23-17-54-248Z-browser-preview-bc7eb566`.
+- New mouse workflows place all three containers and the planned web application
+  from option search/category filters, configure new fields/description/technology,
+  Cancel without mutation, Save as one revision, undo/redo and reload. Family icons,
+  external stereotype and warehouse cylinder are asserted. Axe passes on each desktop
+  options surface and 390px dark diagram. Existing examples, C1/C3 editing/navigation,
+  relationships, placement and scripted chat pass.
+- **`pnpm work run check` → `pnpm check` passed**, **43.8s**, unchanged fingerprints;
+  `2026-10-31T23-18-29-723Z-check-62688d59`. All workspace/script typechecks passed;
+  **694 tests / 105 files**, Vitest **35.59s**; Biome **711 files**, **580 warnings /
+  75 infos / no errors**. Schema tests cover every choice, invalid types/ranges/text
+  lengths, planned C2 projections/generation blocking and unchanged legacy web config
+  serialization. Generator golden/ownership checks pass without fixture edits.
+- Opened all twelve final screenshots: each block's C2 and options at **1440 × 900
+  light**, plus C2 at **390 × 844 dark**. Options scroll with fixed Save/Cancel.
+  Focused unit/typecheck/browser runs and earlier full gates also passed; logs remain.
+  Final gates ran sequentially after the badge-spacing adjustment, with no increased
+  timeout/retry policy or suppressed diagnostics. `git diff --check` and documentation
+  links checked before commit.
+
+No runtime/template/recipe/generator implementation/output, dependency/lockfile,
+golden or live QRWTY edits. New boundaries are planned and continue to block generation;
+no implementation, capacity or latency is claimed. No material deviation from P41;
+free-text technology already existed in P39 and was reused. Only planning/evidence/
+handoff documents and screenshot copies changed after final gates. Removed **20**
+exact-name/session-time projects left by existing suites and **38** session-created
+E2E settings/output directories. New tests delete their own projects; none created
+this session remain. Retained pre-existing data/logs/shared Postgres; existing health
+on 4310 remains OK.
+
+Next: **P42**, planned SaaS C3 responsibilities and client components, with the
+recorded host-role filtering and default-off technical-components decision. Example
+refresh remains P43. Continue the current-branch, one-agent, scoped-local-commit policy;
+no runtime expansion or live adoption.

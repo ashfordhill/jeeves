@@ -80,8 +80,10 @@ export function PlannedElementInspector({
       data-family={elementFamily(element)}
       aria-label={`Configure ${element.name}`}
     >
-      <TypeBadge family={elementFamily(element)} />
-      <span className="capability-status">Planned capability</span>
+      <Group gap="xs">
+        <TypeBadge family={elementFamily(element)} />
+        <span className="capability-status">Planned capability</span>
+      </Group>
       <h2>{element.name}</h2>
       <p className="inspector-empty">{capability.description}</p>
       <form
