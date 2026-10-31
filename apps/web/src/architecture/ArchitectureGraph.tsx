@@ -19,7 +19,6 @@ import {
   type Edge,
   EdgeLabelRenderer,
   type EdgeProps,
-  getSmoothStepPath,
   Handle,
   MarkerType,
   type Node,
@@ -28,9 +27,19 @@ import {
   Position,
   ReactFlow,
   ReactFlowProvider,
+  useNodesInitialized,
   useReactFlow,
 } from "@xyflow/react";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ArchitectureGeometry,
+  architectureLayoutInput,
+  CARD,
+  type RelationGeometry,
+  relationshipPath,
+  SCOPE_ID,
+} from "./layout.ts";
+import { layoutArchitecture } from "./layout-client.ts";
 
 export const supportLabel: Record<ArchitectureSupport, string> = {
   template: "Template provided",
@@ -59,22 +68,11 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
               : IconBox;
   return (
     <>
-      {([Position.Left, Position.Right, Position.Top] as const).flatMap((side) =>
-        (["source", "target"] as const).flatMap((type) =>
-          ([30, 50, 70] as const).map((port) => (
-            <Handle
-              key={`${side}-${type}-${port}`}
-              type={type}
-              position={side}
-              id={`${side}-${type}-${port}`}
-              style={side === Position.Top ? { left: `${port}%` } : { top: `${port}%` }}
-            />
-          )),
-        ),
-      )}
+      <Handle type="source" position={Position.Right} />
+      <Handle type="target" position={Position.Left} />
       <button
         type="button"
-        className="architecture-card nodrag"
+        className="architecture-card nodrag nopan"
         data-selected={selected}
         data-kind={item.kind}
         onClick={() => data.onSelect(item.id)}
@@ -99,40 +97,59 @@ type ScopeNode = Node<{ label: string }, "scope">;
 function ScopeFrame({ data }: NodeProps<ScopeNode>) {
   return (
     <div className="architecture-scope-frame">
-      <strong>{data.label}</strong>
+      <strong title={data.label}>{data.label}</strong>
     </div>
   );
 }
 const nodeTypes = { architecture: ArchitectureCard, scope: ScopeFrame };
-type RelationEdge = Edge<
-  { description: string; lane?: number; laneX?: number; insideFrom?: boolean },
-  "relation"
->;
+type RelationEdge = Edge<{ description: string; geometry: RelationGeometry }, "relation">;
 function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
-  let [path, x, y] = getSmoothStepPath(props);
-  if (data?.lane !== undefined) {
-    y = data.lane;
-    const laneX = data.laneX ?? Math.max(props.sourceX, props.targetX) + 40;
-    x = ((data.insideFrom ? props.sourceX : props.targetX) + laneX) / 2;
-    path = data.insideFrom
-      ? `M ${props.sourceX},${props.sourceY} V ${y} H ${laneX} V ${props.targetY} H ${props.targetX}`
-      : `M ${props.sourceX},${props.sourceY} H ${laneX} V ${y} H ${props.targetX} V ${props.targetY}`;
-  }
+  if (!data) return null;
+  const { label, points } = data.geometry;
   return (
     <>
-      <BaseEdge id={props.id} path={path} markerEnd={props.markerEnd} style={props.style} />
+      <BaseEdge
+        id={props.id}
+        path={relationshipPath(points)}
+        markerEnd={props.markerEnd}
+        style={props.style}
+      />
       <EdgeLabelRenderer>
         <span
-          className="architecture-relation-label"
-          style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
+          className="architecture-relation-label nodrag nopan"
+          data-relation-id={props.id}
+          title={data.description}
+          style={{ left: label.x, top: label.y, width: label.width, height: label.height }}
         >
-          {data?.description}
+          <span>{data.description}</span>
         </span>
       </EdgeLabelRenderer>
     </>
   );
 }
 const edgeTypes = { relation: Relation };
+
+function InitialCamera({ minimumZoom, onReady }: { minimumZoom: number; onReady: () => void }) {
+  // Read-only nodes do not feed dimension changes back through onNodesChange. Inspect the
+  // current measured internals rather than the cached controlled-node initialization flag.
+  const initialized = useNodesInitialized({ includeHiddenNodes: true });
+  const { fitView } = useReactFlow();
+  const fitted = useRef(false);
+  useEffect(() => {
+    if (!initialized || fitted.current) return;
+    let active = true;
+    void fitView({ padding: 0.1, minZoom: minimumZoom, maxZoom: 1 }).then(() => {
+      if (active) {
+        fitted.current = true;
+        onReady();
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [initialized, fitView, minimumZoom, onReady]);
+  return null;
+}
 
 function FocusControl({ selected }: { selected?: string }) {
   const { fitView } = useReactFlow();
@@ -153,46 +170,7 @@ function FocusControl({ selected }: { selected?: string }) {
   );
 }
 
-/** Positions belong to this derived view only. The editable board's layout is never touched. */
-function positions(
-  projection: ArchitectureProjection,
-  compact: boolean,
-): Map<string, { x: number; y: number }> {
-  const out = new Map<string, { x: number; y: number }>();
-  if (projection.level === "context") {
-    let people = 0,
-      external = 0;
-    for (const node of projection.nodes) {
-      if (node.kind === "system") out.set(node.id, { x: 490, y: compact ? 0 : 170 });
-      else if (node.kind === "person") out.set(node.id, { x: 0, y: people++ * 330 });
-      else out.set(node.id, { x: compact ? 490 : 980, y: external++ * 330 + 330 });
-    }
-  } else {
-    const inner = projection.nodes.filter(
-      (node) =>
-        node.binding &&
-        (projection.level === "containers"
-          ? node.kind !== "external-system" && node.kind !== "binding"
-          : node.binding.element === projection.container),
-    );
-    const outer = projection.nodes.filter((node) => !inner.includes(node));
-    const columns = Math.min(inner.length > 9 ? 4 : 3, inner.length || 1);
-    for (const [index, node] of inner.entries())
-      out.set(node.id, {
-        x: (index % columns) * 312,
-        y: Math.floor(index / columns) * 242 + (projection.level === "containers" ? 330 : 0),
-      });
-    for (const [index, node] of outer.entries())
-      out.set(
-        node.id,
-        projection.level === "containers"
-          ? { x: index * 360, y: 0 }
-          : { x: columns * 312 + 80, y: index * 280 },
-      );
-  }
-  return out;
-}
-
+/** Layout never writes the semantic model or editable board positions. */
 export function ArchitectureGraph({
   projection,
   selected,
@@ -204,111 +182,143 @@ export function ArchitectureGraph({
 }) {
   const { ref, width } = useElementSize<HTMLElement>();
   const compact = width > 0 && width < 900;
-  const graph = useMemo(() => {
-    const points = positions(projection, compact);
-    const nodes: (CardNode | ScopeNode)[] = projection.nodes.map((item) => ({
-      id: item.id,
-      type: "architecture",
-      ariaRole: "group",
-      position: points.get(item.id) ?? { x: 0, y: 0 },
-      data: { item, onSelect },
-      selected: item.id === selected,
-      zIndex: 1,
-      style: { width: 252, height: 188 },
-    }));
-    const inner = projection.nodes.filter(
-      (node) =>
-        node.binding &&
-        ((projection.level === "containers" &&
-          node.kind !== "external-system" &&
-          node.kind !== "binding") ||
-          (projection.level === "components" && node.binding.element === projection.container)),
+  const [direction, setDirection] = useState<boolean>();
+  const down = direction ?? compact;
+  const key = useMemo(
+    () => JSON.stringify(architectureLayoutInput(projection, down)),
+    [projection, down],
+  );
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<{ key: string; geometry: ArchitectureGeometry }>();
+  const [error, setError] = useState<string>();
+  const [cameraReadyKey, setCameraReadyKey] = useState<string>();
+  const cameraReady = useCallback(() => setCameraReadyKey(key), [key]);
+  const ready = width > 0;
+  const request = useMemo(() => ({ key, attempt }), [key, attempt]);
+  useEffect(() => {
+    if (!ready) return;
+    const controller = new AbortController();
+    setError(undefined);
+    void layoutArchitecture(request.key, controller.signal).then(
+      (geometry) => {
+        if (!controller.signal.aborted) setResult({ key: request.key, geometry });
+      },
+      () => {
+        if (!controller.signal.aborted)
+          setError(
+            "This architecture view could not be arranged. Retry the layout or return to the board.",
+          );
+      },
     );
-    if (inner.length) {
-      const coordinates = inner.map((node) => points.get(node.id) ?? { x: 0, y: 0 });
-      const minX = Math.min(...coordinates.map((point) => point.x)),
-        minY = Math.min(...coordinates.map((point) => point.y));
+    return () => controller.abort();
+  }, [request, ready]);
+  const current = result?.key === key ? result.geometry : undefined;
+  const graph = useMemo(() => {
+    if (!current) return undefined;
+    const nodes: (CardNode | ScopeNode)[] = projection.nodes.map((item) => {
+      const point = current.nodes[item.id];
+      if (!point) throw new Error("Architecture object geometry is missing.");
+      return {
+        id: item.id,
+        type: "architecture",
+        ariaRole: "group",
+        position: { x: point.x, y: point.y },
+        width: CARD.width,
+        height: CARD.height,
+        data: { item, onSelect },
+        selected: item.id === selected,
+        zIndex: 1,
+        style: CARD,
+      };
+    });
+    if (current.scope)
       nodes.unshift({
-        id: "architecture:scope",
+        id: SCOPE_ID,
         type: "scope",
-        position: { x: minX - 24, y: minY - 42 },
+        position: { x: current.scope.x, y: current.scope.y },
+        width: current.scope.width,
+        height: current.scope.height,
         data: { label: projection.name },
-        style: {
-          width: Math.max(...coordinates.map((point) => point.x)) - minX + 300,
-          height: Math.max(...coordinates.map((point) => point.y)) - minY + 254,
-        },
+        style: { width: current.scope.width, height: current.scope.height },
         zIndex: 0,
         selectable: false,
         focusable: false,
       });
-    }
-    const edges = projection.edges
-      .filter((edge) => points.has(edge.from) && points.has(edge.to))
-      .map((edge, index): RelationEdge => {
-        const forward = (points.get(edge.from)?.x ?? 0) <= (points.get(edge.to)?.x ?? 0);
-        const reciprocal = projection.edges.some(
-          (other) => other.from === edge.to && other.to === edge.from,
-        );
-        const port = reciprocal ? (edge.from < edge.to ? 30 : 70) : 50;
-        // Component dependencies leave the scope above its first responsibility row,
-        // keeping the pinned boundary/adapter's connections clear of the feature cards.
-        const inside = projection.nodes.find(
-          (node) =>
-            node.binding?.element === projection.container &&
-            (node.id === edge.from || node.id === edge.to),
-        );
-        const lane =
-          projection.level === "components" && inside && points.get(inside.id)?.y === 0
-            ? -70 - index * 40
-            : undefined;
-        const outside = inside?.id === edge.from ? edge.to : edge.from;
-        const laneX = (points.get(outside)?.x ?? 0) + 292 + index * 18;
-        return {
-          id: edge.id,
-          source: edge.from,
-          target: edge.to,
-          sourceHandle: `${lane !== undefined ? (inside?.id === edge.from ? "top" : "right") : forward ? "right" : "left"}-source-${port}`,
-          targetHandle: `${lane !== undefined ? (inside?.id === edge.to ? "top" : "right") : forward ? "left" : "right"}-target-${port}`,
-          type: "relation",
-          data: {
-            description: edge.description,
-            lane,
-            laneX,
-            insideFrom: inside?.id === edge.from,
-          },
-          style: {
-            stroke: "var(--line)",
-            strokeWidth: 2,
-            ...(edge.context ? { strokeDasharray: "5 4" } : {}),
-          },
-          markerEnd: { type: MarkerType.ArrowClosed, color: "var(--line)" },
-        };
-      });
+    const edges: RelationEdge[] = projection.edges.map((edge) => {
+      const geometry = current.edges[edge.id];
+      if (!geometry) throw new Error("Architecture relationship geometry is missing.");
+      return {
+        id: edge.id,
+        source: edge.from,
+        target: edge.to,
+        type: "relation",
+        data: { description: edge.description, geometry },
+        style: {
+          stroke: "var(--line)",
+          strokeWidth: 2,
+          ...(edge.context ? { strokeDasharray: "5 4" } : {}),
+        },
+        markerEnd: { type: MarkerType.ArrowClosed, color: "var(--line)" },
+      };
+    });
     return { nodes, edges };
-  }, [projection, selected, onSelect, compact]);
+  }, [projection, selected, onSelect, current]);
   return (
-    <section ref={ref} className="architecture-graph" aria-label={`${projection.level} diagram`}>
-      <ReactFlowProvider>
-        <ReactFlow
-          key={`${projection.level}:${projection.container ?? "system"}:${compact}`}
-          nodes={graph.nodes}
-          edges={graph.edges}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          fitView
-          fitViewOptions={{ padding: 0.12, minZoom: 0.65, maxZoom: 1 }}
-          minZoom={0.35}
-          maxZoom={1.5}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background color="var(--grid-dot)" gap={24} size={1} />
-          <Controls showInteractive={false} />
-          <FocusControl selected={selected} />
-        </ReactFlow>
-      </ReactFlowProvider>
+    <section
+      ref={ref}
+      className="architecture-graph"
+      aria-label={`${projection.level} diagram`}
+      aria-busy={!error && (!graph || (projection.nodes.length > 0 && cameraReadyKey !== key))}
+    >
+      {error ? (
+        <div className="architecture-layout-status" role="alert">
+          <p>{error}</p>
+          <button
+            type="button"
+            className="architecture-focus"
+            onClick={() => setAttempt((value) => value + 1)}
+          >
+            Retry layout
+          </button>
+        </div>
+      ) : !graph ? (
+        <div className="architecture-layout-status" role="status">
+          Arranging architecture…
+        </div>
+      ) : (
+        <ReactFlowProvider>
+          <ReactFlow
+            key={`${projection.level}:${projection.container ?? "system"}:${down}`}
+            nodes={graph.nodes}
+            edges={graph.edges}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            minZoom={0.1}
+            maxZoom={1.5}
+            proOptions={{ hideAttribution: true }}
+          >
+            <InitialCamera
+              minimumZoom={projection.level === "components" ? 0.6 : 0.1}
+              onReady={cameraReady}
+            />
+            <Background color="var(--grid-dot)" gap={24} size={1} />
+            <Controls showInteractive={false} />
+            <Panel position="top-left">
+              <button
+                type="button"
+                className="architecture-focus"
+                onClick={() => setDirection(!down)}
+              >
+                {down ? "Flow right" : "Flow down"}
+              </button>
+            </Panel>
+            <FocusControl selected={selected} />
+          </ReactFlow>
+        </ReactFlowProvider>
+      )}
     </section>
   );
 }

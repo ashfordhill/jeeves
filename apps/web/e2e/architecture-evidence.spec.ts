@@ -100,7 +100,8 @@ test("shows actual written-only and stale starter evidence without changing the 
     await page.setViewportSize({ width: 1440, height: 900 });
     await dialog.getByRole("button", { name: "Close evidence", exact: true }).click();
     await expect(architecture.getByLabel("Inspect an object")).toHaveValue("container:inventory");
-    // The narrow resize intentionally changes derived positions; verify refresh independently below.
+    // Wait for the asynchronous resize layout and its camera fit before testing refresh alone.
+    await expect(architecture.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
     const beforeRefresh = await viewport.getAttribute("style");
     expect(camera).toBeTruthy();
     await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();

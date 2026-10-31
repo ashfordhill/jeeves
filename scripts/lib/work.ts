@@ -22,6 +22,8 @@ export const profiles = {
   unit: "Selected offline test files (or explicit all)",
   templates: "Selected conformance files; may start disposable Docker/browser fixtures (or all)",
   browser: "Selected Playwright specs; starts the existing Jeeves test database (or all)",
+  "browser-preview":
+    "Build and serve production assets through selected strict Playwright specs (or all)",
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
@@ -103,10 +105,18 @@ export function planWork(root: string, name: string, selections: string[]): Work
         "packages/durable-events/conformance/durable-events.conformance.ts",
       );
       break;
-    case "browser": {
+    case "browser":
+    case "browser-preview": {
       const selected = files(".spec.ts");
       pnpm("db:up");
-      pnpm("exec", "playwright", "test", ...selected);
+      if (name === "browser-preview") pnpm("--filter", "@jeeves/web", "build");
+      pnpm(
+        "exec",
+        "playwright",
+        "test",
+        ...(name === "browser-preview" ? ["--config", "playwright.preview.config.ts"] : []),
+        ...selected,
+      );
       break;
     }
     case "browser-docker":

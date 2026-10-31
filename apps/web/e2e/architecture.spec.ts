@@ -42,6 +42,9 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
     .selectOption("component:qrwty:qrwty-api:extension:owner-analytics");
   await expect(details.getByText("qr-studio@0.1.0", { exact: true })).toBeVisible();
   await expect(details.getByText("QR-15, QR-16", { exact: true })).toBeVisible();
+  await expect(
+    workspace.getByRole("region", { name: "components diagram", exact: true }),
+  ).toHaveAttribute("aria-busy", "false");
   await page.screenshot({ path: "test-results/p20-components.png", animations: "disabled" });
   await workspace.getByRole("button", { name: "Focus selected object" }).click();
   await expect(
@@ -149,6 +152,8 @@ test("a narrower context editor keeps unbound architectural intent visible witho
   expect(state.design.elements).toHaveLength(3);
   const graph = page.getByRole("region", { name: "context diagram", exact: true });
   // The narrow default view should contain every context card, not just a tiny/cropped center.
+  await expect(graph).toHaveAttribute("aria-busy", "false");
+  await expect(graph.locator(".architecture-card")).toHaveCount(4);
   const bounds = await graph.boundingBox();
   for (const card of await graph.locator(".architecture-card").all()) {
     await expect(card).toBeInViewport();

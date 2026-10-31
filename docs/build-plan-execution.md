@@ -321,3 +321,17 @@ Scope:
 - Strict browser proof covers an actual starter upgrade, capability availability, cancellation, preserved resources/wiring, layout, stale review refusal, undo/reload, narrow/light/dark accessibility and protected recipe refusal. Run the required gate, review diff/screenshots, append the P29 handoff and create its own local commit. Retain every unrelated working-tree change and the deferred exhaustive testing campaign.
 
 Done when: a resource starter can select the newer HTTP service and add local execution policy without reconstructing its application or modifying its frozen starter origin, and unsupported/protected paths stay explicit. Horizontal pools remain a separately specified next package.
+
+## P30: readable, deterministic C4 relationship layout
+
+Outcome: derived architecture views reserve space for relationship labels and route connections around unrelated cards. A diagram must communicate its actual topology clearly before additional operational capabilities make it more complex.
+
+Scope:
+
+- Replace the fixed C4 grid and special-case edge paths with pinned ELK 0.12.0 layered orthogonal layout. Use stable identity ordering, explicit label dimensions and actual scope membership; retain semantic node/edge identities, directions, context styling and existing inspector navigation. Keep architecture projection and editable board positions untouched. Automation-pitch's reviewed layout separation and ELK usage inform the approach; no upstream application source is copied.
+- Keep layout computation in a browser worker, with bounded completion, cleanup, stale-result rejection and small reusable geometry cache. Report unavailable/failed layout visibly with Retry; never silently hide broken assets or substitute misleading connections. Preserve selection and camera on evidence refresh and other non-geometric updates. Provide fit/focus controls and usable desktop/narrow layouts without introducing a second editable canvas or persisting derived coordinates.
+- Use real compound scope boundaries and normalize ELK geometry explicitly. Reserve bounded readable relationship labels with full text available, including cycles and parallel relationships. Do not invent internal dependencies to improve appearance. Empty scopes remain explicit.
+- Add focused geometry checks for deterministic ordering, scope membership, endpoint direction, labels and unrelated-card avoidance using representative compound/cyclic/parallel fixtures. Strict browser journeys cover actual starter/QR views, labels, mouse navigation, camera preservation, narrow/light/dark accessibility and unchanged semantic/layout state. Build the production worker asset and verify it through a disposable local preview. This is a bounded layout proof, not an exhaustive graph certification campaign.
+- Record dependency provenance and known limits, inspect screenshots, run required `pnpm check`, review the diff, append P30 handoff and commit separately. Preserve live applications, released templates/artifacts and pre-existing work. Local service pools remain a separate package after this visual correction.
+
+Done when: the starter's Web → API → database topology and QR component relationships render without routing through unrelated cards, labels have reserved space, inspection does not mutate design/layout, and strict browser/production/gate checks pass.
