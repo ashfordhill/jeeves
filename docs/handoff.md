@@ -2101,6 +2101,58 @@ After merging and `docker compose up --build --wait` (all three services healthy
 
 **Next:** agree the additive feature separately, then prove regeneration, preserved extension code and cumulative feature usage. Do not claim that feature yet.
 
+---
+
+## Product review: Jeeves UX, qrwty and proposed C4 direction (2026-10-30)
+
+**Status: planning only, draft awaiting joint review.** This is not a completed S section or P implementation package. The user chose to polish qrwty first while extracting reusable Jeeves templates, focusing on QR management and analytics before maps/devices. No application source, dependencies, acceptance fixtures, migrations, provider configuration or generated project files were changed by this review. Existing uncommitted editor changes, their interaction test and the older readiness review remain untouched. No implementation package commit was created.
+
+The deliverable is [the review and proposed roadmap](reviews/jeeves-qrwty-product-plan-2026-10-30.md), with current screenshots and proposed qrwty/Jeeves layouts under `docs/reviews/assets/2026-10-30/`. The review covers live Jeeves at `:4300`, qrwty at `:5173`, both codebases, the animated GIF, dropshipping's existing Cloudflare/MUI constraints, the supplied Educative article and linked primary architecture/framework documentation. During the earlier live inspection, one disposable qrwty review account and one example QR were created; those local review records remain. The final browser check was read-only.
+
+Principal findings: the frontend scaffold leaves most product UX to the agent; complex resources/behavior are buried in a JSON inspector; architecture and implementation binding are conflated; a console-error assertion encouraged a Web Worker HTTP workaround; accepted qrwty behavior does not establish polished UX, low generation cost or release readiness. The proposal retains the generator, ownership protections and React Flow. It adds C4 model/view separation, explicit component responsibilities, structured screen/data/behavior editors, finite reusable UI patterns and versioned behavior recipes. Executable container connections remain outer-only; component projections do not duplicate generated wiring. Existing qrwty data and public QR identities must survive adoption/regeneration.
+
+Proposed order, **not approved implementation scope**: agree screen/state criteria and correct harness assumptions; polish qrwty; reproduce it with templates; expose those choices in Jeeves's model/editor; prove an agreed additive feature with usage evidence; then release/scale and target-specific expansion. The draft does not supersede `docs/improvements.md` or assign new P IDs. That file's opening status is stale relative to the P11 completion evidence; reconcile it when approving the next specification.
+
+Verification evidence from this review:
+
+- `pnpm typecheck`: passed; `pnpm test`: **71 files, 515 tests passed**, 28.26 s. These were run during the initial review and were not repeated after documentation-only edits.
+- `pnpm exec playwright test apps/web/e2e/editor-interactions.spec.ts --reporter=line`: **2 passed (5.4 s)**. Its output includes a ResizeObserver error despite passing; the draft records that limitation.
+- `pnpm check`, including the final rerun: **failed at lint**. Final output: `Checked 419 files ... Found 1 error. Found 137 warnings. Found 57 infos.` Error-only Biome confirms `docs/examples/qrwty.svg:2:1 lint/a11y/noSvgWithoutTitle`. No baseline fix was made during planning, and no green combined gate is claimed.
+- `pnpm exec biome check docs/reviews/assets/2026-10-30 --diagnostic-level=error --max-diagnostics=10`: **2 files checked, no fixes applied**; both concept SVGs pass. SVG XML/title checks and local Markdown-link validation also pass.
+- Final Chromium read-only check: both live apps returned **200** with expected content; both concepts rendered without out-of-bounds text and were visually inspected. Earlier sampled axe states reported zero violations; this is not a full accessibility/usability audit.
+- `git diff --check`: passed. No new paid model runs, deployment, full Docker conformance or physical phone/device tests were performed. Full review logs remain in `/tmp/jeeves-ux-review/`.
+
+**Next:** review the qrwty layout/product contract, deterministic recipe boundary, C4 connection policy and proposed M0–M4 order with the user. Only after agreement, convert the accepted scope into bounded P-package specifications and reconcile the already pending editor fixes. Do not infer implementation authorization from this draft or start maps/devices/dropshipping adoption.
+
+---
+
+## Product review follow-up: public qrwty identity, QR Studio and growth (2026-10-30)
+
+**Status: plan refined; no implementation authorized or started.** The user clarified that `https://qrwty.io/` establishes the product direction: visually appealing QR customization and analytics, with reusable templates extracted for other web apps. They also want horizontal/vertical scaling to be planned for large traffic. This supersedes the earlier draft's narrow first milestone of polishing only the existing QR management screens; maps/devices still remain later work.
+
+- Inspected the public page with a read-only Chromium session at desktop/mobile widths (HTTP 200); captured its dark blue themes, QR preset gallery, PNG/SVG controls, scanability advisor, hosted/self-hosted positioning and a PoC Unique counter. No public form submissions, accounts, links or waitlist records were created. Web extraction could not open the site; the direct browser inspection succeeded. Public UI presence was not treated as backend acceptance.
+- Updated [the main roadmap](reviews/jeeves-qrwty-product-plan-2026-10-30.md) and added [Studio/scaling detail](reviews/qrwty-studio-and-scaling-2026-10-30.md). Added the dark blue [Studio concept](reviews/assets/2026-10-30/qrwty-studio-concept.png) and retained the earlier green library concept as an information-layout study, explicitly superseded for brand direction.
+- The first milestone now includes saved artwork revisions, bounded styling/presets, preview, PNG/SVG export, asset handling and independent scanability checks. Link identity remains separate from artwork revision: destination-only edits preserve a fixed revision's bytes and old printed URLs. New mutation/export contracts are required; the current GET-only custom-extension schema cannot express the whole Studio. Generic editor/preset/media components are separated from QR domain rendering.
+- Growth boundaries are planned from the start: management, redirects, rendering, durable intake and analytics workers/queries. M2 gains a real two-instance ingress/session/drain proof and capacity controls with database connection budgets. The supplement describes compact and growth profiles, cache consistency, deduplicated event processing, hot-link contention, synthetic workload scenarios and proposed benchmark targets. No scalability benchmark was run or throughput claimed.
+- The existing durable-event-before-302 contract remains in force. Redirect availability during an intake outage is the proposed growth preference, but its incomplete-count semantics need explicit review before changing acceptance. Public Unique labels, hosted billing/license enforcement, deployment provider and exact capacity budgets remain unapproved product decisions.
+- Verification: all three review SVGs pass targeted Biome after adding an accessible label to the nested example QR; Studio rendered in Chromium at 1500×1080 with no out-of-bounds text and was visually inspected. The preview QR uses a reserved `.example` URL and is a planning asset. Application code and qrwty's Git tree remain unchanged; the previous full-check failure is still the recorded baseline. No unit/browser application suites were repeated for documentation-only changes.
+
+**Next:** review the Studio flow/preset scope and the growth profiles, especially event-intake failure behavior, then incorporate accepted decisions into bounded implementation packages. Continue planning until the user authorizes implementation. Preserve all earlier handoffs and pending editor work.
+
+---
+
+## Execution handoff preparation: reliability policies and P12 (2026-10-30)
+
+**Status: next execution prompt/specification prepared; no application implementation performed.** The user clarified that enterprise reliability mechanisms belong in reusable Jeeves components/templates with visual choices and recommended defaults. They then said they were ready to begin executing and requested a prompt for a fresh chat, intending to use medium reasoning effort to reduce usage.
+
+Added section 7 to [the Studio/scaling supplement](reviews/qrwty-studio-and-scaling-2026-10-30.md#7-reliability-is-a-reusable-visual-capability): reliable analytics, transactional business events/outbox, regional resilience, backup/restore and dependency-protection profiles. It distinguishes delayed durable events from unaccepted events, live replication from recovery backups, and routine consumer/node outages from exhaustion of every capture path. The inspector should select outcomes/presets and expand into actual supported runtime/deployment configuration and failure conformance, with advanced overrides. These are planned capabilities, not claims about the current generator.
+
+Prepared [docs/build-plan-next.md](build-plan-next.md) as the bounded **P12 — browser verification correctness** specification and updated the active status in `docs/improvements.md`. P12 addresses the browser HTTP/console classification defect, removes overly broad fixed-suite error filtering, proves normal fetch works without a Worker in disposable fixtures, and fixes the existing example SVG title lint blocker. It explicitly preserves current qrwty code/data, protected QR behavior and all pending editor/review work. Studio/C4/reliability implementation follows in separate packages; the user did not request implementing the full roadmap in one fresh chat.
+
+No application tests were rerun for this documentation-only handoff. Prior recorded baseline remains: 515 unit tests and type checks passed; the combined gate failed on the missing title in `docs/examples/qrwty.svg`, now explicitly included in P12. Preparation validation: local document links resolve and `git diff --check` passes. No commits, paid model runs, deployments or live application changes were made in this preparation.
+
+**Next: implement P12 only**, following `AGENTS.md`, `PLAN.md §15` and `docs/build-plan-next.md`. After scoped checks, append the P12 implementation handoff, commit only P12 changes with a `P12:` title, and stop. Preserve all earlier handoff entries and do not stage pre-existing review/editor changes merely because they are in the working tree.
+
 
 ---
 

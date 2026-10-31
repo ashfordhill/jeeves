@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1020" viewBox="0 0 1500 1020" role="img" aria-labelledby="title desc">
+  <title id="title">Jeeves architecture workspace proposal</title>
+  <desc id="desc">Proposed Jeeves workspace with a model explorer, C4 component view of the qrwty API, and a structured inspector for the public redirect capability. Linked views cover screens, data, behavior and verification.</desc>
+  <defs>
+    <style>
+      text { font-family: Inter, system-ui, sans-serif; fill: #23364a; }
+      .body { font-size: 14px; }
+      .small { font-size: 12px; fill: #687b8d; }
+      .label { font-size: 11px; font-weight: 650; letter-spacing: 1px; fill: #687b8d; }
+      .bold { font-weight: 650; }
+      .white { fill: #fff; }
+      .edge { stroke: #899aaa; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#899aaa"/></marker>
+  </defs>
+  <rect width="1500" height="1020" fill="#f7f9fb"/>
+  <rect width="1500" height="42" fill="#e7edf4"/>
+  <text x="24" y="27" class="body bold">DESIGN PROPOSAL</text>
+  <text x="210" y="27" class="body">One semantic model, linked views · Illustrative configuration · Not implemented</text>
+  <rect y="42" width="1500" height="64" fill="#12354b"/>
+  <text x="24" y="82" font-size="24" font-weight="750" class="white">Jeeves</text>
+  <text x="155" y="81" font-size="16" class="white">qrwty ▾</text>
+  <text x="507" y="81" class="body white">Overview</text>
+  <rect x="603" y="56" width="95" height="38" rx="7" fill="#f0cd57"/>
+  <text x="626" y="81" class="body bold">Design</text>
+  <text x="727" y="81" class="body white">Preview</text>
+  <text x="830" y="81" class="body white">Runs</text>
+  <text x="1402" y="81" class="body white">Settings</text>
+  <rect y="106" width="234" height="824" fill="#eef2f6"/>
+  <line x1="234" y1="106" x2="234" y2="930" stroke="#d5dfe8"/>
+  <rect x="18" y="126" width="198" height="40" rx="7" fill="#fff" stroke="#cbd7e2"/>
+  <text x="36" y="152" class="body bold">+ Add to design</text>
+  <text x="22" y="205" class="label">MODEL EXPLORER</text>
+  <text x="24" y="243" class="body bold">▾ qrwty system</text>
+  <text x="45" y="279" class="body">Owners and visitors</text>
+  <text x="45" y="315" class="body">▸ Web application</text>
+  <rect x="12" y="331" width="210" height="38" rx="6" fill="#dce8f2"/>
+  <text x="45" y="356" class="body bold">▾ API application</text>
+  <text x="63" y="393" class="small">Accounts and sessions</text>
+  <text x="63" y="425" class="small">QR registry</text>
+  <text x="63" y="457" class="small">QR image rendering</text>
+  <text x="63" y="489" font-size="12" font-weight="650">Public redirect</text>
+  <text x="63" y="521" class="small">Activity queries</text>
+  <text x="45" y="562" class="body">Postgres</text>
+  <text x="24" y="617" class="label">EXTERNAL CONTEXT</text>
+  <text x="45" y="650" class="body">Destination websites</text>
+  <text x="24" y="841" class="small">Browse or edit without</text>
+  <text x="24" y="862" class="small">dragging on the canvas.</text>
+  <rect x="234" y="106" width="1266" height="56" fill="#fff"/>
+  <line x1="234" y1="162" x2="1500" y2="162" stroke="#d5dfe8"/>
+  <text x="260" y="141" class="body bold">Architecture</text>
+  <rect x="255" y="158" width="97" height="4" fill="#29709b"/>
+  <text x="382" y="141" class="body">Screens</text>
+  <text x="477" y="141" class="body">Data</text>
+  <text x="545" y="141" class="body">Behavior</text>
+  <text x="646" y="141" class="body">Deployment</text>
+  <text x="776" y="141" class="body">Verification</text>
+  <text x="262" y="203" class="small">qrwty / Containers / API application</text>
+  <text x="262" y="240" font-size="24" font-weight="650">API components</text>
+  <text x="262" y="268" class="body" fill="#687b8d">Five responsibilities. One deployable application.</text>
+  <rect x="1110" y="162" width="390" height="768" fill="#fff"/>
+  <line x1="1110" y1="162" x2="1110" y2="930" stroke="#d5dfe8"/>
+  <rect x="262" y="300" width="550" height="505" rx="12" fill="#f1f5f9" stroke="#bdcedd"/>
+  <text x="286" y="330" class="label">QRWTY API · FASTIFY / TYPESCRIPT</text>
+  <rect x="294" y="359" width="230" height="102" rx="9" fill="#fff" stroke="#bacbd9"/>
+  <text x="312" y="390" class="body bold">Accounts and sessions</text>
+  <text x="312" y="416" class="small">Identity, session, CSRF</text>
+  <text x="312" y="441" class="small">Generated capability</text>
+  <rect x="575" y="359" width="218" height="102" rx="9" fill="#fff" stroke="#bacbd9"/>
+  <text x="593" y="390" class="body bold">QR registry</text>
+  <text x="593" y="416" class="small">Owned links and destinations</text>
+  <text x="593" y="441" class="small">Generated resource</text>
+  <path d="M575 408 H524" class="edge"/>
+  <text x="532" y="394" font-size="9" fill="#687b8d">auth</text>
+  <rect x="294" y="518" width="230" height="102" rx="9" fill="#fff" stroke="#bacbd9"/>
+  <text x="312" y="549" class="body bold">QR image rendering</text>
+  <text x="312" y="575" class="small">Stable URL → PNG</text>
+  <text x="312" y="600" class="small">Generated module</text>
+  <rect x="575" y="510" width="218" height="118" rx="9" fill="#e6f0f7" stroke="#2675a5" stroke-width="2.5"/>
+  <text x="593" y="546" class="body bold">Public redirect</text>
+  <text x="593" y="574" class="small">GET /q/{id} → 302</text>
+  <text x="593" y="603" class="small">Generated module</text>
+  <path d="M684 510 V461" class="edge"/>
+  <text x="698" y="489" font-size="10" fill="#687b8d">reads QR</text>
+  <rect x="294" y="681" width="230" height="102" rx="9" fill="#fff" stroke="#bacbd9"/>
+  <text x="312" y="712" class="body bold">Activity queries</text>
+  <text x="312" y="738" class="small">Owner-scoped daily totals</text>
+  <text x="312" y="763" class="small">Generated module</text>
+  <rect x="858" y="687" width="194" height="90" rx="9" fill="#eaf0f4" stroke="#bdcedd"/>
+  <text x="877" y="720" class="body bold">Postgres</text>
+  <text x="877" y="747" class="small">External to this scope</text>
+  <path d="M793 570 H830 V720 H858" class="edge"/>
+  <text x="847" y="558" class="small">persist event</text>
+  <path d="M524 732 H858" class="edge"/>
+  <text x="618" y="719" class="small">read events</text>
+  <text x="285" y="835" class="small">Selected relationships shown · Open Behavior for the complete scan sequence</text>
+  <text x="1134" y="197" class="label">COMPONENT</text>
+  <text x="1134" y="234" font-size="22" font-weight="650">Public redirect</text>
+  <text x="1134" y="263" class="small">Resolve a QR link and record a request.</text>
+  <rect x="1134" y="286" width="340" height="36" rx="6" fill="#edf6ee"/>
+  <text x="1150" y="310" class="body bold" fill="#316347">Generated behavior · version pinned</text>
+  <text x="1134" y="360" class="label">BEHAVIOR CONFIGURATION</text>
+  <text x="1134" y="396" class="body">Resource</text>
+  <rect x="1290" y="374" width="183" height="34" rx="5" fill="#f8fafc" stroke="#cbd7e2"/>
+  <text x="1302" y="397" class="body">QR link ▾</text>
+  <text x="1134" y="444" class="body">Destination field</text>
+  <rect x="1290" y="423" width="183" height="34" rx="5" fill="#f8fafc" stroke="#cbd7e2"/>
+  <text x="1302" y="446" class="body">destination ▾</text>
+  <text x="1134" y="493" class="body">Access</text>
+  <text x="1302" y="493" class="body bold">Public</text>
+  <text x="1134" y="533" class="body">Redirect policy</text>
+  <text x="1302" y="533" class="body bold">302 · no-store</text>
+  <text x="1134" y="573" class="body">Record event</text>
+  <text x="1302" y="573" class="body bold">Before response</text>
+  <line x1="1134" y1="601" x2="1475" y2="601" stroke="#d5dfe8"/>
+  <text x="1134" y="633" class="label">LINKED EVIDENCE</text>
+  <text x="1134" y="665" class="body">QR-03 · Redirect to current destination</text>
+  <text x="1134" y="697" class="body">QR-04 · Destination edit stays stable</text>
+  <text x="1134" y="729" class="body">QR-07 · Unknown IDs and invalid input</text>
+  <rect x="1134" y="756" width="340" height="38" rx="6" fill="#fff" stroke="#bdcedd"/>
+  <text x="1218" y="781" class="body bold">View scan sequence</text>
+  <text x="1134" y="837" class="small">Contract and advanced configuration ▸</text>
+  <rect y="930" width="1500" height="90" fill="#e7edf4"/>
+  <text x="24" y="962" class="body bold">Explore responsibilities → Configure tested behavior → Preview screens → Review changes and evidence</text>
+  <text x="24" y="993" class="small">C4 components describe responsibilities; template capabilities supply implementations; screen patterns describe product interactions.</text>
+</svg>

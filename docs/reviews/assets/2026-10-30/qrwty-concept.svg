@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1020" viewBox="0 0 1500 1020" role="img" aria-labelledby="title desc">
+  <title id="title">qrwty product layout proposal</title>
+  <desc id="desc">Illustrative QR library with a selected QR detail panel, immediate preview and download actions, and request analytics. This is a planning wireframe, not an implemented screen.</desc>
+  <defs>
+    <style>
+      text { font-family: Inter, system-ui, sans-serif; fill: #233a36; }
+      .small { font-size: 13px; fill: #647873; }
+      .body { font-size: 15px; }
+      .label { font-size: 12px; font-weight: 650; letter-spacing: 1px; fill: #647873; }
+      .bold { font-weight: 650; }
+      .heading { font-size: 23px; font-weight: 650; }
+      .line { stroke: #dce5e0; stroke-width: 1; }
+      .white { fill: #fff; }
+      .sidebar-text { fill: #e5f0e9; }
+      .sidebar-muted { fill: #bdd0c7; }
+    </style>
+  </defs>
+  <rect width="1500" height="1020" fill="#f5f7f4"/>
+  <rect width="1500" height="44" fill="#e5ede7"/>
+  <text x="28" y="28" font-size="14" font-weight="600">DESIGN PROPOSAL</text>
+  <text x="220" y="28" font-size="14">QR management + analytics · Illustrative content · No application changes</text>
+  <rect y="44" width="210" height="886" fill="#153e34"/>
+  <text x="30" y="96" font-size="28" font-weight="750" class="white">qrwty</text>
+  <text x="30" y="124" font-size="12" class="sidebar-muted">Your QR workspace</text>
+  <rect x="16" y="163" width="178" height="46" rx="8" fill="#d5e8d8"/>
+  <text x="35" y="193" class="body bold">▦   QR library</text>
+  <text x="35" y="246" class="body sidebar-text">Settings</text>
+  <line x1="28" y1="818" x2="182" y2="818" stroke="#4e6c62"/>
+  <text x="30" y="850" font-size="14" class="sidebar-text">Personal workspace</text>
+  <text x="30" y="878" font-size="13" class="sidebar-muted">Account and sign out</text>
+  <text x="246" y="104" font-size="29" font-weight="650">QR library</text>
+  <text x="246" y="134" class="body" fill="#647873">Stable QR links. Destinations you can update.</text>
+  <rect x="1284" y="80" width="180" height="44" rx="8" fill="#235b47"/>
+  <text x="1312" y="108" class="body bold white">+ Create QR link</text>
+  <rect x="246" y="166" width="688" height="48" rx="8" fill="#fff" stroke="#cad8cf"/>
+  <text x="266" y="196" class="body" fill="#74867d">Search by title or destination</text>
+  <text x="246" y="244" class="small">Search applies across your library · Server-backed queries in M2</text>
+  <rect x="246" y="267" width="688" height="440" rx="12" fill="#fff" stroke="#dce5e0"/>
+  <text x="268" y="299" class="label">QR LINK</text>
+  <text x="677" y="299" class="label">CREATED</text>
+  <text x="844" y="299" class="label">OPEN</text>
+  <line x1="246" y1="315" x2="934" y2="315" class="line"/>
+  <rect x="247" y="316" width="686" height="92" fill="#eaf4eb"/>
+  <rect x="247" y="316" width="4" height="92" fill="#27694b"/>
+  <text x="268" y="349" class="body bold">Spring trail guide</text>
+  <text x="268" y="377" class="small">example.org/trail-guide</text>
+  <text x="677" y="359" class="small">Oct 30</text>
+  <text x="854" y="360" class="body">→</text>
+  <line x1="246" y1="408" x2="934" y2="408" class="line"/>
+  <text x="268" y="442" class="body bold">Community noticeboard</text>
+  <text x="268" y="470" class="small">example.org/community</text>
+  <text x="677" y="453" class="small">Oct 28</text>
+  <text x="854" y="454" class="body">→</text>
+  <line x1="246" y1="500" x2="934" y2="500" class="line"/>
+  <text x="268" y="534" class="body bold">Event information</text>
+  <text x="268" y="562" class="small">example.org/events/autumn</text>
+  <text x="677" y="545" class="small">Oct 25</text>
+  <text x="854" y="546" class="body">→</text>
+  <line x1="246" y1="592" x2="934" y2="592" class="line"/>
+  <text x="268" y="630" class="small">3 illustrative QR links</text>
+  <rect x="756" y="614" width="154" height="36" rx="6" fill="#f6f8f5" stroke="#dce5e0"/>
+  <text x="786" y="637" class="small">Pagination</text>
+  <text x="268" y="682" class="small">Select a title to open details. Refresh preserves your place.</text>
+  <rect x="958" y="166" width="506" height="727" rx="12" fill="#fff" stroke="#cad8cf"/>
+  <text x="982" y="201" class="label">QR DETAILS</text>
+  <text x="982" y="236" class="heading">Spring trail guide</text>
+  <text x="982" y="264" class="small">Addressable detail view · Full page on mobile</text>
+  <rect x="982" y="287" width="152" height="152" rx="6" fill="#f3f6f2" stroke="#c5d2c8" stroke-dasharray="5 4"/>
+  <text x="1018" y="355" font-size="16" font-weight="600">QR preview</text>
+  <text x="1001" y="382" font-size="11" fill="#647873">Wireframe placeholder</text>
+  <text x="1155" y="312" class="label">PUBLIC LINK</text>
+  <text x="1155" y="340" class="small">qrwty.example/q/…</text>
+  <rect x="1155" y="360" width="282" height="36" rx="6" fill="#235b47"/>
+  <text x="1231" y="383" class="body bold white">Download PNG</text>
+  <rect x="1155" y="405" width="282" height="34" rx="6" fill="#fff" stroke="#c5d2c8"/>
+  <text x="1263" y="427" class="body">Copy link</text>
+  <line x1="982" y1="461" x2="1440" y2="461" class="line"/>
+  <text x="982" y="488" class="label">CURRENT DESTINATION</text>
+  <text x="982" y="517" class="body">example.org/trail-guide</text>
+  <text x="1285" y="517" class="body bold" fill="#235b47">Edit destination</text>
+  <text x="982" y="544" class="small">Changing this keeps the printed QR link stable.</text>
+  <line x1="982" y1="565" x2="1440" y2="565" class="line"/>
+  <text x="982" y="598" font-size="18" font-weight="650">Request activity</text>
+  <text x="1284" y="598" class="small">7d   30d   90d</text>
+  <text x="982" y="640" font-size="30" font-weight="650">128</text>
+  <text x="1054" y="638" class="small">requests in selected period</text>
+  <line x1="999" y1="755" x2="1417" y2="755" class="line"/>
+  <line x1="999" y1="692" x2="1417" y2="692" class="line" stroke-dasharray="3 5"/>
+  <path d="M1000 745 L1038 726 L1076 732 L1114 710 L1152 717 L1190 689 L1228 709 L1266 677 L1304 698 L1342 665 L1380 683 L1416 657" fill="none" stroke="#2e7754" stroke-width="3" stroke-linejoin="round"/>
+  <text x="999" y="778" class="small">Oct 1</text>
+  <text x="1364" y="778" class="small">Oct 30</text>
+  <text x="982" y="815" class="small">UTC dates · Includes repeat requests</text>
+  <text x="982" y="845" class="body bold" fill="#235b47">View accessible data table</text>
+  <text x="246" y="753" class="label">INTERACTION CONTRACT</text>
+  <text x="246" y="785" class="body">Create → Preview → Download or copy → Track activity</text>
+  <text x="246" y="817" class="small">No permanent create form. No extra Select step after creation.</text>
+  <text x="246" y="844" class="small">Empty, loading, failed, expired-session and mobile states are</text>
+  <text x="246" y="865" class="small">part of the pattern, alongside the populated layout shown here.</text>
+  <rect y="930" width="1500" height="90" fill="#e5ede7"/>
+  <text x="28" y="963" class="body bold">Reusable pieces: shell · collection · resource form/detail · media preview/download · time-series view</text>
+  <text x="28" y="993" class="small">Review question: does this organization make the everyday QR workflow clear? Exact visual styling remains open.</text>
+</svg>
