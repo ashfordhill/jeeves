@@ -4,7 +4,7 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
-**Next implementation:** [P36 — useful application architecture, proved with QRWTY](docs/build-plan-p36-architecture.md) is specified, not implemented. P12–P35 are complete; [P35 evidence](docs/evidence/p35/README.md) records the versioned session correction. Implement P36 only, verify, append the handoff, commit and stop. Developer testing, page flow and live adoption remain queued; older next-package statements do not authorize them.
+**Next implementation:** [P36 — unified C4 editor and useful application architecture](docs/build-plan-p36-architecture.md) is specified, not implemented. The [latest editor feedback](docs/reviews/jeeves-editor-feedback-2026-10-31.md) requires C1/C2/C3 editing, chat and contextual configuration within one workspace. P12–P35 are complete; [P35 evidence](docs/evidence/p35/README.md) records the versioned session correction. Implement P36 only, verify, append the handoff and commit on the current branch. Broader architecture capabilities, chat improvements, developer testing, page flow and live adoption remain queued; older next-package statements do not authorize them.
 
 Related documents:
 

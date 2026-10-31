@@ -1,10 +1,15 @@
-# P36 — useful application architecture, proved with QRWTY
+# P36 — unified C4 editor and useful application architecture
 
 Fresh-agent implementation specification, 2026-10-31. **Implement P36 only, verify,
 append the handoff, create a scoped local commit and stop.** This document specifies
 the first queued authoring package after P35. It does not implement P36 or authorize
 all subsequent packages. The former P35 business-action-forms proposal remains
 superseded.
+
+Updated after reviewing the user's [editor feedback and sketch](reviews/jeeves-editor-feedback-2026-10-31.md).
+The shared C1/C2/C3 editor below is part of P36 acceptance. Improving only the
+separate Architecture page no longer fulfills the requested outcome. This is a
+specification update, not a claim that P36 has been implemented.
 
 ## Starting state and preservation
 
@@ -19,11 +24,12 @@ superseded.
 - Work in `/home/ash/github/jeeves`. Read `AGENTS.md`, `PLAN.md` §15 and relevant
   §§1–14, latest `docs/handoff.md`, this specification and the
   [QRWTY authoring review](qrwty-authoring-review-2026-10-31.md) before coding.
-- Inspect actual Git status/diff. At preparation, unrelated work is 52 older added
-  handoff lines, the historical status-paragraph edit in `docs/improvements.md`,
-  untracked `docs/build-plan-next.md` and `docs/reviews/`, and
-  `~/github/qrwty/business-analysis/`. Preserve all of it; never stage a whole shared
-  document merely because your own change is also in it.
+- Inspect actual Git status/diff. The previously pending Jeeves handoff, historical
+  status paragraph, next-plan and review files were checkpointed in `1c607d3`.
+  Preserve any subsequent unrelated work and `~/github/qrwty/business-analysis/`;
+  never stage a whole shared document merely because your own change is also in it.
+  Work on the current branch in this checkout, with one agent and no additional
+  branches or worktrees.
 - The running QRWTY repository/application and its saved Jeeves project are
   **read-only reference inputs**. Do not regenerate/restart/adopt it, change its
   saved design, create accounts, change data or QR URLs, or modify its source.
@@ -37,15 +43,70 @@ superseded.
 
 ## Outcome
 
-A person can open the QRWTY API component view, understand its five principal
-responsibilities, inspect every real operation/resource/dependency, and configure
-the selected object without losing the architecture scope. Cards contain useful
-responsibility descriptions instead of implementation prompts. Fit includes the
-external dependencies. The same mechanism works for an ordinary non-QR API.
+A person can edit C1 context, C2 applications/data stores and C3 responsibilities
+inside one design workspace, with chat on the left and controls for the selected
+box or arrow on the right. They can drill into the QRWTY API, understand its five
+principal responsibilities, inspect every real operation/resource/dependency, and
+configure the selected object without losing the architecture scope. Cards contain
+useful responsibility descriptions instead of implementation prompts. Fit includes
+the external dependencies. The same mechanism works for an ordinary non-QR API.
 
 This is an architecture-authoring correction. It does not create new application
 behavior, certify existing custom handlers, or turn frontend components into a
 page-flow diagram.
+
+## 0. One editor across C1, C2 and C3
+
+Use the [user's sketch](reviews/assets/2026-10-31/editor-1.png) for the workspace
+structure, retaining Jeeves's existing theme rather than tracing the sketch's exact
+dimensions. Keep a collapsible chat area on the left, the current canvas in the
+center and a selected-object inspector on the right. Keep project selection,
+Generate, undo/redo and findings reachable. C1/C2/C3 tabs select the editing level;
+C3 includes an explicit parent application selector. Show names as well as C-level
+numbers so less experienced users can understand the hierarchy.
+
+- **C1 Context:** edit the system, people, external systems and context relationships
+  using the existing architecture definitions. Selecting a context object or arrow
+  offers its relevant fields directly. Reuse the current context editor, opening
+  it at the selection when a focused draft dialog is appropriate.
+- **C2 Applications and data:** retain the existing executable board's create,
+  select, move, connect, subtype, attachment, annotation and configuration behavior.
+  It is the editable C2 surface within this shell; do not substitute a read-only
+  projection for working authoring tools. Box/arrow selection opens its matching
+  existing inspector and typed connection controls. Existing positions and camera
+  remain valid. Remove the separate Architecture-entry/Back-to-board round trip.
+- **C3 Components:** select a parent application, inspect/edit its responsibilities
+  and bound capabilities through sections 1–4. Keep drill-down and return navigation
+  explicit. A selected resource opens its existing structured editor; a selected
+  execution/pool/events capability uses its existing specialized editor where
+  editable. Grouping definitions and executable configuration remain distinct edits.
+- **Relationships:** select arrows by mouse and inspect their source/target, kind,
+  label and configuration. Context arrows edit their context relationship; C2
+  arrows edit the existing semantic connection. A derived C3 edge exposes its
+  source connection or declared-use binding and routes edits there. Never create
+  duplicate executable wiring just to make a projected edge editable.
+
+Use a consistent mapping from selected object/capability type to its configuration
+controls. Reuse template schemas, defaults, presets and existing specialized editors
+instead of duplicating forms. Common options come first, with advanced detail in
+disclosures; do not make raw JSON the default interaction for a capability that
+already has a structured editor. Read-only contracts remain clearly inspectable.
+This is an editor integration contract for current templates, not a new runtime or
+plugin-loading framework.
+
+Preserve each level's parent/selection and camera when switching away and back.
+Keep the chat conversation and unsent text across switches; ensure any selection
+context supplied to chat refers to the active selection rather than a hidden old
+board selection. Switching levels does not write semantic/layout changes. Existing
+unsaved drafts must remain intact or use the existing explicit Save/Cancel flow.
+At narrow widths use collapsible panels/drawers with reachable controls; desktop
+must allow chat and object configuration to remain visible together.
+
+The future UI Flow Editor is a separate sibling workspace, not an active empty tab
+or a page-flow implementation in P36. Live token/cost/context indicators and richer
+question review are separate chat work. New cache/storage/security/cloud capability
+contracts and planned-capability authoring are separate packages; keep existing
+supported deployment controls accessible without claiming new runtime support.
 
 ## 1. Explicit, additive responsibility metadata
 
@@ -175,10 +236,10 @@ dialog. Every action must work by mouse.
   valid targets and whole-draft validation. Draft-only selection/keys do not enter
   the semantic document. Save is one atomic revision/undo step; Cancel changes
   nothing; stale revisions preserve the draft and refuse overwrite.
-- Offer **Configure** on the selected responsibility from Architecture. Open the
+- Offer **Configure** on the selected responsibility in the C3 inspector. Open the
   relevant draft directly, with its owning container/component retained after
-  save/cancel. Keep “Edit on board” as an optional navigation action, not the only
-  path to configuration.
+  save/cancel. An optional “Open in C2” action navigates within the shared editor;
+  it must not be the only path to configuration.
 - A selected resource-bound component can open the existing resource editor
   directly at its bound resource. Reuse its Save/Cancel, revision checks, recipe
   locks and validation; do not fork a second resource editor or silently replace
@@ -214,6 +275,7 @@ Read narrowly as needed; these are existing seams, not instructions to refactor 
 | Semantic metadata, refs, atomic edits | `packages/spec/src/architecture.ts`, `architecture.test.ts`, `design.ts`, `operations.ts`, `apply.ts`, `findings.ts` |
 | Projection and ownership | `packages/spec/src/architecture-view.ts`, `packages/generator/src/architecture.test.ts`, `recipes.ts`, `packages/spec/src/evidence.ts` |
 | Architecture API and revision handling | `apps/server/src/design/service.ts`, `apps/server/src/routes/projects.ts`, `projects.test.ts`, `apps/web/src/draw/api.ts`, `store.ts` |
+| Shared editor shell and selection | `apps/web/src/draw/DrawView.tsx`, `Canvas.tsx`, `store.ts`, `draw.css`, `inspector/Rail.tsx`, `apps/web/src/chat/ChatPanel.tsx`, `store.ts` |
 | Workspace and details | `apps/web/src/architecture/ArchitectureWorkspace.tsx`, `ArchitectureEditors.tsx`, `ArchitectureEvidence.tsx`, `architecture.css` |
 | Geometry/fit | `ArchitectureGraph.tsx`, `layout.ts`, `layout-client.ts`, `layout.test.ts` in the architecture directory |
 | Reused editing | `apps/web/src/draw/inspector/ResourceEditor.tsx`, `resourceDraft.ts`, `Inspector.tsx`, `apps/web/src/components/ConfigurationDialog.tsx` |
@@ -239,7 +301,12 @@ Read narrowly as needed; these are existing seams, not instructions to refactor 
    the original recipe/starter/runtime artifacts remain byte-identical. No live
    regeneration or expensive full QR product suite is necessary for this boundary.
 3. **Strict browser authoring proof.** Add `apps/web/e2e/architecture-authoring.spec.ts`
-   using disposable projects. Prove reviewed QRWTY grouping and context; inspect all
+   using disposable projects. Prove the integrated shell: chat and inspector visible
+   together on desktop, level/parent selection retained across C1/C2/C3 switches,
+   chat draft retained, and direct box/arrow configuration without leaving the
+   editor. Exercise C2 placement/connection and context-relationship editing by
+   mouse; keep projected C3 edges tied to their actual editable definition.
+   Prove reviewed QRWTY grouping and context; inspect all
    eight extension operations; create/rename/change membership and Cancel; Save,
    single-step undo/redo and reload; direct resource edit targeted at the selected
    resource; recipe protection; stale-revision refusal with draft retained; and
@@ -262,7 +329,8 @@ Read narrowly as needed; these are existing seams, not instructions to refactor 
      apps/web/e2e/architecture.spec.ts \
      apps/web/e2e/architecture-layout.spec.ts \
      apps/web/e2e/architecture-evidence.spec.ts \
-     apps/web/e2e/resources-editor.spec.ts
+     apps/web/e2e/resources-editor.spec.ts \
+     apps/web/e2e/editor-interactions.spec.ts
    pnpm work run check
    git diff --check
    ```
@@ -283,29 +351,33 @@ verified commit and report what is implemented versus declared and what remains.
 
 ## Not in P36 / next package
 
-No developer auto-login, persistent sandbox/scenario launcher, page-flow/routing
+No live usage/context instrumentation, new chat question-review workflow, developer
+auto-login, persistent sandbox/scenario launcher, page-flow/routing
 contract, public landing page, theme/layout designer, business-action-form runtime,
 new QR feature or auth release, live QRWTY metadata/runtime adoption, recipe upgrade,
 cloud/scaling work, source analyzer or arbitrary workflow language.
 
-The next bounded authoring package after verified P36 is **persistent developer
-testing**: reusable tester/visitor access to an isolated persistent local sandbox,
-empty/sample scenarios and scoped reset, using real application sessions. It needs
-its own implementation specification before coding. Page flow/public entry and
-composable QR adoption remain later separate packages. Do not start them in P36.
+After verified P36, assess the architecture/template configuration gaps against
+the latest feedback before selecting the next bounded package. Planned enterprise
+capabilities versus an executable-only palette is an open product question for
+that follow-up, not a blocker to this editor package. **Persistent developer
+testing** remains queued: reusable tester/visitor access to an isolated persistent
+local sandbox, empty/sample scenarios and scoped reset using real sessions. It,
+chat improvements, page flow/public entry and composable QR adoption need separate
+implementation specifications. Do not start them in P36.
 
 ## Paste-ready implementation prompt
 
 ```text
 Work in /home/ash/github/jeeves.
 
-Implement P36: useful application architecture, proved with QRWTY, as specified in docs/build-plan-p36-architecture.md.
+Implement P36: unified C4 editor and useful application architecture, as specified in docs/build-plan-p36-architecture.md.
 
-Read AGENTS.md, PLAN.md §15, the latest docs/handoff.md entries, the P36 specification, and docs/qrwty-authoring-review-2026-10-31.md before coding. P35 is complete in commit 6823880; preserve its versioned session behavior and frozen artifacts.
+Read AGENTS.md, PLAN.md §15, the latest docs/handoff.md entries, the P36 specification, docs/reviews/jeeves-editor-feedback-2026-10-31.md and docs/qrwty-authoring-review-2026-10-31.md before coding. P35 is complete in commit 6823880; preserve its versioned session behavior and frozen artifacts.
 
-Begin implementation rather than producing another plan. Complete P36 only: explicit responsibility/member/dependency bindings, truthful ownership and endpoint details, direct selected-object configuration, concise cards and readable fit. Use the specification's new QRWTY fixture and a non-QR case. Declared source dependencies must remain distinguishable from generated wiring.
+Begin implementation rather than producing another plan. Complete P36 only: one editor with left chat, C1/C2/C3 tabs and type-specific controls for selected boxes/arrows, explicit responsibility/member/dependency bindings, truthful ownership and endpoint details, concise cards and readable fit. Retain working C2 board authoring. Use the specification's new QRWTY fixture and a non-QR case. Declared source dependencies must remain distinguishable from generated wiring.
 
-Preserve unrelated working-tree changes, published releases and the live QRWTY application/data/saved design. Use disposable projects and generated output for verification. Do not implement developer testing, page flows, public landing pages or live adoption. Do not delegate unless separately requested.
+Preserve unrelated working-tree changes, published releases and the live QRWTY application/data/saved design. Use disposable projects and generated output for verification. Work on the current branch in the current checkout with one agent, no additional branches/worktrees and no delegation. Do not implement new enterprise runtimes, live usage instrumentation, developer testing, page flows, public landing pages or live adoption.
 
 Run the specified focused checks and required repository gate. Record actual results and limitations in docs/evidence/p36/, append docs/handoff.md, and create a scoped local Git commit with P36 in its title. Local commits are already authorized.
 

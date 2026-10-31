@@ -1,5 +1,7 @@
 # Jeeves: execution after the qrwty review
 
+**Historical P12 specification.** P12–P35 are complete. The current next package is [P36](build-plan-p36-architecture.md), updated for the [2026-10-31 editor feedback](reviews/jeeves-editor-feedback-2026-10-31.md). The original preparation text below records the earlier plan; do not restart P12.
+
 The user has asked to begin execution in a fresh chat. **P12 is the next bounded package.** This document specifies P12 only. The broader product/architecture direction remains in the review documents; it is not a request to implement the whole roadmap in one turn. P7–P11 are historical completed work, with evidence in `docs/handoff.md`.
 
 ## Product direction to preserve

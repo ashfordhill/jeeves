@@ -2634,3 +2634,50 @@ Specified additive architecture responsibility/member metadata, stable reference
 Inspected the current architecture schema/projection, workspace/cards/fit, resource-editor seam, API/recipe integration and existing tests, plus QRWTY feature registrations/storage use read-only. Corrected and verified source pointers and local documentation links. Updated current guidance in PLAN, improvements, continuing execution, P35 authoring handoff and review entry points; retained historical review findings and every earlier handoff entry. The next package after verified P36 is persistent developer testing, requiring its own specification; page flow/public entry and composable adoption remain later work.
 
 Verification: `pnpm work run check` passed in **42.5s**, `.jeeves-work/runs/2026-10-31T16-07-42-855Z-check-b653e8cd.*`, unchanged source fingerprints during the run. Biome checked 671 files (462 warnings/74 infos/no errors), all workspace/script types passed, **656 tests / 98 files passed**. Final documentation links/source pointers and `git diff --check` passed. No runtime/source implementation, live application/design/data mutation, browser/Docker campaign or paid model calls in this documentation task. Preserved the pre-existing 52 handoff lines, historical improvements edit, untracked build-plan-next/reviews and qrwty business-analysis work outside the documentation commit. Next agent: implement P36 only from the new specification, verify, append evidence, commit with P36 in its title and stop.
+
+## 2026-10-31 — Feedback review, existing-work checkpoint and integrated P36 scope
+
+The user asked to review `~/.opencode/jeeves-feedback`, commit all existing Jeeves
+changes and continue with one agent in the current checkout/branch. Read the
+feedback text, inspected the two UI screenshots and editor sketch, and checked the
+Excalidraw labels against the sketch. Compared the request with the latest handoff,
+P36 specification and actual Draw/Architecture/inspector/chat/template seams.
+Recorded the review in `docs/reviews/jeeves-editor-feedback-2026-10-31.md`, retaining
+the original feedback, sketch and referenced screenshots in its dated assets.
+
+Committed all pre-existing Jeeves changes as **`1c607d3` — `docs: checkpoint existing
+product reviews and planning`**. These were documentation and review assets; the
+only cleanup was one Markdown trailing-space line so the staged diff check passed.
+No previous handoff entry was rewritten. Added the user's sequential current-branch
+workflow to `AGENTS.md`; no branch, worktree or sub-agent was created.
+
+Updated P36's specification to include the requested shared shell: left chat,
+C1/C2/C3 editing, retained C2 board authoring, right-hand object/arrow-specific
+configuration, selection/camera/draft continuity and mouse-reachable controls.
+Retained its responsibility/member/dependency model, QRWTY/non-QR proofs and
+generation-invariance boundary. The separate Architecture page alone no longer
+satisfies this package. Corrected current PLAN/improvements pointers and marked
+the newly checkpointed P12 specification historical. **P36 remains unimplemented**;
+this turn prepares the work rather than claiming a completed implementation package.
+
+Architecture UX takes priority; page flow/layout, new enterprise capability runtimes,
+chat usage/context/answer review, developer testing and live QRWTY adoption remain
+separate follow-ups. Asked whether not-yet-generatable enterprise capabilities
+should appear as clearly planned objects or only working templates should appear.
+Recommended the former; no answer was received during this review. This is a
+follow-up scope decision, not a dependency for integrating existing editors in P36.
+Use the user's later answer if it arrives; do not treat the recommendation as approval.
+
+Verification: **`pnpm check` passed** before the documentation-only updates, exit 0;
+Biome checked **671 files**, **462 warnings/74 infos/no errors**, all workspace and
+script typechecks passed, **656 tests across 98 files passed** (Vitest **33.51s**).
+Log: `/tmp/jeeves-feedback-baseline-check.log`. **51 local document links** in seven
+changed/captured Markdown files resolve; `git diff --check` passed. Reviewed the
+documentation diff and staged assets. No source changes justified another application
+test run; no live browser/Docker verification or provider requests were made.
+The running QRWTY app, its repository/data and saved Jeeves design were not changed.
+
+Next implementation is the revised P36 in `docs/build-plan-p36-architecture.md`.
+Use the current branch, finish its focused checks and handoff, and create its own
+local package commit. Reassess architecture/template gaps against this feedback
+before automatically resuming an older follow-up order.

@@ -9,6 +9,8 @@ Jeeves is built one section or improvement package at a time (PLAN.md §15). For
 
 The improvement-package ordering in `docs/improvements.md` supersedes the historical S14-next sequence.
 
+Work sequentially in the current checkout and branch. The user is running one agent at a time on Jeeves; do not create additional worktrees or branches, or delegate to other agents, unless the user changes that instruction. Keep committing completed packages locally.
+
 ## Repo conventions
 
 - pnpm workspaces, TypeScript (strict), ESM everywhere. Workspace packages export their TypeScript source directly (`"exports": "./src/index.ts"`); there is no build step for internal packages.
