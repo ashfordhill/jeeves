@@ -4,6 +4,8 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
+**Next implementation:** [P35 — independent sessions for local generated applications](docs/build-plan-qrwty-authoring.md), following the QRWTY authoring review. P12–P34 are complete. Use that bounded fresh-agent specification rather than older next-package statements; P35 is specified, not implemented.
+
 Related documents:
 
 - [docs/sources.md](docs/sources.md): the user's original requests and answers, verbatim (SRC-01 to SRC-18)

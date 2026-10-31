@@ -1,6 +1,6 @@
 # Product and architecture review through P34
 
-**Later user review:** the [QRWTY authoring audit](qrwty-authoring-review-2026-10-31.md) records direct browser/source findings and the user's revised priority. Its proposed architecture, developer-testing and page-flow work supersedes automatic continuation into the P35 recommendation below. This document retains the earlier foundation assessment.
+**Later user review:** the [QRWTY authoring audit](qrwty-authoring-review-2026-10-31.md) records direct browser/source findings and the user's revised priority. The [fresh-agent specification](build-plan-qrwty-authoring.md) assigns P35 to independent application sessions; it supersedes the unimplemented P35 business-action-forms recommendation below. Architecture, developer-testing and page-flow work follows in separately specified packages. This document retains the earlier foundation assessment.
 
 Reviewed 2026-10-31 against the current original `PLAN.md` (§§1–11 and its historical scope), the completed P12–P34 evidence, the read-only Excalidraw/automation-pitch comparison from P20, and automation-pitch's `.docs/VISUAL_IMPROVEMENTS.md`. The complete change log was inspected during P20; this pass revisited its compact-inspector, selection, stable-camera, clipping and draft/Save lessons. Automation-pitch has no tracked/untracked changes. Reference images and observations are [retained with P20](evidence/p20/reference-observations.md); no user diagram was uploaded to a reference product.
 

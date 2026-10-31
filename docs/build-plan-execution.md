@@ -1,5 +1,7 @@
 # Continuing delivery: qrwty and deterministic Jeeves
 
+**Current execution entry point:** P13–P34 below are completed history. Start [P35 — independent sessions for local generated applications](build-plan-qrwty-authoring.md) and implement that package only. Its fresh-agent scope and stopping boundary supersede the earlier continuing-delivery instruction below and the later unimplemented P35 business-action-forms proposal.
+
 The user's continuing implementation instruction supersedes the earlier P12-only stop boundary and planning-only status of the product reviews. Deliver one verified package and local commit at a time, preserving unrelated work and existing QR identities/data. No paid Jeeves agent runs or public deployment are needed.
 
 The product target is the branded qrwty QR Studio, management and analytics experience described in the 2026-10-30 reviews, with proven reusable behavior extracted into versioned Jeeves templates. C4-informed views should explain one model's responsibilities and implementation bindings; structured configuration should drive deterministic generation and tested reliability presets. Retain React Flow, the operations API, generated-file ownership and protected business acceptance. Do not invent cloud capacity/reliability claims without measured evidence.
