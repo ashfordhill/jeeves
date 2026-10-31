@@ -1,0 +1,90 @@
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 422889fc98ea26cf4c4b45d6d7b84479550f4728..e4d8be22cf5dca08f65402df224190d17d874994 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -2146,12 +2146,15 @@ function useVisibleNodeIds(onlyRenderVisible) {
+ const selector$b = (s) => s.updateNodeInternals;
+ function useResizeObserver() {
+     const updateNodeInternals = useStore(selector$b);
++    // Jeeves compatibility patch: never write node layout during ResizeObserver delivery.
++    const pending = useRef(new Map());
++    const frame = useRef();
+     const [resizeObserver] = useState(() => {
+         if (typeof ResizeObserver === 'undefined') {
+             return null;
+         }
+         return new ResizeObserver((entries) => {
+-            const updates = new Map();
++            const updates = pending.current;
+             entries.forEach((entry) => {
+                 const id = entry.target.getAttribute('data-id');
+                 updates.set(id, {
+@@ -2160,12 +2163,22 @@ function useResizeObserver() {
+                     force: true,
+                 });
+             });
+-            updateNodeInternals(updates);
++            if (frame.current === undefined) {
++                frame.current = requestAnimationFrame(() => {
++                    frame.current = undefined;
++                    const batch = pending.current;
++                    pending.current = new Map();
++                    updateNodeInternals(batch);
++                });
++            }
+         });
+     });
+     useEffect(() => {
+         return () => {
+             resizeObserver?.disconnect();
++            if (frame.current !== undefined) cancelAnimationFrame(frame.current);
++            frame.current = undefined;
++            pending.current.clear();
+         };
+     }, [resizeObserver]);
+     return resizeObserver;
+diff --git a/dist/esm/index.mjs b/dist/esm/index.mjs
+index 422889fc98ea26cf4c4b45d6d7b84479550f4728..e4d8be22cf5dca08f65402df224190d17d874994 100644
+--- a/dist/esm/index.mjs
++++ b/dist/esm/index.mjs
+@@ -2146,12 +2146,15 @@ function useVisibleNodeIds(onlyRenderVisible) {
+ const selector$b = (s) => s.updateNodeInternals;
+ function useResizeObserver() {
+     const updateNodeInternals = useStore(selector$b);
++    // Jeeves compatibility patch: never write node layout during ResizeObserver delivery.
++    const pending = useRef(new Map());
++    const frame = useRef();
+     const [resizeObserver] = useState(() => {
+         if (typeof ResizeObserver === 'undefined') {
+             return null;
+         }
+         return new ResizeObserver((entries) => {
+-            const updates = new Map();
++            const updates = pending.current;
+             entries.forEach((entry) => {
+                 const id = entry.target.getAttribute('data-id');
+                 updates.set(id, {
+@@ -2160,12 +2163,22 @@ function useResizeObserver() {
+                     force: true,
+                 });
+             });
+-            updateNodeInternals(updates);
++            if (frame.current === undefined) {
++                frame.current = requestAnimationFrame(() => {
++                    frame.current = undefined;
++                    const batch = pending.current;
++                    pending.current = new Map();
++                    updateNodeInternals(batch);
++                });
++            }
+         });
+     });
+     useEffect(() => {
+         return () => {
+             resizeObserver?.disconnect();
++            if (frame.current !== undefined) cancelAnimationFrame(frame.current);
++            frame.current = undefined;
++            pending.current.clear();
+         };
+     }, [resizeObserver]);
+     return resizeObserver;

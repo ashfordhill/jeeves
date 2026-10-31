@@ -17,9 +17,10 @@ import {
   type OnSelectionChangeParams,
   ReactFlow,
   useReactFlow,
+  useStore,
   useViewport,
 } from "@xyflow/react";
-import { type DragEvent, type MouseEvent, useCallback, useEffect, useState } from "react";
+import { type DragEvent, type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaperTextureSvg } from "../theme/PaperTexture.tsx";
 import { type CanvasEnd, type ConnectPlan, planConnect } from "./connect.ts";
 import { ArrowEdge, ConnectionEdge } from "./edges/BoardEdges.tsx";
@@ -107,6 +108,16 @@ export function Canvas() {
     redo,
   } = useDraw.getState();
   const flow = useReactFlow<BoardNode, BoardEdge>();
+  const boardWidth = useStore((s) => s.width);
+  const previousWidth = useRef(boardWidth);
+
+  // Opening the rail reduces the actual canvas width. Fit after React Flow measures it,
+  // without changing the saved camera on initial load or moving any design items.
+  useEffect(() => {
+    if (previousWidth.current > boardWidth && boardWidth > 0)
+      void flow.fitView({ maxZoom: 1, padding: 0.2, duration: 200 });
+    previousWidth.current = boardWidth;
+  }, [boardWidth, flow]);
 
   // Seeded synchronously so React Flow's initial fitView sees the nodes.
   const [nodes, setNodes] = useState<BoardNode[]>(() =>
@@ -260,7 +271,11 @@ export function Canvas() {
         else
           setNotice({ tone: "info", message: "Attachments go on element cards, not annotations." });
       } else if (tool.kind !== "select" && tool.kind !== "hand") {
-        void placeAt(tool, flow.screenToFlowPosition({ x: event.clientX, y: event.clientY }));
+        // A placement click must never create a card over an existing card or activate
+        // its subtype controls. Frames are containers and can still receive new items.
+        if (node.type === "frame")
+          void placeAt(tool, flow.screenToFlowPosition({ x: event.clientX, y: event.clientY }));
+        else setNotice({ tone: "info", message: "Click empty board space to place the new item." });
       }
     },
     [design, tool, pendingEnd, flow, runPlan, attachTo, placeAt, setNotice, setPendingEnd],
@@ -268,10 +283,13 @@ export function Canvas() {
 
   const onNodeDoubleClick: NodeMouseHandler<BoardNode> = useCallback(
     (_, node) => {
-      if (node.type === "text" || node.type === "note" || node.type === "frame")
+      if (
+        tool.kind === "select" &&
+        (node.type === "text" || node.type === "note" || node.type === "frame")
+      )
         setEditing(node.id);
     },
-    [setEditing],
+    [setEditing, tool.kind],
   );
 
   const onConnect = useCallback(
@@ -371,6 +389,18 @@ export function Canvas() {
         else setNotice({ tone: "info", message: "Drop an attachment onto an element card." });
         return;
       }
+      if (
+        document
+          .elementsFromPoint(event.clientX, event.clientY)
+          .some(
+            (el) =>
+              el.classList.contains("react-flow__node") &&
+              !el.classList.contains("react-flow__node-frame"),
+          )
+      ) {
+        setNotice({ tone: "info", message: "Drop the new item onto empty board space." });
+        return;
+      }
       void placeAt(dropped, flow.screenToFlowPosition({ x: event.clientX, y: event.clientY }));
     },
     [flow, placeAt, attachTo, setNotice],
@@ -388,7 +418,7 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        edgesReconnectable
+        edgesReconnectable={tool.kind === "select"}
         onReconnect={(edge, connection) => {
           if (!design || !design.connections.some((c) => c.id === edge.id)) return;
           const draft = {
@@ -427,7 +457,8 @@ export function Canvas() {
         fitViewOptions={{ maxZoom: 1 }}
         panOnDrag={tool.kind === "hand" ? true : [1, 2]}
         selectionOnDrag={tool.kind === "select"}
-        nodesDraggable={tool.kind !== "hand"}
+        nodesDraggable={tool.kind === "select"}
+        nodesConnectable={tool.kind === "select" || tool.kind === "connect"}
         elementsSelectable={tool.kind === "select"}
         deleteKeyCode={null}
         zoomOnDoubleClick={false}

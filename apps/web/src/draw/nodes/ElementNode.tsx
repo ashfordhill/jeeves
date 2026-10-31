@@ -70,6 +70,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
   );
   const pending = useDraw((s) => s.pendingEnd);
   const edit = useDraw((s) => s.edit);
+  const editing = useDraw((s) => s.tool.kind === "select");
   const findings = useDraw((s) => s.loaded?.findingIndex.byNode.get(id));
   const pendingHere = pending && "element" in pending && pending.element === id;
   const label = template?.displayName ?? "Needs a template";
@@ -80,7 +81,12 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
       data-element-id={id}
       aria-label={`${element.name}, ${label}`}
     >
-      <NodeResizer isVisible={selected} minWidth={260} minHeight={100} onResizeEnd={onResizeEnd} />
+      <NodeResizer
+        isVisible={selected && editing}
+        minWidth={260}
+        minHeight={100}
+        onResizeEnd={onResizeEnd}
+      />
       <Handle type="target" position={Position.Left} id={handleId("in")} className="card-handle" />
       <div className="element-card-head">
         <span className="element-card-icon">
@@ -102,7 +108,9 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
           </span>
         ) : null}
       </div>
-      {template?.elementKind !== "database" ? <SubtypeControl element={element} /> : null}
+      {template?.elementKind !== "database" ? (
+        <SubtypeControl element={element} disabled={!editing} />
+      ) : null}
       <Chips chips={cardChips(template, element.config)} />
       {attachments.length > 0 ? (
         <ul className="attachment-list" aria-label={`Attachments of ${element.name}`}>
@@ -118,25 +126,30 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
                 {attachmentTemplate?.displayName ?? attachment.template.id}
               </span>
               <Chips chips={cardChips(attachmentTemplate, attachment.config).slice(0, 1)} compact />
-              {selected ? (
-                <button
-                  type="button"
-                  className="attachment-remove nodrag"
-                  aria-label={`Remove ${attachmentTemplate?.displayName ?? attachment.template.id}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void edit([{ op: "removeAttachment", id: attachment.id }]);
-                  }}
-                >
-                  <IconX size={12} aria-hidden />
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className="attachment-remove nodrag"
+                aria-label={`Remove ${attachmentTemplate?.displayName ?? attachment.template.id}`}
+                style={{ visibility: selected ? "visible" : "hidden" }}
+                disabled={!editing}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void edit([{ op: "removeAttachment", id: attachment.id }]);
+                }}
+              >
+                <IconX size={12} aria-hidden />
+              </button>
             </li>
           ))}
         </ul>
       ) : null}
-      {selected && element.template ? (
-        <fieldset className="compatible-components nodrag nopan" aria-label="Compatible components">
+      {element.template ? (
+        <fieldset
+          className="compatible-components nodrag nopan"
+          aria-label="Compatible components"
+          style={{ visibility: selected ? "visible" : "hidden" }}
+          disabled={!editing}
+        >
           {registry
             .attachmentsFor(element.template)
             .filter(

@@ -73,10 +73,28 @@ function EmptyHint() {
 function PendingHint() {
   const tool = useDraw((s) => s.tool.kind);
   const pending = useDraw((s) => !!s.pendingEnd);
-  if (tool !== "connect") return null;
+  const setTool = useDraw((s) => s.setTool);
+  const setNotice = useDraw((s) => s.setNotice);
+  if (tool === "select" || tool === "hand") return null;
   return (
     <p className="draw-tool-hint" role="status">
-      {pending ? "Now click the item to connect to." : "Click the item to connect from."}
+      {tool === "connect"
+        ? pending
+          ? "Now click the item to connect to."
+          : "Click the item to connect from."
+        : tool === "attachment"
+          ? "Click a service to add the component."
+          : `Click empty board space to place ${tool === "element" ? "the selected template" : `a ${tool}`}.`}
+      <Button
+        size="compact-xs"
+        variant="default"
+        onClick={() => {
+          setTool({ kind: "select" });
+          setNotice(undefined);
+        }}
+      >
+        Cancel tool
+      </Button>
     </p>
   );
 }

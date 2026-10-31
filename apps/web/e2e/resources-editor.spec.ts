@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./browser-test.ts";
 
 test.use({ viewport: { width: 1600, height: 1000 } });
 

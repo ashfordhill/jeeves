@@ -2130,3 +2130,33 @@ After merging and `docker compose up --build --wait` (all three services healthy
 This proves the normal-fetch browser policy in Chromium and the required generated web-app conformance; it is not a fresh full QR-01–QR-09 live proving run. Existing lint warnings/info diagnostics remain. The current qrwty Worker is deliberately retained; removing it requires a later controlled application adoption with its own regression checks. Headless favicon coverage uses an explicit asset request because automatic icon fetching is browser-dependent. No cloud, reliability runtime, Studio, C4 or schema work is included.
 
 **Next bounded package:** reconcile the already pending Draw Jeeves placement, subtype/control and camera changes with their `editor-interactions.spec.ts` acceptance, review their scope and verification, then hand off/commit them separately. Separately specify the first bounded qrwty product package around the branded Studio/product direction and reusable template boundary, preserving stable QR identity, data and ownership plus the planned visual reliability policies. Do not infer implementation authorization for the broader roadmap from this handoff. Stop after P12.
+
+
+---
+
+## Improvements P13: editor interaction reconciliation (2026-10-30)
+
+**Status: complete.** The user authorized continuing implementation toward polished qrwty, deterministic reusable enterprise components and C4-informed Jeeves, superseding the earlier P12-only stop. They also required a final original-plan/C4 and UI/UX comparison against Excalidraw and automation-pitch, including its `VISUAL_IMPROVEMENTS.md`. This direction and P13's bounded specification are recorded in `docs/build-plan-execution.md`. Each following package still requires independent checks, handoff and local commit.
+
+### Implementation
+
+- Reconciled the previously pending Draw changes: empty-space placement, card hit testing for drops, tool-gated movement/connection/reconnection/control activation, mouse-accessible cancellation, stable selection geometry and fitting the diagram when the inspector reduces available width. Service controls and annotation resize handles are active only in selection mode; frame interiors remain valid placement surfaces. Cancel also clears the placement notice.
+- Removed the pending subtype fieldset's click propagation block after existing inspector tests showed it prevented normal card selection. Retained the disabled controls and pointer handling that prevent accidental edits in creation mode. Added annotation/frame coverage to the existing pending interaction specification.
+- Fixed Playwright's viewport configuration: the Desktop Chrome device preset had overridden the intended 1440×900 viewport with 1280×720, clipping a test card behind the board controls. The explicit viewport now follows the preset; per-test viewport overrides remain available.
+- Added a shared strict browser fixture to the interaction, draw, resource-editor and inspector suites. It uses P12's network/console/page-error observer and also captures native window error events across navigation. The inspector's deliberately stale revision has one exact, required POST/409 expectation; unexpected errors are never filtered.
+- Traced the previously ignored ResizeObserver errors to React Flow's synchronous node-internals update during native observer delivery, reproducibly during mouse resizing. Deferring only the app's controlled callback did not fix the upstream internal-store write, so that experiment was removed. A narrow pnpm patch to the existing pinned `@xyflow/react@12.11.6` coalesces the upstream node measurements into the next animation frame and cancels pending work on cleanup. Both used ESM entry points are patched; versions and all other dependencies are unchanged. `patches/README.md` records the reason, scope and removal gate. No global observer replacement or error suppression remains.
+
+### Commands and results
+
+- Initial focused pending interaction baseline: **2 passed**. Broad acceptance then exposed the viewport/selection regressions and reproduced the native resize errors; strict window-error capture converted the silent warning into a failure.
+- Temporary disposable resize tracing identified the synchronous upstream observer. Diagnostic test/instrumentation and the ineffective app-level scheduling experiment were removed before final checks.
+- `pnpm exec playwright test apps/web/e2e/editor-interactions.spec.ts apps/web/e2e/draw.spec.ts apps/web/e2e/resources-editor.spec.ts apps/web/e2e/inspector.spec.ts --workers=1 --reporter=line`: **12 passed (35.2 s)** with strict network, application and native-window-error checks. Includes mouse resize, subtype review, persistence, connections, conflicts and axe checks. Output: `/tmp/jeeves-p13-e2e.log`.
+- `pnpm exec playwright test apps/web/e2e/editor-review.spec.ts apps/web/e2e/chat.spec.ts apps/web/e2e/generate.spec.ts apps/web/e2e/runs.spec.ts apps/web/e2e/shell.spec.ts --workers=1 --reporter=line`: **17 passed (1.3 min)**. Run because the dependency patch and viewport affect shared setup; all providers/checks use the existing fake test configuration. Output: `/tmp/jeeves-p13-e2e-remaining.log`.
+- `pnpm check`: **passed**, **535 unit tests / 72 files (27.83 s)**; all type checks passed; Biome checked 425 files, **137 warnings / 57 infos and no errors**. Output: `/tmp/jeeves-p13-check.log`.
+- Scoped formatting, final diff review and `git diff --check`: passed. pnpm patch application passed its existing supply-chain checks. No paid model run, live qrwty regeneration/data change, cloud deployment or unrelated review-document staging occurred.
+
+### Limits and next work
+
+The React Flow compatibility patch must be reassessed on dependency upgrades; the CommonJS/UMD bundle is unused by this ESM workspace and unchanged. Existing lint and React Flow attribution console warnings remain. P13 is editor correctness, not the final visual/product or C4 completion review. Earlier uncommitted review/planning documents and handoff additions remain preserved outside this commit.
+
+**Next: P14, qrwty session/shell/library product foundation.** Inspect qrwty's project-owned source and contracts, define the bounded product acceptance, implement a branded navigable account/library experience using existing contracts, extract reusable deterministic UI behavior, and verify adoption with disposable fixtures while preserving QR URLs/data and generated-file ownership. Continue sequentially under the user's ongoing authorization; do not conflate a polished first screen with completed Studio, C4 or enterprise reliability capability.

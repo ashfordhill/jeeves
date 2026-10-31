@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./browser-test.ts";
 import { card, designOf, layoutOf, openNewProject } from "./helpers.ts";
 
 /**
@@ -223,6 +224,7 @@ test("deletes a multi-selection, zooms to it, and undoes moves", async ({ page, 
 test("reloads the design and says so when another edit got there first", async ({
   page,
   request,
+  browserProblems,
 }) => {
   const id = await openNewProject(page, request, "E2E conflict");
   await place(page, "HTTP service", 400, 320);
@@ -241,12 +243,20 @@ test("reloads the design and says so when another edit got there first", async (
   });
   expect(res.status()).toBe(200);
 
+  const conflict = browserProblems.expectHttp({
+    scenario: "another editor changed the revision",
+    method: "POST",
+    url: new URL(`/api/projects/${id}/operations`, page.url()).href,
+    resourceType: "fetch",
+    status: 409,
+  });
   await name.click();
   await name.fill("My service");
   await clickAway(page);
   await expect(
     page.getByRole("status").filter({ hasText: "changed somewhere else" }),
   ).toBeVisible();
+  conflict.finish();
   await expect(card(page, "Links service, HTTP service")).toBeVisible();
   await expect(name).toHaveValue("Links service");
   const saved = (await designOf(request, id)).design;

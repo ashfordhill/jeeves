@@ -5,7 +5,13 @@ import { templateKey } from "./flow.ts";
 import { useDraw } from "./store.ts";
 
 /** Both inline and inspector controls submit the exact same reviewed operation. */
-export function SubtypeControl({ element }: { element: Element }) {
+export function SubtypeControl({
+  element,
+  disabled = false,
+}: {
+  element: Element;
+  disabled?: boolean;
+}) {
   const loaded = useDraw((s) => s.loaded);
   const edit = useDraw((s) => s.edit);
   const [review, setReview] = useState<
@@ -26,6 +32,7 @@ export function SubtypeControl({ element }: { element: Element }) {
     <fieldset
       className="nodrag nopan"
       onKeyDown={(e) => e.stopPropagation()}
+      disabled={disabled}
       aria-label="Service subtype"
     >
       <label>

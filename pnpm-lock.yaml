@@ -162,6 +162,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@xyflow/react@12.11.6': f509d2c694a5d84d74789aff295d0eaf98a87f1913451a89f282cd2a03ea8d21
+
 importers:
 
   .:
@@ -268,7 +271,7 @@ importers:
         version: 3.46.0(react@19.2.8)
       '@xyflow/react':
         specifier: 12.11.6
-        version: 12.11.6(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 12.11.6(patch_hash=f509d2c694a5d84d74789aff295d0eaf98a87f1913451a89f282cd2a03ea8d21)(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -5267,7 +5270,7 @@ snapshots:
 
   '@vitest/spy@5.0.0': {}
 
-  '@xyflow/react@12.11.6(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@xyflow/react@12.11.6(patch_hash=f509d2c694a5d84d74789aff295d0eaf98a87f1913451a89f282cd2a03ea8d21)(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@xyflow/system': 0.0.82
       classcat: 5.0.5

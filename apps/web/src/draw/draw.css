@@ -24,6 +24,7 @@
   cursor: var(--grabbing-cursor);
 }
 
+.draw-board[data-tool="service"] .react-flow__pane,
 .draw-board[data-tool="element"] .react-flow__pane,
 .draw-board[data-tool="text"] .react-flow__pane,
 .draw-board[data-tool="note"] .react-flow__pane,
@@ -595,6 +596,14 @@
 
 .draw-tool-hint {
   top: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 32px);
+}
+
+.draw-tool-hint button {
+  pointer-events: auto;
 }
 
 /* React Flow zoom controls in the board's style. */
@@ -1341,7 +1350,7 @@ button.finding-btn:hover {
   border-radius: 4px;
 }
 
-.draw-board[data-tool="connect"] .element-card .nodrag {
+.draw-board:not([data-tool="select"]) .element-card .nodrag {
   pointer-events: none;
 }
 .element-card .react-flow__resize-control.handle {

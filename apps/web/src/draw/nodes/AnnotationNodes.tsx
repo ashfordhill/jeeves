@@ -99,6 +99,7 @@ export function TextNode({ data, selected }: NodeProps<AnnotationNode>) {
 
 export function NoteNode({ id, data, selected }: NodeProps<AnnotationNode>) {
   const annotation = data.annotation as Editable;
+  const editing = useDraw((s) => s.tool.kind === "select");
   const onResizeEnd = useResize(id);
   const color = annotation.kind === "note" ? (annotation.color ?? "yellow") : "yellow";
   return (
@@ -107,7 +108,12 @@ export function NoteNode({ id, data, selected }: NodeProps<AnnotationNode>) {
       data-color={color}
       aria-label="Sticky note"
     >
-      <NodeResizer isVisible={!!selected} minWidth={120} minHeight={80} onResizeEnd={onResizeEnd} />
+      <NodeResizer
+        isVisible={!!selected && editing}
+        minWidth={120}
+        minHeight={80}
+        onResizeEnd={onResizeEnd}
+      />
       <Handles />
       <InlineText annotation={annotation} placeholder="Double-click to write" />
     </article>
@@ -116,11 +122,12 @@ export function NoteNode({ id, data, selected }: NodeProps<AnnotationNode>) {
 
 export function FrameNode({ id, data, selected }: NodeProps<AnnotationNode>) {
   const annotation = data.annotation as Editable;
+  const editing = useDraw((s) => s.tool.kind === "select");
   const onResizeEnd = useResize(id);
   return (
     <article className={`frame-annotation${selected ? " is-selected" : ""}`} aria-label="Frame">
       <NodeResizer
-        isVisible={!!selected}
+        isVisible={!!selected && editing}
         minWidth={160}
         minHeight={120}
         onResizeEnd={onResizeEnd}

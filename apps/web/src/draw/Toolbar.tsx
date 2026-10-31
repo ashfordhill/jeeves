@@ -15,6 +15,7 @@ import {
   IconNote,
   IconPlug,
   IconPointer,
+  IconSquarePlus,
   IconTextSize,
   IconTrash,
 } from "@tabler/icons-react";
@@ -257,7 +258,7 @@ export function Toolbar({ onDelete, canDelete }: { onDelete: () => void; canDele
         label="Service"
         hint="Place a service, then choose its subtype"
         tool={{ kind: "service" }}
-        icon={<IconBoxMultiple size={18} />}
+        icon={<IconSquarePlus size={18} />}
         draggable
       />
       <PaletteMenu

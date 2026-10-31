@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./browser-test.ts";
 import { card, designOf, layoutOf, openNewProject } from "./helpers.ts";
 
 test("builds a service + REST server + Postgres board that survives a reload", async ({
