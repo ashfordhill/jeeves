@@ -121,7 +121,7 @@ test("a new service can add and configure an event attachment before its databas
   await dialog.getByRole("button", { name: "Save event configuration" }).click();
   await expect(dialog).not.toBeVisible();
   const { design } = await (await request.get(`/api/projects/${id}/design`)).json();
-  expect(design.elements[0].template.version).toBe("0.2.0");
+  expect(design.elements[0].template.version).toBe("0.3.0");
   expect(design.elements[0].attachments[0].config.events[0].type).toBe("domain.event-1");
   await expect(
     page.getByText("Durable events require one Postgres connection from this service.", {

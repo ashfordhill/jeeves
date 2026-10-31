@@ -335,6 +335,9 @@ importers:
       '@jeeves/template-kit':
         specifier: workspace:*
         version: link:../template-kit
+      '@jeeves/template-local-execution':
+        specifier: workspace:*
+        version: link:../../templates/local-execution
       '@jeeves/template-postgres':
         specifier: workspace:*
         version: link:../../templates/postgres
@@ -434,6 +437,9 @@ importers:
       '@jeeves/template-http-service':
         specifier: workspace:*
         version: link:../../templates/http-service
+      '@jeeves/template-local-execution':
+        specifier: workspace:*
+        version: link:../../templates/local-execution
       '@jeeves/template-postgres':
         specifier: workspace:*
         version: link:../../templates/postgres
@@ -540,6 +546,15 @@ importers:
       zod:
         specifier: 4.5.4
         version: 4.5.4
+
+  templates/local-execution:
+    dependencies:
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      '@jeeves/template-kit':
+        specifier: workspace:*
+        version: link:../../packages/template-kit
 
   templates/postgres:
     dependencies:

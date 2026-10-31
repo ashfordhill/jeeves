@@ -2,8 +2,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { TemplateModule } from "@jeeves/template-kit";
 import { generate } from "./generate.ts";
+import { generateV03 } from "./generate-v03.ts";
 import manifest from "./manifest.ts";
 import manifestV02 from "./manifest-v02.ts";
+import manifestV03 from "./manifest-v03.ts";
 import runtimePackage from "./runtime/package.json" with { type: "json" };
 import { testPack } from "./test-pack/index.ts";
 
@@ -24,4 +26,10 @@ export default httpServiceTemplate;
 export const httpServiceV02Template: TemplateModule = {
   ...httpServiceTemplate,
   manifest: manifestV02,
+};
+
+export const httpServiceV03Template: TemplateModule = {
+  ...httpServiceV02Template,
+  manifest: manifestV03,
+  generate: generateV03,
 };

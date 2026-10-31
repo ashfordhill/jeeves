@@ -9,6 +9,7 @@ import {
   IconQuestionMark,
   IconRepeat,
   IconServer,
+  IconSettings,
 } from "@tabler/icons-react";
 
 const ICONS: Record<string, Icon> = {
@@ -18,6 +19,7 @@ const ICONS: Record<string, Icon> = {
   "plug-connected": IconPlugConnected,
   server: IconServer,
   repeat: IconRepeat,
+  settings: IconSettings,
 };
 
 export function TemplateIcon({ name, size = 20 }: { name: string | undefined; size?: number }) {

@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../draw/api.ts";
+import { ExecutionPolicySummary } from "../draw/inspector/LocalExecutionEditor.tsx";
 import { useDraw } from "../draw/store.ts";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog, evidenceLabel } from "./ArchitectureEvidence.tsx";
@@ -287,10 +288,22 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
               </section>
             ) : (
               <p>
-                No objects in this scope. Add an executable element on the board or describe the
-                context.
+                {level === "components"
+                  ? "This service has no declared application components yet. Add capabilities or implementation notes on the board."
+                  : "No objects in this scope. Add an executable element on the board or describe the context."}
               </p>
             )}
+            {node?.execution || projection.execution ? (
+              <section aria-label="Local execution policy">
+                <h2>Local execution · {(node?.execution ?? projection.execution)!.preset}</h2>
+                <p>{node?.execution ? node.name : projection.name}</p>
+                <ExecutionPolicySummary policy={(node?.execution ?? projection.execution)!} />
+                <p className="architecture-evidence-note">
+                  Policy 0.1.0 · declared container settings. Generation and verification provide
+                  applied evidence.
+                </p>
+              </section>
+            ) : null}
             <section className="architecture-relationships" aria-label="Scope relationships">
               <h3>Relationships</h3>
               {projection.edges.length ? (

@@ -17,6 +17,12 @@ const seed = (d: DesignDocument) =>
   seedPlan({ design: d, lock: lockOf(d), templates: templates.lookup });
 
 describe("seedPlan", () => {
+  it("supplies local execution configuration without an implementation task", () => {
+    const document = fixtureDesign("local-execution");
+    document.elements[0]!.attachments[0]!.notes =
+      "Explain why this service uses bounded local resources.";
+    expect(seed(document)).toEqual([]);
+  });
   it("limits workspace notes to additive project content and leaves supplied behavior task-free", () => {
     const document = designSchema.parse(
       JSON.parse(

@@ -16,6 +16,8 @@ describe("templates", () => {
       "durable-events@0.1.0",
       "http-service@0.1.0",
       "http-service@0.2.0",
+      "http-service@0.3.0",
+      "local-execution@0.1.0",
       "postgres@0.1.0",
       "resource-workspace@0.1.0",
       "rest-api-client@0.1.0",
@@ -24,7 +26,7 @@ describe("templates", () => {
       "web-app@0.2.0",
     ]);
     expect(body.palette).toEqual([
-      { group: "Services", templates: [{ id: "http-service", version: "0.2.0" }] },
+      { group: "Services", templates: [{ id: "http-service", version: "0.3.0" }] },
       { group: "Frontends", templates: [{ id: "web-app", version: "0.2.0" }] },
       { group: "Data", templates: [{ id: "postgres", version: "0.1.0" }] },
     ]);

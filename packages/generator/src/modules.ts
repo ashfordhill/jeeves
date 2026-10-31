@@ -3,8 +3,10 @@ import { durableEventsTemplate } from "@jeeves/template-durable-events/template"
 import {
   httpServiceTemplate,
   httpServiceV02Template,
+  httpServiceV03Template,
 } from "@jeeves/template-http-service/template";
 import { manifestLookup, type TemplateModule } from "@jeeves/template-kit";
+import { localExecutionTemplate } from "@jeeves/template-local-execution/template";
 import { postgresTemplate } from "@jeeves/template-postgres/template";
 import { resourceWorkspaceTemplate } from "@jeeves/template-resource-workspace/template";
 import { restApiClientTemplate } from "@jeeves/template-rest-api-client/template";
@@ -16,6 +18,8 @@ export function builtinModules(): TemplateModule[] {
   return [
     httpServiceTemplate,
     httpServiceV02Template,
+    httpServiceV03Template,
+    localExecutionTemplate,
     durableEventsTemplate,
     restApiServerTemplate,
     postgresTemplate,

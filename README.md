@@ -139,10 +139,10 @@ Playwright's Chromium needs system libraries. If it fails with a missing `libnsp
 apps/web          Jeeves UI (React, Vite, Mantine)
 apps/server       Fastify API, Drizzle + Postgres, pg-boss jobs for runs
 packages/*        spec, registry, providers (OpenAI + fake model), template-kit (template contract + conformance harness), generator (design to template project, baseline check), orchestrator (seed planning, planner refinement, run states, the task-execution seam)
-templates/        template packages; the five v1 templates are complete (S7–S9): postgres, http-service, rest-api-server, web-app, rest-api-client
+templates/        versioned service/data/frontend templates and REST, durable-events, resource-workspace, local-execution attachments
 docs/             sources, template briefs, handoff log, reference notes
 ```
 
 ## Current architecture review
 
-The [review through P27](docs/architecture-product-review-2026-10-31.md) compares current capability with the original PLAN, Excalidraw and automation-pitch visual improvements, and separates proven local behavior from remaining enterprise needs. The [qrwty acceptance milestone](docs/examples/qrwty.md) is complete for its documented envelope. The historical editor comparison remains available at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it makes no project writes and is excluded from production builds.
+The [review through P28](docs/architecture-product-review-2026-10-31.md) compares current capability with the original PLAN, Excalidraw and automation-pitch visual improvements, and separates proven local behavior from remaining enterprise needs. The [qrwty acceptance milestone](docs/examples/qrwty.md) is complete for its documented envelope. The historical editor comparison remains available at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it makes no project writes and is excluded from production builds.

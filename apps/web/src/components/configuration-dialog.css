@@ -1,12 +1,12 @@
-.configuration-dialog-fixed {
+.configuration-dialog-fixed.mantine-Modal-content {
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 48px);
 }
-.configuration-dialog-fixed .mantine-Modal-header {
+.configuration-dialog-fixed.mantine-Modal-content .mantine-Modal-header {
   flex-shrink: 0;
 }
-.configuration-dialog-fixed .mantine-Modal-body {
+.configuration-dialog-fixed.mantine-Modal-content .mantine-Modal-body {
   overflow-y: auto;
   min-height: 0;
 }

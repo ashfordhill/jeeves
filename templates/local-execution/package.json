@@ -1,0 +1,17 @@
+{
+  "name": "@jeeves/template-local-execution",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./manifest.ts",
+    "./template": "./template.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@jeeves/spec": "workspace:*",
+    "@jeeves/template-kit": "workspace:*"
+  }
+}

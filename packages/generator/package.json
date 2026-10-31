@@ -21,6 +21,7 @@
     "yaml": "2.9.1",
     "zod": "4.5.4",
     "@jeeves/template-durable-events": "workspace:*",
-    "@jeeves/template-resource-workspace": "workspace:*"
+    "@jeeves/template-resource-workspace": "workspace:*",
+    "@jeeves/template-local-execution": "workspace:*"
   }
 }

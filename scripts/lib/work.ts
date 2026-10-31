@@ -25,6 +25,8 @@ export const profiles = {
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
+  "local-execution":
+    "Disposable local limits, process restart, request drain and bounded shutdown proof",
   "resource-starter":
     "Versioned editable starter to a running Inventory app; generated private setup, no model calls",
   "generated-workspace":
@@ -109,6 +111,7 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "local-execution":
     case "resource-starter":
     case "generated-workspace":
     case "resource-workspace":

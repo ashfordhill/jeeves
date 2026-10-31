@@ -6,7 +6,8 @@
   "exports": {
     ".": "./manifest.ts",
     "./template": "./template.ts",
-    "./v02": "./manifest-v02.ts"
+    "./v02": "./manifest-v02.ts",
+    "./v03": "./manifest-v03.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

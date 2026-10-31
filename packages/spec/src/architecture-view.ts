@@ -1,6 +1,7 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
+import { localExecutionFor } from "./local-execution.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { resourceConfigSchema } from "./resources.ts";
 import { workspaceModel } from "./workspace.ts";
@@ -23,6 +24,7 @@ export interface ArchitectureViewNode {
   binding?: ArchitectureBinding;
   acceptance: string[];
   provenance?: string;
+  execution?: ReturnType<typeof localExecutionFor>;
 }
 export interface ArchitectureViewEdge {
   id: string;
@@ -38,6 +40,7 @@ export interface ArchitectureProjection {
   name: string;
   description: string;
   container?: string;
+  execution?: ReturnType<typeof localExecutionFor>;
   nodes: ArchitectureViewNode[];
   edges: ArchitectureViewEdge[];
   resources: {
@@ -159,6 +162,7 @@ export function architectureViews(
         : "No implementation binding",
       support: role === "external" ? "external" : support,
       binding: { element: element.id },
+      execution: localExecutionFor(element),
       acceptance: [],
       ...(support === "recipe" && provision
         ? { provenance: `${provision.id}@${provision.version}` }
@@ -245,6 +249,7 @@ function componentView(
     return node.id;
   };
   for (const attachment of element.attachments) {
+    if (attachment.template.id === "local-execution") continue;
     const template = lookup.get(attachment.template);
     const version = `${attachment.template.id}@${attachment.template.version}`;
     if (template?.kind === "attachment" && attachment.template.id === "rest-api-server") {
@@ -484,6 +489,7 @@ function componentView(
   return {
     level: "components",
     container: element.id,
+    execution: localExecutionFor(element),
     name: element.name,
     description:
       "Cohesive responsibilities within this application. Resource contracts are listed separately; shown dependency edges reference existing container wiring.",

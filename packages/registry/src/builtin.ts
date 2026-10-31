@@ -1,6 +1,8 @@
 import durableEvents from "@jeeves/template-durable-events";
 import httpService from "@jeeves/template-http-service";
 import httpServiceV02 from "@jeeves/template-http-service/v02";
+import httpServiceV03 from "@jeeves/template-http-service/v03";
+import localExecution from "@jeeves/template-local-execution";
 import postgres from "@jeeves/template-postgres";
 import resourceWorkspace from "@jeeves/template-resource-workspace";
 import restApiClient from "@jeeves/template-rest-api-client";
@@ -13,6 +15,8 @@ import { createRegistry, type Registry } from "./registry.ts";
 export const builtinManifests = [
   httpService,
   httpServiceV02,
+  httpServiceV03,
+  localExecution,
   durableEvents,
   restApiServer,
   postgres,

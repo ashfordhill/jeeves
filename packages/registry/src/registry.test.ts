@@ -32,6 +32,8 @@ describe("builtin registry", () => {
       "durable-events@0.1.0",
       "http-service@0.1.0",
       "http-service@0.2.0",
+      "http-service@0.3.0",
+      "local-execution@0.1.0",
       "postgres@0.1.0",
       "resource-workspace@0.1.0",
       "rest-api-client@0.1.0",
@@ -239,6 +241,6 @@ describe("createRegistry", () => {
   });
 
   it("is what builtinRegistry uses", () => {
-    expect(createRegistry(builtinManifests).list()).toHaveLength(9);
+    expect(createRegistry(builtinManifests).list()).toHaveLength(11);
   });
 });
