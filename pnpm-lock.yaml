@@ -507,6 +507,9 @@ importers:
 
   packages/spec:
     dependencies:
+      '@jeeves/http-pool':
+        specifier: workspace:*
+        version: link:../http-pool
       zod:
         specifier: 4.5.4
         version: 4.5.4

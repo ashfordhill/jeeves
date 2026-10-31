@@ -1,9 +1,15 @@
-import type { ArchitectureEvidence, ArchitectureViewNode, ArchitectureViews } from "@jeeves/spec";
+import {
+  type ArchitectureEvidence,
+  type ArchitectureViewNode,
+  type ArchitectureViews,
+  hasLocalDeploymentView,
+} from "@jeeves/spec";
 import { Alert, Button, Loader, NativeSelect } from "@mantine/core";
 import {
   IconArrowLeft,
   IconChevronRight,
   IconEdit,
+  IconServer,
   IconSettings,
   IconSitemap,
 } from "@tabler/icons-react";
@@ -15,6 +21,7 @@ import { useDraw } from "../draw/store.ts";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog, evidenceLabel } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph, supportLabel } from "./ArchitectureGraph.tsx";
+import { LocalDeploymentDialog } from "./LocalDeployment.tsx";
 import "./architecture.css";
 
 export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
@@ -24,6 +31,8 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
   const [views, setViews] = useState<ArchitectureViews>();
   const [evidence, setEvidence] = useState<ArchitectureEvidence>();
   const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [evidenceSubject, setEvidenceSubject] = useState<ArchitectureViewNode>();
+  const [deployment, setDeployment] = useState<{ element?: string }>();
   const [loading, setLoading] = useState(false);
   const request = useRef<{ key: string; pending: ReturnType<typeof api.architecture> } | undefined>(
     undefined,
@@ -90,9 +99,8 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
     setContainer(id);
     changeLevel("components");
   };
-  const editOnBoard = (item: ArchitectureViewNode) => {
-    if (!item.binding) return;
-    useDraw.getState().focus({ nodes: [item.binding.element], edges: [] });
+  const editElementOnBoard = (id: string) => {
+    useDraw.getState().focus({ nodes: [id], edges: [] });
     useDraw.getState().setRailTab("inspector");
     onClose();
   };
@@ -115,6 +123,17 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
           </h1>
         </div>
         <div className="architecture-header-actions">
+          <Button
+            variant="default"
+            size="xs"
+            leftSection={<IconServer size={15} aria-hidden />}
+            disabled={!loaded.design.elements.some(hasLocalDeploymentView)}
+            onClick={() =>
+              setDeployment({ element: node?.binding?.element ?? projection?.container })
+            }
+          >
+            Local deployment
+          </Button>
           <Button
             variant="default"
             size="xs"
@@ -183,7 +202,10 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
           size="compact-xs"
           variant="default"
           disabled={!currentEvidence}
-          onClick={() => setEvidenceOpen(true)}
+          onClick={() => {
+            setEvidenceSubject(undefined);
+            setEvidenceOpen(true);
+          }}
         >
           Inspect evidence
         </Button>
@@ -267,7 +289,11 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
                   </Button>
                 ) : null}
                 {node.binding ? (
-                  <Button fullWidth variant="default" onClick={() => editOnBoard(node)}>
+                  <Button
+                    fullWidth
+                    variant="default"
+                    onClick={() => node.binding && editElementOnBoard(node.binding.element)}
+                  >
                     Edit on board
                   </Button>
                 ) : null}
@@ -374,12 +400,32 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
         <ArchitectureEvidenceDialog
           evidence={currentEvidence}
           views={views}
-          selected={node}
+          selected={evidenceSubject ?? node}
           loading={loading}
           error={error}
           onRefresh={() => setAttempt((value) => value + 1)}
-          onClose={() => setEvidenceOpen(false)}
+          onClose={() => {
+            setEvidenceOpen(false);
+            setEvidenceSubject(undefined);
+          }}
           onBoard={onClose}
+        />
+      ) : null}
+      {deployment ? (
+        <LocalDeploymentDialog
+          design={loaded.design}
+          findings={loaded.findings}
+          initialElement={deployment.element}
+          evidenceAvailable={Boolean(currentEvidence && views)}
+          onClose={() => setDeployment(undefined)}
+          onConfigure={editElementOnBoard}
+          onEvidence={(id) => {
+            setDeployment(undefined);
+            setEvidenceSubject(
+              views?.containers.nodes.find((item) => item.binding?.element === id),
+            );
+            setEvidenceOpen(true);
+          }}
         />
       ) : null}
       {editor === "context" ? (
