@@ -44,6 +44,7 @@ export interface ArchitectureViewNode {
   members?: ArchitectureViewNode[];
   missing?: string[];
   unassigned?: boolean;
+  technical?: boolean;
 }
 export interface ArchitectureViewEdge {
   id: string;
@@ -281,6 +282,7 @@ function componentView(
         "Validates request contracts and dispatches declared operations through the generated API boundary.",
         version,
         "template",
+        { technical: true },
       );
       attachmentNodes.set(attachment.id, boundary);
       if (!parsed.success) continue;
@@ -401,6 +403,7 @@ function componentView(
           "Generated request/response types and client transport for the selected API contract.",
           version,
           "template",
+          { technical: true },
         ),
       );
     } else {
@@ -530,7 +533,8 @@ function componentView(
         plannedCapability(definition.capability)?.description ||
         "A cohesive application responsibility.",
       technology:
-        plannedCapability(definition.capability)?.name ?? `${members.length} bound capabilities`,
+        (definition.technology?.trim() || plannedCapability(definition.capability)?.name) ??
+        `${members.length} bound capabilities`,
       support: definition.capability
         ? "planned"
         : supports.size > 1
@@ -644,4 +648,21 @@ function memberMatches(node: ArchitectureViewNode, member: ArchitectureMember) {
     : member.kind === "resource"
       ? node.binding.resource === member.ref
       : node.binding.extension === member.ref;
+}
+
+/** View preference only: hiding technical adapters never changes bindings or operation groups. */
+export function componentPresentation(view: ArchitectureProjection, showTechnical: boolean) {
+  if (view.level !== "components" || showTechnical) return view;
+  const visible = new Set(view.nodes.filter((node) => !node.technical).map((node) => node.id));
+  const edges = view.edges.filter((edge) => visible.has(edge.from) && visible.has(edge.to));
+  const connected = new Set(edges.flatMap((edge) => [edge.from, edge.to]));
+  return {
+    ...view,
+    nodes: view.nodes.filter(
+      (node) =>
+        visible.has(node.id) &&
+        (node.binding?.element === view.container || connected.has(node.id)),
+    ),
+    edges,
+  };
 }

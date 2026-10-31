@@ -682,3 +682,15 @@
 .architecture-card-kind {
   color: var(--ink-soft);
 }
+
+/* Reserve whole text lines alongside the component's technology and status. */
+.architecture-card[data-kind="component"] {
+  gap: 6px;
+}
+.architecture-card[data-kind="component"] > * {
+  flex-shrink: 0;
+}
+.architecture-card[data-kind="component"] .architecture-card-description {
+  -webkit-line-clamp: 2;
+  font-size: 13px;
+}

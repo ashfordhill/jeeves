@@ -2,6 +2,8 @@ import { builtinRegistry } from "@jeeves/registry";
 import {
   architectureExample,
   architectureExamples,
+  componentCompatible,
+  componentHostRole,
   type PlannedCapability,
   plannedCapabilities,
 } from "@jeeves/spec";
@@ -20,6 +22,7 @@ export function CapabilityCatalog({
   onTemplate,
   onStarter,
   onComponent,
+  componentContainer,
   initialTab = "blocks",
 }: {
   onClose: () => void;
@@ -27,9 +30,16 @@ export function CapabilityCatalog({
   onTemplate: (tool: Tool) => void;
   onStarter: () => void;
   onComponent?: (id: string) => void;
+  componentContainer?: string;
   initialTab?: "blocks" | "examples";
 }) {
   const loaded = useDraw((state) => state.loaded)!;
+  const owner = loaded.design.elements.find((item) => item.id === componentContainer);
+  const capabilities = plannedCapabilities.filter(
+    (item) =>
+      item.scope === "container" ||
+      Boolean(owner && componentCompatible(item, componentHostRole(owner, builtinRegistry()))),
+  );
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("All");
   const [error, setError] = useState<string>();
@@ -98,7 +108,7 @@ export function CapabilityCatalog({
             onChange={(event) => setQuery(event.currentTarget.value)}
           />
           <div className="catalog-filters">
-            {["All", ...new Set(plannedCapabilities.map((item) => item.group)), "Implemented"].map(
+            {["All", ...new Set(capabilities.map((item) => item.group)), "Implemented"].map(
               (item) => (
                 <button
                   type="button"
@@ -141,7 +151,7 @@ export function CapabilityCatalog({
                     </small>
                   </button>
                 ))}
-            {plannedCapabilities
+            {capabilities
               .filter(
                 (item) => (group === "All" || group === item.group) && matchesCapability(item),
               )
@@ -173,7 +183,7 @@ export function CapabilityCatalog({
                 </button>
               ))}
           </div>
-          {!plannedCapabilities.some(
+          {!capabilities.some(
             (item) => (group === "All" || group === item.group) && matchesCapability(item),
           ) &&
           ![...latest.values()].some(

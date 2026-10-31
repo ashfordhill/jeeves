@@ -145,7 +145,7 @@ function endpointTarget(endpoint: Endpoint): FindingTarget {
  * no findings can be generated.
  */
 export function validateDesign(design: DesignDocument, lookup: TemplateLookup): Finding[] {
-  const findings: Finding[] = validateArchitecture(design);
+  const findings: Finding[] = validateArchitecture(design, lookup);
 
   const seen = new Map<string, string>();
   for (const { id, type } of designIds(design)) {

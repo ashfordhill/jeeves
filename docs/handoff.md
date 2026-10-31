@@ -3165,3 +3165,81 @@ Next: **P42**, planned SaaS C3 responsibilities and client components, with the
 recorded host-role filtering and default-off technical-components decision. Example
 refresh remains P43. Continue the current-branch, one-agent, scoped-local-commit policy;
 no runtime expansion or live adoption.
+
+## 2026-10-31 — P42: SaaS responsibilities and client components
+
+Completed [P42](build-plan-c4-saas.md#p42--c3-catalog-saas-responsibilities-and-client-components)
+in the existing `main` checkout, starting clean at `1e8ea1e`. Followed AGENTS,
+PLAN §15, the latest handoffs and the approved C4 decisions. One agent, sequential
+work, no branches, worktrees, delegation or repeated external research.
+
+Added all ten planned service/worker families: Integration adapter, Notifications,
+Billing & plans, Organizations & members, Developer API & webhooks, Reports &
+exports, Search & indexing, Scheduled jobs, Event handlers and Audit log. Added
+four frontend families: Screen group / feature area, Client session & access,
+API facade, Local state & offline sync. Each has bounded design options and the
+existing workload targets. The library/type picker and semantic validation share
+role compatibility for planned and registered hosts; old backend families still
+fit services/workers. Web, mobile and desktop clients share frontend families.
+
+Optional component technology (trimmed, ≤ 120 characters) edits through the same
+Save/Cancel dialog and renders on C3 cards. Component stereotypes, client family
+colors/icons and small card-spacing/truncation changes keep tags/status readable.
+Connection-use choices show existing verb labels; inherited relationship labels,
+protocols and interaction styles remain unchanged. Existing component relationship
+editing remains available. CATALOG.md records all families and reverse C1/C2 reuse.
+
+Implemented approved D9 with the default-off **Show technical components** checkbox
+in Editor actions. It reveals HTTP resource boundaries and typed API adapters.
+Filtering affects the displayed projection only: members, resources, operations,
+explicit uses and the full evidence projection remain intact. Hidden adapters'
+edges and now-unconnected neighbours are omitted; no replacement calls are inferred.
+The toggle changes neither semantic revision nor board layout and resets on reload.
+C1 remains free of technology tags.
+
+Verification and all captures are in [P42 evidence](evidence/p42/README.md):
+
+- Final **`pnpm work run browser-preview`** command lists eleven suites: **51 tests
+  passed**, Playwright **44.2s** / profile **46.0s**, no retries, strict diagnostics,
+  unchanged fingerprints; `2026-10-31T23-47-55-860Z-browser-preview-393997fa`.
+- All fourteen new families are added from role-filtered search by mouse, configured,
+  linked to a container with a verb/protocol label, canceled without mutation, saved
+  as one revision, undone/redone and reloaded. Axe passes for every options surface
+  and desktop/narrow diagram. The QR case compares all **16** displayed operations
+  against the saved API preview with no duplicates, exercises both technical node
+  types and checks filtering on the implemented frontend. Existing C1/C2/C3, declared
+  relationships, examples, pins, retained conflicts, placement, resource configuration,
+  API reference and scripted chat journeys pass.
+- **`pnpm work run check` → `pnpm check` passed**, **44.2s**, unchanged fingerprints;
+  `2026-10-31T23-48-52-649Z-check-4e694d2d`. All workspace/script typechecks passed;
+  **726 tests / 106 files**, Vitest **36.99s**; Biome **713 files**, **596 warnings /
+  75 infos / no errors**. New tests cover every option's type/choices/bounds, role
+  filtering/atomic rejection, planning-only generation blocking, technology bounds
+  and legacy serialization. Generator tests retain operation membership and explicit
+  edges across visibility modes and compare all generated artifacts/wiring/ownership
+  after technology edits except the existing lossless input snapshot. Golden fixtures
+  are unchanged. Focused unit tests (55) and typechecking also passed.
+- Reviewed all **44 final captures** in contact sheets and opened representative API,
+  client, mobile, QR and options captures at full size: **1440 × 900 light**, **390 ×
+  844 dark**. Options retain scrollable fields and fixed actions. QR narrow views remain
+  fitted overviews with mouse zoom/selection for details. `git diff --check` and local
+  documentation targets checked before commit.
+- Interim browser logs retain the corrected open-dropdown footer obstruction, Mantine
+  checkbox-menu role and description truncation. A full interim run passed 50/51;
+  the existing context test reloaded before Redo finished, so it now waits for the
+  saved architecture before reload. The first blocked browser run was interrupted
+  after finding its shared cause. No timeout/retry increase or diagnostic suppression.
+
+No runtime/template/recipe/generator implementation/output, dependency/lockfile,
+golden or live QRWTY edits. New families remain planned and block generation.
+No material scope deviation; reused existing dialogs and registered role metadata.
+Only planning/evidence/handoff documentation and screenshot copies changed after
+final gates. Removed **32** exact-name/session-time E2E projects (including interrupted
+new cases) and **70** session-created temporary settings/output directories. No browser
+session projects remain. Retained pre-existing data/logs/shared Postgres; existing
+Jeeves health on 4310 remains OK.
+
+Next: **P43**, QRWTY SaaS target architecture example and existing example refresh.
+Current examples are unchanged. Page-flow routing, generated component behavior and
+chat-library awareness remain separate. Continue the current-branch, one-agent,
+scoped-local-commit policy; no runtime expansion or live adoption is implied.

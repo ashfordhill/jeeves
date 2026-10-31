@@ -1,7 +1,11 @@
+import { builtinRegistry } from "@jeeves/registry";
 import {
   type ArchitectureComponent,
   type ArchitectureMember,
   architectureComponentSchema,
+  componentCompatible,
+  componentHostRole,
+  connectionPresentation,
   type DesignDocument,
   plannedCapabilities,
   resourceConfigSchema,
@@ -63,6 +67,10 @@ export function ComponentEditor({
   onClose: () => void;
   onSaved: (id: string) => void;
 }) {
+  const owner = design.elements.find((item) => item.id === element)!;
+  const compatible = plannedCapabilities.filter((item) =>
+    componentCompatible(item, componentHostRole(owner, builtinRegistry())),
+  );
   const loaded = useDraw((state) => state.loaded)!;
   const [draft, setDraft] = useState<ArchitectureComponent>(() =>
     initial
@@ -74,7 +82,7 @@ export function ComponentEditor({
             plannedCapabilities.find((item) => item.id === capability)?.name ??
             "New responsibility",
           responsibility: "",
-          capability: capability ?? "domain-module",
+          capability: capability ?? compatible[0]?.id,
           config: {},
           members: [],
           usesResources: [],
@@ -103,7 +111,7 @@ export function ComponentEditor({
     ],
   };
   const problems = parsed.success
-    ? validateArchitecture({ ...design, architecture }).filter(
+    ? validateArchitecture({ ...design, architecture }, builtinRegistry()).filter(
         (finding) => finding.severity === "error" && finding.code !== "NEEDS_TEMPLATE",
       )
     : [];
@@ -158,13 +166,20 @@ export function ComponentEditor({
           value={draft.responsibility}
           onChange={(event) => setDraft({ ...draft, responsibility: event.currentTarget.value })}
         />
+        <TextInput
+          label="Technology"
+          description="Optional design tag, such as REST controller or Repository."
+          maxLength={120}
+          value={draft.technology ?? ""}
+          onChange={(event) =>
+            setDraft({ ...draft, technology: event.currentTarget.value || undefined })
+          }
+        />
         <NativeSelect
           label="Component type"
           data={[
             { value: "", label: "Group existing capabilities" },
-            ...plannedCapabilities
-              .filter((item) => item.scope === "component")
-              .map((item) => ({ value: item.id, label: `${item.name} · planned` })),
+            ...compatible.map((item) => ({ value: item.id, label: `${item.name} · planned` })),
           ]}
           value={draft.capability ?? ""}
           onChange={(event) =>
@@ -210,7 +225,7 @@ export function ComponentEditor({
             )
             .map((connection) => ({
               value: connection.id,
-              label: `${connection.planned?.label ?? connection.kind} · ${design.elements.find((item) => item.id === (connection.from.element === element ? connection.to.element : connection.from.element))?.name}`,
+              label: `${connectionPresentation(connection, design).description} · ${design.elements.find((item) => item.id === (connection.from.element === element ? connection.to.element : connection.from.element))?.name}`,
             }))}
           value={draft.usesConnections}
           onChange={(usesConnections) => setDraft({ ...draft, usesConnections })}

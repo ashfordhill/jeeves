@@ -39,6 +39,7 @@ test("empty context is explicit and mouse authoring saves, cancels, undoes and r
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect(page.getByRole("button", { name: "Describe this system" })).toBeVisible();
     await page.getByRole("button", { name: "Redo", exact: true }).click();
+    await expect.poll(async () => (await read()).architecture).toEqual(saved.architecture);
     await page.reload();
     await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     await expect(
@@ -118,7 +119,18 @@ test("drawer and concise grouped details preserve pins, contracts, selection and
     ).toHaveAttribute("data-family", "data");
     await expect(
       page.getByRole("button", { name: "Inspect HTTP resource boundary", exact: true }),
+    ).toHaveCount(0);
+    await page.getByRole("button", { name: "Editor actions", exact: true }).click();
+    await page
+      .getByRole("menuitemcheckbox", { name: "Show technical components", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Inspect HTTP resource boundary", exact: true }),
     ).toHaveAttribute("data-family", "endpoint");
+    await page.getByRole("button", { name: "Editor actions", exact: true }).click();
+    await page
+      .getByRole("menuitemcheckbox", { name: "Show technical components", exact: true })
+      .click();
     await page.screenshot({ path: "test-results/p37-analytics.png", animations: "disabled" });
     await page.getByRole("button", { name: "Open chat", exact: true }).click();
     await expect(chat.getByRole("textbox", { name: "Message", exact: true })).toHaveValue(

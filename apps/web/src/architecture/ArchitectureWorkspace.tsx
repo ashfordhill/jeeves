@@ -2,6 +2,7 @@ import {
   type ArchitectureComponent,
   type ArchitectureEvidence,
   type ArchitectureViews,
+  componentPresentation,
   hasLocalDeploymentView,
 } from "@jeeves/spec";
 import {
@@ -24,7 +25,7 @@ import {
   IconMessageCircle,
   IconX,
 } from "@tabler/icons-react";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type ApiSelection, ApiWorkspace } from "../api-reference/ApiWorkspace.tsx";
 import { ApiPreviewProvider } from "../api-reference/preview.tsx";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
@@ -103,6 +104,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
+  const [showTechnical, setShowTechnical] = useState(false);
   const [findingsOpen, setFindingsOpen] = useState(false);
   const [inspectorViews, setInspectorViews] = useState<Record<string, boolean>>({});
   useEffect(() => {
@@ -158,12 +160,16 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       active = false;
     };
   }, [project.id, design.revision, attempt, generationState]);
-  const projection =
+  const sourceProjection =
     level === "context"
       ? views?.context
       : level === "containers"
         ? views?.containers
         : (views?.components.find((view) => view.container === container) ?? views?.components[0]);
+  const projection = useMemo(
+    () => (sourceProjection ? componentPresentation(sourceProjection, showTechnical) : undefined),
+    [sourceProjection, showTechnical],
+  );
   const scope = level === "components" ? `components:${projection?.container}` : level;
   const selected =
     level === "containers"
@@ -282,6 +288,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                   <Menu.Item disabled={!actualContainer} onClick={() => setComponentEditor({})}>
                     Add component
                   </Menu.Item>
+                  <Menu.CheckboxItem
+                    checked={showTechnical}
+                    onChange={setShowTechnical}
+                    closeMenuOnClick
+                  >
+                    Show technical components
+                  </Menu.CheckboxItem>
                   <Menu.Item
                     disabled={declaredComponents.length < 2}
                     onClick={() => setRelationshipEditor({})}
@@ -720,6 +733,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       {catalog ? (
         <CapabilityCatalog
           initialTab={catalog}
+          componentContainer={level === "components" ? actualContainer : undefined}
           onClose={() => setCatalog(undefined)}
           onStarter={() => {
             setCatalog(undefined);

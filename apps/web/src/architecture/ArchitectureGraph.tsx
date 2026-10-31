@@ -54,7 +54,7 @@ export const supportLabel: Record<ArchitectureSupport, string> = {
   mixed: "Mixed ownership",
 };
 type CardNode = Node<
-  { item: ArchitectureViewNode; onSelect: (id: string) => void },
+  { item: ArchitectureViewNode; showTechnology: boolean; onSelect: (id: string) => void },
   "architecture"
 >;
 function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
@@ -82,14 +82,12 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
       >
         <span className="architecture-card-kind">
           <TemplateIcon name={style.icon} size={21} />
-          {style.label}
+          {item.kind === "component" ? "Component" : style.label}
         </span>
         <strong style={{ fontSize: overview ? 14 / Math.max(zoom, 0.25) : 18 }}>{item.name}</strong>
         <span className="architecture-card-description">{item.description}</span>
-        {item.members?.length ? (
-          <span className="architecture-card-technology">
-            {item.members.length} bound capabilities
-          </span>
+        {data.showTechnology && item.technology ? (
+          <span className="architecture-card-technology">{item.technology}</span>
         ) : null}
         {item.support === "planned" || item.missing?.length || item.unassigned ? (
           <span
@@ -313,7 +311,7 @@ export function ArchitectureGraph({
         position: { x: point.x, y: point.y },
         width: CARD.width,
         height: CARD.height,
-        data: { item, onSelect },
+        data: { item, onSelect, showTechnology: projection.level !== "context" },
         selected: item.id === selected,
         zIndex: 1,
         style: CARD,

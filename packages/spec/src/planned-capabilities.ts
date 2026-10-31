@@ -1,5 +1,7 @@
 /** Design-time catalog. These contracts describe intent; they provide no runtime. */
 import { z } from "zod";
+import type { Element } from "./design.ts";
+import type { TemplateLookup } from "./manifest.ts";
 import {
   relationshipInteractionSchema,
   relationshipLabelSchema,
@@ -596,6 +598,244 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     ],
     "component",
   ),
+  capability(
+    "integration-adapter",
+    "Integration adapter",
+    "Components",
+    "service",
+    "plug",
+    "Maps application operations to an external provider and verifies incoming webhooks.",
+    [
+      text("target", "Target external service"),
+      number("retries", "Retry limit target", 3),
+      number("timeoutMs", "Timeout target (ms)", 5000),
+      text("mapping", "Request / response mapping"),
+      toggle("verifyWebhooks", "Verify webhook signatures"),
+    ],
+    "component",
+  ),
+  capability(
+    "notifications-module",
+    "Notifications",
+    "Components",
+    "service",
+    "mail",
+    "Composes messages, selects channels and respects recipient preferences.",
+    [
+      choice("channels", "Channels", ["Email", "Email + push", "Email + SMS + push"]),
+      text("templates", "Message templates"),
+      toggle("preferences", "Recipient preferences"),
+    ],
+    "component",
+  ),
+  capability(
+    "billing-module",
+    "Billing & plans",
+    "Components",
+    "service",
+    "credit-card",
+    "Manages plans, trials and entitlements with explicit provider synchronization.",
+    [
+      text("plans", "Plans", "Free, Pro"),
+      number("trialDays", "Trial duration (days)", 14),
+      text("entitlements", "Entitlements"),
+      choice("providerSync", "Provider synchronization", [
+        "Signed webhooks + reconciliation",
+        "Scheduled reconciliation",
+        "Manual review",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "organizations-module",
+    "Organizations & members",
+    "Components",
+    "service",
+    "user",
+    "Manages teams, membership invitations and organization roles.",
+    [
+      text("teams", "Team structure"),
+      choice("invitations", "Invitations", ["Email invitation", "Invite link", "Admin managed"]),
+      text("roles", "Member roles", "Owner, Admin, Member"),
+    ],
+    "component",
+  ),
+  capability(
+    "developer-api-module",
+    "Developer API & webhooks",
+    "Components",
+    "service",
+    "api",
+    "Exposes developer access and versioned outbound webhook contracts.",
+    [
+      toggle("apiKeys", "API key access"),
+      number("rateLimit", "Requests per minute / key target", 120),
+      toggle("outboundWebhooks", "Outbound webhooks"),
+      choice("versioning", "Versioning", [
+        "URL version",
+        "Header version",
+        "Explicit compatibility policy",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "reports-module",
+    "Reports & exports",
+    "Components",
+    "service",
+    "archive",
+    "Builds reports and exports with explicit generation and retention policies.",
+    [
+      text("formats", "Export formats", "CSV, PDF"),
+      toggle("asyncGeneration", "Asynchronous generation"),
+      number("retention", "Export retention (days)", 7),
+    ],
+    "component",
+  ),
+  capability(
+    "search-module",
+    "Search & indexing",
+    "Components",
+    "service",
+    "search",
+    "Builds search documents from authoritative records and serves discovery queries.",
+    [
+      text("documents", "Indexed documents"),
+      choice("updates", "Index updates", ["Domain events", "Scheduled rebuild", "On write"]),
+      choice("freshness", "Freshness target", ["Seconds", "Minutes", "Batch"]),
+      toggle("accessFilter", "Filter results by access"),
+    ],
+    "component",
+  ),
+  capability(
+    "scheduled-jobs-module",
+    "Scheduled jobs",
+    "Components",
+    "worker",
+    "cpu",
+    "Runs scheduled application work with explicit overlap and failure policies.",
+    [
+      text("schedule", "Schedule", "Daily"),
+      text("timezone", "Time zone", "UTC"),
+      choice("overlap", "Overlapping runs", [
+        "Skip while running",
+        "Queue next run",
+        "Allow overlap",
+      ]),
+      number("retries", "Retry limit target", 3),
+    ],
+    "component",
+  ),
+  capability(
+    "event-handlers-module",
+    "Event handlers",
+    "Components",
+    "worker",
+    "activity",
+    "Handles domain events with explicit idempotency, retry and failure intent.",
+    [
+      text("events", "Event contracts"),
+      text("idempotency", "Idempotency key", "eventId"),
+      number("retries", "Retry limit target", 5),
+      toggle("deadLetter", "Dead-letter handling"),
+    ],
+    "component",
+  ),
+  capability(
+    "audit-log-module",
+    "Audit log",
+    "Components",
+    "service",
+    "list",
+    "Records attributable application actions with explicit retention and access.",
+    [
+      text("actions", "Audited actions"),
+      text("actor", "Actor attribution", "Principal, organization, request ID"),
+      number("retention", "Audit retention (days)", 365),
+      choice("access", "Audit access", ["Admins only", "Organization auditors", "Internal only"]),
+    ],
+    "component",
+  ),
+  capability(
+    "screen-group",
+    "Screen group / feature area",
+    "Client components",
+    "frontend",
+    "browser",
+    "Groups client pages around a cohesive user feature and its data needs.",
+    [
+      text("pages", "Pages"),
+      choice("access", "Page access", ["Public", "Signed-in", "Admin"]),
+      text("dataUsed", "Data used"),
+    ],
+    "component",
+  ),
+  capability(
+    "client-session",
+    "Client session & access",
+    "Client components",
+    "frontend",
+    "lock",
+    "Maintains client session state and presents access-aware navigation.",
+    [
+      choice("identity", "Session source", [
+        "Application session",
+        "OIDC provider",
+        "Platform identity",
+      ]),
+      text("roles", "Client access roles"),
+      choice("expiry", "On session expiry", [
+        "Prompt sign-in",
+        "Return to public area",
+        "Read-only mode",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "api-facade",
+    "API facade",
+    "Client components",
+    "frontend",
+    "api",
+    "Presents application API contracts to client features through a cohesive facade.",
+    [
+      text("target", "Target application API"),
+      choice("transport", "Transport", ["HTTPS/JSON", "GraphQL over HTTPS", "RPC over HTTPS"]),
+      text("mapping", "Client data mapping"),
+      choice("errors", "Error handling", [
+        "Typed errors",
+        "Feature fallback",
+        "Retry transient reads",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "local-state",
+    "Local state & offline sync",
+    "Client components",
+    "frontend",
+    "device-mobile",
+    "Manages local client state and reconciles changes after reconnecting.",
+    [
+      choice("storage", "Local storage", ["Platform database", "Browser database", "Memory only"]),
+      choice("sync", "Synchronization", [
+        "Queue changes for sync",
+        "Read cached content",
+        "Online first",
+      ]),
+      choice("conflicts", "Conflict handling", [
+        "Ask the user",
+        "Server wins",
+        "Explicit merge rules",
+      ]),
+      text("data", "Locally retained data"),
+    ],
+    "component",
+  ),
 ];
 
 export function plannedCapability(id: string | undefined) {
@@ -629,3 +869,20 @@ export const plannedConnectionSchema = z.strictObject({
     .enum(["Service identity", "User identity", "Public", "Private network"])
     .default("Service identity"),
 });
+
+/** Resolve a host role from design intent or its actual registered element template. */
+export function componentHostRole(element: Element, lookup?: TemplateLookup) {
+  if (element.planned) return plannedCapability(element.planned)?.role;
+  const manifest = element.template && lookup?.get(element.template);
+  return manifest?.kind === "element" ? manifest.elementKind : undefined;
+}
+
+/** Backend responsibilities can share service/worker hosts; client responsibilities stay client-side. */
+export function componentCompatible(capability: PlannedCapability, role: string | undefined) {
+  return (
+    capability.scope === "component" &&
+    (capability.role === "frontend"
+      ? role === "frontend"
+      : ["service", "worker"].includes(role ?? ""))
+  );
+}

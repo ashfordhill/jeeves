@@ -28,7 +28,11 @@ offers the existing resource starter and product recipe. The library is not a
 claim that every possible combination is compatible. Unsupported attachments and
 connections retain their existing validation.
 
-C1 offerings below are compositions, not separate runtime templates. A component
+C1 offerings below are compositions, not separate runtime templates.
+Optional SaaS extensions reuse [organizations](#c3-organizations), [billing](#c3-billing),
+[developer access](#c3-developer), [notifications](#c3-notifications),
+[reports](#c3-reports), [audit](#c3-audit) and [client features](#c3-screens).
+These are available planning choices; current examples are unchanged. A component
 such as accounts, moderation or analytics can be reused under several C1 offerings
 through an appropriate C2 host. Reuse does not require those applications to share
 one deployed service or database.
@@ -122,9 +126,9 @@ attachments are not automatically separate deployable containers.
 
 | Offering | Availability and responsibility | C3 choices / reuse |
 | --- | --- | --- |
-| Web application | Implemented `web-app`; also a planned web block with customer/staff/both audience and single-page/server-rendered/static marketing kind, alongside rendering/access choices. | [Client adapters and screens](#c3-client); all C1 offerings. |
-| Mobile application | Planned client with platform and offline intent. | Shared API contracts and [accounts](#c3-accounts); [social](#social-and-content-platform) or any system needing a mobile client. |
-| Desktop application | Planned desktop client with platform/update intent. | Shared API contracts; can front a [resource workspace](#resource-workspace). |
+| Web application | Implemented `web-app`; also a planned web block with customer/staff/both audience and single-page/server-rendered/static marketing kind, alongside rendering/access choices. | [Implemented adapter/screens](#c3-client), planned [screen groups](#c3-screens), [sessions](#c3-session) and [API facade](#c3-facade); all C1 offerings. |
+| Mobile application | Planned client with platform and offline intent. | [Client features](#c3-screens), [sessions](#c3-session), [API facade](#c3-facade), [offline sync](#c3-offline) and shared [accounts](#c3-accounts); [social](#social-and-content-platform) or any system needing a mobile client. |
+| Desktop application | Planned desktop client with platform/update intent. | [Client features](#c3-screens), [sessions](#c3-session), [API facade](#c3-facade) and [offline sync](#c3-offline); can front a [resource workspace](#resource-workspace). |
 
 <a id="c2-application"></a>
 ### Application API
@@ -134,7 +138,10 @@ supplies a REST boundary. The planned application API block also expresses broad
 interface, tenancy and availability choices. A planned GraphQL or RPC choice does
 not turn the REST template into that implementation.
 
-Hosts [accounts](#c3-accounts), [resources](#c3-resources),
+Hosts [SaaS responsibilities](#c3-integration) such as [billing](#c3-billing),
+[organizations](#c3-organizations), [developer access](#c3-developer),
+[notifications](#c3-notifications), [reports](#c3-reports), [audit](#c3-audit),
+[accounts](#c3-accounts), [resources](#c3-resources),
 [domain operations](#c3-domain), [feeds](#c3-feeds),
 [moderation](#c3-moderation), [analytics](#c3-analytics) and
 [media processing](#c3-media). Used by every current C1 offering. Several domain
@@ -147,7 +154,10 @@ component.
 The **background worker** is planned: trigger, concurrency and delivery intent for
 work outside the request path. It can host [domain jobs](#c3-domain),
 [media processing](#c3-media), [moderation](#c3-moderation) and
-[analytics](#c3-analytics). Used by the links, community and social examples.
+[analytics](#c3-analytics), plus planned [event handlers](#c3-events),
+[scheduled jobs](#c3-schedules), [indexing](#c3-indexing), [reports](#c3-reports)
+and [notifications](#c3-notifications). Used by the links, community and social examples;
+new families are reusable choices and are not automatically added to those examples.
 
 <a id="c2-serverless"></a>
 The **serverless function** is a planned worker boundary for bounded HTTP-, queue-,
@@ -210,7 +220,8 @@ infrastructure template.
 
 **Planned search index.** Indexing and freshness intent for discovery. Community
 and social systems can reuse this boundary with different documents and ranking.
-[Domain components](#c3-domain) own the authoritative records and access rules.
+[Search components](#c3-indexing) build/query the index;
+[domain components](#c3-domain) own the authoritative records and access rules.
 
 <a id="c2-messaging"></a>
 ### Queues and streams
@@ -247,10 +258,10 @@ traffic. Private responses and application authorization need explicit handling.
 
 | Offering | Availability and responsibility | Related C3 / C1 |
 | --- | --- | --- |
-| <a id="c2-third-party"></a>Third-party service | Planned generic external boundary: payment, e-mail, SMS, push, maps, analytics vendor, CRM/support, AI API or other provider. Records authentication method, inbound webhooks, data shared and behavior when unavailable. | [Domain components](#c3-domain), notification delivery, [media](#c3-media) and [analytics](#c3-analytics) across C1 offerings; distinct from the specialized billing and identity blocks below. |
+| <a id="c2-third-party"></a>Third-party service | Planned generic external boundary: payment, e-mail, SMS, push, maps, analytics vendor, CRM/support, AI API or other provider. Records authentication method, inbound webhooks, data shared and behavior when unavailable. | [Integration adapters](#c3-integration), [notifications](#c3-notifications), [developer webhooks](#c3-developer), [media](#c3-media) and [analytics](#c3-analytics) across C1 offerings; distinct from the specialized billing and identity blocks below. |
 | Identity provider | Planned sign-in, federation, MFA and tenancy choices. | [Accounts and access](#c3-accounts) in any system; distinct from current supplied local account behavior. |
-| Notification service | Planned delivery-channel and delivery-policy intent. | Domain events in [community](#community-and-discussion), social or resource applications. |
-| Billing provider | Planned subscription/payment-provider integration boundary. | [Domain components](#c3-domain) for any paid SaaS; no new payment implementation. |
+| Notification service | Planned delivery-channel and delivery-policy intent. | [Notification components](#c3-notifications) and domain events in [community](#community-and-discussion), social or resource applications. |
+| Billing provider | Planned subscription/payment-provider integration boundary. | [Billing & plans](#c3-billing) for any paid SaaS; no new payment implementation. |
 | Observability | Planned logs, metrics, traces and retention intent. | All service families, especially [workload verification](#workload-intent); not an existing monitoring deployment. |
 
 ## C3 shared components
@@ -259,6 +270,12 @@ C3 components are cohesive responsibilities within a C2 container. They can grou
 existing generated or recipe-owned operations, or describe planned capabilities.
 Their names and grouping do not duplicate handlers or create runtime calls.
 Declared uses/arrows describe intent; actual generated wiring keeps its own identity.
+The library and component type picker show backend families for service/worker hosts
+and client families for frontend hosts. Optional technology tags describe design
+intent. **Show technical components** in Editor actions reveals the derived HTTP
+resource boundary and typed API adapter; it starts off and preserves operation groups.
+See [P42's specification](docs/build-plan-c4-saas.md#p42--c3-catalog-saas-responsibilities-and-client-components)
+for the planning scope; page-flow routing remains separate.
 
 | Component family | Availability and responsibility | Hosts and C1 reuse |
 | --- | --- | --- |
@@ -270,6 +287,20 @@ Declared uses/arrows describe intent; actual generated wiring keeps its own iden
 | <a id="c3-moderation"></a>Moderation module | Planned review, reporting and enforcement responsibility. | [API](#c2-application) / [worker](#c2-worker); [community](#community-and-discussion) and [social](#social-and-content-platform). |
 | <a id="c3-analytics"></a>Analytics module | Planned aggregation, freshness and retention intent. The QR recipe supplies its own bounded analytics operations. | [API](#c2-application) / [worker](#c2-worker), [data](#c2-data) / [analytics store](#c2-analytics-store) / [streams](#c2-messaging); [links](#links-and-qr-platform), [QR Studio](#qr-studio), reusable for other activity data. |
 | <a id="c3-media"></a>Media module | Planned transform, delivery and storage intent. Specific rendering, QR encoding and file correctness remain implementation or recipe behavior. | [API](#c2-application) / [worker](#c2-worker), [object storage](#c2-storage); links, QR Studio, community and social offerings. |
+| <a id="c3-integration"></a>Integration adapter | Planned provider target, retries, timeout, request/response mapping and webhook verification. | [API](#c2-application) / [worker](#c2-worker) → [third-party provider](#c2-third-party); reusable for paid SaaS, notifications and external data in all C1 offerings. |
+| <a id="c3-notifications"></a>Notifications | Planned message channels, templates and recipient preferences. | [API](#c2-application) / [worker](#c2-worker), [delivery services](#c2-integrations); community, social and resource applications. |
+| <a id="c3-billing"></a>Billing & plans | Planned plans, trial duration, entitlements and provider synchronization. | [API](#c2-application) / [worker](#c2-worker), [billing provider](#c2-integrations); any paid links, community or resource product. |
+| <a id="c3-organizations"></a>Organizations & members | Planned team structure, invitations and membership roles. | [API](#c2-application) / [worker](#c2-worker); team-based resource, links, community and social offerings. |
+| <a id="c3-developer"></a>Developer API & webhooks | Planned API key access, rate targets, outbound webhooks and versioning. | [API](#c2-application) / [worker](#c2-worker), [external systems](#c2-third-party); developer access to links, community or resource products. |
+| <a id="c3-reports"></a>Reports & exports | Planned output formats, asynchronous generation and export retention. | [API](#c2-application) / [worker](#c2-worker), [analytics data](#c2-analytics-store) / [object storage](#c2-storage); reports across C1 offerings. |
+| <a id="c3-indexing"></a>Search & indexing | Planned indexed documents, update policy, freshness and access filtering. | [API](#c2-application) / [worker](#c2-worker) → [search index](#c2-search); community/social discovery or resource lookup. |
+| <a id="c3-schedules"></a>Scheduled jobs | Planned schedule, time zone, overlapping-run and retry intent. | [API](#c2-application) / [worker or function](#c2-worker); recurring exports, reconciliation and maintenance in any C1 offering. |
+| <a id="c3-events"></a>Event handlers | Planned event contracts, idempotency, retries and dead-letter intent; distinct from the implemented durable-events mechanism. | [API](#c2-application) / [worker](#c2-worker), [queues / streams](#c2-messaging); activity processing across C1 offerings. |
+| <a id="c3-audit"></a>Audit log | Planned audited actions, actor attribution, retention and audit access. | [API](#c2-application) / [worker](#c2-worker), [data](#c2-data); administrative actions across C1 offerings. |
+| <a id="c3-screens"></a>Screen group / feature area | Planned pages, public/signed-in/admin access and data used. | [Web/mobile/desktop clients](#c2-web); reusable client features in all C1 offerings. |
+| <a id="c3-session"></a>Client session & access | Planned session source, access roles and session-expiry experience. | [Clients](#c2-web), [accounts](#c3-accounts) / [identity provider](#c2-integrations); signed-in C1 experiences. |
+| <a id="c3-facade"></a>API facade | Planned client counterpart of the implemented typed adapter, with API target, transport, data mapping and error policy. | [Clients](#c2-web) → [application API](#c2-application); shared API use across C1 offerings. |
+| <a id="c3-offline"></a>Local state & offline sync | Planned local storage, synchronization, conflict handling and retained data. | [Clients](#c2-web), especially mobile/desktop; cached resource workspaces or draft content in links, community and social products. |
 
 The implemented [durable-events attachment](#c2-worker) also exposes event contracts
 inside its service. Execution/pooling policies remain attached to their C2 host;

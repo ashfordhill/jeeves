@@ -47,7 +47,7 @@ export function capabilityFamily(id: string): TypeFamily {
   if (!capability) return "domain";
   if (capability.role === "external") return "external";
   if (capability.group === "Messaging") return "messaging";
-  if (capability.scope === "component") return "domain";
+  if (capability.scope === "component") return capability.role === "frontend" ? "client" : "domain";
   return (
     {
       frontend: "client",
@@ -67,7 +67,12 @@ export function nodeFamily(node: ArchitectureViewNode, design: DesignDocument): 
   if (node.kind === "person") return "person";
   if (node.kind === "system") return "system";
   if (node.kind === "external-system") return "external";
-  if (node.binding?.component) return "domain";
+  if (node.binding?.component) {
+    const definition = design.architecture?.components?.find(
+      (item) => item.id === node.binding?.component,
+    );
+    return definition?.capability ? capabilityFamily(definition.capability) : "domain";
+  }
   if (node.binding?.extension || node.binding?.resource || node.binding?.accounts)
     return "endpoint";
   const element = design.elements.find((item) => item.id === node.binding?.element);

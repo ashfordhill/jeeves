@@ -3,7 +3,13 @@ import { z } from "zod";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
-import { plannedCapability, plannedConfigSchema } from "./planned-capabilities.ts";
+import type { TemplateLookup } from "./manifest.ts";
+import {
+  componentCompatible,
+  componentHostRole,
+  plannedCapability,
+  plannedConfigSchema,
+} from "./planned-capabilities.ts";
 import {
   relationshipInteractionSchema,
   relationshipProtocolSchema,
@@ -35,6 +41,7 @@ export const architectureComponentSchema = z.strictObject({
   element: idSchema,
   name: z.string().trim().min(1).max(120),
   responsibility: z.string().trim().max(240).default(""),
+  technology: z.string().trim().max(120).optional(),
   capability: idSchema.optional(),
   config: z.record(z.string(), z.unknown()).default({}),
   members: z.array(architectureMemberSchema).max(100).default([]),
@@ -69,7 +76,7 @@ export type Architecture = z.output<typeof architectureSchema>;
 export type ArchitectureInput = z.input<typeof architectureSchema>;
 
 /** Shares structural findings with the design; context-only objects do not need templates. */
-export function validateArchitecture(design: DesignDocument): Finding[] {
+export function validateArchitecture(design: DesignDocument, lookup?: TemplateLookup): Finding[] {
   const model = design.architecture;
   if (!model) return [];
   const findings: Finding[] = [];
@@ -163,6 +170,18 @@ export function validateArchitecture(design: DesignDocument): Finding[] {
       const capability = plannedCapability(component.capability);
       if (!capability || capability.scope !== "component")
         findings.push(finding("CONFIG_INVALID", "Select a component capability.", target));
+      else if (
+        owner &&
+        (owner.planned || lookup) &&
+        !componentCompatible(capability, componentHostRole(owner, lookup))
+      )
+        findings.push(
+          finding(
+            "CONFIG_INVALID",
+            "Select a component compatible with this application's role.",
+            target,
+          ),
+        );
       else if (!plannedConfigSchema(capability.id).safeParse(component.config).success)
         findings.push(finding("CONFIG_INVALID", "Invalid planned component options.", target));
     }

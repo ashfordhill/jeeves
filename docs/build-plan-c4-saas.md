@@ -1,8 +1,8 @@
 # C4 authoring for SaaS: notation fidelity and catalog coverage (P39–P45)
 
-**Status: approved with recorded decisions, 2026-10-31. P39–P41 are complete; P42 is next.**
-[P39 evidence](evidence/p39/README.md), [P40 evidence](evidence/p40/README.md) and
-[P41 evidence](evidence/p41/README.md) record the implementations, checks and screenshots.
+**Status: approved with recorded decisions, 2026-10-31. P39–P42 are complete; P43 is next.**
+[P39 evidence](evidence/p39/README.md), [P40 evidence](evidence/p40/README.md),
+[P41 evidence](evidence/p41/README.md) and [P42 evidence](evidence/p42/README.md) record the implementations, checks and screenshots.
 The plan was written after P38 (`f8aeea0`) from a read-only inspection of the editor,
 planned-capability catalog, architecture examples, P36/P37 evidence and the Visual Paradigm
 C4 guides below. The user's accepted decisions at the end are binding. Each package is
@@ -162,6 +162,8 @@ schema; `pnpm check` passes.
 **Not in this package.** C3 families (P42), examples (P43), runtimes.
 
 ### P42 — C3 catalog: SaaS responsibilities and client components
+
+**Completed 2026-10-31.** [Evidence and limitations](evidence/p42/README.md); implementation and verification are recorded in the latest [handoff](handoff.md).
 
 **Goal.** A component view of a SaaS API, worker or web client can be composed from named
 responsibilities, following the Visual Paradigm decomposition (feature responsibilities plus

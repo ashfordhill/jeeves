@@ -1,6 +1,7 @@
 import {
   applyOperations,
   architectureViews,
+  componentPresentation,
   type DesignDocument,
   validateArchitecture,
 } from "@jeeves/spec";
@@ -255,4 +256,52 @@ it("projects connection and resource labels with protocols into C3 and keeps C1 
   expect(
     scope.edges.find((edge) => edge.id === "use:analytics:qrwty-uses-db")?.description,
   ).toMatch(/^Reads and writes /);
+});
+
+it("hides technical adapters without losing or duplicating QR operations or declared edges", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const snapshot = structuredClone(design);
+  const views = architectureViews(design, templates.lookup, "QR");
+  const api = views.components.find((view) => view.container === "qrwty")!;
+  const visible = componentPresentation(api, false);
+  expect(visible.nodes.some((node) => node.name === "HTTP resource boundary")).toBe(false);
+  expect(componentPresentation(api, true)).toBe(api);
+  const bindings = (nodes: typeof api.nodes): string[] =>
+    nodes.flatMap((node) =>
+      node.members
+        ? bindings(node.members)
+        : node.binding?.accounts || node.binding?.resource || node.binding?.extension
+          ? [node.id]
+          : [],
+    );
+  expect(bindings(visible.nodes).sort()).toEqual(bindings(api.nodes).sort());
+  expect(new Set(bindings(visible.nodes)).size).toBe(bindings(visible.nodes).length);
+  expect(bindings(visible.nodes)).toHaveLength(10);
+  expect(visible.edges.filter((edge) => edge.declared)).toEqual(
+    api.edges.filter((edge) => edge.declared),
+  );
+  for (const edge of visible.edges) {
+    expect(visible.nodes.some((node) => node.id === edge.from)).toBe(true);
+    expect(visible.nodes.some((node) => node.id === edge.to)).toBe(true);
+  }
+  const client = views.components.find((view) => view.container === "qrwty-web")!;
+  expect(client.nodes.some((node) => node.name === "Typed API adapter")).toBe(true);
+  expect(
+    componentPresentation(client, false).nodes.some((node) => node.name === "Typed API adapter"),
+  ).toBe(false);
+  expect(componentPresentation(views.context, false)).toBe(views.context);
+  expect(design).toEqual(snapshot);
+});
+
+it("ignores component technology in generated behavior and ownership", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  for (const component of design.architecture!.components!)
+    component.technology = "REST controller";
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
 });
