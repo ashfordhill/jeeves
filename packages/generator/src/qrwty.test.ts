@@ -1,6 +1,8 @@
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { validateDesign } from "@jeeves/spec";
 import { afterEach, describe, expect, it } from "vitest";
 import { qrwtyAcceptance } from "../../../fixtures/acceptance/qrwty/manifest.ts";
@@ -83,6 +85,30 @@ describe("qrwty acceptance enablement", () => {
     for (const suite of lock.fixedAcceptance!) {
       expect(Object.keys(lock.files)).toContain(`tests/acceptance/qrwty/${suite.id}.test.ts`);
     }
+    const supportPath = "tests/acceptance/qrwty/_support/page-problems.ts";
+    expect(lock.files[supportPath]).toMatch(/^sha256-/);
+    expect(readFileSync(join(dir, supportPath), "utf8")).toBe(
+      readFileSync(new URL("../../template-kit/src/page-problems.ts", import.meta.url), "utf8"),
+    );
+    // No Jeeves workspace or node_modules in this generated directory. Node must resolve
+    // the copied support directly, including its strip-only TypeScript compatibility.
+    const script = `
+      import { EventEmitter } from "node:events";
+      import { strict as assert } from "node:assert";
+      const { observePageProblems } = await import(${JSON.stringify(pathToFileURL(join(dir, supportPath)).href)});
+      const page = new EventEmitter();
+      const problems = observePageProblems(page);
+      problems.assert("empty fixture");
+      page.emit("pageerror", new Error("copied support works"));
+      assert.throws(() => problems.assert("fixture"), /uncaught: copied support works/);
+      console.log("copied support resolved");
+    `;
+    expect(
+      execFileSync(process.execPath, ["--input-type=module", "--eval", script], {
+        cwd: dir,
+        encoding: "utf8",
+      }),
+    ).toContain("copied support resolved");
     expect(
       JSON.parse(readFileSync(join(dir, "services/qrwty/package.json"), "utf8")),
     ).toMatchObject({

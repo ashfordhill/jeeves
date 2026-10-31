@@ -9,6 +9,10 @@ const support = [
   "_support/fixture.ts",
   "_support/db.ts",
 ].map((path) => ({ path, contents: read(path) }));
+support.push({
+  path: "_support/page-problems.ts",
+  contents: read("../../../packages/template-kit/src/page-problems.ts"),
+});
 const testDependencies = [
   { name: "jsqr", version: "1.4.0" },
   { name: "pngjs", version: "7.0.0" },

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { Destination } from "./_support/destinations.ts";
+import { assertNoPageProblems, observePageProblems } from "./_support/page-problems.ts";
 import { decodeQr } from "./_support/qr.ts";
 
 const web = process.env.JEEVES_TEST_WEB_URL ?? "";
@@ -15,12 +16,18 @@ test("QR-09: register, create, edit, download and activity agree with the API", 
   expect(web).toBeTruthy();
   const destinationA = await Destination.start("/browser-a");
   const destinationB = await Destination.start("/browser-b");
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
+  const problems = observePageProblems(page);
+  const signedOut = problems.expectHttp({
+    scenario: "fresh signed-out session",
+    method: "GET",
+    url: `${web}/_api/qrwty/auth/session`,
+    resourceType: "fetch",
+    status: 401,
   });
   try {
-    await page.goto(web);
+    await page.goto(web, { waitUntil: "networkidle" });
+    await expect(page.getByTestId("auth-email")).toBeVisible();
+    signedOut.finish();
     const email = `qrwty-browser-${crypto.randomUUID()}@example.test`;
     await page.getByTestId("auth-email").fill(email);
     await page.getByTestId("auth-password").fill("qrwty-fixed-password");
@@ -87,12 +94,9 @@ test("QR-09: register, create, edit, download and activity agree with the API", 
     await page.getByTestId("auth-logout").click();
     await expect(page.getByTestId("auth-email")).toBeVisible();
     expect(destinationA.requests()).toBe(0);
-    expect(
-      consoleErrors.filter(
-        (line) => !line.includes("favicon") && !/Failed to load resource/.test(line),
-      ),
-    ).toEqual([]);
+    assertNoPageProblems(problems, "QR-09 browser journey");
   } finally {
+    problems.stop();
     await destinationA.close();
     await destinationB.close();
   }

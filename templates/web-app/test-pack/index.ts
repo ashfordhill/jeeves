@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { TestPack, TestPackContext } from "@jeeves/template-kit";
 import { contractPath, restClientTargets } from "@jeeves/template-kit";
-import { assertNoPageProblems, withPage } from "@jeeves/template-kit/browser";
+import { assertNoPageProblems, type PageProblems, withPage } from "@jeeves/template-kit/browser";
 import { sampleCallFor } from "@jeeves/template-rest-api-client/test-pack";
 import { apiPath } from "../generate.ts";
 
@@ -24,7 +24,9 @@ export const testPack: TestPack = {
       async run(ctx) {
         const url = await appUrl(ctx);
         await withPage(async (page, problems) => {
+          const finish = expectInitialSessionProbes(ctx, url, problems);
           await page.goto(`${url}/`, { waitUntil: "networkidle" });
+          finish();
           const rendered = await page.locator("#root > *").count();
           if (rendered === 0) throw new Error("Nothing was rendered into #root");
           assertNoPageProblems(problems, "The app's page");
@@ -59,8 +61,10 @@ export const testPack: TestPack = {
             `/jeeves-config.json is ${JSON.stringify(served)}; expected ${JSON.stringify(expected)}`,
           );
         }
-        await withPage(async (page) => {
-          await page.goto(`${url}/`);
+        await withPage(async (page, problems) => {
+          const finish = expectInitialSessionProbes(ctx, url, problems);
+          await page.goto(`${url}/`, { waitUntil: "networkidle" });
+          finish();
           await page.waitForFunction(() => "__JEEVES__" in globalThis, undefined, {
             timeout: 15_000,
           });
@@ -74,6 +78,7 @@ export const testPack: TestPack = {
           if (title !== expected.title) {
             throw new Error(`The page title is "${title}", not "${expected.title}"`);
           }
+          assertNoPageProblems(problems, "The runtime-config page");
         });
       },
     },
@@ -121,4 +126,30 @@ export async function appUrl(ctx: TestPackContext): Promise<string> {
   const port = Number(ctx.compose.services[id]?.environment?.PORT ?? ctx.subject.config.port);
   const { host, port: published } = await ctx.service(id).endpoint(port);
   return `http://${host}:${published}`;
+}
+
+/**
+ * A fresh context has no session. Only the generated session operation may return 401 during
+ * initial load, at most once per service. Scaffolds need not implement a session probe yet;
+ * required auth journeys (e.g. QR-09) assert the probe and UI explicitly instead.
+ * The internal sample-call page has no auth gate and gets no exception.
+ */
+function expectInitialSessionProbes(ctx: TestPackContext, url: string, problems: PageProblems) {
+  const probes = restClientTargets(ctx.subject)
+    .filter(({ server }) => server.auth === "session" && server.attachment.config.model)
+    .map(({ target }) =>
+      problems.expectHttp(
+        {
+          scenario: "initial signed-out page load: readSession",
+          method: "GET",
+          url: `${url}${apiPath(target.id)}/auth/session`,
+          resourceType: "fetch",
+          status: 401,
+        },
+        { ifRequested: true },
+      ),
+    );
+  return () => {
+    for (const probe of probes) probe.finish();
+  };
 }

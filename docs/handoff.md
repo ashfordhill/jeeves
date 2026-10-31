@@ -2100,3 +2100,33 @@ After merging and `docker compose up --build --wait` (all three services healthy
 - The additive feature (candidate: optional campaign label and owner filter) is not approved or started. Any reuse of the completed work needs a fresh design/regeneration and independent acceptance per the P5 rules.
 
 **Next:** agree the additive feature separately, then prove regeneration, preserved extension code and cumulative feature usage. Do not claim that feature yet.
+
+
+---
+
+## Improvements P12: browser verification correctness (2026-10-30)
+
+**Status: P12 complete.** Implementation follows the bounded scope in `docs/build-plan-next.md`. The pre-existing Draw Jeeves edits, interaction spec, draft reviews, improvement-plan update and earlier uncommitted handoff additions are preserved and excluded from this package's commit. Live qrwty remains unchanged, including its Worker transport, data and QR URLs. No paid agent runs, live regeneration or subsequent package work was performed.
+
+### Implementation
+
+- Added one self-contained browser observer shared by the template-kit wrapper and the fixed qrwty acceptance suite. It records HTTP responses and transport failures with method/URL/status or error evidence, plus uncaught exceptions, unhandled rejections and application console errors. Chromium's native resource diagnostics are reconciled only when they have no JavaScript arguments and match observed network evidence; application messages with identical text and uncorrelated diagnostics still fail. No blanket 4xx, resource-message or favicon exclusion remains.
+- Expected negative responses match an exact method, full URL (origin/path/query), fetch/XHR resource type and status, bind to a request started inside the scenario, and permit one request. Required expectations fail when unexercised; wrong statuses, earlier/later/repeated requests and mismatches remain failures. Explicit cancellation expectations recognize `net::ERR_ABORTED`; unanticipated aborts and other transport errors fail.
+- Web-app page-load/runtime-config checks permit one initial anonymous `readSession` probe per connected structured session API. This probe is optional only because unfinished scaffolds need not implement it; once started its 401 must match. This generic load check does not claim auth acceptance. The sample-call page remains strict. QR-09 requires the initial session 401 and visible auth form, closes that expectation before registration, and checks network/page/console failures across the remaining journey without changing QR-01–QR-09 business assertions.
+- The fixed-suite manifest copies the shared helper verbatim into generated-owned `_support/page-problems.ts`; a local alias serves the source fixture. An isolated generated-project test verifies the protected hash, copied contents and actual Node strip-only import/execution without workspace dependencies.
+- Added a disposable loopback HTTP fixture using ordinary window fetch with no Worker. Chromium cases cover signed-out/validation success, wrong route/status, unexpected 401/403/404/500, broken script/favicon assets, transport failure, uncaught exception/rejection, application errors including imitated native messages, missing coverage and deliberate/unexpected cancellation. Added focused offline classification unit tests. The SVG fix is one accessible `<title>` in `docs/examples/qrwty.svg`.
+
+### Commands and results
+
+- `pnpm --filter @jeeves/template-kit --filter @jeeves/template-web-app typecheck`: passed.
+- `pnpm exec vitest run packages/template-kit/src/page-problems.test.ts packages/generator/src/qrwty.test.ts`: **23 tests / 2 files passed** (892 ms), including isolated fixed-support loading.
+- `pnpm exec vitest run --config vitest.templates.config.ts templates/web-app/conformance/browser-problems.conformance.ts`: final run **19 passed** (13.11 s). The initial run passed 15 and failed 4 due to two fixture defects: missing `model.extensions`, and headless Chromium omitting automatic favicon requests. Fixed the model and explicitly loaded the missing favicon as an image; the final good case also asserts that native 401/400 diagnostics really occurred and that no Worker was created.
+- `pnpm exec vitest run --config vitest.templates.config.ts templates/web-app/conformance/web-app.conformance.ts`: **15 passed** (64.52 s), using disposable generated apps/containers, including client calls, proxy recovery and generated type checks.
+- `pnpm check`: **passed**, **535 tests / 72 files** (29.86 s unit run), all workspace type checks passed, Biome checked 424 files with **137 warning-level / 57 info diagnostics and no errors**. Full output: `/tmp/jeeves-p12-check.log`.
+- Scoped Biome formatting/checks and `git diff --check`: passed. Reviewed the implementation diff and staged scope; only this appended handoff entry is included in P12. qrwty's Git working tree is clean.
+
+### Limits and next bounded work
+
+This proves the normal-fetch browser policy in Chromium and the required generated web-app conformance; it is not a fresh full QR-01–QR-09 live proving run. Existing lint warnings/info diagnostics remain. The current qrwty Worker is deliberately retained; removing it requires a later controlled application adoption with its own regression checks. Headless favicon coverage uses an explicit asset request because automatic icon fetching is browser-dependent. No cloud, reliability runtime, Studio, C4 or schema work is included.
+
+**Next bounded package:** reconcile the already pending Draw Jeeves placement, subtype/control and camera changes with their `editor-interactions.spec.ts` acceptance, review their scope and verification, then hand off/commit them separately. Separately specify the first bounded qrwty product package around the branded Studio/product direction and reusable template boundary, preserving stable QR identity, data and ownership plus the planned visual reliability policies. Do not infer implementation authorization for the broader roadmap from this handoff. Stop after P12.
