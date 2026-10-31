@@ -173,7 +173,11 @@ export function withDefaultErrorBodies(
   }
   return result;
 }
-export function resourceContract(model: ResourceConfig, title: string) {
+export function resourceContract(
+  model: ResourceConfig,
+  title: string,
+  originScopedSession = false,
+) {
   const credentials = z.toJSONSchema(sessionCredentialsSchema, { io: "input" });
   const identity = z.toJSONSchema(sessionIdentitySchema, { io: "input" });
   const identityResponse = {
@@ -343,7 +347,17 @@ export function resourceContract(model: ResourceConfig, title: string) {
     info: { title, version: "1.0.0" },
     paths,
     components: {
-      securitySchemes: { session: { type: "apiKey", in: "cookie", name: "jeeves_session" } },
+      securitySchemes: {
+        session: {
+          type: "apiKey",
+          in: "cookie",
+          name: originScopedSession ? "jeeves_session_<origin-sha256>" : "jeeves_session",
+          ...(originScopedSession && {
+            description:
+              "Deployment-dependent cookie name: jeeves_session_ plus the first 32 lowercase SHA-256 hex characters of normalized PUBLIC_ORIGIN URL.origin. The name above is a placeholder; browsers receive the actual name at login.",
+          }),
+        },
+      },
     },
   };
 }

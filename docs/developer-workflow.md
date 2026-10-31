@@ -14,6 +14,7 @@ pnpm work run qrwty-upgrade /absolute/old-checkout /absolute/upgraded-checkout
 pnpm work run durable-events
 pnpm work run generated-events
 pnpm work run resource-workspace
+pnpm work run session-isolation
 pnpm work run generated-workspace
 pnpm work run resource-starter
 pnpm work run local-execution
@@ -28,6 +29,14 @@ pnpm work status
 ```
 
 `unit`, `templates`, `browser` and `browser-preview` require existing file paths or the explicit selection `all`. Arbitrary command-line options and shell fragments are not accepted. Unit selectors support `.test.ts` and `.test.tsx`; template selectors use `.conformance.ts`; browser selectors use `.spec.ts`. A nonmatching selection fails instead of reporting an empty passing suite. `browser-preview` first builds production web assets and serves them on the same isolated test ports/API using Vite preview; it verifies worker/chunk URLs through the selected strict journeys. It does not deploy a site. `browser` starts the existing Jeeves test database; `browser-docker` invokes the existing full Docker browser runner. `durable-events` takes no arguments and runs the focused transactional-delivery conformance fixture, with a temporary Postgres volume and automatic teardown. `generated-events` proves the generated event attachment in a disposable Orders service; `resource-workspace` proves the compiled account/resource UI against a disposable Inventory API and Postgres, including strict browser diagnostics and accessibility. `generated-workspace` proves actual diagram generation, template packs, protected composition, additive extras and a generated visual-preset change using the same bounded Inventory journey. `resource-starter` runs that bounded journey against the versioned starter factory and consumes its generated private environment, then proves regeneration preserves credentials. `local-execution` proves generated local resource ceilings, exact Docker settings, process-failure restart and bounded request/shutdown behavior on one disposable service. `template-upgrade` extends the starter journey with a reviewed HTTP version upgrade, unchanged existing output/private setup and explicit local-policy selection. `local-http-pool` consumes the frozen compiled pool component around a fresh generated Inventory app; it proves shared sessions/resources, no ambiguous-write replay, readiness exclusion, instance recreation, proxy limits/draining and the strict resource browser journey. Its topology and control routes are disposable fixture instrumentation. `generated-http-pool` exercises the actual diagram-selected Trio, reviewed source eligibility, per-instance HTTP/execution packs and strict resource journey. `generated-http-pool-browser` is the narrower browser-only diagnostic and explicitly leaves template packs unselected. These profiles take no arguments and clean their own isolated output. Template and product checks can build disposable containers and need Docker. Run independent packages sequentially.
+
+`session-isolation` runs two independently generated owner-resource applications in one pinned
+Firefox context, with separate loopback origins and storage. It verifies two-way login/logout
+isolation, ordinary authentication/CSRF/ownership, a service restart, and a separately generated
+legacy-to-new runtime transition against the same disposable database. Frozen archives, builds,
+regeneration and protected output are checked; teardown removes only its own Compose projects.
+The transition proves storage/protocol compatibility, not adoption into a protected live checkout.
+See the [REST session transition](../templates/rest-api-server/session-transition.md).
 
 Each invocation prints its log and JSON result paths under ignored `.jeeves-work/runs/`. The JSON records exact argv/cwd, timestamps, duration, per-command exit codes, final status and before/after Git fingerprints. Fingerprints include HEAD, tracked diff, index/status and untracked file content; ignored environment files are excluded by Git. They are evidence identifiers, not a build cache. No checks are skipped based on an earlier result. Fingerprints do not establish equality of installed dependencies, external services or environment variables; investigate those when reusing evidence.
 

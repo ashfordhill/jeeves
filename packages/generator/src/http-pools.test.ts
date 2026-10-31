@@ -167,7 +167,10 @@ it("protects the supported project source before writes and verifies it after ge
   renameSync(serviceRoot, savedRoot);
   symlinkSync(join(dir, "missing-api"), serviceRoot);
   expect(() => assertPoolSourcePreflight(dir, first.plan)).toThrow("local HTTP pool");
-  expect(await generate()).toMatchObject({ ok: false, reason: "ownership" });
+  // The REST runtime is now frozen, so its missing dependency manifest refuses first.
+  await expect(generate()).rejects.toThrow(
+    "services/inventory/package.json: missing package manifest for pinned production dependencies",
+  );
   expect(readFileSync(join(dir, "jeeves/lock.json"), "utf8")).toBe(previousLock);
   expect(readFileSync(join(dir, ".env"), "utf8")).toBe(env);
   rmSync(serviceRoot);

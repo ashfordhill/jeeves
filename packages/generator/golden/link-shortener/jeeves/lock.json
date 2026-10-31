@@ -1,5 +1,10 @@
 {
   "lockVersion": 1,
+  "frozenDependencies": {
+    "services/links/package.json": {
+      "@jeeves/rest-server": "file:../../vendor/jeeves/jeeves-rest-server-0.2.0.tgz"
+    }
+  },
   "generator": "0.1.0",
   "designRevision": 7,
   "templates": [
@@ -75,6 +80,7 @@
     "jeeves/elements/links-db.md": "sha256-f0707bae7cca0f7009e6a4af7e8f833d04a1cd430584254efd19dcb23df4eac6",
     "jeeves/elements/links.md": "sha256-9b12affff25fc12bd6b9567faf123b1a2d48713412ce4324b3029e0ab74881fb",
     "jeeves/elements/web.md": "sha256-c4ab49a0ae8f7464589b15257bc1534c03e151936dcb2c72e76911d107b0768c",
-    "services/links/src/jeeves.generated.ts": "sha256-6304096668f1a9d4edb0dd905d2916074dd454ba3b7222df9751efa635aef7e5"
+    "services/links/src/jeeves.generated.ts": "sha256-6304096668f1a9d4edb0dd905d2916074dd454ba3b7222df9751efa635aef7e5",
+    "vendor/jeeves/jeeves-rest-server-0.2.0.tgz": "sha256-33c6fcc3890335dfa39d659a029244ead363c17e65777079470c23c15f5381c6"
   }
 }

@@ -40,6 +40,7 @@ describe("builtin registry", () => {
       "resource-workspace@0.1.0",
       "rest-api-client@0.1.0",
       "rest-api-server@0.1.0",
+      "rest-api-server@0.2.0",
       "web-app@0.1.0",
       "web-app@0.2.0",
     ]);
@@ -243,6 +244,6 @@ describe("createRegistry", () => {
   });
 
   it("is what builtinRegistry uses", () => {
-    expect(createRegistry(builtinManifests).list()).toHaveLength(13);
+    expect(createRegistry(builtinManifests).list()).toHaveLength(14);
   });
 });

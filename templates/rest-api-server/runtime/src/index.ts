@@ -3,4 +3,5 @@
 export * from "./contract.ts";
 export * from "./plugin.ts";
 export * from "./resources.ts";
+export { sessionCookieName } from "./sessions.ts";
 export * from "./validation.ts";

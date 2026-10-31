@@ -67,7 +67,9 @@ export function generate(ctx: GenerateContext): GenerateResult {
           2,
         ) + "\n",
     });
-    const contract = stringify(resourceContract(model, element.name));
+    const contract = stringify(
+      resourceContract(model, element.name, ctx.manifest.version === "0.2.0"),
+    );
     createValidators(parseContract(contract));
     files.push({
       path: contractPath(element.id),

@@ -1,8 +1,8 @@
 # QRWTY authoring: fresh-agent execution handoff
 
-Updated 2026-10-31. **Start with P35: independent sessions for local generated applications.** P12–P34 are complete. The old P35 business-action-forms idea was never implemented and is superseded; P35 now names the bounded session correction below. The [authoring review](qrwty-authoring-review-2026-10-31.md) remains the product direction and evidence, while this file is the implementation specification.
+Updated 2026-10-31. **P35 is implemented and verified:** see [release evidence](evidence/p35/README.md) and the latest handoff. P12–P35 are complete. The next bounded authoring package to specify is useful QRWTY architecture, listed in the queue below. The old P35 business-action-forms idea was never implemented and is superseded; P35 now names the bounded session correction below. The [authoring review](qrwty-authoring-review-2026-10-31.md) remains the product direction and evidence, while this file is the implementation specification.
 
-Implement **P35 only**, run its checks, append the handoff and create its local commit. Do not automatically proceed into the older delivery roadmap or implement all of the review at once. Later packages are queued below but are not yet implementation specifications. The current request is to prepare this handoff; no P35 runtime code has been written by the documentation turn.
+The P35 execution instruction was to implement **P35 only**, run its checks, append the handoff and create its local commit. Do not automatically proceed into the older delivery roadmap or implement all of the review at once. Later packages are queued below but are not yet implementation specifications. The specification below records that bounded release contract; completion does not authorize the queued packages.
 
 ## Read first and preserve
 

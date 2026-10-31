@@ -126,7 +126,12 @@ export function assertFrozenDependencies(
 ): void {
   for (const [path, dependencies] of Object.entries(requirements)) {
     const file = join(dir, path);
-    if (!existsSync(file) && !requirePresent) continue;
+    if (!existsSync(file)) {
+      if (!requirePresent) continue;
+      throw new LockError(
+        `${path}: missing package manifest for pinned production dependencies; restore it before regeneration`,
+      );
+    }
     const pkg = JSON.parse(readFileSync(file, "utf8")) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;

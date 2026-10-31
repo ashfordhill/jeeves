@@ -9,6 +9,7 @@ import postgres from "@jeeves/template-postgres";
 import resourceWorkspace from "@jeeves/template-resource-workspace";
 import restApiClient from "@jeeves/template-rest-api-client";
 import restApiServer from "@jeeves/template-rest-api-server";
+import restApiServerV02 from "@jeeves/template-rest-api-server/v02";
 import webApp from "@jeeves/template-web-app";
 import webAppV02 from "@jeeves/template-web-app/v02";
 import { createRegistry, type Registry } from "./registry.ts";
@@ -23,6 +24,7 @@ export const builtinManifests = [
   localExecution,
   durableEvents,
   restApiServer,
+  restApiServerV02,
   postgres,
   webApp,
   webAppV02,

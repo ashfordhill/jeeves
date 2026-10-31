@@ -1,6 +1,6 @@
 {
   "name": "@jeeves/rest-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Contract-first REST APIs for Jeeves http-service elements: routes from an OpenAPI 3.1 file, request and response validation, and /openapi.json.",
   "type": "module",
   "exports": "./src/index.ts",

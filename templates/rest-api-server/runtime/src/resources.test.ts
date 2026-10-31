@@ -3,8 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createService, type Service } from "@jeeves/service-runtime";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { legacyRuntime } from "../test-fixtures/legacy-runtime.ts";
 import { type ResourceDatabase, type ResourceDefinition, resourceServer } from "./resources.ts";
+import { sessionCookieName } from "./sessions.ts";
 
 const alice = "10000000-0000-4000-8000-000000000001",
   bob = "10000000-0000-4000-8000-000000000002";
@@ -81,8 +83,12 @@ afterEach(async () => {
 });
 const origin = "http://127.0.0.1:9999";
 const token = (letter: string) => letter.repeat(64);
+const legacy = await legacyRuntime();
+afterAll(legacy.cleanup);
+let cookieName = sessionCookieName(origin);
+let selectedServer = resourceServer;
 const headers = (letter = "a") => ({
-  cookie: "jeeves_session=" + token(letter),
+  cookie: cookieName + "=" + token(letter),
   origin,
   "x-csrf-token": "csrf",
 });
@@ -118,7 +124,7 @@ async function setup() {
     {
       name: "test",
       plugins: [
-        resourceServer({
+        selectedServer({
           contract,
           database: () => ({ query }),
           resources: [resource],
@@ -130,7 +136,14 @@ async function setup() {
   );
   return { app: service.app, query, row };
 }
-describe("generated resource runtime", () => {
+describe.each([
+  ["legacy compiled 0.2.0", legacy.resourceServer, "jeeves_session"],
+  ["current source 0.3.0", resourceServer, sessionCookieName(origin)],
+] as const)("generated resource runtime: %s", (_version, server, name) => {
+  beforeEach(() => {
+    selectedServer = server;
+    cookieName = name;
+  });
   it("authenticates before validation or resource storage and rejects caller-supplied owners", async () => {
     const { app, query } = await setup();
     expect(

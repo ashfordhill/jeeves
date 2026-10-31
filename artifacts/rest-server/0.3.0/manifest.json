@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "@jeeves/rest-server",
+  "version": "0.3.0",
+  "maturity": "experimental",
+  "archive": "jeeves-rest-server-0.3.0.tgz",
+  "sha256": "a1dace57d6381a93e07201fa5d64ea887488216a6399298b14ef82b111869fc6",
+  "source": "templates/rest-api-server/runtime",
+  "sourceHashes": {
+    "package.json": "dd1e257bad301487a8013c7fee02133e1e74b57853aac7d30d2a11d1676b9e1b",
+    "tsconfig.build.json": "715b35fd547b1f8b94d666d2de2c9e807bc720154de70024b48344074ed02927",
+    "tsconfig.json": "a4e5eb81210e55a60a5e42ab5eb67127d42921978df7683a2482f7fb2dc0e61a",
+    "src/contract.ts": "f8a080853a60ad69fb7032b014bd96654b145b7db5e930099e6762c1f0489452",
+    "src/index.ts": "2005e14f7eceee1c2711da39b26816c3ce21e627dcbe4a7ec0528712dbb57a80",
+    "src/plugin.ts": "e4e5a97e8cad8b9e423c7e3503e73135afb6362fc89628aef6d9c5664365ef2b",
+    "src/resources.ts": "b849b52b39c5eede437c2352aeb3e90696fccc087b0111a8c6f7f213ea5d5b09",
+    "src/sessions.ts": "6f40e7f87fc02c6c57e1d6af5bdf6dfb18a0b50903e2350b77916151d6928b91",
+    "src/validation.ts": "9f02b2b063032c745435737afc43aeb61ea803722d649ade64682e998510d94d"
+  },
+  "build": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "command": "pnpm --filter @jeeves/rest-server pack --pack-destination <destination>"
+  },
+  "sessionCookie": "jeeves_session_<first 32 lowercase SHA-256 hex characters of normalized PUBLIC_ORIGIN URL.origin>",
+  "upstreamRuntimeCodeCopied": false
+}

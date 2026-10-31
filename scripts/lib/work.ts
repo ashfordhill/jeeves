@@ -40,6 +40,8 @@ export const profiles = {
     "Compiled local HTTP pool with shared generated resources, readiness/loss/recovery and no replay; disposable consumer",
   "local-execution":
     "Disposable local limits, process restart, request drain and bounded shutdown proof",
+  "session-isolation":
+    "Two generated apps in one browser, restart and legacy account transition; disposable storage",
   "resource-starter":
     "Versioned editable starter to a running Inventory app; generated private setup, no model calls",
   "generated-workspace":
@@ -153,6 +155,7 @@ export function planWork(root: string, name: string, selections: string[]): Work
     case "local-http-pool":
     case "generated-http-pool":
     case "generated-http-pool-browser":
+    case "session-isolation":
     case "resource-starter":
     case "generated-workspace":
     case "resource-workspace":

@@ -16,16 +16,23 @@ const error = (status: number, code: string, message: string) => ({
   body: { error: code, message },
 });
 
+/** Stable deployment identity; the resource server validates PUBLIC_ORIGIN before calling. */
+export function sessionCookieName(publicOrigin: string): string {
+  return `jeeves_session_${digest(new URL(publicOrigin).origin).slice(0, 32)}`;
+}
+
 /** Credentials are validated by the generated Zod-derived OpenAPI contract before these handlers. */
 export function sessions(database: () => ResourceDatabase, publicOrigin: string) {
+  const name = sessionCookieName(publicOrigin);
+  const tokenPattern = new RegExp(`(?:^|;\\s*)${name}=([a-f0-9]{64})(?:;|$)`);
   const cookie = (token: string, maxAge = lifetime) =>
-    "jeeves_session=" +
+    name +
+    "=" +
     token +
     "; HttpOnly; SameSite=Strict; Path=/; Max-Age=" +
     maxAge +
     (publicOrigin.startsWith("https:") ? "; Secure" : "");
-  const tokenOf = (request: FastifyRequest) =>
-    /(?:^|;\s*)jeeves_session=([a-f0-9]{64})(?:;|$)/.exec(request.headers.cookie ?? "")?.[1];
+  const tokenOf = (request: FastifyRequest) => tokenPattern.exec(request.headers.cookie ?? "")?.[1];
   const principal = async (request: FastifyRequest): Promise<Principal | undefined> => {
     const token = tokenOf(request);
     if (!token) return undefined;

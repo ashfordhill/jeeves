@@ -98,7 +98,11 @@ it("regenerates safe display changes, preserves additive content, and refuses pr
   const root = "frontends/inventory-web/src/";
   for (const path of ["App.tsx", "main.tsx", "styles.css", "workspace.generated.json"])
     expect(first.lock.files[root + path]).toMatch(/^sha256-/);
-  expect(first.plan.artifacts).toHaveLength(2);
+  expect(first.plan.artifacts?.map((file) => file.path).sort()).toEqual([
+    "vendor/jeeves/jeeves-product-ui-0.3.0.tgz",
+    "vendor/jeeves/jeeves-resource-workspace-0.1.0.tgz",
+    "vendor/jeeves/jeeves-rest-server-0.2.0.tgz",
+  ]);
   const extras = join(dir, root + "project/ProjectExtras.tsx");
   writeFileSync(extras, "// custom additive content\n");
   const again = await generate();

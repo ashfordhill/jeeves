@@ -8,6 +8,7 @@ import { resourceConfigSchema } from "@jeeves/spec";
 import { describe, expect, it, vi } from "vitest";
 import { stringify } from "yaml";
 import { modelMigration, resourceContract, resourceDescriptor } from "./resources.ts";
+import { sessionCookieName } from "./runtime/src/sessions.ts";
 
 const model = () =>
   resourceConfigSchema.parse({
@@ -150,7 +151,11 @@ describe("owner commands and bounded storage", () => {
       { name: "documents", plugins: [plugin()] },
       { env: { PUBLIC_ORIGIN: origin }, features: [feature], logger: false },
     );
-    const headers = { origin, cookie: "jeeves_session=" + "a".repeat(64), "x-csrf-token": "csrf" };
+    const headers = {
+      origin,
+      cookie: sessionCookieName(origin) + "=" + "a".repeat(64),
+      "x-csrf-token": "csrf",
+    };
     const call = (extra: Record<string, string> = headers, payload: unknown = { copies: 5 }) =>
       service.app.inject({
         method: "POST",
@@ -183,7 +188,8 @@ describe("owner commands and bounded storage", () => {
           .statusCode,
       ).toBe(400);
       expect(
-        (await call({ ...headers, cookie: "jeeves_session=" + "b".repeat(64) })).statusCode,
+        (await call({ ...headers, cookie: sessionCookieName(origin) + "=" + "b".repeat(64) }))
+          .statusCode,
       ).toBe(404);
       expect(published).toBe(0);
       const result = await call();

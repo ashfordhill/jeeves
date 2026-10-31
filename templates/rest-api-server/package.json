@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./manifest.ts",
+    "./v02": "./manifest-v02.ts",
     "./template": "./template.ts",
     "./test-pack": "./test-pack/index.ts"
   },

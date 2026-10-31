@@ -52,6 +52,8 @@ export interface BuiltProject {
  */
 export function buildProject(options: BuildProjectOptions): BuiltProject {
   const { design, lookup, dir } = options;
+  // Validate the selected set before writing any output, including scaffold files.
+  selectedRuntimes(options.modules);
   const stubs = options.stubs ?? {};
   const moduleFor = (ref: { id: string; version: string }) =>
     options.modules.find((m) => m.manifest.id === ref.id && m.manifest.version === ref.version);
@@ -108,10 +110,7 @@ function addElementDependencies(
   options: BuildProjectOptions,
   results: Map<string, GenerateResult>,
 ): string[] {
-  const runtimes = new Map<string, RuntimePackage>();
-  for (const module of options.modules) {
-    if (module.runtime) runtimes.set(module.runtime.name, module.runtime);
-  }
+  const runtimes = selectedRuntimes(options.modules);
   const byElement = new Map<string, DependencyEntry[]>();
   const scripts = new Map<string, { name: string; command: string }[]>();
   const add = (element: string, entry: DependencyEntry) =>
@@ -166,13 +165,11 @@ function dirOfElement(options: BuildProjectOptions, id: string): string {
  * `vendor/jeeves/`, where generated `package.json` files point with `file:` specs.
  */
 export function vendorRuntimes(dir: string, modules: TemplateModule[]): string[] {
+  const runtimes = selectedRuntimes(modules);
   const destination = join(dir, VENDOR_DIR);
   mkdirSync(destination, { recursive: true });
-  const seen = new Set<string>();
   const paths: string[] = [];
-  for (const { runtime } of modules) {
-    if (!runtime || seen.has(runtime.name)) continue;
-    seen.add(runtime.name);
+  for (const runtime of runtimes.values()) {
     const frozen = frozenRuntime(runtime);
     if (frozen) {
       writeFileSync(join(dir, frozen.path), frozen.contents);
@@ -190,6 +187,25 @@ export function vendorRuntimes(dir: string, modules: TemplateModule[]): string[]
     paths.push(`${VENDOR_DIR}/${runtimeTarballName(runtime.name, runtime.version)}`);
   }
   return paths;
+}
+
+/** The harness, like the generator, supports one binding per runtime package name. */
+function selectedRuntimes(modules: TemplateModule[]): Map<string, RuntimePackage> {
+  const runtimes = new Map<string, RuntimePackage>();
+  for (const module of modules) {
+    for (const runtime of [
+      ...(module.runtime ? [module.runtime] : []),
+      ...(module.runtimes ?? []),
+    ]) {
+      const existing = runtimes.get(runtime.name);
+      if (existing && JSON.stringify(existing) !== JSON.stringify(runtime))
+        throw new Error(
+          `Conflicting runtime bindings for ${runtime.name}; select one template version for this harness project`,
+        );
+      runtimes.set(runtime.name, runtime);
+    }
+  }
+  return runtimes;
 }
 
 /**

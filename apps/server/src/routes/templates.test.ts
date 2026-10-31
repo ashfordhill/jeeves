@@ -24,6 +24,7 @@ describe("templates", () => {
       "resource-workspace@0.1.0",
       "rest-api-client@0.1.0",
       "rest-api-server@0.1.0",
+      "rest-api-server@0.2.0",
       "web-app@0.1.0",
       "web-app@0.2.0",
     ]);

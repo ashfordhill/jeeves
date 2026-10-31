@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "@jeeves/rest-server",
+  "version": "0.2.0",
+  "maturity": "experimental",
+  "archive": "jeeves-rest-server-0.2.0.tgz",
+  "sha256": "33c6fcc3890335dfa39d659a029244ead363c17e65777079470c23c15f5381c6",
+  "source": "templates/rest-api-server/runtime",
+  "sourceRevision": "cadf0b874e0759619d72f8eb2b0f6dc22470d57e",
+  "sourceHashes": {
+    "package.json": "ba7a4bd7f1188994b2a9633d3c54cd8bf418c9bdffde6239d4a4d5684ed04b5b",
+    "tsconfig.build.json": "715b35fd547b1f8b94d666d2de2c9e807bc720154de70024b48344074ed02927",
+    "tsconfig.json": "a4e5eb81210e55a60a5e42ab5eb67127d42921978df7683a2482f7fb2dc0e61a",
+    "src/contract.ts": "f8a080853a60ad69fb7032b014bd96654b145b7db5e930099e6762c1f0489452",
+    "src/index.ts": "4755e898d027833909777ea03b7ae8f087adfba22ddf77ba135632dae73c2a6f",
+    "src/plugin.test.ts": "c917efdb8495f91c883d1f8be81e7538aaac7037a61f37c2beb242bd334b36d1",
+    "src/plugin.ts": "e4e5a97e8cad8b9e423c7e3503e73135afb6362fc89628aef6d9c5664365ef2b",
+    "src/resources.test.ts": "596671f21173c969e4ec261caa229fdc0f8bc744820d58122a1fbf1efca1fb11",
+    "src/resources.ts": "b849b52b39c5eede437c2352aeb3e90696fccc087b0111a8c6f7f213ea5d5b09",
+    "src/sessions.ts": "a30091630ff007653d012b54fbc671db334ba63e112329bbf18f75ae6f4c6fdb",
+    "src/validation.ts": "9f02b2b063032c745435737afc43aeb61ea803722d649ade64682e998510d94d",
+    "src/verification.test.ts": "7690b7e17a04fcbcdcc9b0a3cd90e47e7e8a39a57f6f9c7255744f143b4f18c4"
+  },
+  "build": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "command": "pnpm --filter @jeeves/rest-server pack --pack-destination <destination>"
+  },
+  "sessionCookie": "jeeves_session",
+  "upstreamRuntimeCodeCopied": false
+}
