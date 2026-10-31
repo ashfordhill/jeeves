@@ -381,3 +381,17 @@ Scope:
 - Update the original-plan/product review and concrete next gap, run required `pnpm check`, inspect the scoped diff, append the handoff and commit P33 separately. Keep the P32 Chromium streamed-fetch diagnostic limitation explicit; this visual slice does not change its client or error collector.
 
 Done when: local policy is legible as a physical arrangement with honest limits, and users can move between intent, configuration and evidence without changing the application merely by inspecting it.
+
+## P34: focused durable-event authoring
+
+Outcome: an application author can configure several durable event contracts without navigating an expanding all-events/all-fields form. Existing event runtime/history/ownership behavior remains unchanged.
+
+Scope:
+
+- Replace the delivery editor's long form with a compact contract selector/list, one focused event and one focused payload field. Show useful type/version/field summaries and finite retry preset/effective policy. Keep existing business-effect notes and acceptance references explicit; supplied delivery does not implement the domain effect.
+- Preserve stable draft identities while editing names/IDs/kinds or switching focus; all unsaved values remain in the draft. Add selects the new event/field; removal selects a surviving neighbor. Allocate nonconflicting default event/field names after removal. Do not reorder persisted arrays or reinterpret immutable published contracts. Cancellation discards the complete draft; one Save remains one atomic design edit with undo/reload and existing stale-revision refusal.
+- Whole-draft validation still controls Save, including invalid hidden events/fields. Mark affected contracts/fields and make the problem reachable by mouse. No autosave, model calls, runtime contract widening, generated-file changes or new business handler execution. Retain published-contract guidance and version/history enforcement.
+- Use the existing fixed-footer configuration dialog and theme conventions. Keep compact selectors and fields usable on narrow/dark layouts, without clipped content or hidden actions. Add focused browser coverage for multi-contract/multi-field switching, draft retention after renames, invalid hidden content, removal/addition, Cancel/Save/undo/reload and stale drafts; retain existing delivery/C4 checks. Use relevant existing schema tests and required repository gate, not a new exhaustive delivery/runtime campaign.
+- Review actual screenshots against the original-plan mouse-first and Excalidraw/automation-pitch focused-editing principles, update the product review/next bounded gap, inspect the scoped diff, append the handoff and create the P34 local commit. Preserve all unrelated work and live qrwty.
+
+Done when: editing a larger event definition remains focused and predictable, validation cannot be hidden by changing selection, and view-only interactions do not mutate the semantic model.

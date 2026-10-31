@@ -1,0 +1,170 @@
+.delivery-editor {
+  color: var(--ink);
+}
+.delivery-policy {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+.delivery-guidance {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.delivery-guidance summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.delivery-guidance p {
+  margin-bottom: 0;
+}
+.delivery-layout {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.delivery-contracts {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.delivery-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.delivery-list-heading > span {
+  color: var(--ink-soft);
+}
+.delivery-contract-list {
+  display: grid;
+  gap: 6px;
+  max-height: 410px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.delivery-contract-list button,
+.delivery-field-list button {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  padding: 10px;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.delivery-contract-list button span,
+.delivery-contract-list button small,
+.delivery-field-list button small {
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+.delivery-contract-list button[aria-pressed="true"],
+.delivery-field-list button[aria-pressed="true"] {
+  border-color: var(--blue);
+  box-shadow: inset 3px 0 0 var(--blue);
+  background: var(--paper);
+}
+.delivery-contract-list button[data-invalid="true"],
+.delivery-field-list button[data-invalid="true"] {
+  border-style: dashed;
+}
+.delivery-contract-list button:focus-visible,
+.delivery-field-list button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+.delivery-event-panel {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 10px;
+  min-width: 0;
+}
+.delivery-event-panel legend,
+.delivery-field-panel legend {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 5px;
+}
+.delivery-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 76px;
+  gap: 8px;
+}
+.delivery-field-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-height: 125px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.delivery-field-list button {
+  padding: 6px 10px;
+  flex: 1 0 95px;
+  max-width: 100%;
+}
+.delivery-field-panel {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 8px;
+  min-width: 0;
+}
+.delivery-issues {
+  margin: 0;
+  padding-left: 18px;
+}
+.delivery-issues button {
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  text-align: left;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .delivery-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .delivery-contract-list {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    max-height: 170px;
+  }
+  .delivery-policy {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}
+@media (max-width: 500px) {
+  .delivery-identity {
+    grid-template-columns: minmax(0, 1fr) 76px;
+  }
+  .delivery-identity > :nth-child(2) {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+  .delivery-identity > :nth-child(3) {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}
+
+.delivery-remove {
+  align-self: flex-start;
+}

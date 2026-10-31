@@ -65,7 +65,7 @@ test("durable event contracts edit by mouse with validation, cancel, undo and re
   await dialog.getByLabel("Event 2 type", { exact: true }).fill("order.approved");
   await dialog.getByLabel("Event 2 field 1 kind", { exact: true }).selectOption("enum");
   await dialog.getByLabel("Field 1 choices for event 2", { exact: true }).fill("manual, automatic");
-  await dialog.getByRole("button", { name: "Add payload field to event 2" }).click();
+  await dialog.getByRole("button", { name: "Add field to event 2" }).click();
   await dialog.getByLabel("Event 2 field 2 kind", { exact: true }).selectOption("boolean");
   await dialog.getByLabel("Event 2 acceptance references", { exact: true }).fill("ORDER-02");
   await dialog
@@ -94,6 +94,7 @@ test("durable event contracts edit by mouse with validation, cancel, undo and re
   await page.getByRole("button", { name: "Configure durable events", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "Configure durable events" });
   await expect(dialog.getByLabel("Retry preset")).toHaveValue("standard");
+  await dialog.getByRole("button", { name: "Edit event 2: order.approved", exact: true }).click();
   await expect(dialog.getByLabel("Event 2 ID", { exact: true })).toHaveValue("order-approved");
   await page.setViewportSize({ width: 900, height: 760 });
   await expect(dialog).toBeVisible();
