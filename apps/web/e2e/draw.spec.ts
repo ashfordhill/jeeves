@@ -15,10 +15,15 @@ test("builds a service + REST server + Postgres board that survives a reload", a
   await pane.click({ position: { x: 420, y: 480 } });
   const service = card(page, "HTTP service, HTTP service");
   await expect(service).toBeVisible();
+  // Establish the selected-card camera before beginning a native drag.
+  await service.locator(".element-card-name").click();
+  await page.getByRole("button", { name: "Fit View", exact: true }).click();
 
   // Drag-to-attach: drop the REST server attachment onto the service card.
   await page.getByRole("button", { name: "Attachments" }).click();
-  await page.getByRole("button", { name: /^REST API server/ }).dragTo(service);
+  await page
+    .getByRole("button", { name: /^REST API server/ })
+    .dragTo(service, { targetPosition: { x: 15, y: 15 } });
   await expect(service.getByRole("listitem", { name: "REST API server" })).toBeVisible();
 
   // Drag-to-place: drop Postgres onto empty board.
@@ -100,10 +105,12 @@ test("dragging a node saves layout without changing the semantic revision", asyn
     .dragTo(page.locator(".react-flow__pane"), {
       targetPosition: { x: 300, y: 300 },
     });
+  await expect(page.locator(".note-annotation")).toBeVisible();
   await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Fit View", exact: true }).click();
   await page.getByRole("button", { name: "Elements" }).click();
   await page.getByRole("button", { name: /^HTTP service/ }).click();
-  await page.locator(".react-flow__pane").click({ position: { x: 600, y: 300 } });
+  await page.locator(".react-flow__pane").click({ position: { x: 750, y: 150 } });
   const service = card(page, "HTTP service, HTTP service");
   await expect(service).toBeVisible();
   await expect.poll(async () => (await layoutOf(request, id)).items["http-service"]).toBeTruthy();

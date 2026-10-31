@@ -1,6 +1,7 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
 
 import { type ArchitectureMember, resolveArchitectureMember } from "./architecture.ts";
+import { containerDescription, containerTechnology } from "./container-display.ts";
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
 import { localExecutionFor } from "./local-execution.ts";
@@ -176,20 +177,8 @@ export function architectureViews(
       id: elementKey(element.id),
       kind: role === "external" ? "external-system" : role === "library" ? "binding" : "container",
       name: element.name,
-      description: planned
-        ? planned.description
-        : role === "database"
-          ? "Persistent data store for connected applications."
-          : role === "frontend"
-            ? "Browser application and user interactions."
-            : role === "library"
-              ? "Library binding; not a separately running C4 container."
-              : "Application runtime and its declared responsibilities.",
-      technology: planned
-        ? planned.name
-        : element.template
-          ? `${manifest?.displayName ?? element.template.id} · ${element.template.version}`
-          : "No implementation binding",
+      description: containerDescription(element),
+      technology: containerTechnology(element),
       support: planned ? "planned" : role === "external" ? "external" : support,
       binding: { element: element.id },
       execution: localExecutionFor(element),
@@ -222,17 +211,13 @@ export function architectureViews(
       if (!node.binding || node.binding.element === view.container) return node;
       return nodes.find((container) => container.id === node.id) ?? node;
     });
-  // Context participants enter the container view only through explicit system-end bindings.
+  // Every participant with a system relationship appears; unbound ends target the boundary.
   const participants = new Set<string>();
   for (const relation of intent?.relationships ?? []) {
-    if (
-      !relation.container ||
-      !design.elements.some((element) => element.id === relation.container)
-    )
-      continue;
-    const from =
-      relation.from === "system" ? elementKey(relation.container) : `context:${relation.from}`;
-    const to = relation.to === "system" ? elementKey(relation.container) : `context:${relation.to}`;
+    if (relation.from !== "system" && relation.to !== "system") continue;
+    const systemEnd = relation.container ? elementKey(relation.container) : "context:system";
+    const from = relation.from === "system" ? systemEnd : `context:${relation.from}`;
+    const to = relation.to === "system" ? systemEnd : `context:${relation.to}`;
     if (relation.from !== "system") participants.add(from);
     if (relation.to !== "system") participants.add(to);
     containers.edges.push({
@@ -244,6 +229,7 @@ export function architectureViews(
     });
   }
   containers.nodes.push(...context.nodes.filter((node) => participants.has(node.id)));
+  containers.nodes.push(context.nodes[0]!);
   return { context, containers, components, ...(provision && { provision }) };
 }
 

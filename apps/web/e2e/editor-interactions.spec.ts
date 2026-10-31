@@ -13,9 +13,10 @@ test("creation over an existing subtype cannot add, edit, or move that card", as
   await page.getByRole("button", { name: "Service", exact: true }).click();
   await pane.click({ position: { x: 180, y: 330 } });
   const service = page.locator('[data-element-id="service"]');
-  const subtype = service.getByRole("combobox", { name: "Subtype of Service", exact: true });
-  await subtype.selectOption({ label: "Web app" });
-  await service.locator(".element-card-head").click();
+  const subtype = service.getByRole("button", { name: "Change subtype of Service", exact: true });
+  await subtype.click();
+  await page.getByRole("menuitem", { name: "Web app", exact: true }).click();
+  await service.locator(".element-card-name").click();
   await service.getByRole("button", { name: "Add REST API client", exact: true }).click();
   await expect(service.locator("[data-attachment-id]")).toHaveCount(1);
   await expect.poll(async () => (await layoutOf(request, project)).items.service).toBeTruthy();
@@ -42,7 +43,8 @@ test("creation over an existing subtype cannot add, edit, or move that card", as
   expect((await designOf(request, project)).design).toEqual(before);
   expect((await layoutOf(request, project)).items.service).toEqual(position);
 
-  await subtype.selectOption({ label: "HTTP service" });
+  await subtype.click();
+  await page.getByRole("menuitem", { name: "HTTP service", exact: true }).click();
   const review = page.getByRole("dialog", { name: "Change service subtype?" });
   await review.getByRole("button", { name: "Cancel", exact: true }).click();
   expect((await designOf(request, project)).design).toEqual(before);
@@ -82,7 +84,7 @@ test("selection keeps card geometry stable and opening the inspector fits the bo
   await expect(cards).toHaveCount(2);
   const first = cards.first();
   const unselected = await first.boundingBox();
-  await first.locator(".element-card-head").click();
+  await first.locator(".element-card-name").click();
   await expect(first.getByRole("group", { name: "Compatible components" })).toBeVisible();
   expect(await first.boundingBox()).toEqual(unselected);
   await first.getByRole("button", { name: "Add REST API server", exact: true }).click();

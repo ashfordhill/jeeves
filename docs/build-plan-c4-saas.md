@@ -1,10 +1,11 @@
 # C4 authoring for SaaS: notation fidelity and catalog coverage (P39–P45)
 
-**Status: draft for review, 2026-10-31.** Written after P38 (`f8aeea0`) from a read-only
-inspection of the editor, the planned-capability catalog, the architecture examples,
-the P36/P37 evidence screenshots and the Visual Paradigm C4 guides listed below. Nothing
-here is approved or implemented. The open decisions at the end must be answered before
-P39 starts; each package is sized for one fresh agent following PLAN.md §15.
+**Status: approved with recorded decisions, 2026-10-31. P39 is complete; P40 is next.**
+[P39 evidence](evidence/p39/README.md) records the implementation, checks and screenshots.
+The plan was written after P38 (`f8aeea0`) from a read-only inspection of the editor,
+planned-capability catalog, architecture examples, P36/P37 evidence and the Visual Paradigm
+C4 guides below. The user's accepted decisions at the end are binding. Each package is
+sized for one fresh agent following PLAN.md §15.
 
 Scope guard for every package below: this work is about **designing with C4 in Jeeves**.
 No template runtime, recipe, generator output, lockfile or live QRWTY change is in scope.
@@ -49,7 +50,7 @@ They follow the Visual Paradigm guides and c4model.com notation guidance.
 | N10 | No abstraction mixing: C1 has no technology, C2 shows what runs (not where), C3 scopes one container. | C1–C3 |
 | N11 | Everything above is reachable and editable by mouse alone, with Save/Cancel, undo/redo and reload continuity. | all |
 
-## Where Jeeves stands today
+## Where Jeeves stood before P39
 
 Observed on the P37 QR fixture, the P36 community example and the code.
 
@@ -73,6 +74,8 @@ the named browser suites, inspected screenshots, CATALOG.md kept current. Packag
 ordered; P44 and P45 can be dropped or reordered by the user.
 
 ### P39 — C4 container notation on the C2 board
+
+**Completed 2026-10-31.** [Evidence and limitations](evidence/p39/README.md); implementation and verification are recorded in the latest [handoff](handoff.md).
 
 **Goal.** The C2 board reads as a C4 container diagram (N1, N2, N4, N5, N6) while remaining
 the editor.
@@ -269,4 +272,4 @@ The user accepted every recommended default. These are binding for P39–P45:
 | D15 | The expired Lens image is dropped; the Visual Paradigm guides are the reference. |
 | D16 | Commit planning documents immediately. Work on `main`, one agent at a time; no branches or worktrees. Commit history is disposable. |
 
-Status: P38 is the latest completed package (`f8aeea0`). **P39 is next.**
+Status: **P39 is complete. P40 is next.** Follow the package order and recorded decisions above.

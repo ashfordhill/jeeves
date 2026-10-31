@@ -4,9 +4,14 @@
  * Card shape follows automation-pitch's step tile (3px line, rounded, cream fill).
  */
 import type { TemplateDescription } from "@jeeves/registry";
-import { type ConfigValues, plannedCapability } from "@jeeves/spec";
+import {
+  type ConfigValues,
+  containerDescription,
+  containerTechnology,
+  plannedCapability,
+} from "@jeeves/spec";
 import { IconAlertTriangle, IconX } from "@tabler/icons-react";
-import { Handle, type NodeProps, NodeResizer, Position } from "@xyflow/react";
+import { Handle, type NodeProps, NodeResizer, Position, useViewport } from "@xyflow/react";
 import { useCallback } from "react";
 import { elementFamily, templateFamily, typeStyles } from "../../architecture/type-style.tsx";
 import { type ElementNode as ElementNodeType, handleId } from "../flow.ts";
@@ -35,8 +40,7 @@ export function cardChips(template: TemplateDescription | undefined, config: Con
   });
 }
 
-/** `compact` drops the labels, for the narrow attachment mini-boxes. */
-function Chips({ chips, compact }: { chips: Chip[]; compact?: boolean }) {
+function Chips({ chips }: { chips: Chip[] }) {
   if (chips.length === 0) return null;
   return (
     <span className="card-chips">
@@ -47,7 +51,7 @@ function Chips({ chips, compact }: { chips: Chip[]; compact?: boolean }) {
           className="card-chip"
           data-unset={chip.value === "not set" || undefined}
         >
-          {compact ? null : <span className="card-chip-label">{chip.label} </span>}
+          <span className="card-chip-label">{chip.label} </span>
           {chip.value}
         </span>
       ))}
@@ -58,6 +62,7 @@ function Chips({ chips, compact }: { chips: Chip[]; compact?: boolean }) {
 export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) {
   const { element, template, attachments } = data;
   const planned = plannedCapability(element.planned);
+  const { zoom } = useViewport();
   const onResizeEnd = useCallback(
     (_: unknown, size: { x: number; y: number; width: number; height: number }) => {
       const layout = useDraw.getState().loaded?.layout.items[id];
@@ -81,6 +86,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
     <article
       className={`element-card${planned ? " planned-card" : ""}${template?.elementKind === "database" || planned?.role === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
       data-element-id={id}
+      data-overview={zoom < 0.55}
       data-family={elementFamily(element)}
       aria-label={`${element.name}, ${label}`}
     >
@@ -95,10 +101,18 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
         <span className="element-card-icon">
           <TemplateIcon name={typeStyles[elementFamily(element)].icon} size={22} />
         </span>
-        <span className="element-card-titles">
+        <div className="element-card-titles">
+          <span className="element-card-stereotype">
+            {planned?.role === "external" ? "External system" : "Container"}
+          </span>
           <span className="element-card-name">{element.name}</span>
-          <span className="element-card-template">{label}</span>
-        </span>
+          {!planned && template?.elementKind !== "database" ? (
+            <SubtypeControl element={element} disabled={!editing} cardLabel={label} />
+          ) : (
+            <span className="element-card-template">{label}</span>
+          )}
+          <span className="element-card-technology">{containerTechnology(element)}</span>
+        </div>
         {!planned && findings?.length ? (
           <span
             className="card-findings"
@@ -111,18 +125,11 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
           </span>
         ) : null}
       </div>
-      {planned ? (
-        <>
-          <p className="planned-card-description">
-            {element.notes.trim().slice(0, 120) || planned.description}
-          </p>
-          <span className="capability-status">Planned</span>
-        </>
-      ) : null}
-      {!planned && template?.elementKind !== "database" ? (
-        <SubtypeControl element={element} disabled={!editing} />
-      ) : null}
-      <Chips chips={cardChips(template, element.config)} />
+      <p className="container-description" title={containerDescription(element)}>
+        {containerDescription(element)}
+      </p>
+      {planned ? <span className="capability-status">Planned</span> : null}
+      <Chips chips={cardChips(template, element.config).slice(0, 2)} />
       {attachments.length > 0 ? (
         <ul className="attachment-list" aria-label={`Attachments of ${element.name}`}>
           {attachments.map(({ attachment, template: attachmentTemplate }) => (
@@ -132,6 +139,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
               data-attachment-id={attachment.id}
               data-family={templateFamily(attachment.template.id)}
               aria-label={attachmentTemplate?.displayName ?? attachment.template.id}
+              title={attachmentTemplate?.displayName ?? attachment.template.id}
             >
               <TemplateIcon
                 name={typeStyles[templateFamily(attachment.template.id)].icon}
@@ -140,7 +148,6 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
               <span className="attachment-box-name">
                 {attachmentTemplate?.displayName ?? attachment.template.id}
               </span>
-              <Chips chips={cardChips(attachmentTemplate, attachment.config).slice(0, 1)} compact />
               <button
                 type="button"
                 className="attachment-remove nodrag"
@@ -178,6 +185,8 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
               <button
                 type="button"
                 key={t.id}
+                aria-label={`Add ${t.displayName}`}
+                title={`Add ${t.displayName}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   const loaded = useDraw.getState().loaded;
@@ -189,7 +198,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
                   if (plan.ok) void edit(plan.ops);
                 }}
               >
-                Add {t.displayName}
+                <TemplateIcon name={typeStyles[templateFamily(t.id)].icon} size={16} />
               </button>
             ))}
         </fieldset>

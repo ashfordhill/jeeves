@@ -96,3 +96,20 @@ export function ArrowEdge(props: EdgeProps<BoardEdge>) {
     </>
   );
 }
+
+export function ContextEdge(props: EdgeProps<BoardEdge>) {
+  const [path, x, y] = useGeometry(props);
+  const label = props.data && "context" in props.data ? props.data.label : "";
+  return (
+    <>
+      <BaseEdge id={props.id} path={path} markerEnd={props.markerEnd} className="connection-path" />
+      <EdgeChip
+        x={x}
+        y={y}
+        text={label}
+        className="context-chip"
+        onClick={() => useDraw.getState().focus({ nodes: [], edges: [props.id] })}
+      />
+    </>
+  );
+}

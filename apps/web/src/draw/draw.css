@@ -1441,3 +1441,184 @@ button.finding-btn:hover {
     margin-top: 8px;
   }
 }
+
+/* C4 container notation; all geometry below is a view, never a layout annotation. */
+.c2-scope-caption {
+  position: absolute;
+  inset: 0 0 auto;
+  box-sizing: border-box;
+  height: 45px;
+  pointer-events: none;
+}
+.c2-board-stage {
+  position: absolute;
+  inset: 45px 0 0;
+}
+.draw-board > .draw-toolbar {
+  top: 54px;
+}
+.element-card-stereotype {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.element-card-technology {
+  display: block;
+  font-size: 12px;
+  margin-top: 3px;
+}
+.element-card .subtype-menu {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  text-align: left;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.container-description {
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.element-card[data-overview="true"] .container-description,
+.element-card[data-overview="true"] > .card-chips {
+  display: none;
+}
+.element-card .attachment-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.element-card .attachment-box {
+  position: relative;
+  padding: 4px 6px;
+  min-height: 22px;
+}
+.element-card .attachment-box-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.element-card .compatible-components {
+  display: flex;
+}
+.c2-system-boundary {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 2px dashed var(--ink-soft);
+  border-radius: 12px;
+  pointer-events: none;
+}
+.c2-system-boundary > span {
+  position: absolute;
+  left: 16px;
+  top: 10px;
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--ink);
+}
+.c2-system-boundary small {
+  font-size: 11px;
+  font-weight: 600;
+}
+.c2-context-card {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 2px solid var(--type-color);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--type-color) 10%, var(--cream));
+  color: var(--ink);
+}
+.c2-context-card > svg {
+  float: left;
+  margin-right: 8px;
+}
+.c2-context-card strong {
+  display: block;
+  font-size: 16px;
+}
+.c2-context-card p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.c2-context-card.is-selected {
+  outline: 3px solid var(--select-ring);
+  outline-offset: 2px;
+}
+.draw-board .react-flow__node-context .react-flow__handle,
+.draw-board .react-flow__node-systemBoundary .react-flow__handle {
+  opacity: 0;
+  pointer-events: none;
+}
+.database-card {
+  border-radius: 18px / 12px;
+  border-top-width: 3px;
+  padding-top: 30px;
+  padding-bottom: 22px;
+}
+.database-card::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: -3px;
+  height: 24px;
+  border: 3px solid var(--type-color, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--type-color) 7%, var(--cream));
+  pointer-events: none;
+}
+@media (max-width: 800px) {
+  .c2-scope-caption {
+    gap: 8px;
+    font-size: 11px;
+    padding-left: 12px;
+  }
+  .c2-scope-caption span {
+    display: block;
+    white-space: normal;
+  }
+}
+
+.draw-tool-hint {
+  top: 114px;
+}
+.c2-context-card p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 800px) {
+  .c2-scope-caption {
+    gap: 2px;
+    padding: 5px 12px;
+  }
+  .c2-scope-caption strong {
+    flex-shrink: 0;
+  }
+  .draw-tool-hint {
+    top: 144px;
+  }
+}
+.element-card .compatible-components button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  min-width: 26px;
+  min-height: 26px;
+}

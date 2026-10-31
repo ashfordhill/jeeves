@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "./browser-test.ts";
-import { card, designOf, layoutOf, openNewProject } from "./helpers.ts";
+import { card, designOf, editorAction, layoutOf, openNewProject } from "./helpers.ts";
 
 /**
  * S5: inspector, findings, and history, all driven by mouse. Text still has to be typed, but
@@ -14,8 +14,7 @@ async function place(page: Page, template: string, x: number, y: number) {
   await page.locator(".react-flow__pane").click({ position: { x, y } });
 }
 
-const rail = (page: Page) =>
-  page.getByRole("complementary", { name: "Inspector, findings, and chat" });
+const rail = (page: Page) => page.getByRole("complementary", { name: "Architecture details" });
 
 /** Clicks a section heading in the rail, which moves focus off the field being edited. */
 async function clickAway(page: Page) {
@@ -26,6 +25,7 @@ async function expectNoAxeViolations(page: Page) {
   // Toolbar tooltips are transient portals outside any landmark; scan without one open.
   await page.mouse.move(1, 1);
   await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await expect(page.locator(".mantine-Menu-dropdown, .mantine-Modal-content")).toHaveCount(0);
   const axe = await new AxeBuilder({ page }).analyze();
   expect(axe.violations).toEqual([]);
 }
@@ -41,18 +41,13 @@ test("edits config and notes, sees findings appear and clear, and undoes and red
 
   // The web app's title has no default: a finding on the card and in the Findings tab.
   await expect(web.getByRole("img", { name: "1 finding" })).toBeVisible();
-  const findingsTab = rail(page).getByRole("tab", { name: /Findings/ });
-  await expect(findingsTab).toContainText("1");
-  await findingsTab.click();
-  await rail(page)
-    .getByRole("button", { name: /Web app.*needs a value for "title"/ })
-    .click();
+  await editorAction(page, "Findings (1)");
+  const findings = page.getByRole("dialog", { name: "Findings", exact: true });
+  await findings.getByRole("button", { name: /Web app.*needs a value for "title"/ }).click();
+  await expect(findings).not.toBeVisible();
 
-  // Clicking the finding selects the card and opens it in the inspector.
-  await expect(rail(page).getByRole("tab", { name: "Inspector" })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
+  // Clicking the finding selects the card and opens its current inspector.
+  await expect(rail(page)).toBeVisible();
   await expect(web).toHaveClass(/is-selected/);
   await expect(rail(page).getByRole("textbox", { name: "Name" })).toHaveValue("Web app");
   await expectNoAxeViolations(page);
@@ -64,7 +59,7 @@ test("edits config and notes, sees findings appear and clear, and undoes and red
   await clickAway(page);
 
   await expect(web.getByRole("img", { name: /finding/ })).toHaveCount(0);
-  await expect(findingsTab).toContainText("0");
+
   await expect(rail(page).getByText("Required")).toHaveCount(0);
   await expect(web).toContainText("Link shortener");
 
@@ -114,8 +109,9 @@ test("edits config and notes, sees findings appear and clear, and undoes and red
   expect(saved.elements[0]?.config).toEqual({ title: "Link shortener", port: 5174 });
   expect(saved.elements[0]?.notes).toBe("Lists links and their click counts.");
 
-  await findingsTab.click();
-  await expect(rail(page).getByText("No findings. The design is ready to generate.")).toBeVisible();
+  await editorAction(page, "Findings (0)");
+  await expect(findings.getByText("No findings. The design is ready to generate.")).toBeVisible();
+  await findings.getByRole("button", { name: "Close findings" }).click();
   await expectNoAxeViolations(page);
 });
 

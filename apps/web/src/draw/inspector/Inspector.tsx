@@ -37,6 +37,7 @@ import { SubtypeControl } from "../SubtypeControl.tsx";
 import { type Selection, useDraw } from "../store.ts";
 import { TemplateIcon } from "../TemplateIcon.tsx";
 import { ConfigForm } from "./ConfigForm.tsx";
+import { ContainerDescription } from "./ContainerDescription.tsx";
 import { DeliveryConfiguration } from "./DeliveryEditor.tsx";
 import { DraftTextarea, DraftTextInput } from "./fields.tsx";
 import { LocalExecutionConfiguration } from "./LocalExecutionEditor.tsx";
@@ -323,6 +324,8 @@ export function ElementInspector({ element }: { element: Element }) {
           if (name.trim()) void edit([{ op: "updateElement", id: element.id, name: name.trim() }]);
         }}
       />
+
+      <ContainerDescription element={element} />
 
       {template?.elementKind !== "database" ? (
         <SubtypeControl element={element} implementationDetails />

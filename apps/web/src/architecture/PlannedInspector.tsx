@@ -1,5 +1,6 @@
 import {
   type Connection,
+  containerTechnology,
   type Element,
   plannedCapability,
   plannedConfigSchema,
@@ -25,6 +26,8 @@ export function PlannedElementInspector({
     `element:${element.id}`,
     {
       name: element.name,
+      description: element.description ?? "",
+      technology: element.technology ?? "",
       notes: element.notes,
       config: structuredClone(element.config),
     },
@@ -35,10 +38,18 @@ export function PlannedElementInspector({
   const valid =
     draft.name.trim().length > 0 &&
     draft.name.trim().length <= 120 &&
+    draft.description.trim().length <= 240 &&
+    draft.technology.trim().length <= 120 &&
     plannedConfigSchema(capability.id).safeParse(draft.config).success;
   const changed =
     JSON.stringify(draft) !==
-    JSON.stringify({ name: element.name, notes: element.notes, config: element.config });
+    JSON.stringify({
+      name: element.name,
+      description: element.description ?? "",
+      technology: element.technology ?? "",
+      notes: element.notes,
+      config: element.config,
+    });
   const save = async () => {
     if (!valid || saving) return;
     if (useDraw.getState().loaded?.design.revision !== baseRevision) {
@@ -47,7 +58,14 @@ export function PlannedElementInspector({
     }
     setSaving(true);
     const ok = await useDraw.getState().edit([
-      { op: "updateElement", id: element.id, name: draft.name, config: draft.config },
+      {
+        op: "updateElement",
+        id: element.id,
+        name: draft.name,
+        description: draft.description,
+        technology: draft.technology,
+        config: draft.config,
+      },
       { op: "setNotes", id: element.id, notes: draft.notes },
     ]);
     setSaving(false);
@@ -78,6 +96,24 @@ export function PlannedElementInspector({
             value={draft.name}
             maxLength={120}
             onChange={(event) => setDraft({ ...draft, name: event.currentTarget.value })}
+          />
+          <Textarea
+            label="Description"
+            value={draft.description}
+            maxLength={240}
+            minRows={2}
+            onChange={(event) => setDraft({ ...draft, description: event.currentTarget.value })}
+          />
+          <TextInput
+            label="Technology"
+            placeholder={containerTechnology({
+              ...element,
+              technology: undefined,
+              config: draft.config,
+            })}
+            value={draft.technology}
+            maxLength={120}
+            onChange={(event) => setDraft({ ...draft, technology: event.currentTarget.value })}
           />
           <CapabilityFields
             capability={capability.id}
@@ -114,6 +150,8 @@ export function PlannedElementInspector({
               onClick={() => {
                 setDraft({
                   name: element.name,
+                  description: element.description ?? "",
+                  technology: element.technology ?? "",
                   notes: element.notes,
                   config: structuredClone(element.config),
                 });

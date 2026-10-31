@@ -28,7 +28,8 @@ import {
 import { type DragEvent, type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaperTextureSvg } from "../theme/PaperTexture.tsx";
 import { type CanvasEnd, type ConnectPlan, planConnect } from "./connect.ts";
-import { ArrowEdge, ConnectionEdge } from "./edges/BoardEdges.tsx";
+import { ContextBoardCard, SystemBoundary, withContainerNotation } from "./container-notation.tsx";
+import { ArrowEdge, ConnectionEdge, ContextEdge } from "./edges/BoardEdges.tsx";
 import { FreeArrows } from "./edges/FreeArrows.tsx";
 import {
   attachmentFromHandle,
@@ -48,8 +49,15 @@ import { registry } from "./registry.ts";
 import { type Tool, useDraw } from "./store.ts";
 import { readDraggedTool, Toolbar } from "./Toolbar.tsx";
 
-const nodeTypes = { element: ElementNode, text: TextNode, note: NoteNode, frame: FrameNode };
-const edgeTypes = { connection: ConnectionEdge, arrow: ArrowEdge };
+const nodeTypes = {
+  context: ContextBoardCard,
+  systemBoundary: SystemBoundary,
+  element: ElementNode,
+  text: TextNode,
+  note: NoteNode,
+  frame: FrameNode,
+};
+const edgeTypes = { connection: ConnectionEdge, arrow: ArrowEdge, context: ContextEdge };
 
 /** Offset from the pointer to a new item's top-left, so it lands roughly centered. */
 const PLACE_OFFSET: Record<string, { x: number; y: number }> = {
@@ -128,7 +136,11 @@ export function Canvas() {
   // Seeded synchronously so React Flow's initial fitView sees the nodes.
   const [nodes, setNodes] = useState<BoardNode[]>(() =>
     loaded
-      ? buildNodes(loaded.design, loaded.layout, loaded.templates).map((node) => ({
+      ? withContainerNotation(
+          loaded.design,
+          buildNodes(loaded.design, loaded.layout, loaded.templates),
+          loaded.project.name,
+        ).map((node) => ({
           ...node,
           selected: useDraw.getState().selection.nodes.includes(node.id),
         }))
@@ -152,8 +164,17 @@ export function Canvas() {
   const templates = loaded?.templates;
   useEffect(() => {
     if (!design || !layout || !templates) return;
-    setNodes((prev) => buildNodes(design, layout, templates, prev));
-  }, [design, layout, templates]);
+    setNodes((prev) =>
+      withContainerNotation(
+        design,
+        [
+          ...buildNodes(design, layout, templates, prev),
+          ...prev.filter((node) => node.type === "context"),
+        ],
+        loaded.project.name,
+      ),
+    );
+  }, [design, layout, templates, loaded?.project.name]);
   useEffect(() => {
     if (!design) return;
     setEdges((prev) => buildEdges(design, prev));
@@ -189,8 +210,12 @@ export function Canvas() {
   );
 
   const onNodesChange = useCallback(
-    (changes: NodeChange<BoardNode>[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [],
+    (changes: NodeChange<BoardNode>[]) =>
+      setNodes((nds) => {
+        const updated = applyNodeChanges(changes, nds);
+        return design ? withContainerNotation(design, updated, loaded!.project.name) : updated;
+      }),
+    [design, loaded?.project.name],
   );
   const onEdgesChange = useCallback(
     (changes: EdgeChange<BoardEdge>[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
@@ -299,6 +324,7 @@ export function Canvas() {
   const onNodeClick: NodeMouseHandler<BoardNode> = useCallback(
     (event, node) => {
       if (!design) return;
+      if (node.type === "context" || node.type === "systemBoundary") return;
       if (tool.kind === "connect") {
         const end = endFromClick(design, node, event);
         if (pendingEnd) void runPlan(planConnect(design, registry, pendingEnd, end));
@@ -343,6 +369,7 @@ export function Canvas() {
     (_: unknown, __: BoardNode, dragged: BoardNode[]) => {
       const items: Record<string, LayoutItem> = {};
       for (const node of dragged) {
+        if (node.type === "context" || node.type === "systemBoundary") continue;
         const x = Math.round(node.position.x);
         const y = Math.round(node.position.y);
         items[node.id] = { ...layout?.items[node.id], x, y };
@@ -432,7 +459,8 @@ export function Canvas() {
           .some(
             (el) =>
               el.classList.contains("react-flow__node") &&
-              !el.classList.contains("react-flow__node-frame"),
+              !el.classList.contains("react-flow__node-frame") &&
+              !el.classList.contains("react-flow__node-systemBoundary"),
           )
       ) {
         setNotice({ tone: "info", message: "Drop the new item onto empty board space." });
@@ -447,75 +475,84 @@ export function Canvas() {
 
   return (
     <div className="draw-board" data-tool={tool.kind}>
-      <ReactFlow<BoardNode, BoardEdge>
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        edgesReconnectable={tool.kind === "select"}
-        onReconnect={(edge, connection) => {
-          if (!design || !design.connections.some((c) => c.id === edge.id)) return;
-          const draft = {
-            ...design,
-            connections: design.connections.filter((c) => c.id !== edge.id),
-          };
-          const plan = planConnect(
-            draft,
-            registry,
-            { element: connection.source },
-            { element: connection.target },
-          );
-          const disconnect: OperationInput = { op: "disconnect", id: edge.id };
-          if (plan.ok === true) void runPlan({ ...plan, ops: [disconnect, ...plan.ops] });
-          else if (plan.ok === "choose")
-            void runPlan({
-              ...plan,
-              choices: plan.choices.map((c) => ({ ...c, ops: [disconnect, ...c.ops] })),
-            });
-          else
-            void runPlan({
-              ...plan,
-              fixes: plan.fixes.map((c) => ({ ...c, ops: [disconnect, ...c.ops] })),
-            });
-        }}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onPaneClick={onPaneClick}
-        onNodeClick={onNodeClick}
-        onNodeDoubleClick={onNodeDoubleClick}
-        onNodeDragStop={onNodeDragStop}
-        onSelectionChange={onSelectionChange}
-        onMoveEnd={(_, viewport) => setViewport(viewport)}
-        defaultViewport={defaultViewport}
-        fitView={fitOnOpen}
-        fitViewOptions={{ maxZoom: 1 }}
-        panOnDrag={tool.kind === "hand" ? true : [1, 2]}
-        selectionOnDrag={tool.kind === "select"}
-        nodesDraggable={tool.kind === "select"}
-        nodesConnectable={tool.kind === "select" || tool.kind === "connect"}
-        elementsSelectable={tool.kind === "select"}
-        deleteKeyCode={null}
-        zoomOnDoubleClick={false}
-        minZoom={0.2}
-        maxZoom={2}
-        proOptions={{ hideAttribution: true }}
+      <section
+        className="architecture-scope-caption c2-scope-caption"
+        aria-label={`Container diagram for ${loaded.design.architecture?.system.name ?? loaded.project.name}`}
       >
-        <BoardTexture />
-        <FreeArrows design={loaded.design} layout={loaded.layout} />
-        <Controls showInteractive={false} position="bottom-right">
-          <ControlButton
-            onClick={zoomToSelection}
-            disabled={!hasSelection}
-            title="Zoom to selection (Shift+2)"
-            aria-label="Zoom to selection"
-          >
-            <IconFocusCentered size={16} />
-          </ControlButton>
-        </Controls>
-      </ReactFlow>
+        <strong>{loaded.design.architecture?.system.name ?? loaded.project.name}</strong>
+        <span>Applications and data stores</span>
+      </section>
+      <div className="c2-board-stage">
+        <ReactFlow<BoardNode, BoardEdge>
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          edgesReconnectable={tool.kind === "select"}
+          onReconnect={(edge, connection) => {
+            if (!design || !design.connections.some((c) => c.id === edge.id)) return;
+            const draft = {
+              ...design,
+              connections: design.connections.filter((c) => c.id !== edge.id),
+            };
+            const plan = planConnect(
+              draft,
+              registry,
+              { element: connection.source },
+              { element: connection.target },
+            );
+            const disconnect: OperationInput = { op: "disconnect", id: edge.id };
+            if (plan.ok === true) void runPlan({ ...plan, ops: [disconnect, ...plan.ops] });
+            else if (plan.ok === "choose")
+              void runPlan({
+                ...plan,
+                choices: plan.choices.map((c) => ({ ...c, ops: [disconnect, ...c.ops] })),
+              });
+            else
+              void runPlan({
+                ...plan,
+                fixes: plan.fixes.map((c) => ({ ...c, ops: [disconnect, ...c.ops] })),
+              });
+          }}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+          onPaneClick={onPaneClick}
+          onNodeClick={onNodeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
+          onNodeDragStop={onNodeDragStop}
+          onSelectionChange={onSelectionChange}
+          onMoveEnd={(_, viewport) => setViewport(viewport)}
+          defaultViewport={defaultViewport}
+          fitView={fitOnOpen}
+          fitViewOptions={{ maxZoom: 1, padding: 0.15 }}
+          panOnDrag={tool.kind === "hand" ? true : [1, 2]}
+          selectionOnDrag={tool.kind === "select"}
+          nodesDraggable={tool.kind === "select"}
+          nodesConnectable={tool.kind === "select" || tool.kind === "connect"}
+          elementsSelectable={tool.kind === "select"}
+          deleteKeyCode={null}
+          zoomOnDoubleClick={false}
+          minZoom={0.2}
+          maxZoom={2}
+          proOptions={{ hideAttribution: true }}
+        >
+          <BoardTexture />
+          <FreeArrows design={loaded.design} layout={loaded.layout} />
+          <Controls showInteractive={false} position="bottom-right">
+            <ControlButton
+              onClick={zoomToSelection}
+              disabled={!hasSelection}
+              title="Zoom to selection (Shift+2)"
+              aria-label="Zoom to selection"
+            >
+              <IconFocusCentered size={16} />
+            </ControlButton>
+          </Controls>
+        </ReactFlow>
+      </div>
       <Toolbar onDelete={deleteSelection} canDelete={hasSelection} />
     </div>
   );

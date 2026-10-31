@@ -191,3 +191,20 @@ it("changes documentation/configuration through the same protected recipe withou
     before.files.find((file) => file.path === "docker-compose.yml"),
   );
 });
+
+it("ignores container description and technology in generated behavior and ownership", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  const edited = structuredClone(design);
+  for (const element of edited.elements) {
+    element.description = `Responsibility of ${element.name}`;
+    element.technology = "Presentation only";
+  }
+  const after = planProject(edited, templates, { projectName: "QR" });
+  // The saved input snapshot is deliberately lossless; every generated artifact is identical.
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+});

@@ -167,9 +167,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const selected =
     level === "containers"
       ? boardSelection.edges[0]
-        ? `connection:${boardSelection.edges[0]}`
+        ? boardSelection.edges[0].startsWith("context:")
+          ? boardSelection.edges[0]
+          : `connection:${boardSelection.edges[0]}`
         : boardSelection.nodes[0]
-          ? `container:${boardSelection.nodes[0]}`
+          ? boardSelection.nodes[0].startsWith("context:")
+            ? boardSelection.nodes[0]
+            : `container:${boardSelection.nodes[0]}`
           : undefined
       : selections[scope];
   const inspectorOpen = inspectorViews[scope] ?? Boolean(selected);
@@ -544,7 +548,16 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           ) : null}
           {level === "containers" ? (
             <>
-              {selected ? <Inspector onComponents={openComponents} /> : null}
+              {selected?.startsWith("context:") ? (
+                <ContextInspector
+                  key={selected}
+                  selected={node?.id ?? ""}
+                  relationship={edge?.context}
+                  onContainers={() => void changeLevel("containers")}
+                />
+              ) : selected ? (
+                <Inspector onComponents={openComponents} />
+              ) : null}
               {boardElement &&
               !boardElement.planned &&
               views?.components.some((view) => view.container === boardElement.id) ? (
@@ -662,7 +675,11 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                   .focus(
                     value.startsWith("container:")
                       ? { nodes: [value.slice(10)], edges: [] }
-                      : { nodes: [], edges: [value.slice(11)] },
+                      : value.startsWith("context:")
+                        ? projection?.edges.some((edge) => edge.id === value)
+                          ? { nodes: [], edges: [value] }
+                          : { nodes: [value], edges: [] }
+                        : { nodes: [], edges: [value.slice(11)] },
                   );
               else choose(value);
               setInspectorOpen(true);

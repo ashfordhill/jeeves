@@ -16,10 +16,9 @@ test("production Service hierarchy, reviewed subtype loss and layout-only resize
   await pane.click({ position: { x: 310, y: 330 } });
   const service = page.locator('[data-element-id="service"]');
   await expect(service).toBeVisible();
-  await service
-    .getByRole("combobox", { name: "Subtype of Service" })
-    .selectOption({ label: "HTTP service" });
-  await service.locator(".element-card-head").click();
+  await service.getByRole("button", { name: "Change subtype of Service", exact: true }).click();
+  await page.getByRole("menuitem", { name: "HTTP service", exact: true }).click();
+  await service.locator(".element-card-name").click();
   await service.getByRole("button", { name: "Add REST API server", exact: true }).click();
   await expect(service.locator("[data-attachment-id]")).toHaveCount(1);
   await expect(service.locator(".react-flow__handle")).toHaveCount(2);
@@ -30,17 +29,16 @@ test("production Service hierarchy, reviewed subtype loss and layout-only resize
   const db = page.locator(".database-card");
   await expect(db).toBeVisible();
   await page.getByRole("button", { name: "Connector", exact: true }).click();
-  await service.locator(".element-card-head").click();
+  await service.locator(".element-card-name").click();
   await db.click();
   await expect
     .poll(async () => (await designOf(request, project)).design.connections.length)
     .toBe(1);
   await page.getByRole("button", { name: "Select", exact: true }).click();
-  await service.locator(".element-card-head").click();
+  await service.locator(".element-card-name").click();
   const before = (await designOf(request, project)).design;
-  await service
-    .getByRole("combobox", { name: "Subtype of Service" })
-    .selectOption({ label: "Web app" });
+  await service.getByRole("button", { name: "Change subtype of Service", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Web app", exact: true }).click();
   const review = page.getByRole("dialog", { name: "Change service subtype?" });
   await expect(review).toContainText("component: service-rest-api-server");
   await expect(review).toContainText("connection:");
@@ -58,9 +56,8 @@ test("production Service hierarchy, reviewed subtype loss and layout-only resize
     .poll(async () => (await layoutOf(request, project)).items.service)
     .toHaveProperty("width");
   expect((await designOf(request, project)).design.revision).toBe(before.revision);
-  await service
-    .getByRole("combobox", { name: "Subtype of Service" })
-    .selectOption({ label: "Web app" });
+  await service.getByRole("button", { name: "Change subtype of Service", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Web app", exact: true }).click();
   await review.getByRole("button", { name: "Discard and change subtype" }).click();
   await expect(service).toContainText("Web app");
   await expect
@@ -94,10 +91,14 @@ test("outer connections infer a single pair, expose ambiguity, and validate nati
     await pane.click({ position: { x, y } });
     await expect(page.locator("[data-element-id]")).toHaveCount(index + 1);
     const service = page.locator("[data-element-id]").nth(index);
-    await service
-      .getByRole("combobox", { name: /^Subtype of/ })
-      .selectOption({ label: subtype === "web-app" ? "Web app" : "HTTP service" });
-    await service.locator(".element-card-head").click();
+    await service.getByRole("button", { name: /^Change subtype of/ }).click();
+    await page
+      .getByRole("menuitem", {
+        name: subtype === "web-app" ? "Web app" : "HTTP service",
+        exact: true,
+      })
+      .click();
+    await service.locator(".element-card-name").click();
     await service
       .getByRole("button", {
         name: subtype === "web-app" ? "Add REST API client" : "Add REST API server",
@@ -168,7 +169,7 @@ test("outer connections infer a single pair, expose ambiguity, and validate nati
     await page.mouse.click(point.x, point.y);
   }
   await page.getByRole("button", { name: "Delete connection", exact: true }).click();
-  await source.locator(".element-card-head").click();
+  await source.locator(".element-card-name").click();
   await source.getByRole("button", { name: "Add REST API client", exact: true }).click();
   await drag(source.locator('[data-handleid="out"]'), target.locator('[data-handleid="in"]'));
   const choices = page.getByRole("region", { name: "Connection choices" });

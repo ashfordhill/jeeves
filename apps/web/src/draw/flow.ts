@@ -14,6 +14,7 @@ import type {
   LayoutItem,
 } from "@jeeves/spec";
 import { type Edge, MarkerType, type Node } from "@xyflow/react";
+import type { ContextBoardNode } from "./container-notation.tsx";
 
 export type TemplateIndex = ReadonlyMap<string, TemplateDescription>;
 
@@ -28,11 +29,15 @@ export type AnnotationNodeData = { annotation: Annotation };
 
 export type ElementNode = Node<ElementNodeData, "element">;
 export type AnnotationNode = Node<AnnotationNodeData, "text" | "note" | "frame">;
-export type BoardNode = ElementNode | AnnotationNode;
+export type BoardNode = ElementNode | AnnotationNode | ContextBoardNode;
 
 export type ConnectionEdgeData = { connection: Connection };
+export type ContextEdgeData = { context: string; label: string };
 export type ArrowEdgeData = { annotation: Extract<Annotation, { kind: "arrow" }> };
-export type BoardEdge = Edge<ConnectionEdgeData, "connection"> | Edge<ArrowEdgeData, "arrow">;
+export type BoardEdge =
+  | Edge<ConnectionEdgeData, "connection">
+  | Edge<ArrowEdgeData, "arrow">
+  | Edge<ContextEdgeData, "context">;
 
 /** Handle IDs: an element's own ports are `in`/`out`; an attachment's are `in:<id>`/`out:<id>`. */
 export const handleId = (side: "in" | "out", attachment?: string) =>
@@ -173,6 +178,21 @@ export function buildEdges(
       data: { annotation },
       markerEnd: ARROW_HEAD,
       ...(selected.has(annotation.id) ? { selected: true } : {}),
+    });
+  }
+  for (const relation of design.architecture?.relationships ?? []) {
+    if (relation.from !== "system" && relation.to !== "system") continue;
+    const end = relation.container ?? "context:system";
+    edges.push({
+      id: `context:${relation.id}`,
+      type: "context",
+      source: relation.from === "system" ? end : `context:${relation.from}`,
+      target: relation.to === "system" ? end : `context:${relation.to}`,
+      sourceHandle: "out",
+      targetHandle: "in",
+      markerEnd: ARROW_HEAD,
+      data: { context: relation.id, label: relation.description },
+      ...(selected.has(`context:${relation.id}`) ? { selected: true } : {}),
     });
   }
   return edges;

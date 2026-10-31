@@ -116,7 +116,7 @@ test("a new service can add and configure an event attachment before its databas
   await page.locator(".react-flow__pane").click({ position: { x: 350, y: 250 } });
   await page
     .getByRole("article", { name: "HTTP service, HTTP service", exact: true })
-    .locator(".element-card-head")
+    .locator(".element-card-name")
     .click();
   await page.getByRole("button", { name: "Add attachment", exact: true }).click();
   await page.getByRole("menuitem", { name: "Durable events", exact: true }).click();

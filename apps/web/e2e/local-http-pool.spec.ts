@@ -16,7 +16,7 @@ test("a reviewed starter authors a local pool by mouse, preserves application id
   try {
     await page.goto(`/?project=${id}#/draw`);
     const card = page.locator('[data-element-id="inventory"]');
-    await card.locator(".element-card-head").click();
+    await card.locator(".element-card-name").click();
     const original = await read(),
       layout = await layoutOf(request, id);
     await reviewRelease(page, "inventory", "Inventory API", "http-service@0.4.0");
@@ -69,7 +69,7 @@ test("a reviewed starter authors a local pool by mouse, preserves application id
     await execution.getByRole("button", { name: "Save local execution", exact: true }).click();
     await expect(execution).not.toBeVisible();
     await page.reload();
-    await card.locator(".element-card-head").click();
+    await card.locator(".element-card-name").click();
     await page.getByRole("button", { name: "Dark mode", exact: true }).click();
     await configure.click();
     await expect(dialog.getByLabel("Pool size")).toHaveValue("3");

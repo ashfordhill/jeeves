@@ -30,7 +30,7 @@ test("focused event and payload drafts survive switching, expose hidden errors a
     ).toBe(200);
     const before = await read();
     await page.reload();
-    await page.locator('[data-element-id="orders"] .element-card-head').click();
+    await page.locator('[data-element-id="orders"] .element-card-name').click();
     const open = page.getByRole("button", { name: "Configure durable events", exact: true });
     const dialog = page.getByRole("dialog", { name: "Configure durable events", exact: true });
     await open.click();

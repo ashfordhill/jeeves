@@ -45,6 +45,7 @@ export function templateFamily(id?: string): TypeFamily {
 export function capabilityFamily(id: string): TypeFamily {
   const capability = plannedCapability(id);
   if (!capability) return "domain";
+  if (capability.role === "external") return "external";
   if (capability.group === "Messaging") return "messaging";
   if (capability.scope === "component") return "domain";
   return (

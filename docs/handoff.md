@@ -2972,3 +2972,73 @@ partial updates in the concise detail view. Follow up separately on the approved
 focused C4 implementation/handler/library bindings with linked data/traffic settings,
 then broader backend data/deployment authoring, new runtimes, source analysis and
 live adoption. Planning entry points now point to P38 and these boundaries.
+
+## 2026-10-31 — P39: C4 container notation on the C2 board
+
+Completed [P39](build-plan-c4-saas.md#p39--c4-container-notation-on-the-c2-board) in the
+existing `main` checkout, starting clean at `3d4fb0f`. One agent, sequential work,
+no branches/worktrees/delegation. Read AGENTS, PLAN §1–§15, the recorded P39–P45
+decisions and latest P37/P38 handoffs. Did not repeat the C4 research.
+
+Added optional bounded element descriptions and technology metadata through the
+normal schemas/atomic updateElement operation. Implemented technology labels use
+a spec display map; planned blocks allow free text and otherwise follow their
+engine option/default. Unspecified technology stays explicit. Cards show a
+stereotype, name, technology and responsibility, at most two chips and compact
+capability icons; notes no longer supply planned card descriptions. Below zoom
+0.55, descriptions/chips hide. Type-label clicks use the existing reviewed subtype
+workflow; inspector subtype/version controls preserve existing pins and reviews.
+Description Save/Cancel retains drafts across selection and revision conflicts;
+planned descriptions/technology save with the existing options batch.
+
+A derived dashed boundary follows measured non-external containers and the system
+name. Context people/external systems with system relationships appear outside;
+bound relationships target the container, unbound ones the boundary. Planned
+external blocks render outside too, without overwriting authored layout. Derived
+identities never enter annotations or saved layout. C2 context selections and Find
+object reuse the existing context editor, including Save/Cancel/history/reload.
+Family colors, grey external systems, database cylinders and person glyphs have
+separate status/issue/selection cues. A scope caption and measured inner stage keep
+all mouse controls within the canvas. Compatible add-capability buttons became
+compact accessible icons to preserve selection geometry and avoid oversized cards.
+
+Verification and inspected captures are in [P39 evidence](evidence/p39/README.md):
+
+- Final production browser command lists fourteen suites: **38 tests passed**,
+  Playwright **28.2s** / profile **30.0s**, no retries, strict diagnostics and unchanged
+  fingerprints; `2026-10-31T20-58-04-769Z-browser-preview-d0e62f7d`.
+- Description/technology Save/Cancel/undo/redo/reload, retained 409 drafts, context
+  editing/unbinding, subtype review, exact/protected pins, placement, native dragging,
+  selection/resize, C1/C3 continuity, API reference, resources, events and scripted chat
+  passed. Axe covers desktop/narrow dark C2 and exercised inspector/configuration
+  surfaces. Fit assertions include every node, actual viewport and mouse controls.
+- **`pnpm work run check` → `pnpm check` passed**, **43.8s**, unchanged fingerprints;
+  `2026-10-31T20-58-35-024Z-check-77e8d978`. All workspace/script types passed;
+  **677 tests / 103 files**, Vitest **35.99s**; Biome **703 files**, **561 warnings /
+  75 infos / no errors**. Generator golden/ownership checks remain unchanged; new
+  tests compare all generated artifacts except the lossless input design snapshot.
+- Opened and visually inspected six final screenshots: QR architecture and the
+  eight-container link platform at **1440 × 900 light** and **390 × 844 dark**,
+  retained description conflict, and an unbound context relationship.
+- Interim logs remain. Corrected boundary hit testing, color variables/tool-hint
+  overlap, control clipping from React Flow's fixed inline wrapper sizing, stale
+  inline subtype/tab selectors, moving native-drag targets and premature reload
+  after Redo. Accessibility scans wait for closing menus/dialogs to unmount.
+  No timeout/retry increase or diagnostic suppression. `git diff --check` and new
+  local documentation targets were checked before commit.
+
+No template/runtime/recipe/generator implementation, dependency pin/lockfile,
+golden fixture or live QRWTY edits. The existing generated input snapshot retains
+metadata losslessly; runtime artifacts and ownership ignore it. No offerings,
+availability or reusable C1–C3 boundaries changed, so CATALOG.md is unchanged.
+Only evidence/planning/handoff documentation changed after the gates. Removed
+**165** exact-name/session-time test projects from `jeeves_e2e` and **172** newly
+created E2E settings/output directories; retained existing data, logs and shared
+Postgres. Existing Jeeves health on 4310 remains OK.
+
+Next: **P40**, relationship labels, protocols and sync/async line semantics. Existing
+kind-name labels, planned-edge dashes and arrow/card overlaps in authored layouts
+remain visible and are not P39 claims. Legacy planned examples retain unspecified
+technology until explicitly selected; their reviewed refresh is P43. Narrow diagrams
+are fitted overviews with mouse zoom/selection for detail. Continue the recorded
+package order/current-branch/local-commit policy; no runtime or live adoption work.

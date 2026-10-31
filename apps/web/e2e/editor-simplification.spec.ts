@@ -140,7 +140,7 @@ test("drawer and concise grouped details preserve pins, contracts, selection and
     ]);
     await subtype.selectOption({ label: "HTTP service" });
     await page.getByRole("button", { name: "Hide inspector", exact: true }).click();
-    await page.locator('[data-element-id="qrwty"] .element-card-head').click();
+    await page.locator('[data-element-id="qrwty"] .element-card-name').click();
     await expect(details).toBeVisible();
     await page.getByRole("button", { name: "Library", exact: true }).click();
     const library = page.getByRole("dialog", { name: "Architecture library" });

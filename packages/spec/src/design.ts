@@ -32,6 +32,9 @@ export type AttachmentInput = z.input<typeof attachmentSchema>;
 export const elementSchema = z.strictObject({
   id: idSchema,
   name: z.string().trim().min(1).max(120),
+  /** C4 presentation metadata; never an implementation brief. */
+  description: z.string().trim().max(240).optional(),
+  technology: z.string().trim().max(120).optional(),
   /** `null` means "needs a template": a capability the registry can't provide yet. */
   template: templateRefSchema.nullable(),
   /** Design-only capability from the planning catalog. It never selects a runtime. */

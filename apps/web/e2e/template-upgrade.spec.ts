@@ -17,7 +17,7 @@ test("reviews an editable starter upgrade by mouse and retains application ident
   await editorAction(page, "Show inspector");
   const before = await read();
   const card = page.locator('[data-element-id="inventory"]');
-  await card.locator(".element-card-head").click();
+  await card.locator(".element-card-name").click();
   await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   await expect(page.getByRole("button", { name: "C1 Context", exact: true })).toHaveAttribute(
     "aria-pressed",
@@ -64,8 +64,12 @@ test("reviews an editable starter upgrade by mouse and retains application ident
   await expect.poll(async () => (await read()).elements[0].template.version).toBe("0.2.0");
   await page.getByRole("button", { name: "Redo", exact: true }).click();
   await page.reload();
-  await card.locator(".element-card-head").click();
-  await expect(card.getByLabel("Subtype of Inventory API")).toHaveValue("http-service@0.3.0");
+  await card.locator(".element-card-name").click();
+  await expect(
+    page
+      .getByRole("complementary", { name: "Architecture details" })
+      .getByLabel("Subtype of Inventory API", { exact: true }),
+  ).toHaveValue("http-service@0.3.0");
   await page.getByRole("button", { name: "Add attachment", exact: true }).click();
   await page.getByRole("menuitem", { name: "Local execution policy", exact: true }).click();
   await page.getByRole("button", { name: "Configure local execution", exact: true }).click();
@@ -103,7 +107,7 @@ test("refuses stale, reverse and protected recipe upgrade reviews without discar
   const read = async () => (await (await request.get(`/api/projects/${id}/design`)).json()).design;
   const before = await read();
   const card = page.locator('[data-element-id="inventory"]');
-  await card.locator(".element-card-head").click();
+  await card.locator(".element-card-name").click();
   await reviewRelease(page, "inventory", "Inventory API", "http-service@0.1.0");
   let dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await expect(dialog.getByRole("alert")).toContainText("No reviewed compatible upgrade");
@@ -156,7 +160,7 @@ test("refuses stale, reverse and protected recipe upgrade reviews without discar
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`/?project=${recipeId}#/draw`);
   const qr = page.locator('[data-element-id="qrwty"]');
-  await qr.locator(".element-card-head").click();
+  await qr.locator(".element-card-name").click();
   await reviewRelease(page, "qrwty", "qrwty API", "http-service@0.3.0");
   dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await expect(dialog.getByRole("alert")).toContainText("protected recipe release");

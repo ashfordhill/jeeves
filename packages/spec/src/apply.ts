@@ -208,6 +208,8 @@ function applyOne(
       if (op.name !== undefined) element.name = op.name;
       if (op.template !== undefined) element.template = op.template;
       if (op.config !== undefined) element.config = op.config;
+      if (op.description !== undefined) element.description = op.description;
+      if (op.technology !== undefined) element.technology = op.technology;
       return;
     }
     case "upgradeTemplate": {

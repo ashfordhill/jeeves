@@ -52,7 +52,7 @@ export async function inspectObject(page: Page, id: string) {
     .selectOption(id);
 }
 export async function reviewRelease(page: Page, element: string, name: string, release: string) {
-  await page.locator(`[data-element-id="${element}"] .element-card-head`).click();
+  await page.locator(`[data-element-id="${element}"] .element-card-name`).click();
   const card = page.getByRole("complementary", { name: "Architecture details" });
   const details = card.locator(".subtype-implementation");
   if (!(await details.getAttribute("open"))) {

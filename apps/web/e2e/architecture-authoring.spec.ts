@@ -40,7 +40,7 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
     await page
       .getByRole("textbox", { name: "Message", exact: true })
       .fill("Keep the discussion service simple.");
-    await page.locator('[data-element-id="cache"] .element-card-head').click();
+    await page.locator('[data-element-id="cache"] .element-card-name').click();
     const details = page.getByRole("complementary", { name: "Architecture details" });
     await details.getByLabel("Default TTL (seconds)", { exact: true }).fill("600");
     await details.getByLabel("Traffic pattern", { exact: true }).selectOption("Bursty");
@@ -77,7 +77,7 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
     await page.getByRole("button", { name: "Redo", exact: true }).click();
     await expect(details.getByLabel("Default TTL (seconds)", { exact: true })).toHaveValue("600");
     await page.screenshot({ path: "test-results/p36-cache-options.png", animations: "disabled" });
-    await page.locator('[data-element-id="api"] .element-card-head').click();
+    await page.locator('[data-element-id="api"] .element-card-name').click();
     await details.getByRole("button", { name: "Open components", exact: true }).click();
     await expect(
       page.getByRole("region", { name: "components diagram", exact: true }),
@@ -176,8 +176,8 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
     }
     await expect(page.locator(".planned-card")).toHaveCount(2);
     await page.getByRole("button", { name: "Connector", exact: true }).click();
-    await page.locator(".planned-card .element-card-head").nth(0).click();
-    await page.locator(".planned-card .element-card-head").nth(1).click();
+    await page.locator(".planned-card .element-card-name").nth(0).click();
+    await page.locator(".planned-card .element-card-name").nth(1).click();
     await page.getByRole("button", { name: "Select", exact: true }).click();
     await page.locator(".connection-chip").click();
     await details.getByLabel("Relationship label", { exact: true }).fill("Caches public responses");
@@ -188,7 +188,7 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
       .poll(async () => (await read()).connections[0]?.planned.label)
       .toBe("Caches public responses");
     expect((await read()).revision).toBe(before.revision + 1);
-    await page.locator(".planned-card .element-card-head").nth(1).click();
+    await page.locator(".planned-card .element-card-name").nth(1).click();
     await details.getByLabel("Default TTL (seconds)", { exact: true }).fill("999");
     const current = await read();
     expect(

@@ -6,7 +6,7 @@ import {
   type TemplateRef,
   type TemplateUpgradeReview,
 } from "@jeeves/spec";
-import { Button, Modal } from "@mantine/core";
+import { Button, Menu, Modal } from "@mantine/core";
 import { useState } from "react";
 import { templateKey } from "./flow.ts";
 import { useDraw } from "./store.ts";
@@ -19,10 +19,12 @@ export function SubtypeControl({
   element,
   disabled = false,
   implementationDetails = false,
+  cardLabel,
 }: {
   element: Element;
   disabled?: boolean;
   implementationDetails?: boolean;
+  cardLabel?: string;
 }) {
   const loaded = useDraw((s) => s.loaded);
   const edit = useDraw((s) => s.edit);
@@ -46,6 +48,12 @@ export function SubtypeControl({
     void edit([
       { op: "changeSubtype", id: element.id, template, ...(confirmation && { confirmation }) },
     ]);
+  const choose = (template: TemplateRef | null) => {
+    if (element.template && template?.id === element.template.id) return;
+    const discarded = subtypeDiscards(loaded.design, element);
+    if (discarded.length) setReview({ template, discarded, revision: loaded.design.revision });
+    else apply(template);
+  };
   return (
     <fieldset
       className="nodrag nopan"
@@ -53,29 +61,49 @@ export function SubtypeControl({
       disabled={disabled}
       aria-label="Service subtype"
     >
-      <label>
-        Subtype
-        <select
-          aria-label={`Subtype of ${element.name}`}
-          value={element.template ? templateKey(element.template) : ""}
-          onChange={(e) => {
-            const picked = options.find((t) => templateKey(t) === e.currentTarget.value);
-            const template = picked ? { id: picked.id, version: picked.version } : null;
-            if (element.template && template?.id === element.template.id) return;
-            const discarded = subtypeDiscards(loaded.design, element);
-            if (discarded.length)
-              setReview({ template, discarded, revision: loaded.design.revision });
-            else apply(template);
-          }}
-        >
-          <option value="">Choose subtype</option>
-          {options.map((t) => (
-            <option key={templateKey(t)} value={templateKey(t)}>
-              {t.displayName}
-            </option>
-          ))}
-        </select>
-      </label>
+      {cardLabel ? (
+        <Menu position="bottom-start" shadow="md">
+          <Menu.Target>
+            <button
+              type="button"
+              className="element-card-template subtype-menu"
+              disabled={disabled}
+              aria-label={`Change subtype of ${element.name}`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {cardLabel} ▾
+            </button>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Label>Service subtype</Menu.Label>
+            {options.map((t) => (
+              <Menu.Item key={t.id} onClick={() => choose({ id: t.id, version: t.version })}>
+                {t.displayName}
+              </Menu.Item>
+            ))}
+            <Menu.Item onClick={() => choose(null)}>Needs a template</Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      ) : (
+        <label>
+          Subtype
+          <select
+            aria-label={`Subtype of ${element.name}`}
+            value={element.template ? templateKey(element.template) : ""}
+            onChange={(event) => {
+              const picked = options.find((t) => templateKey(t) === event.currentTarget.value);
+              choose(picked ? { id: picked.id, version: picked.version } : null);
+            }}
+          >
+            <option value="">Choose subtype</option>
+            {options.map((t) => (
+              <option key={templateKey(t)} value={templateKey(t)}>
+                {t.displayName}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {element.template && implementationDetails ? (
         <details className="subtype-implementation">
           <summary>Implementation version</summary>

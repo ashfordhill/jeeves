@@ -24,6 +24,8 @@ export const operationSchema = z.discriminatedUnion("op", [
     op: z.literal("updateElement"),
     id: idSchema,
     name: elementSchema.shape.name.optional(),
+    description: elementSchema.shape.description,
+    technology: elementSchema.shape.technology,
     /** `null` turns the element into a "needs a template" placeholder. */
     template: templateRefSchema.nullable().optional(),
     /** Replaces the whole stored config. */
