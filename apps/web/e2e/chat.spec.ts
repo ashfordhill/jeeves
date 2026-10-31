@@ -13,7 +13,7 @@ const rail = (page: Page) => page.getByRole("complementary", { name: "Chat panel
 async function openChat(page: Page) {
   await expect(page.getByRole("region", { name: "Architecture workspace" })).toBeVisible();
   if (!(await rail(page).isVisible()))
-    await page.getByRole("button", { name: "Chat", exact: true }).click();
+    await page.getByRole("button", { name: "Open chat", exact: true }).click();
   return rail(page).getByRole("region", { name: "Design chat" });
 }
 
@@ -46,10 +46,7 @@ test("chat subtype review requires a human click and preserves the design on Can
     .poll(async () => (await designOf(request, id)).design.revision)
     .toBe(before.revision + 1);
   expect((await designOf(request, id)).design.elements[0]?.attachments).toEqual([]);
-  await page
-    .getByRole("toolbar", { name: "Drawing tools" })
-    .getByRole("button", { name: "Undo", exact: true })
-    .click();
+  await page.locator(".editor-header").getByRole("button", { name: "Undo", exact: true }).click();
   await expect
     .poll(async () => (await designOf(request, id)).design)
     .toEqual({

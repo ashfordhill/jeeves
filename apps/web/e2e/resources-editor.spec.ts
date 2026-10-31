@@ -3,13 +3,14 @@ import { expect, test } from "./browser-test.ts";
 
 test.use({ viewport: { width: 1600, height: 1000 } });
 
-import { designOf, layoutOf, openNewProject } from "./helpers.ts";
+import { designOf, editorAction, layoutOf, openNewProject } from "./helpers.ts";
 
 test("production Service hierarchy, reviewed subtype loss and layout-only resize work with mouse controls", async ({
   page,
   request,
 }) => {
   const project = await openNewProject(page, request, "P3 service editing");
+  await editorAction(page, "Show inspector");
   const pane = page.locator(".react-flow__pane");
   await page.getByRole("button", { name: "Service", exact: true }).click();
   await pane.click({ position: { x: 310, y: 330 } });
@@ -17,7 +18,7 @@ test("production Service hierarchy, reviewed subtype loss and layout-only resize
   await expect(service).toBeVisible();
   await service
     .getByRole("combobox", { name: "Subtype of Service" })
-    .selectOption("http-service@0.1.0");
+    .selectOption({ label: "HTTP service" });
   await service.locator(".element-card-head").click();
   await service.getByRole("button", { name: "Add REST API server", exact: true }).click();
   await expect(service.locator("[data-attachment-id]")).toHaveCount(1);
@@ -37,7 +38,9 @@ test("production Service hierarchy, reviewed subtype loss and layout-only resize
   await page.getByRole("button", { name: "Select", exact: true }).click();
   await service.locator(".element-card-head").click();
   const before = (await designOf(request, project)).design;
-  await service.getByRole("combobox", { name: "Subtype of Service" }).selectOption("web-app@0.1.0");
+  await service
+    .getByRole("combobox", { name: "Subtype of Service" })
+    .selectOption({ label: "Web app" });
   const review = page.getByRole("dialog", { name: "Change service subtype?" });
   await expect(review).toContainText("component: service-rest-api-server");
   await expect(review).toContainText("connection:");
@@ -55,7 +58,9 @@ test("production Service hierarchy, reviewed subtype loss and layout-only resize
     .poll(async () => (await layoutOf(request, project)).items.service)
     .toHaveProperty("width");
   expect((await designOf(request, project)).design.revision).toBe(before.revision);
-  await service.getByRole("combobox", { name: "Subtype of Service" }).selectOption("web-app@0.1.0");
+  await service
+    .getByRole("combobox", { name: "Subtype of Service" })
+    .selectOption({ label: "Web app" });
   await review.getByRole("button", { name: "Discard and change subtype" }).click();
   await expect(service).toContainText("Web app");
   await expect
@@ -76,6 +81,7 @@ test("outer connections infer a single pair, expose ambiguity, and validate nati
   request,
 }) => {
   const project = await openNewProject(page, request, "P3 connections");
+  await editorAction(page, "Show inspector");
   const pane = page.locator(".react-flow__pane");
   for (const [index, [x, y, subtype]] of (
     [
@@ -88,7 +94,9 @@ test("outer connections infer a single pair, expose ambiguity, and validate nati
     await pane.click({ position: { x, y } });
     await expect(page.locator("[data-element-id]")).toHaveCount(index + 1);
     const service = page.locator("[data-element-id]").nth(index);
-    await service.getByRole("combobox").selectOption(subtype + "@0.1.0");
+    await service
+      .getByRole("combobox", { name: /^Subtype of/ })
+      .selectOption({ label: subtype === "web-app" ? "Web app" : "HTTP service" });
     await service.locator(".element-card-head").click();
     await service
       .getByRole("button", {

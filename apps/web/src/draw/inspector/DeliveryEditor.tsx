@@ -442,17 +442,20 @@ function DeliveryEditor({ attachment, onClose }: { attachment: Attachment; onClo
                   value={event.notes}
                   onChange={(e) => changeEvent({ notes: e.currentTarget.value })}
                 />
-                <TextInput
-                  label="Acceptance references"
-                  aria-label={`Event ${index + 1} acceptance references`}
-                  description="Separate fixed acceptance IDs with commas."
-                  value={event.acceptance.join(", ")}
-                  onChange={(e) =>
-                    changeEvent({
-                      acceptance: e.currentTarget.value.split(",").map((v) => v.trim()),
-                    })
-                  }
-                />
+                <details>
+                  <summary>Verification metadata</summary>
+                  <TextInput
+                    label="Acceptance references"
+                    aria-label={`Event ${index + 1} acceptance references`}
+                    description="Separate fixed acceptance IDs with commas."
+                    value={event.acceptance.join(", ")}
+                    onChange={(e) =>
+                      changeEvent({
+                        acceptance: e.currentTarget.value.split(",").map((v) => v.trim()),
+                      })
+                    }
+                  />
+                </details>
                 <Button
                   size="xs"
                   className="delivery-remove"

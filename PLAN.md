@@ -4,12 +4,9 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
-**Current editor package:** [P36](docs/build-plan-p36-architecture.md) adds a shared C1/C2/C3 workspace, editable responsibilities, a planned SaaS capability library and the modular [catalog](CATALOG.md). See [P36 evidence](docs/evidence/p36/README.md) for verification and boundaries. P12–P35 remain complete; [P35 evidence](docs/evidence/p35/README.md) records the session correction. Per the latest user instructions, broader template runtimes, generation and load-test implementation are deferred. Assess the visuals and catalog before choosing the next bounded package; chat improvements, developer testing, page flow and live adoption remain separate.
+**Current editor package:** [P37](docs/build-plan-p37-editor.md) simplifies the shared C1/C2/C3 editor with an edge chat drawer, selection-driven details, contextual menus and consistent type cues. [P37 evidence](docs/evidence/p37/README.md) records the checks and screenshots. P36's planned offerings and modular [catalog](CATALOG.md) remain available. New template runtimes, generation/load tooling and live QRWTY adoption remain separate work.
 
-**Latest review:** [JEEVES-2 research and planning](docs/reviews/jeeves-feedback-2-2026-10-31.md)
-records the requested editor simplification, C4/API research and three unresolved
-product choices. Resolve those choices and specify the next bounded package before
-major implementation; the recommendations are not an approved P37 specification.
+**JEEVES-2 decisions:** the user chose focused C4 implementation with linked data/traffic settings, contextual menus for retained actions, and C3 responsibility groups. The [research review](docs/reviews/jeeves-feedback-2-2026-10-31.md) is retained as background. API tooling and deeper backend implementation/data/deployment authoring are separately scoped follow-ups in P37's specification; they are not implemented by this editor cleanup.
 
 Related documents:
 

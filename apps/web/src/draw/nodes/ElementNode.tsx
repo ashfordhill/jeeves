@@ -8,6 +8,7 @@ import { type ConfigValues, plannedCapability } from "@jeeves/spec";
 import { IconAlertTriangle, IconX } from "@tabler/icons-react";
 import { Handle, type NodeProps, NodeResizer, Position } from "@xyflow/react";
 import { useCallback } from "react";
+import { elementFamily, templateFamily, typeStyles } from "../../architecture/type-style.tsx";
 import { type ElementNode as ElementNodeType, handleId } from "../flow.ts";
 import { attach } from "../ops.ts";
 import { registry } from "../registry.ts";
@@ -80,6 +81,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
     <article
       className={`element-card${planned ? " planned-card" : ""}${template?.elementKind === "database" || planned?.role === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
       data-element-id={id}
+      data-family={elementFamily(element)}
       aria-label={`${element.name}, ${label}`}
     >
       <NodeResizer
@@ -91,7 +93,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
       <Handle type="target" position={Position.Left} id={handleId("in")} className="card-handle" />
       <div className="element-card-head">
         <span className="element-card-icon">
-          <TemplateIcon name={planned?.icon ?? template?.card.icon} size={22} />
+          <TemplateIcon name={typeStyles[elementFamily(element)].icon} size={22} />
         </span>
         <span className="element-card-titles">
           <span className="element-card-name">{element.name}</span>
@@ -128,9 +130,13 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
               key={attachment.id}
               className={`attachment-box${pendingHere && pending.attachment === attachment.id ? " is-pending" : ""}`}
               data-attachment-id={attachment.id}
+              data-family={templateFamily(attachment.template.id)}
               aria-label={attachmentTemplate?.displayName ?? attachment.template.id}
             >
-              <TemplateIcon name={attachmentTemplate?.card.icon} size={16} />
+              <TemplateIcon
+                name={typeStyles[templateFamily(attachment.template.id)].icon}
+                size={16}
+              />
               <span className="attachment-box-name">
                 {attachmentTemplate?.displayName ?? attachment.template.id}
               </span>

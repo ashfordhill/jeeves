@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "./browser-test.ts";
+import { diagramAction, editorAction, inspectObject } from "./helpers.ts";
 
 async function clearRelationships(page: Page) {
   const graph = page.locator(".architecture-graph");
@@ -55,12 +56,10 @@ test("actual starter routes reserve labels and inspection preserves semantic dat
     await page.getByRole("button", { name: "Zoom In", exact: true }).click();
     const viewport = page.locator(".architecture-graph .react-flow__viewport");
     const camera = await viewport.getAttribute("style");
-    await page.getByLabel("Inspect an object").selectOption("container:inventory-db");
+    await inspectObject(page, "container:inventory-db");
     await expect(viewport).toHaveAttribute("style", camera ?? "");
-    await page
-      .getByLabel("Inspect an object")
-      .selectOption("component:inventory:inventory-api:accounts");
-    await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
+    await inspectObject(page, "component:inventory:inventory-api:accounts");
+    await editorAction(page, "Inspect evidence");
     const evidence = page.getByRole("dialog", { name: "Architecture evidence" });
     await evidence.getByRole("button", { name: "Refresh evidence", exact: true }).click();
     await expect(
@@ -68,10 +67,10 @@ test("actual starter routes reserve labels and inspection preserves semantic dat
     ).toBeEnabled();
     await evidence.getByRole("button", { name: "Close evidence", exact: true }).click();
     await expect(viewport).toHaveAttribute("style", camera ?? "");
-    await page.getByRole("button", { name: /^Flow (down|right)$/ }).click();
+    await diagramAction(page, /^Flow (down|right)$/);
     await clearRelationships(page);
     await page.setViewportSize({ width: 1000, height: 850 });
-    await page.getByRole("button", { name: "Chat", exact: true }).click();
+
     await page.getByRole("button", { name: "Fit View", exact: true }).click();
     await clearRelationships(page);
     await page.screenshot({ path: "test-results/p30-narrow.png", animations: "disabled" });
@@ -124,16 +123,14 @@ test("unavailable worker offers Retry and a real QR component scope renders inde
       .getByRole("navigation", { name: "Architecture levels" })
       .getByRole("button", { name: /Containers/ })
       .click();
-    await page.getByLabel("Inspect an object").selectOption("container:qrwty");
+    await inspectObject(page, "container:qrwty");
     await page.getByRole("button", { name: "Open components", exact: true }).click();
     await clearRelationships(page);
     await expect(page.locator(".architecture-card")).toHaveCount(13);
     await expect(page.locator(".architecture-relation-label")).toHaveCount(2);
     await page.screenshot({ path: "test-results/p30-components.png", animations: "disabled" });
-    await page
-      .getByLabel("Inspect an object")
-      .selectOption("component:qrwty:qrwty-api:extension:owner-analytics");
-    await page.getByRole("button", { name: "Focus selected object", exact: true }).click();
+    await inspectObject(page, "component:qrwty:qrwty-api:extension:owner-analytics");
+    await diagramAction(page, "Focus selected object");
     await expect(
       page.getByRole("button", { name: "Inspect Owner analytics", exact: true }),
     ).toBeInViewport();

@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
-import { layoutOf } from "./helpers.ts";
+import { inspectObject, layoutOf, reviewRelease } from "./helpers.ts";
 
 test("a reviewed starter authors a local pool by mouse, preserves application identity, and refuses a stale draft", async ({
   page,
@@ -19,7 +19,7 @@ test("a reviewed starter authors a local pool by mouse, preserves application id
     await card.locator(".element-card-head").click();
     const original = await read(),
       layout = await layoutOf(request, id);
-    await card.getByLabel("Subtype of Inventory API").selectOption("http-service@0.4.0");
+    await reviewRelease(page, "inventory", "Inventory API", "http-service@0.4.0");
     const review = page.getByRole("dialog", { name: "Review template upgrade" });
     await expect(review.getByText("Local HTTP pool", { exact: true })).toBeVisible();
     await review.getByRole("button", { name: "Upgrade template", exact: true }).click();
@@ -121,7 +121,7 @@ test("a reviewed starter authors a local pool by mouse, preserves application id
       .getByRole("button", { name: /Containers/ })
       .click();
     await expect(page.locator(".draw-board")).toBeVisible();
-    await workspace.getByLabel("Inspect an object").selectOption("container:inventory");
+    await inspectObject(page, "container:inventory");
     await expect(page.locator("[data-element-id]")).toHaveCount(3);
     const summary = workspace.getByRole("region", { name: "Local HTTP pool", exact: true });
     await expect(summary).toContainText("One application · 3 local instances");
@@ -132,6 +132,7 @@ test("a reviewed starter authors a local pool by mouse, preserves application id
     ).toEqual([]);
     await workspace.getByRole("button", { name: "Open components", exact: true }).click();
     await expect(page.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
+    await page.getByRole("button", { name: "Inspect Accounts and sessions", exact: true }).click();
     await expect(summary).toContainText("3 local instances");
     const architecture = await (await request.get(`/api/projects/${id}/architecture`)).json();
     expect(

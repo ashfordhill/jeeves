@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
-import { openNewProject } from "./helpers.ts";
+import { inspectObject, openNewProject } from "./helpers.ts";
 
 const fixture = JSON.parse(
   readFileSync(new URL("../../../fixtures/designs/event-orders.json", import.meta.url), "utf8"),
@@ -31,17 +31,15 @@ test("durable event contracts edit by mouse with validation, cancel, undo and re
     .getByRole("button", { name: /Containers/ })
     .click();
   const details = workspace.getByRole("complementary", { name: "Architecture details" });
-  await details.getByLabel("Inspect an object").selectOption("container:orders");
+  await inspectObject(page, "container:orders");
   await details.getByRole("button", { name: "Open components" }).click();
-  await details.getByLabel("Inspect an object").selectOption("component:orders:order-delivery");
+  await inspectObject(page, "component:orders:order-delivery");
   await expect(details.getByText(/One worker in this service process/)).toBeVisible();
   await expect(
     workspace.getByRole("button", { name: "Inspect Orders database", exact: true }),
   ).toBeVisible();
-  await details
-    .getByLabel("Inspect an object")
-    .selectOption("component:orders:order-delivery:event:order-placed");
-  await expect(details.getByText("ORDER-01", { exact: true })).toBeVisible();
+  await inspectObject(page, "component:orders:order-delivery:event:order-placed");
+  await expect(details.getByText("ORDER-01", { exact: true })).toHaveCount(0);
   expect(
     (await new AxeBuilder({ page }).include(".architecture-workspace").analyze()).violations,
   ).toEqual([]);
@@ -68,6 +66,7 @@ test("durable event contracts edit by mouse with validation, cancel, undo and re
   await dialog.getByLabel("Field 1 choices for event 2", { exact: true }).fill("manual, automatic");
   await dialog.getByRole("button", { name: "Add field to event 2" }).click();
   await dialog.getByLabel("Event 2 field 2 kind", { exact: true }).selectOption("boolean");
+  await dialog.getByText("Verification metadata", { exact: true }).click();
   await dialog.getByLabel("Event 2 acceptance references", { exact: true }).fill("ORDER-02");
   await dialog
     .getByLabel("Event 2 business effect", { exact: true })
@@ -115,7 +114,10 @@ test("a new service can add and configure an event attachment before its databas
   await page.getByRole("button", { name: "Elements", exact: true }).click();
   await page.getByRole("button", { name: /^HTTP service/ }).click();
   await page.locator(".react-flow__pane").click({ position: { x: 350, y: 250 } });
-  await page.getByRole("article", { name: "HTTP service, HTTP service", exact: true }).click();
+  await page
+    .getByRole("article", { name: "HTTP service, HTTP service", exact: true })
+    .locator(".element-card-head")
+    .click();
   await page.getByRole("button", { name: "Add attachment", exact: true }).click();
   await page.getByRole("menuitem", { name: "Durable events", exact: true }).click();
   await page.getByRole("button", { name: "Configure durable events", exact: true }).click();

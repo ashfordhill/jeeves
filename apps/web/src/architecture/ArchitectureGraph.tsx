@@ -3,15 +3,9 @@ import type {
   ArchitectureSupport,
   ArchitectureViewNode,
 } from "@jeeves/spec";
+import { ActionIcon, Menu } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
-import {
-  IconBox,
-  IconBuilding,
-  IconDatabase,
-  IconPuzzle,
-  IconUser,
-  IconWorld,
-} from "@tabler/icons-react";
+import { IconDots } from "@tabler/icons-react";
 import {
   Background,
   BaseEdge,
@@ -35,6 +29,8 @@ import {
   type Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDraw } from "../draw/store.ts";
+import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import {
   type ArchitectureGeometry,
   architectureLayoutInput,
@@ -44,6 +40,7 @@ import {
   SCOPE_ID,
 } from "./layout.ts";
 import { layoutArchitecture } from "./layout-client.ts";
+import { nodeFamily, typeStyles } from "./type-style.tsx";
 
 export const supportLabel: Record<ArchitectureSupport, string> = {
   template: "Template provided",
@@ -62,18 +59,9 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
   const item = data.item;
   const { zoom } = useViewport();
   const overview = zoom < 0.65;
-  const Icon =
-    item.kind === "person"
-      ? IconUser
-      : item.kind === "external-system"
-        ? IconWorld
-        : item.kind === "system"
-          ? IconBuilding
-          : item.kind === "component"
-            ? IconPuzzle
-            : item.technology.toLowerCase().includes("postgres")
-              ? IconDatabase
-              : IconBox;
+  const design = useDraw((state) => state.loaded!.design);
+  const family = nodeFamily(item, design);
+  const style = typeStyles[family];
   return (
     <>
       <Handle type="source" position={Position.Right} />
@@ -83,6 +71,7 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
         className="architecture-card nodrag nopan"
         data-selected={selected}
         data-kind={item.kind}
+        data-family={family}
         data-support={item.support}
         data-overview={overview}
         onClick={() => data.onSelect(item.id)}
@@ -90,8 +79,8 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
         aria-label={`Inspect ${item.name}`}
       >
         <span className="architecture-card-kind">
-          <Icon size={21} aria-hidden />
-          {item.kind.replaceAll("-", " ")}
+          <TemplateIcon name={style.icon} size={21} />
+          {style.label}
         </span>
         <strong style={{ fontSize: overview ? 14 / Math.max(zoom, 0.25) : 18 }}>{item.name}</strong>
         <span className="architecture-card-description">{item.description}</span>
@@ -205,21 +194,52 @@ function InitialCamera({ onReady, restored }: { onReady: () => void; restored?: 
   return null;
 }
 
-function FocusControl({ selected }: { selected?: string }) {
+function ResizeCamera() {
+  const width = useStore((state) => state.width);
+  const height = useStore((state) => state.height);
+  const previous = useRef(width);
+  const { setViewport, getNodes, getNodesBounds } = useReactFlow();
+  useEffect(() => {
+    if (width > 0 && height > 0 && previous.current > width && getNodes().length)
+      void setViewport(
+        getViewportForBounds(getNodesBounds(getNodes()), width, height, 0.1, 1, 0.12),
+      );
+    previous.current = width;
+  }, [width, height, setViewport, getNodes, getNodesBounds]);
+  return null;
+}
+
+function DiagramOptions({
+  selected,
+  down,
+  onDirection,
+}: {
+  selected?: string;
+  down: boolean;
+  onDirection: () => void;
+}) {
   const { fitView } = useReactFlow();
   return (
     <Panel position="top-right">
-      <button
-        type="button"
-        className="architecture-focus"
-        disabled={!selected}
-        onClick={() => {
-          if (selected)
-            void fitView({ nodes: [{ id: selected }], minZoom: 1, maxZoom: 1, duration: 200 });
-        }}
-      >
-        Focus selected object
-      </button>
+      <Menu position="bottom-end" shadow="md">
+        <Menu.Target>
+          <ActionIcon variant="default" aria-label="Diagram options" size="lg">
+            <IconDots size={19} />
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item onClick={onDirection}>{down ? "Flow right" : "Flow down"}</Menu.Item>
+          <Menu.Item
+            disabled={!selected}
+            onClick={() => {
+              if (selected)
+                void fitView({ nodes: [{ id: selected }], minZoom: 1, maxZoom: 1, duration: 200 });
+            }}
+          >
+            Focus selected object
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
     </Panel>
   );
 }
@@ -363,6 +383,7 @@ export function ArchitectureGraph({
               cameraCache?.viewports.set(`${scope}:${down}`, { key, viewport })
             }
             onEdgeClick={(_, edge) => onSelect(edge.id)}
+            onPaneClick={() => onSelect("")}
           >
             <InitialCamera
               key={key}
@@ -373,21 +394,17 @@ export function ArchitectureGraph({
               }
               onReady={cameraReady}
             />
+            <ResizeCamera />
             <Background color="var(--grid-dot)" gap={24} size={1} />
             <Controls showInteractive={false} />
-            <Panel position="top-left">
-              <button
-                type="button"
-                className="architecture-focus"
-                onClick={() => {
-                  setDirections((current) => ({ ...current, [scope]: !down }));
-                  cameraCache?.directions.set(scope, !down);
-                }}
-              >
-                {down ? "Flow right" : "Flow down"}
-              </button>
-            </Panel>
-            <FocusControl selected={selected} />
+            <DiagramOptions
+              selected={selected}
+              down={down}
+              onDirection={() => {
+                setDirections((current) => ({ ...current, [scope]: !down }));
+                cameraCache?.directions.set(scope, !down);
+              }}
+            />
           </ReactFlow>
         </ReactFlowProvider>
       )}

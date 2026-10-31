@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
+import { diagramAction, editorAction, inspectObject } from "./helpers.ts";
 
 test("C4 navigation preserves the board and context/product edits save, cancel, undo and reload", async ({
   page,
@@ -19,6 +20,7 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
     (await (await request.get(`/api/projects/${project.id}/layout`)).json()).layout;
   await page.goto(`/?project=${project.id}#/draw`);
   await expect(page.locator("[data-element-id]")).toHaveCount(3);
+  await editorAction(page, "Show inspector");
   const before = await design();
   let beforeLayout = await layout();
   // A delayed layout save must not let an earlier tab click replace the latest choice.
@@ -56,7 +58,7 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   await savedLayout;
   await page.unroute(layoutUrl);
   beforeLayout = await layout();
-  await page.getByLabel("Inspect an object").selectOption("container:qrwty");
+  await inspectObject(page, "container:qrwty");
   await expect(page.getByRole("button", { name: "C2 Containers", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
@@ -76,22 +78,19 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   ).toBeVisible();
   await page.screenshot({ path: "test-results/p20-context.png", animations: "disabled" });
   await levels.getByRole("button", { name: /Containers/ }).click();
-  await details.getByLabel("Inspect an object").selectOption("container:qrwty");
+  await inspectObject(page, "container:qrwty");
   await details.getByRole("button", { name: "Open components" }).click();
-  await details.getByLabel("Inspect an object").selectOption("component:qrwty:qrwty-api:accounts");
+  await inspectObject(page, "component:qrwty:qrwty-api:accounts");
   await expect(details.getByRole("heading", { name: "Accounts and sessions" })).toBeVisible();
-  await details
-    .getByLabel("Inspect an object")
-    .selectOption("component:qrwty:qrwty-api:extension:owner-analytics");
-  await expect(
-    details.locator(".component-member").getByText("qr-studio@0.1.0", { exact: true }),
-  ).toBeVisible();
-  await expect(details.getByText("QR-15, QR-16", { exact: true })).toBeVisible();
+  await inspectObject(page, "component:qrwty:qrwty-api:extension:owner-analytics");
+  await expect(details.getByText("qr-studio@0.1.0", { exact: true })).not.toBeVisible();
+  await expect(details.getByText("QR-15, QR-16", { exact: true })).toHaveCount(0);
+  await expect(details.locator(".endpoint-line")).toContainText("GET /api/analytics");
   await expect(
     workspace.getByRole("region", { name: "components diagram", exact: true }),
   ).toHaveAttribute("aria-busy", "false");
   await page.screenshot({ path: "test-results/p20-components.png", animations: "disabled" });
-  await workspace.getByRole("button", { name: "Focus selected object" }).click();
+  await diagramAction(page, "Focus selected object");
   await expect(
     workspace.getByRole("button", { name: "Inspect Owner analytics", exact: true }),
   ).toBeInViewport();
@@ -105,24 +104,25 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   expect(await layout()).toEqual(beforeLayout);
 
   await page.getByRole("button", { name: "C1 Context", exact: true }).click();
-  await workspace.getByRole("button", { name: "Edit context", exact: true }).click();
+  await editorAction(page, "Edit context");
   const context = page.getByRole("dialog", { name: "Edit system context" });
   await context
     .getByLabel("System responsibility")
     .fill("A reusable QR product configured from an intentional architecture.");
   await context.getByRole("button", { name: "Save context" }).click();
   await expect(context).not.toBeVisible();
+  await inspectObject(page, "context:system");
   await expect(details.getByLabel("Responsibility", { exact: true })).toHaveValue(
     "A reusable QR product configured from an intentional architecture.",
   );
   expect((await design()).revision).toBe(before.revision + 1);
 
-  await workspace.getByRole("button", { name: "Product configuration", exact: true }).click();
+  await editorAction(page, "Product configuration");
   let config = page.getByRole("dialog", { name: "Product configuration" });
   await config.getByLabel("Product tagline").fill("Discard this draft");
   await config.getByRole("button", { name: "Cancel", exact: true }).click();
   expect((await design()).recipe.config.tagline).toBe(before.recipe.config.tagline);
-  await workspace.getByRole("button", { name: "Product configuration", exact: true }).click();
+  await editorAction(page, "Product configuration");
   config = page.getByRole("dialog", { name: "Product configuration" });
   await config
     .getByRole("textbox", { name: "Product name", exact: true })
@@ -144,7 +144,7 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   expect(
     configured.elements.find((element: { id: string }) => element.id === "qrwty-web").config.title,
   ).toBe("Configured Studio");
-  await workspace.getByRole("button", { name: "Undo latest change" }).click();
+  await workspace.getByRole("button", { name: "Undo" }).click();
   await expect.poll(async () => (await design()).recipe.config).toEqual(before.recipe.config);
   expect(
     (await design()).elements.find((element: { id: string }) => element.id === "qrwty-web").config
@@ -154,6 +154,7 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   );
   await page.reload();
   await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await inspectObject(page, "context:system");
   await expect(details.getByLabel("Responsibility", { exact: true })).toHaveValue(
     "A reusable QR product configured from an intentional architecture.",
   );
@@ -175,14 +176,17 @@ test("a narrower context editor keeps unbound architectural intent visible witho
   const { project } = await created.json();
   await page.goto(`/?project=${project.id}#/draw`);
   await page.getByRole("button", { name: "C1 Context", exact: true }).click();
-  await page.getByRole("button", { name: "Edit context", exact: true }).click();
+  await editorAction(page, "Edit context");
   const dialog = page.getByRole("dialog", { name: "Edit system context" });
   await dialog.getByLabel("Interaction 1 container", { exact: true }).selectOption("");
   await dialog.getByRole("button", { name: "Save context" }).click();
   await expect(dialog).not.toBeVisible();
-  await page.getByRole("tab", { name: /Findings/ }).click();
+  await editorAction(page, /^Findings/);
   await expect(page.getByText(/has no container binding. It describes intent only/)).toBeVisible();
-  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: "Findings", exact: true })
+    .getByRole("button", { name: "Close findings" })
+    .click();
   const state = await (await request.get(`/api/projects/${project.id}/design`)).json();
   expect(state.findings.map((finding: { code: string }) => finding.code)).toEqual([
     "ARCHITECTURE_UNBOUND",

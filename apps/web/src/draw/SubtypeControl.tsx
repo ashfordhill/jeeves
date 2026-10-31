@@ -18,9 +18,11 @@ const registry = builtinRegistry();
 export function SubtypeControl({
   element,
   disabled = false,
+  implementationDetails = false,
 }: {
   element: Element;
   disabled?: boolean;
+  implementationDetails?: boolean;
 }) {
   const loaded = useDraw((s) => s.loaded);
   const edit = useDraw((s) => s.edit);
@@ -29,9 +31,14 @@ export function SubtypeControl({
   >();
   const [upgrade, setUpgrade] = useState<{ target: TemplateRef; review: TemplateUpgradeReview }>();
   if (!loaded) return null;
-  const options = loaded.catalog.templates.filter(
+  const releases = loaded.catalog.templates.filter(
     (t) => t.kind === "element" && t.elementKind !== "database",
   );
+  // The registry explicitly orders semantic versions. Existing instances always keep their pin.
+  const options = [...new Set(releases.map((t) => t.id))].flatMap((id) => {
+    const ref = element.template?.id === id ? element.template : registry.latest(id);
+    return releases.find((t) => t.id === ref?.id && t.version === ref.version) ?? [];
+  });
   const apply = (
     template: TemplateRef | null,
     confirmation?: { revision: number; discarded: string[] },
@@ -54,14 +61,7 @@ export function SubtypeControl({
           onChange={(e) => {
             const picked = options.find((t) => templateKey(t) === e.currentTarget.value);
             const template = picked ? { id: picked.id, version: picked.version } : null;
-            if (element.template && template?.id === element.template.id) {
-              if (template.version !== element.template.version)
-                setUpgrade({
-                  target: template,
-                  review: reviewTemplateUpgrade(loaded.design, element.id, template, registry),
-                });
-              return;
-            }
+            if (element.template && template?.id === element.template.id) return;
             const discarded = subtypeDiscards(loaded.design, element);
             if (discarded.length)
               setReview({ template, discarded, revision: loaded.design.revision });
@@ -72,11 +72,39 @@ export function SubtypeControl({
           {options.map((t) => (
             <option key={templateKey(t)} value={templateKey(t)}>
               {t.displayName}
-              {options.filter((option) => option.id === t.id).length > 1 ? ` · ${t.version}` : ""}
             </option>
           ))}
         </select>
       </label>
+      {element.template && implementationDetails ? (
+        <details className="subtype-implementation">
+          <summary>Implementation version</summary>
+          <label>
+            Template release
+            <select
+              aria-label={`Template release of ${element.name}`}
+              value={templateKey(element.template)}
+              onChange={(event) => {
+                const picked = releases.find((t) => templateKey(t) === event.currentTarget.value);
+                if (!picked || picked.version === element.template?.version) return;
+                const target = { id: picked.id, version: picked.version };
+                setUpgrade({
+                  target,
+                  review: reviewTemplateUpgrade(loaded.design, element.id, target, registry),
+                });
+              }}
+            >
+              {releases
+                .filter((t) => t.id === element.template?.id)
+                .map((t) => (
+                  <option key={templateKey(t)} value={templateKey(t)}>
+                    {t.displayName} · {t.version}
+                  </option>
+                ))}
+            </select>
+          </label>
+        </details>
+      ) : null}
       {upgrade ? (
         <TemplateUpgradeDialog
           name={element.name}

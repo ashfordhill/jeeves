@@ -1,3 +1,4 @@
+import { builtinRegistry } from "@jeeves/registry";
 import { architectureExample, architectureExamples, plannedCapabilities } from "@jeeves/spec";
 import { Alert, Badge, Button, Group, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
@@ -6,6 +7,7 @@ import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api } from "../draw/api.ts";
 import { type Tool, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
 
 export function CapabilityCatalog({
   onClose,
@@ -28,7 +30,10 @@ export function CapabilityCatalog({
   const [error, setError] = useState<string>();
   const [creating, setCreating] = useState(false);
   const latest = new Map<string, (typeof loaded.catalog.templates)[number]>();
-  for (const template of loaded.catalog.templates) latest.set(template.id, template);
+  for (const template of loaded.catalog.templates) {
+    if (builtinRegistry().latest(template.id)?.version === template.version)
+      latest.set(template.id, template);
+  }
   const matches = (name: string, description: string) =>
     `${name} ${description}`.toLowerCase().includes(query.toLowerCase());
   const create = async (id: string) => {
@@ -103,6 +108,7 @@ export function CapabilityCatalog({
                     type="button"
                     key={template.id}
                     className="catalog-card"
+                    data-family={templateFamily(template.id)}
                     onClick={() => {
                       onTemplate({
                         kind: template.kind,
@@ -111,7 +117,7 @@ export function CapabilityCatalog({
                     }}
                   >
                     <Group justify="space-between">
-                      <TemplateIcon name={template.card.icon} size={22} />
+                      <TemplateIcon name={typeStyles[templateFamily(template.id)].icon} size={22} />
                       <Badge size="xs" color="teal" variant="light">
                         Implemented
                       </Badge>
@@ -119,8 +125,7 @@ export function CapabilityCatalog({
                     <strong>{template.displayName}</strong>
                     <span>{template.description}</span>
                     <small>
-                      {template.kind === "attachment" ? "Add to an application" : "Place on C2"} ·{" "}
-                      {template.version}
+                      {template.kind === "attachment" ? "Add to an application" : "Place on C2"}
                     </small>
                   </button>
                 ))}
@@ -134,13 +139,14 @@ export function CapabilityCatalog({
                   type="button"
                   key={item.id}
                   className="catalog-card"
+                  data-family={capabilityFamily(item.id)}
                   disabled={item.scope === "component" && !onComponent}
                   onClick={() =>
                     item.scope === "component" ? onComponent?.(item.id) : onPlace(item.id)
                   }
                 >
                   <Group justify="space-between">
-                    <TemplateIcon name={item.icon} size={22} />
+                    <TemplateIcon name={typeStyles[capabilityFamily(item.id)].icon} size={22} />
                     <span className="capability-status">Planned</span>
                   </Group>
                   <strong>{item.name}</strong>

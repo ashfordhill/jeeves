@@ -8,6 +8,7 @@ import {
   IconBolt,
   IconBox,
   IconBrowser,
+  IconBuilding,
   IconChartBar,
   IconCpu,
   IconCreditCard,
@@ -28,6 +29,7 @@ import {
   IconServer,
   IconSettings,
   IconShield,
+  IconUser,
   IconWorld,
 } from "@tabler/icons-react";
 
@@ -58,6 +60,8 @@ const ICONS: Record<string, Icon> = {
   search: IconSearch,
   shield: IconShield,
   world: IconWorld,
+  user: IconUser,
+  building: IconBuilding,
 };
 
 export function TemplateIcon({ name, size = 20 }: { name: string | undefined; size?: number }) {

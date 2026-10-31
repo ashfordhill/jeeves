@@ -81,6 +81,7 @@ test("focused event and payload drafts survive switching, expose hidden errors a
     await dialog
       .getByLabel("Event 2 business effect", { exact: true })
       .fill("Record one shipment state transition using context.effect.");
+    await dialog.getByText("Verification metadata", { exact: true }).click();
     await dialog.getByLabel("Event 2 acceptance references", { exact: true }).fill("SHIPMENT-01");
     await dialog.getByRole("button", { name: "Add event contract", exact: true }).click();
     await expect(dialog.getByLabel("Event 3 ID", { exact: true })).toHaveValue("event-1");

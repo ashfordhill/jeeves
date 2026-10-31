@@ -3,6 +3,7 @@ import { Alert, Button, Group, NativeSelect, Stack, Textarea, TextInput } from "
 import { useState } from "react";
 import { useDraw } from "../draw/store.ts";
 import { useEditorDraft } from "./editor-drafts.tsx";
+import { TypeBadge } from "./type-style.tsx";
 
 export function ContextInspector({
   selected,
@@ -68,15 +69,19 @@ export function ContextInspector({
       className="planned-inspector"
       aria-label={edge ? "Configure context relationship" : "Configure context object"}
     >
-      <span className="inspector-kicker">
-        {edge
-          ? "Context relationship"
-          : id === "system"
-            ? "Software system"
-            : "kind" in (node ?? {})
-              ? (node as Architecture["nodes"][number]).kind.replaceAll("-", " ")
-              : "Context"}
-      </span>
+      {edge ? (
+        <span className="inspector-kicker">Context relationship</span>
+      ) : (
+        <TypeBadge
+          family={
+            id === "system"
+              ? "system"
+              : node && "kind" in node && node.kind === "person"
+                ? "person"
+                : "external"
+          }
+        />
+      )}
       <h2>{edge?.description ?? node?.name}</h2>
       <Stack gap="sm">
         {edge ? (
@@ -180,9 +185,6 @@ export function ContextInspector({
           </Button>
         ) : null}
       </Stack>
-      <p className="planned-footnote">
-        Context describes who uses the system and why. Application details live in C2.
-      </p>
     </section>
   );
 }

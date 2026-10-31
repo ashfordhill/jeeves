@@ -4,12 +4,25 @@ import {
   type ArchitectureViews,
   hasLocalDeploymentView,
 } from "@jeeves/spec";
-import { Alert, Button, Group, Loader, NativeSelect, Tabs } from "@mantine/core";
 import {
+  ActionIcon,
+  Alert,
+  Button,
+  Group,
+  Loader,
+  Menu,
+  Modal,
+  NativeSelect,
+  Tooltip,
+} from "@mantine/core";
+import {
+  IconArrowBackUp,
+  IconArrowForwardUp,
   IconBook,
+  IconDots,
   IconLayoutSidebarLeftCollapse,
   IconMessageCircle,
-  IconSitemap,
+  IconX,
 } from "@tabler/icons-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
@@ -23,7 +36,7 @@ import { canRedo, canUndo, useDraw } from "../draw/store.ts";
 import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { useGenerate } from "../generate/store.ts";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
-import { ArchitectureEvidenceDialog, evidenceLabel } from "./ArchitectureEvidence.tsx";
+import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { type ArchitectureCameraCache, ArchitectureGraph } from "./ArchitectureGraph.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
@@ -35,6 +48,7 @@ import { LocalDeploymentDialog } from "./LocalDeployment.tsx";
 import { PlannedConnectionInspector, PlannedElementInspector } from "./PlannedInspector.tsx";
 import "./architecture.css";
 import "./editor.css";
+import { TypeLegend } from "./type-style.tsx";
 
 type Level = "context" | "containers" | "components";
 export function ArchitectureWorkspace({ board }: { board: ReactNode }) {
@@ -75,13 +89,23 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     capability?: string;
   }>();
   const [relationshipEditor, setRelationshipEditor] = useState<{ id?: string }>();
-  const [chatOpen, setChatOpen] = useState(() => window.innerWidth >= 1200);
-  const [inspectorOpen, setInspectorOpen] = useState(() => window.innerWidth >= 760);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false);
+  const [findingsOpen, setFindingsOpen] = useState(false);
+  const [inspectorViews, setInspectorViews] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (boardSelection.nodes.length || boardSelection.edges.length)
+      setInspectorViews((current) => ({ ...current, containers: true }));
+  }, [boardSelection]);
   const railTab = useDraw((state) => state.railTab);
   const setRailTab = useDraw((state) => state.setRailTab);
   useEffect(() => {
     if (railTab === "chat") {
       setChatOpen(true);
+      setRailTab("inspector");
+    } else if (railTab === "findings") {
+      setFindingsOpen(true);
       setRailTab("inspector");
     }
   }, [railTab, setRailTab]);
@@ -138,18 +162,20 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           ? `container:${boardSelection.nodes[0]}`
           : undefined
       : selections[scope];
+  const inspectorOpen = inspectorViews[scope] ?? Boolean(selected);
+  const setInspectorOpen = useCallback(
+    (open: boolean) => setInspectorViews((current) => ({ ...current, [scope]: open })),
+    [scope],
+  );
   const edge = projection?.edges.find((item) => item.id === selected);
-  const node = edge
-    ? undefined
-    : (projection?.nodes.find((item) => item.id === selected) ??
-      (level === "containers" ? undefined : projection?.nodes[0]));
+  const node = edge ? undefined : projection?.nodes.find((item) => item.id === selected);
   const choose = useCallback(
     (id: string) => {
       setSelections((current) => ({ ...current, [scope]: id }));
-      setInspectorOpen(true);
+      setInspectorOpen(Boolean(id));
       setRailTab("inspector");
     },
-    [scope, setRailTab],
+    [scope, setRailTab, setInspectorOpen],
   );
   const currentEvidence = evidence?.revision === design.revision ? evidence : undefined;
   const changeLevel = async (next: Level) => {
@@ -167,7 +193,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   };
   const openContainer = (id?: string) => {
     if (id) useDraw.getState().focus({ nodes: [id], edges: [] });
-    setInspectorOpen(true);
+    setInspectorViews((current) => ({ ...current, containers: true }));
     setRailTab("inspector");
     void changeLevel("containers");
   };
@@ -211,14 +237,83 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       className="architecture-workspace integrated-editor"
       aria-label="Architecture workspace"
       data-chat-open={chatOpen}
+      data-selection={selected ?? ""}
       data-inspector-open={inspectorOpen}
     >
       <header className="editor-header">
-        <div className="editor-identity">
-          <IconSitemap size={20} aria-hidden />
-          <strong>Architecture</strong>
-          <span>C4 editor</span>
-        </div>
+        <Group gap={4} className="editor-menu-actions">
+          <Menu position="bottom-start" shadow="md">
+            <Menu.Target>
+              <ActionIcon variant="default" aria-label="Editor actions" size="lg">
+                <IconDots size={20} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={() => setFindOpen(true)}>Find object</Menu.Item>
+              <Menu.Item onClick={() => setInspectorOpen(!inspectorOpen)}>
+                {inspectorOpen ? "Hide inspector" : "Show inspector"}
+              </Menu.Item>
+              {level === "context" ? (
+                <Menu.Item onClick={() => setEditor("context")}>Edit context</Menu.Item>
+              ) : null}
+              {level === "components" ? (
+                <>
+                  <Menu.Item disabled={!actualContainer} onClick={() => setComponentEditor({})}>
+                    Add component
+                  </Menu.Item>
+                  <Menu.Item
+                    disabled={declaredComponents.length < 2}
+                    onClick={() => setRelationshipEditor({})}
+                  >
+                    Connect components
+                  </Menu.Item>
+                </>
+              ) : null}
+              {design.recipe?.id === "qr-studio" ? (
+                <Menu.Item onClick={() => setEditor("product")}>Product configuration</Menu.Item>
+              ) : null}
+              <Menu.Divider />
+              <Menu.Item onClick={() => setFindingsOpen(true)}>
+                Findings ({loaded.findings.length})
+              </Menu.Item>
+              <Menu.Item
+                disabled={!design.elements.some(hasLocalDeploymentView)}
+                onClick={() =>
+                  setDeployment({ element: node?.binding?.element ?? actualContainer })
+                }
+              >
+                Local deployment
+              </Menu.Item>
+              <Menu.Item disabled={!currentEvidence} onClick={() => setEvidenceOpen(true)}>
+                Inspect evidence
+              </Menu.Item>
+              <Menu.Item onClick={() => setLegendOpen(true)}>Type colors</Menu.Item>
+              <Menu.Label>Saved revision {design.revision}</Menu.Label>
+            </Menu.Dropdown>
+          </Menu>
+          <Tooltip label="Undo latest change">
+            <ActionIcon
+              variant="subtle"
+              color="var(--ink)"
+              aria-label="Undo"
+              disabled={!undoable}
+              onClick={() => void useDraw.getState().undo()}
+            >
+              <IconArrowBackUp size={19} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Redo latest change">
+            <ActionIcon
+              variant="subtle"
+              color="var(--ink)"
+              aria-label="Redo"
+              disabled={!redoable}
+              onClick={() => void useDraw.getState().redo()}
+            >
+              <IconArrowForwardUp size={19} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
         <nav className="architecture-levels" aria-label="Architecture levels">
           {(["context", "containers", "components"] as const).map((item, index) => (
             <button
@@ -233,113 +328,32 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
             </button>
           ))}
         </nav>
-        <Button
-          variant="default"
-          size="sm"
-          leftSection={<IconBook size={16} />}
-          onClick={() => setCatalog("blocks")}
-        >
-          Library
-        </Button>
-      </header>
-      <div className="editor-actions">
-        <Group gap="xs">
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            aria-pressed={chatOpen}
-            onClick={() => setChatOpen(!chatOpen)}
-          >
-            Chat
-          </Button>
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            aria-pressed={inspectorOpen}
-            aria-label={inspectorOpen ? "Hide inspector" : "Show inspector"}
-            onClick={() => setInspectorOpen(!inspectorOpen)}
-          >
-            Inspector
-          </Button>
-          <Button
-            size="compact-xs"
-            variant="default"
-            disabled={!undoable}
-            onClick={() => void useDraw.getState().undo()}
-          >
-            Undo latest change
-          </Button>
-          <Button
-            size="compact-xs"
-            variant="default"
-            disabled={!redoable}
-            onClick={() => void useDraw.getState().redo()}
-          >
-            Redo latest change
-          </Button>
-        </Group>
-        <Group gap="xs">
-          {level === "context" ? (
-            <Button size="compact-xs" variant="default" onClick={() => setEditor("context")}>
-              Edit context
-            </Button>
-          ) : null}
+        <Group gap="xs" className="editor-primary-actions">
           {level === "components" ? (
-            <>
-              <NativeSelect
-                aria-label="Component container"
-                size="xs"
-                value={actualContainer ?? ""}
-                data={
-                  views?.components.map((view) => ({
-                    value: view.container ?? "",
-                    label: view.name,
-                  })) ?? []
-                }
-                onChange={(event) => setContainer(event.currentTarget.value)}
-              />
-              <Button
-                size="compact-xs"
-                variant="default"
-                disabled={!actualContainer}
-                onClick={() => setComponentEditor({})}
-              >
-                Add component
-              </Button>
-              <Button
-                size="compact-xs"
-                variant="default"
-                disabled={declaredComponents.length < 2}
-                onClick={() => setRelationshipEditor({})}
-              >
-                Connect components
-              </Button>
-            </>
-          ) : null}
-          {design.recipe?.id === "qr-studio" ? (
-            <Button size="compact-xs" variant="default" onClick={() => setEditor("product")}>
-              Product configuration
-            </Button>
+            <NativeSelect
+              aria-label="Component container"
+              size="xs"
+              value={actualContainer ?? ""}
+              data={
+                views?.components.map((view) => ({
+                  value: view.container ?? "",
+                  label: view.name,
+                })) ?? []
+              }
+              onChange={(event) => setContainer(event.currentTarget.value)}
+            />
           ) : null}
           <Button
-            size="compact-xs"
-            variant="subtle"
-            disabled={!design.elements.some(hasLocalDeploymentView)}
-            onClick={() => setDeployment({ element: node?.binding?.element ?? actualContainer })}
+            variant="default"
+            size="sm"
+            leftSection={<IconBook size={16} />}
+            onClick={() => setCatalog("blocks")}
           >
-            Local deployment
+            Library
           </Button>
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            disabled={!currentEvidence}
-            onClick={() => setEvidenceOpen(true)}
-          >
-            Inspect evidence
-          </Button>
-          <span className="editor-revision">Revision {design.revision}</span>
+          <GenerateButton />
         </Group>
-      </div>
+      </header>
       {level !== "containers" && notice ? (
         <Alert
           color={notice.tone === "error" ? "red" : "blue"}
@@ -364,7 +378,20 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
         </Alert>
       ) : null}
       <div className="editor-body">
-        <aside className="editor-chat" aria-label="Chat panel" hidden={!chatOpen}>
+        {!chatOpen ? (
+          <button
+            className="editor-chat-handle"
+            type="button"
+            aria-label="Open chat"
+            aria-expanded={false}
+            aria-controls="editor-chat"
+            onClick={() => setChatOpen(true)}
+          >
+            <IconMessageCircle size={19} />
+            <span>Chat</span>
+          </button>
+        ) : null}
+        <aside id="editor-chat" className="editor-chat" aria-label="Chat panel" hidden={!chatOpen}>
           <header>
             <span>
               <IconMessageCircle size={17} aria-hidden /> Design assistant
@@ -375,7 +402,18 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           </header>
           <ChatPanel />
         </aside>
-        <div className="editor-canvas-area">
+        <div
+          className="editor-canvas-area"
+          onClickCapture={(event) => {
+            if (
+              level === "containers" &&
+              tool === "select" &&
+              event.target instanceof Element &&
+              event.target.closest(".react-flow__node, .react-flow__edge, .edge-chip")
+            )
+              setInspectorOpen(true);
+          }}
+        >
           {level === "containers" ? (
             board
           ) : !views ? (
@@ -392,7 +430,18 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                     : "Responsibilities within one application"}
                 </span>
               </div>
-              {projection.nodes.length ? (
+              {level === "context" && !design.architecture ? (
+                <div className="editor-empty context-empty">
+                  <span className="editor-empty-eyebrow">System context</span>
+                  <h2>Who uses {project.name}?</h2>
+                  <p>
+                    Describe its purpose, the people who use it, and the systems it interacts with.
+                  </p>
+                  <Button color="cyan.9" onClick={() => setEditor("context")}>
+                    Describe this system
+                  </Button>
+                </div>
+              ) : projection.nodes.length ? (
                 <ArchitectureGraph
                   projection={projection}
                   selected={node?.id}
@@ -444,197 +493,192 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           aria-label="Architecture details"
           hidden={!inspectorOpen}
         >
-          <Tabs
-            value={railTab}
-            onChange={(value) => {
-              if (value === "inspector" || value === "findings") setRailTab(value);
-            }}
-            keepMounted={false}
-          >
-            <Tabs.List>
-              <Tabs.Tab value="inspector">Inspector</Tabs.Tab>
-              <Tabs.Tab value="findings">
-                Findings <small>{loaded.findings.length}</small>
-              </Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel value="findings">
-              <FindingsPanel
-                onNavigate={() => {
-                  setInspectorOpen(true);
-                  void changeLevel("containers");
-                }}
-              />
-            </Tabs.Panel>
-            <Tabs.Panel value="inspector">
-              {notice?.actions?.length ? (
-                <section className="inspector-section" aria-label="Connection choices">
-                  <h3>Connection choices</h3>
-                  {notice.actions.map((action) => (
-                    <Button
-                      key={action.label}
-                      variant="default"
-                      size="xs"
-                      onClick={() => {
-                        useDraw.getState().setNotice(undefined);
-                        void useDraw.getState().edit(action.ops);
-                      }}
-                    >
-                      {action.label}
-                    </Button>
+          <div className="inspector-toolbar">
+            <span>Selection</span>
+            <ActionIcon
+              variant="subtle"
+              color="var(--ink)"
+              aria-label="Hide inspector"
+              onClick={() => setInspectorOpen(false)}
+            >
+              <IconX size={17} />
+            </ActionIcon>
+          </div>
+          {!selected ? (
+            <p className="inspector-empty">Select a box or arrow to edit its details.</p>
+          ) : null}
+          {notice?.actions?.length ? (
+            <section className="inspector-section" aria-label="Connection choices">
+              <h3>Connection choices</h3>
+              {notice.actions.map((action) => (
+                <Button
+                  key={action.label}
+                  variant="default"
+                  size="xs"
+                  onClick={() => {
+                    useDraw.getState().setNotice(undefined);
+                    void useDraw.getState().edit(action.ops);
+                  }}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </section>
+          ) : null}
+          {level === "containers" ? (
+            <>
+              {selected ? <Inspector onComponents={openComponents} /> : null}
+              {boardElement &&
+              !boardElement.planned &&
+              views?.components.some((view) => view.container === boardElement.id) ? (
+                <Button m="md" variant="default" onClick={() => openComponents(boardElement.id)}>
+                  Open components
+                </Button>
+              ) : null}
+            </>
+          ) : projection ? (
+            <>
+              {level === "context" && selected ? (
+                <ContextInspector
+                  key={node?.id ?? edge?.id}
+                  selected={node?.id ?? ""}
+                  relationship={edge?.context}
+                  onContainers={() => void changeLevel("containers")}
+                />
+              ) : edge ? (
+                <>
+                  {selectedConnection?.planned ? (
+                    <PlannedConnectionInspector
+                      key={selectedConnection.id}
+                      connection={selectedConnection}
+                    />
+                  ) : selectedConnection ? (
+                    <ConnectionInspector connection={selectedConnection} />
+                  ) : (
+                    <section className="planned-inspector">
+                      <span className="capability-status">Declared relationship</span>
+                      <h2>{edge.description}</h2>
+                      <p>Describes intended collaboration within this application.</p>
+                      {edge.componentRelationship ? (
+                        <Button
+                          variant="default"
+                          onClick={() => setRelationshipEditor({ id: edge.componentRelationship })}
+                        >
+                          Edit relationship
+                        </Button>
+                      ) : null}
+                    </section>
+                  )}
+                </>
+              ) : node?.binding?.element !== actualContainer && selectedElement ? (
+                selectedElement.planned ? (
+                  <PlannedElementInspector
+                    key={selectedElement.id}
+                    element={selectedElement}
+                    onComponents={() => openComponents(selectedElement.id)}
+                  />
+                ) : (
+                  <ElementInspector element={selectedElement} />
+                )
+              ) : node ? (
+                <ComponentDetails
+                  node={node}
+                  onConfigure={() => setComponentEditor({ initial: definition })}
+                  onContainer={() => openContainer(node.binding?.element)}
+                />
+              ) : null}
+              {selected ? (
+                <details className="scope-relationships">
+                  <summary>Relationships in this scope ({projection.edges.length})</summary>
+                  {projection.edges.map((relation) => (
+                    <button type="button" key={relation.id} onClick={() => choose(relation.id)}>
+                      <strong>
+                        {projection.nodes.find((item) => item.id === relation.from)?.name} →{" "}
+                        {projection.nodes.find((item) => item.id === relation.to)?.name}
+                      </strong>
+                      <span>{relation.description}</span>
+                    </button>
                   ))}
-                </section>
+                </details>
               ) : null}
-              {level === "containers" ? (
-                <>
-                  <div className="scope-object-picker">
-                    <NativeSelect
-                      label="Inspect an object"
-                      value={selected ?? ""}
-                      data={[
-                        { value: "", label: "Select a box or arrow" },
-                        ...design.elements.map((item) => ({
-                          value: `container:${item.id}`,
-                          label: item.name,
-                        })),
-                        ...design.connections.map((item) => ({
-                          value: `connection:${item.id}`,
-                          label: `↗ ${item.planned?.label ?? item.kind}`,
-                        })),
-                      ]}
-                      onChange={(event) => {
-                        const value = event.currentTarget.value;
-                        useDraw
-                          .getState()
-                          .focus(
-                            value.startsWith("container:")
-                              ? { nodes: [value.slice(10)], edges: [] }
-                              : { nodes: [], edges: value ? [value.slice(11)] : [] },
-                          );
-                      }}
-                    />
-                  </div>
-                  <Inspector onComponents={openComponents} />
-                  {boardElement &&
-                  !boardElement.planned &&
-                  views?.components.some((view) => view.container === boardElement.id) ? (
-                    <Button
-                      m="md"
-                      variant="default"
-                      onClick={() => openComponents(boardElement.id)}
-                    >
-                      Open components
-                    </Button>
-                  ) : null}
-                </>
-              ) : projection ? (
-                <>
-                  <div className="scope-object-picker">
-                    <NativeSelect
-                      label="Inspect an object"
-                      value={edge?.id ?? node?.id ?? ""}
-                      data={[
-                        ...projection.nodes.map((item) => ({ value: item.id, label: item.name })),
-                        ...projection.edges.map((item) => ({
-                          value: item.id,
-                          label: `↗ ${item.description}`,
-                        })),
-                      ]}
-                      onChange={(event) => choose(event.currentTarget.value)}
-                    />
-                  </div>
-                  {level === "context" ? (
-                    <ContextInspector
-                      key={node?.id ?? edge?.id}
-                      selected={node?.id ?? ""}
-                      relationship={edge?.context}
-                      onContainers={() => void changeLevel("containers")}
-                    />
-                  ) : edge ? (
-                    <>
-                      {selectedConnection?.planned ? (
-                        <PlannedConnectionInspector
-                          key={selectedConnection.id}
-                          connection={selectedConnection}
-                        />
-                      ) : selectedConnection ? (
-                        <ConnectionInspector connection={selectedConnection} />
-                      ) : (
-                        <section className="planned-inspector">
-                          <span className="capability-status">Declared relationship</span>
-                          <h2>{edge.description}</h2>
-                          <p>Describes intended collaboration within this application.</p>
-                          {edge.componentRelationship ? (
-                            <Button
-                              variant="default"
-                              onClick={() =>
-                                setRelationshipEditor({ id: edge.componentRelationship })
-                              }
-                            >
-                              Edit relationship
-                            </Button>
-                          ) : null}
-                        </section>
-                      )}
-                    </>
-                  ) : node?.binding?.element !== actualContainer && selectedElement ? (
-                    selectedElement.planned ? (
-                      <PlannedElementInspector
-                        key={selectedElement.id}
-                        element={selectedElement}
-                        onComponents={() => openComponents(selectedElement.id)}
-                      />
-                    ) : (
-                      <ElementInspector element={selectedElement} />
-                    )
-                  ) : node ? (
-                    <ComponentDetails
-                      node={node}
-                      onConfigure={() => setComponentEditor({ initial: definition })}
-                      onContainer={() => openContainer(node.binding?.element)}
-                    />
-                  ) : null}
-                  <details className="scope-relationships">
-                    <summary>Relationships in this scope ({projection.edges.length})</summary>
-                    {projection.edges.map((relation) => (
-                      <button type="button" key={relation.id} onClick={() => choose(relation.id)}>
-                        <strong>
-                          {projection.nodes.find((item) => item.id === relation.from)?.name} →{" "}
-                          {projection.nodes.find((item) => item.id === relation.to)?.name}
-                        </strong>
-                        <span>{relation.description}</span>
-                      </button>
-                    ))}
-                  </details>
-                </>
-              ) : null}
-              {node?.pool || (level === "components" && projection?.pool) ? (
-                <section className="inspector-section" aria-label="Local HTTP pool">
-                  <h3>Local HTTP pool</h3>
-                  <LocalHttpPoolSummary binding={(node?.pool ?? projection?.pool)!} />
-                </section>
-              ) : null}
-              {node?.execution || (level === "components" && projection?.execution) ? (
-                <section className="inspector-section" aria-label="Local execution policy">
-                  <h3>Local execution · {(node?.execution ?? projection?.execution)!.preset}</h3>
-                  <ExecutionPolicySummary policy={(node?.execution ?? projection?.execution)!} />
-                </section>
-              ) : null}
-            </Tabs.Panel>
-          </Tabs>
+            </>
+          ) : null}
+          {selected && (node?.pool || (level === "components" && projection?.pool)) ? (
+            <section className="inspector-section" aria-label="Local HTTP pool">
+              <h3>Local HTTP pool</h3>
+              <LocalHttpPoolSummary binding={(node?.pool ?? projection?.pool)!} />
+            </section>
+          ) : null}
+          {selected && (node?.execution || (level === "components" && projection?.execution)) ? (
+            <section className="inspector-section" aria-label="Local execution policy">
+              <h3>Local execution · {(node?.execution ?? projection?.execution)!.preset}</h3>
+              <ExecutionPolicySummary policy={(node?.execution ?? projection?.execution)!} />
+            </section>
+          ) : null}
         </aside>
       </div>
-      <footer className="editor-footer">
-        <span>
-          {level === "containers"
-            ? "Applications & data stores"
-            : level === "context"
-              ? "System context"
-              : "Application components"}{" "}
-          · {design.elements.filter((element) => element.planned).length} planned blocks
-        </span>
-        <span>{currentEvidence ? evidenceLabel(currentEvidence) : "Refreshing evidence…"}</span>
-        <GenerateButton />
-      </footer>
+      {findOpen ? (
+        <Modal
+          opened
+          onClose={() => setFindOpen(false)}
+          title="Find object"
+          closeButtonProps={{ "aria-label": "Close find object" }}
+        >
+          <NativeSelect
+            label="Inspect an object"
+            value={selected ?? ""}
+            data={[
+              { value: "", label: "Select a box or arrow" },
+              ...(projection?.nodes.map((item) => ({ value: item.id, label: item.name })) ?? []),
+              ...(projection?.edges.map((item) => ({
+                value: item.id,
+                label: `↗ ${item.description}`,
+              })) ?? []),
+            ]}
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              if (!value) return;
+              if (level === "containers")
+                useDraw
+                  .getState()
+                  .focus(
+                    value.startsWith("container:")
+                      ? { nodes: [value.slice(10)], edges: [] }
+                      : { nodes: [], edges: [value.slice(11)] },
+                  );
+              else choose(value);
+              setInspectorOpen(true);
+              setFindOpen(false);
+            }}
+          />
+        </Modal>
+      ) : null}
+      {findingsOpen ? (
+        <Modal
+          opened
+          onClose={() => setFindingsOpen(false)}
+          title="Findings"
+          closeButtonProps={{ "aria-label": "Close findings" }}
+        >
+          <FindingsPanel
+            onNavigate={() => {
+              setFindingsOpen(false);
+              setInspectorOpen(true);
+              void changeLevel("containers");
+            }}
+          />
+        </Modal>
+      ) : null}
+      {legendOpen ? (
+        <Modal
+          opened
+          onClose={() => setLegendOpen(false)}
+          title="Type colors"
+          closeButtonProps={{ "aria-label": "Close type colors" }}
+        >
+          <TypeLegend />
+        </Modal>
+      ) : null}
       <GenerateDrawer />
       {catalog ? (
         <CapabilityCatalog

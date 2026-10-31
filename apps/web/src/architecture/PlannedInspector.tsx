@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useDraw } from "../draw/store.ts";
 import { CapabilityFields } from "./CapabilityFields.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
+import { elementFamily, TypeBadge } from "./type-style.tsx";
 
 export function PlannedElementInspector({
   element,
@@ -56,9 +57,14 @@ export function PlannedElementInspector({
     } else setError(useDraw.getState().notice?.message ?? "Could not save this draft.");
   };
   return (
-    <section className="planned-inspector" aria-label={`Configure ${element.name}`}>
+    <section
+      className="planned-inspector"
+      data-family={elementFamily(element)}
+      aria-label={`Configure ${element.name}`}
+    >
+      <TypeBadge family={elementFamily(element)} />
       <span className="capability-status">Planned capability</span>
-      <h2>{capability.name}</h2>
+      <h2>{element.name}</h2>
       <p className="inspector-empty">{capability.description}</p>
       <form
         onSubmit={(event) => {

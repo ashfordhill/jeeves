@@ -2807,3 +2807,84 @@ No application/runtime/template/lockfile changes, dependency installs, live desi
 edits, account/data changes, provider calls or runtime/browser certification campaigns.
 CATALOG availability and boundaries remain unchanged. Complete this review with its
 own scoped documentation commit; implementation remains a separate package.
+
+## 2026-10-31 — P37: editor simplification and contextual actions
+
+Completed [P37](build-plan-p37-editor.md) sequentially on the existing `main`
+checkout, starting clean at `3282fdb`, with one agent and no branches/worktrees.
+Read the JEEVES-2 review, original feedback and annotated screenshot; did not repeat
+its research. The user explicitly chose **focused C4 implementation with linked
+data/traffic settings**, **contextual menus for retained actions**, and **C3
+responsibility groups**. The first choice guides the separately scoped backend
+follow-up; this package implements the bounded editor simplification only.
+
+Implemented an initially collapsed left-edge chat drawer with its existing mounted
+conversation/draft. One header retains navigation, parent application, Library,
+Generate and mouse undo/redo. Editor/diagram menus retain object lookup, component
+creation/relationships, context/product editing, findings, evidence, deployment,
+flow direction and focus. Removed the permanent action row, Architecture label,
+object picker, Findings tab, revision/footer counters and duplicate history buttons.
+Selection opens concise details; inspector visibility restores per scope, and
+clicking the selected C2 card reopens a dismissed inspector.
+
+C3 uses one responsibility heading/purpose, compact method/path/response-media rows,
+and disclosures for contracts, resource fields and implementation configuration.
+Existing structured configuration remains reachable. Acceptance IDs are absent
+from normal component/resource editing; event acceptance editing is behind
+Verification metadata. Protected contracts and evidence retain their metadata.
+Normal subtype choices show one entry per type and keep existing exact pins;
+explicit version changes remain in inspector implementation details and use the
+existing reviewed upgrade dialog. New selections use the registry's explicit
+semantic-version ordering, not catalog array order.
+
+Shared family colors/icons now cover C2/C3 cards, Library and inspector headings,
+with separate selection, planned and issue cues. C1 uses saved purpose/actors/
+interactions, and missing context offers an explicit setup action through the
+existing editor. No context or responsibility grouping is silently inserted into
+existing designs. Existing ungrouped components remain visible.
+
+Visual/interaction fixes needed by this shell: prevent an empty-board resize from
+queuing a fit that unexpectedly centers the first new item; fit C1/C3 against
+measured bounds when the panel shrinks the canvas; restore per-scope panel state
+so navigation retains the C2 camera; bound default C2 card width while preserving
+saved resize dimensions and semantic/layout separation. Screenshots exposed
+oversized intrinsic cards with newer templates' additional attachment actions.
+No model, runtime, template, recipe, starter, generator or dependency pin changed.
+Catalog offerings and boundaries are unchanged, so `CATALOG.md` is unchanged.
+
+Verification and evidence:
+
+- Final production-build browser command is listed in
+  [P37 evidence](evidence/p37/README.md): **32 tests passed / 15 suites**, Playwright
+  **24.8s**, profile **26.5s**, no retries, strict diagnostics and unchanged source
+  fingerprints; `2026-10-31T20-04-23-930Z-browser-preview-8fd282c1`.
+- Mouse selection/connections, menus, chat draft collapse/continuity, context
+  Save/Cancel/undo/redo/reload, planned and configuration conflict drafts, explicit
+  upgrade boundaries, evidence/deployment, resources/workspaces/events and starter
+  generation passed. Axe checks cover desktop/narrow/dark screens and configuration
+  dialogs. Providers are scripted; generated output is disposable and write-only.
+- **`pnpm work run check` → `pnpm check` passed**, **44.3s**, unchanged fingerprints,
+  profile `2026-10-31T20-05-56-648Z-check-d8cf1f71`. All workspace/script types passed;
+  **665 tests / 99 files**, Vitest **37.07s**; Biome **687 files, 514 warnings/74 infos,
+  no errors**. Only evidence/handoff documentation changed afterward.
+- Opened and visually inspected seven final screenshots: C1 empty/setup, saved
+  actor editing, QR fixture context, C2 container types, concise C3 analytics,
+  expanded chat and 390px dark context. The evidence directory retains them.
+- Interim browser failures and logs are retained. They exposed the corrected
+  contrast/fit/card-width/scope-camera issues and old test assumptions about
+  permanent controls, acceptance/version text, implicit selection and Undo location.
+  No timeout increase, diagnostic suppression or retry was added. `git diff --check`
+  and local documentation link checks passed.
+
+Removed 87 named projects created by this session from `jeeves_e2e` and 132
+session-created E2E temporary settings/output directories, retaining existing
+projects, logs and the shared Postgres service. Existing Jeeves API health is OK
+on 4310. Live QRWTY source, services, URLs/accounts, saved design and data were not
+edited. Work remains in the current checkout for its scoped local P37 commit.
+
+Next: separately specify the complete API operation/reference workflow and selected
+contract authoring, then the approved focused implementation view with explicit
+handler/library bindings and linked data/traffic settings. No embedded API viewer,
+combined backend canvas, general code graph, new runtime, deployment authoring,
+page flow, developer-testing service or live adoption was built here. Keep those
+bounded and continue the one-agent/current-branch/local-commit policy.

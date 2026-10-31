@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { type DesignDocument, designSchema, workspaceConfigSchema } from "@jeeves/spec";
 import { expect, test } from "./browser-test.ts";
-import { openNewProject } from "./helpers.ts";
+import { inspectObject, openNewProject } from "./helpers.ts";
 
 const fixture = designSchema.parse(
   JSON.parse(
@@ -46,11 +46,9 @@ test("configures generated resource screens by mouse with actual C4 binding, und
     .getByRole("button", { name: /Containers/ })
     .click();
   const details = architecture.getByRole("complementary", { name: "Architecture details" });
-  await details.getByLabel("Inspect an object").selectOption("container:inventory-web");
+  await inspectObject(page, "container:inventory-web");
   await details.getByRole("button", { name: "Open components" }).click();
-  await details
-    .getByLabel("Inspect an object")
-    .selectOption("component:inventory-web:inventory-workspace");
+  await inspectObject(page, "component:inventory-web:inventory-workspace");
   await expect(details.getByText(/Accounts, owner-record forms/)).toBeVisible();
   await expect(
     architecture.getByRole("button", { name: "Inspect Inventory API", exact: true }),

@@ -1,12 +1,8 @@
 # Deterministic application behavior and the qrwty proof
 
-**Current editor package (2026-10-31): [P36 — unified C4 editor and planned SaaS building blocks](build-plan-p36-architecture.md).** The shared C1/C2/C3 editor, selected-object controls, responsibility grouping and planned catalog are implemented; [evidence](evidence/p36/README.md) records the checks and limits. Maintain the modular [CATALOG.md](../CATALOG.md). The user prioritizes visuals and composable planning; new template runtimes, generation and load/stress-test implementation are deferred to future tasking. Chat usage/answer previews, persistent developer testing, page flow/public entry and live adoption remain separate. Live QRWTY has not adopted P35.
+**Current editor package (2026-10-31): [P37 — editor simplification](build-plan-p37-editor.md).** Edge chat, concise selected details, contextual actions, hidden version/acceptance noise and shared type colors build on completed P36. [Evidence](evidence/p37/README.md) records verification and screenshots. Maintain the modular [CATALOG.md](../CATALOG.md); no offerings or implementation availability changed. Runtime expansion, API tooling, developer testing, page flows and live adoption remain separate. Live QRWTY has not adopted P35.
 
-**Latest requested review:** [JEEVES-2 research and planning](reviews/jeeves-feedback-2-2026-10-31.md)
-maps the annotated UI removals, simpler API/type editing and deeper backend view to
-the current implementation. Its C4 scope, action placement and C3 granularity
-questions remain open. Recommendations await answers and a bounded specification;
-do not treat this review as completed or approved P37 implementation.
+**JEEVES-2 choices resolved:** the user approved focused C4 implementation with linked data/traffic settings, contextual menus for retained actions, and C3 responsibility groups. The [research review](reviews/jeeves-feedback-2-2026-10-31.md) remains background; the bounded P37 specification defines what this package implements and what needs separate follow-up scope.
 
 Status: the original architecture was approved on 2026-10-29 (see SRC-18 in `docs/sources.md`); P1–P35 and the qrwty proving run are complete as recorded in `docs/handoff.md`. The current priority is C4 authoring UX, with QRWTY as the proving application and reusable templates as the implementation foundation. The earlier [product review](reviews/jeeves-qrwty-product-plan-2026-10-30.md) supplies background; its P12-next statements are historical. The owner-scoped resource pattern, React Flow/outer-only executable connections and ownership protections remain in force until a later package explicitly evolves them. Historical descriptions and handoffs below remain evidence of their original scope.
 
@@ -180,7 +176,7 @@ Persist an implementation-usage ledger across project → run → task → attem
 
 ## Ordered delivery and review checkpoints
 
-The following list records the earlier delivery sequence. The latest editor package is [P36](build-plan-p36-architecture.md); use the [JEEVES-2 review](reviews/jeeves-feedback-2-2026-10-31.md) and the user's answers to specify the next task. Do not restart completed proving work or automatically continue the superseded P35 forms proposal.
+The following list records the earlier delivery sequence. The latest editor package is [P37](build-plan-p37-editor.md); use its approved choices and separately listed follow-ups to specify the next task. Do not restart completed proving work or automatically continue the superseded P35 forms proposal.
 
 1. **Complete and approved.** Record this specification, the schema/output examples, truthful baseline evidence, and [qrwty acceptance](examples/qrwty.md). The user approved the resource pattern before runtime implementation.
 2. **Complete; React Flow recommendation approved.** Prototype editor alternatives; document official provider support and Settings behavior. Implement the hierarchy and outer-only connections in the existing production editor. The provider/Settings investigation is documented; production Settings simplification remains outstanding.

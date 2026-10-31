@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
+import { editorAction, inspectObject } from "./helpers.ts";
 
 test("shows actual written-only and stale starter evidence without changing the design or C4 camera", async ({
   page,
@@ -19,7 +20,7 @@ test("shows actual written-only and stale starter evidence without changing the 
   try {
     await page.goto(`/?project=${id}#/draw`);
     await page.getByRole("button", { name: "C1 Context", exact: true }).click();
-    await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
+    await editorAction(page, "Inspect evidence");
     let dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
       dialog.getByRole("heading", { name: "No generation recorded", exact: true }),
@@ -45,7 +46,7 @@ test("shows actual written-only and stale starter evidence without changing the 
     });
     await generate.getByRole("button", { name: "Hide generate output" }).click();
     await page.getByRole("button", { name: "C1 Context", exact: true }).click();
-    await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
+    await editorAction(page, "Inspect evidence");
     dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
       dialog.getByRole("heading", { name: "Written · checks not run", exact: true }),
@@ -55,7 +56,7 @@ test("shows actual written-only and stale starter evidence without changing the 
       animations: "disabled",
     });
     await dialog.getByRole("button", { name: "Close evidence", exact: true }).click();
-    await page.getByRole("button", { name: "Edit context", exact: true }).click();
+    await editorAction(page, "Edit context");
     const context = page.getByRole("dialog", { name: "Edit system context" });
     await context.getByLabel("System responsibility").fill("Our edited inventory responsibility.");
     await context.getByRole("button", { name: "Save context", exact: true }).click();
@@ -65,11 +66,9 @@ test("shows actual written-only and stale starter evidence without changing the 
       .getByRole("navigation", { name: "Architecture levels" })
       .getByRole("button", { name: /Containers/ })
       .click();
-    await architecture.getByLabel("Inspect an object").selectOption("container:inventory");
+    await inspectObject(page, "container:inventory");
     await architecture.getByRole("button", { name: "Open components", exact: true }).click();
-    await architecture
-      .getByLabel("Inspect an object")
-      .selectOption("component:inventory:inventory-api:accounts");
+    await inspectObject(page, "component:inventory:inventory-api:accounts");
     await architecture.getByRole("button", { name: "Zoom In", exact: true }).click();
     const viewport = architecture.locator(".react-flow__viewport");
     await expect(
@@ -78,7 +77,7 @@ test("shows actual written-only and stale starter evidence without changing the 
     const camera = await viewport.getAttribute("style"),
       design = await read();
     const layout = await (await request.get(`/api/projects/${id}/layout`)).json();
-    await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
+    await editorAction(page, "Inspect evidence");
     dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
       dialog.getByText(
@@ -103,14 +102,15 @@ test("shows actual written-only and stale starter evidence without changing the 
     });
     await page.setViewportSize({ width: 1440, height: 900 });
     await dialog.getByRole("button", { name: "Close evidence", exact: true }).click();
-    await expect(architecture.getByLabel("Inspect an object")).toHaveValue(
+    await expect(architecture).toHaveAttribute(
+      "data-selection",
       "component:inventory:inventory-api:accounts",
     );
     // Wait for the asynchronous resize layout and its camera fit before testing refresh alone.
     await expect(architecture.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
     const beforeRefresh = await viewport.getAttribute("style");
     expect(camera).toBeTruthy();
-    await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
+    await editorAction(page, "Inspect evidence");
     await dialog.getByRole("button", { name: "Refresh evidence", exact: true }).click();
     await expect(
       dialog.getByRole("button", { name: "Refresh evidence", exact: true }),
@@ -225,12 +225,10 @@ test("controlled read-only record renders layered outcomes, service-scoped refer
       .getByRole("navigation", { name: "Architecture levels" })
       .getByRole("button", { name: /Containers/ })
       .click();
-    await architecture.getByLabel("Inspect an object").selectOption("container:qrwty");
+    await inspectObject(page, "container:qrwty");
     await architecture.getByRole("button", { name: "Open components", exact: true }).click();
-    await architecture
-      .getByLabel("Inspect an object")
-      .selectOption("component:qrwty:qrwty-api:extension:owner-analytics");
-    await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
+    await inspectObject(page, "component:qrwty:qrwty-api:extension:owner-analytics");
+    await editorAction(page, "Inspect evidence");
     const dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
       dialog.getByRole("heading", { name: "Incomplete check evidence", exact: true }),

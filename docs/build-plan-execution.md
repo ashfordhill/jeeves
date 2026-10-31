@@ -1,11 +1,8 @@
 # Continuing delivery: qrwty and deterministic Jeeves
 
-**Current execution entry point:** P13–P36 are completed history. [P36 evidence](evidence/p36/README.md) records the integrated editor, planned capability library and reusable [catalog](../CATALOG.md). The user prioritized visual authoring and deferred new template runtime, generation and load-test implementation to future tasking. Review the editor before specifying the next bounded package; do not automatically resume the historical sequence below. P35 session release evidence is retained separately; no live QRWTY adoption has occurred.
+**Current execution entry point:** P13–P37 are completed history. [P37](build-plan-p37-editor.md) and its [evidence](evidence/p37/README.md) record the simplified editor. P36's planned capability library and reusable [catalog](../CATALOG.md) remain in place. The user chose focused C4 implementation with linked data/traffic settings, retained actions in contextual menus, and C3 responsibility groups. API tooling and backend implementation/data/deployment authoring require their separately bounded follow-ups; do not automatically resume the historical sequence below. New runtime/load implementation and live QRWTY adoption remain deferred.
 
-The requested [JEEVES-2 review](reviews/jeeves-feedback-2-2026-10-31.md) now records
-that assessment, primary diagram/API research and the remaining product questions.
-Its recommendations need the user's answers and a bounded implementation spec;
-this does not start a new package or reopen completed P36.
+The [JEEVES-2 review](reviews/jeeves-feedback-2-2026-10-31.md) retains the completed research. P37 records the subsequent product decisions and implementation scope; the research does not need repeating.
 
 The user's continuing implementation instruction supersedes the earlier P12-only stop boundary and planning-only status of the product reviews. Deliver one verified package and local commit at a time, preserving unrelated work and existing QR identities/data. No paid Jeeves agent runs or public deployment are needed.
 

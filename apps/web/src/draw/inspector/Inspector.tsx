@@ -28,6 +28,7 @@ import {
   PlannedConnectionInspector,
   PlannedElementInspector,
 } from "../../architecture/PlannedInspector.tsx";
+import { elementFamily, templateFamily, typeStyles } from "../../architecture/type-style.tsx";
 import { connectionLabels } from "../connect.ts";
 import { templateKey } from "../flow.ts";
 import { attach, deleteOps } from "../ops.ts";
@@ -141,9 +142,13 @@ export function AttachmentPanel({
   const name = template?.displayName ?? attachment.template.id;
   const own = findings.filter((f) => f.target.attachment === attachment.id);
   return (
-    <li className="inspector-attachment" aria-label={`${name} attachment of ${element.name}`}>
+    <li
+      className="inspector-attachment"
+      data-family={templateFamily(attachment.template.id)}
+      aria-label={`${name} attachment of ${element.name}`}
+    >
       <div className="inspector-attachment-head">
-        <TemplateIcon name={template?.card.icon} size={16} />
+        <TemplateIcon name={typeStyles[templateFamily(attachment.template.id)].icon} size={16} />
         <span className="inspector-attachment-name">{name}</span>
         <button
           type="button"
@@ -297,14 +302,17 @@ export function ElementInspector({ element }: { element: Element }) {
   );
 
   return (
-    <section className="inspector-body" aria-label={`Inspector: ${element.name}`}>
+    <section
+      className="inspector-body"
+      data-family={elementFamily(element)}
+      aria-label={`Inspector: ${element.name}`}
+    >
       <header className="inspector-head">
         <span className="element-card-icon">
-          <TemplateIcon name={template?.card.icon} size={22} />
+          <TemplateIcon name={typeStyles[elementFamily(element)].icon} size={22} />
         </span>
         <span className="inspector-head-titles">
           <span className="inspector-kicker">{template?.displayName ?? "Needs a template"}</span>
-          {template ? <span className="inspector-head-sub">{template.description}</span> : null}
         </span>
       </header>
 
@@ -316,7 +324,9 @@ export function ElementInspector({ element }: { element: Element }) {
         }}
       />
 
-      {template?.elementKind !== "database" ? <SubtypeControl element={element} /> : null}
+      {template?.elementKind !== "database" ? (
+        <SubtypeControl element={element} implementationDetails />
+      ) : null}
 
       {elementFindings.some((f) => !f.target.path) ? (
         <Section title="Findings">

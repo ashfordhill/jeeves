@@ -4,6 +4,7 @@ import { AttachmentPanel } from "../draw/inspector/Inspector.tsx";
 import { ResourceConfiguration } from "../draw/inspector/ResourceEditor.tsx";
 import { useDraw } from "../draw/store.ts";
 import { supportLabel } from "./ArchitectureGraph.tsx";
+import { nodeFamily, TypeBadge } from "./type-style.tsx";
 
 function MemberDetails({ node, design }: { node: ArchitectureViewNode; design: DesignDocument }) {
   const element = design.elements.find((item) => item.id === node.binding?.element);
@@ -15,21 +16,37 @@ function MemberDetails({ node, design }: { node: ArchitectureViewNode; design: D
   const resource = parsed.success
     ? parsed.data.resources.find((item) => item.id === node.binding?.resource)
     : undefined;
+  const responses = extension ? Object.entries(extension.contract.responses) : [];
+  const responseSummary = responses
+    .filter(([status]) => /^[23]/.test(status))
+    .map(
+      ([status, response]) =>
+        `${status} · ${Object.keys(response.content ?? {}).join(", ") || response.description}`,
+    )
+    .join(" / ");
   return (
-    <details className="component-member" open>
-      <summary>{node.name}</summary>
-      <span className="architecture-support" data-support={node.support}>
-        {supportLabel[node.support]}
-      </span>
-      {node.provenance ? <p className="planned-footnote">{node.provenance}</p> : null}
+    <details className="component-member">
+      <summary>
+        {extension ? (
+          <>
+            <span className="endpoint-line">
+              <strong>{extension.method}</strong> {extension.path}
+            </span>
+            <span className="endpoint-response">{responseSummary}</span>
+          </>
+        ) : (
+          node.name
+        )}
+      </summary>
       {extension ? (
         <>
-          <p className="endpoint-line">
-            <strong>{extension.method}</strong> {extension.path}
-          </p>
-          <p className="planned-footnote">
-            {extension.operationId} · {extension.access}
-          </p>
+          <p>{extension.access === "owner" ? "Signed-in owner" : "Public access"}</p>
+          {responses.map(([status, response]) => (
+            <p key={status}>
+              <strong>{status}</strong> · {response.description}
+              {response.content ? ` · ${Object.keys(response.content).join(", ")}` : ""}
+            </p>
+          ))}
           <details>
             <summary>Operation contract</summary>
             <pre className="component-contract">{JSON.stringify(extension.contract, null, 2)}</pre>
@@ -57,11 +74,6 @@ function MemberDetails({ node, design }: { node: ArchitectureViewNode; design: D
       ) : (
         <p>{node.description}</p>
       )}
-      {node.acceptance.length ? (
-        <p className="planned-footnote">
-          Acceptance references: <strong>{node.acceptance.join(", ")}</strong>
-        </p>
-      ) : null}
       {element && attachment && resource ? (
         <ResourceConfiguration
           element={element}
@@ -86,12 +98,11 @@ export function ComponentDetails({
   const element = loaded.design.elements.find((item) => item.id === node.binding?.element);
   const attachment = element?.attachments.find((item) => item.id === node.binding?.attachment);
   return (
-    <section className="component-details">
-      <span className="architecture-support" data-support={node.support}>
-        {supportLabel[node.support]}
-      </span>
+    <section className="component-details" data-family={nodeFamily(node, loaded.design)}>
+      <TypeBadge family={nodeFamily(node, loaded.design)} />
       <h2>{node.name}</h2>
       <p>{node.description}</p>
+      {node.support === "planned" ? <span className="capability-status">Planned</span> : null}
       {node.binding?.component ? (
         <Button fullWidth variant="default" onClick={onConfigure}>
           Configure component
@@ -114,19 +125,18 @@ export function ComponentDetails({
         <MemberDetails node={node} design={loaded.design} />
       ) : null}
       {!node.members && element && attachment && !node.binding?.resource ? (
-        <ul className="component-configuration">
-          <AttachmentPanel element={element} attachment={attachment} findings={loaded.findings} />
-        </ul>
-      ) : null}
-      {!node.members && node.acceptance.length > 0 && !node.binding?.extension ? (
-        <p>
-          Acceptance references: <strong>{node.acceptance.join(", ")}</strong>
-        </p>
+        <details className="component-technical">
+          <summary>Application configuration</summary>
+          <ul className="component-configuration">
+            <AttachmentPanel element={element} attachment={attachment} findings={loaded.findings} />
+          </ul>
+        </details>
       ) : null}
       <details className="component-technical">
         <summary>Technical details</summary>
+        <p>{supportLabel[node.support]}</p>
         <p>{node.technology}</p>
-        <p>{node.provenance}</p>
+        {node.provenance ? <p>{node.provenance}</p> : null}
         <Button variant="subtle" size="xs" onClick={onContainer}>
           Open in C2
         </Button>

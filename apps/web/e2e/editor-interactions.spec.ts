@@ -1,5 +1,5 @@
 import { expect, test } from "./browser-test.ts";
-import { designOf, layoutOf, openNewProject } from "./helpers.ts";
+import { designOf, editorAction, layoutOf, openNewProject } from "./helpers.ts";
 
 test.use({ viewport: { width: 1600, height: 1000 }, actionTimeout: 10_000 });
 
@@ -8,12 +8,13 @@ test("creation over an existing subtype cannot add, edit, or move that card", as
   request,
 }) => {
   const project = await openNewProject(page, request, "P13 placement");
+  await editorAction(page, "Show inspector");
   const pane = page.locator(".react-flow__pane");
   await page.getByRole("button", { name: "Service", exact: true }).click();
   await pane.click({ position: { x: 180, y: 330 } });
   const service = page.locator('[data-element-id="service"]');
-  const subtype = service.getByRole("combobox");
-  await subtype.selectOption("web-app@0.1.0");
+  const subtype = service.getByRole("combobox", { name: "Subtype of Service", exact: true });
+  await subtype.selectOption({ label: "Web app" });
   await service.locator(".element-card-head").click();
   await service.getByRole("button", { name: "Add REST API client", exact: true }).click();
   await expect(service.locator("[data-attachment-id]")).toHaveCount(1);
@@ -41,7 +42,7 @@ test("creation over an existing subtype cannot add, edit, or move that card", as
   expect((await designOf(request, project)).design).toEqual(before);
   expect((await layoutOf(request, project)).items.service).toEqual(position);
 
-  await subtype.selectOption("http-service@0.1.0");
+  await subtype.selectOption({ label: "HTTP service" });
   const review = page.getByRole("dialog", { name: "Change service subtype?" });
   await review.getByRole("button", { name: "Cancel", exact: true }).click();
   expect((await designOf(request, project)).design).toEqual(before);
@@ -69,7 +70,8 @@ test("selection keeps card geometry stable and opening the inspector fits the bo
   request,
 }) => {
   const project = await openNewProject(page, request, "P13 camera");
-  await page.getByRole("button", { name: "Hide inspector", exact: true }).click();
+
+  await editorAction(page, "Show inspector");
   const pane = page.locator(".react-flow__pane");
   for (const x of [300, 1200]) {
     await page.getByRole("button", { name: "Elements", exact: true }).click();
@@ -94,7 +96,8 @@ test("selection keeps card geometry stable and opening the inspector fits the bo
   const before = (await designOf(request, project)).design;
   const positions = (await layoutOf(request, project)).items;
 
-  await page.getByRole("button", { name: "Show inspector", exact: true }).click();
+  await page.getByRole("button", { name: "Hide inspector", exact: true }).click();
+  await editorAction(page, "Show inspector");
   await expect
     .poll(async () => {
       const canvas = await page.locator(".draw-board").boundingBox();
@@ -122,6 +125,7 @@ test("placement keeps annotation controls inert and permits a service inside a f
   request,
 }) => {
   const project = await openNewProject(page, request, "P13 annotations");
+  await editorAction(page, "Show inspector");
   const pane = page.locator(".react-flow__pane");
   await page.getByRole("button", { name: "Frame", exact: true }).click();
   await pane.click({ position: { x: 300, y: 260 } });

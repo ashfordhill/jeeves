@@ -120,7 +120,7 @@ export function Canvas() {
   // Opening the rail reduces the actual canvas width. Fit after React Flow measures it,
   // without changing the saved camera on initial load or moving any design items.
   useEffect(() => {
-    if (previousWidth.current > boardWidth && boardWidth > 0)
+    if (previousWidth.current > boardWidth && boardWidth > 0 && flow.getNodes().length > 0)
       void flow.fitView({ maxZoom: 1, padding: 0.2, duration: 200 });
     previousWidth.current = boardWidth;
   }, [boardWidth, flow]);

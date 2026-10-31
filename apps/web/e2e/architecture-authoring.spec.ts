@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
-import { openNewProject } from "./helpers.ts";
+import { editorAction, openNewProject } from "./helpers.ts";
 
 test.use({ actionTimeout: 10_000 });
 
@@ -14,7 +14,7 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
   const seed = await openNewProject(page, request, "P36 example chooser");
   let id = seed;
   try {
-    await expect(page.getByRole("region", { name: "Design chat", exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Design chat", exact: true })).not.toBeVisible();
     await page.getByRole("button", { name: "Explore SaaS examples", exact: true }).click();
     const library = page.getByRole("dialog", { name: "Architecture library" });
     await expect(library.getByRole("heading", { name: "Social & content platform" })).toBeVisible();
@@ -36,6 +36,7 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
     const read = async () =>
       (await (await request.get(`/api/projects/${id}/design`)).json()).design;
     await expect(page.locator(".planned-card")).toHaveCount(9);
+    await page.getByRole("button", { name: "Open chat", exact: true }).click();
     await page
       .getByRole("textbox", { name: "Message", exact: true })
       .fill("Keep the discussion service simple.");
@@ -71,9 +72,9 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
     expect(
       (await read()).elements.find((item: { id: string }) => item.id === "cache").config.peakRate,
     ).toBe(5000);
-    await page.getByRole("button", { name: "Undo latest change", exact: true }).click();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect(details.getByLabel("Default TTL (seconds)", { exact: true })).toHaveValue("300");
-    await page.getByRole("button", { name: "Redo latest change", exact: true }).click();
+    await page.getByRole("button", { name: "Redo", exact: true }).click();
     await expect(details.getByLabel("Default TTL (seconds)", { exact: true })).toHaveValue("600");
     await page.screenshot({ path: "test-results/p36-cache-options.png", animations: "disabled" });
     await page.locator('[data-element-id="api"] .element-card-head').click();
@@ -97,7 +98,7 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
           ).config.review,
       )
       .toBe("Automated screening + review");
-    await page.getByRole("button", { name: "Connect components", exact: true }).click();
+    await editorAction(page, "Connect components");
     const relationship = page.getByRole("dialog", { name: "Component relationship", exact: true });
     await relationship.getByLabel("From component").selectOption("content");
     await relationship.getByLabel("To component").selectOption("moderation");
@@ -128,16 +129,15 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
       page.getByRole("button", { name: "Inspect relationship: Submits reported content" }),
     ).toBeVisible();
     await page.setViewportSize({ width: 1000, height: 850 });
-    await page.getByRole("button", { name: "Chat", exact: true }).click();
     await page.getByRole("button", { name: "Fit View", exact: true }).click();
     await page.screenshot({ path: "test-results/p36-medium.png", animations: "disabled" });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole("button", { name: "Hide inspector", exact: true }).click();
+
     await page.getByRole("button", { name: "Dark mode", exact: true }).click();
     await expect
       .poll(async () => {
         const box = await page
-          .getByRole("button", { name: "Focus selected object", exact: true })
+          .getByRole("button", { name: "Diagram options", exact: true })
           .boundingBox();
         return box ? box.x + box.width <= 390 : false;
       })
@@ -163,6 +163,7 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
   const read = async () => (await (await request.get(`/api/projects/${id}/design`)).json()).design;
   const details = page.getByRole("complementary", { name: "Architecture details" });
   try {
+    await editorAction(page, "Show inspector");
     for (const [name, x] of [
       ["Application API", 190],
       ["Cache", 600],
@@ -216,6 +217,13 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
     await expect(details.getByLabel("Name", { exact: true })).toHaveValue("Renamed elsewhere");
     await expect(details.getByLabel("Default TTL (seconds)", { exact: true })).toHaveValue("300");
     await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+    await page.getByRole("button", { name: "Describe this system" }).click();
+    await page
+      .getByRole("dialog")
+      .getByLabel("System responsibility")
+      .fill("Serves public application requests.");
+    await page.getByRole("dialog").getByRole("button", { name: "Save context" }).click();
+    await page.getByRole("button", { name: "Inspect P36 mouse authoring", exact: true }).click();
     await details
       .getByLabel("Responsibility", { exact: true })
       .fill("Serves public application requests.");
@@ -281,6 +289,7 @@ test("QR architecture groups real operations and directly opens the bound resour
     await page.getByRole("button", { name: "Inspect Analytics", exact: true }).click();
     await expect(details.locator(".component-member")).toHaveCount(2);
     await page.getByRole("button", { name: "Inspect QR management", exact: true }).click();
+    await details.locator(".component-member > summary").first().click();
     await details.getByRole("button", { name: "Configure resources", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true }).click();

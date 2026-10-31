@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
-import { layoutOf } from "./helpers.ts";
+import { editorAction, inspectObject, layoutOf, reviewRelease } from "./helpers.ts";
 
 test("reviews an editable starter upgrade by mouse and retains application identities, layout and undo history", async ({
   page,
@@ -14,11 +14,14 @@ test("reviews an editable starter upgrade by mouse and retains application ident
   await page.goto(`/?project=${id}#/draw`);
   const read = async () => (await (await request.get(`/api/projects/${id}/design`)).json()).design;
   await expect(page.locator('[data-element-id="inventory"]')).toBeVisible();
-  const before = await read(),
-    layout = await layoutOf(request, id);
+  await editorAction(page, "Show inspector");
+  const before = await read();
   const card = page.locator('[data-element-id="inventory"]');
   await card.locator(".element-card-head").click();
-  await card.getByLabel("Subtype of Inventory API").selectOption("http-service@0.3.0");
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await page.getByRole("button", { name: "C2 Containers", exact: true }).click();
+  const layout = await layoutOf(request, id);
+  await reviewRelease(page, "inventory", "Inventory API", "http-service@0.3.0");
   let dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await expect(dialog.getByText("Local execution policy", { exact: true })).toBeVisible();
   await dialog.getByText("Retained identities and configuration").click();
@@ -30,7 +33,7 @@ test("reviews an editable starter upgrade by mouse and retains application ident
   await page.screenshot({ path: "test-results/p29-upgrade-review.png", animations: "disabled" });
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   expect(await read()).toEqual(before);
-  await card.getByLabel("Subtype of Inventory API").selectOption("http-service@0.3.0");
+  await reviewRelease(page, "inventory", "Inventory API", "http-service@0.3.0");
   dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await dialog.getByRole("button", { name: "Upgrade template", exact: true }).click();
   await expect(dialog).not.toBeVisible();
@@ -62,7 +65,7 @@ test("reviews an editable starter upgrade by mouse and retains application ident
     .getByRole("navigation", { name: "Architecture levels" })
     .getByRole("button", { name: /Containers/ })
     .click();
-  await workspace.getByLabel("Inspect an object").selectOption("container:inventory");
+  await inspectObject(page, "container:inventory");
   await expect(workspace.getByRole("region", { name: "Local execution policy" })).toContainText(
     "balanced",
   );
@@ -84,14 +87,14 @@ test("refuses stale, reverse and protected recipe upgrade reviews without discar
   const before = await read();
   const card = page.locator('[data-element-id="inventory"]');
   await card.locator(".element-card-head").click();
-  await card.getByLabel("Subtype of Inventory API").selectOption("http-service@0.1.0");
+  await reviewRelease(page, "inventory", "Inventory API", "http-service@0.1.0");
   let dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await expect(dialog.getByRole("alert")).toContainText("No reviewed compatible upgrade");
   await expect(dialog.getByRole("button", { name: "Upgrade template" })).toBeDisabled();
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   expect(await read()).toEqual(before);
   await page.getByRole("button", { name: "Dark mode", exact: true }).click();
-  await card.getByLabel("Subtype of Inventory API").selectOption("http-service@0.3.0");
+  await reviewRelease(page, "inventory", "Inventory API", "http-service@0.3.0");
   dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await page.setViewportSize({ width: 680, height: 740 });
   await expect(dialog.getByRole("button", { name: "Upgrade template" })).toBeInViewport();
@@ -137,7 +140,7 @@ test("refuses stale, reverse and protected recipe upgrade reviews without discar
   await page.goto(`/?project=${recipeId}#/draw`);
   const qr = page.locator('[data-element-id="qrwty"]');
   await qr.locator(".element-card-head").click();
-  await qr.getByLabel("Subtype of qrwty API", { exact: true }).selectOption("http-service@0.3.0");
+  await reviewRelease(page, "qrwty", "qrwty API", "http-service@0.3.0");
   dialog = page.getByRole("dialog", { name: "Review template upgrade" });
   await expect(dialog.getByRole("alert")).toContainText("protected recipe release");
   await expect(dialog.getByRole("button", { name: "Upgrade template" })).toBeDisabled();

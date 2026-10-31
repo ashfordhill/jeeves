@@ -543,8 +543,7 @@ function ResourceEditor({
                       {extension.method} {extension.path}
                     </Text>
                     <Text size="xs">
-                      {extension.operationId} · {extension.access} ·{" "}
-                      {extension.acceptance.join(", ")}
+                      {extension.access === "owner" ? "Signed-in owner" : "Public access"}
                     </Text>
                   </div>
                 ))}

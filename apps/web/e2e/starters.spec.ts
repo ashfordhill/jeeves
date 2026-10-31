@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./browser-test.ts";
-import { openNewProject } from "./helpers.ts";
+import { editorAction, inspectObject, openNewProject } from "./helpers.ts";
 
 test("creates an editable starter by mouse, keeps the previous diagram and reaches C4, resource editing and generation", async ({
   page,
@@ -51,7 +51,7 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
   await dialog.getByRole("button", { name: "Create project", exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole("button", { name: "Show inspector", exact: true }).click();
+  await editorAction(page, "Show inspector");
   const id = new URL(page.url()).searchParams.get("project");
   expect(id).not.toBe(original);
   expect(id).toBeTruthy();
@@ -67,7 +67,7 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
   ).toBeVisible();
   await page.screenshot({ path: "test-results/p26-starter-context.png", animations: "disabled" });
   await page.getByRole("button", { name: "C2 Containers", exact: true }).click();
-  await page.getByLabel("Inspect an object").selectOption("container:inventory");
+  await inspectObject(page, "container:inventory");
   await page.getByRole("button", { name: "Configure resources", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "Configure resources" });
   await dialog.getByLabel("Field 1 name", { exact: true }).fill("displayName");
@@ -77,7 +77,7 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
   expect(design.elements[0].attachments[0].config.model.resources[0].fields[0].name).toBe(
     "displayName",
   );
-  await page.getByLabel("Inspect an object").selectOption("container:inventory-web");
+  await inspectObject(page, "container:inventory-web");
   await page.getByRole("button", { name: "Configure resource workspace", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "Configure resource workspace" });
   await expect(dialog.getByLabel("Visual preset")).toHaveValue("paper");
