@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "name": "@jeeves/durable-events",
+  "version": "0.1.0",
+  "maturity": "experimental",
+  "archive": "jeeves-durable-events-0.1.0.tgz",
+  "sha256": "b0658fce9fbb692e317c54ded4c9b4fff3d4eb3c66b5d4b550947f67f60776fd",
+  "source": "packages/durable-events",
+  "sourceHashes": {
+    "package.json": "b9b1e5a846ef4b6ac14b024711873114dc5be1f2e5bb887f7b54c11fcfa44a94",
+    "README.md": "07ddcdf5cecf8ad808976712454d0870b685c8e3e2f6087b35b3aaf85e18585b",
+    "tsconfig.build.json": "715b35fd547b1f8b94d666d2de2c9e807bc720154de70024b48344074ed02927",
+    "src/index.ts": "a8d1c81f861a8cf4e3aa923862a5a298c5b816e525b2a5ed428315cb9d83bfd4",
+    "src/json.ts": "b4c3d15d2871e174229cfe460cbebb0657c77230b0d195d8f4975de11399f3e4",
+    "src/migration.ts": "a46366ae0a95035aede98bde9c510fd02dbeab8dba92ff2110f73ddb8b6cb09d",
+    "src/policy.ts": "526e2c263741607027bcbc7e72ae0541e0978d8e4058e49b0cb6318f7b1905dd",
+    "src/postgres.ts": "4d784a6297d3a13278f3d14cba3c9cb7319b071fb25e156b94fb004dc0fd27b2",
+    "src/worker.ts": "f1ef1819be4905a62444d299d41fd376875bf0a2b700b2be113fb570de7908fc"
+  },
+  "upstreamRuntimeCodeCopied": false,
+  "runtimeDependencies": []
+}

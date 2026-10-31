@@ -10,11 +10,12 @@ pnpm work run templates packages/qr-artwork/conformance/svg.conformance.ts
 pnpm work run browser apps/web/e2e/editor-interactions.spec.ts
 pnpm work run qrwty-product /home/ash/github/qrwty
 pnpm work run qrwty-upgrade /absolute/old-checkout /absolute/upgraded-checkout
+pnpm work run durable-events
 pnpm work run check
 pnpm work status
 ```
 
-`unit`, `templates` and `browser` require existing file paths or the explicit selection `all`. Arbitrary command-line options and shell fragments are not accepted. Unit selectors support `.test.ts` and `.test.tsx`; template selectors use `.conformance.ts`; browser selectors use `.spec.ts`. A nonmatching selection fails instead of reporting an empty passing suite. `browser` starts the existing Jeeves test database; `browser-docker` invokes the existing full Docker browser runner. Template and product checks can build disposable containers and need Docker. Run independent packages sequentially.
+`unit`, `templates` and `browser` require existing file paths or the explicit selection `all`. Arbitrary command-line options and shell fragments are not accepted. Unit selectors support `.test.ts` and `.test.tsx`; template selectors use `.conformance.ts`; browser selectors use `.spec.ts`. A nonmatching selection fails instead of reporting an empty passing suite. `browser` starts the existing Jeeves test database; `browser-docker` invokes the existing full Docker browser runner. `durable-events` takes no arguments and runs the focused transactional-delivery conformance fixture, with a temporary Postgres volume and automatic teardown. Template and product checks can build disposable containers and need Docker. Run independent packages sequentially.
 
 Each invocation prints its log and JSON result paths under ignored `.jeeves-work/runs/`. The JSON records exact argv/cwd, timestamps, duration, per-command exit codes, final status and before/after Git fingerprints. Fingerprints include HEAD, tracked diff, index/status and untracked file content; ignored environment files are excluded by Git. They are evidence identifiers, not a build cache. No checks are skipped based on an earlier result. Fingerprints do not establish equality of installed dependencies, external services or environment variables; investigate those when reusing evidence.
 

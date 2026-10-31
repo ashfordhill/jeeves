@@ -10,6 +10,7 @@ export default defineConfig({
       "templates/*/conformance/**/*.conformance.ts",
       "packages/generator/conformance/**/*.conformance.ts",
       "packages/qr-artwork/conformance/**/*.conformance.ts",
+      "packages/durable-events/conformance/**/*.conformance.ts",
     ],
     environment: "node",
     fileParallelism: false,

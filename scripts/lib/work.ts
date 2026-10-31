@@ -25,6 +25,8 @@ export const profiles = {
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
+  "durable-events":
+    "Focused transactional delivery proof in disposable PostgreSQL; no live consumer",
   "qrwty-product": "Isolated composed consumer verification; requires an absolute checkout path",
   "qrwty-upgrade": "Disposable old-to-new migration proof; requires two absolute checkout paths",
 } as const;
@@ -75,6 +77,18 @@ export function planWork(root: string, name: string, selections: string[]): Work
         "vitest.templates.config.ts",
         "--passWithNoTests=false",
         ...files(".conformance.ts"),
+      );
+      break;
+    case "durable-events":
+      none();
+      pnpm(
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.templates.config.ts",
+        "--passWithNoTests=false",
+        "packages/durable-events/conformance/durable-events.conformance.ts",
       );
       break;
     case "browser": {
