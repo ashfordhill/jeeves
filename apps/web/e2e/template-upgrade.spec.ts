@@ -56,7 +56,7 @@ test("reviews an editable starter upgrade by mouse and retains application ident
   expect(changed.elements[0].attachments[0]).toEqual(before.elements[0].attachments[0]);
   expect(changed.connections).toEqual(before.connections);
   expect(changed.startedFrom).toEqual(before.startedFrom);
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   const workspace = page.getByRole("region", { name: "Architecture workspace", exact: true });
   await workspace
     .getByRole("navigation", { name: "Architecture levels" })

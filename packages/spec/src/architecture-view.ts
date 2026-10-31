@@ -1,19 +1,31 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
+
+import { type ArchitectureMember, resolveArchitectureMember } from "./architecture.ts";
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
 import { localExecutionFor } from "./local-execution.ts";
 import { localHttpPoolFor } from "./local-http-pool.ts";
 import type { TemplateLookup } from "./manifest.ts";
+import { plannedCapability } from "./planned-capabilities.ts";
 import { resourceConfigSchema } from "./resources.ts";
 import { workspaceModel } from "./workspace.ts";
 
-export type ArchitectureSupport = "template" | "recipe" | "extension" | "intent" | "external";
+export type ArchitectureSupport =
+  | "template"
+  | "recipe"
+  | "extension"
+  | "intent"
+  | "external"
+  | "planned"
+  | "mixed";
 export interface ArchitectureBinding {
   element: string;
   attachment?: string;
   extension?: string;
   event?: string;
   resource?: string;
+  accounts?: boolean;
+  component?: string;
 }
 export interface ArchitectureViewNode {
   id: string;
@@ -27,6 +39,9 @@ export interface ArchitectureViewNode {
   provenance?: string;
   execution?: ReturnType<typeof localExecutionFor>;
   pool?: ReturnType<typeof localHttpPoolFor>;
+  members?: ArchitectureViewNode[];
+  missing?: string[];
+  unassigned?: boolean;
 }
 export interface ArchitectureViewEdge {
   id: string;
@@ -36,6 +51,8 @@ export interface ArchitectureViewEdge {
   /** Existing semantic connection, never new wiring inferred from a view. */
   connection?: string;
   context?: string;
+  declared?: boolean;
+  componentRelationship?: string;
 }
 export interface ArchitectureProjection {
   level: "context" | "containers" | "components";
@@ -128,13 +145,20 @@ export function architectureViews(
   const components = design.elements.flatMap((element) => {
     const manifest = element.template && lookup.get(element.template);
     if (
-      manifest?.kind !== "element" ||
-      !["service", "frontend", "worker"].includes(manifest.elementKind)
+      !element.planned &&
+      (manifest?.kind !== "element" ||
+        !["service", "frontend", "worker"].includes(manifest.elementKind))
+    )
+      return [];
+    if (
+      element.planned &&
+      !["service", "frontend", "worker"].includes(plannedCapability(element.planned)?.role ?? "")
     )
       return [];
     return [componentView(element, design, lookup, provision)];
   });
   const nodes = design.elements.map((element): ArchitectureViewNode => {
+    const planned = plannedCapability(element.planned);
     const manifest = element.template && lookup.get(element.template);
     const own =
       components
@@ -147,23 +171,26 @@ export function architectureViews(
         : own.some((node) => node.support === "recipe")
           ? "recipe"
           : "template";
-    const role = manifest?.kind === "element" ? manifest.elementKind : undefined;
+    const role = planned?.role ?? (manifest?.kind === "element" ? manifest.elementKind : undefined);
     return {
       id: elementKey(element.id),
       kind: role === "external" ? "external-system" : role === "library" ? "binding" : "container",
       name: element.name,
-      description:
-        role === "database"
+      description: planned
+        ? planned.description
+        : role === "database"
           ? "Persistent data store for connected applications."
           : role === "frontend"
             ? "Browser application and user interactions."
             : role === "library"
               ? "Library binding; not a separately running C4 container."
-              : short(element.notes) || "Application runtime and its declared responsibilities.",
-      technology: element.template
-        ? `${manifest?.displayName ?? element.template.id} · ${element.template.version}`
-        : "No implementation binding",
-      support: role === "external" ? "external" : support,
+              : "Application runtime and its declared responsibilities.",
+      technology: planned
+        ? planned.name
+        : element.template
+          ? `${manifest?.displayName ?? element.template.id} · ${element.template.version}`
+          : "No implementation binding",
+      support: planned ? "planned" : role === "external" ? "external" : support,
       binding: { element: element.id },
       execution: localExecutionFor(element),
       pool: localHttpPoolFor(element),
@@ -183,8 +210,9 @@ export function architectureViews(
       id: `connection:${connection.id}`,
       from: elementKey(connection.from.element),
       to: elementKey(connection.to.element),
-      description: connectionDescription(connection.kind),
+      description: connection.planned?.label ?? connectionDescription(connection.kind),
       connection: connection.id,
+      ...(connection.planned && { declared: true }),
     })),
     resources: [],
   };
@@ -276,6 +304,7 @@ function componentView(
           "Registration, session identity, origin and CSRF guards for protected commands.",
           version,
           "template",
+          { binding: { element: element.id, attachment: attachment.id, accounts: true } },
         );
       for (const resource of parsed.data.resources) {
         resources.push({
@@ -304,7 +333,7 @@ function componentView(
           `${attachment.id}:extension:${extension.id}`,
           attachment.id,
           label(extension.id),
-          short(extension.notes) || `${extension.method} ${extension.path}`,
+          `${label(extension.id)} operation with an explicit request and response contract.`,
           `${extension.method} ${extension.path}`,
           supplied ? "recipe" : "extension",
           {
@@ -335,7 +364,7 @@ function componentView(
             `${attachment.id}:event:${event.id}`,
             attachment.id,
             `${label(event.id)} handler`,
-            short(event.notes) || "Project-owned domain effect; fixed acceptance required.",
+            "Handles this event's domain effect within the application.",
             `${event.type}@${event.version}`,
             "extension",
             {
@@ -411,8 +440,7 @@ function componentView(
         "Application workspace",
         supplied
           ? "Product navigation, user flows and state handling supplied by the pinned recipe."
-          : short(element.notes) ||
-              "Template shell; product-specific user flows remain project-owned.",
+          : "Application shell and product-specific user interactions.",
         "React application",
         supplied ? "recipe" : "extension",
         supplied && provision ? { provenance: `${provision.id}@${provision.version}` } : {},
@@ -490,6 +518,111 @@ function componentView(
         connection: connection.id,
       });
   }
+  const definitions =
+    design.architecture?.components?.filter((item) => item.element === element.id) ?? [];
+  const grouped = new Set<string>();
+  for (const definition of definitions) {
+    const members: ArchitectureViewNode[] = [];
+    const missing: string[] = [];
+    for (const member of definition.members) {
+      const match = nodes.find((node) => memberMatches(node, member));
+      if (match) {
+        members.push(match);
+        grouped.add(match.id);
+      } else missing.push(`${member.kind}: ${member.ref ?? member.attachment}`);
+    }
+    const supports = new Set(members.map((member) => member.support));
+    const nodeId = `responsibility:${definition.id}`;
+    nodes.push({
+      id: nodeId,
+      kind: "component",
+      name: definition.name,
+      description:
+        definition.responsibility ||
+        plannedCapability(definition.capability)?.description ||
+        "A cohesive application responsibility.",
+      technology:
+        plannedCapability(definition.capability)?.name ?? `${members.length} bound capabilities`,
+      support: definition.capability
+        ? "planned"
+        : supports.size > 1
+          ? "mixed"
+          : (members[0]?.support ?? "planned"),
+      binding: { element: element.id, component: definition.id },
+      members,
+      missing,
+      acceptance: [...new Set(members.flatMap((member) => member.acceptance))],
+    });
+    const uses = new Map<string, boolean>();
+    for (const member of definition.members) {
+      if (member.kind === "extension") continue;
+      const binding = resolveArchitectureMember(design, element.id, member);
+      if (binding?.model.storeConnection) uses.set(binding.model.storeConnection, false);
+    }
+    for (const id of definition.usesConnections) if (!uses.has(id)) uses.set(id, true);
+    for (const resource of definition.usesResources) {
+      const binding = resolveArchitectureMember(design, element.id, {
+        attachment: resource.attachment,
+        kind: "resource",
+        ref: resource.resource,
+      });
+      if (binding?.model.storeConnection && !uses.has(binding.model.storeConnection))
+        uses.set(binding.model.storeConnection, true);
+    }
+    for (const [id, declared] of uses) {
+      const connection = design.connections.find((item) => item.id === id);
+      if (!connection) continue;
+      const otherId =
+        connection.from.element === element.id ? connection.to.element : connection.from.element;
+      const other = design.elements.find((item) => item.id === otherId);
+      if (!other) continue;
+      const outside = elementKey(other.id);
+      if (!nodes.some((node) => node.id === outside))
+        nodes.push({
+          id: outside,
+          name: other.name,
+          kind: "container",
+          description: "Connected dependency",
+          technology: "",
+          support: other.planned ? "planned" : "template",
+          binding: { element: other.id },
+          acceptance: [],
+        });
+      edges.push({
+        id: `use:${definition.id}:${id}`,
+        from: nodeId,
+        to: outside,
+        description: declared ? "Declared use" : "Uses store",
+        connection: id,
+        declared: declared || Boolean(connection.planned),
+      });
+    }
+  }
+  for (const relation of design.architecture?.componentRelationships ?? []) {
+    if (
+      !definitions.some((item) => item.id === relation.from) ||
+      !definitions.some((item) => item.id === relation.to)
+    )
+      continue;
+    edges.push({
+      id: `declared:${relation.id}`,
+      from: `responsibility:${relation.from}`,
+      to: `responsibility:${relation.to}`,
+      description: relation.description,
+      declared: true,
+      componentRelationship: relation.id,
+    });
+  }
+  const visible = nodes.filter((node) => !grouped.has(node.id));
+  if (definitions.length)
+    for (const node of visible) {
+      if (
+        node.binding?.element === element.id &&
+        !node.binding.component &&
+        !node.id.endsWith(":boundary")
+      )
+        node.unassigned = true;
+    }
   return {
     level: "components",
     container: element.id,
@@ -498,8 +631,17 @@ function componentView(
     name: element.name,
     description:
       "Cohesive responsibilities within this application. Resource contracts are listed separately; shown dependency edges reference existing container wiring.",
-    nodes,
-    edges,
+    nodes: visible,
+    edges: edges.filter((edge) => !grouped.has(edge.from) && !grouped.has(edge.to)),
     resources,
   };
+}
+
+function memberMatches(node: ArchitectureViewNode, member: ArchitectureMember) {
+  if (node.binding?.attachment !== member.attachment) return false;
+  return member.kind === "accounts"
+    ? node.binding.accounts === true
+    : member.kind === "resource"
+      ? node.binding.resource === member.ref
+      : node.binding.extension === member.ref;
 }

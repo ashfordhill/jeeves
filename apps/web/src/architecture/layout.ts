@@ -25,7 +25,7 @@ function labelSize(text: string): { width: number; height: number } {
   const length = Array.from(text).length;
   const width = Math.min(176, Math.max(56, length * 7.5 + 20));
   const lines = Math.min(3, Math.max(1, Math.ceil((length * 7.5) / (width - 20))));
-  return { width, height: lines * 17 + 12 };
+  return { width, height: Math.max(42, lines * 17 + 12) };
 }
 
 export function architectureLayoutInput(

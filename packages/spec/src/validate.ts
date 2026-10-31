@@ -21,6 +21,7 @@ import {
   type TemplateLookup,
   type TemplateManifest,
 } from "./manifest.ts";
+import { plannedCapability, plannedConfigSchema } from "./planned-capabilities.ts";
 import { workspaceConfigSchema, workspaceModel } from "./workspace.ts";
 
 /** An endpoint with its element, attachment, and their templates looked up. */
@@ -253,6 +254,7 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
   const portUse = new Map<string, number>();
   for (const connection of design.connections) {
     validateConnection(design, connection, lookup, resolved, findings);
+    if (connection.planned) continue;
     const fromKey = `${endpointKey(capabilityEndpoint(connection, "from"))}|${connection.kind}|out`;
     const toKey = `${endpointKey(capabilityEndpoint(connection, "to"))}|${connection.kind}|in`;
     for (const [key, endpoint, direction] of [
@@ -326,6 +328,28 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
 function validateElement(element: Element, lookup: TemplateLookup, findings: Finding[]): void {
   const target = { element: element.id };
   let manifest: ElementManifest | undefined;
+  if (element.planned) {
+    const capability = plannedCapability(element.planned);
+    if (!capability || capability.scope !== "container" || element.template)
+      findings.push(
+        finding(
+          "CONFIG_INVALID",
+          "A planned container must select a planning capability without a runtime template.",
+          target,
+        ),
+      );
+    else {
+      const parsed = plannedConfigSchema(capability.id).safeParse(element.config);
+      if (!parsed.success)
+        findings.push(
+          finding(
+            "CONFIG_INVALID",
+            parsed.error.issues[0]?.message ?? "Invalid planned configuration",
+            target,
+          ),
+        );
+    }
+  }
   if (element.template === null) {
     findings.push(
       finding(
@@ -334,7 +358,7 @@ function validateElement(element: Element, lookup: TemplateLookup, findings: Fin
         target,
       ),
     );
-    if (Object.keys(element.config).length > 0) {
+    if (!element.planned && Object.keys(element.config).length > 0) {
       findings.push(
         finding(
           "CONFIG_INVALID",
@@ -499,6 +523,20 @@ function validateConnection(
   }
   const [from, to] = ends;
   if (!from || !to) return;
+  if (connection.planned) {
+    findings.push(
+      finding(
+        "NEEDS_TEMPLATE",
+        `“${connection.planned.label}” is a planned relationship; generation is not implemented.`,
+        target,
+      ),
+    );
+    if (connection.from.element === connection.to.element)
+      findings.push(
+        finding("PORT_INCOMPATIBLE", "Connect two different applications or stores.", target),
+      );
+    return;
+  }
 
   const duplicate = design.connections.find(
     (other) =>

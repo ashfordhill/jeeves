@@ -19,6 +19,7 @@ import {
   type Edge,
   EdgeLabelRenderer,
   type EdgeProps,
+  getViewportForBounds,
   Handle,
   MarkerType,
   type Node,
@@ -29,6 +30,9 @@ import {
   ReactFlowProvider,
   useNodesInitialized,
   useReactFlow,
+  useStore,
+  useViewport,
+  type Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -47,6 +51,8 @@ export const supportLabel: Record<ArchitectureSupport, string> = {
   extension: "Project implementation",
   intent: "Architecture intent",
   external: "Externally supplied",
+  planned: "Planned",
+  mixed: "Mixed ownership",
 };
 type CardNode = Node<
   { item: ArchitectureViewNode; onSelect: (id: string) => void },
@@ -54,6 +60,8 @@ type CardNode = Node<
 >;
 function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
   const item = data.item;
+  const { zoom } = useViewport();
+  const overview = zoom < 0.65;
   const Icon =
     item.kind === "person"
       ? IconUser
@@ -75,6 +83,8 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
         className="architecture-card nodrag nopan"
         data-selected={selected}
         data-kind={item.kind}
+        data-support={item.support}
+        data-overview={overview}
         onClick={() => data.onSelect(item.id)}
         aria-pressed={selected}
         aria-label={`Inspect ${item.name}`}
@@ -83,12 +93,26 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
           <Icon size={21} aria-hidden />
           {item.kind.replaceAll("-", " ")}
         </span>
-        <strong>{item.name}</strong>
+        <strong style={{ fontSize: overview ? 14 / Math.max(zoom, 0.25) : 18 }}>{item.name}</strong>
         <span className="architecture-card-description">{item.description}</span>
-        <span className="architecture-card-technology">{item.technology}</span>
-        <span className="architecture-support" data-support={item.support}>
-          {supportLabel[item.support]}
-        </span>
+        {item.members?.length ? (
+          <span className="architecture-card-technology">
+            {item.members.length} bound capabilities
+          </span>
+        ) : null}
+        {item.support === "planned" || item.missing?.length || item.unassigned ? (
+          <span
+            className="architecture-support"
+            data-support={item.support}
+            style={overview ? { fontSize: 9 / Math.max(zoom, 0.25) } : undefined}
+          >
+            {item.missing?.length
+              ? "Binding needs attention"
+              : item.unassigned
+                ? "Ungrouped"
+                : "Planned"}
+          </span>
+        ) : null}
       </button>
     </>
   );
@@ -102,8 +126,12 @@ function ScopeFrame({ data }: NodeProps<ScopeNode>) {
   );
 }
 const nodeTypes = { architecture: ArchitectureCard, scope: ScopeFrame };
-type RelationEdge = Edge<{ description: string; geometry: RelationGeometry }, "relation">;
+type RelationEdge = Edge<
+  { description: string; geometry: RelationGeometry; onSelect: (id: string) => void },
+  "relation"
+>;
 function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
+  const { zoom } = useViewport();
   if (!data) return null;
   const { label, points } = data.geometry;
   return (
@@ -115,30 +143,47 @@ function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
         style={props.style}
       />
       <EdgeLabelRenderer>
-        <span
+        <button
+          type="button"
+          onClick={() => data.onSelect(props.id)}
+          aria-label={`Inspect relationship: ${data.description}`}
           className="architecture-relation-label nodrag nopan"
           data-relation-id={props.id}
           title={data.description}
-          style={{ left: label.x, top: label.y, width: label.width, height: label.height }}
+          style={{
+            left: label.x,
+            top: label.y,
+            width: label.width,
+            height: label.height,
+            fontSize: Math.min(20, 11 / zoom),
+          }}
         >
           <span>{data.description}</span>
-        </span>
+        </button>
       </EdgeLabelRenderer>
     </>
   );
 }
 const edgeTypes = { relation: Relation };
 
-function InitialCamera({ minimumZoom, onReady }: { minimumZoom: number; onReady: () => void }) {
+function InitialCamera({ onReady, restored }: { onReady: () => void; restored?: Viewport }) {
   // Read-only nodes do not feed dimension changes back through onNodesChange. Inspect the
   // current measured internals rather than the cached controlled-node initialization flag.
   const initialized = useNodesInitialized({ includeHiddenNodes: true });
-  const { fitView } = useReactFlow();
+  const width = useStore((state) => state.width);
+  const height = useStore((state) => state.height);
+  const { getNodes, getNodesBounds, setViewport, viewportInitialized } = useReactFlow();
+  const saved = useRef(restored);
   const fitted = useRef(false);
   useEffect(() => {
-    if (!initialized || fitted.current) return;
+    if (!initialized || !viewportInitialized || width <= 0 || height <= 0 || fitted.current) return;
     let active = true;
-    void fitView({ padding: 0.1, minZoom: minimumZoom, maxZoom: 1 }).then(() => {
+    // Set the camera from measured bounds directly. Queued fitView can wait indefinitely
+    // when a controlled read-only graph replaces nodes during initial measurement.
+    const viewport =
+      saved.current ??
+      getViewportForBounds(getNodesBounds(getNodes()), width, height, 0.1, 1, 0.12);
+    void setViewport(viewport).then(() => {
       if (active) {
         fitted.current = true;
         onReady();
@@ -147,7 +192,16 @@ function InitialCamera({ minimumZoom, onReady }: { minimumZoom: number; onReady:
     return () => {
       active = false;
     };
-  }, [initialized, fitView, minimumZoom, onReady]);
+  }, [
+    initialized,
+    viewportInitialized,
+    width,
+    height,
+    getNodes,
+    getNodesBounds,
+    setViewport,
+    onReady,
+  ]);
   return null;
 }
 
@@ -171,18 +225,26 @@ function FocusControl({ selected }: { selected?: string }) {
 }
 
 /** Layout never writes the semantic model or editable board positions. */
+export type ArchitectureCameraCache = {
+  directions: Map<string, boolean>;
+  viewports: Map<string, { key: string; viewport: Viewport }>;
+};
 export function ArchitectureGraph({
   projection,
   selected,
   onSelect,
+  cameraCache,
 }: {
   projection: ArchitectureProjection;
   selected?: string;
   onSelect: (id: string) => void;
+  cameraCache?: ArchitectureCameraCache;
 }) {
   const { ref, width } = useElementSize<HTMLElement>();
   const compact = width > 0 && width < 900;
-  const [direction, setDirection] = useState<boolean>();
+  const scope = `${projection.level}:${projection.container ?? "system"}`;
+  const [directions, setDirections] = useState<Record<string, boolean>>({});
+  const direction = directions[scope] ?? cameraCache?.directions.get(scope);
   const down = direction ?? compact;
   const key = useMemo(
     () => JSON.stringify(architectureLayoutInput(projection, down)),
@@ -205,9 +267,7 @@ export function ArchitectureGraph({
       },
       () => {
         if (!controller.signal.aborted)
-          setError(
-            "This architecture view could not be arranged. Retry the layout or return to the board.",
-          );
+          setError("This architecture view could not be arranged. Retry the layout or open C2.");
       },
     );
     return () => controller.abort();
@@ -252,11 +312,11 @@ export function ArchitectureGraph({
         source: edge.from,
         target: edge.to,
         type: "relation",
-        data: { description: edge.description, geometry },
+        data: { description: edge.description, geometry, onSelect },
         style: {
           stroke: "var(--line)",
           strokeWidth: 2,
-          ...(edge.context ? { strokeDasharray: "5 4" } : {}),
+          ...(edge.context || edge.declared ? { strokeDasharray: "5 4" } : {}),
         },
         markerEnd: { type: MarkerType.ArrowClosed, color: "var(--line)" },
       };
@@ -299,9 +359,18 @@ export function ArchitectureGraph({
             minZoom={0.1}
             maxZoom={1.5}
             proOptions={{ hideAttribution: true }}
+            onMoveEnd={(_, viewport) =>
+              cameraCache?.viewports.set(`${scope}:${down}`, { key, viewport })
+            }
+            onEdgeClick={(_, edge) => onSelect(edge.id)}
           >
             <InitialCamera
-              minimumZoom={projection.level === "components" ? 0.6 : 0.1}
+              key={key}
+              restored={
+                cameraCache?.viewports.get(`${scope}:${down}`)?.key === key
+                  ? cameraCache.viewports.get(`${scope}:${down}`)?.viewport
+                  : undefined
+              }
               onReady={cameraReady}
             />
             <Background color="var(--grid-dot)" gap={24} size={1} />
@@ -310,7 +379,10 @@ export function ArchitectureGraph({
               <button
                 type="button"
                 className="architecture-focus"
-                onClick={() => setDirection(!down)}
+                onClick={() => {
+                  setDirections((current) => ({ ...current, [scope]: !down }));
+                  cameraCache?.directions.set(scope, !down);
+                }}
               >
                 {down ? "Flow right" : "Flow down"}
               </button>

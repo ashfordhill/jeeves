@@ -19,9 +19,49 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
     (await (await request.get(`/api/projects/${project.id}/layout`)).json()).layout;
   await page.goto(`/?project=${project.id}#/draw`);
   await expect(page.locator("[data-element-id]")).toHaveCount(3);
-  const before = await design(),
-    beforeLayout = await layout();
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  const before = await design();
+  let beforeLayout = await layout();
+  // A delayed layout save must not let an earlier tab click replace the latest choice.
+  let releaseLayout!: () => void;
+  let layoutStarted!: () => void;
+  const heldLayout = new Promise<void>((resolve) => {
+    releaseLayout = resolve;
+  });
+  const startedLayout = new Promise<void>((resolve) => {
+    layoutStarted = resolve;
+  });
+  const layoutUrl = `**/api/projects/${project.id}/layout`;
+  await page.route(layoutUrl, async (route) => {
+    if (route.request().method() === "PUT") {
+      layoutStarted();
+      await heldLayout;
+    }
+    await route.continue();
+  });
+  const board = await page.locator(".react-flow__pane").boundingBox();
+  if (!board) throw new Error("Board not visible");
+  await page.mouse.move(board.x + 40, board.y + board.height - 80);
+  await page.mouse.down({ button: "middle" });
+  await page.mouse.move(board.x + 100, board.y + board.height - 110, { steps: 3 });
+  await page.mouse.up({ button: "middle" });
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await startedLayout;
+  await page.getByRole("button", { name: "C2 Containers", exact: true }).click();
+  const savedLayout = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`/projects/${project.id}/layout`) &&
+      response.request().method() === "PUT",
+  );
+  releaseLayout();
+  await savedLayout;
+  await page.unroute(layoutUrl);
+  beforeLayout = await layout();
+  await page.getByLabel("Inspect an object").selectOption("container:qrwty");
+  await expect(page.getByRole("button", { name: "C2 Containers", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   const workspace = page.getByRole("region", { name: "Architecture workspace", exact: true });
   const levels = workspace.getByRole("navigation", { name: "Architecture levels" });
   const details = workspace.getByRole("complementary", { name: "Architecture details" });
@@ -29,7 +69,10 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
     workspace.getByRole("button", { name: "Inspect Link owner", exact: true }),
   ).toBeVisible();
   await expect(
-    details.getByText("Browser follows the destination URL", { exact: true }),
+    workspace.getByRole("button", {
+      name: "Inspect relationship: Browser follows the destination URL",
+      exact: true,
+    }),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/p20-context.png", animations: "disabled" });
   await levels.getByRole("button", { name: /Containers/ }).click();
@@ -40,7 +83,9 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   await details
     .getByLabel("Inspect an object")
     .selectOption("component:qrwty:qrwty-api:extension:owner-analytics");
-  await expect(details.getByText("qr-studio@0.1.0", { exact: true })).toBeVisible();
+  await expect(
+    details.locator(".component-member").getByText("qr-studio@0.1.0", { exact: true }),
+  ).toBeVisible();
   await expect(details.getByText("QR-15, QR-16", { exact: true })).toBeVisible();
   await expect(
     workspace.getByRole("region", { name: "components diagram", exact: true }),
@@ -53,12 +98,13 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
   expect(
     (await new AxeBuilder({ page }).include(".architecture-workspace").analyze()).violations,
   ).toEqual([]);
-  await details.getByRole("button", { name: "Edit on board" }).click();
+  await details.getByText("Technical details", { exact: true }).click();
+  await details.getByRole("button", { name: "Open in C2" }).click();
   await expect(page.getByRole("toolbar", { name: "Drawing tools" })).toBeVisible();
   expect(await design()).toEqual(before);
   expect(await layout()).toEqual(beforeLayout);
 
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   await workspace.getByRole("button", { name: "Edit context", exact: true }).click();
   const context = page.getByRole("dialog", { name: "Edit system context" });
   await context
@@ -66,13 +112,9 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
     .fill("A reusable QR product configured from an intentional architecture.");
   await context.getByRole("button", { name: "Save context" }).click();
   await expect(context).not.toBeVisible();
-  await expect(
-    details
-      .getByText("A reusable QR product configured from an intentional architecture.", {
-        exact: true,
-      })
-      .first(),
-  ).toBeVisible();
+  await expect(details.getByLabel("Responsibility", { exact: true })).toHaveValue(
+    "A reusable QR product configured from an intentional architecture.",
+  );
   expect((await design()).revision).toBe(before.revision + 1);
 
   await workspace.getByRole("button", { name: "Product configuration", exact: true }).click();
@@ -111,14 +153,10 @@ test("C4 navigation preserves the board and context/product edits save, cancel, 
     before.elements.find((element: { id: string }) => element.id === "qrwty-web").config.title,
   );
   await page.reload();
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
-  await expect(
-    details
-      .getByText("A reusable QR product configured from an intentional architecture.", {
-        exact: true,
-      })
-      .first(),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await expect(details.getByLabel("Responsibility", { exact: true })).toHaveValue(
+    "A reusable QR product configured from an intentional architecture.",
+  );
   expect(await layout()).toEqual(beforeLayout);
   await request.delete(`/api/projects/${project.id}`);
 });
@@ -136,15 +174,15 @@ test("a narrower context editor keeps unbound architectural intent visible witho
   });
   const { project } = await created.json();
   await page.goto(`/?project=${project.id}#/draw`);
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   await page.getByRole("button", { name: "Edit context", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Edit system context" });
   await dialog.getByLabel("Interaction 1 container", { exact: true }).selectOption("");
   await dialog.getByRole("button", { name: "Save context" }).click();
   await expect(dialog).not.toBeVisible();
-  await expect(
-    page.getByText("1 context interaction has no container binding.", { exact: false }),
-  ).toBeVisible();
+  await page.getByRole("tab", { name: /Findings/ }).click();
+  await expect(page.getByText(/has no container binding. It describes intent only/)).toBeVisible();
+  await page.getByRole("tab", { name: "Inspector", exact: true }).click();
   const state = await (await request.get(`/api/projects/${project.id}/design`)).json();
   expect(state.findings.map((finding: { code: string }) => finding.code)).toEqual([
     "ARCHITECTURE_UNBOUND",

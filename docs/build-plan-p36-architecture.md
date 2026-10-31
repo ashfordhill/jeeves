@@ -1,15 +1,40 @@
 # P36 — unified C4 editor and useful application architecture
 
-Fresh-agent implementation specification, 2026-10-31. **Implement P36 only, verify,
-append the handoff, create a scoped local commit and stop.** This document specifies
-the first queued authoring package after P35. It does not implement P36 or authorize
-all subsequent packages. The former P35 business-action-forms proposal remains
-superseded.
+Completed implementation specification, 2026-10-31. Implementation, verification and
+remaining boundaries are recorded in [P36 evidence](evidence/p36/README.md). The
+instructions below retain the package's scope; they do not authorize subsequent
+packages. The former P35 business-action-forms proposal remains superseded.
 
 Updated after reviewing the user's [editor feedback and sketch](reviews/jeeves-editor-feedback-2026-10-31.md).
 The shared C1/C2/C3 editor below is part of P36 acceptance. Improving only the
-separate Architecture page no longer fulfills the requested outcome. This is a
-specification update, not a claim that P36 has been implemented.
+separate Architecture page no longer fulfills the requested outcome. P36's completed
+implementation includes the authorized scope update below.
+
+## Authorized scope update — 2026-10-31
+
+The user's subsequent instructions expand this package to **planned capabilities**,
+typed template menus and generic SaaS planning examples. Visual authoring is the
+priority; new template runtimes, generation and template/load-test implementation
+are explicitly deferred to a later agent. This update supersedes conflicting
+executable-only restrictions and the generation campaign below. Existing offline
+regressions and bounded editor/evidence journeys still apply; do not regenerate the
+live QRWTY application or run new runtime certification campaigns.
+
+Include editable planned C2 blocks, planned C3 options and explicitly declared C3
+relationships. They must remain distinguishable from actual generated wiring and
+must not silently generate unsupported behavior. Include link/QR, community and
+social architecture studies without claiming to reproduce named SaaS internals.
+Traffic pattern, numeric workload/unit and latency targets are saved design intent,
+not automatic topology selection or measured capacity. New load-test harnesses,
+cloud infrastructure and automatic scaling remain deferred.
+
+Maintain root [CATALOG.md](../CATALOG.md): C1 compositions link to reusable C2 and C3
+sections, with reverse reuse links and a conceptual C4 implementation/verification
+boundary. Describe implemented versus planned offerings; keep versions and detailed
+contracts in their owning sources. QR encoding is normally an implementation/library
+choice inside a reusable operation; dedicated service/worker boundaries depend on
+the application's workload. Passing generic performance checks cannot certify domain
+correctness. Keep this distinction explicit for future implementation agents.
 
 ## Starting state and preservation
 
@@ -358,9 +383,7 @@ new QR feature or auth release, live QRWTY metadata/runtime adoption, recipe upg
 cloud/scaling work, source analyzer or arbitrary workflow language.
 
 After verified P36, assess the architecture/template configuration gaps against
-the latest feedback before selecting the next bounded package. Planned enterprise
-capabilities versus an executable-only palette is an open product question for
-that follow-up, not a blocker to this editor package. **Persistent developer
+the latest feedback before selecting the next bounded package. The user approved planned capabilities in this package; runtime implementation and load verification remain future tasking. **Persistent developer
 testing** remains queued: reusable tester/visitor access to an isolated persistent
 local sandbox, empty/sample scenarios and scoped reset using real sessions. It,
 chat improvements, page flow/public entry and composable QR adoption need separate

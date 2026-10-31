@@ -3,17 +3,13 @@
  * and the Generate button and drawer) and the inspector rail on the right.
  */
 import { Button, Loader } from "@mantine/core";
-import { IconSitemap, IconX } from "@tabler/icons-react";
+import { IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { ProjectChooser } from "./ProjectChooser.tsx";
-import { StarterGuide } from "./StarterGuide.tsx";
 import "@xyflow/react/dist/base.css";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ArchitectureWorkspace } from "../architecture/ArchitectureWorkspace.tsx";
-import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { Canvas } from "./Canvas.tsx";
 import "./draw.css";
-import { Rail } from "./inspector/Rail.tsx";
 import { projectFromUrl, useDraw } from "./store.ts";
 
 function NoticeStrip() {
@@ -57,32 +53,6 @@ function NoticeStrip() {
   );
 }
 
-/** Hint shown while the board is empty, so the first step is obvious. */
-function EmptyHint() {
-  const [opened, setOpened] = useState(false);
-  const tool = useDraw((state) => state.tool.kind);
-  const empty = useDraw(
-    (s) =>
-      !!s.loaded &&
-      s.loaded.design.elements.length === 0 &&
-      s.loaded.design.annotations.length === 0,
-  );
-  if (!empty || (tool !== "select" && tool !== "hand")) return null;
-  return (
-    <>
-      <div className="draw-empty-start">
-        <span className="draw-empty-kicker">YOUR NEXT APPLICATION</span>
-        <h2>Start with a working architecture.</h2>
-        <p>Use a starter, or pick an element above and draw your own.</p>
-        <Button color="cyan.9" onClick={() => setOpened(true)}>
-          Explore starting points
-        </Button>
-      </div>
-      {opened ? <ProjectChooser onClose={() => setOpened(false)} /> : null}
-    </>
-  );
-}
-
 function PendingHint() {
   const tool = useDraw((s) => s.tool.kind);
   const pending = useDraw((s) => !!s.pendingEnd);
@@ -97,7 +67,7 @@ function PendingHint() {
           : "Click the item to connect from."
         : tool === "attachment"
           ? "Click a service to add the component."
-          : `Click empty board space to place ${tool === "element" ? "the selected template" : `a ${tool}`}.`}
+          : `Click empty board space to place ${tool === "element" ? "the selected template" : tool === "planned" ? "the planned capability" : `a ${tool}`}.`}
       <Button
         size="compact-xs"
         variant="default"
@@ -113,7 +83,6 @@ function PendingHint() {
 }
 
 export function DrawView() {
-  const [architectureOpen, setArchitectureOpen] = useState(false);
   const status = useDraw((s) => s.status);
   const error = useDraw((s) => s.error);
   const projectId = useDraw((s) => s.loaded?.project.id);
@@ -131,9 +100,6 @@ export function DrawView() {
       flush();
     };
   }, []);
-
-  if (architectureOpen && projectId && status === "ready")
-    return <ArchitectureWorkspace key={projectId} onClose={() => setArchitectureOpen(false)} />;
 
   if (status === "error") {
     return (
@@ -155,36 +121,16 @@ export function DrawView() {
   }
   return (
     <ReactFlowProvider key={projectId}>
-      <div className="draw-layout">
-        <div className="draw-main">
-          <Canvas />
-          <EmptyHint />
-          <StarterGuide
-            onArchitecture={() => {
-              void useDraw
-                .getState()
-                .flushLayout()
-                .then(() => setArchitectureOpen(true));
-            }}
-          />
-          <PendingHint />
-          <NoticeStrip />
-          <Button
-            className="architecture-launch"
-            variant="default"
-            leftSection={<IconSitemap size={17} />}
-            onClick={async () => {
-              await useDraw.getState().flushLayout();
-              setArchitectureOpen(true);
-            }}
-          >
-            Architecture
-          </Button>
-          <GenerateButton />
-          <GenerateDrawer />
-        </div>
-        <Rail />
-      </div>
+      <ArchitectureWorkspace
+        key={projectId}
+        board={
+          <div className="draw-main">
+            <Canvas />
+            <PendingHint />
+            <NoticeStrip />
+          </div>
+        }
+      />
     </ReactFlowProvider>
   );
 }

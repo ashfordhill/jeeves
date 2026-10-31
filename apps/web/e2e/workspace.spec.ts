@@ -39,7 +39,7 @@ test("configures generated resource screens by mouse with actual C4 binding, und
     );
   const before = configOf(await read());
   await page.reload();
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   const architecture = page.getByRole("region", { name: "Architecture workspace", exact: true });
   await architecture
     .getByRole("navigation", { name: "Architecture levels" })
@@ -56,7 +56,8 @@ test("configures generated resource screens by mouse with actual C4 binding, und
     architecture.getByRole("button", { name: "Inspect Inventory API", exact: true }),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/p25-components.png", animations: "disabled" });
-  await details.getByRole("button", { name: "Edit on board" }).click();
+  await details.getByText("Technical details", { exact: true }).click();
+  await details.getByRole("button", { name: "Open in C2" }).click();
   await page.getByRole("button", { name: "Configure resource workspace", exact: true }).click();
   let dialog = page.getByRole("dialog", { name: "Configure resource workspace" });
   await dialog.getByLabel("Visual preset").selectOption("paper");

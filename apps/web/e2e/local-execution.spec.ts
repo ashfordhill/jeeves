@@ -58,7 +58,7 @@ test("local execution presets edit by mouse and appear as container policy with 
   await page.screenshot({ path: "test-results/p28-policy-narrow.png", animations: "disabled" });
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   const workspace = page.getByRole("region", { name: "Architecture workspace", exact: true });
   await workspace
     .getByRole("navigation", { name: "Architecture levels" })

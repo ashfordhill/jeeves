@@ -2,6 +2,12 @@
 
 Jeeves turns a software design into a working, tested application by combining strict, reusable templates with coding agents. Draw Jeeves is its design canvas. See [PLAN.md](PLAN.md) for the architecture and build plan.
 
+Browse [CATALOG.md](CATALOG.md) for system offerings and reusable C2/C3 building
+blocks, with implemented and planned capabilities distinguished. The shared C1/C2/C3
+editor keeps chat, diagrams and selected-object controls together. **Library**
+includes editable SaaS architecture examples and planned capacity options; those
+options do not generate runtimes or certify traffic targets.
+
 Current status: qrwty has a working Library, saved artwork Studio and bounded owner Analytics. Jeeves can generate a complete [QR Studio product recipe](recipes/README.md) or an editable [resource application starter](starters/README.md) without implementation-model calls for their supplied features. The same design has intentional C4 context/container/component views, structured resource and screen editors, and explicit project extension seams. Experimental [durable delivery](packages/durable-events/README.md) supplies transactional events and finite retry policies; it is locally proven, not cloud infrastructure. Exact package evidence and limits are in the [handoffs](docs/handoff.md) and [current architecture/product review](docs/architecture-product-review-2026-10-31.md).
 
 **Draw** authors the model by mouse or optional design chat. **Generate** writes the owned template project and runs checks. **Runs** derives remaining work and can execute it through configured coding agents. Supplied recipe/resource behavior needs no implementation run; new domain behavior still needs contracts and independent acceptance. S1–S12 are implemented, the original S13 attempt remains partial, and S14 local models are deferred. Current work follows the [bounded package plan](docs/build-plan-execution.md).

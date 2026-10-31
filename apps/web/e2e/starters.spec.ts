@@ -11,7 +11,10 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
 }) => {
   test.setTimeout(90_000);
   const original = await openNewProject(page, request, "Keep my diagram");
-  await page.getByRole("button", { name: "Explore starting points" }).click();
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Use an implemented starter or recipe", exact: true })
+    .click();
   let dialog = page.getByRole("dialog", { name: "Create a project" });
   await expect(dialog.getByLabel("Workspace preset")).toBeVisible();
   await dialog.getByRole("button", { name: "Choose QR Studio", exact: true }).click();
@@ -48,6 +51,7 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
   await dialog.getByRole("button", { name: "Create project", exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Show inspector", exact: true }).click();
   const id = new URL(page.url()).searchParams.get("project");
   expect(id).not.toBe(original);
   expect(id).toBeTruthy();
@@ -55,16 +59,15 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
   let design = await read();
   expect(design.recipe).toBeUndefined();
   expect(design.startedFrom).toMatchObject({ id: "resource-workspace", version: "0.1.0" });
-  const guide = page.getByRole("region", { name: "Starter next steps" });
-  await expect(guide).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Architecture levels" })).toBeVisible();
   await page.screenshot({ path: "test-results/p26-starter-board.png", animations: "disabled" });
-  await guide.getByRole("button", { name: "Review C4 context" }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Inspect Workspace member", exact: true }),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/p26-starter-context.png", animations: "disabled" });
-  await page.getByRole("button", { name: "Back to board" }).click();
-  await guide.getByRole("button", { name: "Inspect resources" }).click();
+  await page.getByRole("button", { name: "C2 Containers", exact: true }).click();
+  await page.getByLabel("Inspect an object").selectOption("container:inventory");
   await page.getByRole("button", { name: "Configure resources", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "Configure resources" });
   await dialog.getByLabel("Field 1 name", { exact: true }).fill("displayName");
@@ -74,12 +77,12 @@ test("creates an editable starter by mouse, keeps the previous diagram and reach
   expect(design.elements[0].attachments[0].config.model.resources[0].fields[0].name).toBe(
     "displayName",
   );
-  await guide.getByRole("button", { name: "Inspect workspace" }).click();
+  await page.getByLabel("Inspect an object").selectOption("container:inventory-web");
   await page.getByRole("button", { name: "Configure resource workspace", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "Configure resource workspace" });
   await expect(dialog.getByLabel("Visual preset")).toHaveValue("paper");
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
-  await guide.getByRole("button", { name: "Generate app", exact: true }).click();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
   const generate = page.getByRole("region", { name: "Generate", exact: true });
   const dir = mkdtempSync(join(tmpdir(), "jeeves-starter-browser-"));
   try {
@@ -129,7 +132,10 @@ test("recovers a scoped catalog failure and creates a blank project without conf
       }),
     { times: 1 },
   );
-  await page.getByRole("button", { name: "Explore starting points" }).click();
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Use an implemented starter or recipe", exact: true })
+    .click();
   const dialog = page.getByRole("dialog", { name: "Create a project" });
   await expect(
     dialog.getByText("Starting architectures could not load", { exact: true }),

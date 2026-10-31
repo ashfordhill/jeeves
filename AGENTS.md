@@ -13,6 +13,8 @@ Work sequentially in the current checkout and branch. The user is running one ag
 
 ## Repo conventions
 
+- Maintain [CATALOG.md](CATALOG.md) when offerings, reusable C1/C2/C3 boundaries or availability change. Keep it conceptual and cross-linked; exact implementation details belong in the referenced template documentation.
+
 - pnpm workspaces, TypeScript (strict), ESM everywhere. Workspace packages export their TypeScript source directly (`"exports": "./src/index.ts"`); there is no build step for internal packages.
 - Relative imports include the `.ts`/`.tsx` extension.
 - Biome does lint and formatting: `pnpm format` fixes, `pnpm lint` checks. Don't add ESLint or Prettier.

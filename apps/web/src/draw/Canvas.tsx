@@ -3,7 +3,12 @@
  * (saved separately). Adapted from automation-pitch's Board: same paper texture following the
  * camera, handle look, and grab cursors; the tool model is Excalidraw's.
  */
-import type { DesignDocument, LayoutItem, OperationInput } from "@jeeves/spec";
+import {
+  type DesignDocument,
+  type LayoutItem,
+  type OperationInput,
+  plannedCapability,
+} from "@jeeves/spec";
 import { IconFocusCentered } from "@tabler/icons-react";
 import {
   applyEdgeChanges,
@@ -50,6 +55,7 @@ const edgeTypes = { connection: ConnectionEdge, arrow: ArrowEdge };
 const PLACE_OFFSET: Record<string, { x: number; y: number }> = {
   element: { x: 130, y: 40 },
   service: { x: 130, y: 40 },
+  planned: { x: 130, y: 40 },
   text: { x: 20, y: 14 },
   note: { x: NOTE_SIZE.width / 2, y: NOTE_SIZE.height / 2 },
   frame: { x: FRAME_SIZE.width / 2, y: 24 },
@@ -121,9 +127,21 @@ export function Canvas() {
 
   // Seeded synchronously so React Flow's initial fitView sees the nodes.
   const [nodes, setNodes] = useState<BoardNode[]>(() =>
-    loaded ? buildNodes(loaded.design, loaded.layout, loaded.templates) : [],
+    loaded
+      ? buildNodes(loaded.design, loaded.layout, loaded.templates).map((node) => ({
+          ...node,
+          selected: useDraw.getState().selection.nodes.includes(node.id),
+        }))
+      : [],
   );
-  const [edges, setEdges] = useState<BoardEdge[]>(() => (loaded ? buildEdges(loaded.design) : []));
+  const [edges, setEdges] = useState<BoardEdge[]>(() =>
+    loaded
+      ? buildEdges(loaded.design).map((edge) => ({
+          ...edge,
+          selected: useDraw.getState().selection.edges.includes(edge.id),
+        }))
+      : [],
+  );
   // The saved camera, read once: DrawView remounts the canvas per project. Without one, fit the
   // board on open, but never on an empty board: React Flow would refit when the first item lands.
   const [defaultViewport] = useState(() => loaded?.layout.viewport);
@@ -198,7 +216,25 @@ export function Canvas() {
     async (placing: Tool, at: { x: number; y: number }) => {
       if (!design || !templates) return;
       let placed: { id: string; ops: OperationInput[] } | undefined;
-      if (placing.kind === "service") {
+      if (placing.kind === "planned") {
+        const capability = plannedCapability(placing.capability);
+        if (!capability || capability.scope !== "container") return;
+        const id = uniqueId(design, capability.id);
+        placed = {
+          id,
+          ops: [
+            {
+              op: "addElement",
+              element: {
+                id,
+                name: uniqueName(design, capability.name),
+                template: null,
+                planned: capability.id,
+              },
+            },
+          ],
+        };
+      } else if (placing.kind === "service") {
         const id = uniqueId(design, "service");
         placed = {
           id,
@@ -224,6 +260,7 @@ export function Canvas() {
       const ok = await edit(placed.ops);
       if (ok) {
         setNotice(undefined);
+        useDraw.getState().focus({ nodes: [placed.id], edges: [] });
         if (placing.kind === "text" || placing.kind === "note") setEditing(placed.id);
       }
     },

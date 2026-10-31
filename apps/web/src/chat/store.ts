@@ -131,7 +131,10 @@ export const useChat = create<ChatState>()((set, get) => ({
     if (staged.some((s) => s.status === "uploading")) return;
     const files = staged.flatMap((s) => (s.status === "ready" && s.file ? [s.file] : []));
     const draw = useDraw.getState();
-    const selection = [...draw.selection.nodes, ...draw.selection.edges];
+    const selection = draw.architectureSelection ?? [
+      ...draw.selection.nodes,
+      ...draw.selection.edges,
+    ];
     // Live at once, so a second click can't send the message twice.
     set({
       live: { message: body, files, reply: "", activity: [] },

@@ -2681,3 +2681,76 @@ Next implementation is the revised P36 in `docs/build-plan-p36-architecture.md`.
 Use the current branch, finish its focused checks and handoff, and create its own
 local package commit. Reassess architecture/template gaps against this feedback
 before automatically resuming an older follow-up order.
+
+## 2026-10-31 — P36: integrated C4 editor and reusable planned offerings
+
+Completed the revised P36 specification in the current `main` checkout, with one
+agent and no new branches/worktrees. The user explicitly approved planned
+capabilities and prioritized editor/menu visuals, then requested a modular root
+catalog and workload intent. This supersedes the older executable-only scope and
+new generation/runtime certification campaign; implementation of the new templates
+and stress-test harnesses remains deferred to future tasking.
+
+Draw now hosts C1 context, the existing editable C2 board and scoped C3 responsibilities
+in one shell with left chat and right selected-object/arrow controls. Retained
+mouse placement, connection choices, resources, events, execution/pooling, deployment,
+starters/recipes, Generate and evidence inspection. Added a searchable library with
+20 planned C2 types, six planned C3 types and three editable SaaS architecture studies
+(links/QR, community/discussion, social/content). Typed settings include workload
+pattern, peak/unit and P95 targets where applicable; these save intent only.
+
+Added optional responsibility/member metadata, explicit resource/connection uses and
+C3 relationships, stable identity, duplicate/missing-reference validation and visible
+lost bindings. Grouped members retain their actual contracts, ownership and acceptance
+references. A new QR architecture fixture covers five responsibilities and all eight
+extensions once; ungrouped capabilities remain visible. Direct resource configuration
+reuses the existing editor. Planned objects/arrows block generation and cannot satisfy
+real ports. No runtime template, frozen release, recipe, starter or lockfile changed.
+
+Saved per-scope selection/cameras and dirty inspector drafts, preserved conflict drafts,
+refreshed evidence after generation, and fixed rapid navigation racing a layout save.
+Initial C1/C3 fitting uses measured bounds and an initialized viewport; this avoids a
+controlled-node fit queue remaining pending during updates. Added readable overview
+labels, bounded planned-card width and responsive mobile canvas/header sizing.
+
+Created `CATALOG.md` with cross-linked C1 offerings, shared C2/C3 families and reverse
+reuse, plus the C4 implementation/library and verification boundary. QR encoding is
+normally domain/library code; a reusable future load harness can exercise representative
+operations/data without certifying custom domain correctness. Added the catalog
+maintenance rule to AGENTS.md and updated current documentation pointers while retaining
+historical specifications and earlier handoffs. Evidence and six inspected screenshots
+are in `docs/evidence/p36/README.md`.
+
+Verification:
+
+- Focused offline architecture/planning/generation/layout: **19 tests / 4 files**,
+  **1.9s**, profile `2026-10-31T17-21-00-762Z-unit-98b48782`.
+- Final production-build browser command (all 14 affected suites listed in evidence):
+  **30 passed**, **23.4s** / profile **25.1s**, Chromium **153.0.8010.12**, Playwright
+  **1.63.0**, profile `2026-10-31T17-37-47-184Z-browser-preview-646db5a1`. Real mouse/API
+  edit, Save/Cancel, undo/redo, reload, conflict, declared relationships, delayed-layout
+  navigation, existing executable configuration, chat, starter/evidence and responsive
+  axe journeys passed with strict diagnostics and no retries. Providers are scripted;
+  starter generation is write-only, not a new runtime/load proof.
+- Required **`pnpm work run check` → `pnpm check` passed**, **42.0s**, profile
+  `2026-10-31T17-38-37-548Z-check-2eac1dc6`: all workspace/script types; **665 tests /
+  99 files**, Vitest **33.84s**; Biome **685 files, 511 warnings/75 infos, no errors**.
+  These three passing profiles all report unchanged source fingerprints. Full logs and
+  JSON are retained under `.jeeves-work/runs/`.
+- Failed interim browser attempts exposed the corrected layout/navigation/validation
+  defects and obsolete selectors/readiness assumptions. The concurrent gate/browser
+  attempt `17-34-53-863Z-check-f3dc9a12` hit two existing five-second unit timeouts;
+  the final gate passed separately without changing timeouts or weakening checks.
+  Failed attempts remain recorded. Document links and `git diff --check` passed.
+
+Read QRWTY source at `9bc5467` without modifying or running it. Live QRWTY source,
+services, data/URLs, accounts and saved Jeeves design remain untouched. Removed 148
+named session-created projects from `jeeves_e2e` and 230 session-created disposable
+E2E settings/output directories; retained other projects and the shared Postgres
+service. The existing Jeeves dev web/API remain healthy at 4300/4310.
+
+Next: review the visible editor and catalog before specifying another package.
+New template runtimes/generation/load tests, automatic topology/provisioning, general
+C4 code diagrams, page flows, developer tester access, broader chat-context work and
+live QRWTY adoption are separate follow-ups. Keep the one-agent/current-branch flow;
+P36 finishes with its own scoped local commit.

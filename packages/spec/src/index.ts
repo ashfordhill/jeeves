@@ -2,6 +2,7 @@
 // functions that apply and validate design edits.
 export * from "./apply.ts";
 export * from "./architecture.ts";
+export * from "./architecture-examples.ts";
 export * from "./architecture-view.ts";
 export * from "./config.ts";
 export * from "./delivery.ts";
@@ -15,6 +16,7 @@ export * from "./local-execution.ts";
 export * from "./local-http-pool.ts";
 export * from "./manifest.ts";
 export * from "./operations.ts";
+export * from "./planned-capabilities.ts";
 export * from "./resources.ts";
 export * from "./subtype.ts";
 export * from "./template-upgrade.ts";

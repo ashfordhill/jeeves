@@ -92,6 +92,33 @@ export function planConnect(
     };
   }
 
+  if (
+    [from.element, to.element].some(
+      (id) => design.elements.find((element) => element.id === id)?.planned,
+    )
+  ) {
+    return {
+      ok: true,
+      ops: [
+        {
+          op: "connect",
+          connection: {
+            id: uniqueId(design, `${from.element}-to-${to.element}`),
+            kind: "depends-on",
+            from: { element: from.element },
+            to: { element: to.element },
+            planned: {
+              label: "Communicates with",
+              protocol: "HTTPS",
+              interaction: "Request / response",
+              security: "Service identity",
+            },
+          },
+        },
+      ],
+    };
+  }
+
   // A visible outer end can offer several attachment capabilities. Never guess between them.
   const candidates = (end: Endpoint): Endpoint[] =>
     end.attachment

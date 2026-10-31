@@ -332,6 +332,32 @@ body,
   flex: 1 1 0;
   display: flex;
   justify-content: flex-end;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --header-height: 104px;
+  }
+  .app-header {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  .app-brand {
+    flex: 0 0 auto;
+  }
+  .app-header-end {
+    flex: 1 1 0;
+  }
+  .app-header-end > button {
+    max-width: 100%;
+  }
+  .app-header > .view-switch {
+    order: 3;
+    flex: 0 0 100%;
+    justify-content: center;
+  }
 }
 
 .view-stage {

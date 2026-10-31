@@ -1,6 +1,6 @@
 # QRWTY authoring, architecture and testing review
 
-**Implementation handoff:** [P35 independent sessions](evidence/p35/README.md) is now implemented and verified; live QRWTY has not adopted it. [P36 — useful application architecture, proved with QRWTY](build-plan-p36-architecture.md) is the specified next package, not yet implemented. Developer testing, page flow and composable adoption remain queued below. This audit remains the product direction and original evidence; the old P35 forms proposal stays superseded.
+**Implementation handoff:** [P35 independent sessions](evidence/p35/README.md) and [P36 integrated architecture editor](evidence/p36/README.md) are implemented and verified; live QRWTY has not adopted either change. P36 includes planned SaaS offerings and a reusable [catalog](../CATALOG.md), following the user's visual-authoring priority. New template runtimes/load tests are deferred. Developer testing, page flow and composable adoption remain possible follow-ups requiring their own specification. This audit retains the original findings; the old P35 forms proposal stays superseded.
 
 Reviewed 2026-10-31 in response to the user's request to refocus Jeeves on composing applications such as QRWTY with minimal bespoke code. This is an audit and proposed delivery plan, not an implemented feature package. The earlier proposal to continue automatically into P35 business-action forms should be reconsidered against this product priority.
 

@@ -114,15 +114,15 @@ test("a reviewed starter authors a local pool by mouse, preserves application id
     expect(changed.connections).toEqual(original.connections);
     expect(changed.startedFrom).toEqual(original.startedFrom);
     expect((await layoutOf(request, id)).items).toEqual(layout.items);
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     const workspace = page.getByRole("region", { name: "Architecture workspace", exact: true });
     await workspace
       .getByRole("navigation", { name: "Architecture levels" })
       .getByRole("button", { name: /Containers/ })
       .click();
-    await expect(page.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
+    await expect(page.locator(".draw-board")).toBeVisible();
     await workspace.getByLabel("Inspect an object").selectOption("container:inventory");
-    await expect(page.locator(".architecture-card")).toHaveCount(4);
+    await expect(page.locator("[data-element-id]")).toHaveCount(3);
     const summary = workspace.getByRole("region", { name: "Local HTTP pool", exact: true });
     await expect(summary).toContainText("One application · 3 local instances");
     await expect(summary).toContainText("15 application connections");

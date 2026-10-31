@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./browser-test.ts";
 import { card, designOf, layoutOf, openNewProject } from "./helpers.ts";
 
 /**
@@ -7,11 +8,12 @@ import { card, designOf, layoutOf, openNewProject } from "./helpers.ts";
  * step is a mouse click; message text is typed or picked from an example.
  */
 
-const rail = (page: Page) =>
-  page.getByRole("complementary", { name: "Inspector, findings, and chat" });
+const rail = (page: Page) => page.getByRole("complementary", { name: "Chat panel" });
 
 async function openChat(page: Page) {
-  await rail(page).getByRole("tab", { name: "Chat" }).click();
+  await expect(page.getByRole("region", { name: "Architecture workspace" })).toBeVisible();
+  if (!(await rail(page).isVisible()))
+    await page.getByRole("button", { name: "Chat", exact: true }).click();
   return rail(page).getByRole("region", { name: "Design chat" });
 }
 
@@ -97,7 +99,7 @@ test("a chat message draws a link shortener as one undo step", async ({ page, re
   await expect(card(page, "Links service, HTTP service")).toHaveCount(0);
   await expect.poll(async () => (await designOf(request, id)).design.elements).toEqual([]);
   await expect(chat.getByRole("button", { name: "Undo" })).toBeDisabled();
-  await page.getByRole("button", { name: "Redo" }).click();
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
   await expect(card(page, "Links service, HTTP service")).toBeVisible();
   await expect.poll(async () => (await designOf(request, id)).design.elements.length).toBe(3);
 

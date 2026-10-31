@@ -63,12 +63,18 @@ export function ArchitectureEvidenceDialog({
     record = evidence.generation;
   const checks = (record?.checks ?? []).filter((check) => subjectIn(check.subject, scope));
   const responsibilities = views.components.flatMap((view) =>
-    view.nodes.filter(
-      (node) =>
-        (node.kind === "component" ||
-          (node.kind === "binding" && node.binding?.element === view.container)) &&
-        (!scope || node.binding?.element === scope),
-    ),
+    view.nodes
+      .flatMap((node) =>
+        node.members?.length
+          ? [...node.members, ...(node.support === "planned" ? [node] : [])]
+          : [node],
+      )
+      .filter(
+        (node) =>
+          (node.kind === "component" ||
+            (node.kind === "binding" && node.binding?.element === view.container)) &&
+          (!scope || node.binding?.element === scope),
+      ),
   );
   for (const node of views.containers.nodes) {
     if (
@@ -87,7 +93,11 @@ export function ArchitectureEvidenceDialog({
     (node) => node.support === "recipe" || node.support === "template",
   );
   const project = responsibilities.filter(
-    (node) => node.support === "extension" || node.support === "intent",
+    (node) =>
+      node.support === "extension" ||
+      node.support === "intent" ||
+      node.support === "planned" ||
+      node.support === "mixed",
   );
   const references = acceptanceEvidence(
     selected?.acceptance ?? [],

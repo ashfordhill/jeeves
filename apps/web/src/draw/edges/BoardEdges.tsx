@@ -4,6 +4,7 @@
 import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getBezierPath } from "@xyflow/react";
 import { connectionLabels } from "../connect.ts";
 import type { BoardEdge } from "../flow.ts";
+import { useDraw } from "../store.ts";
 
 function useGeometry(props: EdgeProps<BoardEdge>) {
   return getBezierPath({
@@ -21,20 +22,24 @@ function EdgeChip({
   y,
   text,
   className,
+  onClick,
 }: {
   x: number;
   y: number;
   text: string;
   className: string;
+  onClick?: () => void;
 }) {
   return (
     <EdgeLabelRenderer>
-      <span
-        className={`edge-chip ${className}`}
+      <button
+        type="button"
+        onClick={onClick}
+        className={`edge-chip nodrag nopan ${className}`}
         style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
       >
         {text}
-      </span>
+      </button>
     </EdgeLabelRenderer>
   );
 }
@@ -42,6 +47,8 @@ function EdgeChip({
 export function ConnectionEdge(props: EdgeProps<BoardEdge>) {
   const [path, x, y] = useGeometry(props);
   const kind = props.data && "connection" in props.data ? props.data.connection.kind : undefined;
+  const planned =
+    props.data && "connection" in props.data ? props.data.connection.planned : undefined;
   return (
     <>
       <BaseEdge
@@ -50,13 +57,15 @@ export function ConnectionEdge(props: EdgeProps<BoardEdge>) {
         markerEnd={props.markerEnd}
         className={`connection-path${props.selected ? " is-selected" : ""}`}
         interactionWidth={24}
+        style={planned ? { strokeDasharray: "7 4" } : undefined}
       />
       {kind ? (
         <EdgeChip
           x={x}
           y={y}
-          text={connectionLabels[kind]}
+          text={planned?.label ?? connectionLabels[kind]}
           className={`connection-chip${props.selected ? " is-selected" : ""}`}
+          onClick={() => useDraw.getState().focus({ nodes: [], edges: [props.id] })}
         />
       ) : null}
     </>
@@ -75,7 +84,15 @@ export function ArrowEdge(props: EdgeProps<BoardEdge>) {
         className={`arrow-path${props.selected ? " is-selected" : ""}`}
         interactionWidth={24}
       />
-      {label ? <EdgeChip x={x} y={y} text={label} className="arrow-chip" /> : null}
+      {label ? (
+        <EdgeChip
+          x={x}
+          y={y}
+          text={label}
+          className="arrow-chip"
+          onClick={() => useDraw.getState().focus({ nodes: [], edges: [props.id] })}
+        />
+      ) : null}
     </>
   );
 }

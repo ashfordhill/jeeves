@@ -111,7 +111,7 @@ export function buildNodes(
     nodes.push({
       id: element.id,
       type: "element",
-      ...(item.width && { width: item.width }),
+      ...(item.width ? { width: item.width } : element.planned ? { width: 280 } : {}),
       ...(item.height && { height: item.height }),
       position: { x: item.x, y: item.y },
       data: {

@@ -67,15 +67,17 @@ test("declared deployment stays separate from C4, exposes real budgets and prese
     const before = await read("design"),
       layout = await read("layout");
     await page.goto(`/?project=${id}#/draw`);
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     const workspace = page.getByRole("region", { name: "Architecture workspace", exact: true });
     await workspace
       .getByRole("navigation", { name: "Architecture levels" })
       .getByRole("button", { name: /Containers/ })
       .click();
-    await expect(page.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
+    await expect(page.locator(".draw-board")).toBeVisible();
     await workspace.getByLabel("Inspect an object").selectOption("container:inventory");
-    await expect(page.locator(".architecture-card")).toHaveCount(5);
+    await expect(page.locator("[data-element-id]")).toHaveCount(4);
+    await workspace.getByRole("button", { name: "Open components", exact: true }).click();
+    await expect(page.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
     await page.getByRole("button", { name: "Zoom In", exact: true }).click();
     const viewport = page.locator(".architecture-graph .react-flow__viewport"),
       camera = await viewport.getAttribute("style");
@@ -111,7 +113,9 @@ test("declared deployment stays separate from C4, exposes real budgets and prese
     await expect(dialog.getByRole("article", { name: "Local proxy" })).toHaveCount(0);
     await expect(dialog.getByText(/Legacy replica hint 4 does not create instances/)).toBeVisible();
     await dialog.getByRole("button", { name: "Close deployment", exact: true }).click();
-    await expect(workspace.getByLabel("Inspect an object")).toHaveValue("container:inventory");
+    await expect(workspace.getByLabel("Inspect an object")).toHaveValue(
+      "component:inventory:inventory-api:boundary",
+    );
     await expect(viewport).toHaveAttribute("style", camera ?? "");
     expect(await read("design")).toEqual(before);
     expect(await read("layout")).toEqual(layout);
@@ -137,7 +141,9 @@ test("declared deployment stays separate from C4, exposes real budgets and prese
     await open.click();
     await dialog.getByLabel("Application deployment").selectOption("audit");
     await dialog.getByRole("button", { name: "Configure application", exact: true }).click();
-    await expect(workspace).not.toBeVisible();
+    await expect(
+      workspace.getByRole("button", { name: "C2 Containers", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
     await expect(
       page.locator('.react-flow__node.selected [data-element-id="audit"]'),
     ).toBeVisible();
@@ -155,7 +161,7 @@ test("declared deployment stays separate from C4, exposes real budgets and prese
       ).status(),
     ).toBe(200);
     await page.reload();
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     await open.click();
     await expect(
       dialog.getByText("Complete configuration before generation", { exact: true }),

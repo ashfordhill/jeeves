@@ -7,7 +7,7 @@ import { findingSubject, placeFinding } from "../findings.ts";
 import { useDraw } from "../store.ts";
 import { FindingList } from "./Inspector.tsx";
 
-export function FindingsPanel() {
+export function FindingsPanel({ onNavigate }: { onNavigate?: () => void } = {}) {
   const loaded = useDraw((s) => s.loaded);
   const focus = useDraw((s) => s.focus);
   const setRailTab = useDraw((s) => s.setRailTab);
@@ -36,6 +36,7 @@ export function FindingsPanel() {
             { zoom: true },
           );
           setRailTab("inspector");
+          onNavigate?.();
         }}
       />
     </section>

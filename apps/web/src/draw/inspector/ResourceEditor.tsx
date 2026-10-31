@@ -37,9 +37,11 @@ type RecipeBinding = ProductRecipe["resourceBindings"][number];
 export function ResourceConfiguration({
   element,
   attachment,
+  initialResource,
 }: {
   element: Element;
   attachment: Attachment;
+  initialResource?: string;
 }) {
   const design = useDraw((s) => s.loaded?.design);
   const [opened, setOpened] = useState(false);
@@ -60,6 +62,7 @@ export function ResourceConfiguration({
           attachment={attachment}
           design={design}
           onClose={() => setOpened(false)}
+          initialResource={initialResource}
         />
       ) : null}
     </Stack>
@@ -70,11 +73,13 @@ function ResourceEditor({
   attachment,
   design,
   onClose,
+  initialResource,
 }: {
   element: Element;
   attachment: Attachment;
   design: DesignDocument;
   onClose: () => void;
+  initialResource?: string;
 }) {
   const [draft, setDraft] = useState(() => resourceDraft(attachment.config.model));
   const reservedResources = useRef(draft?.resources.map((item) => item.id) ?? []);
@@ -91,7 +96,7 @@ function ResourceEditor({
       ...(reservedFields.current.get(resource.id) ?? []),
       id,
     ]);
-  const [selected, setSelected] = useState(draft?.resources[0]?.id);
+  const [selected, setSelected] = useState(initialResource ?? draft?.resources[0]?.id);
   const [baseRevision] = useState(design.revision);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();

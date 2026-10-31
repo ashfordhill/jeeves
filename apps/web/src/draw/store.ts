@@ -29,6 +29,7 @@ import { type FindingIndex, indexFindings } from "./findings.ts";
 import { templateKey } from "./flow.ts";
 
 export type Tool =
+  | { kind: "planned"; capability: string }
   | { kind: "service" }
   | { kind: "select" }
   | { kind: "hand" }
@@ -90,6 +91,8 @@ type DrawState = {
   selection: Selection;
   focusRequest?: FocusRequest;
   railTab: RailTab;
+  /** Selection in the active C4 scope; undefined means use the editable board selection. */
+  architectureSelection?: string[];
   undoSteps: Step[];
   redoSteps: Step[];
 

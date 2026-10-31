@@ -46,7 +46,7 @@ export function ContextEditor({
   const parsed = architectureSchema.safeParse(draft);
   const problems = parsed.success
     ? validateArchitecture({ ...design, architecture: parsed.data }).filter(
-        (finding) => finding.severity === "error",
+        (finding) => finding.severity === "error" && finding.code !== "NEEDS_TEMPLATE",
       )
     : [];
   const changeNode = (id: string, patch: Partial<Architecture["nodes"][number]>) =>

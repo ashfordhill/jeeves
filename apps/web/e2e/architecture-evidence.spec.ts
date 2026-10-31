@@ -18,7 +18,7 @@ test("shows actual written-only and stale starter evidence without changing the 
   const read = async () => (await (await request.get(`/api/projects/${id}/design`)).json()).design;
   try {
     await page.goto(`/?project=${id}#/draw`);
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
     let dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
@@ -44,7 +44,7 @@ test("shows actual written-only and stale starter evidence without changing the 
       timeout: 45_000,
     });
     await generate.getByRole("button", { name: "Hide generate output" }).click();
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
     dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
@@ -66,10 +66,14 @@ test("shows actual written-only and stale starter evidence without changing the 
       .getByRole("button", { name: /Containers/ })
       .click();
     await architecture.getByLabel("Inspect an object").selectOption("container:inventory");
+    await architecture.getByRole("button", { name: "Open components", exact: true }).click();
+    await architecture
+      .getByLabel("Inspect an object")
+      .selectOption("component:inventory:inventory-api:accounts");
     await architecture.getByRole("button", { name: "Zoom In", exact: true }).click();
     const viewport = architecture.locator(".react-flow__viewport");
     await expect(
-      architecture.getByRole("button", { name: "Inspect Inventory API", exact: true }),
+      architecture.getByRole("button", { name: "Inspect Accounts and sessions", exact: true }),
     ).toBeInViewport();
     const camera = await viewport.getAttribute("style"),
       design = await read();
@@ -99,7 +103,9 @@ test("shows actual written-only and stale starter evidence without changing the 
     });
     await page.setViewportSize({ width: 1440, height: 900 });
     await dialog.getByRole("button", { name: "Close evidence", exact: true }).click();
-    await expect(architecture.getByLabel("Inspect an object")).toHaveValue("container:inventory");
+    await expect(architecture.getByLabel("Inspect an object")).toHaveValue(
+      "component:inventory:inventory-api:accounts",
+    );
     // Wait for the asynchronous resize layout and its camera fit before testing refresh alone.
     await expect(architecture.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
     const beforeRefresh = await viewport.getAttribute("style");
@@ -213,7 +219,7 @@ test("controlled read-only record renders layered outcomes, service-scoped refer
   try {
     await page.goto(`/?project=${id}#/draw`);
     await page.getByRole("button", { name: "Dark mode", exact: true }).click();
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     const architecture = page.getByRole("region", { name: "Architecture workspace", exact: true });
     await architecture
       .getByRole("navigation", { name: "Architecture levels" })

@@ -43,20 +43,23 @@ test("actual starter routes reserve labels and inspection preserves semantic dat
     layout = await read("layout");
   try {
     await page.goto(`/?project=${id}#/draw`);
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     const levels = page.getByRole("navigation", { name: "Architecture levels" });
-    await levels.getByRole("button", { name: /Containers/ }).click();
+    await levels.getByRole("button", { name: /Components/ }).click();
+    await page.getByLabel("Component container").selectOption("inventory");
     await clearRelationships(page);
-    await expect(page.locator(".architecture-card")).toHaveCount(4);
-    await expect(page.locator(".architecture-relation-label")).toHaveCount(3);
-    await page.getByRole("button", { name: "Inspect Inventory API", exact: true }).click();
+    await expect(page.locator(".architecture-card")).toHaveCount(6);
+    await expect(page.locator(".architecture-relation-label")).toHaveCount(2);
+    await page.getByRole("button", { name: "Inspect Accounts and sessions", exact: true }).click();
     await page.screenshot({ path: "test-results/p30-containers.png", animations: "disabled" });
     await page.getByRole("button", { name: "Zoom In", exact: true }).click();
     const viewport = page.locator(".architecture-graph .react-flow__viewport");
     const camera = await viewport.getAttribute("style");
     await page.getByLabel("Inspect an object").selectOption("container:inventory-db");
     await expect(viewport).toHaveAttribute("style", camera ?? "");
-    await page.getByLabel("Inspect an object").selectOption("container:inventory");
+    await page
+      .getByLabel("Inspect an object")
+      .selectOption("component:inventory:inventory-api:accounts");
     await page.getByRole("button", { name: "Inspect evidence", exact: true }).click();
     const evidence = page.getByRole("dialog", { name: "Architecture evidence" });
     await evidence.getByRole("button", { name: "Refresh evidence", exact: true }).click();
@@ -65,9 +68,10 @@ test("actual starter routes reserve labels and inspection preserves semantic dat
     ).toBeEnabled();
     await evidence.getByRole("button", { name: "Close evidence", exact: true }).click();
     await expect(viewport).toHaveAttribute("style", camera ?? "");
-    await page.getByRole("button", { name: "Flow down", exact: true }).click();
+    await page.getByRole("button", { name: /^Flow (down|right)$/ }).click();
     await clearRelationships(page);
     await page.setViewportSize({ width: 1000, height: 850 });
+    await page.getByRole("button", { name: "Chat", exact: true }).click();
     await page.getByRole("button", { name: "Fit View", exact: true }).click();
     await clearRelationships(page);
     await page.screenshot({ path: "test-results/p30-narrow.png", animations: "disabled" });
@@ -110,7 +114,7 @@ test("unavailable worker offers Retry and a real QR component scope renders inde
   const id = (await created.json()).project.id;
   try {
     await page.goto(`/?project=${id}#/draw`);
-    await page.getByRole("button", { name: "Architecture", exact: true }).click();
+    await page.getByRole("button", { name: "C1 Context", exact: true }).click();
     await expect(page.getByRole("alert")).toContainText("could not be arranged");
     await expect(page.locator(".architecture-card")).toHaveCount(0);
     await page.evaluate(() => Object.assign(window, { p30WorkerUnavailable: false }));

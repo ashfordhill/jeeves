@@ -24,6 +24,10 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
+import {
+  PlannedConnectionInspector,
+  PlannedElementInspector,
+} from "../../architecture/PlannedInspector.tsx";
 import { connectionLabels } from "../connect.ts";
 import { templateKey } from "../flow.ts";
 import { attach, deleteOps } from "../ops.ts";
@@ -123,7 +127,7 @@ function NotesField({ id, notes, label }: { id: string; notes: string; label: st
   );
 }
 
-function AttachmentPanel({
+export function AttachmentPanel({
   element,
   attachment,
   findings,
@@ -280,7 +284,7 @@ function DeleteButton({ label, ops }: { label: string; ops: OperationInput[] }) 
   );
 }
 
-function ElementInspector({ element }: { element: Element }) {
+export function ElementInspector({ element }: { element: Element }) {
   const { loaded, edit } = useInspector();
   if (!loaded) return null;
   const template = element.template
@@ -373,7 +377,7 @@ function ElementInspector({ element }: { element: Element }) {
   );
 }
 
-function ConnectionInspector({ connection }: { connection: Connection }) {
+export function ConnectionInspector({ connection }: { connection: Connection }) {
   const { loaded, focus } = useInspector();
   if (!loaded) return null;
   const findings = loaded.findingIndex.byEdge.get(connection.id) ?? [];
@@ -537,7 +541,7 @@ function Overview() {
   );
 }
 
-export function Inspector() {
+export function Inspector({ onComponents }: { onComponents?: (id: string) => void } = {}) {
   const loaded = useDraw((s) => s.loaded);
   const selection = useDraw((s) => s.selection);
   if (!loaded) return null;
@@ -553,8 +557,18 @@ export function Inspector() {
   if (nodes.length + edges.length > 1) return <MultiInspector selection={{ nodes, edges }} />;
   const id = nodes[0] ?? edges[0];
   const element = design.elements.find((e) => e.id === id);
+  if (element?.planned)
+    return (
+      <PlannedElementInspector
+        key={element.id}
+        element={element}
+        onComponents={onComponents ? () => onComponents(element.id) : undefined}
+      />
+    );
   if (element) return <ElementInspector key={element.id} element={element} />;
   const connection = design.connections.find((c) => c.id === id);
+  if (connection?.planned)
+    return <PlannedConnectionInspector key={connection.id} connection={connection} />;
   if (connection) return <ConnectionInspector key={connection.id} connection={connection} />;
   const annotation = design.annotations.find((a) => a.id === id);
   if (annotation) return <AnnotationInspector key={annotation.id} annotation={annotation} />;

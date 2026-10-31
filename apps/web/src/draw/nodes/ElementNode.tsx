@@ -4,7 +4,7 @@
  * Card shape follows automation-pitch's step tile (3px line, rounded, cream fill).
  */
 import type { TemplateDescription } from "@jeeves/registry";
-import type { ConfigValues } from "@jeeves/spec";
+import { type ConfigValues, plannedCapability } from "@jeeves/spec";
 import { IconAlertTriangle, IconX } from "@tabler/icons-react";
 import { Handle, type NodeProps, NodeResizer, Position } from "@xyflow/react";
 import { useCallback } from "react";
@@ -56,6 +56,7 @@ function Chips({ chips, compact }: { chips: Chip[]; compact?: boolean }) {
 
 export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) {
   const { element, template, attachments } = data;
+  const planned = plannedCapability(element.planned);
   const onResizeEnd = useCallback(
     (_: unknown, size: { x: number; y: number; width: number; height: number }) => {
       const layout = useDraw.getState().loaded?.layout.items[id];
@@ -73,11 +74,11 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
   const editing = useDraw((s) => s.tool.kind === "select");
   const findings = useDraw((s) => s.loaded?.findingIndex.byNode.get(id));
   const pendingHere = pending && "element" in pending && pending.element === id;
-  const label = template?.displayName ?? "Needs a template";
+  const label = planned?.name ?? template?.displayName ?? "Needs a template";
 
   return (
     <article
-      className={`element-card${template?.elementKind === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
+      className={`element-card${planned ? " planned-card" : ""}${template?.elementKind === "database" || planned?.role === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
       data-element-id={id}
       aria-label={`${element.name}, ${label}`}
     >
@@ -90,13 +91,13 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
       <Handle type="target" position={Position.Left} id={handleId("in")} className="card-handle" />
       <div className="element-card-head">
         <span className="element-card-icon">
-          <TemplateIcon name={template?.card.icon} size={22} />
+          <TemplateIcon name={planned?.icon ?? template?.card.icon} size={22} />
         </span>
         <span className="element-card-titles">
           <span className="element-card-name">{element.name}</span>
           <span className="element-card-template">{label}</span>
         </span>
-        {findings?.length ? (
+        {!planned && findings?.length ? (
           <span
             className="card-findings"
             role="img"
@@ -108,7 +109,15 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
           </span>
         ) : null}
       </div>
-      {template?.elementKind !== "database" ? (
+      {planned ? (
+        <>
+          <p className="planned-card-description">
+            {element.notes.trim().slice(0, 120) || planned.description}
+          </p>
+          <span className="capability-status">Planned</span>
+        </>
+      ) : null}
+      {!planned && template?.elementKind !== "database" ? (
         <SubtypeControl element={element} disabled={!editing} />
       ) : null}
       <Chips chips={cardChips(template, element.config)} />

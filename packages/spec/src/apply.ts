@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { unbindArchitecture } from "./architecture.ts";
+import { unbindArchitecture, validateArchitecture } from "./architecture.ts";
 import {
   type Annotation,
   annotationSchema,
@@ -92,6 +92,22 @@ export function applyOperations(
   }
 
   const before = new Set(validateDesign(design, lookup).filter(isStructural).map(findingKey));
+  if (parsed.data.some((op) => op.op === "setArchitecture")) {
+    const previous = new Set(
+      validateArchitecture(design).map((f) => architectureBindingKey(design, f)),
+    );
+    const newMissing = validateArchitecture(draft).filter(
+      (f) =>
+        f.code === "ARCHITECTURE_UNBOUND" &&
+        f.target.path?.includes("components") &&
+        !previous.has(architectureBindingKey(draft, f)),
+    );
+    if (newMissing.length)
+      return {
+        ok: false,
+        errors: newMissing.map((f) => finding("CONFIG_INVALID", f.message, f.target)),
+      };
+  }
   const findings = validateDesign(draft, lookup);
   const introduced = findings.filter((f) => isStructural(f) && !before.has(findingKey(f)));
   if (introduced.length > 0) return { ok: false, errors: introduced };
@@ -102,6 +118,16 @@ export function applyOperations(
 
 function findingKey(f: Finding): string {
   return `${f.code} ${JSON.stringify(f.target)}`;
+}
+
+// Display renames do not change a lost binding's identity.
+function architectureBindingKey(design: DesignDocument, f: Finding): string {
+  const component = design.architecture?.components?.find((item) => item.id === f.target.path?.[2]);
+  const message =
+    component && f.message.startsWith(`${component.name}: `)
+      ? f.message.slice(component.name.length + 2)
+      : f.message;
+  return `${findingKey(f)} ${message}`;
 }
 
 function applyOne(
@@ -233,6 +259,7 @@ function applyOne(
         element.attachments.map((a) => a.id),
       );
       element.template = op.template;
+      delete element.planned;
       element.config = {};
       element.attachments = [];
       design.connections = design.connections.filter(

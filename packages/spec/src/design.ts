@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
 import { idSchema, templateRefSchema } from "./ids.ts";
+import { plannedConnectionSchema } from "./planned-capabilities.ts";
 
 export const connectionKindSchema = z.enum(["uses-database", "calls", "depends-on"]);
 export type ConnectionKind = z.infer<typeof connectionKindSchema>;
@@ -33,6 +34,8 @@ export const elementSchema = z.strictObject({
   name: z.string().trim().min(1).max(120),
   /** `null` means "needs a template": a capability the registry can't provide yet. */
   template: templateRefSchema.nullable(),
+  /** Design-only capability from the planning catalog. It never selects a runtime. */
+  planned: idSchema.optional(),
   config: configValuesSchema.default({}),
   attachments: z.array(attachmentSchema).default([]),
   notes: notesSchema.default(""),
@@ -52,6 +55,8 @@ export const connectionSchema = z.strictObject({
   kind: connectionKindSchema,
   from: endpointSchema,
   to: endpointSchema,
+  /** Explicit planned relationship; does not satisfy executable port requirements. */
+  planned: plannedConnectionSchema.optional(),
   config: z
     .strictObject({ fromCapability: idSchema.optional(), toCapability: idSchema.optional() })
     .optional(),

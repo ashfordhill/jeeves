@@ -1,6 +1,6 @@
 # Continuing delivery: qrwty and deterministic Jeeves
 
-**Current execution entry point:** P13–P35 are completed history. Start [P36 — useful application architecture, proved with QRWTY](build-plan-p36-architecture.md) and implement that package only. Its fresh-agent scope and stopping boundary supersede the earlier continuing-delivery instruction below and the former P35 business-action-forms proposal. P35 session release evidence is retained separately; no live QRWTY adoption has occurred.
+**Current execution entry point:** P13–P36 are completed history. [P36 evidence](evidence/p36/README.md) records the integrated editor, planned capability library and reusable [catalog](../CATALOG.md). The user prioritized visual authoring and deferred new template runtime, generation and load-test implementation to future tasking. Review the editor before specifying the next bounded package; do not automatically resume the historical sequence below. P35 session release evidence is retained separately; no live QRWTY adoption has occurred.
 
 The user's continuing implementation instruction supersedes the earlier P12-only stop boundary and planning-only status of the product reviews. Deliver one verified package and local commit at a time, preserving unrelated work and existing QR identities/data. No paid Jeeves agent runs or public deployment are needed.
 

@@ -1,5 +1,9 @@
 # Template catalog
 
+For the maintained C1/C2/C3 offerings, reuse links and implemented/planned status,
+start with the root [building-block catalog](../../CATALOG.md). This directory
+contains detailed template briefs, including historical stubs.
+
 Each file here describes one template: what it is on the Draw Jeeves board, what it generates, and what its test pack proves. The template contract itself is defined in [PLAN.md §8](../../PLAN.md#8-templates).
 
 | Template | Board role | Status |

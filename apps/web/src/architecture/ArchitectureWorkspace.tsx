@@ -1,70 +1,116 @@
 import {
+  type ArchitectureComponent,
   type ArchitectureEvidence,
-  type ArchitectureViewNode,
   type ArchitectureViews,
   hasLocalDeploymentView,
 } from "@jeeves/spec";
-import { Alert, Button, Loader, NativeSelect } from "@mantine/core";
+import { Alert, Button, Group, Loader, NativeSelect, Tabs } from "@mantine/core";
 import {
-  IconArrowLeft,
-  IconChevronRight,
-  IconEdit,
-  IconServer,
-  IconSettings,
+  IconBook,
+  IconLayoutSidebarLeftCollapse,
+  IconMessageCircle,
   IconSitemap,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { api } from "../draw/api.ts";
+import { FindingsPanel } from "../draw/inspector/FindingsPanel.tsx";
+import { ConnectionInspector, ElementInspector, Inspector } from "../draw/inspector/Inspector.tsx";
 import { ExecutionPolicySummary } from "../draw/inspector/LocalExecutionEditor.tsx";
 import { LocalHttpPoolSummary } from "../draw/inspector/LocalHttpPoolEditor.tsx";
-import { useDraw } from "../draw/store.ts";
+import { ProjectChooser } from "../draw/ProjectChooser.tsx";
+import { canRedo, canUndo, useDraw } from "../draw/store.ts";
+import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
+import { useGenerate } from "../generate/store.ts";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog, evidenceLabel } from "./ArchitectureEvidence.tsx";
-import { ArchitectureGraph, supportLabel } from "./ArchitectureGraph.tsx";
+import { type ArchitectureCameraCache, ArchitectureGraph } from "./ArchitectureGraph.tsx";
+import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
+import { ComponentDetails } from "./ComponentDetails.tsx";
+import { ComponentEditor } from "./ComponentEditor.tsx";
+import { ComponentRelationshipEditor } from "./ComponentRelationshipEditor.tsx";
+import { ContextInspector } from "./ContextInspector.tsx";
+import { EditorDraftProvider } from "./editor-drafts.tsx";
 import { LocalDeploymentDialog } from "./LocalDeployment.tsx";
+import { PlannedConnectionInspector, PlannedElementInspector } from "./PlannedInspector.tsx";
 import "./architecture.css";
+import "./editor.css";
 
-export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
-  const loaded = useDraw((state) => state.loaded);
+type Level = "context" | "containers" | "components";
+export function ArchitectureWorkspace({ board }: { board: ReactNode }) {
+  return (
+    <EditorDraftProvider>
+      <EditorWorkspace board={board} />
+    </EditorDraftProvider>
+  );
+}
+function EditorWorkspace({ board }: { board: ReactNode }) {
+  const loaded = useDraw((state) => state.loaded)!;
   const notice = useDraw((state) => state.notice);
-  const localUndo = useDraw((state) => state.undoSteps.length);
+  const boardSelection = useDraw((state) => state.selection);
+  const tool = useDraw((state) => state.tool.kind);
+  const undoable = useDraw(canUndo),
+    redoable = useDraw(canRedo);
   const [views, setViews] = useState<ArchitectureViews>();
   const [evidence, setEvidence] = useState<ArchitectureEvidence>();
-  const [evidenceOpen, setEvidenceOpen] = useState(false);
-  const [evidenceSubject, setEvidenceSubject] = useState<ArchitectureViewNode>();
-  const [deployment, setDeployment] = useState<{ element?: string }>();
+  const [error, setError] = useState<string>();
+  const [attempt, setAttempt] = useState(0);
   const [loading, setLoading] = useState(false);
+  const generationState = useGenerate((state) =>
+    state.projectId === loaded.project.id
+      ? `${state.generation?.id}:${state.generation?.status}`
+      : "",
+  );
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [deployment, setDeployment] = useState<{ element?: string }>();
+  const [level, setLevel] = useState<Level>("containers");
+  const navigationRequest = useRef(0);
+  const [container, setContainer] = useState<string>();
+  const [selections, setSelections] = useState<Record<string, string>>({});
+  const [editor, setEditor] = useState<"context" | "product">();
+  const [catalog, setCatalog] = useState<"blocks" | "examples">();
+  const [starterOpen, setStarterOpen] = useState(false);
+  const [componentEditor, setComponentEditor] = useState<{
+    initial?: ArchitectureComponent;
+    capability?: string;
+  }>();
+  const [relationshipEditor, setRelationshipEditor] = useState<{ id?: string }>();
+  const [chatOpen, setChatOpen] = useState(() => window.innerWidth >= 1200);
+  const [inspectorOpen, setInspectorOpen] = useState(() => window.innerWidth >= 760);
+  const railTab = useDraw((state) => state.railTab);
+  const setRailTab = useDraw((state) => state.setRailTab);
+  useEffect(() => {
+    if (railTab === "chat") {
+      setChatOpen(true);
+      setRailTab("inspector");
+    }
+  }, [railTab, setRailTab]);
+  const cameraCache = useRef<ArchitectureCameraCache>({
+    directions: new Map(),
+    viewports: new Map(),
+  });
   const request = useRef<{ key: string; pending: ReturnType<typeof api.architecture> } | undefined>(
     undefined,
   );
-  const [error, setError] = useState<string>();
-  const [attempt, setAttempt] = useState(0);
-  const [level, setLevel] = useState<"context" | "containers" | "components">("context");
-  const [container, setContainer] = useState<string>();
-  const [selected, setSelected] = useState<string>();
-  const [editor, setEditor] = useState<"context" | "product">();
-  const projectId = loaded?.project.id,
-    revision = loaded?.design.revision;
+  const { project, design } = loaded;
   useEffect(() => {
-    if (!projectId) return;
     let active = true;
-    const key = `${projectId}:${revision}:${attempt}`;
+    const key = `${project.id}:${design.revision}:${attempt}:${generationState}`;
     setLoading(true);
     setError(undefined);
-    if (!request.current?.key.startsWith(`${projectId}:${revision}:`)) {
-      setViews(undefined);
-      setEvidence(undefined);
-    }
     if (request.current?.key !== key)
-      request.current = { key, pending: api.architecture(projectId) };
+      request.current = { key, pending: api.architecture(project.id) };
     request.current.pending.then(
       (result) => {
-        if (active && result.revision === revision) {
+        if (!active) return;
+        if (result.revision === design.revision) {
           setViews(result.views);
           setEvidence(result.evidence);
-        } else if (active)
-          setError("The design changed elsewhere. Return to the board and reload the design.");
-        if (active) setLoading(false);
+        } else
+          setError(
+            "The design changed elsewhere. Reload this project to review the current version.",
+          );
+        setLoading(false);
       },
       (error) => {
         if (active) {
@@ -76,141 +122,225 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
     return () => {
       active = false;
     };
-    // attempt explicitly retries a failed request without changing the semantic document.
-  }, [projectId, revision, attempt]);
-  const choose = useCallback((id: string) => setSelected(id), []);
-  if (!loaded) return null;
-  const currentEvidence =
-    evidence && evidence.revision === revision && evidence.projectId === projectId
-      ? evidence
-      : undefined;
+  }, [project.id, design.revision, attempt, generationState]);
   const projection =
     level === "context"
       ? views?.context
       : level === "containers"
         ? views?.containers
         : (views?.components.find((view) => view.container === container) ?? views?.components[0]);
-  const node = projection?.nodes.find((item) => item.id === selected) ?? projection?.nodes[0];
-  const changeLevel = (next: typeof level) => {
+  const scope = level === "components" ? `components:${projection?.container}` : level;
+  const selected =
+    level === "containers"
+      ? boardSelection.edges[0]
+        ? `connection:${boardSelection.edges[0]}`
+        : boardSelection.nodes[0]
+          ? `container:${boardSelection.nodes[0]}`
+          : undefined
+      : selections[scope];
+  const edge = projection?.edges.find((item) => item.id === selected);
+  const node = edge
+    ? undefined
+    : (projection?.nodes.find((item) => item.id === selected) ??
+      (level === "containers" ? undefined : projection?.nodes[0]));
+  const choose = useCallback(
+    (id: string) => {
+      setSelections((current) => ({ ...current, [scope]: id }));
+      setInspectorOpen(true);
+      setRailTab("inspector");
+    },
+    [scope, setRailTab],
+  );
+  const currentEvidence = evidence?.revision === design.revision ? evidence : undefined;
+  const changeLevel = async (next: Level) => {
+    const navigation = ++navigationRequest.current;
+    if (next === level) return;
+    if (level === "containers") await useDraw.getState().flushLayout();
+    // A newer tab click wins even while an earlier one is saving the board camera.
+    if (navigation !== navigationRequest.current) return;
+    useDraw.getState().setTool({ kind: "select" });
     setLevel(next);
-    setSelected(undefined);
   };
   const openComponents = (id: string) => {
     setContainer(id);
-    changeLevel("components");
+    void changeLevel("components");
   };
-  const editElementOnBoard = (id: string) => {
-    useDraw.getState().focus({ nodes: [id], edges: [] });
-    useDraw.getState().setRailTab("inspector");
-    onClose();
+  const openContainer = (id?: string) => {
+    if (id) useDraw.getState().focus({ nodes: [id], edges: [] });
+    setInspectorOpen(true);
+    setRailTab("inspector");
+    void changeLevel("containers");
   };
-  const unbound = loaded.findings.filter((finding) => finding.code === "ARCHITECTURE_UNBOUND");
+  useEffect(() => {
+    useDraw.setState({
+      architectureSelection:
+        level === "containers"
+          ? undefined
+          : node?.binding
+            ? [
+                node.binding.extension ??
+                  node.binding.resource ??
+                  node.binding.attachment ??
+                  node.binding.element,
+              ]
+            : edge?.connection
+              ? [edge.connection]
+              : [],
+    });
+    return () => {
+      useDraw.setState({ architectureSelection: undefined });
+    };
+  }, [level, node?.binding, edge?.connection]);
+  const selectedConnection = design.connections.find((item) => item.id === edge?.connection);
+  const selectedElement = design.elements.find((item) => item.id === node?.binding?.element);
+  const definition = design.architecture?.components?.find(
+    (item) => item.id === node?.binding?.component,
+  );
+  const actualContainer = projection?.container;
+  const declaredComponents =
+    design.architecture?.components?.filter((item) => item.element === actualContainer) ?? [];
+  const boardElement = design.elements.find((element) => element.id === boardSelection.nodes[0]);
+  const place = (id: string) => {
+    setCatalog(undefined);
+    void changeLevel("containers").then(() =>
+      useDraw.getState().setTool({ kind: "planned", capability: id }),
+    );
+  };
   return (
-    <section className="architecture-workspace" aria-label="Architecture workspace">
-      <header className="architecture-header">
-        <div className="architecture-header-title">
-          <Button
-            variant="default"
-            size="xs"
-            leftSection={<IconArrowLeft size={15} />}
-            onClick={onClose}
-          >
-            Back to board
-          </Button>
-          <h1>
-            <IconSitemap size={20} aria-hidden />
-            Architecture
-          </h1>
+    <section
+      className="architecture-workspace integrated-editor"
+      aria-label="Architecture workspace"
+      data-chat-open={chatOpen}
+      data-inspector-open={inspectorOpen}
+    >
+      <header className="editor-header">
+        <div className="editor-identity">
+          <IconSitemap size={20} aria-hidden />
+          <strong>Architecture</strong>
+          <span>C4 editor</span>
         </div>
-        <div className="architecture-header-actions">
-          <Button
-            variant="default"
-            size="xs"
-            leftSection={<IconServer size={15} aria-hidden />}
-            disabled={!loaded.design.elements.some(hasLocalDeploymentView)}
-            onClick={() =>
-              setDeployment({ element: node?.binding?.element ?? projection?.container })
-            }
-          >
-            Local deployment
-          </Button>
-          <Button
-            variant="default"
-            size="xs"
-            leftSection={<IconEdit size={15} />}
-            onClick={() => setEditor("context")}
-          >
-            Edit context
-          </Button>
-          {loaded.design.recipe?.id === "qr-studio" ? (
-            <Button
-              color="cyan.9"
-              size="xs"
-              leftSection={<IconSettings size={15} />}
-              onClick={() => setEditor("product")}
+        <nav className="architecture-levels" aria-label="Architecture levels">
+          {(["context", "containers", "components"] as const).map((item, index) => (
+            <button
+              type="button"
+              key={item}
+              aria-pressed={level === item}
+              onClick={() => void changeLevel(item)}
             >
-              Product configuration
-            </Button>
-          ) : null}
+              <span>C{index + 1}</span>
+              {item[0]?.toUpperCase()}
+              {item.slice(1)}
+            </button>
+          ))}
+        </nav>
+        <Button
+          variant="default"
+          size="sm"
+          leftSection={<IconBook size={16} />}
+          onClick={() => setCatalog("blocks")}
+        >
+          Library
+        </Button>
+      </header>
+      <div className="editor-actions">
+        <Group gap="xs">
           <Button
+            size="compact-xs"
+            variant="subtle"
+            aria-pressed={chatOpen}
+            onClick={() => setChatOpen(!chatOpen)}
+          >
+            Chat
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            aria-pressed={inspectorOpen}
+            aria-label={inspectorOpen ? "Hide inspector" : "Show inspector"}
+            onClick={() => setInspectorOpen(!inspectorOpen)}
+          >
+            Inspector
+          </Button>
+          <Button
+            size="compact-xs"
             variant="default"
-            size="xs"
-            disabled={!loaded.history.canUndo && localUndo === 0}
+            disabled={!undoable}
             onClick={() => void useDraw.getState().undo()}
           >
             Undo latest change
           </Button>
-        </div>
-      </header>
-      <nav className="architecture-levels" aria-label="Architecture levels">
-        {(["context", "containers", "components"] as const).map((item, index) => (
-          <button
-            key={item}
-            type="button"
-            aria-pressed={level === item}
-            disabled={item === "components" && !views?.components.length}
-            onClick={() => changeLevel(item)}
+          <Button
+            size="compact-xs"
+            variant="default"
+            disabled={!redoable}
+            onClick={() => void useDraw.getState().redo()}
           >
-            <span>C{index + 1}</span>
-            {item[0]?.toUpperCase()}
-            {item.slice(1)}
-            {index < 2 ? <IconChevronRight size={14} aria-hidden /> : null}
-          </button>
-        ))}
-        {level === "components" && views?.components.length ? (
-          <NativeSelect
-            aria-label="Component container"
-            value={projection?.container}
-            data={views.components.map((view) => ({
-              value: view.container ?? "",
-              label: view.name,
-            }))}
-            onChange={(event) => {
-              setContainer(event.currentTarget.value);
-              setSelected(undefined);
-            }}
-          />
-        ) : null}
-        <p>One design. Different scopes.</p>
-      </nav>
-      <div className="architecture-evidence-strip">
-        <strong>Design revision {revision}</strong>
-        <span>
-          {currentEvidence ? evidenceLabel(currentEvidence) : "Loading recorded evidence…"}
-        </span>
-        <Button
-          size="compact-xs"
-          variant="default"
-          disabled={!currentEvidence}
-          onClick={() => {
-            setEvidenceSubject(undefined);
-            setEvidenceOpen(true);
-          }}
-        >
-          Inspect evidence
-        </Button>
+            Redo latest change
+          </Button>
+        </Group>
+        <Group gap="xs">
+          {level === "context" ? (
+            <Button size="compact-xs" variant="default" onClick={() => setEditor("context")}>
+              Edit context
+            </Button>
+          ) : null}
+          {level === "components" ? (
+            <>
+              <NativeSelect
+                aria-label="Component container"
+                size="xs"
+                value={actualContainer ?? ""}
+                data={
+                  views?.components.map((view) => ({
+                    value: view.container ?? "",
+                    label: view.name,
+                  })) ?? []
+                }
+                onChange={(event) => setContainer(event.currentTarget.value)}
+              />
+              <Button
+                size="compact-xs"
+                variant="default"
+                disabled={!actualContainer}
+                onClick={() => setComponentEditor({})}
+              >
+                Add component
+              </Button>
+              <Button
+                size="compact-xs"
+                variant="default"
+                disabled={declaredComponents.length < 2}
+                onClick={() => setRelationshipEditor({})}
+              >
+                Connect components
+              </Button>
+            </>
+          ) : null}
+          {design.recipe?.id === "qr-studio" ? (
+            <Button size="compact-xs" variant="default" onClick={() => setEditor("product")}>
+              Product configuration
+            </Button>
+          ) : null}
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            disabled={!design.elements.some(hasLocalDeploymentView)}
+            onClick={() => setDeployment({ element: node?.binding?.element ?? actualContainer })}
+          >
+            Local deployment
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            disabled={!currentEvidence}
+            onClick={() => setEvidenceOpen(true)}
+          >
+            Inspect evidence
+          </Button>
+          <span className="editor-revision">Revision {design.revision}</span>
+        </Group>
       </div>
-      {notice ? (
+      {level !== "containers" && notice ? (
         <Alert
           color={notice.tone === "error" ? "red" : "blue"}
           role="alert"
@@ -233,210 +363,359 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
           </Button>
         </Alert>
       ) : null}
-      {!views && !error ? (
-        <div className="architecture-loading">
-          <Loader size="sm" /> Loading architecture…
-        </div>
-      ) : projection ? (
-        <div className="architecture-content">
-          <div className="architecture-stage">
-            <div className="architecture-scope-caption">
-              <strong>{projection.name}</strong>
-              <span>
-                {projection.level === "components"
-                  ? "Component scope · one application"
-                  : "Software system boundary"}
-              </span>
+      <div className="editor-body">
+        <aside className="editor-chat" aria-label="Chat panel" hidden={!chatOpen}>
+          <header>
+            <span>
+              <IconMessageCircle size={17} aria-hidden /> Design assistant
+            </span>
+            <button type="button" aria-label="Collapse chat" onClick={() => setChatOpen(false)}>
+              <IconLayoutSidebarLeftCollapse size={17} />
+            </button>
+          </header>
+          <ChatPanel />
+        </aside>
+        <div className="editor-canvas-area">
+          {level === "containers" ? (
+            board
+          ) : !views ? (
+            <div className="architecture-loading">
+              <Loader size="sm" /> Loading architecture…
             </div>
-            <ArchitectureGraph projection={projection} selected={node?.id} onSelect={choose} />
-          </div>
-          <aside className="architecture-inspector" aria-label="Architecture details">
-            <p className="architecture-intro">{projection.description}</p>
-            <NativeSelect
-              label="Inspect an object"
-              value={node?.id ?? ""}
-              data={projection.nodes.map((item) => ({ value: item.id, label: item.name }))}
-              onChange={(event) => choose(event.currentTarget.value)}
-            />
-            {node ? (
-              <section className="architecture-object-details">
-                <span className="architecture-support" data-support={node.support}>
-                  {supportLabel[node.support]}
+          ) : projection ? (
+            <div className="architecture-stage">
+              <div className="architecture-scope-caption">
+                <strong>{projection.name}</strong>
+                <span>
+                  {level === "context"
+                    ? "People, purpose & external systems"
+                    : "Responsibilities within one application"}
                 </span>
-                <h2>{node.name}</h2>
-                <p>{node.description}</p>
-                <p className="architecture-detail-technology">{node.technology}</p>
-                {node.provenance ? (
-                  <p>
-                    Source: <strong>{node.provenance}</strong>
-                  </p>
-                ) : null}
-                {node.kind === "system" ? (
-                  <Button fullWidth color="cyan.9" onClick={() => changeLevel("containers")}>
-                    Open containers
-                  </Button>
-                ) : node.binding &&
-                  views?.components.some((view) => view.container === node.binding?.element) &&
-                  level !== "components" ? (
-                  <Button
-                    fullWidth
-                    color="cyan.9"
-                    onClick={() => {
-                      if (node.binding) openComponents(node.binding.element);
-                    }}
-                  >
-                    Open components
-                  </Button>
-                ) : null}
-                {node.binding ? (
-                  <Button
-                    fullWidth
-                    variant="default"
-                    onClick={() => node.binding && editElementOnBoard(node.binding.element)}
-                  >
-                    Edit on board
-                  </Button>
-                ) : null}
-                {node.acceptance.length ? (
-                  <p>
-                    Acceptance references: <strong>{node.acceptance.join(", ")}</strong>
-                  </p>
-                ) : null}
-                {node.support === "recipe" || node.support === "template" ? (
-                  <p className="architecture-evidence-note">
-                    Supplied by generation. Run Generate with verification for evidence on this
-                    design revision.
-                  </p>
-                ) : node.support === "extension" ? (
-                  <p className="architecture-evidence-note">
-                    The design alone does not prove this project-owned implementation. Review Runs
-                    and application acceptance.
-                  </p>
-                ) : null}
-              </section>
-            ) : (
-              <p>
-                {level === "components"
-                  ? "This service has no declared application components yet. Add capabilities or implementation notes on the board."
-                  : "No objects in this scope. Add an executable element on the board or describe the context."}
-              </p>
-            )}
-            {node?.pool || projection.pool ? (
-              <section aria-label="Local HTTP pool">
-                <h2>Local HTTP pool</h2>
-                <LocalHttpPoolSummary binding={(node?.pool ?? projection.pool)!} />
-                <p className="architecture-evidence-note">
-                  Declared deployment policy · one logical application. Generate checks the
-                  supported source shape; verification supplies applied evidence.
-                </p>
-              </section>
-            ) : null}
-            {node?.execution || projection.execution ? (
-              <section aria-label="Local execution policy">
-                <h2>Local execution · {(node?.execution ?? projection.execution)!.preset}</h2>
-                <p>{node?.execution ? node.name : projection.name}</p>
-                <ExecutionPolicySummary policy={(node?.execution ?? projection.execution)!} />
-                <p className="architecture-evidence-note">
-                  Policy 0.1.0 · declared container settings. Generation and verification provide
-                  applied evidence.
-                </p>
-              </section>
-            ) : null}
-            <section className="architecture-relationships" aria-label="Scope relationships">
-              <h3>Relationships</h3>
-              {projection.edges.length ? (
-                <ul>
-                  {projection.edges.map((edge) => (
-                    <li key={edge.id}>
-                      <strong>
-                        {projection.nodes.find((item) => item.id === edge.from)?.name} →{" "}
-                        {projection.nodes.find((item) => item.id === edge.to)?.name}
-                      </strong>
-                      <span>{edge.description}</span>
-                      <small>
-                        {edge.connection ? `Connection ${edge.connection}` : "Context intent"}
-                      </small>
-                    </li>
-                  ))}
-                </ul>
+              </div>
+              {projection.nodes.length ? (
+                <ArchitectureGraph
+                  projection={projection}
+                  selected={node?.id}
+                  onSelect={choose}
+                  cameraCache={cameraCache.current}
+                />
               ) : (
-                <p>No declared relationships in this scope.</p>
+                <div className="editor-empty">
+                  <h2>Give this application its responsibilities</h2>
+                  <p>Add a component for each cohesive part of its behavior.</p>
+                  <Button color="cyan.9" onClick={() => setComponentEditor({})}>
+                    Add component
+                  </Button>
+                </div>
               )}
-            </section>
-            {projection.resources.length ? (
-              <details className="architecture-resources">
-                <summary>Data contracts ({projection.resources.length})</summary>
-                {projection.resources.map((resource) => (
-                  <p key={`${resource.attachment}:${resource.id}`}>
-                    <strong>{resource.name}</strong> · {resource.fields} fields
-                    <br />
-                    {resource.operations.length
-                      ? resource.operations.join(", ")
-                      : "Internal storage; no standard CRUD routes"}
-                  </p>
-                ))}
-              </details>
-            ) : null}
-            {unbound.length ? (
-              <p className="architecture-unbound">
-                {unbound.length} context interaction{unbound.length === 1 ? " has" : "s have"} no
-                container binding. Use Edit context to bind it or keep it as visible intent.
-              </p>
-            ) : null}
-            <details className="architecture-key" open>
-              <summary>Diagram key</summary>
+            </div>
+          ) : (
+            <div className="editor-empty">
+              <h2>Start with an application</h2>
+              <p>Add a web app, API or worker in C2, then design its components here.</p>
+              <Button color="cyan.9" onClick={() => setCatalog("blocks")}>
+                Browse building blocks
+              </Button>
+            </div>
+          )}
+          {level === "containers" &&
+          design.elements.length === 0 &&
+          design.annotations.length === 0 &&
+          (tool === "select" || tool === "hand") ? (
+            <div className="editor-empty">
+              <span className="editor-empty-eyebrow">From idea to architecture</span>
+              <h2>What are you building?</h2>
               <p>
-                Boxes show architectural roles. Solid arrows reference executable connections;
-                dashed arrows show context intent. Template/recipe labels describe supplied
-                behavior, not passed production certification. People and external systems are
-                outside the generated application.
+                Start with an example, or choose the applications and data stores your system needs.
               </p>
-              <p>View navigation and zoom do not change the design or the board layout.</p>
-            </details>
-          </aside>
+              <Group justify="center">
+                <Button color="cyan.9" onClick={() => setCatalog("examples")}>
+                  Explore SaaS examples
+                </Button>
+                <Button variant="default" onClick={() => setCatalog("blocks")}>
+                  Browse building blocks
+                </Button>
+              </Group>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      {evidenceOpen && currentEvidence && views ? (
-        <ArchitectureEvidenceDialog
-          evidence={currentEvidence}
-          views={views}
-          selected={evidenceSubject ?? node}
-          loading={loading}
-          error={error}
-          onRefresh={() => setAttempt((value) => value + 1)}
-          onClose={() => {
-            setEvidenceOpen(false);
-            setEvidenceSubject(undefined);
+        <aside
+          className="editor-inspector"
+          aria-label="Architecture details"
+          hidden={!inspectorOpen}
+        >
+          <Tabs
+            value={railTab}
+            onChange={(value) => {
+              if (value === "inspector" || value === "findings") setRailTab(value);
+            }}
+            keepMounted={false}
+          >
+            <Tabs.List>
+              <Tabs.Tab value="inspector">Inspector</Tabs.Tab>
+              <Tabs.Tab value="findings">
+                Findings <small>{loaded.findings.length}</small>
+              </Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="findings">
+              <FindingsPanel
+                onNavigate={() => {
+                  setInspectorOpen(true);
+                  void changeLevel("containers");
+                }}
+              />
+            </Tabs.Panel>
+            <Tabs.Panel value="inspector">
+              {notice?.actions?.length ? (
+                <section className="inspector-section" aria-label="Connection choices">
+                  <h3>Connection choices</h3>
+                  {notice.actions.map((action) => (
+                    <Button
+                      key={action.label}
+                      variant="default"
+                      size="xs"
+                      onClick={() => {
+                        useDraw.getState().setNotice(undefined);
+                        void useDraw.getState().edit(action.ops);
+                      }}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
+                </section>
+              ) : null}
+              {level === "containers" ? (
+                <>
+                  <div className="scope-object-picker">
+                    <NativeSelect
+                      label="Inspect an object"
+                      value={selected ?? ""}
+                      data={[
+                        { value: "", label: "Select a box or arrow" },
+                        ...design.elements.map((item) => ({
+                          value: `container:${item.id}`,
+                          label: item.name,
+                        })),
+                        ...design.connections.map((item) => ({
+                          value: `connection:${item.id}`,
+                          label: `↗ ${item.planned?.label ?? item.kind}`,
+                        })),
+                      ]}
+                      onChange={(event) => {
+                        const value = event.currentTarget.value;
+                        useDraw
+                          .getState()
+                          .focus(
+                            value.startsWith("container:")
+                              ? { nodes: [value.slice(10)], edges: [] }
+                              : { nodes: [], edges: value ? [value.slice(11)] : [] },
+                          );
+                      }}
+                    />
+                  </div>
+                  <Inspector onComponents={openComponents} />
+                  {boardElement &&
+                  !boardElement.planned &&
+                  views?.components.some((view) => view.container === boardElement.id) ? (
+                    <Button
+                      m="md"
+                      variant="default"
+                      onClick={() => openComponents(boardElement.id)}
+                    >
+                      Open components
+                    </Button>
+                  ) : null}
+                </>
+              ) : projection ? (
+                <>
+                  <div className="scope-object-picker">
+                    <NativeSelect
+                      label="Inspect an object"
+                      value={edge?.id ?? node?.id ?? ""}
+                      data={[
+                        ...projection.nodes.map((item) => ({ value: item.id, label: item.name })),
+                        ...projection.edges.map((item) => ({
+                          value: item.id,
+                          label: `↗ ${item.description}`,
+                        })),
+                      ]}
+                      onChange={(event) => choose(event.currentTarget.value)}
+                    />
+                  </div>
+                  {level === "context" ? (
+                    <ContextInspector
+                      key={node?.id ?? edge?.id}
+                      selected={node?.id ?? ""}
+                      relationship={edge?.context}
+                      onContainers={() => void changeLevel("containers")}
+                    />
+                  ) : edge ? (
+                    <>
+                      {selectedConnection?.planned ? (
+                        <PlannedConnectionInspector
+                          key={selectedConnection.id}
+                          connection={selectedConnection}
+                        />
+                      ) : selectedConnection ? (
+                        <ConnectionInspector connection={selectedConnection} />
+                      ) : (
+                        <section className="planned-inspector">
+                          <span className="capability-status">Declared relationship</span>
+                          <h2>{edge.description}</h2>
+                          <p>Describes intended collaboration within this application.</p>
+                          {edge.componentRelationship ? (
+                            <Button
+                              variant="default"
+                              onClick={() =>
+                                setRelationshipEditor({ id: edge.componentRelationship })
+                              }
+                            >
+                              Edit relationship
+                            </Button>
+                          ) : null}
+                        </section>
+                      )}
+                    </>
+                  ) : node?.binding?.element !== actualContainer && selectedElement ? (
+                    selectedElement.planned ? (
+                      <PlannedElementInspector
+                        key={selectedElement.id}
+                        element={selectedElement}
+                        onComponents={() => openComponents(selectedElement.id)}
+                      />
+                    ) : (
+                      <ElementInspector element={selectedElement} />
+                    )
+                  ) : node ? (
+                    <ComponentDetails
+                      node={node}
+                      onConfigure={() => setComponentEditor({ initial: definition })}
+                      onContainer={() => openContainer(node.binding?.element)}
+                    />
+                  ) : null}
+                  <details className="scope-relationships">
+                    <summary>Relationships in this scope ({projection.edges.length})</summary>
+                    {projection.edges.map((relation) => (
+                      <button type="button" key={relation.id} onClick={() => choose(relation.id)}>
+                        <strong>
+                          {projection.nodes.find((item) => item.id === relation.from)?.name} →{" "}
+                          {projection.nodes.find((item) => item.id === relation.to)?.name}
+                        </strong>
+                        <span>{relation.description}</span>
+                      </button>
+                    ))}
+                  </details>
+                </>
+              ) : null}
+              {node?.pool || (level === "components" && projection?.pool) ? (
+                <section className="inspector-section" aria-label="Local HTTP pool">
+                  <h3>Local HTTP pool</h3>
+                  <LocalHttpPoolSummary binding={(node?.pool ?? projection?.pool)!} />
+                </section>
+              ) : null}
+              {node?.execution || (level === "components" && projection?.execution) ? (
+                <section className="inspector-section" aria-label="Local execution policy">
+                  <h3>Local execution · {(node?.execution ?? projection?.execution)!.preset}</h3>
+                  <ExecutionPolicySummary policy={(node?.execution ?? projection?.execution)!} />
+                </section>
+              ) : null}
+            </Tabs.Panel>
+          </Tabs>
+        </aside>
+      </div>
+      <footer className="editor-footer">
+        <span>
+          {level === "containers"
+            ? "Applications & data stores"
+            : level === "context"
+              ? "System context"
+              : "Application components"}{" "}
+          · {design.elements.filter((element) => element.planned).length} planned blocks
+        </span>
+        <span>{currentEvidence ? evidenceLabel(currentEvidence) : "Refreshing evidence…"}</span>
+        <GenerateButton />
+      </footer>
+      <GenerateDrawer />
+      {catalog ? (
+        <CapabilityCatalog
+          initialTab={catalog}
+          onClose={() => setCatalog(undefined)}
+          onStarter={() => {
+            setCatalog(undefined);
+            setStarterOpen(true);
           }}
-          onBoard={onClose}
+          onPlace={place}
+          onTemplate={(tool) => {
+            setCatalog(undefined);
+            void changeLevel("containers").then(() => useDraw.getState().setTool(tool));
+          }}
+          onComponent={
+            level === "components" && actualContainer
+              ? (capability) => {
+                  setCatalog(undefined);
+                  setComponentEditor({ capability });
+                }
+              : undefined
+          }
         />
       ) : null}
-      {deployment ? (
-        <LocalDeploymentDialog
-          design={loaded.design}
-          findings={loaded.findings}
-          initialElement={deployment.element}
-          evidenceAvailable={Boolean(currentEvidence && views)}
-          onClose={() => setDeployment(undefined)}
-          onConfigure={editElementOnBoard}
-          onEvidence={(id) => {
-            setDeployment(undefined);
-            setEvidenceSubject(
-              views?.containers.nodes.find((item) => item.binding?.element === id),
-            );
-            setEvidenceOpen(true);
-          }}
+      {componentEditor && actualContainer ? (
+        <ComponentEditor
+          design={design}
+          element={actualContainer}
+          {...componentEditor}
+          onClose={() => setComponentEditor(undefined)}
+          onSaved={(id) => choose(`responsibility:${id}`)}
         />
       ) : null}
+      {relationshipEditor && actualContainer ? (
+        <ComponentRelationshipEditor
+          design={design}
+          element={actualContainer}
+          id={relationshipEditor.id}
+          onClose={() => setRelationshipEditor(undefined)}
+          onSaved={(id) => choose(`declared:${id}`)}
+        />
+      ) : null}
+      {starterOpen ? <ProjectChooser onClose={() => setStarterOpen(false)} /> : null}
       {editor === "context" ? (
         <ContextEditor
-          design={loaded.design}
-          projectName={loaded.project.name}
+          design={design}
+          projectName={project.name}
           onClose={() => setEditor(undefined)}
         />
       ) : null}
       {editor === "product" ? (
-        <ProductConfiguration design={loaded.design} onClose={() => setEditor(undefined)} />
+        <ProductConfiguration design={design} onClose={() => setEditor(undefined)} />
+      ) : null}
+      {currentEvidence && views && evidenceOpen ? (
+        <ArchitectureEvidenceDialog
+          evidence={currentEvidence}
+          views={views}
+          selected={node}
+          loading={loading}
+          error={error}
+          onRefresh={() => setAttempt((value) => value + 1)}
+          onClose={() => setEvidenceOpen(false)}
+          onBoard={() => openContainer(node?.binding?.element)}
+        />
+      ) : null}
+      {deployment ? (
+        <LocalDeploymentDialog
+          design={design}
+          findings={loaded.findings}
+          initialElement={deployment.element}
+          evidenceAvailable={Boolean(currentEvidence)}
+          onClose={() => setDeployment(undefined)}
+          onConfigure={(id) => {
+            setDeployment(undefined);
+            openContainer(id);
+          }}
+          onEvidence={() => {
+            setDeployment(undefined);
+            setEvidenceOpen(true);
+          }}
+        />
       ) : null}
     </section>
   );

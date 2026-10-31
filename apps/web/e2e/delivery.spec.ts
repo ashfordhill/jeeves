@@ -24,7 +24,7 @@ test("durable event contracts edit by mouse with validation, cancel, undo and re
   const read = async () => (await (await request.get(`/api/projects/${id}/design`)).json()).design;
   const before = await read();
   await page.reload();
-  await page.getByRole("button", { name: "Architecture", exact: true }).click();
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
   const workspace = page.getByRole("region", { name: "Architecture workspace", exact: true });
   await workspace
     .getByRole("navigation", { name: "Architecture levels" })
@@ -46,7 +46,8 @@ test("durable event contracts edit by mouse with validation, cancel, undo and re
     (await new AxeBuilder({ page }).include(".architecture-workspace").analyze()).violations,
   ).toEqual([]);
   await page.screenshot({ path: "test-results/p22-components.png", animations: "disabled" });
-  await details.getByRole("button", { name: "Edit on board" }).click();
+  await details.getByText("Technical details", { exact: true }).click();
+  await details.getByRole("button", { name: "Open in C2" }).click();
   await page.getByRole("button", { name: "Configure durable events", exact: true }).click();
   let dialog = page.getByRole("dialog", { name: "Configure durable events" });
   await dialog.getByLabel("Retry preset").selectOption("standard");

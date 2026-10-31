@@ -4,7 +4,7 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
-**Next implementation:** [P36 — unified C4 editor and useful application architecture](docs/build-plan-p36-architecture.md) is specified, not implemented. The [latest editor feedback](docs/reviews/jeeves-editor-feedback-2026-10-31.md) requires C1/C2/C3 editing, chat and contextual configuration within one workspace. P12–P35 are complete; [P35 evidence](docs/evidence/p35/README.md) records the versioned session correction. Implement P36 only, verify, append the handoff and commit on the current branch. Broader architecture capabilities, chat improvements, developer testing, page flow and live adoption remain queued; older next-package statements do not authorize them.
+**Current editor package:** [P36](docs/build-plan-p36-architecture.md) adds a shared C1/C2/C3 workspace, editable responsibilities, a planned SaaS capability library and the modular [catalog](CATALOG.md). See [P36 evidence](docs/evidence/p36/README.md) for verification and boundaries. P12–P35 remain complete; [P35 evidence](docs/evidence/p35/README.md) records the session correction. Per the latest user instructions, broader template runtimes, generation and load-test implementation are deferred. Assess the visuals and catalog before choosing the next bounded package; chat improvements, developer testing, page flow and live adoption remain separate.
 
 Related documents:
 

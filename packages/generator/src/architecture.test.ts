@@ -1,4 +1,9 @@
-import { architectureViews, type DesignDocument } from "@jeeves/spec";
+import {
+  applyOperations,
+  architectureViews,
+  type DesignDocument,
+  validateArchitecture,
+} from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { templateSet } from "./modules.ts";
 import { planProject } from "./plan.ts";
@@ -6,6 +11,84 @@ import { createRecipeDesign, recipeForDesign } from "./recipes.ts";
 import { fixtureDesign } from "./test-support.ts";
 
 const templates = templateSet();
+it("groups every QR operation once, preserves partial and mixed groups, and keeps uses explicit", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const project = (input: DesignDocument) =>
+    architectureViews(input, templates.lookup, "QR").components.find(
+      (view) => view.container === "qrwty",
+    )!;
+  const scope = project(design);
+  const grouped = scope.nodes.filter((node) => node.binding?.component);
+  expect(grouped).toHaveLength(5);
+  expect(
+    grouped.flatMap((node) => node.members ?? []).filter((node) => node.binding?.extension),
+  ).toHaveLength(8);
+  expect(
+    new Set(grouped.flatMap((node) => node.members?.map((member) => member.id) ?? [])).size,
+  ).toBe(10);
+  expect(
+    scope.edges
+      .filter((edge) => edge.declared)
+      .map((edge) => edge.from)
+      .sort(),
+  ).toEqual(["responsibility:analytics", "responsibility:artwork", "responsibility:redirect"]);
+  expect(scope.edges.filter((edge) => edge.id.startsWith("declared:"))).toHaveLength(0);
+  const partial = structuredClone(design);
+  partial.architecture!.components = partial.architecture!.components!.filter(
+    (item) => item.id !== "artwork",
+  );
+  expect(
+    project(partial).nodes.filter((node) => node.unassigned && node.binding?.extension),
+  ).toHaveLength(5);
+  const mixed = structuredClone(design);
+  const definitions = mixed.architecture!.components!;
+  definitions
+    .find((item) => item.id === "qr-management")!
+    .members.push(...definitions.find((item) => item.id === "redirect")!.members);
+  mixed.architecture!.components = definitions.filter((item) => item.id !== "redirect");
+  expect(
+    project(mixed).nodes.find((item) => item.binding?.component === "qr-management")?.support,
+  ).toBe("mixed");
+  expect(validateArchitecture(mixed)).toEqual([]);
+});
+
+it("rejects duplicate and unknown bindings atomically while retaining lost intent through a display rename", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const before = structuredClone(design);
+  const architecture = structuredClone(design.architecture!);
+  architecture.components![1]!.members.push(...architecture.components![0]!.members);
+  expect(
+    applyOperations(design, [{ op: "setArchitecture", architecture }], templates.lookup).ok,
+  ).toBe(false);
+  architecture.components![1]!.members = [
+    { attachment: "missing", kind: "resource", ref: "missing" },
+  ];
+  expect(
+    applyOperations(design, [{ op: "setArchitecture", architecture }], templates.lookup).ok,
+  ).toBe(false);
+  expect(design).toEqual(before);
+  const removed = applyOperations(
+    design,
+    [{ op: "removeAttachment", id: "qrwty-api" }],
+    templates.lookup,
+  );
+  expect(removed.ok).toBe(true);
+  if (!removed.ok) return;
+  expect(removed.design.architecture?.components).toEqual(design.architecture?.components);
+  const renamed = structuredClone(removed.design.architecture!);
+  renamed.components![0]!.name = "Renamed missing capability";
+  expect(
+    applyOperations(
+      removed.design,
+      [{ op: "setArchitecture", architecture: renamed }],
+      templates.lookup,
+    ).ok,
+  ).toBe(true);
+  const missing = architectureViews(removed.design, templates.lookup, "QR")
+    .components.flatMap((view) => view.nodes)
+    .filter((node) => node.missing?.length);
+  expect(missing).toHaveLength(5);
+});
 it("projects the same QR recipe through context, containers and meaningful component bindings", () => {
   const { design } = createRecipeDesign(
     { id: "qr-studio", version: "0.1.0" },

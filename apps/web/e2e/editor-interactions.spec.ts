@@ -1,7 +1,7 @@
 import { expect, test } from "./browser-test.ts";
 import { designOf, layoutOf, openNewProject } from "./helpers.ts";
 
-test.use({ viewport: { width: 1600, height: 1000 } });
+test.use({ viewport: { width: 1600, height: 1000 }, actionTimeout: 10_000 });
 
 test("creation over an existing subtype cannot add, edit, or move that card", async ({
   page,
@@ -10,7 +10,7 @@ test("creation over an existing subtype cannot add, edit, or move that card", as
   const project = await openNewProject(page, request, "P13 placement");
   const pane = page.locator(".react-flow__pane");
   await page.getByRole("button", { name: "Service", exact: true }).click();
-  await pane.click({ position: { x: 300, y: 330 } });
+  await pane.click({ position: { x: 180, y: 330 } });
   const service = page.locator('[data-element-id="service"]');
   const subtype = service.getByRole("combobox");
   await subtype.selectOption("web-app@0.1.0");
@@ -48,7 +48,9 @@ test("creation over an existing subtype cannot add, edit, or move that card", as
   await expect(review).not.toBeVisible();
 
   await page.getByRole("button", { name: "Elements", exact: true }).click();
-  await page.getByRole("button", { name: /^PostgreSQL/ }).dragTo(service);
+  await page
+    .getByRole("button", { name: /^PostgreSQL/ })
+    .dragTo(service, { targetPosition: { x: 15, y: 15 } });
   await expect(
     page.getByText("Drop the new item onto empty board space.", { exact: true }),
   ).toBeVisible();
