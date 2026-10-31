@@ -24,6 +24,7 @@ export const profiles = {
   browser: "Selected Playwright specs; starts the existing Jeeves test database (or all)",
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qrwty-product": "Isolated composed consumer verification; requires an absolute checkout path",
+  "qrwty-upgrade": "Disposable old-to-new migration proof; requires two absolute checkout paths",
 } as const;
 
 export function planWork(root: string, name: string, selections: string[]): WorkPlan {
@@ -84,16 +85,15 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
-    case "qrwty-product": {
-      const path = selections[0];
+    case "qrwty-product":
+    case "qrwty-upgrade": {
+      const count = name === "qrwty-upgrade" ? 2 : 1;
       if (
-        selections.length !== 1 ||
-        !path ||
-        !isAbsolute(path) ||
-        !existsSync(join(path, "jeeves/lock.json"))
+        selections.length !== count ||
+        selections.some((path) => !isAbsolute(path) || !existsSync(join(path, "jeeves/lock.json")))
       )
-        throw new Error("qrwty-product requires the absolute path of a generated qrwty checkout.");
-      repositories.push(path);
+        throw new Error(`${name} requires ${count} absolute generated qrwty checkout path(s).`);
+      repositories.push(...selections);
       // Run Node directly so a signal reaches the verifier, which owns fixture cleanup.
       const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
       commands.push({
@@ -101,8 +101,8 @@ export function planWork(root: string, name: string, selections: string[]): Work
         args: [
           "--import",
           loader,
-          join(root, "packages/generator/scripts/verify-qrwty-product.ts"),
-          path,
+          join(root, `packages/generator/scripts/verify-${name}.ts`),
+          ...selections,
         ],
         cwd: root,
       });

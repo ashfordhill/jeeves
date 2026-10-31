@@ -29,7 +29,14 @@ export function ProductShell({
   const mainId = useId();
   return (
     <div className="jui-shell">
-      <a className="jui-skip" href={`#${mainId}`}>
+      <a
+        className="jui-skip"
+        href={`#${mainId}`}
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById(mainId)?.focus();
+        }}
+      >
         Skip to content
       </a>
       <aside className="jui-sidebar" aria-label={`${name} workspace`}>

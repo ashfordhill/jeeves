@@ -212,6 +212,19 @@ describe("generate", () => {
           { id: "restart", acceptanceIds: ["QR-08"] },
         ],
       },
+      {
+        id: "qrwty-studio",
+        suites: [
+          { id: "activity", acceptanceIds: ["QR-05", "QR-06"] },
+          { id: "artwork", acceptanceIds: ["QR-10", "QR-11", "QR-12", "QR-13"] },
+          { id: "browser", acceptanceIds: ["QR-09"] },
+          { id: "core", acceptanceIds: ["QR-01"] },
+          { id: "qr-image", acceptanceIds: ["QR-02", "QR-06"] },
+          { id: "redirect", acceptanceIds: ["QR-03", "QR-04", "QR-07"] },
+          { id: "restart", acceptanceIds: ["QR-08"] },
+          { id: "studio-browser", acceptanceIds: ["QR-14"] },
+        ],
+      },
     ]);
 
     const id = await h.project("qrwty pack", qrwtyOps);

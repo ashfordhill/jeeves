@@ -294,13 +294,16 @@ export async function verifyBehavior(options: {
     if (up.exitCode !== 0)
       throw new Error(`Disposable fixture startup failed: ${up.output.slice(-4000)}`);
     const serviceUrls: Record<string, string> = {};
-    for (const element of lock.elements) {
-      const env = fixture.services[element.id]?.environment ?? {};
-      const port = Number(env.PORT);
-      if (!Number.isFinite(port) || port <= 0) continue;
-      const endpoint = await compose.service(element.id).endpoint(port);
-      serviceUrls[element.id] = `http://${endpoint.host}:${endpoint.port}`;
-    }
+    const refreshEndpoints = async () => {
+      for (const element of lock.elements) {
+        const env = fixture.services[element.id]?.environment ?? {};
+        const port = Number(env.PORT);
+        if (!Number.isFinite(port) || port <= 0) continue;
+        const endpoint = await compose.service(element.id).endpoint(port);
+        serviceUrls[element.id] = `http://${endpoint.host}:${endpoint.port}`;
+      }
+    };
+    await refreshEndpoints();
     const web = webApps[0] ? serviceUrls[webApps[0].id] : undefined;
     if (webApps.length && !web) throw new Error("The fixture web app didn't publish a port");
     const origin = web ?? webUrl ?? "http://127.0.0.1:1";
@@ -319,6 +322,9 @@ export async function verifyBehavior(options: {
       try {
         if (!lock.files[path])
           throw new Error(`Independent test is not protected by the generation lock: ${path}`);
+        // A preceding suite may restart a service and republish its ephemeral host port.
+        // Resolve every service again so the next suite receives current endpoints.
+        await refreshEndpoints();
         const url = serviceUrls[service];
         if (!url) throw new Error(`No fixture URL for service ${service}`);
         const port = Number(fixture.services[service]?.environment?.PORT ?? 0);

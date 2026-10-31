@@ -213,3 +213,178 @@
     scroll-behavior: auto;
   }
 }
+
+.jui-configuration {
+  min-width: 0;
+}
+.jui-config-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding-block: 12px;
+  background: var(--jui-background);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.jui-config-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.jui-configuration button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--jui-ink);
+  border: 1px solid var(--jui-line);
+  border-radius: 9px;
+  background: var(--jui-raised);
+  padding: 10px 14px;
+  min-height: 42px;
+}
+.jui-configuration button:hover:not(:disabled) {
+  border-color: var(--jui-accent);
+}
+.jui-configuration button:focus-visible {
+  outline: 3px solid var(--jui-accent);
+  outline-offset: 3px;
+}
+.jui-configuration button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.jui-config-actions .jui-config-save {
+  background: var(--jui-accent);
+  color: #0b2037;
+  font-weight: 700;
+  border-color: transparent;
+}
+.jui-config-state {
+  font-size: 13px;
+  color: var(--jui-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.jui-config-state::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c3a470;
+}
+.jui-config-saved::before {
+  background: #8ccdb3;
+}
+.jui-config-grid {
+  display: grid;
+  grid-template-columns: 168px minmax(240px, 1fr) 264px;
+  border: 1px solid var(--jui-line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--jui-surface);
+}
+.jui-config-presets {
+  padding: 24px 16px;
+  border-right: 1px solid var(--jui-line);
+}
+.jui-config-presets h2 {
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--jui-muted);
+  margin: 0 0 18px;
+}
+.jui-config-preset-list {
+  display: grid;
+  gap: 12px;
+}
+.jui-config-preset-list button {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  font-size: 12px;
+  text-align: left;
+}
+.jui-config-preset-list button[aria-pressed="true"] {
+  border-color: var(--jui-accent);
+  background: var(--jui-raised);
+}
+.jui-config-sample {
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  overflow: hidden;
+  min-height: 64px;
+}
+.jui-config-preview {
+  min-width: 0;
+  padding: 32px;
+}
+.jui-config-controls {
+  min-width: 0;
+  padding: 24px;
+  border-left: 1px solid var(--jui-line);
+}
+.jui-config-dialog {
+  width: min(440px, calc(100vw - 40px));
+  padding: 28px;
+  border: 1px solid var(--jui-line);
+  border-radius: 14px;
+  background: var(--jui-surface);
+  color: var(--jui-ink);
+  box-shadow: 0 20px 100px #0008;
+}
+.jui-config-dialog::backdrop {
+  background: #020917aa;
+}
+.jui-config-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.jui-config-dialog p {
+  color: var(--jui-muted);
+  margin: 12px 0 24px;
+  line-height: 1.6;
+}
+@media (max-width: 1180px) {
+  .jui-config-grid {
+    grid-template-columns: minmax(0, 1fr) 264px;
+  }
+  .jui-config-presets {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 1px solid var(--jui-line);
+    padding: 20px;
+  }
+  .jui-config-preset-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .jui-config-sample {
+    min-height: 48px;
+  }
+  .jui-config-preview {
+    padding: 24px;
+  }
+}
+@media (max-width: 620px) {
+  .jui-config-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .jui-config-preset-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .jui-config-controls {
+    border-left: 0;
+    border-top: 1px solid var(--jui-line);
+  }
+  .jui-config-toolbar {
+    align-items: flex-start;
+  }
+}

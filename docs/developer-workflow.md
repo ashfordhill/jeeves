@@ -9,6 +9,7 @@ pnpm work run unit packages/product-ui/src/ProductShell.test.tsx
 pnpm work run templates packages/qr-artwork/conformance/svg.conformance.ts
 pnpm work run browser apps/web/e2e/editor-interactions.spec.ts
 pnpm work run qrwty-product /home/ash/github/qrwty
+pnpm work run qrwty-upgrade /absolute/old-checkout /absolute/upgraded-checkout
 pnpm work run check
 pnpm work status
 ```

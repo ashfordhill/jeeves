@@ -53,7 +53,7 @@ export class Client {
   async request(
     method: string,
     path: string,
-    options: { body?: unknown; csrf?: boolean; redirect?: RequestRedirect } = {},
+    options: { body?: unknown; csrf?: boolean; redirect?: RequestInit["redirect"] } = {},
   ): Promise<Response> {
     const headers: Record<string, string> = {};
     if (options.body !== undefined) headers["content-type"] = "application/json";
@@ -77,7 +77,7 @@ export class Client {
     return { status: response.status, body, headers: response.headers };
   }
 
-  get(path: string, options?: { redirect?: RequestRedirect }) {
+  get(path: string, options?: { redirect?: RequestInit["redirect"] }) {
     return this.request("GET", path, options);
   }
 
@@ -120,7 +120,7 @@ export class Client {
     const cookies = response.headers.getSetCookie?.() ?? [];
     const session = cookies.find((cookie) => cookie.trim().startsWith("jeeves_session="));
     if (session) {
-      const value = session.trim().split(";")[0];
+      const value = session.trim().split(";")[0] ?? "";
       this.cookie = value === "jeeves_session=" ? "" : value;
     }
     if (body && typeof body === "object" && "csrfToken" in body)
