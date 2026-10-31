@@ -13,7 +13,7 @@ import { and, eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
-import { designRevisions, projects } from "../db/schema.ts";
+import { designRevisions, generations, projects, runs, tasks } from "../db/schema.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 
 const fixture = (name: string): unknown =>
@@ -96,6 +96,108 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
+  it("projects the latest evidence only, keeps projects isolated and excludes logs/provider payloads", async () => {
+    const id = await client.createProject("Evidence one"),
+      other = await client.createProject("Evidence two");
+    await client.call("PATCH", `/projects/${id}`, { outputDir: "/tmp/evidence-one" });
+    const initial = (await client.call("GET", `/projects/${id}/architecture`)).body.evidence;
+    expect(initial).toMatchObject({
+      projectId: id,
+      revision: 0,
+      generation: null,
+      run: null,
+      outputDir: "/tmp/evidence-one",
+    });
+    const input = {
+      projectId: id,
+      revision: 0,
+      outputDir: "/tmp/evidence-one",
+      baseline: true,
+      status: "succeeded" as const,
+      steps: [],
+      checks: [],
+      log: [{ step: "generate" as const, line: "PRIVATE-FIXTURE-LOG" }],
+    };
+    await db.insert(generations).values(input);
+    const [latest] = await db
+      .insert(generations)
+      .values({
+        ...input,
+        status: "failed",
+        checks: [
+          {
+            subject: "api",
+            template: "rest",
+            id: "failed",
+            title: "Failed contract",
+            status: "failed",
+            durationMs: 2,
+            error: "Reviewed fixture failure",
+          },
+        ],
+      })
+      .returning();
+    await db.insert(generations).values({ ...input, projectId: other, status: "running" });
+    const [run] = await db
+      .insert(runs)
+      .values({
+        projectId: id,
+        status: "planned",
+        outputDir: "/tmp/evidence-one",
+        designRevision: 0,
+      })
+      .returning();
+    await db.insert(tasks).values({
+      runId: run!.id,
+      position: 0,
+      key: "domain",
+      element: "api",
+      title: "Domain work",
+      description: "Private implementation description",
+      acceptance: [],
+      ownedPaths: [],
+      dependsOn: [],
+      source: "seed",
+      status: "pending",
+    });
+    const before = await client.design(id);
+    const projected = (await client.call("GET", `/projects/${id}/architecture`)).body.evidence;
+    expect(projected.generation).toMatchObject({
+      id: latest!.id,
+      status: "failed",
+      omittedChecks: 0,
+      checks: [{ status: "failed", reason: "Reviewed fixture failure" }],
+    });
+    expect(projected.run).toMatchObject({
+      id: run!.id,
+      revision: 0,
+      status: "planned",
+      tasks: { pending: 1 },
+    });
+    expect(JSON.stringify(projected)).not.toContain("PRIVATE-FIXTURE-LOG");
+    expect(JSON.stringify(projected)).not.toContain("Private implementation description");
+    expect(await client.design(id)).toEqual(before);
+    expect(
+      (await client.call("GET", `/projects/${other}/architecture`)).body.evidence.generation.status,
+    ).toBe("running");
+    await db.insert(generations).values({
+      ...input,
+      baseline: false,
+      checks: Array.from({ length: 205 }, (_, index) => ({
+        subject: "api",
+        template: "rest",
+        id: String(index),
+        title: "Bounded check",
+        status: "passed" as const,
+        durationMs: 0,
+      })),
+    });
+    const bounded = (await client.call("GET", `/projects/${id}/architecture`)).body.evidence
+      .generation;
+    expect(bounded).toMatchObject({ baseline: false, omittedChecks: 5 });
+    expect(bounded.checks).toHaveLength(200);
+  });
+
   it("creates an independent editable starter with C4 context and refuses unknown versions atomically", async () => {
     const original = await client.createProject("Keep the original");
     const before = (await client.call("GET", "/projects")).body.projects.length;

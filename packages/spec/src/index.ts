@@ -6,6 +6,7 @@ export * from "./architecture-view.ts";
 export * from "./config.ts";
 export * from "./delivery.ts";
 export * from "./design.ts";
+export * from "./evidence.ts";
 export * from "./findings.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";

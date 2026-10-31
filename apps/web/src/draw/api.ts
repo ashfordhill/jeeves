@@ -4,6 +4,7 @@
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type {
+  ArchitectureEvidence,
   ArchitectureViews,
   DesignDocument,
   Finding,
@@ -428,7 +429,9 @@ export const api = {
       body: JSON.stringify({ name, starter, config }),
     }).then((result) => result.project),
   architecture: (id: string) =>
-    request<{ revision: number; views: ArchitectureViews }>(`/projects/${id}/architecture`),
+    request<{ revision: number; views: ArchitectureViews; evidence: ArchitectureEvidence }>(
+      `/projects/${id}/architecture`,
+    ),
   recipes: () => request<{ recipes: ProductRecipe[] }>("/recipes").then((r) => r.recipes),
   createFromRecipe: (
     name: string,

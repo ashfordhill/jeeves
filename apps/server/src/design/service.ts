@@ -1,6 +1,7 @@
 import { recipeFindings, recipeForDesign } from "@jeeves/generator";
 import type { Registry } from "@jeeves/registry";
 import {
+  type ArchitectureEvidence,
   type ArchitectureProvision,
   applyOperations,
   architectureViews,
@@ -13,14 +14,17 @@ import {
   upgradeDesign,
   validateDesign,
 } from "@jeeves/spec";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import {
   designRevisions,
+  generations,
   layouts,
   type OperationSource,
   operations,
   projects,
+  runs,
+  tasks,
 } from "../db/schema.ts";
 
 export type Project = typeof projects.$inferSelect;
@@ -118,6 +122,100 @@ export class DesignService {
     return {
       revision: state.design.revision,
       views: architectureViews(state.design, this.registry, project.name, provision),
+      evidence: await this.architectureEvidence(project, state.design.revision),
+    };
+  }
+
+  private async architectureEvidence(
+    project: Project,
+    revision: number,
+  ): Promise<ArchitectureEvidence> {
+    const [generation] = await this.db
+      .select({
+        id: generations.id,
+        revision: generations.revision,
+        outputDir: generations.outputDir,
+        baseline: generations.baseline,
+        status: generations.status,
+        createdAt: generations.createdAt,
+        finishedAt: generations.finishedAt,
+        stages: generations.steps,
+        checks: generations.checks,
+      })
+      .from(generations)
+      .where(eq(generations.projectId, project.id))
+      .orderBy(desc(generations.id))
+      .limit(1);
+    const [run] = await this.db
+      .select({
+        id: runs.id,
+        revision: runs.designRevision,
+        outputDir: runs.outputDir,
+        status: runs.status,
+        updatedAt: runs.updatedAt,
+      })
+      .from(runs)
+      .where(eq(runs.projectId, project.id))
+      .orderBy(desc(runs.id))
+      .limit(1);
+    const counts = run
+      ? await this.db
+          .select({ status: tasks.status, count: count() })
+          .from(tasks)
+          .where(eq(tasks.runId, run.id))
+          .groupBy(tasks.status)
+      : [];
+    return {
+      projectId: project.id,
+      revision,
+      outputDir: project.outputDir,
+      generation: generation
+        ? {
+            id: generation.id,
+            revision: generation.revision,
+            outputDir: generation.outputDir,
+            baseline: generation.baseline,
+            status: generation.status,
+            createdAt: generation.createdAt.toISOString(),
+            finishedAt: generation.finishedAt?.toISOString() ?? null,
+            stages: generation.stages
+              .slice(0, 32)
+              .map(({ id, title, status }) => ({ id, title: title.slice(0, 200), status })),
+            checks: generation.checks
+              .slice(0, 200)
+              .map(
+                ({
+                  subject,
+                  template,
+                  id,
+                  title,
+                  status,
+                  layer,
+                  acceptanceIds,
+                  reason,
+                  error,
+                }) => ({
+                  subject,
+                  template,
+                  id,
+                  title: title.slice(0, 300),
+                  status,
+                  ...(layer && { layer }),
+                  ...(acceptanceIds && { acceptanceIds }),
+                  ...((reason || error) && { reason: (reason || error)!.slice(0, 600) }),
+                }),
+              ),
+            omittedChecks: Math.max(0, generation.checks.length - 200),
+            omittedStages: Math.max(0, generation.stages.length - 32),
+          }
+        : null,
+      run: run
+        ? {
+            ...run,
+            updatedAt: run.updatedAt.toISOString(),
+            tasks: Object.fromEntries(counts.map((item) => [item.status, item.count])),
+          }
+        : null,
     };
   }
 

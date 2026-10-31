@@ -41,6 +41,8 @@ Open **Architecture** at the lower left of Draw to explore the same design as **
 
 **Edit context** saves one undoable semantic change. Unbound system interactions remain visible intent with a warning. **Product configuration** on a QR Studio recipe edits title, tagline and the default analytics range; Save is one undo step and Cancel discards the draft. Generate applies saved configuration to the generated app. Neither form restarts a running application. Stable printed-link origins require a separate reviewed migration.
 
+**Inspect evidence** shows the latest recorded generation and implementation run beside the current design revision. It separates readiness stages, template conformance and application acceptance, scopes named checks to their actual service, and marks stale/different-output evidence. **Supplied & project work** describes current responsibilities. Refresh is read-only; Open Generate and Open Runs lead to the actual workflows. Stored results do not inspect current files or live deployments.
+
 These are C4-informed derived views, not a claim of production certification or automatic internal-call discovery. Custom per-view layouts, behavioral/screen views and deployment profiles remain future packages. See [P20 evidence and comparison](docs/evidence/p20/README.md).
 
 ## User guide: from a brief to a running app
@@ -143,4 +145,4 @@ docs/             sources, template briefs, handoff log, reference notes
 
 ## Current architecture review
 
-The [review through P26](docs/architecture-product-review-2026-10-31.md) compares current capability with the original PLAN, Excalidraw and automation-pitch visual improvements, and separates proven local behavior from remaining enterprise needs. The [qrwty acceptance milestone](docs/examples/qrwty.md) is complete for its documented envelope. The historical editor comparison remains available at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it makes no project writes and is excluded from production builds.
+The [review through P27](docs/architecture-product-review-2026-10-31.md) compares current capability with the original PLAN, Excalidraw and automation-pitch visual improvements, and separates proven local behavior from remaining enterprise needs. The [qrwty acceptance milestone](docs/examples/qrwty.md) is complete for its documented envelope. The historical editor comparison remains available at `http://127.0.0.1:4300/editor-review.html` with `pnpm --filter @jeeves/web dev`; it makes no project writes and is excluded from production builds.

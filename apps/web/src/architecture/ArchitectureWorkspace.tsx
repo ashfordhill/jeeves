@@ -1,4 +1,4 @@
-import type { ArchitectureViewNode, ArchitectureViews } from "@jeeves/spec";
+import type { ArchitectureEvidence, ArchitectureViewNode, ArchitectureViews } from "@jeeves/spec";
 import { Alert, Button, Loader, NativeSelect } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -7,10 +7,11 @@ import {
   IconSettings,
   IconSitemap,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
+import { ArchitectureEvidenceDialog, evidenceLabel } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph, supportLabel } from "./ArchitectureGraph.tsx";
 import "./architecture.css";
 
@@ -19,6 +20,12 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
   const notice = useDraw((state) => state.notice);
   const localUndo = useDraw((state) => state.undoSteps.length);
   const [views, setViews] = useState<ArchitectureViews>();
+  const [evidence, setEvidence] = useState<ArchitectureEvidence>();
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const request = useRef<{ key: string; pending: ReturnType<typeof api.architecture> } | undefined>(
+    undefined,
+  );
   const [error, setError] = useState<string>();
   const [attempt, setAttempt] = useState(0);
   const [level, setLevel] = useState<"context" | "containers" | "components">("context");
@@ -27,19 +34,32 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
   const [editor, setEditor] = useState<"context" | "product">();
   const projectId = loaded?.project.id,
     revision = loaded?.design.revision;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: attempt is an explicit user retry trigger.
   useEffect(() => {
     if (!projectId) return;
     let active = true;
-    setViews(undefined);
+    const key = `${projectId}:${revision}:${attempt}`;
+    setLoading(true);
     setError(undefined);
-    api.architecture(projectId).then(
+    if (!request.current?.key.startsWith(`${projectId}:${revision}:`)) {
+      setViews(undefined);
+      setEvidence(undefined);
+    }
+    if (request.current?.key !== key)
+      request.current = { key, pending: api.architecture(projectId) };
+    request.current.pending.then(
       (result) => {
-        if (active && result.revision === revision) setViews(result.views);
-        else if (active) setError("The architecture changed while loading. Refresh this view.");
+        if (active && result.revision === revision) {
+          setViews(result.views);
+          setEvidence(result.evidence);
+        } else if (active)
+          setError("The design changed elsewhere. Return to the board and reload the design.");
+        if (active) setLoading(false);
       },
       (error) => {
-        if (active) setError(error instanceof Error ? error.message : String(error));
+        if (active) {
+          setError(error instanceof Error ? error.message : String(error));
+          setLoading(false);
+        }
       },
     );
     return () => {
@@ -49,6 +69,10 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
   }, [projectId, revision, attempt]);
   const choose = useCallback((id: string) => setSelected(id), []);
   if (!loaded) return null;
+  const currentEvidence =
+    evidence && evidence.revision === revision && evidence.projectId === projectId
+      ? evidence
+      : undefined;
   const projection =
     level === "context"
       ? views?.context
@@ -148,6 +172,20 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
         ) : null}
         <p>One design. Different scopes.</p>
       </nav>
+      <div className="architecture-evidence-strip">
+        <strong>Design revision {revision}</strong>
+        <span>
+          {currentEvidence ? evidenceLabel(currentEvidence) : "Loading recorded evidence…"}
+        </span>
+        <Button
+          size="compact-xs"
+          variant="default"
+          disabled={!currentEvidence}
+          onClick={() => setEvidenceOpen(true)}
+        >
+          Inspect evidence
+        </Button>
+      </div>
       {notice ? (
         <Alert
           color={notice.tone === "error" ? "red" : "blue"}
@@ -306,6 +344,18 @@ export function ArchitectureWorkspace({ onClose }: { onClose: () => void }) {
             </details>
           </aside>
         </div>
+      ) : null}
+      {evidenceOpen && currentEvidence && views ? (
+        <ArchitectureEvidenceDialog
+          evidence={currentEvidence}
+          views={views}
+          selected={node}
+          loading={loading}
+          error={error}
+          onRefresh={() => setAttempt((value) => value + 1)}
+          onClose={() => setEvidenceOpen(false)}
+          onBoard={onClose}
+        />
       ) : null}
       {editor === "context" ? (
         <ContextEditor
