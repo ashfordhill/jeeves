@@ -155,6 +155,7 @@ test("refuses a malformed value at the field and edits attachment config", async
   await page.getByRole("menuitem", { name: "REST API server" }).click();
   await expect(service.getByRole("listitem", { name: "REST API server" })).toBeVisible();
   const attachment = rail(page).getByRole("listitem", { name: /REST API server attachment/ });
+  await attachment.getByText("Advanced API configuration", { exact: true }).click();
   await attachment.getByRole("combobox", { name: "Auth" }).selectOption("bearer");
   await expect
     .poll(

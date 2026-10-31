@@ -396,6 +396,12 @@ export interface ProductRecipe {
   description: string;
   maturity: "experimental";
   features: string[];
+  resourceBindings: {
+    element: string;
+    attachment: string;
+    resourceIds: string[];
+    storeConnection?: string;
+  }[];
 }
 
 export const api = {

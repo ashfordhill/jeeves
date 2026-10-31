@@ -1,11 +1,17 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { designSchema } from "@jeeves/spec";
+import { designSchema, type ResourceConfig } from "@jeeves/spec";
 import { afterEach, expect, it } from "vitest";
 import { generateProject } from "./generate.ts";
 import { templateSet } from "./modules.ts";
-import { createRecipeDesign, loadRecipe, recipeCoverage, recipeFindings } from "./recipes.ts";
+import {
+  createRecipeDesign,
+  loadRecipe,
+  recipeCatalog,
+  recipeCoverage,
+  recipeFindings,
+} from "./recipes.ts";
 import { fixtureDesign } from "./test-support.ts";
 
 const ref = { id: "qr-studio", version: "0.1.0" };
@@ -124,4 +130,28 @@ it("refuses dependency drift and altered core contracts but accepts branding and
   const existing = temp();
   mkdirSync(join(existing, "src"));
   await expect(generate(existing)).rejects.toThrow(/new empty/);
+});
+
+it("publishes protected resource boundaries from the immutable recipe and permits separate additions", () => {
+  const metadata = recipeCatalog().find((item) => item.id === ref.id)!;
+  const design = fresh();
+  const service = design.elements.find((item) => item.id === "qrwty")!;
+  const model = service.attachments[0]!.config.model as ResourceConfig;
+  expect(metadata.resourceBindings).toEqual([
+    {
+      element: service.id,
+      attachment: service.attachments[0]!.id,
+      resourceIds: model.resources.map((item) => item.id),
+      storeConnection: model.storeConnection,
+    },
+  ]);
+  model.resources.push({
+    id: "independent",
+    name: "inventory",
+    access: "owner",
+    fields: [],
+    belongsTo: [],
+    operations: ["create", "list"],
+  });
+  expect(recipeFindings(design, lookup)).toEqual([]);
 });

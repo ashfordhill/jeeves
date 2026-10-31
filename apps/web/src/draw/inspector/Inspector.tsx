@@ -34,6 +34,7 @@ import { TemplateIcon } from "../TemplateIcon.tsx";
 import { ConfigForm } from "./ConfigForm.tsx";
 import { DeliveryConfiguration } from "./DeliveryEditor.tsx";
 import { DraftTextarea, DraftTextInput } from "./fields.tsx";
+import { ResourceConfiguration } from "./ResourceEditor.tsx";
 
 const NOTE_COLORS = ["yellow", "blue", "green", "pink", "gray"] as const;
 
@@ -151,6 +152,28 @@ function AttachmentPanel({
       ) : null}
       {attachment.template.id === "durable-events" ? (
         <DeliveryConfiguration attachment={attachment} />
+      ) : attachment.template.id === "rest-api-server" && template ? (
+        <>
+          <ResourceConfiguration element={element} attachment={attachment} />
+          <details style={{ marginTop: 12 }}>
+            <summary style={{ cursor: "pointer", fontSize: 12 }}>
+              Advanced API configuration
+            </summary>
+            <p className="inspector-empty">
+              Raw contract configuration. Changes to versioned recipe definitions can prevent
+              generation; the structured editor preserves them.
+            </p>
+            <ConfigForm
+              schema={template.configJsonSchema}
+              manifest={registry.get(attachment.template)}
+              config={attachment.config}
+              findings={own}
+              onCommit={(config) =>
+                void edit([{ op: "updateAttachment", id: attachment.id, config }])
+              }
+            />
+          </details>
+        </>
       ) : template ? (
         <ConfigForm
           schema={template.configJsonSchema}

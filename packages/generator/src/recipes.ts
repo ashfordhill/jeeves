@@ -13,6 +13,7 @@ import {
   finding,
   type LayoutDocument,
   resolveConfig,
+  resourceConfigSchema,
   type TemplateLookup,
   type TemplateRef,
   upgradeDesign,
@@ -173,6 +174,21 @@ export function recipeCatalog() {
       features,
       configuration: z.toJSONSchema(qrStudioConfigurationSchema, { io: "input" }),
       provided: recipe.manifest.provided,
+      resourceBindings: recipe.design.elements.flatMap((element) =>
+        element.attachments
+          .filter(
+            (attachment) => attachment.template.id === "rest-api-server" && attachment.config.model,
+          )
+          .map((attachment) => {
+            const model = resourceConfigSchema.parse(attachment.config.model);
+            return {
+              element: element.id,
+              attachment: attachment.id,
+              resourceIds: model.resources.map((resource) => resource.id),
+              storeConnection: model.storeConnection,
+            };
+          }),
+      ),
     };
   });
 }

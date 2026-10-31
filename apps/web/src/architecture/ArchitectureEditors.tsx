@@ -8,44 +8,19 @@ import {
   Alert,
   Button,
   Group,
-  Modal,
   NativeSelect,
   Stack,
   Text,
   Textarea,
   TextInput,
 } from "@mantine/core";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
+import { ConfigurationDialog as ArchitectureDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
 
 const errorText = () =>
   useDraw.getState().notice?.message ??
   "The design could not be saved. Close this dialog and reopen it to review the latest version.";
-
-export function ArchitectureDialog({
-  title,
-  size,
-  onClose,
-  children,
-}: {
-  title: string;
-  size: "lg" | "xl";
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <Modal.Root opened onClose={onClose} size={size}>
-      <Modal.Overlay />
-      <Modal.Content aria-label={title}>
-        <Modal.Header role="presentation">
-          <Modal.Title>{title}</Modal.Title>
-          <Modal.CloseButton aria-label={`Close ${title.toLowerCase()}`} />
-        </Modal.Header>
-        <Modal.Body>{children}</Modal.Body>
-      </Modal.Content>
-    </Modal.Root>
-  );
-}
 
 export function ContextEditor({
   design,

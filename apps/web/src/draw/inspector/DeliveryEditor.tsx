@@ -18,7 +18,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useRef, useState } from "react";
-import { ArchitectureDialog } from "../../architecture/ArchitectureEditors.tsx";
+import { ConfigurationDialog as ArchitectureDialog } from "../../components/ConfigurationDialog.tsx";
 import { useDraw } from "../store.ts";
 
 const newEvent = (index: number): DeliveryEvent => ({

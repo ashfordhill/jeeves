@@ -1,0 +1,102 @@
+.resource-editor-layout {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.resource-editor-list,
+.resource-editor-controls,
+.resource-editor-section,
+.resource-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.resource-editor-list {
+  position: sticky;
+  top: 0;
+  max-height: 60dvh;
+  overflow-y: auto;
+}
+.resource-editor-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 8px;
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.resource-editor-item[aria-current="true"] {
+  border-color: var(--mantine-primary-color-filled);
+  background: var(--mantine-primary-color-light);
+}
+.resource-editor-item span {
+  font-weight: 700;
+}
+.resource-editor-item small {
+  font-size: 11px;
+}
+.resource-editor-detail {
+  min-width: 0;
+}
+.resource-editor-controls {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.resource-editor-field {
+  padding: 12px;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 8px;
+}
+.resource-editor-relation {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+.resource-editor-relation > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.resource-editor-preview {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  background: var(--mantine-color-default-hover);
+  border-radius: 8px;
+}
+.resource-editor-preview code {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.resource-editor-extensions summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+@media (max-width: 700px) {
+  .resource-editor-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .resource-editor-list {
+    position: static;
+    max-height: 140px;
+  }
+  .resource-editor-relation {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Recipe values remain readable while their controls are unavailable. */
+.resource-editor-controls:disabled :is(input, select, textarea),
+.resource-editor-store select:disabled {
+  color: var(--mantine-color-text);
+  -webkit-text-fill-color: var(--mantine-color-text);
+  opacity: 1;
+}
