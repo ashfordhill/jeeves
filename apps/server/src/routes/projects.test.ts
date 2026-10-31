@@ -96,6 +96,42 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
+  it("creates a separate recipe project, rejects invalid configuration, and restores recipe edits with undo", async () => {
+    const old = await client.createProject("Keep this project");
+    const catalog = await client.call("GET", "/recipes");
+    expect(catalog.body.recipes[0]).toMatchObject({ id: "qr-studio", maturity: "experimental" });
+    const input = {
+      name: "Recipe proof",
+      recipe: { id: "qr-studio", version: "0.1.0" },
+      config: { tagline: "Made without a model", analyticsDays: 7 },
+    };
+    expect(
+      (
+        await client.call("POST", "/projects/from-recipe", {
+          ...input,
+          config: { analyticsDays: 365 },
+        })
+      ).status,
+    ).toBe(422);
+    const created = await client.call("POST", "/projects/from-recipe", input);
+    expect(created.status).toBe(201);
+    const id = created.body.project.id;
+    const state = await client.design(id);
+    expect(state.design.elements).toHaveLength(3);
+    expect(state.design.recipe?.config).toEqual(input.config);
+    expect(state.findings).toEqual([]);
+    expect((await client.design(old)).design.elements).toHaveLength(0);
+    expect(
+      Object.keys((await client.call("GET", `/projects/${id}/layout`)).body.layout.items),
+    ).toHaveLength(3);
+    await client.edit(id, 0, [
+      {
+        op: "setRecipe",
+        recipe: { ...input.recipe, config: { ...input.config, tagline: "Changed" } },
+      },
+    ]);
+    expect((await client.undo(id, 1)).body.design.recipe.config.tagline).toBe(input.config.tagline);
+  });
   it("converts legacy endpoints on read but records v2 only on a semantic save", async () => {
     const id = await client.createProject("Legacy conversion");
     const legacy = { ...linkShortener, revision: 1 };

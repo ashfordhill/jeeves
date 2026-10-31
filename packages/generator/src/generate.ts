@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { DesignDocument } from "@jeeves/spec";
@@ -20,6 +28,7 @@ import { pnpmCommand, runCommand } from "./exec.ts";
 import { hashContents, type Lock, lockFor, lockToJson, readLock } from "./lock.ts";
 import { type TemplateSet, templateSet } from "./modules.ts";
 import { type PlannedElement, type ProjectPlan, planProject } from "./plan.ts";
+import { assertRecipeDependencies, loadRecipe, RecipeError, recipeEnvironment } from "./recipes.ts";
 
 /** Packs runtimes into `<dir>/vendor/jeeves/`; returns the paths it wrote (changed tarballs). */
 export type Vendor = (dir: string, runtimes: RuntimePackage[]) => Promise<string[]>;
@@ -86,6 +95,30 @@ export async function generateProject(
   const log = options.log ?? (() => {});
   const templates = options.templates ?? templateSet();
   const previous = readLock(dir);
+  if (
+    previous?.recipe &&
+    (previous.recipe.id !== design.recipe?.id || previous.recipe.version !== design.recipe?.version)
+  )
+    throw new RecipeError(
+      "Removing or changing a recipe version requires a reviewed ownership/data migration. Existing output is unchanged.",
+    );
+  if (
+    design.recipe &&
+    !previous?.recipe &&
+    (previous ||
+      (existsSync(dir) && readdirSync(dir).some((name) => name !== ".git" && name !== ".env")))
+  )
+    throw new RecipeError(
+      "Install a product recipe into a new empty output folder. Existing applications need a reviewed adoption package.",
+    );
+  if (design.recipe && previous?.recipe) {
+    const recipe = loadRecipe(design.recipe);
+    if (previous.recipe.manifestSha256 !== recipe.registration.manifestSha256)
+      throw new RecipeError(
+        "The pinned recipe manifest changed under the same version. Restore it or create a reviewed version upgrade.",
+      );
+    assertRecipeDependencies(dir, recipe);
+  }
   const migrationFiles = Object.keys(previous?.files ?? {}).filter(
     (p) => p.includes("/resource-migrations/") && p.endsWith(".sql"),
   );
@@ -138,14 +171,30 @@ export async function generateProject(
 
   const problems = ownershipProblems(dir, plan, previous);
   if (problems.length > 0) return { ok: false, reason: "ownership", problems };
+  recipeEnvironment(dir, design);
 
   mkdirSync(dir, { recursive: true });
   log(`Vendoring ${plan.runtimes.length} runtime package(s) into ${VENDOR_DIR}/`);
-  const vendored = await (options.vendor ?? packRuntimes)(dir, plan.runtimes);
+  const pinnedPaths = new Set(plan.artifacts?.map((file) => file.path) ?? []);
+  const vendored = await (options.vendor ?? packRuntimes)(
+    dir,
+    plan.runtimes.filter(
+      (runtime) =>
+        !pinnedPaths.has(`${VENDOR_DIR}/${runtimeTarballName(runtime.name, runtime.version)}`),
+    ),
+  );
 
   const written: string[] = [];
   const scaffolded: string[] = [];
   const kept: string[] = [];
+  for (const file of plan.artifacts ?? []) {
+    const path = join(dir, file.path);
+    if (existsSync(path) && readFileSync(path).equals(file.contents)) continue;
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, file.contents);
+    written.push(file.path);
+    if (file.path.startsWith(`${VENDOR_DIR}/`)) vendored.push(file.path);
+  }
   for (const file of plan.files) {
     const path = join(dir, file.path);
     const exists = existsSync(path);
@@ -206,6 +255,7 @@ export async function generateProject(
   }
 
   const lock = lockFor(plan, design.revision);
+  if (recipeEnvironment(dir, design, true)) scaffolded.push(".env");
   writeFileSync(join(dir, LOCK_PATH), lockToJson(lock));
 
   const planned = new Set(plan.elements.map((e) => e.id));
@@ -272,6 +322,16 @@ export function ownershipProblems(
         message: `${file.path} already exists and Jeeves didn't generate it. Move or delete it, or pick another output folder.`,
       });
     }
+  }
+  for (const file of plan.artifacts ?? []) {
+    if (file.path in owned) continue;
+    const path = join(dir, file.path);
+    if (existsSync(path) && !readFileSync(path).equals(file.contents))
+      problems.push({
+        path: file.path,
+        kind: "unmanaged",
+        message: `${file.path} conflicts with the pinned recipe artifact. Choose a new output directory.`,
+      });
   }
   return problems.sort((a, b) => (a.path < b.path ? -1 : 1));
 }

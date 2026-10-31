@@ -8,3 +8,4 @@ export * from "./generate.ts";
 export * from "./lock.ts";
 export * from "./modules.ts";
 export * from "./plan.ts";
+export * from "./recipes.ts";

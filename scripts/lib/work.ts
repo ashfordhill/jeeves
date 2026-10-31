@@ -23,6 +23,8 @@ export const profiles = {
   templates: "Selected conformance files; may start disposable Docker/browser fixtures (or all)",
   browser: "Selected Playwright specs; starts the existing Jeeves test database (or all)",
   "browser-docker": "All Playwright specs using the existing Docker runner",
+  "qr-studio-recipe":
+    "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
   "qrwty-product": "Isolated composed consumer verification; requires an absolute checkout path",
   "qrwty-upgrade": "Disposable old-to-new migration proof; requires two absolute checkout paths",
 } as const;
@@ -85,6 +87,20 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "qr-studio-recipe": {
+      none();
+      const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
+      commands.push({
+        executable: process.execPath,
+        args: [
+          "--import",
+          loader,
+          join(root, "packages/generator/scripts/verify-qr-studio-recipe.ts"),
+        ],
+        cwd: root,
+      });
+      break;
+    }
     case "qrwty-product":
     case "qrwty-upgrade": {
       const count = name === "qrwty-upgrade" ? 2 : 1;

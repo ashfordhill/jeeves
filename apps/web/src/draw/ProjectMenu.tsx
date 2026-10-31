@@ -6,11 +6,13 @@ import { Button, Menu, Modal, TextInput, UnstyledButton } from "@mantine/core";
 import { IconChevronDown, IconPencil, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { api, type Project } from "./api.ts";
+import { RecipeDialog } from "./RecipeDialog.tsx";
 import { useDraw } from "./store.ts";
 
 export function ProjectMenu() {
   const project = useDraw((s) => s.loaded?.project);
   const open = useDraw((s) => s.open);
+  const [recipeOpen, setRecipeOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [error, setError] = useState<string>();
@@ -65,6 +67,9 @@ export function ProjectMenu() {
             </Menu.Item>
           ))}
           <Menu.Divider />
+          <Menu.Item leftSection={<IconPlus size={14} />} onClick={() => setRecipeOpen(true)}>
+            New from recipe
+          </Menu.Item>
           <Menu.Item
             leftSection={<IconPlus size={14} />}
             onClick={async () => {
@@ -76,6 +81,7 @@ export function ProjectMenu() {
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
+      <RecipeDialog opened={recipeOpen} onClose={() => setRecipeOpen(false)} />
       <Modal opened={renaming !== null} onClose={() => setRenaming(null)} title="Rename project">
         <form
           className="project-rename"

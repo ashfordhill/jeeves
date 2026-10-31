@@ -17,7 +17,11 @@ function edit(change: (doc: DesignDocument) => void): DesignDocument {
  * One case per finding code. Typed as a full record so adding a code without a test is a type
  * error.
  */
-const cases: Record<FindingCode, { name: string; findings: () => Finding[]; target?: object }[]> = {
+// Recipe compatibility depends on the generator's source catalog; covered in recipes.test.ts.
+const cases: Record<
+  Exclude<FindingCode, "RECIPE_INCOMPATIBLE">,
+  { name: string; findings: () => Finding[]; target?: object }[]
+> = {
   DUPLICATE_ID: [
     {
       name: "an attachment reuses an element ID",

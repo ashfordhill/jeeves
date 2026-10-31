@@ -241,6 +241,7 @@ function Log({ generation }: { generation: Generation }) {
 }
 
 export function GenerateDrawer() {
+  const recipe = useDraw((s) => s.loaded?.design.recipe);
   const projectId = useDraw((s) => s.loaded?.project.id);
   const errors = useDraw(
     (s) => s.loaded?.findings.filter((f) => f.severity === "error").length ?? 0,
@@ -254,6 +255,10 @@ export function GenerateDrawer() {
   useEffect(() => {
     if (projectId) void useGenerate.getState().load(projectId);
   }, [projectId]);
+
+  useEffect(() => {
+    if (recipe) useGenerate.getState().setAcceptancePack("");
+  }, [recipe]);
 
   if (!open) return null;
   const running = generation?.status === "running";
@@ -299,17 +304,24 @@ export function GenerateDrawer() {
             disabled={running}
             onChange={(e) => state.setBaseline(e.currentTarget.checked)}
           />
-          <NativeSelect
-            label="Fixed acceptance pack"
-            description="Reviewed repository suites to register as generated-owned tests. None keeps the project's existing lock."
-            value={state.acceptancePack}
-            disabled={running}
-            data={[
-              { value: "", label: "None" },
-              ...state.packs.map((pack) => ({ value: pack.id, label: pack.id })),
-            ]}
-            onChange={(event) => state.setAcceptancePack(event.currentTarget.value)}
-          />
+          {recipe ? (
+            <p className="generate-help">
+              {recipe.id} {recipe.version} supplies the complete product and its fixed acceptance.
+              No implementation model is needed for its provided features.
+            </p>
+          ) : (
+            <NativeSelect
+              label="Fixed acceptance pack"
+              description="Reviewed repository suites to register as generated-owned tests. None keeps the project's existing lock."
+              value={state.acceptancePack}
+              disabled={running}
+              data={[
+                { value: "", label: "None" },
+                ...state.packs.map((pack) => ({ value: pack.id, label: pack.id })),
+              ]}
+              onChange={(event) => state.setAcceptancePack(event.currentTarget.value)}
+            />
+          )}
           {pack ? (
             <p className="generate-help">
               {pack.suites

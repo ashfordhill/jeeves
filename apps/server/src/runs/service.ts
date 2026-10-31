@@ -8,7 +8,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { acceptanceCaseCoverageProblems, readLock } from "@jeeves/generator";
+import { acceptanceCaseCoverageProblems, loadRecipe, readLock } from "@jeeves/generator";
 import {
   type AttemptEvent,
   type AttemptOutcome,
@@ -459,7 +459,9 @@ export class RunService {
     });
     if (seed.length === 0) {
       return seedOnly(
-        "No element or attachment has implementation notes, so there's nothing to implement. Add notes in the Draw view and generate again.",
+        project.lock.recipe
+          ? `Recipe ${project.lock.recipe.id}@${project.lock.recipe.version} provides this application's declared behavior. No implementation model call is needed. Run Generate with verification, then start the local app.`
+          : "No element or attachment has implementation notes, so there's nothing to implement. Add notes in the Draw view and generate again.",
       );
     }
     if (project.lock.resourceModels)
@@ -1303,17 +1305,25 @@ function gitRevision(dir: string): string | null {
 function capabilities(run: Run): string[] {
   try {
     const lock = readLock(run.outputDir);
-    return Object.entries(lock?.resourceModels ?? {}).flatMap(([service, model]) => [
-      `${service}: accounts and sessions; ${model.resources.map((r) => `${r.name} (${r.operations.join(", ")})`).join("; ")}`,
-      ...(model.extensions.length
+    const provided = lock?.recipe ? loadRecipe(lock.recipe).manifest.provided : undefined;
+    return [
+      ...(lock?.recipe
         ? [
-            `${service}: extensions ${model.extensions.map((e) => `${e.id} (${e.operationId}, ${e.path})`).join("; ")}`,
+            `${lock.recipe.id}@${lock.recipe.version}: product implementation supplied; frontend ${provided?.frontends.join(", ")}. Verification evidence is recorded separately.`,
           ]
         : []),
-      ...(model.acceptanceCases.length
-        ? [`${service}: acceptance ${model.acceptanceCases.join(", ")}`]
-        : []),
-    ]);
+      ...Object.entries(lock?.resourceModels ?? {}).flatMap(([service, model]) => [
+        `${service}: accounts and sessions; ${model.resources.map((r) => `${r.name} (${r.operations.join(", ")})`).join("; ")}`,
+        ...(model.extensions.length
+          ? [
+              `${service}: extensions ${model.extensions.map((e) => `${e.id} (${e.operationId}, ${e.path}${provided?.operations[service]?.includes(e.operationId) ? ", recipe-provided" : ""})`).join("; ")}`,
+            ]
+          : []),
+        ...(model.acceptanceCases.length
+          ? [`${service}: acceptance ${model.acceptanceCases.join(", ")}`]
+          : []),
+      ]),
+    ];
   } catch {
     return [];
   }

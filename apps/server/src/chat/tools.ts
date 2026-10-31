@@ -75,6 +75,8 @@ export function toolDefinitions(): ToolDefinition[] {
 }
 
 const explanations: Record<FindingCode, string> = {
+  RECIPE_INCOMPATIBLE:
+    "Restore the versioned recipe contract or create a separate custom design; recipe-provided implementation cannot be silently redefined.",
   DUPLICATE_ID: "Two items share an ID. IDs must be unique across the whole design; pick another.",
   UNKNOWN_REFERENCE: "Something refers to an ID that doesn't exist. Check the IDs with getDesign.",
   UNKNOWN_TEMPLATE:

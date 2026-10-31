@@ -17,6 +17,13 @@ function applied(ops: OperationInput[], doc?: DesignDocument): DesignDocument {
 
 /** One passing case per operation type. Typed as a full record so new op types need a test. */
 const opCases: Record<OperationType, () => void> = {
+  setRecipe() {
+    const binding = { id: "qr-studio", version: "0.1.0", config: { analyticsDays: 30 } };
+    const doc = applied([{ op: "setRecipe", recipe: binding }]);
+    expect(doc.recipe).toEqual(binding);
+    expect(applied([{ op: "setRecipe", recipe: null }], doc)).not.toHaveProperty("recipe");
+    expect(sampleDesign()).not.toHaveProperty("recipe");
+  },
   changeSubtype() {
     const doc = sampleDesign();
     const discarded = subtypeDiscards(doc, doc.elements[0]!);

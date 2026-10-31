@@ -14,6 +14,13 @@ import { GENERATOR_VERSION, type ProjectPlan } from "./plan.ts";
  */
 export const lockSchema = z.object({
   lockVersion: z.literal(1),
+  recipe: z
+    .object({
+      id: z.string(),
+      version: z.string(),
+      manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .optional(),
   fixedAcceptance: z.array(acceptanceRegistrationSchema).optional(),
   resourceFingerprints: z.record(z.string(), z.string()).optional(),
   resourceStores: z
@@ -46,6 +53,7 @@ export function hashContents(contents: string | Buffer): string {
 export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
   return {
     lockVersion: 1,
+    ...(plan.recipe && { recipe: plan.recipe }),
     ...(plan.fixedAcceptance && { fixedAcceptance: plan.fixedAcceptance }),
     ...(plan.resourceModels && {
       resourceModels: plan.resourceModels,
@@ -66,11 +74,12 @@ export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
       tarball: `${VENDOR_DIR}/${runtimeTarballName(r.name, r.version)}`,
     })),
     elements: plan.elements,
-    files: Object.fromEntries(
-      plan.files
+    files: Object.fromEntries([
+      ...plan.files
         .filter((f) => f.ownership === "generated")
         .map((f) => [f.path, hashContents(f.contents)]),
-    ),
+      ...(plan.artifacts ?? []).map((file) => [file.path, hashContents(file.contents)]),
+    ]),
   };
 }
 

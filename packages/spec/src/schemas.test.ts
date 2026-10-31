@@ -17,7 +17,7 @@ describe("operation JSON Schema", () => {
       (v) => (v as { properties: { op: { const: string } } }).properties.op.const,
     );
     expect(ops.sort()).toEqual([...operationTypes].sort());
-    expect(ops).toHaveLength(13);
+    expect(ops).toHaveLength(14);
   });
 
   it("is plain JSON", () => {

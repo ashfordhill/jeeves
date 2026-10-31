@@ -4,7 +4,15 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { DESIGN_PATH, elementNotesPath, type Lock, readLock } from "@jeeves/generator";
+import {
+  assertRecipeDependencies,
+  DESIGN_PATH,
+  elementNotesPath,
+  hashContents,
+  type Lock,
+  loadRecipe,
+  readLock,
+} from "@jeeves/generator";
 import { type DesignDocument, designSchema } from "@jeeves/spec";
 
 export type GeneratedProject = {
@@ -34,6 +42,14 @@ export function readGeneratedProject(dir: string): GeneratedProject {
   }
   const parsed = designSchema.safeParse(raw);
   if (!parsed.success) throw new ProjectReadError(`${DESIGN_PATH} isn't a Jeeves design.`);
+  if (lock.recipe) {
+    assertRecipeDependencies(dir, loadRecipe(lock.recipe));
+    for (const [path, expected] of Object.entries(lock.files))
+      if (!existsSync(join(dir, path)) || hashContents(readFileSync(join(dir, path))) !== expected)
+        throw new ProjectReadError(
+          `Protected recipe output ${path} is missing or changed. Restore it before planning.`,
+        );
+  }
   const briefs: Record<string, string> = {};
   for (const element of lock.elements) {
     const path = join(dir, elementNotesPath(element.id));

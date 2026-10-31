@@ -388,7 +388,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
+export interface ProductRecipe {
+  id: string;
+  version: string;
+  title: string;
+  description: string;
+  maturity: "experimental";
+  features: string[];
+}
+
 export const api = {
+  recipes: () => request<{ recipes: ProductRecipe[] }>("/recipes").then((r) => r.recipes),
+  createFromRecipe: (
+    name: string,
+    recipe: { id: string; version: string },
+    config: Record<string, unknown>,
+  ) =>
+    request<{ project: Project }>("/projects/from-recipe", {
+      method: "POST",
+      body: JSON.stringify({ name, recipe, config }),
+    }).then((r) => r.project),
   listProjects: () => request<{ projects: Project[] }>("/projects").then((r) => r.projects),
 
   renameProject: (id: string, name: string) =>

@@ -23,6 +23,7 @@ import {
   acceptanceCaseCoverageProblems,
   acceptanceFiles,
   type FixedAcceptance,
+  fixedAcceptanceSchema,
 } from "./acceptance.ts";
 import {
   agentsFile,
@@ -32,6 +33,12 @@ import {
   type SubjectSummary,
 } from "./documents.ts";
 import type { TemplateSet } from "./modules.ts";
+import {
+  applyRecipe,
+  type RecipeArtifact,
+  type RecipeRegistration,
+  recipeForDesign,
+} from "./recipes.ts";
 
 export const GENERATOR_VERSION = "0.1.0";
 
@@ -66,6 +73,8 @@ export interface PlannedElement {
 
 /** Everything generation will write, computed without touching the disk (deterministic). */
 export interface ProjectPlan {
+  recipe?: RecipeRegistration;
+  artifacts?: RecipeArtifact[];
   fixedAcceptance?: AcceptanceRegistration[];
   resourceModels?: Record<string, ResourceConfig>;
   resourceStores?: Record<string, { connection: string; database: string }>;
@@ -108,6 +117,29 @@ export function planProject(
   options: PlanOptions,
 ): ProjectPlan {
   const { lookup } = templates;
+  const recipe = recipeForDesign(design, lookup);
+  if (recipe) {
+    const normalized = (suite: FixedAcceptance) =>
+      JSON.stringify(
+        fixedAcceptanceSchema.parse({
+          ...suite,
+          requires: suite.requires ?? "extensions",
+          runner: suite.runner ?? "node",
+          dependencies: suite.dependencies ?? [],
+          files: suite.files ?? [],
+        }),
+      );
+    const extra = options.fixedAcceptance ?? [];
+    const byId = new Map(recipe.acceptance.map((suite) => [`${suite.service}/${suite.id}`, suite]));
+    for (const suite of extra) {
+      const key = `${suite.service}/${suite.id}`;
+      const fixed = byId.get(key);
+      if (fixed && normalized(fixed) !== normalized(suite))
+        throw new GenerationError(`Fixed recipe acceptance ${key} cannot be replaced.`);
+      if (!fixed) byId.set(key, suite);
+    }
+    options = { ...options, fixedAcceptance: [...byId.values()] };
+  }
   const findings = validateDesign(design, lookup);
   if (blocksGenerate(findings))
     throw new GenerationError(findings.map((f) => f.message).join("\n"));
@@ -259,7 +291,7 @@ export function planProject(
   for (const file of docs) add(file, "jeeves");
 
   for (const file of acceptance.files) add(file, "fixed acceptance");
-  return {
+  const plan: ProjectPlan = {
     ...(acceptance.registrations.length && { fixedAcceptance: acceptance.registrations }),
     ...(Object.keys(resourceModels).length && {
       resourceModels,
@@ -282,6 +314,7 @@ export function planProject(
     templates: [...used].sort(),
     subjects: results.map((r) => r.subject),
   };
+  return recipe ? applyRecipe(plan, design, recipe) : plan;
 }
 
 function parseRef(ref: string): { id: string; version: string } {

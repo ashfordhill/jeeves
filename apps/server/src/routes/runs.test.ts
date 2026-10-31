@@ -260,6 +260,31 @@ const taskSummary = (detail: RunDetail) =>
   detail.tasks.map((t) => [t.key, t.title, t.status] as const);
 
 describe("planning", () => {
+  it("plans a complete product recipe without selecting a model or creating implementation tasks", async () => {
+    let providerCalls = 0;
+    const h = harness({
+      models: () => {
+        providerCalls++;
+        return { error: "must not select a model" };
+      },
+      generator: {
+        generate: (options) => generateProject({ ...options, git: false }),
+        baseline: async () => ({ ok: true, steps: [], checks: [] }),
+      },
+    });
+    const created = await h.call("POST", "/projects/from-recipe", {
+      name: "Provided studio",
+      recipe: { id: "qr-studio", version: "0.1.0" },
+    });
+    expect(created.status).toBe(201);
+    const id = created.body.project.id;
+    await h.generate(id);
+    const detail = await h.planned(id);
+    expect(detail.tasks).toEqual([]);
+    expect(providerCalls).toBe(0);
+    expect(detail.run.planner?.message).toContain("No implementation model");
+    expect(detail.capabilities.join(" ")).toContain("recipe-provided");
+  });
   it("keeps structured tasks deterministic and reports required operations removed from the plan", async () => {
     let plannerCalled = false;
     const h = harness({

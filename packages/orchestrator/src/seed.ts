@@ -2,7 +2,7 @@
  * The deterministic seed plan (PLAN §10, Plan step 1): one task per element and per attachment
  * whose implementation notes aren't empty, in dependency order.
  */
-import type { Lock } from "@jeeves/generator";
+import { type Lock, recipeCoverage } from "@jeeves/generator";
 import {
   type DesignDocument,
   type ElementKind,
@@ -82,7 +82,7 @@ export function dependencies(design: DesignDocument): Map<string, Set<string>> {
 
 export type SeedInput = {
   design: DesignDocument;
-  lock: Pick<Lock, "elements">;
+  lock: Pick<Lock, "elements"> & Partial<Omit<Lock, "elements">>;
   templates: TemplateLookup;
 };
 
@@ -91,6 +91,7 @@ export type SeedInput = {
  * its own task, since the element's features build on its capabilities (its API, its clients).
  */
 export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] {
+  const provided = recipeCoverage(design, lock, templates);
   const deps = dependencies(design);
   const owned = new Map(lock.elements.map((e) => [e.id, e.ownedPaths]));
   const elements = new Map(design.elements.map((e) => [e.id, e]));
@@ -109,7 +110,9 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
       if (attachment.template.id === "rest-api-server" && attachment.config.model) {
         const model = resourceConfigSchema.parse(attachment.config.model);
         const dir = lock.elements.find((e) => e.id === element.id)?.dir ?? `services/${element.id}`;
-        for (const extension of model.extensions)
+        for (const extension of model.extensions.filter(
+          (extension) => !provided?.operations[element.id]?.includes(extension.operationId),
+        ))
           tasks.push({
             ...base,
             key: extensionTaskKey(element.id, attachment.id, extension.id),
@@ -144,6 +147,7 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
     }
     if (
       element.notes.trim() &&
+      provided?.frontendNotes[element.id] !== element.notes &&
       !element.attachments.some((a) => a.template.id === "rest-api-server" && a.config.model)
     ) {
       tasks.push({

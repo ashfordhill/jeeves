@@ -12,11 +12,13 @@ import {
 } from "../acceptance.ts";
 import { pnpmCommand, runCommand } from "../exec.ts";
 import { hashContents, type Lock } from "../lock.ts";
+import { assertRecipeDependencies, loadRecipe } from "../recipes.ts";
 import { ComposeCli } from "./compose.ts";
 import type { CheckOutcome } from "./index.ts";
 
 /** Reject missing, edited, and symlinked expectations before any application tests run. */
 export function assertGeneratedIntegrity(dir: string, lock: Lock): void {
+  if (lock.recipe) assertRecipeDependencies(dir, loadRecipe(lock.recipe));
   for (const [path, hash] of Object.entries(lock.files)) {
     let current = dir;
     for (const part of path.split("/")) {
@@ -222,6 +224,8 @@ export async function verifyBehavior(options: {
   required: Record<string, string[]>;
   /** Whether the frontend has been implemented; frontend-phase suites wait until it has. */
   phase?: "extensions" | "frontend";
+  /** Pinned recipe suites are already implemented, including their frontend phase. */
+  providedAcceptance?: string[];
   signal?: AbortSignal;
   log: (line: string) => void;
   onCheck: (check: CheckOutcome) => void;
@@ -414,7 +418,11 @@ export async function verifyBehavior(options: {
         );
     }
     for (const suite of suites) {
-      const gate = fixedSuiteGate(suite, required, phase);
+      const gate = fixedSuiteGate(
+        suite,
+        required,
+        options.providedAcceptance?.includes(`${suite.service}/${suite.id}`) ? "frontend" : phase,
+      );
       if (gate.check) onCheck(gate.check);
       if (gate.run)
         await run(

@@ -123,6 +123,11 @@ function applyOne(
   };
 
   switch (op.op) {
+    case "setRecipe": {
+      if (op.recipe) design.recipe = op.recipe;
+      else delete design.recipe;
+      return;
+    }
     case "addElement": {
       ensureFree(op.element.id);
       for (const attachment of op.element.attachments) ensureFree(attachment.id);

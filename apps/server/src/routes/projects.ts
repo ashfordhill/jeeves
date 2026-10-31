@@ -1,4 +1,6 @@
-import { layoutSchema, operationBatchSchema } from "@jeeves/spec";
+import { createRecipeDesign, RecipeError, recipeCatalog } from "@jeeves/generator";
+import { freePort } from "@jeeves/generator/baseline";
+import { layoutSchema, operationBatchSchema, templateRefSchema } from "@jeeves/spec";
 import type { FastifyReply } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
@@ -32,6 +34,34 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
   { service },
 ) => {
   app.get("/projects", async () => ({ projects: await service.listProjects() }));
+  app.get("/recipes", async () => ({ recipes: recipeCatalog() }));
+  app.post(
+    "/projects/from-recipe",
+    {
+      schema: {
+        body: z.strictObject({
+          name: z.string().trim().min(1).max(80),
+          recipe: templateRefSchema,
+          config: z.record(z.string(), z.unknown()).optional(),
+        }),
+      },
+    },
+    async (req, reply) => {
+      try {
+        const initial = createRecipeDesign(req.body.recipe, {
+          title: req.body.name,
+          hostPort: await freePort(),
+          config: req.body.config,
+        });
+        const project = await service.createProject(req.body.name, initial);
+        return reply.code(201).send({ project });
+      } catch (error) {
+        if (error instanceof RecipeError || error instanceof z.ZodError)
+          return reply.code(422).send({ code: "INVALID_RECIPE", message: error.message });
+        throw error;
+      }
+    },
+  );
 
   app.post("/projects", { schema: { body: projectBody } }, async (req, reply) => {
     const project = await service.createProject(req.body.name);

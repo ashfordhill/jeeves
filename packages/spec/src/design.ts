@@ -8,6 +8,14 @@ export type ConnectionKind = z.infer<typeof connectionKindSchema>;
 export const configValuesSchema = z.record(z.string(), z.unknown());
 export type ConfigValues = z.infer<typeof configValuesSchema>;
 
+/** A catalog-owned product composition; configuration is validated by its pinned recipe. */
+export const recipeBindingSchema = z.strictObject({
+  id: idSchema,
+  version: templateRefSchema.shape.version,
+  config: configValuesSchema.default({}),
+});
+export type RecipeBinding = z.output<typeof recipeBindingSchema>;
+
 export const notesSchema = z.string().max(20_000);
 
 export const attachmentSchema = z.strictObject({
@@ -76,6 +84,7 @@ export const designSchema = z.strictObject({
   schemaVersion: z.union([z.literal(1), z.literal(2)]),
   /** Semantic revision. Bumped once per applied operation batch, never by layout changes. */
   revision: z.int().nonnegative(),
+  recipe: recipeBindingSchema.optional(),
   elements: z.array(elementSchema).default([]),
   connections: z.array(connectionSchema).default([]),
   annotations: z.array(annotationSchema).default([]),

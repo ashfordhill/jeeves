@@ -1,3 +1,4 @@
+import { createRecipeDesign, lockFor, planProject } from "@jeeves/generator";
 import type { DesignDocument } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
@@ -120,4 +121,21 @@ describe("orderProblems", () => {
       },
     ]);
   });
+});
+
+it("seeds no implementation work for protected recipe behavior and retains independent custom work", () => {
+  const { design } = createRecipeDesign(
+    { id: "qr-studio", version: "0.1.0" },
+    { title: "Proof", hostPort: 18287 },
+  );
+  const plan = planProject(design, templates, { projectName: "Proof" });
+  const lock = lockFor(plan, design.revision);
+  expect(seedPlan({ design, lock, templates: templates.lookup })).toEqual([]);
+  const web = design.elements.find((element) => element.id === "qrwty-web")!;
+  web.notes += " Add a project-specific help panel in ProjectExtras.";
+  expect(seedPlan({ design, lock, templates: templates.lookup }).map((task) => task.key)).toEqual([
+    "qrwty-web",
+  ]);
+  delete lock.files["frontends/qrwty-web/src/pages/Home.tsx"];
+  expect(() => seedPlan({ design, lock, templates: templates.lookup })).toThrow(/not protected/);
 });

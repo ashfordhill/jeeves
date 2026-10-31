@@ -9,6 +9,7 @@ import { pnpmCommand, runCommand } from "../exec.ts";
 import { readLock } from "../lock.ts";
 import { type TemplateSet, templateSet } from "../modules.ts";
 import type { Subject } from "../plan.ts";
+import { recipeCoverage } from "../recipes.ts";
 import { assertGeneratedIntegrity, verifyBehavior } from "./behavior.ts";
 import { assertComposeEnvironment, ComposeCli } from "./compose.ts";
 
@@ -136,7 +137,8 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
   const [pnpm, ...pnpmArgs] = pnpmCommand();
   const lock = readLock(dir);
   const models = lock?.resourceModels ?? {};
-  const required =
+  const provided = lock ? recipeCoverage(options.design, lock, templates.lookup) : undefined;
+  const requested =
     options.requiredExtensions ??
     (options.unitTests
       ? Object.fromEntries(
@@ -146,6 +148,14 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
           ]),
         )
       : {});
+  const required = Object.fromEntries(
+    [...new Set([...Object.keys(requested), ...Object.keys(provided?.operations ?? {})])].map(
+      (service) => [
+        service,
+        [...new Set([...(requested[service] ?? []), ...(provided?.operations[service] ?? [])])],
+      ],
+    ),
+  );
   const result: BaselineResult = { ok: true, steps: [], checks: [] };
   if (signal?.aborted) result.ok = false;
 
@@ -335,6 +345,7 @@ export async function runBaseline(options: BaselineOptions): Promise<BaselineRes
         dir,
         lock,
         required,
+        providedAcceptance: provided?.acceptance,
         ...(options.phase && { phase: options.phase }),
         signal,
         log,

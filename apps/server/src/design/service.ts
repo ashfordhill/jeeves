@@ -1,3 +1,4 @@
+import { recipeFindings } from "@jeeves/generator";
 import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
@@ -67,18 +68,26 @@ export class DesignService {
     return project;
   }
 
-  createProject(name: string): Promise<Project> {
+  createProject(
+    name: string,
+    initial?: { design: DesignDocument; layout: LayoutDocument },
+  ): Promise<Project> {
+    const design = initial ? { ...upgradeDesign(initial.design), revision: 0 } : emptyDesign();
+    const findings = this.findings(design);
+    if (initial && findings.some((item) => item.severity === "error"))
+      throw new Error(findings.map((item) => item.message).join("\n"));
     return this.db.transaction(async (tx) => {
       const [project] = await tx.insert(projects).values({ name }).returning();
       if (!project) throw new Error("insert returned no project");
-      const design = emptyDesign();
       await tx.insert(designRevisions).values({
         projectId: project.id,
         revision: design.revision,
         document: design,
-        findings: validateDesign(design, this.registry),
+        findings,
       });
-      await tx.insert(layouts).values({ projectId: project.id, document: emptyLayout() });
+      await tx
+        .insert(layouts)
+        .values({ projectId: project.id, document: initial?.layout ?? emptyLayout() });
       return project;
     });
   }
@@ -142,13 +151,19 @@ export class DesignService {
         .update(operations)
         .set({ state: "discarded" })
         .where(and(eq(operations.projectId, project.id), eq(operations.state, "undone")));
-      const operationId = await this.record(tx, project, result.design, result.findings, {
-        kind: "edit",
-        source: input.source,
-        ops: input.ops as OperationInput[],
-        state: "applied",
-        before: current.document,
-      });
+      const operationId = await this.record(
+        tx,
+        project,
+        result.design,
+        this.findings(result.design),
+        {
+          kind: "edit",
+          source: input.source,
+          ops: input.ops as OperationInput[],
+          state: "applied",
+          before: current.document,
+        },
+      );
       return { ok: true, operationId, state: await this.state(tx, project) };
     });
   }
@@ -228,7 +243,7 @@ export class DesignService {
       const snapshot = kind === "undo" ? target.before : target.after;
       const design: DesignDocument = { ...upgradeDesign(snapshot), revision: project.revision + 1 };
       // Findings are recomputed: the registry may have changed since the snapshot was taken.
-      const findings = validateDesign(design, this.registry);
+      const findings = this.findings(design);
       await tx
         .update(operations)
         .set({ state: kind === "undo" ? "undone" : "applied" })
@@ -309,7 +324,11 @@ export class DesignService {
       );
     if (!row) throw new Error(`project ${project.id} has no revision ${project.revision}`);
     const document = upgradeDesign(row.document);
-    return { document, findings: validateDesign(document, this.registry) };
+    return { document, findings: this.findings(document) };
+  }
+
+  private findings(design: DesignDocument): Finding[] {
+    return [...validateDesign(design, this.registry), ...recipeFindings(design, this.registry)];
   }
 
   private async state(db: Db | Tx, project: Project): Promise<DesignState> {
