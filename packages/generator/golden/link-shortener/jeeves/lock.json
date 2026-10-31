@@ -22,8 +22,8 @@
     },
     {
       "name": "@jeeves/rest-server",
-      "version": "0.1.0",
-      "tarball": "vendor/jeeves/jeeves-rest-server-0.1.0.tgz"
+      "version": "0.2.0",
+      "tarball": "vendor/jeeves/jeeves-rest-server-0.2.0.tgz"
     },
     {
       "name": "@jeeves/service-runtime",
@@ -73,7 +73,7 @@
     "frontends/web/src/jeeves.generated.ts": "sha256-bd1a98551013f1175f3229d4553ea374ca70044430fa8cf93af9eadc8c8256df",
     "jeeves/design.json": "sha256-9442f593c846e5cea0364b880b3fd7ee112b1376d34ba6750a5ad8e62f04377c",
     "jeeves/elements/links-db.md": "sha256-f0707bae7cca0f7009e6a4af7e8f833d04a1cd430584254efd19dcb23df4eac6",
-    "jeeves/elements/links.md": "sha256-d08e70861a4d4929c4460597125643ebd87496fa701e4a25b169b9cecf790a35",
+    "jeeves/elements/links.md": "sha256-9b12affff25fc12bd6b9567faf123b1a2d48713412ce4324b3029e0ab74881fb",
     "jeeves/elements/web.md": "sha256-c4ab49a0ae8f7464589b15257bc1534c03e151936dcb2c72e76911d107b0768c",
     "services/links/src/jeeves.generated.ts": "sha256-6304096668f1a9d4edb0dd905d2916074dd454ba3b7222df9751efa635aef7e5"
   }

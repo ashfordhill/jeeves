@@ -19,10 +19,24 @@ export const tableName = (r: Resource) => storage("r", r.id);
 const columnName = (id: string) => storage("f", id);
 const relationColumn = (id: string) => storage("b", id);
 const sqlType = (f: Resource["fields"][number]) =>
-  f.type === "text" ? `varchar(${f.maxLength})` : f.type === "timestamp" ? "timestamptz" : "text";
+  f.type === "text"
+    ? `varchar(${f.maxLength})`
+    : f.type === "timestamp"
+      ? "timestamptz"
+      : f.type === "integer"
+        ? "integer"
+        : "text";
 const required = (f: Resource["fields"][number]) => f.type === "timestamp" || f.required;
+const fieldConstraint = (f: Resource["fields"][number]) => {
+  const column = `"${columnName(f.id)}"`;
+  if (f.type === "integer")
+    return ` CHECK (${column} >= ${f.minimum} AND ${column} <= ${f.maximum})`;
+  if (f.type === "enum")
+    return ` CHECK (${column} IN (${f.values.map((v) => `'${v.replaceAll("'", "''")}'`).join(", ")}))`;
+  return "";
+};
 const fieldSql = (f: Resource["fields"][number]) =>
-  `"${columnName(f.id)}" ${sqlType(f)}${required(f) ? " NOT NULL" : ""}${f.type === "timestamp" ? " DEFAULT now()" : ""}`;
+  `"${columnName(f.id)}" ${sqlType(f)}${required(f) ? " NOT NULL" : ""}${f.type === "timestamp" ? " DEFAULT now()" : ""}${fieldConstraint(f)}`;
 
 export class DestructiveModelError extends Error {
   constructor(readonly affected: string[]) {
@@ -52,9 +66,15 @@ export function modelMigration(next: ResourceConfig, previous?: ResourceConfig):
       else if (
         f.type !== field.type ||
         (f.type === "text" && field.type === "text" && f.maxLength < field.maxLength) ||
+        (f.type === "integer" &&
+          field.type === "integer" &&
+          (f.minimum !== field.minimum || f.maximum !== field.maximum)) ||
+        (f.type === "enum" &&
+          field.type === "enum" &&
+          JSON.stringify([...f.values].sort()) !== JSON.stringify([...field.values].sort())) ||
         (!required(field) && required(f))
       )
-        affected.push(`${r.id}.${field.id}: type/requiredness narrowing`);
+        affected.push(`${r.id}.${field.id}: type/requiredness narrowing or constraint change`);
       else {
         if (f.type === "text" && field.type === "text" && f.maxLength > field.maxLength)
           sql.push(
@@ -219,7 +239,18 @@ export function resourceContract(model: ResourceConfig, title: string) {
           ? { type: "string", format: "date-time" }
           : f.type === "text"
             ? { type: f.required ? "string" : ["string", "null"], maxLength: f.maxLength }
-            : { type: f.required ? "string" : ["string", "null"], format: "uri" };
+            : f.type === "integer"
+              ? {
+                  type: f.required ? "integer" : ["integer", "null"],
+                  minimum: f.minimum,
+                  maximum: f.maximum,
+                }
+              : f.type === "enum"
+                ? {
+                    type: f.required ? "string" : ["string", "null"],
+                    enum: f.required ? f.values : [...f.values, null],
+                  }
+                : { type: f.required ? "string" : ["string", "null"], format: "uri" };
     for (const b of r.belongsTo)
       properties[`${model.resources.find((p) => p.id === b.resource)!.name}Id`] = {
         type: "string",
@@ -296,10 +327,13 @@ export function resourceContract(model: ResourceConfig, title: string) {
   }
   for (const e of model.extensions) {
     paths[e.path] ??= {};
-    paths[e.path]!.get = {
+    paths[e.path]![e.method.toLowerCase()] = {
       operationId: e.operationId,
       ...e.contract,
-      responses: withDefaultErrorBodies(e.contract.responses),
+      responses: withDefaultErrorBodies({
+        ...(e.method === "POST" && { "400": error, "401": error, "403": error, "500": error }),
+        ...e.contract.responses,
+      }),
       security: e.access === "owner" ? [{ session: [] }] : [],
       "x-jeeves-acceptance": e.acceptance,
     };

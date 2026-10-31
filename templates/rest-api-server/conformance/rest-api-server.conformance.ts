@@ -53,7 +53,7 @@ describe("conformance: http-service with a rest-api-server attachment", () => {
     expect(wiring).toContain('basePath: "/v1",');
     const pkg = JSON.parse(readFileSync(join(dir, "services/links/package.json"), "utf8"));
     expect(pkg.dependencies["@jeeves/rest-server"]).toBe(
-      "file:../../vendor/jeeves/jeeves-rest-server-0.1.0.tgz",
+      "file:../../vendor/jeeves/jeeves-rest-server-0.2.0.tgz",
     );
   });
 

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import type { ResourceConfig } from "@jeeves/spec";
 import { type StartedProject, startProject } from "@jeeves/template-kit/harness";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { resourceDescriptor } from "../../../templates/rest-api-server/resources.ts";
 import { generateProject } from "../src/generate.ts";
 import { fixtureDesign } from "../src/test-support.ts";
 
@@ -39,7 +40,11 @@ resourceModel.resources.push({
   id: "memo",
   name: "memo",
   access: "owner",
-  fields: [{ id: "body", name: "body", type: "text", required: true, maxLength: 100 }],
+  fields: [
+    { id: "body", name: "body", type: "text", required: true, maxLength: 100 },
+    { id: "copies", name: "copies", type: "integer", required: false, minimum: 1, maximum: 100 },
+    { id: "style", name: "style", type: "enum", required: false, values: ["plain", "rounded"] },
+  ],
   belongsTo: [{ id: "qr-parent", resource: "qr", required: true }],
   operations: ["create", "read", "update", "list"],
 });
@@ -67,6 +72,57 @@ resourceModel.extensions.push({
     },
   },
 });
+resourceModel.acceptanceCases.push("CMD-01");
+resourceModel.extensions.push({
+  id: "publish-memo",
+  operationId: "publishMemo",
+  method: "POST",
+  path: "/api/memo/{id}/publish",
+  access: "owner",
+  acceptance: ["CMD-01"],
+  notes: "Publish an owned memo using bounded settings",
+  contract: {
+    parameters: [
+      { in: "path", name: "id", required: true, schema: { type: "string", format: "uuid" } },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            required: ["copies", "style"],
+            properties: {
+              copies: { type: "integer", minimum: 1, maximum: 100 },
+              style: { type: "string", enum: ["plain", "rounded"] },
+            },
+          },
+        },
+      },
+    },
+    responses: {
+      "200": {
+        description: "Saved settings",
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              additionalProperties: false,
+              required: ["id", "copies", "style"],
+              properties: {
+                id: { type: "string", format: "uuid" },
+                copies: { type: "integer", minimum: 1, maximum: 100 },
+                style: { type: "string", enum: ["plain", "rounded"] },
+              },
+            },
+          },
+        },
+      },
+      "404": { description: "Not found" },
+    },
+  },
+});
 design.connections.push({
   id: "consumer-calls-links",
   kind: "calls",
@@ -83,6 +139,7 @@ let project: StartedProject;
 let base: string;
 let web: string;
 let id: string;
+let memoId: string;
 const accounts: Record<string, Record<string, string>> = {};
 const compose = (...args: string[]) =>
   execFileSync("docker", ["compose", "-p", projectName, ...args], {
@@ -103,6 +160,31 @@ beforeAll(async () => {
   writeFileSync(
     join(dir, "services/links/src/features/public-link/index.ts"),
     'import { defineFeature } from "@jeeves/service-runtime"; export default defineFeature({name:"public-link",operations:{followPublic:async () => ({status:302,headers:{Location:"http://127.0.0.1/destination","Cache-Control":"no-store"}})}});\n',
+  );
+  writeFileSync(
+    join(dir, "services/links/src/features/publish-memo/index.ts"),
+    `
+import { defineFeature } from "@jeeves/service-runtime";
+import { sessionPrincipal } from "@jeeves/rest-server";
+import { database } from "../../jeeves.generated.ts";
+import memo from "../../generated/resources/memo.ts";
+const copies = memo.fields.find(f => f.name === "copies")!.column;
+const style = memo.fields.find(f => f.name === "style")!.column;
+export default defineFeature({ name: "publish-memo", operations: { publishMemo: async request => {
+  const input = request.body as { copies: number; style: string };
+  const { rows } = await database.pool.query('UPDATE "' + memo.table + '" SET "' + copies + '"=$1,"' + style + '"=$2 WHERE id=$3 AND owner_id=$4 RETURNING id,"' + copies + '" AS copies,"' + style + '" AS style', [input.copies, input.style, request.params.id, sessionPrincipal(request.request)!.id]);
+  return rows[0] ? { status: 200, body: rows[0] } : { status: 404, body: { error: "NOT_FOUND", message: "No owned memo" } };
+} } });
+`,
+  );
+  writeFileSync(
+    join(dir, "services/consumer/src/command-typecheck.ts"),
+    `
+import { linksClient } from "./clients/links.generated.ts";
+export const good = () => linksClient.POST("/api/memo/{id}/publish", { params: { path: { id: "fixture" } }, body: { copies: 17, style: "rounded" } });
+// @ts-expect-error the generated client must reject string quantities and unknown enum values
+export const bad = () => linksClient.POST("/api/memo/{id}/publish", { params: { path: { id: "fixture" } }, body: { copies: "17", style: "arbitrary" } });
+`,
   );
   project = await startProject(dir, { projectName, startupTimeoutMs: 180000 });
   const endpoint = await project.service("links").endpoint(8080);
@@ -179,6 +261,7 @@ describe("structured resources: generated project", () => {
       body: JSON.stringify({ body: "owned child", qrId: id }),
     });
     expect(memo.status).toBe(201);
+    memoId = ((await memo.json()) as { id: string }).id;
 
     expect((await fetch(base + "/api/qr/" + id, { headers: accounts.bob })).status).toBe(404);
     const clientScript =
@@ -228,6 +311,75 @@ describe("structured resources: generated project", () => {
       ]);
     expect(forbidden.exitCode).not.toBe(0);
     expect((await fetch(base + "/api/scan", { headers: accounts.alice })).status).toBe(404);
+  });
+  it("validates owner commands and persists bounded settings with database constraints", async () => {
+    const url = base + "/api/memo/" + memoId + "/publish";
+    const call = (headers = accounts.alice, value: unknown = { copies: 17, style: "rounded" }) =>
+      fetch(url, { method: "POST", headers, body: JSON.stringify(value) });
+    expect((await call({ "content-type": "application/json" })).status).toBe(401);
+    expect((await call({ ...accounts.alice, "x-csrf-token": "wrong" })).status).toBe(403);
+    expect((await call({ ...accounts.alice, origin: "http://evil.test" })).status).toBe(403);
+    expect((await call(accounts.bob)).status).toBe(404);
+    for (const invalid of [
+      { copies: 0, style: "plain" },
+      { copies: 101, style: "plain" },
+      { copies: "17", style: "plain" },
+      { copies: 1, style: "invalid" },
+      { copies: 1, style: "plain", ownerId: "caller" },
+    ])
+      expect((await call(accounts.alice, invalid)).status).toBe(400);
+    expect(
+      (
+        await fetch(url, {
+          method: "POST",
+          headers: {
+            cookie: accounts.alice!.cookie!,
+            origin,
+            "x-csrf-token": accounts.alice!["x-csrf-token"]!,
+          },
+        })
+      ).status,
+    ).toBe(400);
+    const saved = await call();
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toEqual({ id: memoId, copies: 17, style: "rounded" });
+    const descriptor = resourceDescriptor(
+      resourceModel.resources.find((r) => r.id === "memo")!,
+      resourceModel,
+    );
+    for (const [field, value] of [
+      ["copies", "101"],
+      ["style", "'invalid'"],
+    ]) {
+      const column = descriptor.fields.find((f) => f.name === field)!.column;
+      const invalid = await project
+        .service("links-db")
+        .exec([
+          "psql",
+          "-U",
+          "postgres",
+          "-d",
+          "links",
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-c",
+          `UPDATE "${descriptor.table}" SET "${column}"=${value} WHERE id='${memoId}'`,
+        ]);
+      expect(invalid.exitCode).not.toBe(0);
+      expect(invalid.output).toMatch(/check constraint/i);
+    }
+    const clientScript =
+      'import assert from "node:assert/strict"; import { linksClient } from "./services/consumer/src/clients/links.generated.ts"; const result=await linksClient.POST("/api/memo/{id}/publish",{params:{path:{id:process.env.MEMO_ID}},headers:JSON.parse(process.env.OWNER_HEADERS),body:{copies:17,style:"rounded"}}); assert.equal(result.response.status,200); assert.deepEqual(result.data,{id:process.env.MEMO_ID,copies:17,style:"rounded"});';
+    execFileSync("node", ["--input-type=module", "-e", clientScript], {
+      cwd: dir,
+      env: {
+        ...process.env,
+        API_LINKS_URL: base,
+        MEMO_ID: memoId,
+        OWNER_HEADERS: JSON.stringify(accounts.alice),
+      },
+      stdio: "pipe",
+    });
   });
   it("authenticates login, expires opaque sessions, and paginates without repeats", async () => {
     const login = (password: string) =>
@@ -288,6 +440,9 @@ describe("structured resources: generated project", () => {
       destination: "https://example.test/first",
       title: null,
     });
+    expect(
+      await (await fetch(base + "/api/memo/" + memoId, { headers: accounts.alice })).json(),
+    ).toMatchObject({ id: memoId, copies: 17, style: "rounded" });
     const migrations = await project
       .service("links-db")
       .exec([

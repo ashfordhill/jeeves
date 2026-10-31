@@ -9,6 +9,7 @@ export default defineConfig({
     include: [
       "templates/*/conformance/**/*.conformance.ts",
       "packages/generator/conformance/**/*.conformance.ts",
+      "packages/qr-artwork/conformance/**/*.conformance.ts",
     ],
     environment: "node",
     fileParallelism: false,

@@ -109,7 +109,7 @@ describe("generateProject", () => {
     const service = JSON.parse(read(dir, "services/links/package.json"));
     expect(service.dependencies).toMatchObject({
       "@jeeves/service-runtime": "file:../../vendor/jeeves/jeeves-service-runtime-0.1.0.tgz",
-      "@jeeves/rest-server": "file:../../vendor/jeeves/jeeves-rest-server-0.1.0.tgz",
+      "@jeeves/rest-server": "file:../../vendor/jeeves/jeeves-rest-server-0.2.0.tgz",
       "@jeeves/postgres-runtime": "file:../../vendor/jeeves/jeeves-postgres-runtime-0.1.0.tgz",
       "drizzle-orm": "0.45.4",
     });

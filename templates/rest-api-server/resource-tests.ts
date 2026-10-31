@@ -8,18 +8,18 @@ export function resourceTests(
   model: ResourceConfig,
 ): OutputFile {
   const q = JSON.stringify;
+  const sample = (field: Resource["fields"][number], update = false) => {
+    if (field.type === "http-url") return `https://example.test/${update ? "updated" : "original"}`;
+    if (field.type === "integer") return update ? field.maximum : field.minimum;
+    if (field.type === "enum") return update ? field.values.at(-1) : field.values[0];
+    if (field.type === "text") return (update ? "update" : "sample").slice(0, field.maxLength);
+    throw new Error("A timestamp cannot be supplied by a caller");
+  };
   const seedLines: string[] = [];
   let seedNumber = 0;
   const seedInput = (r: Resource, variable: string) => {
     const input = Object.fromEntries(
-      r.fields
-        .filter((f) => f.type !== "timestamp")
-        .map((f) => [
-          f.name,
-          f.type === "http-url"
-            ? "https://example.test/original"
-            : "sample".slice(0, f.type === "text" ? f.maxLength : 6),
-        ]),
+      r.fields.filter((f) => f.type !== "timestamp").map((f) => [f.name, sample(f)]),
     );
     seedLines.push("  const " + variable + " = " + q(input) + ";");
     for (const b of r.belongsTo) {
@@ -124,6 +124,15 @@ export function resourceTests(
           q("x".repeat(f.type === "text" ? f.maxLength + 1 : 1)) +
           "});",
       ),
+    ...resource.fields.flatMap((f) => {
+      const invalid =
+        f.type === "integer"
+          ? [f.minimum - 1, f.maximum + 1, f.minimum + 0.5, "1"]
+          : f.type === "enum"
+            ? ["__invalid__", 1]
+            : [];
+      return invalid.map((value) => `    invalids.push({...input,${q(f.name)}:${q(value)}});`);
+    }),
     '    for (const invalid of invalids) assert.equal((await fetch(base+path,{method:"POST",headers:alice,body:JSON.stringify(invalid)})).status,400);',
     '    const created=await fetch(base+path,{method:"POST",headers:alice,body:JSON.stringify(input)}); assert.equal(created.status,201);',
     "    const row=await created.json(); assertRow(row); id=row.id;",
@@ -144,16 +153,7 @@ export function resourceTests(
     ...resource.fields
       .filter((f) => f.type !== "timestamp")
       .slice(0, 1)
-      .map(
-        (f) =>
-          "    input[" +
-          q(f.name) +
-          "]=" +
-          q(
-            f.type === "http-url" ? "https://example.test/updated" : "update".slice(0, f.maxLength),
-          ) +
-          ";",
-      ),
+      .map((f) => "    input[" + q(f.name) + "]=" + q(sample(f, true)) + ";"),
     '    assert.equal((await fetch(base+path+"/"+id,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify(input)})).status,401);',
 
     '    assert.equal((await fetch(base+path+"/"+id,{method:"PATCH",headers:bob,body:JSON.stringify(input)})).status,404);',

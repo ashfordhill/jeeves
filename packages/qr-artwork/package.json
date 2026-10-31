@@ -1,0 +1,31 @@
+{
+  "name": "@jeeves/qr-artwork",
+  "version": "0.1.0",
+  "description": "Deterministic versioned QR artwork rendering and independent PNG decode checks.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./settings": "./src/settings.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.js",
+      "./settings": "./dist/settings.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "qrcode": "1.5.4",
+    "pngjs": "7.0.0",
+    "jsqr": "1.4.0",
+    "zod": "4.5.4"
+  }
+}

@@ -19,9 +19,12 @@ export interface ResourceDefinition {
     readonly id: string;
     readonly name: string;
     readonly column: string;
-    readonly type: "text" | "http-url" | "timestamp";
+    readonly type: "text" | "http-url" | "timestamp" | "integer" | "enum";
     readonly required?: boolean;
     readonly maxLength?: number;
+    readonly minimum?: number;
+    readonly maximum?: number;
+    readonly values?: readonly string[];
   }[];
   readonly belongsTo: readonly {
     readonly id: string;

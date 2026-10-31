@@ -19,6 +19,27 @@ export const resourceFieldSchema = z.discriminatedUnion("type", [
     type: z.literal("http-url"),
     required: z.boolean(),
   }),
+  z
+    .strictObject({
+      id: idSchema,
+      name: nameSchema,
+      type: z.literal("integer"),
+      required: z.boolean(),
+      minimum: z.int().min(-2147483648).max(2147483647),
+      maximum: z.int().min(-2147483648).max(2147483647),
+    })
+    .refine((field) => field.minimum <= field.maximum, "Minimum must not exceed maximum"),
+  z.strictObject({
+    id: idSchema,
+    name: nameSchema,
+    type: z.literal("enum"),
+    required: z.boolean(),
+    values: z
+      .array(z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,47}$/))
+      .min(1)
+      .max(64)
+      .refine((values) => new Set(values).size === values.length, "Enum values must be unique"),
+  }),
   z.strictObject({
     id: idSchema,
     name: nameSchema,
@@ -70,7 +91,7 @@ export const resourceConfigSchema = z
         z.strictObject({
           id: idSchema,
           operationId: nameSchema,
-          method: z.literal("GET"),
+          method: z.enum(["GET", "POST"]),
           path: z
             .string()
             .regex(
@@ -82,6 +103,14 @@ export const resourceConfigSchema = z
           dependencies: z.array(extensionDependencySchema).optional(),
           contract: z.strictObject({
             parameters: z.array(parameterSchema).default([]),
+            requestBody: z
+              .strictObject({
+                required: z.literal(true),
+                content: z.strictObject({
+                  "application/json": z.strictObject({ schema: jsonSchema }),
+                }),
+              })
+              .optional(),
             responses: z.record(z.string().regex(/^[1-5][0-9]{2}$/), responseSchema),
           }),
         }),
@@ -165,6 +194,14 @@ export const resourceConfigSchema = z
     };
     for (const id of ids) visit(id);
     for (const e of model.extensions) {
+      if (e.method === "GET" && e.contract.requestBody)
+        issue(`${e.id}: GET extensions cannot have a request body`);
+      if (e.method === "POST") {
+        if (e.access !== "owner") issue(`${e.id}: POST commands require owner access`);
+        const body = e.contract.requestBody?.content["application/json"].schema;
+        if (!body || body.type !== "object" || body.additionalProperties !== false)
+          issue(`${e.id}: POST commands require a strict JSON object request body`);
+      }
       if (
         ["/auth", "/health", "/ready", "/openapi.json", "/_jeeves"].some(
           (path) => e.path === path || e.path.startsWith(path + "/"),
@@ -211,17 +248,19 @@ export function resourceInputSchema(resource: Resource, model: ResourceConfig): 
   const shape: Record<string, z.ZodType> = {};
   for (const field of resource.fields) {
     if (field.type === "timestamp") continue;
-    let schema: z.ZodType =
-      field.type === "text"
-        ? z.string().max(field.maxLength)
-        : z
-            .string()
-            .max(8192)
-            .url()
-            .regex(
-              /^[hH][tT][tT][pP][sS]?:\/\/(?![^/?#]*@)/,
-              "Use an absolute HTTP/HTTPS URL without credentials",
-            );
+    let schema: z.ZodType;
+    if (field.type === "text") schema = z.string().max(field.maxLength);
+    else if (field.type === "integer") schema = z.int().min(field.minimum).max(field.maximum);
+    else if (field.type === "enum") schema = z.enum(field.values);
+    else
+      schema = z
+        .string()
+        .max(8192)
+        .url()
+        .regex(
+          /^[hH][tT][tT][pP][sS]?:\/\/(?![^/?#]*@)/,
+          "Use an absolute HTTP/HTTPS URL without credentials",
+        );
     if (!field.required) schema = schema.nullable().optional();
     shape[field.name] = schema;
   }

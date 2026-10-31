@@ -51,3 +51,23 @@ Done when:
 - Review both repository diffs and protected-file hashes, append the implementation handoff with commands/results and remaining limits, and create scoped local P14 commits. Existing review/planning additions remain uncommitted and preserved.
 
 Next: bounded immutable artwork/Studio contract and rendering package, followed by deterministic product-recipe adoption and C4/configuration/reliability packages. Specify each before coding and use measured acceptance to decide its actual scope.
+
+## P15: validated Studio foundations
+
+Inspection found two concrete prerequisites for saved artwork: the resource vocabulary has only text/URL/timestamp fields, and custom operations are GET-only. The existing session runtime already protects non-GET owner operations with Origin and CSRF checks. Extend these boundaries deliberately before adopting a new qrwty schema. P15 changes Jeeves only; P16 will bind the resulting contracts/rendering to qrwty and build the Studio UI.
+
+Scope:
+
+- Add bounded integer and finite enum resource fields, with strict design/input/output schemas, SQL constraints, generated descriptors, meaningful standard acceptance, and model-tool schema support. Preserve stable physical IDs and old field behavior. Existing constraint changes require reviewed migration; never silently narrow or discard data.
+- Allow owner-only POST extension commands with an explicit required JSON request-body contract. GET body contracts and public POST commands remain unsupported. Generate the declared method/body into OpenAPI and typed clients; verify missing/invalid bodies, unknown fields, no session, wrong owner, missing/wrong CSRF and wrong Origin. Project features still cannot replace generated operations. Existing GET extensions and fixed acceptance stay compatible.
+- Version the REST runtime artifact for the widened resource descriptor surface; do not overwrite qrwty's pinned runtime or regenerate it in this package. Record compatibility and adoption requirements. No model-provider invocation is needed for this work.
+- Add a pinned, versioned QR artwork domain package. A strict finite configuration selects reviewed colors, square/rounded modules, bounded finder styles, 256/512/1024px PNG or SVG, quiet zone of at least four modules and M/Q/H correction. Keep canonical encoded URL separate from mutable destination. Enforce useful module resolution and conservative color constraints without presenting a numeric heuristic as a scan guarantee. No logo uploads or arbitrary artwork in this package.
+- Render deterministically on the server from canonical URL + configuration + renderer version. Produce identical bytes for identical inputs. Independently decode representative exports across presets, sizes, rotation and bounded degradation; reject invalid settings. State exactly what the checks prove. A saved artwork revision will pin this renderer/configuration in P16; legacy 512px PNG behavior remains a separate unchanged endpoint.
+
+Done when:
+
+- Focused offline schema/generator/runtime/renderer tests pass, including invalid command authorization and migration cases; `pnpm check` passes.
+- An isolated generated fixture compiles and exercises the new typed resource and owner command through actual HTTP/Postgres, including persistence/restart and cross-owner denial. Existing relevant REST/resource conformance remains green; no live qrwty or database change.
+- Diff review confirms old identity/ownership protections and no weakening of QR-01–QR-09. Append the P15 handoff and create its scoped local commit.
+
+Next: P16, immutable artwork revision adoption and the qrwty Studio product flow. Reuse P14's shell, add a generic preset/configuration editor verified against a non-QR example, preserve printed QR identity/legacy exports, and prove the controlled additive migration in disposable copies before live adoption. Owner-wide analytics, deterministic product recipes and C4/reliability packages follow separately.

@@ -60,6 +60,25 @@ contract documents standard error bodies, so return `{ error, message }` for 400
 Compare it with the resource's `owner_id` column (generated for owner resources) and never take the
 owner from a request body or query.
 
+### Owner commands and bounded settings
+
+Structured extensions support GET reads and owner-only POST commands. A POST declares a required
+`application/json` object body with `additionalProperties: false` in the design. Generation owns
+the resulting contract and client types. The runtime checks the session, matching Origin and
+CSRF token before dispatch, then validates the body without type coercion. Public POST commands
+and GET request bodies are unsupported. Do not add undeclared routes to work around this boundary.
+
+Owner access establishes a principal; the extension must still scope its query to the actual
+owned resource. Put `owner_id = principal.id` in the mutation predicate (or join through its owned
+parent), use parameterized values and return 404 when no owned row matches. Use a transaction for
+related writes. Never accept a caller-supplied owner or replace a generated CRUD handler.
+
+Resource fields can declare bounded `integer` values or finite `enum` tokens. Their JSON and SQL
+constraints agree. Changing existing bounds or enum membership requires a reviewed migration;
+changing names preserves stable physical IDs. A new optional field or a new resource is additive.
+The widened descriptor surface uses `@jeeves/rest-server@0.2.0`; adopt that new artifact through
+generation, preserving earlier pinned runtime artifacts and immutable migration history.
+
 ### Dates and binary bodies
 
 - Postgres returns `date` and `timestamptz` columns as JavaScript `Date` objects. The response
