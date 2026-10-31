@@ -36,6 +36,7 @@ import {
 import { type TemplateSet, templateSet } from "./modules.ts";
 import { type PlannedElement, type ProjectPlan, planProject } from "./plan.ts";
 import { assertRecipeDependencies, loadRecipe, RecipeError, recipeEnvironment } from "./recipes.ts";
+import { starterEnvironment } from "./starter-environment.ts";
 
 /** Packs runtimes into `<dir>/vendor/jeeves/`; returns the paths it wrote (changed tarballs). */
 export type Vendor = (dir: string, runtimes: RuntimePackage[]) => Promise<string[]>;
@@ -186,6 +187,7 @@ export async function generateProject(
   const problems = ownershipProblems(dir, plan, previous);
   if (problems.length > 0) return { ok: false, reason: "ownership", problems };
   recipeEnvironment(dir, design);
+  starterEnvironment(dir, design, { fresh: !previous });
 
   mkdirSync(dir, { recursive: true });
   log(`Vendoring ${plan.runtimes.length} runtime package(s) into ${VENDOR_DIR}/`);
@@ -270,6 +272,7 @@ export async function generateProject(
 
   const lock = lockFor(plan, design.revision);
   if (recipeEnvironment(dir, design, true)) scaffolded.push(".env");
+  if (starterEnvironment(dir, design, { create: true, fresh: !previous })) scaffolded.push(".env");
   writeFileSync(join(dir, LOCK_PATH), lockToJson(lock));
 
   const planned = new Set(plan.elements.map((e) => e.id));

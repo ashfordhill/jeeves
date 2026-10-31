@@ -25,6 +25,8 @@ export const profiles = {
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
+  "resource-starter":
+    "Versioned editable starter to a running Inventory app; generated private setup, no model calls",
   "generated-workspace":
     "Diagram-generated Inventory workspace with frozen components and no frontend implementation model",
   "resource-workspace":
@@ -107,6 +109,7 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "resource-starter":
     case "generated-workspace":
     case "resource-workspace":
     case "generated-events":
@@ -115,7 +118,15 @@ export function planWork(root: string, name: string, selections: string[]): Work
       const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
       commands.push({
         executable: process.execPath,
-        args: ["--import", loader, join(root, `packages/generator/scripts/verify-${name}.ts`)],
+        args: [
+          "--import",
+          loader,
+          join(
+            root,
+            `packages/generator/scripts/verify-${name === "resource-starter" ? "generated-workspace" : name}.ts`,
+          ),
+          ...(name === "resource-starter" ? ["--starter"] : []),
+        ],
         cwd: root,
       });
       break;

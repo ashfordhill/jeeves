@@ -404,7 +404,29 @@ export interface ProductRecipe {
   }[];
 }
 
+export interface ArchitectureStarter {
+  id: string;
+  version: string;
+  title: string;
+  description: string;
+  maturity: "experimental";
+  features: string[];
+  limits: string[];
+  manifestSha256: string;
+}
+
 export const api = {
+  starters: () =>
+    request<{ starters: ArchitectureStarter[] }>("/starters").then((result) => result.starters),
+  createFromStarter: (
+    name: string,
+    starter: { id: string; version: string },
+    config: { preset: "midnight" | "paper"; pageSize: 10 | 25 | 50; tagline: string },
+  ) =>
+    request<{ project: Project }>("/projects/from-starter", {
+      method: "POST",
+      body: JSON.stringify({ name, starter, config }),
+    }).then((result) => result.project),
   architecture: (id: string) =>
     request<{ revision: number; views: ArchitectureViews }>(`/projects/${id}/architecture`),
   recipes: () => request<{ recipes: ProductRecipe[] }>("/recipes").then((r) => r.recipes),

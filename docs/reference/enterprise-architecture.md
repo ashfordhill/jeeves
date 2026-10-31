@@ -71,3 +71,8 @@ A disposable Inventory consumer proves the compiled runtime with real generated 
 ## P25 executable workspace follow-through
 
 The [resource-workspace attachment](../../templates/resource-workspace/README.md) now binds the P24 runtime to an actual session-resource API and derives its fields, relationships and capabilities from that contract. Stable IDs carry display selection; labels/preset/page size remain finite user choices. Protected composition and immutable artifacts remove routine frontend implementation work, while additive content and domain API behavior stay explicit. The generated Inventory proof uses no hand-written application root and seeds no implementation tasks. C4 projects the real API dependency, supplied workspace responsibilities and additional notes separately. This is a usable bounded resource application, not an arbitrary enterprise workflow engine.
+
+
+## P26 editable architecture follow-through
+
+The [resource application starter](../../starters/README.md) packages P25's executable composition with deliberate C4 person/system intent and a useful initial layout. Its versioned/hash-checked snapshot is copied into a new editable design; `startedFrom` records origin without pretending to be a protected implementation or verification result. The first-project chooser and current-model configuration use those real bindings. This follows Backstage's reviewed identity/reference/provenance separation while keeping Jeeves's executable design authoritative; no Backstage code or dependency is copied. The disposable factory-to-app proof consumes fresh private environment values, needs zero implementation tasks and preserves existing credentials/custom content during regeneration.

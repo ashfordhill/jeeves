@@ -1,9 +1,10 @@
 /** Actual diagram generation proof; all service/database/frontend state is disposable. */
 import { createHash, randomUUID } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseEnv } from "node:util";
 import { designSchema } from "@jeeves/spec";
 import {
   CheckSkipped,
@@ -16,12 +17,14 @@ import { parse } from "yaml";
 import { seedPlan } from "../../orchestrator/src/seed.ts";
 import { proveResourceWorkspace } from "../../resource-workspace/conformance/browser-proof.ts";
 import { assertGeneratedIntegrity, fixtureCompose, freePort } from "../src/baseline/behavior.ts";
-import { ComposeCli } from "../src/baseline/compose.ts";
+import { ComposeCli, missingComposeEnvironment } from "../src/baseline/compose.ts";
 import { pnpmCommand, runCommand } from "../src/exec.ts";
 import { generateProject } from "../src/generate.ts";
 import { templateSet } from "../src/modules.ts";
+import { createStarterDesign } from "../src/starters.ts";
 
-if (process.argv.length > 2) throw new Error("Generated workspace proof takes no arguments");
+const starterMode = process.argv[2] === "--starter";
+if (process.argv.length > (starterMode ? 3 : 2)) throw new Error("Only --starter is supported");
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 const scratch = mkdtempSync(join(tmpdir(), "jeeves-generated-workspace-")),
   dir = join(scratch, "app");
@@ -30,7 +33,7 @@ const cancellation = new AbortController(),
 process.on("SIGINT", cancel);
 process.on("SIGTERM", cancel);
 const log = (line: string) => console.log(line);
-const evidence = join(repository, ".jeeves-work/evidence/p25");
+const evidence = join(repository, `.jeeves-work/evidence/${starterMode ? "p26" : "p25"}`);
 const artifacts = ["product-ui/0.3.0", "resource-workspace/0.1.0"].map((path) => {
   const root = join(repository, "artifacts", path);
   const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8")) as {
@@ -44,9 +47,18 @@ const artifacts = ["product-ui/0.3.0", "resource-workspace/0.1.0"].map((path) =>
     throw new Error(`Archive hash differs: ${manifest.name}`);
   return { ...manifest, data };
 });
-const design = designSchema.parse(
-  JSON.parse(readFileSync(join(repository, "fixtures/designs/generated-workspace.json"), "utf8")),
-);
+const webPort = await freePort(),
+  origin = `http://127.0.0.1:${webPort}`;
+const design = starterMode
+  ? createStarterDesign(
+      { id: "resource-workspace", version: "0.1.0" },
+      { title: "Fieldwork", hostPort: webPort },
+    ).design
+  : designSchema.parse(
+      JSON.parse(
+        readFileSync(join(repository, "fixtures/designs/generated-workspace.json"), "utf8"),
+      ),
+    );
 let compose: ComposeCli | undefined,
   isolation: { file: string; name: string } | undefined,
   failure: unknown,
@@ -60,6 +72,13 @@ try {
     log,
   });
   if (!generated.ok) throw new Error(JSON.stringify(generated.problems));
+  const privateEnvironment = starterMode ? readFileSync(join(dir, ".env"), "utf8") : undefined;
+  if (
+    starterMode &&
+    (missingComposeEnvironment(dir, {}).length ||
+      (statSync(join(dir, ".env")).mode & 0o777) !== 0o600)
+  )
+    throw new Error("Starter local environment is incomplete or not private");
   const frontend = join(dir, "frontends/inventory-web");
   const vendor = join(dir, "vendor/jeeves");
   const templates = templateSet();
@@ -85,13 +104,24 @@ try {
     if (result.exitCode !== 0)
       throw new Error(`Consumer ${args.join(" ")} failed: ${result.output.slice(-4000)}`);
   }
-  const webPort = await freePort(),
-    origin = `http://127.0.0.1:${webPort}`;
-  const isolated = fixtureCompose(
-    parse(readFileSync(join(dir, "docker-compose.yml"), "utf8")) as ComposeFile,
-    generated.lock,
-    { publicOrigin: origin, webPorts: { "inventory-web": webPort } },
-  );
+  const sourceCompose = parse(readFileSync(join(dir, "docker-compose.yml"), "utf8")) as ComposeFile;
+  if (privateEnvironment) {
+    // Consume the generated private credentials and origin, then retain fixture port/volume isolation.
+    const localValues = parseEnv(privateEnvironment);
+    for (const service of Object.values(sourceCompose.services))
+      for (const [key, value] of Object.entries(service.environment ?? {}))
+        service.environment![key] = value.replace(
+          /\$\{([^}:]+)(?::[^}]*)?\}/g,
+          (_, name: string) => {
+            if (!localValues[name]) throw new Error(`Starter environment is missing ${name}`);
+            return localValues[name];
+          },
+        );
+  }
+  const isolated = fixtureCompose(sourceCompose, generated.lock, {
+    publicOrigin: origin,
+    webPorts: { "inventory-web": webPort },
+  });
   const composeFile = join(scratch, "compose.yml"),
     name = `jeeves-workspace-${randomUUID()}`;
   writeFileSync(composeFile, composeToYaml(isolated), { mode: 0o600 });
@@ -192,8 +222,10 @@ try {
     if (!readFileSync(join(vendor, artifact.archive)).equals(artifact.data))
       throw new Error("Consumer artifact changed");
   assertGeneratedIntegrity(dir, regenerated.lock);
+  if (privateEnvironment && readFileSync(join(dir, ".env"), "utf8") !== privateEnvironment)
+    throw new Error("Starter regeneration changed private local setup");
   log(
-    `PASS generated resource workspace (${packChecks} template checks, ${skippedChecks} explicitly inapplicable; zero implementation tasks; ${journeys.join(", ")}); archive hashes preserved, generated composition integrity and project extras retained, no model calls`,
+    `PASS ${starterMode ? "editable starter" : "generated resource workspace"} (${packChecks} template checks, ${skippedChecks} explicitly inapplicable; zero implementation tasks; ${journeys.join(", ")}); archive hashes preserved, generated composition integrity and project extras retained, no model calls`,
   );
 } catch (error) {
   failure = error;

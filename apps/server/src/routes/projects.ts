@@ -1,4 +1,12 @@
-import { createRecipeDesign, RecipeError, recipeCatalog } from "@jeeves/generator";
+import {
+  createRecipeDesign,
+  createStarterDesign,
+  RecipeError,
+  recipeCatalog,
+  StarterError,
+  starterCatalog,
+  starterConfigSchema,
+} from "@jeeves/generator";
 import { freePort } from "@jeeves/generator/baseline";
 import { layoutSchema, operationBatchSchema, templateRefSchema } from "@jeeves/spec";
 import type { FastifyReply } from "fastify";
@@ -35,6 +43,34 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
 ) => {
   app.get("/projects", async () => ({ projects: await service.listProjects() }));
   app.get("/recipes", async () => ({ recipes: recipeCatalog() }));
+  app.get("/starters", async () => ({ starters: starterCatalog() }));
+  app.post(
+    "/projects/from-starter",
+    {
+      schema: {
+        body: z.strictObject({
+          name: z.string().trim().min(1).max(80),
+          starter: templateRefSchema,
+          config: starterConfigSchema.optional(),
+        }),
+      },
+    },
+    async (req, reply) => {
+      try {
+        const initial = createStarterDesign(req.body.starter, {
+          title: req.body.name,
+          hostPort: await freePort(),
+          config: req.body.config,
+        });
+        const project = await service.createProject(req.body.name, initial);
+        return reply.code(201).send({ project });
+      } catch (error) {
+        if (error instanceof StarterError || error instanceof z.ZodError)
+          return reply.code(422).send({ code: "INVALID_STARTER", message: error.message });
+        throw error;
+      }
+    },
+  );
   app.post(
     "/projects/from-recipe",
     {

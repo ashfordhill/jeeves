@@ -96,6 +96,52 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
+  it("creates an independent editable starter with C4 context and refuses unknown versions atomically", async () => {
+    const original = await client.createProject("Keep the original");
+    const before = (await client.call("GET", "/projects")).body.projects.length;
+    const catalog = (await client.call("GET", "/starters")).body.starters;
+    expect(catalog[0]).toMatchObject({
+      id: "resource-workspace",
+      version: "0.1.0",
+      maturity: "experimental",
+    });
+    expect(
+      (
+        await client.call("POST", "/projects/from-starter", {
+          name: "Unknown",
+          starter: { id: "resource-workspace", version: "9.0.0" },
+        })
+      ).status,
+    ).toBe(422);
+    expect((await client.call("GET", "/projects")).body.projects).toHaveLength(before);
+    const created = await client.call("POST", "/projects/from-starter", {
+      name: "Fieldwork starter",
+      starter: { id: "resource-workspace", version: "0.1.0" },
+      config: { preset: "paper", pageSize: 25, tagline: "Our private records" },
+    });
+    expect(created.status).toBe(201);
+    const id = created.body.project.id,
+      state = await client.design(id);
+    expect(state.findings).toEqual([]);
+    expect(state.design.recipe).toBeUndefined();
+    expect(state.design.startedFrom?.manifestSha256).toBe(catalog[0].manifestSha256);
+    expect(state.design.architecture?.nodes[0]?.name).toBe("Workspace member");
+    const web = state.design.elements.find((element) => element.id === "inventory-web")!;
+    expect(web.config).toMatchObject({ title: "Fieldwork starter", hostPort: expect.any(Number) });
+    expect(
+      web.attachments.find((attachment) => attachment.id === "inventory-workspace")!.config,
+    ).toMatchObject({ preset: "paper", pageSize: 25 });
+    const service = state.design.elements[0]!,
+      attachment = service.attachments[0]!;
+    const config = structuredClone(attachment.config);
+    (config.model as { resources: { fields: { name: string }[] }[] }).resources[0]!
+      .fields[0]!.name = "displayName";
+    const edit = await client.edit(id, 0, [{ op: "updateAttachment", id: attachment.id, config }]);
+    expect(edit.status).toBe(200);
+    expect(edit.body.design.startedFrom).toEqual(state.design.startedFrom);
+    expect((await client.design(original)).design.elements).toEqual([]);
+  });
+
   it("reads architecture without mutation and keeps added project work visible beside a recipe", async () => {
     const created = await client.call("POST", "/projects/from-recipe", {
       name: "Architecture proof",

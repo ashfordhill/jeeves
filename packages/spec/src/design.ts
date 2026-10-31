@@ -86,6 +86,10 @@ export const designSchema = z.strictObject({
   /** Semantic revision. Bumped once per applied operation batch, never by layout changes. */
   revision: z.int().nonnegative(),
   recipe: recipeBindingSchema.optional(),
+  /** Origin of an editable copy, not a binding or a claim that current behavior is provided. */
+  startedFrom: templateRefSchema
+    .extend({ manifestSha256: z.string().regex(/^[a-f0-9]{64}$/) })
+    .optional(),
   architecture: architectureSchema.optional(),
   elements: z.array(elementSchema).default([]),
   connections: z.array(connectionSchema).default([]),

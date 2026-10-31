@@ -5,6 +5,8 @@
 import { Button, Loader } from "@mantine/core";
 import { IconSitemap, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
+import { ProjectChooser } from "./ProjectChooser.tsx";
+import { StarterGuide } from "./StarterGuide.tsx";
 import "@xyflow/react/dist/base.css";
 import { useEffect, useState } from "react";
 import { ArchitectureWorkspace } from "../architecture/ArchitectureWorkspace.tsx";
@@ -57,17 +59,27 @@ function NoticeStrip() {
 
 /** Hint shown while the board is empty, so the first step is obvious. */
 function EmptyHint() {
+  const [opened, setOpened] = useState(false);
+  const tool = useDraw((state) => state.tool.kind);
   const empty = useDraw(
     (s) =>
       !!s.loaded &&
       s.loaded.design.elements.length === 0 &&
       s.loaded.design.annotations.length === 0,
   );
-  if (!empty) return null;
+  if (!empty || (tool !== "select" && tool !== "hand")) return null;
   return (
-    <p className="draw-empty-hint">
-      Pick an element from the toolbar, then click the board, or drag it onto the board.
-    </p>
+    <>
+      <div className="draw-empty-start">
+        <span className="draw-empty-kicker">YOUR NEXT APPLICATION</span>
+        <h2>Start with a working architecture.</h2>
+        <p>Use a starter, or pick an element above and draw your own.</p>
+        <Button color="cyan.9" onClick={() => setOpened(true)}>
+          Explore starting points
+        </Button>
+      </div>
+      {opened ? <ProjectChooser onClose={() => setOpened(false)} /> : null}
+    </>
   );
 }
 
@@ -147,6 +159,14 @@ export function DrawView() {
         <div className="draw-main">
           <Canvas />
           <EmptyHint />
+          <StarterGuide
+            onArchitecture={() => {
+              void useDraw
+                .getState()
+                .flushLayout()
+                .then(() => setArchitectureOpen(true));
+            }}
+          />
           <PendingHint />
           <NoticeStrip />
           <Button

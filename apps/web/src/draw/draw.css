@@ -1364,3 +1364,80 @@ button.finding-btn:hover {
   padding: 0;
   min-width: 0;
 }
+
+.draw-empty-start {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: min(430px, calc(100% - 40px));
+  text-align: center;
+  pointer-events: none;
+  color: var(--ink);
+}
+.draw-empty-start h2 {
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 12px 0;
+  letter-spacing: -0.02em;
+}
+.draw-empty-start p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+.draw-empty-kicker {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+}
+.draw-empty-start button {
+  pointer-events: auto;
+}
+
+.starter-guide {
+  position: absolute;
+  bottom: 72px;
+  left: 16px;
+  z-index: 6;
+  width: min(580px, calc(100% - 88px));
+  padding: 14px 16px;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 12px;
+  background: var(--mantine-color-body);
+  box-shadow: var(--chip-shadow);
+}
+.starter-guide strong,
+.starter-guide small {
+  display: block;
+}
+.starter-guide strong {
+  font-size: 14px;
+}
+.starter-guide small {
+  margin-top: 4px;
+  font-size: 11px;
+}
+.starter-guide p {
+  margin: 9px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.starter-guide-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 800px) {
+  .starter-guide {
+    width: min(330px, calc(100% - 88px));
+    padding: 10px;
+  }
+  .starter-guide p {
+    display: none;
+  }
+  .starter-guide-actions {
+    margin-top: 8px;
+  }
+}
