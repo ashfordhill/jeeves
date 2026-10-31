@@ -91,6 +91,14 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
     return state ?? notFound(reply);
   });
 
+  app.get(
+    "/projects/:id/architecture",
+    { schema: { params: projectParams } },
+    async (req, reply) => {
+      return (await service.architecture(req.params.id)) ?? notFound(reply);
+    },
+  );
+
   app.get("/projects/:id/findings", { schema: { params: projectParams } }, async (req, reply) => {
     const state = await service.getDesign(req.params.id);
     return state ? { revision: state.design.revision, findings: state.findings } : notFound(reply);

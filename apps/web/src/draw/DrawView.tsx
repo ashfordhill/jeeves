@@ -3,10 +3,11 @@
  * and the Generate button and drawer) and the inspector rail on the right.
  */
 import { Button, Loader } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
+import { IconSitemap, IconX } from "@tabler/icons-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ArchitectureWorkspace } from "../architecture/ArchitectureWorkspace.tsx";
 import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { Canvas } from "./Canvas.tsx";
 import "./draw.css";
@@ -100,6 +101,7 @@ function PendingHint() {
 }
 
 export function DrawView() {
+  const [architectureOpen, setArchitectureOpen] = useState(false);
   const status = useDraw((s) => s.status);
   const error = useDraw((s) => s.error);
   const projectId = useDraw((s) => s.loaded?.project.id);
@@ -117,6 +119,9 @@ export function DrawView() {
       flush();
     };
   }, []);
+
+  if (architectureOpen && projectId && status === "ready")
+    return <ArchitectureWorkspace key={projectId} onClose={() => setArchitectureOpen(false)} />;
 
   if (status === "error") {
     return (
@@ -144,6 +149,17 @@ export function DrawView() {
           <EmptyHint />
           <PendingHint />
           <NoticeStrip />
+          <Button
+            className="architecture-launch"
+            variant="default"
+            leftSection={<IconSitemap size={17} />}
+            onClick={async () => {
+              await useDraw.getState().flushLayout();
+              setArchitectureOpen(true);
+            }}
+          >
+            Architecture
+          </Button>
           <GenerateButton />
           <GenerateDrawer />
         </div>

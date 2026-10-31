@@ -96,6 +96,40 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
+  it("reads architecture without mutation and keeps added project work visible beside a recipe", async () => {
+    const created = await client.call("POST", "/projects/from-recipe", {
+      name: "Architecture proof",
+      recipe: { id: "qr-studio", version: "0.1.0" },
+    });
+    const id = created.body.project.id;
+    const before = await client.design(id);
+    const architecture = await client.call("GET", `/projects/${id}/architecture`);
+    expect(architecture.status).toBe(200);
+    expect(architecture.body.views.provision.id).toBe("qr-studio");
+    expect(architecture.body.views.context.nodes).toHaveLength(4);
+    expect(await client.design(id)).toEqual(before);
+    const intent = structuredClone(before.design.architecture!);
+    intent.system.description = "Explicit architecture responsibility";
+    await client.edit(id, 0, [
+      { op: "setArchitecture", architecture: intent },
+      { op: "setNotes", id: "qrwty-web", notes: "Add project-specific inventory integration." },
+    ]);
+    const changed = (await client.call("GET", `/projects/${id}/architecture`)).body;
+    expect(changed.revision).toBe(1);
+    expect(changed.views.context.description).toBe(intent.system.description);
+    expect(
+      changed.views.components.find((view: { container: string }) => view.container === "qrwty-web")
+        .nodes,
+    ).toContainEqual(
+      expect.objectContaining({ name: "Additional product work", support: "extension" }),
+    );
+    await client.undo(id, 1);
+    expect((await client.design(id)).design.architecture).toEqual(before.design.architecture);
+    expect(
+      (await client.call("GET", "/projects/00000000-0000-4000-8000-000000000000/architecture"))
+        .status,
+    ).toBe(404);
+  });
   it("creates a separate recipe project, rejects invalid configuration, and restores recipe edits with undo", async () => {
     const old = await client.createProject("Keep this project");
     const catalog = await client.call("GET", "/recipes");

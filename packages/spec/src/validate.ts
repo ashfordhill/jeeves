@@ -1,3 +1,4 @@
+import { validateArchitecture } from "./architecture.ts";
 import { checkConfig } from "./config.ts";
 import {
   type Attachment,
@@ -140,7 +141,7 @@ function endpointTarget(endpoint: Endpoint): FindingTarget {
  * no findings can be generated.
  */
 export function validateDesign(design: DesignDocument, lookup: TemplateLookup): Finding[] {
-  const findings: Finding[] = [];
+  const findings: Finding[] = validateArchitecture(design);
 
   const seen = new Map<string, string>();
   for (const { id, type } of designIds(design)) {

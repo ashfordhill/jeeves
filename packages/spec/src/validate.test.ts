@@ -22,6 +22,25 @@ const cases: Record<
   Exclude<FindingCode, "RECIPE_INCOMPATIBLE">,
   { name: string; findings: () => Finding[]; target?: object }[]
 > = {
+  ARCHITECTURE_UNBOUND: [
+    {
+      name: "makes an unbound context interaction visible without requiring a template for the person",
+      findings: () =>
+        validateDesign(
+          edit((d) => {
+            d.architecture = {
+              system: { name: "Example", description: "" },
+              nodes: [{ id: "visitor", kind: "person", name: "Visitor", description: "" }],
+              relationships: [
+                { id: "uses", from: "visitor", to: "system", description: "Uses the application" },
+              ],
+            };
+          }),
+          testLookup,
+        ),
+      target: { path: ["architecture", "relationships", "uses"] },
+    },
+  ],
   DUPLICATE_ID: [
     {
       name: "an attachment reuses an element ID",

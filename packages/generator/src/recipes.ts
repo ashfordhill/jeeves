@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseEnv } from "node:util";
 import {
+  type Architecture,
   capabilityEndpoint,
   type DesignDocument,
   designSchema,
@@ -295,6 +296,7 @@ export function createRecipeDesign(
 ): { design: DesignDocument; layout: LayoutDocument } {
   const recipe = loadRecipe(ref),
     design = structuredClone(recipe.design);
+  design.architecture = qrStudioArchitecture(options.title);
   design.recipe = { ...ref, config: qrStudioConfigurationSchema.parse(options.config ?? {}) };
   const web = design.elements.find((item) => item.id === "qrwty-web");
   if (!web) throw new RecipeError("Recipe has no frontend");
@@ -453,5 +455,64 @@ export function recipeCoverage(
         .filter((element) => recipe.manifest.provided.frontends.includes(element.id))
         .map((element) => [element.id, element.notes]),
     ),
+  };
+}
+
+export function qrStudioArchitecture(name: string): Architecture {
+  return {
+    system: {
+      name,
+      description:
+        "Create permanent QR links, save artwork revisions and understand recorded scan activity.",
+    },
+    nodes: [
+      {
+        id: "owner",
+        kind: "person",
+        name: "Link owner",
+        description: "Manages private links, artwork and analytics.",
+      },
+      {
+        id: "scanner",
+        kind: "person",
+        name: "Person scanning a code",
+        description: "Opens a printed QR link in their browser.",
+      },
+      {
+        id: "destination",
+        kind: "external-system",
+        name: "Destination websites",
+        description: "Sites selected by link owners, outside this system's control.",
+      },
+    ],
+    relationships: [
+      {
+        id: "owner-manages",
+        from: "owner",
+        to: "system",
+        description: "Manages links, artwork and analytics",
+        container: "qrwty-web",
+      },
+      {
+        id: "scanner-opens",
+        from: "scanner",
+        to: "system",
+        description: "Opens the permanent QR URL",
+        container: "qrwty",
+      },
+      {
+        id: "system-redirects",
+        from: "system",
+        to: "scanner",
+        description: "Returns a redirect destination",
+        container: "qrwty",
+      },
+      {
+        id: "browser-follows",
+        from: "scanner",
+        to: "destination",
+        description: "Browser follows the destination URL",
+      },
+    ],
   };
 }

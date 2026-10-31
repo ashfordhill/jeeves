@@ -75,6 +75,8 @@ export function toolDefinitions(): ToolDefinition[] {
 }
 
 const explanations: Record<FindingCode, string> = {
+  ARCHITECTURE_UNBOUND:
+    "Choose the existing container that realizes this context interaction, or leave it explicitly as architectural intent. Context edges do not generate network calls.",
   RECIPE_INCOMPATIBLE:
     "Restore the versioned recipe contract or create a separate custom design; recipe-provided implementation cannot be silently redefined.",
   DUPLICATE_ID: "Two items share an ID. IDs must be unique across the whole design; pick another.",

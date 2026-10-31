@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { architectureSchema } from "./architecture.ts";
 import { idSchema, templateRefSchema } from "./ids.ts";
 
 export const connectionKindSchema = z.enum(["uses-database", "calls", "depends-on"]);
@@ -85,6 +86,7 @@ export const designSchema = z.strictObject({
   /** Semantic revision. Bumped once per applied operation batch, never by layout changes. */
   revision: z.int().nonnegative(),
   recipe: recipeBindingSchema.optional(),
+  architecture: architectureSchema.optional(),
   elements: z.array(elementSchema).default([]),
   connections: z.array(connectionSchema).default([]),
   annotations: z.array(annotationSchema).default([]),

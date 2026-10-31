@@ -1,7 +1,9 @@
-import { recipeFindings } from "@jeeves/generator";
+import { recipeFindings, recipeForDesign } from "@jeeves/generator";
 import type { Registry } from "@jeeves/registry";
 import {
+  type ArchitectureProvision,
   applyOperations,
+  architectureViews,
   type DesignDocument,
   emptyDesign,
   emptyLayout,
@@ -90,6 +92,33 @@ export class DesignService {
         .values({ projectId: project.id, document: initial?.layout ?? emptyLayout() });
       return project;
     });
+  }
+
+  async architecture(projectId: string) {
+    const state = await this.getDesign(projectId);
+    const project = await this.getProject(projectId);
+    if (!state || !project) return undefined;
+    let provision: ArchitectureProvision | undefined;
+    try {
+      const recipe = recipeForDesign(state.design, this.registry);
+      if (recipe)
+        provision = {
+          id: recipe.manifest.id,
+          version: recipe.manifest.version,
+          ...recipe.manifest.provided,
+          frontendNotes: Object.fromEntries(
+            recipe.design.elements
+              .filter((element) => recipe.manifest.provided.frontends.includes(element.id))
+              .map((element) => [element.id, element.notes]),
+          ),
+        };
+    } catch {
+      /* Invalid bindings remain visible as findings; do not claim supplied behavior. */
+    }
+    return {
+      revision: state.design.revision,
+      views: architectureViews(state.design, this.registry, project.name, provision),
+    };
   }
 
   async renameProject(id: string, name: string): Promise<Project | undefined> {

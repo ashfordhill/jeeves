@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { unbindArchitecture } from "./architecture.ts";
 import {
   type Annotation,
   annotationSchema,
@@ -123,6 +124,11 @@ function applyOne(
   };
 
   switch (op.op) {
+    case "setArchitecture": {
+      if (op.architecture === null) delete design.architecture;
+      else design.architecture = op.architecture;
+      return;
+    }
     case "setRecipe": {
       if (op.recipe) design.recipe = op.recipe;
       else delete design.recipe;
@@ -190,6 +196,7 @@ function applyOne(
       design.connections = design.connections.filter(
         (c) => c.from.element !== op.id && c.to.element !== op.id,
       );
+      unbindArchitecture(design, element.id);
       unbindArrows(design, [element.id, ...element.attachments.map((a) => a.id)]);
       return;
     }

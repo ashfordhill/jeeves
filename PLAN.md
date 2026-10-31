@@ -1,6 +1,6 @@
 # Jeeves and Draw Jeeves
 
-Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md`: S1–S12 implemented; S13 acceptance is partial (provider credits stopped the first coding task). The current improvement specification is [docs/improvements.md](docs/improvements.md); its ordered delivery and explicit review checkpoints supersede conflicting future-work statements below. The original S1–S14 sections remain the historical build sequence.
+Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md`: S1–S12 implemented; S13 acceptance is partial (provider credits stopped the first coding task). The current improvement specification is [docs/improvements.md](docs/improvements.md); its ordered delivery and explicit review checkpoints supersede conflicting future-work statements below. The original S1–S14 sections remain the historical build sequence. The continuing product/component packages are specified in [docs/build-plan-execution.md](docs/build-plan-execution.md); P19 provides a complete deterministic QR Studio recipe, and P20 makes C4 scope and configuration intentional in the current design.
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
@@ -15,25 +15,27 @@ Related documents:
 
 ## 1. What we're building
 
-**Jeeves** is a local web app that turns a software design into a working, tested application by combining strict, reusable templates with coding agents. **Draw Jeeves** is its design view: an Excalidraw-inspired canvas where the shapes are replaced by template elements (a microservice, a frontend, a database pattern, …).
+**Jeeves** is a local web app that turns an intentional software design into an application through versioned deterministic templates and product recipes. Coding agents implement explicit remaining work. **Draw Jeeves** combines an Excalidraw-inspired executable board with C4-informed context, container and component views of the same semantic model. People and external systems describe context; applications, data stores and meaningful modules bind to actual implementation responsibilities.
 
 The pipeline has four steps:
 
 ```mermaid
 flowchart LR
-    Design["1. Design<br/>Draw Jeeves canvas + chat"] --> Generate["2. Generate<br/>deterministic template project"]
-    Generate --> Orchestrate["3. Orchestrate<br/>Jeeves plans tasks, coding agents implement"]
-    Orchestrate --> Run["4. Run<br/>local Docker, tests green"]
+    Design["1. Design<br/>C4 scopes + structured configuration"] --> Generate["2. Generate<br/>templates + product recipes"]
+    Generate --> Verify["Verify<br/>independent acceptance"]
+    Generate -. "Unprovided behavior only" .-> Orchestrate["3. Orchestrate<br/>explicit extension tasks"]
+    Orchestrate --> Verify
+    Verify --> Run["4. Run<br/>local application"]
 ```
 
 1. **Design.** A person places a Service rectangle, chooses its subtype, selects compatible components inside it, and connects outer service/database elements. Structured resources define standard behavior; implementation notes describe explicit remaining extensions. The design chat agent can do all of this too ("I want an app like bit.ly, make me a diagram"). It accepts Markdown and image files (PNG, JPEG, SVG) as input.
-2. **Generate.** The design compiles deterministically into a **template project**: a repository on disk where every element is an instantiated template, wired together, with a `docker-compose.yml`. The current generator creates runnable infrastructure and extension scaffolds. The approved resource pattern will also generate standard application behavior, persistence, contracts, clients, and fixed tests. Infrastructure readiness and demonstrated application acceptance are reported separately.
-3. **Orchestrate.** Currently Jeeves seeds work from implementation notes and a planner. The target derives narrow tasks from explicit unresolved extensions under fixed tests, then runs coding agents (Codex first) on them one at a time. After each task Jeeves runs the tests itself; it does not trust the agent's own report. Git and PR behavior follow a per-project ruleset.
+2. **Generate.** The design compiles deterministically into a **template project**: a repository on disk where every element is an instantiated template, wired together, with a `docker-compose.yml`. The generator supplies infrastructure, standard resources/sessions, validated command boundaries, persistence, contracts, clients and fixed tests. Versioned product recipes additionally supply reviewed domain implementation and product UI, with protected artifacts and explicit customization seams. Infrastructure readiness and demonstrated application acceptance are reported separately.
+3. **Orchestrate.** For structured designs Jeeves derives narrow tasks from unresolved extensions and remaining frontend notes under fixed tests. A validated recipe supplies its declared behavior without an implementation task or model selection. Other designs can use a planner to refine their notes into tasks. Coding agents (Codex first) run those tasks one at a time. After each task Jeeves runs the tests itself; it does not trust the agent's own report. Git and PR behavior follow a per-project ruleset.
 4. **Run.** The result runs in local Docker with its template tests and the new tests green.
 
 **Where the "orchestration harness" fits** (SRC-01): Jeeves is the orchestrator. It owns the plan, task order, state, verification, and git strategy. Each coding agent (Codex) is the harness for one task. Jeeves never relies on an agent session as its record of state.
 
-**Why this is cheap with budget models:** templates provide the standard 80% (server bootstrap, wiring, database access, test harnesses) as tested library code. Agents only fill in feature code inside well-defined extension points, guided by per-template agent guides and checked by test packs that already exist.
+**Why model usage can stay small:** templates and recipes own the behavior they actually implement, with bounded configuration and reusable acceptance. Supplied behavior needs no implementation-model run; explicit gaps remain project-owned tasks. Report coverage by named capability and evidence, never an assumed percentage of generated lines or a promise of bug-free output.
 
 ## 2. Decisions
 
@@ -53,6 +55,8 @@ flowchart LR
 | Templates are option (b): a versioned runtime library plus a thin scaffold, extended through plugin points | SRC-15 |
 | Retain React Flow after the editor comparison; Excalidraw file import remains out of scope | SRC-18; [review](docs/editor-provider-review.md) |
 | Visual style follows automation-pitch | SRC-15 |
+| C4 context/container/component scopes share one semantic design; deployment and scaling profiles remain separate | Continuing user direction; P20 |
+| A versioned product recipe can supply complete declared behavior without an implementation-model call; additional work stays explicit | Continuing user direction; P19 |
 | Chat accepts files: Markdown/text and images (PNG, JPEG, SVG) | SRC-15 |
 | OpenAI and Codex first, behind provider interfaces so Claude or others can be added | SRC-01 |
 | Provider-agnostic: each role (design chat, planner, coding) picks a provider and model in Settings, like a model picker in an editor. Subscription logins (Codex with a ChatGPT plan) are first-class next to API keys; local models remain planned (S14), deferred behind the qrwty proof | SRC-17 |
@@ -84,7 +88,11 @@ flowchart LR
 | **Annotation** | A presentation-only item: text, sticky note, frame, or plain arrow. Never affects generation |
 | **Attributes** | An element's template config (schema-validated) plus its implementation notes (free text) |
 | **Template** | A versioned package: manifest, runtime library, scaffold, test pack, and agent guide (§8) |
-| **Template project** | The repository produced by Generate; runnable with generated standard behavior and project-owned extension points (currently infrastructure/scaffolds only) |
+| **Template project** | The repository produced by Generate; runnable with standard behavior, optional recipe-supplied implementation and project-owned extension points |
+| **Product recipe** | A versioned composition of executable design, finite configuration, protected implementation/artifacts and fixed acceptance |
+| **Architecture intent** | System responsibility, people/external systems and their interactions; optional explicit container bindings, with no network calls inferred from prose |
+| **C4 container** | An application or data store, bound to an executable element; not a synonym for a Docker instance |
+| **C4 component** | A cohesive responsibility within one application, bound to actual generated capability/domain-module definitions |
 | **Task** | One unit of agent work created by the orchestrator. Never shown on the board |
 | **Run** | One orchestration of a template project: a plan of tasks, their attempts, and evidence |
 
@@ -105,6 +113,18 @@ flowchart LR
 **Other panels.** Chat (docked, collapsible), Findings (all readiness issues; clicking one selects the element), and a **Generate** button with an output drawer.
 
 **Engine review completed.** The user approved retaining React Flow after [the runnable prototype and comparison](docs/editor-provider-review.md). P3 implements the approved hierarchy and outer-only connections in production. The prototype itself remains temporary.
+
+### Architecture scopes and configuration
+
+C4 is an intentional organization of the model, not a set of decorative shapes. The [context view](https://c4model.com/diagrams/system-context) states the system's purpose and its people/external systems. The [container view](https://c4model.com/diagrams/container) derives applications, data stores and typed communication from existing executable elements/connections. A [component view](https://c4model.com/diagrams/component) scopes one application and exposes accounts/sessions, resource registries, typed API adapters and declared domain extension modules. Resource records are data contracts; React widgets and arbitrary attachments are not automatically C4 components. Library/unknown capability bindings are labeled as such.
+
+Context relationships can bind their system end to an existing container. That binding changes traceability, not runtime wiring. Component dependency edges project an existing connection/capability or a structured storage binding; they never create a duplicate client or dependency. In the QR product, the API returns a redirect destination and the visitor's browser follows it; the API does not fetch the destination website.
+
+Architecture navigation and zoom never mutate semantic inputs or the editable board's positions/camera. P20's diagrams use deterministic derived positions; persistent custom per-view layouts, behavior/screen views and code-level diagrams are future work. People/external systems can be documented without a template. Missing executable behavior remains visible as project implementation or unbound intent. Template/recipe provision is distinct from passing verification for a generated revision.
+
+All navigation, drill-down, context editing and product configuration work by mouse. Explicit Save/Cancel protects drafts; a product configuration save is one undoable batch and does not deploy or regenerate a running app. “Edit on board” reaches the same existing structured definitions. The visual direction keeps stable controls, readable fitted diagrams and consistent inspector hierarchy, informed by Excalidraw and automation-pitch's actual UI and VISUAL_IMPROVEMENTS history.
+
+Deployment instances, replicas, resource limits, queues, retries and failover belong in separately versioned execution/deployment policy contracts with evidence. C4 views must not imply those mechanisms exist merely because a line or a box is labeled reliable.
 
 ## 6. Design document and editing
 
@@ -142,6 +162,8 @@ flowchart LR
   ]
 }
 ```
+
+Optional `recipe` selects a server-owned composition/configuration. Optional `architecture` records system responsibility, stable context nodes and directed labeled relationships with explicit container bindings. Both have semantic undoable operations. Architecture reference errors reject a batch; an unbound context interaction is a visible warning, not a missing-template error. Removing a bound element retains the relationship intent and exposes its lost binding. Old documents omit these fields and retain their serialization.
 
 Layout (positions, sizes, frames, collapsed state) is stored in a separate layout document keyed by ID. Moving things never changes the semantic revision or what Generate produces.
 
@@ -216,10 +238,10 @@ The output directory is chosen per project. Layout:
 **Input:** a green template project.
 
 **Plan.**
-Current implementation (retained until structured resources/extensions land):
+Current deterministic planning:
 
-1. Deterministic seed: one task per element (and per attachment) whose notes are non-empty, ordered by dependencies: databases, then services that expose servers, then their clients, then frontends.
-2. The planner model, configurable per project, refines the seed. It may split a large element into several tasks and adds acceptance tests to each. Every task stays within one element's owned paths plus contracts that element owns.
+1. Structured designs seed explicit extension operations and remaining frontend notes, ordered by dependencies. A recipe is validated against its catalog/ownership before its supplied operations and unchanged frontend brief are omitted. Other designs seed one task per element/attachment with notes.
+2. Structured tasks need no planner model. For other designs the planner model, configurable per project, refines the seed. It may split a large element into several tasks and adds acceptance tests to each. Every task stays within one element's owned paths plus contracts that element owns.
 3. The plan appears in the **Runs** view, where the user can edit, reorder, or remove tasks, then press Start.
 
 **Execute** (sequentially, one task at a time).

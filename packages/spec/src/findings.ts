@@ -22,6 +22,7 @@ export const findingCatalog = {
   DUPLICATE_CONNECTION: { category: "structural", severity: "error" },
   NEEDS_TEMPLATE: { category: "readiness", severity: "error" },
   CONFIG_REQUIRED: { category: "readiness", severity: "error" },
+  ARCHITECTURE_UNBOUND: { category: "readiness", severity: "warning" },
   RECIPE_INCOMPATIBLE: { category: "readiness", severity: "error" },
   UNCONNECTED_REQUIRED_PORT: { category: "readiness", severity: "error" },
   INVALID_OPERATION: { category: "operation", severity: "error" },

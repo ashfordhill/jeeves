@@ -4,6 +4,7 @@
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type {
+  ArchitectureViews,
   DesignDocument,
   Finding,
   LayoutDocument,
@@ -398,6 +399,8 @@ export interface ProductRecipe {
 }
 
 export const api = {
+  architecture: (id: string) =>
+    request<{ revision: number; views: ArchitectureViews }>(`/projects/${id}/architecture`),
   recipes: () => request<{ recipes: ProductRecipe[] }>("/recipes").then((r) => r.recipes),
   createFromRecipe: (
     name: string,

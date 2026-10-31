@@ -17,6 +17,18 @@ function applied(ops: OperationInput[], doc?: DesignDocument): DesignDocument {
 
 /** One passing case per operation type. Typed as a full record so new op types need a test. */
 const opCases: Record<OperationType, () => void> = {
+  setArchitecture() {
+    const architecture = {
+      system: { name: "Inventory", description: "Keeps stock records" },
+      nodes: [],
+      relationships: [],
+    };
+    const doc = applied([{ op: "setArchitecture", architecture }]);
+    expect(doc.architecture).toEqual(architecture);
+    expect(applied([{ op: "setArchitecture", architecture: null }], doc)).not.toHaveProperty(
+      "architecture",
+    );
+  },
   setRecipe() {
     const binding = { id: "qr-studio", version: "0.1.0", config: { analyticsDays: 30 } };
     const doc = applied([{ op: "setRecipe", recipe: binding }]);
