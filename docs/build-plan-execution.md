@@ -71,3 +71,22 @@ Done when:
 - Diff review confirms old identity/ownership protections and no weakening of QR-01–QR-09. Append the P15 handoff and create its scoped local commit.
 
 Next: P16, immutable artwork revision adoption and the qrwty Studio product flow. Reuse P14's shell, add a generic preset/configuration editor verified against a non-QR example, preserve printed QR identity/legacy exports, and prove the controlled additive migration in disposable copies before live adoption. Owner-wide analytics, deterministic product recipes and C4/reliability packages follow separately.
+
+## P16: repeatable work and architecture reference library
+
+The user's subsequent overnight instruction adds code-based research of mature open-source applications, reusable task automation and a lighter verification strategy. Before Studio work begins, use this package slot for those prerequisites; the previously proposed Studio adoption moves to P17. Continue implementation without waiting for feedback. No package may claim bug-free or enterprise-ready behavior from limited evidence.
+
+Scope:
+
+- Provide one local command for the existing check gate, selected unit/template/browser tests, and disposable qrwty verification. Save complete local logs plus a concise machine-readable result containing the exact command, duration, exit status and repository fingerprint. Preserve failures and interrupted runs honestly. No automatic cache-based skipping, model calls, arbitrary shell execution or live application regeneration.
+- Provide a pinned architecture-reference catalog and a repeatable source-fetch command. Inspect actual implementation seams and license files for Medusa, Payload, Umami, Zulip and Backstage. Record commit IDs, file hashes, strengths, costs, license boundaries and concrete candidate Jeeves components. Download source only for inspection; do not execute or install upstream applications or silently copy their code into generated products.
+- Connect each candidate to a C4 responsibility, deterministic configuration contract, model-owned extension seam, qrwty or second-consumer proving case, and an explicit maturity state. Favor coherent contracts and constrained defaults over an indiscriminate template catalog. Reuse architectural patterns first; direct source adoption requires a separately scoped provenance and compatibility decision.
+- Record the user's verification preference: run focused checks for changed behavior and the existing required `pnpm check` before each handoff; run relevant integration/browser checks when boundaries change. Defer exhaustive reliability, load, chaos, combinatorial and certification-style testing to the later testing campaign. Track deferred evidence instead of converting untested behavior into a passing claim.
+
+Done when:
+
+- The command can list tasks, run a selected existing test, report a real failed command and reject invalid selections; the check gate runs through it successfully. Interrupt/cleanup behavior is inspected without touching live stacks.
+- Five references have immutable source provenance and inspected implementation evidence. Fetching pinned selected files validates hashes and can reuse a local verified cache without network access; a mismatched file is rejected.
+- `pnpm check`, script type checking and diff review pass. Append the P16 handoff and commit only scoped changes. No live qrwty or generated ownership changes.
+
+Next: P17, immutable artwork revisions and qrwty Studio adoption, using the P15 renderer and command schema. Then owner-wide analytics, deterministic product recipes, C4/configuration and selected enterprise components. Expand implementation in bounded packages, with the final original-plan and Excalidraw/automation-pitch review still required.

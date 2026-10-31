@@ -13,13 +13,15 @@
     "dev": "pnpm db:up && pnpm --parallel --filter @jeeves/server --filter @jeeves/web dev",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "typecheck": "pnpm -r --no-bail typecheck",
+    "typecheck": "pnpm -r --no-bail typecheck && tsc -p scripts/tsconfig.json",
     "test": "vitest run",
     "test:e2e": "pnpm db:up && playwright test",
     "test:e2e:docker": "pnpm db:up && scripts/e2e-docker.sh",
     "test:templates": "vitest run --config vitest.templates.config.ts",
     "qrwty:bootstrap": "pnpm --filter @jeeves/server exec tsx ../../scripts/qrwty-bootstrap.ts",
-    "check": "pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "work": "node scripts/work.ts",
+    "references": "node scripts/references.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

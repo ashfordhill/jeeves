@@ -59,7 +59,11 @@ const fixture = fixtureCompose(
   },
 );
 writeFileSync(file, composeToYaml(fixture));
-const compose = new ComposeCli(dir, undefined, { file, name });
+const cancellation = new AbortController();
+const cancel = () => cancellation.abort();
+process.on("SIGINT", cancel);
+process.on("SIGTERM", cancel);
+const compose = new ComposeCli(dir, cancellation.signal, { file, name });
 const [pnpm, ...pnpmArgs] = pnpmCommand();
 const log = (line: string) => console.log(line);
 let failure: unknown;
@@ -68,6 +72,7 @@ async function command(args: string[], env?: Record<string, string | undefined>)
     cwd: dir,
     onLine: log,
     timeoutMs: 300_000,
+    signal: cancellation.signal,
     ...(env && { inheritEnv: false, env }),
   });
   if (result.exitCode !== 0)
@@ -88,6 +93,7 @@ try {
     log,
   };
   for (const check of templates.module({ id: "web-app", version: "0.1.0" }).testPack.checks) {
+    cancellation.signal.throwIfAborted();
     await check.run(context);
     log(`PASS web-app/${check.id}`);
   }
@@ -130,16 +136,20 @@ try {
 } catch (error) {
   failure = error;
 } finally {
-  const down = await compose.run(["down", "--volumes", "--remove-orphans", "--rmi", "local"], log);
+  // Cleanup must still run after cancellation; the working Compose instance carries an aborted signal.
+  const cleanup = new ComposeCli(dir, undefined, { file, name });
+  const down = await cleanup.run(["down", "--volumes", "--remove-orphans", "--rmi", "local"], log);
   if (down.exitCode !== 0) failure = new Error(`Disposable cleanup failed: ${down.output}`);
 }
 try {
   if (failure) throw failure;
+  cancellation.signal.throwIfAborted();
   log(`Protected acceptance: ${lock.fixedAcceptance?.map(acceptancePath).join(", ")}`);
   await verifyBehavior({
     dir,
     lock,
     phase: "frontend",
+    signal: cancellation.signal,
     required: Object.fromEntries(
       Object.entries(lock.resourceModels ?? {}).map(([id, model]) => [
         id,
@@ -156,4 +166,6 @@ try {
   log("PASS product adoption: protected files unchanged; both fixture databases removed.");
 } finally {
   rmSync(root, { recursive: true, force: true });
+  process.off("SIGINT", cancel);
+  process.off("SIGTERM", cancel);
 }

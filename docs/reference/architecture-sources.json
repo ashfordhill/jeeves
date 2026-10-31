@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "reuseMode": "architecture-patterns-only-no-upstream-code-adopted",
+  "references": [
+    {
+      "id": "medusa",
+      "repository": "medusajs/medusa",
+      "commit": "7e797dfd591d25d9dded71b5ab8bbc7b89958f17",
+      "observedAt": "2026-10-30",
+      "status": "inspected",
+      "license": {
+        "summary": "MIT for selected shared workflow/event infrastructure; proprietary Enterprise RBAC/SSO paths excluded.",
+        "evidence": ["LICENSE", "ENTERPRISE-LICENSE.md"],
+        "excluded": [
+          "All Enterprise Materials enumerated by ENTERPRISE-LICENSE.md, including RBAC, policies and auth-oidc."
+        ]
+      },
+      "candidates": ["compensating-workflow", "durable-event-delivery"],
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "cf67cc556c17e0b00dc0c74a3d71db8dec9aae98af747a2503803a640fba9bb5"
+        },
+        {
+          "path": "ENTERPRISE-LICENSE.md",
+          "sha256": "2e0b6e1a06fc2fbc9d4f6bb57cf61ea707bb470711f8c068acc42b85fd30b5d4"
+        },
+        {
+          "path": "packages/core/workflows-sdk/src/utils/composer/create-step.ts",
+          "sha256": "1b13d9d2cf346c7c72575d3c26606e84af92c249c530db9826d9bb2ff75ef7a5"
+        },
+        {
+          "path": "packages/core/workflows-sdk/src/utils/composer/create-workflow.ts",
+          "sha256": "2fe663423acff81903b7b4684a04a8333541748aefc62c43cabc9485c0389848"
+        },
+        {
+          "path": "packages/core/core-flows/src/order/workflows/create-order.ts",
+          "sha256": "1c47be04ba3aa042951b1b7147d94d322f4160f722cdba657c68cfa8c24e245b"
+        },
+        {
+          "path": "packages/modules/event-bus-redis/src/services/event-bus-redis.ts",
+          "sha256": "87245ef931210f2f528e4d67c130ab322c08cb27b115ed18bb5159a39ff5874f"
+        }
+      ]
+    },
+    {
+      "id": "payload",
+      "repository": "payloadcms/payload",
+      "commit": "ec351643011603cf75dc91db5d03f80ff120f1e9",
+      "observedAt": "2026-10-30",
+      "status": "inspected",
+      "license": {
+        "summary": "MIT at the inspected repository revision; inspect transitive files again before direct adoption.",
+        "evidence": ["LICENSE.md"],
+        "excluded": []
+      },
+      "candidates": ["policy-scoped-resource", "transaction-context", "immutable-revision"],
+      "files": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "467deba7e5f01116cc92ca147cb18256216f3bc3b389fe8c6180b7c2d6cc082d"
+        },
+        {
+          "path": "packages/payload/src/collections/operations/local/find.ts",
+          "sha256": "712869b081bd84e725e28e7d33254c028f5f0eb3916aea8b17f378c9758539c0"
+        },
+        {
+          "path": "packages/payload/src/collections/operations/find.ts",
+          "sha256": "4c21ddc86fe554d727936f5a34b3f655d1f118c2756f50bb5a501faafedb221d"
+        },
+        {
+          "path": "packages/payload/src/collections/operations/create.ts",
+          "sha256": "93c48b646cd0a6f416f2376950fd9da65bc5c110494d3452b1eb579f28670b18"
+        },
+        {
+          "path": "packages/payload/src/auth/executeAccess.ts",
+          "sha256": "0c6883313555f43a9d04b3c4b265cb84c9a72d586badf202168c1432bff6fea0"
+        },
+        {
+          "path": "packages/payload/src/utilities/initTransaction.ts",
+          "sha256": "6806b969221217dfcbb8b8966e9cc87f062bbcd87fefe002b63f5704a9e49770"
+        }
+      ]
+    },
+    {
+      "id": "umami",
+      "repository": "umami-software/umami",
+      "commit": "559e3c607c23d2c72d9bd4f6481bda428255323c",
+      "observedAt": "2026-10-30",
+      "status": "inspected",
+      "license": {
+        "summary": "MIT at the inspected repository revision.",
+        "evidence": ["LICENSE"],
+        "excluded": []
+      },
+      "candidates": ["bounded-analytics-query", "analytics-dashboard"],
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "d59f69c3a56253a150adfc42b41acd49e9024410ad087c58a23d506623258dfe"
+        },
+        {
+          "path": "src/app/api/websites/[websiteId]/stats/route.ts",
+          "sha256": "09aaa9ea6bd9c8485abf0d274f92485b9439a3d2f652e458c2e3dffa83918c77"
+        },
+        {
+          "path": "src/app/api/websites/[websiteId]/stats/contract.ts",
+          "sha256": "4f4364b36cbe95ec8a434e22af5f0d21d332017cb71ac397932521fed404c749"
+        },
+        {
+          "path": "src/lib/auth.ts",
+          "sha256": "2f8f466426ed45215d73b9198ad3bed325bf54e839ad7da7f825d8a712857bac"
+        },
+        {
+          "path": "src/lib/filters.ts",
+          "sha256": "e7016fc1e9c92fbc868bb61f1d38598cbcbad4f5d977ccb441112b053030c7b2"
+        },
+        {
+          "path": "prisma/schema.prisma",
+          "sha256": "9b27b84576c2f9fea31fd68d5c0ad23a6ea9384e946f18934a78761c9eaeedd6"
+        },
+        {
+          "path": "src/queries/sql/getWebsiteStats.ts",
+          "sha256": "7c5f6e025a5b0721a868bbb57aa7b90420260fc725bdb825b92b0609a6cbe16a"
+        },
+        {
+          "path": "src/lib/schema.ts",
+          "sha256": "625cc08007ce7d7188d36f362b2370baddfd748aaa9b284909aa56bf784e13f1"
+        },
+        {
+          "path": "src/permissions/website.ts",
+          "sha256": "34effa98ed8050bdbd33e2310b7b63ccc4c0a9d452440dd06baa281d9fd67fd8"
+        }
+      ]
+    },
+    {
+      "id": "zulip",
+      "repository": "zulip/zulip",
+      "commit": "c803cca1ceac58fed390846d4aae5be40e06132d",
+      "observedAt": "2026-10-30",
+      "status": "inspected",
+      "license": {
+        "summary": "Apache-2.0 for inspected server files; bundled third-party code/assets require separate provenance review.",
+        "evidence": ["LICENSE"],
+        "excluded": [
+          "Bundled third-party code, artwork and trademarks are outside the proposed pattern extraction."
+        ]
+      },
+      "candidates": ["transactional-event-delivery", "event-subscription"],
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "docs/overview/architecture-overview.md",
+          "sha256": "ef278bc93717f068b7e9c510c92a3a72a34a37a5af7a11cf2743287ca8ecf1a6"
+        },
+        {
+          "path": "zerver/lib/queue.py",
+          "sha256": "f462d9fb810defe934e1fcfcaa2c545a57a33d60aa55f5a8ba25f311bac4396e"
+        },
+        {
+          "path": "zerver/worker/base.py",
+          "sha256": "19cb6eda8c622f7e801d70509551e4487fdc37b947db234efc64cea11b0da243"
+        },
+        {
+          "path": "zerver/tornado/event_queue.py",
+          "sha256": "83d0f011dbf5a3b42e656c7c67991262380e2ab9ba6052157390868491b76134"
+        }
+      ]
+    },
+    {
+      "id": "backstage",
+      "repository": "backstage/backstage",
+      "commit": "f74cd6adcba2994c3b05ed8252998ac074673737",
+      "observedAt": "2026-10-30",
+      "status": "inspected",
+      "license": {
+        "summary": "Apache-2.0 for inspected catalog code; retain per-file attribution on any future direct reuse.",
+        "evidence": ["LICENSE"],
+        "excluded": []
+      },
+      "candidates": ["architecture-catalog", "validated-component-relations"],
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "e3620220d6f8a43cb5c968720f86d4e7c6e97847ee61a9c7694039896efb869b"
+        },
+        {
+          "path": "packages/catalog-model/src/entity/Entity.ts",
+          "sha256": "e414d4e13ca69720e3d2a2f5cbba545ab3839e7daacc9f84e175e0335d1b99af"
+        },
+        {
+          "path": "packages/catalog-model/src/kinds/SystemEntityV1alpha1.ts",
+          "sha256": "789df3265dbb7fdb1ab1802c86b5c429bc7f49a8a71397134aa3500fe2dec55a"
+        },
+        {
+          "path": "packages/catalog-model/src/kinds/ComponentEntityV1alpha1.ts",
+          "sha256": "54a4226d8a8227fd26d0eab4737f301154f5234136f672f162cf17c3bd6a2a1f"
+        },
+        {
+          "path": "plugins/catalog-backend/src/processing/DefaultCatalogProcessingEngine.ts",
+          "sha256": "b0f6d825f2019bd09057ef5e15af39ba23c3b6d76f1bbfe4df77a97e37dbb00f"
+        },
+        {
+          "path": "docs/features/software-catalog/system-model.md",
+          "sha256": "a94b1103cf666ecb1ed8b12f79accd112433feccdb9bc22d72bb3702c7be3f5b"
+        },
+        {
+          "path": "docs/architecture-decisions/adr005-catalog-core-entities.md",
+          "sha256": "582f8229d10bd8fddae82ab577d2223afa60e7ebbc2307872e21e89de613d239"
+        }
+      ]
+    }
+  ]
+}
