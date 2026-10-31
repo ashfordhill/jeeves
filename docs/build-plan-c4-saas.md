@@ -1,7 +1,7 @@
 # C4 authoring for SaaS: notation fidelity and catalog coverage (P39–P45)
 
-**Status: approved with recorded decisions, 2026-10-31. P39 is complete; P40 is next.**
-[P39 evidence](evidence/p39/README.md) records the implementation, checks and screenshots.
+**Status: approved with recorded decisions, 2026-10-31. P39 and P40 are complete; P41 is next.**
+[P39 evidence](evidence/p39/README.md) and [P40 evidence](evidence/p40/README.md) record the implementations, checks and screenshots.
 The plan was written after P38 (`f8aeea0`) from a read-only inspection of the editor,
 planned-capability catalog, architecture examples, P36/P37 evidence and the Visual Paradigm
 C4 guides below. The user's accepted decisions at the end are binding. Each package is
@@ -106,6 +106,8 @@ generator golden/ownership tests unchanged; axe passes; `pnpm check` passes.
 generated output, live QRWTY.
 
 ### P40 — Relationship labels, protocols and line semantics
+
+**Completed 2026-10-31.** [Evidence and limitations](evidence/p40/README.md); implementation and verification are recorded in the latest [handoff](handoff.md).
 
 **Goal.** Every arrow carries a verb phrase and (C2/C3) a protocol; sync and async differ
 visually; "planned" is a badge (N7, N8, N9).
@@ -272,4 +274,4 @@ The user accepted every recommended default. These are binding for P39–P45:
 | D15 | The expired Lens image is dropped; the Visual Paradigm guides are the reference. |
 | D16 | Commit planning documents immediately. Work on `main`, one agent at a time; no branches or worktrees. Commit history is disposable. |
 
-Status: **P39 is complete. P40 is next.** Follow the package order and recorded decisions above.
+Status: **P39 and P40 are complete. P41 is next.** Follow the package order and recorded decisions above.

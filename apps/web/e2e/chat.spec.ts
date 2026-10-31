@@ -69,7 +69,7 @@ test("a chat message draws a link shortener as one undo step", async ({ page, re
   for (const name of ["Links service, HTTP service", "Links DB, PostgreSQL", "Web app, Web app"]) {
     await expect(card(page, name)).toBeVisible();
   }
-  await expect(page.locator(".connection-chip", { hasText: "uses database" })).toBeVisible();
+  await expect(page.locator(".connection-chip", { hasText: "Reads and writes" })).toBeVisible();
 
   const saved = await designOf(request, id);
   expect(saved.design.elements.map((e) => e.id)).toEqual(["links", "links-db", "web"]);

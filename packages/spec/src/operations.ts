@@ -63,6 +63,13 @@ export const operationSchema = z.discriminatedUnion("op", [
   /** Also removes connections to or from the attachment. */
   z.strictObject({ op: z.literal("removeAttachment"), id: idSchema }),
   z.strictObject({ op: z.literal("connect"), connection: connectionSchema }),
+  z.strictObject({
+    op: z.literal("updateConnection"),
+    id: idSchema,
+    label: connectionSchema.shape.label,
+    protocol: connectionSchema.shape.protocol,
+    interaction: connectionSchema.shape.interaction,
+  }),
   z.strictObject({ op: z.literal("disconnect"), id: idSchema }),
   /** Implementation notes of an element or an attachment. */
   z.strictObject({ op: z.literal("setNotes"), id: idSchema, notes: notesSchema }),

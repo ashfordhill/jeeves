@@ -8,6 +8,7 @@ import { localExecutionFor } from "./local-execution.ts";
 import { localHttpPoolFor } from "./local-http-pool.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { plannedCapability } from "./planned-capabilities.ts";
+import { connectionPresentation, type RelationshipInteraction } from "./relationship-display.ts";
 import { resourceConfigSchema } from "./resources.ts";
 import { workspaceModel } from "./workspace.ts";
 
@@ -49,6 +50,9 @@ export interface ArchitectureViewEdge {
   from: string;
   to: string;
   description: string;
+  protocol?: string;
+  interaction?: RelationshipInteraction;
+  planned?: boolean;
   /** Existing semantic connection, never new wiring inferred from a view. */
   connection?: string;
   context?: string;
@@ -93,9 +97,6 @@ const label = (text: string) => {
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 const elementKey = (id: string) => `container:${id}`;
-const connectionDescription = (kind: string) =>
-  ({ "uses-database": "Uses database", calls: "Calls API", "depends-on": "Depends on" })[kind] ??
-  kind;
 
 export function architectureViews(
   design: DesignDocument,
@@ -199,7 +200,7 @@ export function architectureViews(
       id: `connection:${connection.id}`,
       from: elementKey(connection.from.element),
       to: elementKey(connection.to.element),
-      description: connection.planned?.label ?? connectionDescription(connection.kind),
+      ...connectionPresentation(connection, design),
       connection: connection.id,
       ...(connection.planned && { declared: true }),
     })),
@@ -225,6 +226,7 @@ export function architectureViews(
       from,
       to,
       description: relation.description,
+      protocol: "Undecided",
       context: relation.id,
     });
   }
@@ -500,7 +502,7 @@ function componentView(
         id: `connection:${connection.id}:${component}`,
         from: insideSide === "from" ? component : otherId,
         to: insideSide === "from" ? otherId : component,
-        description: connectionDescription(connection.kind),
+        ...connectionPresentation(connection, design),
         connection: connection.id,
       });
   }
@@ -539,23 +541,29 @@ function componentView(
       missing,
       acceptance: [...new Set(members.flatMap((member) => member.acceptance))],
     });
-    const uses = new Map<string, boolean>();
+    const uses = new Map<string, { declared: boolean; resources: string[] }>();
     for (const member of definition.members) {
       if (member.kind === "extension") continue;
       const binding = resolveArchitectureMember(design, element.id, member);
-      if (binding?.model.storeConnection) uses.set(binding.model.storeConnection, false);
+      if (binding?.model.storeConnection)
+        uses.set(binding.model.storeConnection, { declared: false, resources: [] });
     }
-    for (const id of definition.usesConnections) if (!uses.has(id)) uses.set(id, true);
+    for (const id of definition.usesConnections) uses.set(id, { declared: true, resources: [] });
     for (const resource of definition.usesResources) {
       const binding = resolveArchitectureMember(design, element.id, {
         attachment: resource.attachment,
         kind: "resource",
         ref: resource.resource,
       });
-      if (binding?.model.storeConnection && !uses.has(binding.model.storeConnection))
-        uses.set(binding.model.storeConnection, true);
+      if (binding?.model.storeConnection) {
+        const id = binding.model.storeConnection;
+        const use = uses.get(id) ?? { declared: true, resources: [] };
+        const name = binding.model.resources.find((item) => item.id === resource.resource)?.name;
+        if (name) use.resources.push(name);
+        uses.set(id, use);
+      }
     }
-    for (const [id, declared] of uses) {
+    for (const [id, use] of uses) {
       const connection = design.connections.find((item) => item.id === id);
       if (!connection) continue;
       const otherId =
@@ -578,9 +586,12 @@ function componentView(
         id: `use:${definition.id}:${id}`,
         from: nodeId,
         to: outside,
-        description: declared ? "Declared use" : "Uses store",
+        ...connectionPresentation(connection, design),
+        ...(use.resources.length && {
+          description: `Reads and writes ${[...new Set(use.resources)].join(", ")}`,
+        }),
         connection: id,
-        declared: declared || Boolean(connection.planned),
+        declared: use.declared || Boolean(connection.planned),
       });
     }
   }
@@ -595,6 +606,9 @@ function componentView(
       from: `responsibility:${relation.from}`,
       to: `responsibility:${relation.to}`,
       description: relation.description,
+      protocol: relation.protocol ?? "In process",
+      interaction: relation.interaction ?? "Request / response",
+      planned: true,
       declared: true,
       componentRelationship: relation.id,
     });

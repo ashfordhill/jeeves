@@ -208,3 +208,51 @@ it("ignores container description and technology in generated behavior and owner
   expect(after.artifacts).toEqual(before.artifacts);
   expect(after.elements).toEqual(before.elements);
 });
+
+it("ignores relationship metadata in generation, contracts, wiring and ownership", () => {
+  for (const design of [
+    fixtureDesign("qrwty-architecture"),
+    createRecipeDesign({ id: "qr-studio", version: "0.1.0" }, { title: "QR", hostPort: 5173 })
+      .design,
+  ]) {
+    const before = planProject(design, templates, { projectName: "QR" });
+    const edited = structuredClone(design);
+    for (const connection of edited.connections)
+      Object.assign(connection, {
+        label: "Presents domain collaboration",
+        protocol: "AMQP",
+        interaction: "Streaming",
+      });
+    if (edited.architecture?.componentRelationships)
+      for (const relationship of edited.architecture.componentRelationships)
+        Object.assign(relationship, { protocol: "In process", interaction: "Asynchronous" });
+    const after = planProject(edited, templates, { projectName: "QR" });
+    expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+      before.files.filter((file) => file.path !== "jeeves/design.json"),
+    );
+    expect(after.artifacts).toEqual(before.artifacts);
+    expect(after.elements).toEqual(before.elements);
+  }
+});
+
+it("projects connection and resource labels with protocols into C3 and keeps C1 unchanged", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const before = architectureViews(design, templates.lookup, "QR");
+  const edited = structuredClone(design);
+  for (const connection of edited.connections)
+    Object.assign(connection, {
+      label: `Collaborates through ${connection.id}`,
+      protocol: "AMQP",
+      interaction: "Streaming",
+    });
+  const after = architectureViews(edited, templates.lookup, "QR");
+  expect(after.context).toEqual(before.context);
+  const scope = after.components.find((view) => view.container === "qrwty")!;
+  for (const edge of scope.edges.filter((edge) => edge.connection)) {
+    expect(edge).toMatchObject({ protocol: "AMQP", interaction: "Streaming", planned: false });
+    expect(edge.description).not.toMatch(/Declared use|Uses store|^calls$/);
+  }
+  expect(
+    scope.edges.find((edge) => edge.id === "use:analytics:qrwty-uses-db")?.description,
+  ).toMatch(/^Reads and writes /);
+});

@@ -50,6 +50,7 @@ import { LocalDeploymentDialog } from "./LocalDeployment.tsx";
 import { PlannedConnectionInspector, PlannedElementInspector } from "./PlannedInspector.tsx";
 import "./architecture.css";
 import "./editor.css";
+import { RelationshipLegend } from "./RelationshipLabel.tsx";
 import { TypeLegend } from "./type-style.tsx";
 
 type Level = "context" | "containers" | "components";
@@ -712,6 +713,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           closeButtonProps={{ "aria-label": "Close type colors" }}
         >
           <TypeLegend />
+          <RelationshipLegend />
         </Modal>
       ) : null}
       <GenerateDrawer />

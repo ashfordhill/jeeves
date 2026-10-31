@@ -12,6 +12,7 @@ import {
 import { type Finding, finding, isStructural } from "./findings.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
+import { plannedConnectionSchema } from "./planned-capabilities.ts";
 import { sameSubtype, subtypeDiscards } from "./subtype.ts";
 import { reviewTemplateUpgrade } from "./template-upgrade.ts";
 import { validateDesign } from "./validate.ts";
@@ -308,6 +309,27 @@ function applyOne(
         upgradeDesign({ ...design, schemaVersion: 1, connections: [op.connection] })
           .connections[0] as typeof op.connection,
       );
+      return;
+    }
+    case "updateConnection": {
+      const connection = design.connections.find((item) => item.id === op.id);
+      if (!connection) throw missing("connection", op.id);
+      const patch = Object.fromEntries(
+        (["label", "protocol", "interaction"] as const)
+          .filter((field) => op[field] !== undefined)
+          .map((field) => [field, op[field]]),
+      );
+      if (connection.planned) {
+        const parsed = plannedConnectionSchema.safeParse({ ...connection.planned, ...patch });
+        if (!parsed.success)
+          throw new OpError(
+            finding(
+              "INVALID_OPERATION",
+              "A planned relationship needs a nonempty label and protocol.",
+            ),
+          );
+        connection.planned = parsed.data;
+      } else Object.assign(connection, patch);
       return;
     }
     case "disconnect": {

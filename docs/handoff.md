@@ -3042,3 +3042,70 @@ remain visible and are not P39 claims. Legacy planned examples retain unspecifie
 technology until explicitly selected; their reviewed refresh is P43. Narrow diagrams
 are fitted overviews with mouse zoom/selection for detail. Continue the recorded
 package order/current-branch/local-commit policy; no runtime or live adoption work.
+
+## 2026-10-31 — P40: relationship labels, protocols and line semantics
+
+Completed [P40](build-plan-c4-saas.md#p40--relationship-labels-protocols-and-line-semantics)
+in the existing `main` checkout, starting clean at `fcfe48b`. Read AGENTS, PLAN
+§1–§15, the recorded C4 decisions and latest handoffs. One agent, no delegation,
+branches or worktrees; no repeated external research.
+
+Added optional bounded executable-connection label/protocol/interaction metadata,
+shared with planned relationships. `updateConnection` changes presentation atomically
+without replacing/reordering wiring. Defaults use current target names and SQL or
+HTTPS/JSON; generic dependencies remain Undecided. The inspector provides explicit
+Save/Cancel, dirty draft retention through selection/conflicts and existing history.
+Planned protocol selection now accepts bounded text in the existing inspector.
+
+C2/C3 show verb phrases and protocols separately. Request/response is solid, async
+dashed and streaming dotted; Planned is a badge independent of interaction. The
+existing legend explains styles. C3 connection uses inherit presentation; resource
+uses name their selected resources and aggregate by their existing store connection.
+“Declared use” and “Uses store” no longer render. Declared component relationships
+retain stored descriptions, with optional protocol/interaction controls in the same
+dialog. No per-use override or new dialog was necessary. C1 descriptions/line styles
+remain unchanged and contain no protocol. Context intent at C2 shows Undecided;
+transport is not inferred from prose.
+
+Screenshot-driven adjustments keep C2 labels clear of measured cards/earlier labels
+inside fitted object bounds, with thin leaders when displaced. Saved positions/layout
+and authored arrow routing stay intact. C3 reserves label/protocol/badge space for
+its overview font, preventing text overlap. Existing arrow crossings remain.
+
+Verification and all fifteen inspected captures are in [P40 evidence](evidence/p40/README.md):
+
+- Final **`pnpm work run browser-preview`** command lists ten suites: **36 tests passed**,
+  Playwright **26.0s** / profile **27.8s**, no retries, strict diagnostics and unchanged
+  fingerprints; `2026-10-31T23-09-15-415Z-browser-preview-c3f68a50`.
+- QR plus all three examples have verb/protocol labels at C2/C3, solid default
+  executable lines, dashed async planned lines and separate Planned badges. Browser
+  assertions check label/card/label separation within the viewport and nonoverlapping
+  C3 text. Mouse Save/Cancel/undo/redo/reload, retained 409 drafts, declared async and
+  planned streaming persistence pass. Existing C1/configuration/placement/chat/API
+  reference journeys pass; axe covers desktop C2/C3, narrow dark C2 and existing forms.
+- **`pnpm work run check` → `pnpm check` passed**, **45.2s**, unchanged fingerprints;
+  `2026-10-31T23-10-01-560Z-check-adbb57ab`. All workspace/script typechecks passed;
+  **686 tests / 105 files**, Vitest **37.69s**; Biome **710 files**, **577 warnings /
+  75 infos / no errors**. Generator golden/ownership fixtures are unchanged. Added
+  comparisons prove edited metadata leaves generated artifacts/wiring/ownership
+  identical for the QR architecture fixture and protected recipe, except the existing
+  lossless input design snapshot.
+- Interim logs retain the corrected inspector-state/narrow-panel assumptions,
+  clipped/colliding labels and C3 text spacing. The first full check caught a stale
+  new-test API-suffix expectation and an existing PGlite migration-test timeout while
+  browser tests ran concurrently. Corrected the assertion; final gates ran sequentially
+  without timeout/retry increases or diagnostic suppression.
+
+The small extensions to declared component metadata and label geometry complete
+N7–N9 within existing surfaces; they add no runtime behavior. No template, runtime,
+recipe, generator implementation, dependency pin/lockfile, golden or live QRWTY edits.
+Catalog offerings, availability and reusable boundaries are unchanged, so CATALOG.md
+is unchanged. Only evidence/planning/handoff documentation changed after final gates.
+Removed **36** exact-name/session-time E2E projects and **70** session-created temporary
+settings/output directories, retaining pre-existing data/logs/shared Postgres.
+Existing Jeeves health on 4310 remains OK.
+
+Next: **P41**, missing SaaS containers in the C2 planning catalog, followed by the
+recorded package order. Existing example content/technology refresh remains P43;
+narrow views remain mouse-zoomable overviews. Follow the current-branch, one-agent,
+scoped-local-commit policy. No runtime expansion or live adoption is implied.

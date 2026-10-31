@@ -14,6 +14,7 @@ import type {
   Finding,
   OperationInput,
 } from "@jeeves/spec";
+import { connectionPresentation } from "@jeeves/spec";
 import { Button, Menu } from "@mantine/core";
 import {
   IconAlertTriangle,
@@ -42,6 +43,7 @@ import { DeliveryConfiguration } from "./DeliveryEditor.tsx";
 import { DraftTextarea, DraftTextInput } from "./fields.tsx";
 import { LocalExecutionConfiguration } from "./LocalExecutionEditor.tsx";
 import { LocalHttpPoolConfiguration } from "./LocalHttpPoolEditor.tsx";
+import { RelationshipPresentation } from "./RelationshipPresentation.tsx";
 import { ResourceConfiguration } from "./ResourceEditor.tsx";
 import { WorkspaceConfiguration } from "./WorkspaceEditor.tsx";
 
@@ -411,11 +413,16 @@ export function ConnectionInspector({ connection }: { connection: Connection }) 
       <header className="inspector-head">
         <span className="inspector-head-titles">
           <span className="inspector-kicker">Connection</span>
-          <span className="inspector-title">{connectionLabels[connection.kind]}</span>
+          <span className="inspector-title">
+            {connectionPresentation(connection, loaded.design).description}
+          </span>
         </span>
       </header>
       {end("From", connection.from)}
       {end("To", connection.to)}
+      <Section title="Relationship">
+        <RelationshipPresentation key={connection.id} connection={connection} />
+      </Section>
       {findings.length > 0 ? (
         <Section title="Findings">
           <FindingList findings={findings} />

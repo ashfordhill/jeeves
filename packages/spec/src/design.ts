@@ -2,6 +2,11 @@ import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
 import { idSchema, templateRefSchema } from "./ids.ts";
 import { plannedConnectionSchema } from "./planned-capabilities.ts";
+import {
+  relationshipInteractionSchema,
+  relationshipLabelSchema,
+  relationshipProtocolSchema,
+} from "./relationship-display.ts";
 
 export const connectionKindSchema = z.enum(["uses-database", "calls", "depends-on"]);
 export type ConnectionKind = z.infer<typeof connectionKindSchema>;
@@ -58,6 +63,10 @@ export const connectionSchema = z.strictObject({
   kind: connectionKindSchema,
   from: endpointSchema,
   to: endpointSchema,
+  /** C4 presentation metadata; wiring and generation ignore these fields. */
+  label: relationshipLabelSchema.optional(),
+  protocol: relationshipProtocolSchema.optional(),
+  interaction: relationshipInteractionSchema.optional(),
   /** Explicit planned relationship; does not satisfy executable port requirements. */
   planned: plannedConnectionSchema.optional(),
   config: z

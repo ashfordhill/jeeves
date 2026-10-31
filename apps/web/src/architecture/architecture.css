@@ -395,7 +395,7 @@
   color: var(--ink-soft);
 }
 
-.architecture-relation-label > span {
+.architecture-relation-label > .relationship-description {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -405,4 +405,8 @@
 .architecture-layout-status {
   padding: 24px;
   color: var(--ink-soft);
+}
+
+.architecture-relation-label {
+  row-gap: 2px;
 }

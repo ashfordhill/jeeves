@@ -38,7 +38,7 @@ test("builds a service + REST server + Postgres board that survives a reload", a
   await page.getByRole("button", { name: "Connector" }).click();
   await service.click();
   await db.click();
-  await expect(page.locator(".connection-chip", { hasText: "uses database" })).toBeVisible();
+  await expect(page.locator(".connection-chip", { hasText: "Reads and writes" })).toBeVisible();
 
   const saved = await designOf(request, id);
   expect(saved.design.elements.map((e) => e.id)).toEqual(["http-service", "postgresql"]);
@@ -56,7 +56,7 @@ test("builds a service + REST server + Postgres board that survives a reload", a
   await expect(service).toBeVisible();
   await expect(db).toBeVisible();
   await expect(service.getByRole("listitem", { name: "REST API server" })).toBeVisible();
-  await expect(page.locator(".connection-chip", { hasText: "uses database" })).toBeVisible();
+  await expect(page.locator(".connection-chip", { hasText: "Reads and writes" })).toBeVisible();
   expect(await transformOf("HTTP service, HTTP service")).toBe(serviceStyle);
 
   const axe = await new AxeBuilder({ page }).analyze();
@@ -91,7 +91,7 @@ test("refuses an incompatible connection with an explanation", async ({ page, re
 
   // The suggested fix connects the right way round.
   await alert.getByRole("button", { name: /Connect from "HTTP service"/ }).click();
-  await expect(page.locator(".connection-chip", { hasText: "uses database" })).toBeVisible();
+  await expect(page.locator(".connection-chip", { hasText: "Reads and writes" })).toBeVisible();
   expect((await designOf(request, id)).design.revision).toBe(before + 1);
 });
 

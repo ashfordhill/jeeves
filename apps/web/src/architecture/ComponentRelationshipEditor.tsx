@@ -1,4 +1,4 @@
-import type { DesignDocument } from "@jeeves/spec";
+import { type DesignDocument, relationshipInteractionSchema } from "@jeeves/spec";
 import { Alert, Button, Group, NativeSelect, Stack, TextInput } from "@mantine/core";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
@@ -100,6 +100,26 @@ export function ComponentRelationshipEditor({
           maxLength={240}
           value={draft.description}
           onChange={(event) => setDraft({ ...draft, description: event.currentTarget.value })}
+        />
+        <TextInput
+          label="Protocol"
+          maxLength={80}
+          placeholder="In process"
+          value={draft.protocol ?? ""}
+          onChange={(event) =>
+            setDraft({ ...draft, protocol: event.currentTarget.value || undefined })
+          }
+        />
+        <NativeSelect
+          label="Interaction"
+          data={relationshipInteractionSchema.options}
+          value={draft.interaction ?? "Request / response"}
+          onChange={(event) =>
+            setDraft({
+              ...draft,
+              interaction: relationshipInteractionSchema.parse(event.currentTarget.value),
+            })
+          }
         />
         {error ? (
           <Alert color="red" role="alert">

@@ -20,12 +20,13 @@ export interface ArchitectureGeometry {
 }
 const compare = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
-function labelSize(text: string): { width: number; height: number } {
+function labelSize(text: string, detailed = false): { width: number; height: number } {
   // Deliberately conservative, independent of browser font loading. CSS clamps to this box.
   const length = Array.from(text).length;
-  const width = Math.min(176, Math.max(56, length * 7.5 + 20));
-  const lines = Math.min(3, Math.max(1, Math.ceil((length * 7.5) / (width - 20))));
-  return { width, height: Math.max(42, lines * 17 + 12) };
+  const characterWidth = detailed ? 11.5 : 7.5;
+  const width = Math.min(detailed ? 240 : 176, Math.max(56, length * characterWidth + 20));
+  const lines = Math.min(3, Math.max(1, Math.ceil((length * characterWidth) / (width - 20))));
+  return { width, height: Math.max(42, lines * (detailed ? 24 : 17) + 12) };
 }
 
 export function architectureLayoutInput(
@@ -107,7 +108,13 @@ export function architectureLayoutInput(
       labels: [
         {
           text: edge.description,
-          ...labelSize(edge.description),
+          ...(() => {
+            const size = labelSize(edge.description, projection.level !== "context");
+            return {
+              ...size,
+              height: size.height + (edge.protocol ? 26 : 0) + (edge.planned ? 28 : 0),
+            };
+          })(),
           layoutOptions: { "elk.edgeLabels.inline": "true" },
         },
       ],

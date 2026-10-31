@@ -238,9 +238,9 @@ export function PlannedConnectionInspector({ connection }: { connection: Connect
             }
           />
         ))}
-        <NativeSelect
+        <TextInput
           label="Protocol"
-          data={schema.protocol.unwrap().options}
+          maxLength={80}
           value={planned.protocol}
           onChange={(event) =>
             update({ protocol: event.currentTarget.value as typeof planned.protocol })

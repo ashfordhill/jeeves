@@ -20,6 +20,7 @@ export * from "./local-http-pool.ts";
 export * from "./manifest.ts";
 export * from "./operations.ts";
 export * from "./planned-capabilities.ts";
+export * from "./relationship-display.ts";
 export * from "./resources.ts";
 export * from "./subtype.ts";
 export * from "./template-upgrade.ts";

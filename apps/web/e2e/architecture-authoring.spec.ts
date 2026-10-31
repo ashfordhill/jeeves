@@ -103,6 +103,8 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
     await relationship.getByLabel("From component").selectOption("content");
     await relationship.getByLabel("To component").selectOption("moderation");
     await relationship.getByLabel("Relationship label").fill("Submits reported content");
+    await relationship.getByLabel("Protocol", { exact: true }).fill("In process");
+    await relationship.getByLabel("Interaction", { exact: true }).selectOption("Asynchronous");
     await relationship.getByRole("button", { name: "Save relationship", exact: true }).click();
     await expect(relationship).not.toBeVisible();
     await expect(
@@ -112,6 +114,20 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
       .getByRole("button", { name: "Inspect relationship: Submits reported content" })
       .click();
     await expect(details.getByRole("heading", { name: "Submits reported content" })).toBeVisible();
+    const savedRelationship = (await read()).architecture.componentRelationships[0];
+    expect(savedRelationship).toMatchObject({
+      protocol: "In process",
+      interaction: "Asynchronous",
+    });
+    await expect(
+      page.locator(
+        `.react-flow__edge[data-id="declared:${savedRelationship.id}"] .react-flow__edge-path`,
+      ),
+    ).toHaveCSS("stroke-dasharray", "7px, 4px");
+    await page.screenshot({
+      path: "test-results/p40-component-relationship.png",
+      animations: "disabled",
+    });
     await page.screenshot({
       path: "test-results/p36-community-components.png",
       animations: "disabled",
@@ -181,7 +197,7 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
     await page.getByRole("button", { name: "Select", exact: true }).click();
     await page.locator(".connection-chip").click();
     await details.getByLabel("Relationship label", { exact: true }).fill("Caches public responses");
-    await details.getByLabel("Protocol", { exact: true }).selectOption("Cache protocol");
+    await details.getByLabel("Protocol", { exact: true }).fill("Cache protocol");
     const before = await read();
     await details.getByRole("button", { name: "Save relationship", exact: true }).click();
     await expect

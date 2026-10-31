@@ -17,6 +17,36 @@ function applied(ops: OperationInput[], doc?: DesignDocument): DesignDocument {
 
 /** One passing case per operation type. Typed as a full record so new op types need a test. */
 const opCases: Record<OperationType, () => void> = {
+  updateConnection() {
+    const input = sampleDesign();
+    const doc = applied(
+      [
+        {
+          op: "updateConnection",
+          id: "c-db",
+          label: "Persists stock records",
+          protocol: "SQL",
+          interaction: "Asynchronous",
+        },
+      ],
+      input,
+    );
+    const expected = upgradeDesign(input);
+    Object.assign(expected.connections[0]!, {
+      label: "Persists stock records",
+      protocol: "SQL",
+      interaction: "Asynchronous",
+    });
+    expected.revision++;
+    expect(doc).toEqual(expected);
+    expect(input.connections[0]).not.toHaveProperty("label");
+    expect(apply([{ op: "updateConnection", id: "missing", label: "Reads records" }]).ok).toBe(
+      false,
+    );
+    expect(apply([{ op: "updateConnection", id: "c-db", protocol: "x".repeat(81) }]).ok).toBe(
+      false,
+    );
+  },
   setArchitecture() {
     const architecture = {
       system: { name: "Inventory", description: "Keeps stock records" },

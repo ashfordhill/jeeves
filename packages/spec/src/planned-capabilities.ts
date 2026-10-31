@@ -1,5 +1,10 @@
 /** Design-time catalog. These contracts describe intent; they provide no runtime. */
 import { z } from "zod";
+import {
+  relationshipInteractionSchema,
+  relationshipLabelSchema,
+  relationshipProtocolSchema,
+} from "./relationship-display.ts";
 
 export type CapabilityField = {
   key: string;
@@ -552,22 +557,9 @@ export function plannedConfigSchema(id: string) {
 }
 
 export const plannedConnectionSchema = z.strictObject({
-  label: z.string().trim().min(1).max(120),
-  protocol: z
-    .enum([
-      "HTTPS",
-      "HTTP",
-      "WebSocket",
-      "SQL",
-      "Cache protocol",
-      "Object API",
-      "Message protocol",
-      "Undecided",
-    ])
-    .default("HTTPS"),
-  interaction: z
-    .enum(["Request / response", "Asynchronous", "Streaming"])
-    .default("Request / response"),
+  label: relationshipLabelSchema.min(1),
+  protocol: relationshipProtocolSchema.default("HTTPS"),
+  interaction: relationshipInteractionSchema.default("Request / response"),
   security: z
     .enum(["Service identity", "User identity", "Public", "Private network"])
     .default("Service identity"),

@@ -1,6 +1,7 @@
 import type {
   ArchitectureProjection,
   ArchitectureSupport,
+  ArchitectureViewEdge,
   ArchitectureViewNode,
 } from "@jeeves/spec";
 import { ActionIcon, Menu } from "@mantine/core";
@@ -40,6 +41,7 @@ import {
   SCOPE_ID,
 } from "./layout.ts";
 import { layoutArchitecture } from "./layout-client.ts";
+import { RelationshipLabel, relationshipLineStyle } from "./RelationshipLabel.tsx";
 import { nodeFamily, typeStyles } from "./type-style.tsx";
 
 export const supportLabel: Record<ArchitectureSupport, string> = {
@@ -116,7 +118,12 @@ function ScopeFrame({ data }: NodeProps<ScopeNode>) {
 }
 const nodeTypes = { architecture: ArchitectureCard, scope: ScopeFrame };
 type RelationEdge = Edge<
-  { description: string; geometry: RelationGeometry; onSelect: (id: string) => void },
+  {
+    description: string;
+    presentation: ArchitectureViewEdge;
+    geometry: RelationGeometry;
+    onSelect: (id: string) => void;
+  },
   "relation"
 >;
 function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
@@ -145,9 +152,10 @@ function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
             width: label.width,
             height: label.height,
             fontSize: Math.min(20, 11 / zoom),
+            lineHeight: data.presentation.protocol ? "1.2" : undefined,
           }}
         >
-          <span>{data.description}</span>
+          <RelationshipLabel {...data.presentation} />
         </button>
       </EdgeLabelRenderer>
     </>
@@ -332,11 +340,15 @@ export function ArchitectureGraph({
         source: edge.from,
         target: edge.to,
         type: "relation",
-        data: { description: edge.description, geometry, onSelect },
+        data: { description: edge.description, presentation: edge, geometry, onSelect },
         style: {
           stroke: "var(--line)",
           strokeWidth: 2,
-          ...(edge.context || edge.declared ? { strokeDasharray: "5 4" } : {}),
+          ...(projection.level === "context"
+            ? edge.context || edge.declared
+              ? { strokeDasharray: "5 4" }
+              : {}
+            : relationshipLineStyle(edge.interaction)),
         },
         markerEnd: { type: MarkerType.ArrowClosed, color: "var(--line)" },
       };

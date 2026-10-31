@@ -4,6 +4,10 @@ import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import { plannedCapability, plannedConfigSchema } from "./planned-capabilities.ts";
+import {
+  relationshipInteractionSchema,
+  relationshipProtocolSchema,
+} from "./relationship-display.ts";
 import { resourceConfigSchema } from "./resources.ts";
 
 const description = z.string().trim().max(1200).default("");
@@ -54,6 +58,8 @@ export const architectureSchema = z.strictObject({
         from: idSchema,
         to: idSchema,
         description: z.string().trim().min(1).max(240),
+        protocol: relationshipProtocolSchema.optional(),
+        interaction: relationshipInteractionSchema.optional(),
       }),
     )
     .max(300)
