@@ -29,6 +29,8 @@ export const profiles = {
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
   "template-upgrade":
     "Reviewed starter template upgrade, preserved output and newly selected policy in a disposable Inventory app",
+  "local-http-pool":
+    "Compiled local HTTP pool with shared generated resources, readiness/loss/recovery and no replay; disposable consumer",
   "local-execution":
     "Disposable local limits, process restart, request drain and bounded shutdown proof",
   "resource-starter":
@@ -125,6 +127,7 @@ export function planWork(root: string, name: string, selections: string[]): Work
       break;
     case "template-upgrade":
     case "local-execution":
+    case "local-http-pool":
     case "resource-starter":
     case "generated-workspace":
     case "resource-workspace":

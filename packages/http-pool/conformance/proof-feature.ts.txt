@@ -1,0 +1,24 @@
+// Disposable consumer instrumentation only; never supplied by a generated application.
+import { hostname } from "node:os";
+import { defineFeature } from "@jeeves/service-runtime";
+import { database } from "../../jeeves.generated.ts";
+let ready = true;
+let slowStarted = false;
+export default defineFeature({
+  name: "pool-proof",
+  register(app) {
+    app.addHook("onRequest", async (request, reply) => {
+      reply.header("x-pool-proof-instance", hostname());
+      if (request.url === "/ready" && !ready) return reply.code(503).send({ status: "not-ready" });
+    });
+    app.get("/proof/id", async request => ({ instance: hostname(), forwarded: request.headers["x-forwarded-for"] ?? null, origin: request.headers.origin ?? null, requestId: request.id }));
+    app.post("/proof/readiness", async request => { ready = (request.body as { ready: boolean }).ready; return { ready }; });
+    app.post("/proof/commit-then-drop", async (request, reply) => {
+      await database.pool.query("INSERT INTO pool_proof_effects (token) VALUES ($1)", [(request.body as { token: string }).token]);
+      reply.hijack();
+      reply.raw.destroy();
+    });
+    app.get("/proof/slow", async () => { slowStarted = true; await new Promise(resolve => setTimeout(resolve, 2000)); return { completed: true }; });
+    app.get("/proof/state", async () => ({ slowStarted }));
+  },
+});

@@ -1,0 +1,22 @@
+{
+  "name": "@jeeves/http-pool",
+  "version": "0.1.0",
+  "description": "Deterministic bounded local HTTP pool definitions using a pinned HAProxy release.",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "exports": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  }
+}
