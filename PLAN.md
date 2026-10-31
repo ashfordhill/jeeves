@@ -4,7 +4,7 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
-**Current editor package:** [P38](docs/build-plan-p38-api.md) adds the complete structured API operation list, selected contracts, protected editing and a saved-revision OpenAPI reference to [P37's compact editor](docs/build-plan-p37-editor.md). [P38 evidence](docs/evidence/p38/README.md) records checks, viewer fit and screenshots. P36's planned offerings and modular [catalog](CATALOG.md) remain available.
+**Next package:** [P39](docs/build-plan-c4-saas.md), the first of the C4 SaaS authoring packages (P39–P45: container notation, relationship labels, C2/C3 catalog coverage, QRWTY target example, chat awareness, dynamic view). **Latest completed:** [P38](docs/build-plan-p38-api.md) adds the complete structured API operation list, selected contracts, protected editing and a saved-revision OpenAPI reference to [P37's compact editor](docs/build-plan-p37-editor.md). [P38 evidence](docs/evidence/p38/README.md) records checks, viewer fit and screenshots. P36's planned offerings and modular [catalog](CATALOG.md) remain available.
 
 **JEEVES-2 decisions:** the user chose focused C4 implementation with linked data/traffic settings, contextual menus for retained actions, and C3 responsibility groups. The [research review](docs/reviews/jeeves-feedback-2-2026-10-31.md) is completed background. P38 implements bounded API contract/reference work; C4 implementation/code graphs, deeper backend data/deployment authoring, new runtimes and live QRWTY adoption remain separate follow-ups.
 
