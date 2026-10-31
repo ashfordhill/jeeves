@@ -1,0 +1,99 @@
+.workspace-editor-controls,
+.workspace-editor-collections,
+.workspace-editor-columns {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.workspace-editor-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.workspace-editor-layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 24px;
+}
+.workspace-editor-collections legend,
+.workspace-editor-columns legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.workspace-editor-display {
+  min-width: 0;
+}
+.workspace-preset-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #314662;
+  border-radius: 12px;
+  padding: 18px;
+  background: #0b1424;
+  color: #eaf1fb;
+}
+.workspace-preset-preview[data-preset="paper"] {
+  background: #faf9f4;
+  border-color: #d0d9cf;
+  color: #172f29;
+}
+.workspace-preview-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #8acbff;
+  color: #0b1424;
+  font-weight: 800;
+}
+.workspace-preset-preview > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.workspace-preset-preview span:not(.workspace-preview-mark),
+.workspace-preset-preview small {
+  font-size: 12px;
+}
+.workspace-preset-preview small {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .workspace-editor-layout,
+  .workspace-editor-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workspace-editor-collections {
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--mantine-color-default-border);
+  }
+  .workspace-preset-preview small {
+    display: none;
+  }
+}
+
+.workspace-editor-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.workspace-preset-preview {
+  margin: 0;
+  min-width: 0;
+}
+
+.workspace-preset-preview[data-preset="paper"] .workspace-preview-mark {
+  background: #087c80;
+  color: #fff;
+}

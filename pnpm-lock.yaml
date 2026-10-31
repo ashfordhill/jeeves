@@ -338,6 +338,9 @@ importers:
       '@jeeves/template-postgres':
         specifier: workspace:*
         version: link:../../templates/postgres
+      '@jeeves/template-resource-workspace':
+        specifier: workspace:*
+        version: link:../../templates/resource-workspace
       '@jeeves/template-rest-api-client':
         specifier: workspace:*
         version: link:../../templates/rest-api-client
@@ -434,6 +437,9 @@ importers:
       '@jeeves/template-postgres':
         specifier: workspace:*
         version: link:../../templates/postgres
+      '@jeeves/template-resource-workspace':
+        specifier: workspace:*
+        version: link:../../templates/resource-workspace
       '@jeeves/template-rest-api-client':
         specifier: workspace:*
         version: link:../../templates/rest-api-client
@@ -572,6 +578,18 @@ importers:
       '@types/pg':
         specifier: 8.23.1
         version: 8.23.1
+
+  templates/resource-workspace:
+    dependencies:
+      '@jeeves/resource-workspace':
+        specifier: workspace:*
+        version: link:../../packages/resource-workspace
+      '@jeeves/spec':
+        specifier: workspace:*
+        version: link:../../packages/spec
+      '@jeeves/template-kit':
+        specifier: workspace:*
+        version: link:../../packages/template-kit
 
   templates/rest-api-client:
     dependencies:

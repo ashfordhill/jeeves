@@ -1,5 +1,6 @@
+import { readFileSync } from "node:fs";
 import { createRecipeDesign, lockFor, planProject } from "@jeeves/generator";
-import type { DesignDocument } from "@jeeves/spec";
+import { type DesignDocument, designSchema } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import {
   elementOrder,
@@ -16,6 +17,34 @@ const seed = (d: DesignDocument) =>
   seedPlan({ design: d, lock: lockOf(d), templates: templates.lookup });
 
 describe("seedPlan", () => {
+  it("limits workspace notes to additive project content and leaves supplied behavior task-free", () => {
+    const document = designSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL("../../../fixtures/designs/generated-workspace.json", import.meta.url),
+          "utf8",
+        ),
+      ),
+    );
+    const plan = planProject(document, templates, { projectName: "Inventory" });
+    const lock = lockFor(plan, document.revision);
+    expect(seedPlan({ design: document, lock, templates: templates.lookup })).toEqual([]);
+    const web = document.elements.find((element) => element.id === "inventory-web")!;
+    web.notes = "Add a help panel.";
+    web.attachments.find((attachment) => attachment.template.id === "resource-workspace")!.notes =
+      "Explain the inventory policy.";
+    const tasks = seedPlan({ design: document, lock, templates: templates.lookup });
+    expect(tasks).toHaveLength(2);
+    for (const task of tasks) {
+      expect(task.ownedPaths).toEqual([
+        "frontends/inventory-web/src/project/",
+        "frontends/inventory-web/tests/",
+        "frontends/inventory-web/package.json",
+      ]);
+      expect(task.description).toContain("additive content");
+    }
+  });
+
   it("seeds bounded event handlers without notes and retains their verification requirement", () => {
     const d = fixtureDesign("event-orders");
     const attachment = d.elements[0]!.attachments[0]!;

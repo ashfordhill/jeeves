@@ -14,3 +14,4 @@ export * from "./operations.ts";
 export * from "./resources.ts";
 export * from "./subtype.ts";
 export * from "./validate.ts";
+export * from "./workspace.ts";

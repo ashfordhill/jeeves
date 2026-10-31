@@ -462,7 +462,9 @@ export class RunService {
       return seedOnly(
         project.lock.recipe
           ? `Recipe ${project.lock.recipe.id}@${project.lock.recipe.version} provides this application's declared behavior. No implementation model call is needed. Run Generate with verification, then start the local app.`
-          : "No element or attachment has implementation notes, so there's nothing to implement. Add notes in the Draw view and generate again.",
+          : project.lock.workspaceBindings
+            ? "The resource workspace supplies account access, configured owner records, forms and paging. No implementation model call is needed for those capabilities. Run Generate with verification, then start the local app. Additional business behavior requires explicit contracts or project notes."
+            : "No element or attachment has implementation notes, so there's nothing to implement. Add notes in the Draw view and generate again.",
       );
     }
     if (project.lock.resourceModels || project.lock.deliveryModels)
@@ -1320,6 +1322,10 @@ function capabilities(run: Run): string[] {
       ...Object.entries(lock?.deliveryModels ?? {}).map(
         ([service, model]) =>
           `${service}: durable event delivery (${model.config.preset}, worker in service); project handlers ${model.config.events.map((event) => `${event.type}@${event.version} [${event.acceptance.join(", ")}]`).join("; ")}`,
+      ),
+      ...Object.entries(lock?.workspaceBindings ?? {}).map(
+        ([frontend, binding]) =>
+          `${frontend}: generated resource workspace 0.1.0; accounts, owner records, forms and cursor pages from ${binding.service} through ${binding.connection}. Additive project content remains separate; verification evidence is recorded separately.`,
       ),
       ...Object.entries(lock?.resourceModels ?? {}).flatMap(([service, model]) => [
         `${service}: accounts and sessions; ${model.resources.map((r) => `${r.name} (${r.operations.join(", ")})`).join("; ")}`,

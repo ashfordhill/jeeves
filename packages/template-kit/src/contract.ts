@@ -35,6 +35,8 @@ export interface TemplateModule {
   testPack: TestPack;
   /** The runtime package generated code imports, if the template has one. */
   runtime?: RuntimePackage;
+  /** Additional immutable/shared components required by this template. */
+  runtimes?: RuntimePackage[];
 }
 
 export interface RuntimePackage {

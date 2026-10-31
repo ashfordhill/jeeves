@@ -124,7 +124,14 @@ export interface BaselineResult {
  * checks restart services (and the web proxy can hold an old address for a few seconds); postgres
  * and http-service restart or stop the database, so they go last.
  */
-const PACK_ORDER = ["web-app", "rest-api-client", "rest-api-server", "postgres", "http-service"];
+const PACK_ORDER = [
+  "web-app",
+  "resource-workspace",
+  "rest-api-client",
+  "rest-api-server",
+  "postgres",
+  "http-service",
+];
 
 /**
  * The baseline check (PLAN §9): install, type check, `docker compose up --wait`, and every

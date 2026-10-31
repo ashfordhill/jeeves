@@ -9,6 +9,7 @@ export async function proveResourceWorkspace(
   problems: PageProblems,
   origin: string,
   evidence: string,
+  options: { beforePaper?: () => Promise<void>; stateLabel?: string } = {},
 ) {
   mkdirSync(evidence, { recursive: true });
   const api = `${origin}/_api/inventory`;
@@ -91,7 +92,9 @@ export async function proveResourceWorkspace(
   dialog = page.getByRole("dialog", { name: "New Stock item", exact: true });
   await dialog.getByLabel(/^Title/).fill("First widget");
   await dialog.getByLabel(/^Quantity/).fill("7");
-  await dialog.getByLabel(/^Status/).selectOption("available");
+  await dialog
+    .getByLabel(new RegExp(`^${options.stateLabel ?? "Status"}`))
+    .selectOption("available");
   await dialog.getByLabel(/^Notes/).fill("Original note");
   await expect(dialog.getByRole("button", { name: "Next choices", exact: true })).toBeEnabled();
   await dialog.getByRole("button", { name: "Next choices", exact: true }).click();
@@ -166,7 +169,11 @@ export async function proveResourceWorkspace(
   await expect(page.getByText("10 records on this page", { exact: true })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.screenshot({ path: join(evidence, "workspace-midnight.png"), animations: "disabled" });
-  await page.goto(`${origin}/?theme=paper#collection/stock-item`);
+  if (options.beforePaper) {
+    await options.beforePaper();
+    // The hash route is unchanged: explicitly load the newly generated application bundle.
+    await page.reload();
+  } else await page.goto(`${origin}/?theme=paper#collection/stock-item`);
   await expect(page.locator(".jrw-root")).toHaveAttribute("data-preset", "paper");
   await expect(page.getByText("10 records on this page", { exact: true })).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);

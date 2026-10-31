@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { deliveryModelSchema, resourceConfigSchema } from "@jeeves/spec";
+import { deliveryModelSchema, resourceConfigSchema, workspaceBindingSchema } from "@jeeves/spec";
 import { runtimeTarballName, VENDOR_DIR } from "@jeeves/template-kit";
 import { z } from "zod";
 import { acceptanceRegistrationSchema } from "./acceptance.ts";
@@ -28,6 +28,7 @@ export const lockSchema = z.object({
     .optional(),
   frozenDependencies: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   deliveryModels: z.record(z.string(), deliveryModelSchema).optional(),
+  workspaceBindings: z.record(z.string(), workspaceBindingSchema).optional(),
   resourceModels: z.record(z.string(), resourceConfigSchema).optional(),
   generator: z.string(),
   designRevision: z.int().nonnegative(),
@@ -68,6 +69,7 @@ export function lockFor(plan: ProjectPlan, designRevision: number): Lock {
       ),
     }),
     ...(plan.deliveryModels && { deliveryModels: plan.deliveryModels }),
+    ...(plan.workspaceBindings && { workspaceBindings: plan.workspaceBindings }),
     ...(plan.frozenDependencies && { frozenDependencies: plan.frozenDependencies }),
     generator: GENERATOR_VERSION,
     designRevision,

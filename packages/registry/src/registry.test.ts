@@ -33,9 +33,11 @@ describe("builtin registry", () => {
       "http-service@0.1.0",
       "http-service@0.2.0",
       "postgres@0.1.0",
+      "resource-workspace@0.1.0",
       "rest-api-client@0.1.0",
       "rest-api-server@0.1.0",
       "web-app@0.1.0",
+      "web-app@0.2.0",
     ]);
     expect(registry.latest("postgres")?.version).toBe("0.1.0");
     expect(registry.versions("nope")).toEqual([]);
@@ -237,6 +239,6 @@ describe("createRegistry", () => {
   });
 
   it("is what builtinRegistry uses", () => {
-    expect(createRegistry(builtinManifests).list()).toHaveLength(7);
+    expect(createRegistry(builtinManifests).list()).toHaveLength(9);
   });
 });

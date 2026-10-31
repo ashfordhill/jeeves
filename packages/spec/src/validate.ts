@@ -20,6 +20,7 @@ import {
   type TemplateLookup,
   type TemplateManifest,
 } from "./manifest.ts";
+import { workspaceConfigSchema, workspaceModel } from "./workspace.ts";
 
 /** An endpoint with its element, attachment, and their templates looked up. */
 export interface ResolvedEndpoint {
@@ -220,6 +221,23 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
           { element: element.id, attachment: attachment.id },
         ),
       );
+    for (const workspace of element.attachments.filter(
+      (a) => a.template.id === "resource-workspace",
+    )) {
+      // Missing draft fields are already reported by checkConfig; users may attach before wiring.
+      if (!workspaceConfigSchema.safeParse(workspace.config).success) continue;
+      try {
+        workspaceModel(design, element.id, workspace.id);
+      } catch (error) {
+        findings.push(
+          finding(
+            "CONFIG_REQUIRED",
+            error instanceof Error ? error.message : "Invalid resource workspace",
+            { element: element.id, attachment: workspace.id },
+          ),
+        );
+      }
+    }
   }
 
   const resolved = new Map<string, ResolvedEndpoint>();

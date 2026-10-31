@@ -6,9 +6,10 @@ import {
 } from "@jeeves/template-http-service/template";
 import { manifestLookup, type TemplateModule } from "@jeeves/template-kit";
 import { postgresTemplate } from "@jeeves/template-postgres/template";
+import { resourceWorkspaceTemplate } from "@jeeves/template-resource-workspace/template";
 import { restApiClientTemplate } from "@jeeves/template-rest-api-client/template";
 import { restApiServerTemplate } from "@jeeves/template-rest-api-server/template";
-import { webAppTemplate } from "@jeeves/template-web-app/template";
+import { webAppTemplate, webAppV02Template } from "@jeeves/template-web-app/template";
 
 /** The five v1 templates (PLAN §8), as generate-capable modules. */
 export function builtinModules(): TemplateModule[] {
@@ -19,6 +20,8 @@ export function builtinModules(): TemplateModule[] {
     restApiServerTemplate,
     postgresTemplate,
     webAppTemplate,
+    webAppV02Template,
+    resourceWorkspaceTemplate,
     restApiClientTemplate,
   ];
 }

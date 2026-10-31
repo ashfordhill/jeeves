@@ -15,6 +15,7 @@
     "@jeeves/template-rest-api-server": "workspace:*",
     "@jeeves/template-web-app": "workspace:*",
     "zod": "4.5.4",
-    "@jeeves/template-durable-events": "workspace:*"
+    "@jeeves/template-durable-events": "workspace:*",
+    "@jeeves/template-resource-workspace": "workspace:*"
   }
 }

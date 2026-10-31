@@ -6,6 +6,8 @@ import {
   formatTemplateRef,
   type ResourceConfig,
   validateDesign,
+  type WorkspaceBinding,
+  workspaceBindings,
 } from "@jeeves/spec";
 import {
   type ComposeFile,
@@ -81,6 +83,7 @@ export interface ProjectPlan {
   fixedAcceptance?: AcceptanceRegistration[];
   resourceModels?: Record<string, ResourceConfig>;
   deliveryModels?: Record<string, DeliveryModel>;
+  workspaceBindings?: Record<string, WorkspaceBinding>;
   frozenDependencies?: Record<string, Record<string, string>>;
   resourceStores?: Record<string, { connection: string; database: string }>;
   /** Sorted by path. */
@@ -100,6 +103,7 @@ export interface PlanOptions {
   /** Used for the root `package.json` name and the docs; the design has no name of its own. */
   projectName: string;
   deliveryHistory?: Record<string, DeliveryModel>;
+  workspaceHistory?: Record<string, WorkspaceBinding>;
   resourceHistory?: {
     models: Record<string, ResourceConfig>;
     files: OutputFile[];
@@ -190,7 +194,15 @@ export function planProject(
     for (const target of targets) {
       const module = templates.module(target.ref);
       used.add(formatTemplateRef(target.ref));
-      if (module.runtime) runtimes.set(module.runtime.name, module.runtime);
+      for (const runtime of [
+        ...(module.runtime ? [module.runtime] : []),
+        ...(module.runtimes ?? []),
+      ]) {
+        const existing = runtimes.get(runtime.name);
+        if (existing && JSON.stringify(existing) !== JSON.stringify(runtime))
+          throw new GenerationError(`Conflicting runtime bindings for ${runtime.name}`);
+        runtimes.set(runtime.name, runtime);
+      }
       const ctx = createGenerateContext(design, lookup, element.id, target.attachment);
       if (options.resourceHistory?.models[element.id])
         ctx.previousModel = options.resourceHistory.models[element.id];
@@ -274,6 +286,12 @@ export function planProject(
       .map((r) => [r.subject.element, r.result.resourceModel!]),
   );
   const deliveryModels = deriveDeliveryModels(design);
+  const workspaces = workspaceBindings(design);
+  for (const [frontend, binding] of Object.entries(options.workspaceHistory ?? {}))
+    if (JSON.stringify(binding) !== JSON.stringify(workspaces[frontend]))
+      throw new GenerationError(
+        `${frontend}: workspace attachment or API binding removal/change requires a reviewed ownership migration`,
+      );
   assertDeliveryHistory(options.deliveryHistory ?? {}, deliveryModels);
   const acceptance = acceptanceFiles(options.fixedAcceptance ?? [], resourceModels, deliveryModels);
   // A supplied fixed suite set must account for every case the design declares.
@@ -318,6 +336,7 @@ export function planProject(
     }),
   );
   const plan: ProjectPlan = {
+    ...(Object.keys(workspaces).length && { workspaceBindings: workspaces }),
     ...(Object.keys(frozenDependencies).length && { frozenDependencies }),
     ...(artifacts.length && { artifacts }),
     ...(Object.keys(deliveryModels).length && { deliveryModels }),

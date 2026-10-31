@@ -167,6 +167,7 @@ export async function generateProject(
         })),
       })),
     ...(previous?.deliveryModels && { deliveryHistory: previous.deliveryModels }),
+    ...(previous?.workspaceBindings && { workspaceHistory: previous.workspaceBindings }),
     ...(previous?.resourceModels && {
       resourceHistory: {
         models: previous.resourceModels,

@@ -3,6 +3,7 @@ import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { resourceConfigSchema } from "./resources.ts";
+import { workspaceModel } from "./workspace.ts";
 
 export type ArchitectureSupport = "template" | "recipe" | "extension" | "intent" | "external";
 export interface ArchitectureBinding {
@@ -333,6 +334,37 @@ function componentView(
               acceptance: event.acceptance,
             },
           );
+    } else if (template?.kind === "attachment" && attachment.template.id === "resource-workspace") {
+      let description: string,
+        valid = false;
+      try {
+        const workspace = workspaceModel(design, element.id, attachment.id);
+        description = `Accounts, owner-record forms, details and cursor pages for ${workspace.collections.map((item) => item.selection.label).join(", ")}. ${workspace.config.preset} preset; API ${workspace.binding.service} through ${workspace.binding.connection}.`;
+        valid = true;
+      } catch {
+        description =
+          "Complete the actual session API binding and owner-resource selection before generation.";
+      }
+      attachmentNodes.set(
+        attachment.id,
+        add(
+          attachment.id,
+          attachment.id,
+          "Resource workspace",
+          description,
+          version,
+          valid ? "template" : "intent",
+        ),
+      );
+      if (attachment.notes.trim())
+        add(
+          `${attachment.id}:extras`,
+          attachment.id,
+          "Additional workspace content",
+          short(attachment.notes),
+          "Project extension",
+          "extension",
+        );
     } else if (template?.kind === "attachment" && attachment.template.id === "rest-api-client") {
       attachmentNodes.set(
         attachment.id,
@@ -363,19 +395,27 @@ function componentView(
   const manifest = element.template && lookup.get(element.template);
   if (manifest?.kind === "element" && manifest.elementKind === "frontend") {
     const supplied = provision?.frontends.includes(element.id) ?? false;
-    add(
-      "workspace",
-      undefined,
-      "Application workspace",
-      supplied
-        ? "Product navigation, user flows and state handling supplied by the pinned recipe."
-        : short(element.notes) ||
-            "Template shell; product-specific user flows remain project-owned.",
-      "React application",
-      supplied ? "recipe" : "extension",
-      supplied && provision ? { provenance: `${provision.id}@${provision.version}` } : {},
-    );
-    if (supplied && element.notes.trim() && element.notes !== provision?.frontendNotes[element.id])
+    if (!element.attachments.some((attachment) => attachment.template.id === "resource-workspace"))
+      add(
+        "workspace",
+        undefined,
+        "Application workspace",
+        supplied
+          ? "Product navigation, user flows and state handling supplied by the pinned recipe."
+          : short(element.notes) ||
+              "Template shell; product-specific user flows remain project-owned.",
+        "React application",
+        supplied ? "recipe" : "extension",
+        supplied && provision ? { provenance: `${provision.id}@${provision.version}` } : {},
+      );
+    if (
+      (supplied ||
+        element.attachments.some(
+          (attachment) => attachment.template.id === "resource-workspace",
+        )) &&
+      element.notes.trim() &&
+      element.notes !== provision?.frontendNotes[element.id]
+    )
       add(
         "workspace-extension",
         undefined,
@@ -404,6 +444,16 @@ function componentView(
             })
             .map((a) => a.id)
         : [];
+    for (const attachment of element.attachments.filter(
+      (item) => item.template.id === "resource-workspace",
+    )) {
+      try {
+        if (workspaceModel(design, element.id, attachment.id).binding.connection === connection.id)
+          boundAttachments.push(attachment.id);
+      } catch {
+        /* Incomplete configuration remains intent, without an invented dependency. */
+      }
+    }
     const components = boundAttachments.flatMap((id) => {
       const node = attachmentNodes.get(id);
       return node ? [node] : [];

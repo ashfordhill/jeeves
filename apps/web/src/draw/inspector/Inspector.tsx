@@ -35,6 +35,7 @@ import { ConfigForm } from "./ConfigForm.tsx";
 import { DeliveryConfiguration } from "./DeliveryEditor.tsx";
 import { DraftTextarea, DraftTextInput } from "./fields.tsx";
 import { ResourceConfiguration } from "./ResourceEditor.tsx";
+import { WorkspaceConfiguration } from "./WorkspaceEditor.tsx";
 
 const NOTE_COLORS = ["yellow", "blue", "green", "pink", "gray"] as const;
 
@@ -150,7 +151,9 @@ function AttachmentPanel({
       {own.some((f) => !f.target.path) ? (
         <FindingList findings={own.filter((f) => !f.target.path)} />
       ) : null}
-      {attachment.template.id === "durable-events" ? (
+      {attachment.template.id === "resource-workspace" ? (
+        <WorkspaceConfiguration element={element} attachment={attachment} />
+      ) : attachment.template.id === "durable-events" ? (
         <DeliveryConfiguration attachment={attachment} />
       ) : attachment.template.id === "rest-api-server" && template ? (
         <>

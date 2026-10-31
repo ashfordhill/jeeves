@@ -13,6 +13,7 @@ import {
   loadRecipe,
   readLock,
 } from "@jeeves/generator";
+import { assertGeneratedIntegrity } from "@jeeves/generator/baseline";
 import { type DesignDocument, designSchema } from "@jeeves/spec";
 
 export type GeneratedProject = {
@@ -49,6 +50,15 @@ export function readGeneratedProject(dir: string): GeneratedProject {
         throw new ProjectReadError(
           `Protected recipe output ${path} is missing or changed. Restore it before planning.`,
         );
+  }
+  if (lock.workspaceBindings) {
+    try {
+      assertGeneratedIntegrity(dir, lock);
+    } catch (error) {
+      throw new ProjectReadError(
+        error instanceof Error ? error.message : "Protected workspace output changed",
+      );
+    }
   }
   const briefs: Record<string, string> = {};
   for (const element of lock.elements) {

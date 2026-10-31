@@ -8,6 +8,7 @@ import {
   createAgentExecutor,
   FAIL_MARKER,
   markerChecks,
+  readGeneratedProject,
   STUB_SUMMARY,
   SUBMIT_PLAN,
   stubExecutor,
@@ -227,6 +228,10 @@ function harness(options: HarnessOptions = {}) {
       expect(started.status).toBe(202);
       await waitFor(async () => {
         const { body } = await call("GET", `/projects/${projectId}/generation`);
+        if (body.latest.status === "failed")
+          throw new Error(
+            `Fixture generation failed: ${body.latest.error ?? JSON.stringify(body.latest.report)}`,
+          );
         return body.latest.status === "succeeded";
       });
       return outputDir;
@@ -260,6 +265,47 @@ const taskSummary = (detail: RunDetail) =>
   detail.tasks.map((t) => [t.key, t.title, t.status] as const);
 
 describe("planning", () => {
+  it("reports generated workspace coverage and plans no implementation model calls", async () => {
+    let providerCalls = 0;
+    const h = harness({
+      generator: {
+        ...generator,
+        generate: async (options) => {
+          const result = await generator.generate({ ...options, fixedAcceptance: [] });
+          writeFileSync(
+            join(options.dir, ".env"),
+            "DB_INVENTORY_PASSWORD=test-password\nINVENTORY_PUBLIC_ORIGIN=http://127.0.0.1:1\n",
+          );
+          return result;
+        },
+      },
+      models: () => {
+        providerCalls++;
+        return { error: "must not select a model" };
+      },
+    });
+    const design = designSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL("../../../../fixtures/designs/generated-workspace.json", import.meta.url),
+          "utf8",
+        ),
+      ),
+    );
+    const id = await h.project("Generated Inventory", [
+      ...design.elements.map((element) => ({ op: "addElement" as const, element })),
+      ...design.connections.map((connection) => ({ op: "connect" as const, connection })),
+    ]);
+    const output = await h.generate(id);
+    const detail = await h.planned(id);
+    expect(detail.tasks).toEqual([]);
+    expect(providerCalls).toBe(0);
+    expect(detail.run.planner?.message).toContain("resource workspace supplies");
+    expect(detail.capabilities.join(" ")).toContain("generated resource workspace 0.1.0");
+    writeFileSync(join(output, "frontends/inventory-web/src/App.tsx"), "// replaced root\n");
+    expect(() => readGeneratedProject(output)).toThrow("Protected artifact changed");
+  });
+
   it("plans a complete product recipe without selecting a model or creating implementation tasks", async () => {
     let providerCalls = 0;
     const h = harness({

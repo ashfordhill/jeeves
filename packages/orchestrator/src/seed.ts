@@ -101,10 +101,19 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
   for (const id of elementOrder(design, templates)) {
     const element = elements.get(id);
     if (!element) continue;
+    const workspace = lock.workspaceBindings?.[element.id];
+    const workspaceDir = lock.elements.find((item) => item.id === element.id)?.dir;
     const base = {
       element: element.id,
       acceptance: [],
-      ownedPaths: owned.get(element.id) ?? [],
+      ownedPaths:
+        workspace && workspaceDir
+          ? [
+              `${workspaceDir}/src/project/`,
+              `${workspaceDir}/tests/`,
+              `${workspaceDir}/package.json`,
+            ]
+          : (owned.get(element.id) ?? []),
       dependsOn: [...(deps.get(element.id) ?? [])].sort(),
       source: "seed" as const,
     };
@@ -169,7 +178,14 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
         key: targetKey({ element: element.id, attachment: attachment.id }),
         attachment: attachment.id,
         title: `Implement ${capability} (${attachment.id}) on ${element.name}`,
-        description: attachment.notes.trim(),
+        description: [
+          attachment.notes.trim(),
+          ...(workspace
+            ? [
+                "The resource workspace is generated. Implement additive content only in src/project/ and supplemental tests. Do not replace account, resource, transport or composition behavior; unsupported business UI requires a separately specified component.",
+              ]
+            : []),
+        ].join("\n\n"),
       });
     }
     if (
@@ -182,7 +198,14 @@ export function seedPlan({ design, lock, templates }: SeedInput): PlannedTask[] 
         key: element.id,
         attachment: null,
         title: `Implement ${element.name}`,
-        description: element.notes.trim(),
+        description: [
+          element.notes.trim(),
+          ...(workspace
+            ? [
+                "The resource workspace is generated. Implement additive content only in src/project/ and supplemental tests. Preserve all protected composition and pinned component dependencies.",
+              ]
+            : []),
+        ].join("\n\n"),
       });
     }
   }

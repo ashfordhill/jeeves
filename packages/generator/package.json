@@ -20,6 +20,7 @@
     "@jeeves/template-web-app": "workspace:*",
     "yaml": "2.9.1",
     "zod": "4.5.4",
-    "@jeeves/template-durable-events": "workspace:*"
+    "@jeeves/template-durable-events": "workspace:*",
+    "@jeeves/template-resource-workspace": "workspace:*"
   }
 }
