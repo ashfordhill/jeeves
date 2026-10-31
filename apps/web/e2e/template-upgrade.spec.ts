@@ -19,7 +19,24 @@ test("reviews an editable starter upgrade by mouse and retains application ident
   const card = page.locator('[data-element-id="inventory"]');
   await card.locator(".element-card-head").click();
   await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C1 Context", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await page.getByRole("button", { name: "C2 Containers", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C2 Containers", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  // Establish a persisted mouse-chosen camera before comparing upgrade snapshots.
+  const fitted = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`/api/projects/${id}/layout`) &&
+      response.request().method() === "PUT" &&
+      response.status() === 200,
+  );
+  await page.getByRole("button", { name: "Fit View", exact: true }).click();
+  await fitted;
   const layout = await layoutOf(request, id);
   await reviewRelease(page, "inventory", "Inventory API", "http-service@0.3.0");
   let dialog = page.getByRole("dialog", { name: "Review template upgrade" });

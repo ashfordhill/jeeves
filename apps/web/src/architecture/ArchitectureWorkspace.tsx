@@ -25,6 +25,8 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { type ApiSelection, ApiWorkspace } from "../api-reference/ApiWorkspace.tsx";
+import { ApiPreviewProvider } from "../api-reference/preview.tsx";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { api } from "../draw/api.ts";
 import { FindingsPanel } from "../draw/inspector/FindingsPanel.tsx";
@@ -54,7 +56,9 @@ type Level = "context" | "containers" | "components";
 export function ArchitectureWorkspace({ board }: { board: ReactNode }) {
   return (
     <EditorDraftProvider>
-      <EditorWorkspace board={board} />
+      <ApiPreviewProvider>
+        <EditorWorkspace board={board} />
+      </ApiPreviewProvider>
     </EditorDraftProvider>
   );
 }
@@ -76,6 +80,12 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       : "",
   );
   const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [apiOpen, setApiOpen] = useState(false);
+  const [apiSelection, setApiSelection] = useState<ApiSelection>({});
+  const openApi = (selection: ApiSelection) => {
+    setApiSelection(selection);
+    setApiOpen(true);
+  };
   const [deployment, setDeployment] = useState<{ element?: string }>();
   const [level, setLevel] = useState<Level>("containers");
   const navigationRequest = useRef(0);
@@ -241,6 +251,12 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       data-inspector-open={inspectorOpen}
     >
       <header className="editor-header">
+        <ApiWorkspace
+          opened={apiOpen}
+          selection={apiSelection}
+          onSelect={setApiSelection}
+          onClose={() => setApiOpen(false)}
+        />
         <Group gap={4} className="editor-menu-actions">
           <Menu position="bottom-start" shadow="md">
             <Menu.Target>
@@ -273,6 +289,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 <Menu.Item onClick={() => setEditor("product")}>Product configuration</Menu.Item>
               ) : null}
               <Menu.Divider />
+              <Menu.Item onClick={() => setApiOpen(true)}>API contracts</Menu.Item>
               <Menu.Item onClick={() => setFindingsOpen(true)}>
                 Findings ({loaded.findings.length})
               </Menu.Item>
@@ -583,6 +600,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               ) : node ? (
                 <ComponentDetails
                   node={node}
+                  onOperation={(attachment, operation) => openApi({ attachment, operation })}
                   onConfigure={() => setComponentEditor({ initial: definition })}
                   onContainer={() => openContainer(node.binding?.element)}
                 />

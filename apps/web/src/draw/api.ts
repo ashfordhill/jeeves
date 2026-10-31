@@ -4,6 +4,7 @@
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type {
+  ApiPreview,
   ArchitectureEvidence,
   ArchitectureViews,
   DesignDocument,
@@ -417,6 +418,7 @@ export interface ArchitectureStarter {
 }
 
 export const api = {
+  apiPreview: (id: string) => request<ApiPreview>(`/projects/${id}/api-preview`),
   starters: () =>
     request<{ starters: ArchitectureStarter[] }>("/starters").then((result) => result.starters),
   createFromStarter: (

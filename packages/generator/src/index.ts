@@ -2,6 +2,7 @@
 // Docker-backed baseline check is in `@jeeves/generator/baseline`.
 
 export * from "./acceptance.ts";
+export * from "./api-preview.ts";
 export * from "./documents.ts";
 export * from "./exec.ts";
 export * from "./generate.ts";

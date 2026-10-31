@@ -44,9 +44,10 @@ Implementation evidence and seven inspected screenshots: [P37 evidence](evidence
 
 ## Separately specified follow-ups
 
-1. API tooling: complete CRUD/session/extension operation list, saved-design
-   OpenAPI preview, focused supported contract editing and an embedded reference
-   viewer. Choose and verify a viewer against real contracts before adding it.
+1. API tooling is implemented by [P38](build-plan-p38-api.md): complete
+   CRUD/session/extension operations, saved-design OpenAPI preview, bounded existing
+   extension editing and a locally bundled reference viewer. [Evidence](evidence/p38/README.md)
+   records real-contract fit and remaining limits.
 2. Focused C4 implementation: explicit handler/library bindings with linked data
    and traffic settings; begin with analytics and a non-QR operation. No combined
    backend canvas, inferred dependency graph or automatic provisioning.

@@ -1,5 +1,7 @@
 // Zod schemas for the design, layout, operations, findings, and template manifests, plus the pure
 // functions that apply and validate design edits.
+
+export * from "./api-preview.ts";
 export * from "./apply.ts";
 export * from "./architecture.ts";
 export * from "./architecture-examples.ts";

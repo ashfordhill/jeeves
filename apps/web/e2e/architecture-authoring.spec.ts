@@ -289,10 +289,13 @@ test("QR architecture groups real operations and directly opens the bound resour
     await page.getByRole("button", { name: "Inspect Analytics", exact: true }).click();
     await expect(details.locator(".component-member")).toHaveCount(2);
     await page.getByRole("button", { name: "Inspect QR management", exact: true }).click();
-    await details.locator(".component-member > summary").first().click();
-    await details.getByRole("button", { name: "Configure resources", exact: true }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await page.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true }).click();
+    await details.getByRole("button", { name: /^POST \/api\/qr / }).click();
+    const api = page.getByRole("dialog", { name: "API contracts", exact: true });
+    await api.getByRole("button", { name: "Configure resources", exact: true }).click();
+    const resources = page.getByRole("dialog", { name: "Configure resources", exact: true });
+    await expect(resources).toBeVisible();
+    await resources.getByRole("button", { name: "Cancel", exact: true }).click();
+    await api.getByRole("button", { name: "Close API contracts", exact: true }).click();
     await page.screenshot({ path: "test-results/p36-qr-components.png", animations: "disabled" });
     const clipped = await graph.evaluate((root) => {
       const frame = root.getBoundingClientRect();

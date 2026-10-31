@@ -96,6 +96,43 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
+  it("reads saved API contracts without mutation and follows edits and undo", async () => {
+    const id = await client.createProject("P38 contracts");
+    const design = designSchema.parse(fixture("generated-workspace.json"));
+    await client.edit(id, 0, [
+      ...design.elements.map((element) => ({ op: "addElement", element })),
+      ...design.connections.map((connection) => ({ op: "connect", connection })),
+    ]);
+    const before = await client.design(id);
+    const response = await app.inject({ method: "GET", url: `/projects/${id}/api-preview` });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.json()).toMatchObject({
+      revision: 1,
+      apis: [{ name: "Inventory API", operations: expect.any(Array) }],
+    });
+    expect(response.json().apis[0].operations).toHaveLength(12);
+    expect(await client.design(id)).toEqual(before);
+    await client.edit(id, 1, [{ op: "updateElement", id: "inventory", name: "Warehouse service" }]);
+    expect((await client.call("GET", `/projects/${id}/api-preview`)).body).toMatchObject({
+      revision: 2,
+      apis: [{ document: { info: { title: "Warehouse service" } } }],
+    });
+    await client.undo(id, 2);
+    expect((await client.call("GET", `/projects/${id}/api-preview`)).body).toMatchObject({
+      revision: 3,
+      apis: [{ document: { info: { title: "Inventory API" } } }],
+    });
+    expect(
+      (await client.call("GET", "/projects/00000000-0000-4000-8000-000000000000/api-preview"))
+        .status,
+    ).toBe(404);
+    const empty = await client.createProject("P38 empty");
+    expect((await client.call("GET", `/projects/${empty}/api-preview`)).body).toEqual({
+      revision: 0,
+      apis: [],
+    });
+  });
   it("projects the latest evidence only, keeps projects isolated and excludes logs/provider payloads", async () => {
     const id = await client.createProject("Evidence one"),
       other = await client.createProject("Evidence two");

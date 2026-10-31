@@ -2888,3 +2888,87 @@ handler/library bindings and linked data/traffic settings. No embedded API viewe
 combined backend canvas, general code graph, new runtime, deployment authoring,
 page flow, developer-testing service or live adoption was built here. Keep those
 bounded and continue the one-agent/current-branch/local-commit policy.
+
+## 2026-10-31 — P38: saved-design API contracts and reference
+
+Completed [P38](build-plan-p38-api.md) in the existing `main` checkout, starting
+clean at `0627fe5`, sequentially with one agent and no branches/worktrees/delegation.
+Read AGENTS, PLAN/editor architecture, the latest two handoffs, P37 specification
+and evidence, and the JEEVES-2 review. Did not repeat C4 research. The approved
+focused C4/linked settings, contextual menus and responsibility groups remain the
+direction; this package is bounded API contract/reference work.
+
+Added a contextual API workspace listing generated sessions, resource CRUD and
+existing extensions exactly once per REST capability. Rows show complete paths,
+methods, documented purposes and success media/types; selection shows inputs,
+access and all statuses/media/headers. C3 responsibility members open their same
+operations. Generated CRUD reuses the existing resource editor. Project extensions
+edit supported GET/POST route/access/notes and the existing single-operation JSON
+contract, with whole-model validation and no lossy schema projection. Unsupported
+contract fields/methods and duplicate CRUD routes fail with the draft retained.
+Closing/switching selection or scope retains drafts; Cancel clears them; Save,
+undo/redo/reload and revision conflicts use the existing semantic operations.
+
+The new no-store API preview compiles a saved revision with `resourceContract` and
+the exact pinned REST version. It performs no generation or application requests;
+legacy project-owned/invalid/missing-template contracts are explicitly unavailable.
+UI labels distinguish saved design preview from a running application's possibly
+older contract. The compiled document is unchanged; display-only grouping/purpose
+labels and selected-operation filtering operate on a clone.
+
+Evaluated Swagger UI against real contracts before integration, then added exact
+`swagger-ui-dist@5.33.3` (published October 15, sixteen days old). It is lazy-loaded
+from local assets in an opaque sandbox; execution, authorization controls, query
+configuration and external validation are disabled, with CSP `connect-src 'none'`
+and a rejecting request interceptor. Vendor CSS is locally inlined; no CDN assets.
+Small contrast adjustments pass the exercised viewer accessibility check. The
+optional Scarf installation script is explicitly disabled. Dependency source,
+size, fit-check procedure and limitations are in [P38 evidence](evidence/p38/README.md).
+
+Recipe contracts remain read-only here. The shared edit API additionally rejects
+new incompatibilities in valid recipe bindings using existing recipe validation;
+old invalid designs can still be repaired. No template/runtime pin, builder body,
+generated fixture/golden output, catalog offering or C1–C3 boundary changed.
+The only template-package change exposes its existing builder through an export.
+`CATALOG.md` therefore remains unchanged. No live QRWTY adoption, source/service,
+saved-design or data changes.
+
+Verification:
+
+- Final production browser profile `2026-10-31T20-27-53-659Z-browser-preview-1afc4c29`:
+  **23 tests / 8 suites passed**, **18.7s** Playwright / **21.2s** profile, no retries,
+  strict diagnostics and unchanged source fingerprints. The exact command is in
+  the evidence README. Covers JSON, PNG/binary and redirect/header contracts,
+  non-QR inventory, CRUD reuse, protected recipes, retained invalid/conflict drafts,
+  Save/Cancel/undo/redo/reload, P37 chat/selection/compact shell and explicit upgrades.
+- Opened and inspected six final screenshots: operations, PNG, redirect, inventory,
+  conflict and narrow/dark. Axe covers the API workspace and the actual sandboxed
+  PNG viewer, plus existing editor/configuration suites. No application/validator
+  requests or external viewer assets were observed.
+- **`pnpm work run check` → `pnpm check` passed**, profile
+  `2026-10-31T20-28-31-424Z-check-50e93611`, **42.2s**, unchanged fingerprints.
+  Workspace/script types passed; **672 tests / 101 files**, Vitest **34.41s**;
+  Biome **697 files / 546 warnings / 75 infos / no errors**. Preview tests compare
+  the complete builder document for both old/new pins and prove non-mutating saved
+  revision reads. Existing generator golden/compatibility checks pass unchanged.
+- Interim failures/logs are retained. Fixed viewer contrast/focus, repeated headings,
+  obsolete selectors and test setup/type errors. An overlapping unit/browser run
+  exposed a restart-test timeout and premature camera snapshot; final gates ran
+  separately with unchanged timeout/retry policy. Resource-test deletion now waits
+  for C2 navigation's layout flush, and upgrade tests establish a saved mouse-chosen
+  camera. Strict diagnostics were retained, with only the intentional exact 409
+  scenario registered.
+- Removed **46** named session test projects from `jeeves_e2e` and **114** session
+  E2E settings/output directories; retained existing data/logs/Postgres. Stopped
+  temporary viewer server 4398; existing Jeeves health on 4310 remains OK. Only
+  evidence/planning/handoff documents and screenshot copies changed after checks.
+
+Limits/next work: this is a design reference, not runtime/binary-decoding/load
+certification. Existing project extensions use supported contract JSON detail;
+new operation creation, general OpenAPI import/export and broader methods need
+separate scope. The existing builder's PATCH schema still uses creation-input
+requiredness while runtime updates are partial; P38 preserves generation and notes
+partial updates in the concise detail view. Follow up separately on the approved
+focused C4 implementation/handler/library bindings with linked data/traffic settings,
+then broader backend data/deployment authoring, new runtimes, source analysis and
+live adoption. Planning entry points now point to P38 and these boundaries.

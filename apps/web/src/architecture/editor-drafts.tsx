@@ -48,5 +48,17 @@ export function useEditorDraft<T>(key: string, incoming: T, revision: number) {
       revision: next,
       baseline: JSON.stringify(current.draft),
     }));
-  return { draft: entry.draft, setDraft, baseRevision: entry.revision, setBaseRevision };
+  // Save/Cancel may unmount the editor in the same event; update its cache synchronously.
+  const resetDraft = (draft: T, revision: number) => {
+    const next = { draft, revision, baseline: JSON.stringify(draft) };
+    cache?.set(key, next);
+    setEntry(next);
+  };
+  return {
+    draft: entry.draft,
+    setDraft,
+    baseRevision: entry.revision,
+    setBaseRevision,
+    resetDraft,
+  };
 }

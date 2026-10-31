@@ -12,6 +12,8 @@ allowBuilds:
   cpu-features: false
   ssh2: false
   protobufjs: false
+  # Swagger UI's optional installation analytics are unnecessary for a local reference viewer.
+  '@scarf/scarf': false
 
 patchedDependencies:
   '@xyflow/react@12.11.6': patches/@xyflow__react@12.11.6.patch

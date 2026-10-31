@@ -238,6 +238,12 @@ test("preserves existing domain contracts and protects recipe resources while al
   expect(changed.extensions).toEqual(originalModel.extensions);
   expect(changed.acceptanceCases).toEqual(originalModel.acceptanceCases);
   expect(changed.resources.slice(0, -1)).toEqual(originalModel.resources);
+  // C1 navigation flushes the board's pending layout before removing this test project.
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C1 Context", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await request.delete(`/api/projects/${id}`);
 
   const created = await request.post("/api/projects/from-recipe", {
@@ -270,6 +276,11 @@ test("preserves existing domain contracts and protects recipe resources while al
     ...priorModel,
     resources: [...priorModel.resources, expect.objectContaining({ name: "campaign" })],
   });
+  await page.getByRole("button", { name: "C1 Context", exact: true }).click();
+  await expect(page.getByRole("button", { name: "C1 Context", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await request.delete(`/api/projects/${project.id}`);
 });
 

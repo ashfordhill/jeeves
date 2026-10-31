@@ -128,6 +128,15 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
   });
 
   app.get(
+    "/projects/:id/api-preview",
+    { schema: { params: projectParams } },
+    async (req, reply) => {
+      reply.header("Cache-Control", "no-store");
+      return (await service.apiPreview(req.params.id)) ?? notFound(reply);
+    },
+  );
+
+  app.get(
     "/projects/:id/architecture",
     { schema: { params: projectParams } },
     async (req, reply) => {

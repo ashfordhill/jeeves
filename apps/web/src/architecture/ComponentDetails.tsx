@@ -1,12 +1,24 @@
 import { type ArchitectureViewNode, type DesignDocument, resourceConfigSchema } from "@jeeves/spec";
 import { Button } from "@mantine/core";
+import { OperationLabel, useApiPreview } from "../api-reference/preview.tsx";
 import { AttachmentPanel } from "../draw/inspector/Inspector.tsx";
 import { ResourceConfiguration } from "../draw/inspector/ResourceEditor.tsx";
 import { useDraw } from "../draw/store.ts";
 import { supportLabel } from "./ArchitectureGraph.tsx";
 import { nodeFamily, TypeBadge } from "./type-style.tsx";
 
-function MemberDetails({ node, design }: { node: ArchitectureViewNode; design: DesignDocument }) {
+function MemberDetails({
+  node,
+  design,
+  onOperation,
+  showName = false,
+}: {
+  node: ArchitectureViewNode;
+  design: DesignDocument;
+  onOperation: (attachment: string, operation: string) => void;
+  showName?: boolean;
+}) {
+  const { preview } = useApiPreview();
   const element = design.elements.find((item) => item.id === node.binding?.element);
   const attachment = element?.attachments.find((item) => item.id === node.binding?.attachment);
   const parsed = resourceConfigSchema.safeParse(attachment?.config.model);
@@ -16,64 +28,46 @@ function MemberDetails({ node, design }: { node: ArchitectureViewNode; design: D
   const resource = parsed.success
     ? parsed.data.resources.find((item) => item.id === node.binding?.resource)
     : undefined;
-  const responses = extension ? Object.entries(extension.contract.responses) : [];
-  const responseSummary = responses
-    .filter(([status]) => /^[23]/.test(status))
-    .map(
-      ([status, response]) =>
-        `${status} · ${Object.keys(response.content ?? {}).join(", ") || response.description}`,
-    )
-    .join(" / ");
+  const operations =
+    preview?.apis
+      .find((api) => api.attachment === attachment?.id)
+      ?.operations.filter((operation) =>
+        extension
+          ? operation.extension === extension.id
+          : resource
+            ? operation.resource === resource.id
+            : node.binding?.accounts
+              ? operation.group === "Sessions"
+              : true,
+      ) ?? [];
+  if (operations.length)
+    return (
+      <section className="component-member">
+        {showName && (resource || node.binding?.accounts) ? <h3>{node.name}</h3> : null}
+        {operations.map((operation) => (
+          <button
+            type="button"
+            className="component-operation"
+            key={operation.id}
+            onClick={() => onOperation(attachment!.id, operation.id)}
+          >
+            <OperationLabel operation={operation} />
+          </button>
+        ))}
+      </section>
+    );
   return (
     <details className="component-member">
-      <summary>
-        {extension ? (
-          <>
-            <span className="endpoint-line">
-              <strong>{extension.method}</strong> {extension.path}
-            </span>
-            <span className="endpoint-response">{responseSummary}</span>
-          </>
-        ) : (
-          node.name
-        )}
-      </summary>
+      <summary>{node.name}</summary>
+      <p>{node.description}</p>
       {extension ? (
-        <>
-          <p>{extension.access === "owner" ? "Signed-in owner" : "Public access"}</p>
-          {responses.map(([status, response]) => (
-            <p key={status}>
-              <strong>{status}</strong> · {response.description}
-              {response.content ? ` · ${Object.keys(response.content).join(", ")}` : ""}
-            </p>
-          ))}
-          <details>
-            <summary>Operation contract</summary>
-            <pre className="component-contract">{JSON.stringify(extension.contract, null, 2)}</pre>
-          </details>
-          {extension.notes ? (
-            <details>
-              <summary>Implementation notes</summary>
-              <p>{extension.notes}</p>
-            </details>
-          ) : null}
-        </>
-      ) : resource ? (
-        <>
-          <p>{resource.operations.join(" · ") || "Internal data contract"}</p>
-          <ul>
-            {resource.fields.map((field) => (
-              <li key={field.id}>
-                {field.name} <small>· {field.type}</small>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : node.binding?.accounts ? (
-        <p>Register · Login · Read session · Logout</p>
-      ) : (
-        <p>{node.description}</p>
-      )}
+        <Button
+          variant="default"
+          onClick={() => onOperation(attachment!.id, extension.operationId)}
+        >
+          Inspect operation
+        </Button>
+      ) : null}
       {element && attachment && resource ? (
         <ResourceConfiguration
           element={element}
@@ -89,10 +83,12 @@ export function ComponentDetails({
   node,
   onConfigure,
   onContainer,
+  onOperation,
 }: {
   node: ArchitectureViewNode;
   onConfigure: () => void;
   onContainer: () => void;
+  onOperation: (attachment: string, operation: string) => void;
 }) {
   const loaded = useDraw((state) => state.loaded)!;
   const element = loaded.design.elements.find((item) => item.id === node.binding?.element);
@@ -117,12 +113,21 @@ export function ComponentDetails({
         <p className="planned-footnote">Not yet grouped into a responsibility.</p>
       ) : null}
       {node.members?.map((member) => (
-        <MemberDetails key={member.id} node={member} design={loaded.design} />
+        <MemberDetails
+          key={member.id}
+          node={member}
+          design={loaded.design}
+          onOperation={onOperation}
+          showName
+        />
       ))}
       {!node.members &&
       node.binding?.attachment &&
-      (node.binding.resource || node.binding.extension || node.binding.accounts) ? (
-        <MemberDetails node={node} design={loaded.design} />
+      (node.binding.resource ||
+        node.binding.extension ||
+        node.binding.accounts ||
+        attachment?.config.model) ? (
+        <MemberDetails node={node} design={loaded.design} onOperation={onOperation} />
       ) : null}
       {!node.members && element && attachment && !node.binding?.resource ? (
         <details className="component-technical">

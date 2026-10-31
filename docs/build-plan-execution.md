@@ -1,8 +1,8 @@
 # Continuing delivery: qrwty and deterministic Jeeves
 
-**Current execution entry point:** P13–P37 are completed history. [P37](build-plan-p37-editor.md) and its [evidence](evidence/p37/README.md) record the simplified editor. P36's planned capability library and reusable [catalog](../CATALOG.md) remain in place. The user chose focused C4 implementation with linked data/traffic settings, retained actions in contextual menus, and C3 responsibility groups. API tooling and backend implementation/data/deployment authoring require their separately bounded follow-ups; do not automatically resume the historical sequence below. New runtime/load implementation and live QRWTY adoption remain deferred.
+**Current execution entry point:** P13–P38 are completed history. [P38](build-plan-p38-api.md) and its [evidence](evidence/p38/README.md) record bounded API contracts and reference UX on P37's compact editor. P36's planned capability library and reusable [catalog](../CATALOG.md) remain in place. The user chose focused C4 implementation with linked data/traffic settings, retained actions in contextual menus, and C3 responsibility groups. C4 implementation/code graphs and backend data/deployment authoring require separately bounded follow-ups; do not automatically resume the historical sequence below. New runtime/load implementation and live QRWTY adoption remain deferred.
 
-The [JEEVES-2 review](reviews/jeeves-feedback-2-2026-10-31.md) retains the completed research. P37 records the subsequent product decisions and implementation scope; the research does not need repeating.
+The [JEEVES-2 review](reviews/jeeves-feedback-2-2026-10-31.md) retains the completed research. P37 records the editor cleanup; P38 adds API tooling. The research does not need repeating.
 
 The user's continuing implementation instruction supersedes the earlier P12-only stop boundary and planning-only status of the product reviews. Deliver one verified package and local commit at a time, preserving unrelated work and existing QR identities/data. No paid Jeeves agent runs or public deployment are needed.
 

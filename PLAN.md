@@ -4,9 +4,9 @@ Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
 
-**Current editor package:** [P37](docs/build-plan-p37-editor.md) simplifies the shared C1/C2/C3 editor with an edge chat drawer, selection-driven details, contextual menus and consistent type cues. [P37 evidence](docs/evidence/p37/README.md) records the checks and screenshots. P36's planned offerings and modular [catalog](CATALOG.md) remain available. New template runtimes, generation/load tooling and live QRWTY adoption remain separate work.
+**Current editor package:** [P38](docs/build-plan-p38-api.md) adds the complete structured API operation list, selected contracts, protected editing and a saved-revision OpenAPI reference to [P37's compact editor](docs/build-plan-p37-editor.md). [P38 evidence](docs/evidence/p38/README.md) records checks, viewer fit and screenshots. P36's planned offerings and modular [catalog](CATALOG.md) remain available.
 
-**JEEVES-2 decisions:** the user chose focused C4 implementation with linked data/traffic settings, contextual menus for retained actions, and C3 responsibility groups. The [research review](docs/reviews/jeeves-feedback-2-2026-10-31.md) is retained as background. API tooling and deeper backend implementation/data/deployment authoring are separately scoped follow-ups in P37's specification; they are not implemented by this editor cleanup.
+**JEEVES-2 decisions:** the user chose focused C4 implementation with linked data/traffic settings, contextual menus for retained actions, and C3 responsibility groups. The [research review](docs/reviews/jeeves-feedback-2-2026-10-31.md) is completed background. P38 implements bounded API contract/reference work; C4 implementation/code graphs, deeper backend data/deployment authoring, new runtimes and live QRWTY adoption remain separate follow-ups.
 
 Related documents:
 

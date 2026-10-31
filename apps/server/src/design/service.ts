@@ -1,4 +1,4 @@
-import { recipeFindings, recipeForDesign } from "@jeeves/generator";
+import { designApiPreview, recipeFindings, recipeForDesign } from "@jeeves/generator";
 import type { Registry } from "@jeeves/registry";
 import {
   type ArchitectureEvidence,
@@ -96,6 +96,11 @@ export class DesignService {
         .values({ projectId: project.id, document: initial?.layout ?? emptyLayout() });
       return project;
     });
+  }
+
+  async apiPreview(projectId: string) {
+    const state = await this.getDesign(projectId);
+    return state ? designApiPreview(state.design, this.registry) : undefined;
   }
 
   async architecture(projectId: string) {
@@ -272,6 +277,13 @@ export class DesignService {
         { baseRevision: input.baseRevision, allowSubtypeConfirmation: input.source !== "chat" },
       );
       if (!result.ok) return { ok: false, reason: "invalid", errors: result.errors };
+
+      // Protected recipe contracts are also guarded at the shared mutation boundary.
+      // Allow repair of historical invalid designs, but never break a valid recipe binding.
+      if (current.document.recipe && !recipeFindings(current.document, this.registry).length) {
+        const errors = recipeFindings(result.design, this.registry);
+        if (errors.length) return { ok: false, reason: "invalid", errors };
+      }
 
       // A new edit ends the redo chain.
       await tx
