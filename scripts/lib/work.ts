@@ -25,6 +25,8 @@ export const profiles = {
   "browser-docker": "All Playwright specs using the existing Docker runner",
   "qr-studio-recipe":
     "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
+  "resource-workspace":
+    "Compiled owner-resource workspace in a disposable Inventory app; no live consumer",
   "generated-events":
     "Generated non-QR event service, lifecycle and fixed acceptance; disposable Postgres",
   "durable-events":
@@ -103,6 +105,7 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
+    case "resource-workspace":
     case "generated-events":
     case "qr-studio-recipe": {
       none();

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "@jeeves/product-ui",
+  "version": "0.3.0",
+  "maturity": "experimental",
+  "archive": "jeeves-product-ui-0.3.0.tgz",
+  "sha256": "389791a7a18bf33bbd66fc0b62e8c52c9abedf22acd7ebd86c53f823d696a615",
+  "source": "packages/product-ui",
+  "sourceCommit": "9e03c55c32bfb382a6c7abb034cae7905930f682",
+  "provenance": "Exact previously released P18 bytes, retained in the immutable QR Studio 0.1.0 recipe. Promoted as a shared peer artifact without repacking.",
+  "upstreamRuntimeCodeCopied": false
+}

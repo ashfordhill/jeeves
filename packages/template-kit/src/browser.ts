@@ -15,7 +15,9 @@ export async function withPage<T>(
 ): Promise<T> {
   const browser: Browser = await chromium.launch();
   try {
-    const page = await browser.newPage();
+    // Explicit contexts also allow accessibility tools to open their analysis page.
+    const context = await browser.newContext();
+    const page = await context.newPage();
     const problems = observePageProblems(page);
     return await fn(page, problems);
   } finally {
