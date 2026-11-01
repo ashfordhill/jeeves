@@ -79,10 +79,23 @@ test("declared deployment stays separate from C4, exposes real budgets and prese
     await expect(page.locator("[data-element-id]")).toHaveCount(4);
     await workspace.getByRole("button", { name: "Open components", exact: true }).click();
     await expect(page.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
+    await workspace.getByRole("button", { name: "Editor actions", exact: true }).click();
+    await page
+      .getByRole("menuitemcheckbox", { name: "Show technical components", exact: true })
+      .check();
+    await expect(page.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
     await inspectObject(page, "component:inventory:inventory-api:boundary");
     await page.getByRole("button", { name: "Zoom In", exact: true }).click();
     const viewport = page.locator(".architecture-graph .react-flow__viewport"),
       camera = await viewport.getAttribute("style");
+    // P49 persists diagram layout and camera independently; inspect from its settled snapshot.
+    await expect
+      .poll(
+        async () =>
+          (await read("layout")).layout.architecture?.["components:inventory"]?.viewport?.zoom,
+      )
+      .toBeCloseTo(Number(camera?.match(/scale\(([^)]+)\)/)?.[1]), 6);
+    const inspectionLayout = await read("layout");
     const open = () => editorAction(page, "Local deployment");
     await open();
     const dialog = page.getByRole("dialog", { name: "Local deployment", exact: true });
@@ -121,7 +134,8 @@ test("declared deployment stays separate from C4, exposes real budgets and prese
     );
     await expect(viewport).toHaveAttribute("style", camera ?? "");
     expect(await read("design")).toEqual(before);
-    expect(await read("layout")).toEqual(layout);
+    expect(await read("layout")).toEqual(inspectionLayout);
+    expect(inspectionLayout.layout.items).toEqual(layout.layout.items);
     await page.getByRole("button", { name: "Dark mode", exact: true }).click();
     await page.setViewportSize({ width: 520, height: 820 });
     await open();

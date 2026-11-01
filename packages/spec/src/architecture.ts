@@ -12,6 +12,10 @@ import {
   architectureInterfaceSchema,
   validateArchitectureContracts,
 } from "./architecture-contracts.ts";
+import {
+  deploymentEnvironmentSchema,
+  validateArchitectureDeployments,
+} from "./architecture-deployments.ts";
 import { patternInstanceSchema } from "./architecture-pattern-provenance.ts";
 import {
   architectureDecisionSchema,
@@ -113,6 +117,7 @@ export const architectureSchema = z.strictObject({
   patternInstances: z.array(patternInstanceSchema).max(100).optional(),
   reviewRequirements: z.array(reviewRequirementSchema).max(200).optional(),
   decisions: z.array(architectureDecisionSchema).max(200).optional(),
+  deployments: z.array(deploymentEnvironmentSchema).max(12).optional(),
   componentRelationships: z
     .array(
       z.strictObject({
@@ -368,6 +373,7 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
     ...validateArchitectureContracts(design),
     ...validateRelationshipBindings(design),
     ...validateArchitectureReview(design),
+    ...validateArchitectureDeployments(design),
   ];
 }
 

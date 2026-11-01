@@ -4043,3 +4043,81 @@ commit; execute P53 separately in this checkout/branch when requested.
 
 Final documentation validation: all **40 changed-document local link targets** resolve and
 `git diff --check` passes. The completed P52 scope is ready for its local commit.
+
+
+## 2026-11-01 — P53: logical deployment planning
+
+Implemented P53 only, in `/home/ash/github/jeeves` on the existing `main` branch.
+[Evidence and seven inspected captures](evidence/p53/README.md) and the
+[deployment model/editor contract](architecture-deployments.md) describe the result.
+P54 scenarios/outcomes is next, only when requested.
+
+Optional architecture.deployments records alternative hosted/private environments, nested
+placement boundaries and infrastructure, technology/location, declared replicas, operation
+ownership and responsibility. Instance groups reference existing C2 application/store identities;
+managed stores remain logical stores. The diagram expands replicas without duplicating C2.
+Two named logical channels can share broker infrastructure while retaining their own C2
+identities/policies. External C2/C1 providers retain their outside boundary.
+
+Logical interactions reference exact C2/context relationships and preserve their endpoints and
+direction. Infrastructure-only wiring needs a distinct identity, purpose/protocol and an
+infrastructure endpoint; it cannot define an application contract or executable connection.
+Reviewed legacy mappings require eligible internal infrastructure, original identity and a reason;
+source classification and relationships remain intact. Structural validation rejects missing or
+cross-environment references, cycles, duplicate identities, invalid counts, repeated channel
+placements and projected expansion beyond the documented bounds. Unknown technology/location
+and empty alternatives remain saveable planning intent.
+
+Editor actions → Deployment plans provides mouse insertion, selection, editing/removal, fixed
+Save/Cancel, retained drafts, semantic undo/redo and reload. Saved diagrams share P49's drag/nudge,
+direction, Fit/focus, Reset and independent layout history. Nested geometry and per-environment
+positions/cameras persist separately from semantic revision; removed environments/replicas prune
+obsolete layout. An object picker and full selected summary keep small/off-camera objects
+reachable; a nested disclosure exposes responsibility, ownership and exact logical references.
+Closing retains the session draft; Cancel discards it. A stale save retains edits for review.
+
+Chat uses the same setArchitecture schema/operation validation. Scripted chat matches mouse
+semantics, commits one undo step and refuses automatic replay over concurrent planning inputs.
+No extra approval is required for ordinary supplied planning edits. Optional metadata needs no
+migration and does not change old serialization or executable generation/ownership.
+
+Final verification, with unchanged fingerprints throughout each recorded run:
+
+- `pnpm work run browser-preview apps/web/e2e/architecture-deployments.spec.ts apps/web/e2e/local-deployment.spec.ts apps/web/e2e/architecture-layout.spec.ts`:
+  **7 passed**, Playwright **15.9s**, profile **17.9s**;
+  `2026-11-01T13-50-11-679Z-browser-preview-b1775df0`.
+  Includes strict diagnostics, the exactly registered expected HTTP revision conflict, axe,
+  narrow overflow, source C2 preservation, local P33 behavior and focused P49 layout regressions.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **864 tests / 118 files**
+  passed, Vitest **39.42s**, profile **49.4s**;
+  `2026-11-01T13-50-30-743Z-check-f2510684`. Biome checked **768 files**:
+  **1415 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+  Includes 21 new tests for semantic, projection, layout, scripted chat and generation boundaries.
+- Inspected seven **1440 × 900 light / 390 × 844 dark** production captures. Whole topology,
+  selected replica, nested managed responsibilities, two channels, external provider, mapping,
+  retained conflict draft and narrow fixed actions are visible. Object selection/focus provides
+  detail beyond the zoomed overview; placement forms scroll.
+- Generator compatibility keeps all executable files, contracts, artifacts and ownership unchanged;
+  only its intentionally lossless design snapshot retains new deployment metadata. No golden refresh.
+- Read-only E2E database inspection found **zero** projects with the P53/P33 fixture names after
+  deleting four earlier timeout fixtures by their exact observed IDs. Shared/live data were retained.
+
+Interim checks corrected required-label selectors, a duplicate import and a test-only jsdom
+fixture URL. Visual/interaction review corrected saved-draft comparison after database JSON key
+ordering, save-button hover contrast and ambiguous close labels, and added the object picker.
+The P33 regression needed its existing hidden technical components explicitly enabled and an
+inspection snapshot taken after P49 layout persistence. Its generic network-idle wait could stall
+under the combined suite; it now checks the actual saved camera at the CSS transform's six-decimal
+precision. These are test adaptations to the current editor; LocalDeployment/local-deployment
+runtime code is unchanged. No automatic retries, increased timeouts, suppressed diagnostics,
+dependency changes or golden updates were used. Earlier failed runs are not final evidence.
+
+No material scope deviation. Environment placement is declared design intent, never measured
+resilience or provisioning. Updated catalog and roadmap/agent/entry pointers for actual authoring
+availability. No new runtime/template/recipe, generated output, lockfile, paid model call, deployment
+resources, generation subset, live qrwty design or application changes. Evidence archives and this
+append-only record follow the required checks; no application code changed after the final gate.
+Stop after P53 and its scoped local commit; execute P54 separately in this checkout/branch when requested.
+
+Final documentation validation: all **47 changed-document local link targets** resolve, earlier
+handoff bytes are preserved, and `git diff --check` passes. P53 is ready for its local commit.

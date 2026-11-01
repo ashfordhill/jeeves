@@ -17,6 +17,7 @@ export interface ArchitectureGeometry {
   nodes: Record<string, Box>;
   edges: Record<string, RelationGeometry>;
   scope?: Box;
+  groups?: Record<string, Box>;
 }
 const compare = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
@@ -94,6 +95,23 @@ export function architectureLayoutInput(
       layoutOptions: options,
       children: packed,
     });
+  if (projection.groups) {
+    const groupChildren = (parent?: string): ElkNode[] =>
+      [
+        ...nodes.filter((n) => n.parent === parent).map((n) => ({ id: n.id, ...CARD })),
+        ...projection
+          .groups!.filter((g) => g.parent === parent)
+          .map((g) => ({
+            id: g.id,
+            layoutOptions: options,
+            children: groupChildren(g.id),
+            // Empty placement boundaries remain visible before the first instance is assigned.
+            width: CARD.width + 56,
+            height: CARD.height + 76,
+          })),
+      ].sort(compare);
+    children.splice(0, children.length, ...groupChildren());
+  }
   const known = new Set(nodes.map((node) => node.id));
   if (projection.edges.some((edge) => !known.has(edge.from) || !known.has(edge.to)))
     throw new Error("A relationship references an unavailable architecture object.");
@@ -137,7 +155,10 @@ function box(shape: Partial<Box>): Box {
 export function architectureGeometry(root: ElkNode): ArchitectureGeometry {
   const result: ArchitectureGeometry = { nodes: {}, edges: {} };
   const visit = (node: ElkNode) => {
-    if (node.id === SCOPE_ID) result.scope = box(node);
+    if (node.id.startsWith("deployment-group:")) {
+      result.groups ??= {};
+      result.groups[node.id] = box(node);
+    } else if (node.id === SCOPE_ID) result.scope = box(node);
     else if (node.id !== root.id && node.id !== PACK_ID) result.nodes[node.id] = box(node);
     for (const edge of node.edges ?? []) {
       const section = edge.sections?.[0];
@@ -162,6 +183,7 @@ export function relationshipPath(points: ElkPoint[]): string {
 export function architectureBounds(geometry: ArchitectureGeometry): Box {
   const boxes = [
     ...Object.values(geometry.nodes),
+    ...Object.values(geometry.groups ?? {}),
     ...(geometry.scope ? [geometry.scope] : []),
     ...Object.values(geometry.edges).flatMap((edge) => [
       edge.label,
@@ -266,5 +288,28 @@ export function positionedArchitectureGeometry(
             76,
         }
       : base.scope;
-  return { nodes, edges, ...(scope && { scope }) };
+  const groups: Record<string, Box> = {};
+  const groupBounds = (id: string): Box => {
+    const children = [
+      ...projection.nodes
+        .filter((n) => n.parent === id)
+        .flatMap((n) => (nodes[n.id] ? [nodes[n.id]!] : [])),
+      ...(projection.groups ?? []).filter((g) => g.parent === id).map((g) => groupBounds(g.id)),
+    ];
+    if (!children.length) {
+      groups[id] = base.groups![id]!;
+      return groups[id]!;
+    }
+    const x = Math.min(...children.map((b) => b.x)) - 28;
+    const y = Math.min(...children.map((b) => b.y)) - 48;
+    groups[id] = {
+      x,
+      y,
+      width: Math.max(...children.map((b) => b.x + b.width)) - x + 28,
+      height: Math.max(...children.map((b) => b.y + b.height)) - y + 28,
+    };
+    return groups[id]!;
+  };
+  if (base.groups) for (const group of projection.groups ?? []) groupBounds(group.id);
+  return { nodes, edges, ...(scope && { scope }), ...(base.groups && { groups }) };
 }

@@ -197,3 +197,28 @@ it("manual positions preserve identities and keep re-routed labels clear of all 
     ),
   ).toBe(geometry);
 });
+
+it("lays out nested deployment boundaries and keeps manual placement inside the updated boundaries", async () => {
+  const { default: deploymentFixture } = await import(
+    "../../../../fixtures/designs/architecture-deployments.json"
+  );
+  const { designSchema, deploymentProjection } = await import("@jeeves/spec");
+  const { positionedArchitectureGeometry } = await import("./layout.ts");
+  const design = designSchema.parse(deploymentFixture);
+  const view = deploymentProjection(design, design.architecture!.deployments![0]!);
+  const geometry = await checkView(view);
+  for (const node of view.nodes.filter((n) => n.parent)) {
+    const point = geometry.nodes[node.id]!,
+      boundary = geometry.groups![node.parent!]!;
+    expect(
+      point.x >= boundary.x &&
+        point.y >= boundary.y &&
+        point.x + point.width <= boundary.x + boundary.width &&
+        point.y + point.height <= boundary.y + boundary.height,
+    ).toBe(true);
+  }
+  const id = view.nodes.find((n) => n.binding?.element === "redirect")!.id;
+  const moved = positionedArchitectureGeometry(geometry, view, { [id]: { x: -200, y: -300 } });
+  expect(moved.nodes[id]).toMatchObject({ x: -200, y: -300 });
+  expect(moved.groups!["deployment-group:hosted-plan:hosting"]!.x).toBeLessThan(-200);
+});

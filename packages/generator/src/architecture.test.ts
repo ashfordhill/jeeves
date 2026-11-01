@@ -612,3 +612,35 @@ it("keeps sourced architecture annotations out of executable outputs and ownersh
     "annotationOrigin",
   );
 });
+
+it("preserves executable artifacts and ownership with planned deployment alternatives", async () => {
+  const { deploymentEnvironmentSchema } = await import("@jeeves/spec");
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  design.architecture!.deployments = [
+    deploymentEnvironmentSchema.parse({
+      id: "hosting-plan",
+      name: "Hosted intent",
+      kind: "Hosted",
+      nodes: [
+        {
+          id: "hosting-node",
+          name: "Managed host",
+          kind: "deployment",
+          region: "Illustrative region",
+          responsibility: "Platform operates hosts",
+        },
+      ],
+      instances: [{ id: "api-placement", element: "qrwty", node: "hosting-node", replicas: 3 }],
+    }),
+  ];
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((f) => f.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((f) => f.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((f) => f.path === "jeeves/design.json")!.contents).toContain(
+    "hosting-plan",
+  );
+});

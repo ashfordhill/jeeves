@@ -100,8 +100,9 @@ export function CapabilityCatalog({
       </p>
       <p className="catalog-intro">
         Choose a logical application, data store or external system. Deployment infrastructure
-        records placement concerns; it stays inspectable on C2 until deployment authoring is
-        available. Runtime host compatibility is separate.
+        records placement concerns. Deployment plans can map an existing infrastructure identity
+        after review; the original C2 relationships stay intact. Runtime host compatibility is
+        separate.
       </p>
       <Button variant="default" mb="md" onClick={onStarter}>
         Use an implemented starter or recipe

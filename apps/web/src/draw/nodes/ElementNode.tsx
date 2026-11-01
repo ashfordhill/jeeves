@@ -114,7 +114,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
         <div className="element-card-titles">
           <span className="element-card-stereotype">
             {classification.kind === "Deployment infrastructure"
-              ? "Deployment infrastructure · placement pending"
+              ? "Deployment infrastructure · see deployment plans"
               : classification.kind === "External system"
                 ? "External system"
                 : "Container"}

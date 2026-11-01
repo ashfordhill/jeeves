@@ -18,7 +18,17 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) and [P52 evidence](docs/evidence/p52/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) [P52 evidence](docs/evidence/p52/README.md) and [P53 evidence](docs/evidence/p53/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+
+P53 adds **Deployment plans** in Editor actions: alternative hosted/private environments,
+nested placement boundaries, declared container replicas and infrastructure operation ownership.
+Instances reference logical C2 applications/stores; named queues/topics stay separate on a
+broker, and external providers retain their boundary. Interactions trace existing relationships
+or explicitly declare deployment-only infrastructure wiring. A reviewed legacy mapping preserves
+its C2 identity and direction. Layout is independent, and declarations supply no capacity,
+failover or runtime evidence. P33's supported local arrangement remains derived and read-only.
+See the [deployment contract](docs/architecture-deployments.md) and
+[example](fixtures/designs/architecture-deployments.json). No runtime availability changes.
 
 P52 adds **planning targets** from any saved design: an immutable baseline, a separate editable
 model, stable-identity changes and source drift. Protected recipe copies retain constraints;
@@ -366,7 +376,7 @@ because two blocks have the same family.
 | Offering | Availability and boundary | Reuse |
 | --- | --- | --- |
 | API gateway | Planned routing, identity boundary and rate-policy intent. | Public application APIs across C1 offerings. |
-| Load balancer | Planned routing, instance and readiness intent. | Distributes traffic across instances of one logical C2 service. Labeled as deployment infrastructure awaiting placement; retained visibly on C2 until deployment authoring is available. |
+| Load balancer | Planned routing, instance and readiness intent. | Distributes traffic across instances of one logical C2 service. Explicitly mapped to planned infrastructure after reviewing placement responsibility; its source C2 identity and relationships remain intact. |
 | Local HTTP pool | Implemented attachment for a restricted generated resource API; [documented limits](templates/local-http-pool/README.md). | Multiple local instances, with shared data; not arbitrary-service or host failover. |
 | Local execution policy | Implemented finite resource/restart/shutdown choices; [documented limits](templates/local-execution/README.md). | Compatible HTTP services; resource ceilings do not establish throughput. |
 

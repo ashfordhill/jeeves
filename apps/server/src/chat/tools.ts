@@ -114,7 +114,8 @@ const descriptions: Record<ToolName, string> = {
     "Preview additions and candidate role/relationship bindings at getDesign.patternBaseRevision (the saved base, including pending edits), using the same expansion as the editor. Unique compatible host roles resolve automatically; ambiguous stores/hosts require a choice. Non-host reuse requires explicit matching ownership, tenant scope, exact contracts and guarantees. No change is made.",
   applyArchitecturePattern:
     "Apply a versioned architecture pattern with fresh instanceId and explicit role choices in one validated edit. Use preview for ambiguity. Unfilled or incompatible roles and stale revisions change nothing. Ordinary unambiguous/provided choices need no extra approval. Expansion is editable intent, never runtime implementation or proof of outbox atomicity.",
-  getDesign: "The current design document (with your pending edits applied) and its findings.",
+  getDesign:
+    "The current design document (with your pending edits applied) and its findings. architecture.deployments contains planned alternative environments: nested deployment/infrastructure nodes, instances referencing logical C2 identities (replicas 1–32), external references and interactions tracing exact logical relationships. Named channels remain separate on broker infrastructure. Legacy infrastructure mappings require source identity and review reason. No provisioning, generated wiring or observed health follows. Preserve all other architecture entries when editing deployments via setArchitecture.",
   applyOperations:
     "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Element classification:{kind,ownership,operation} describes architectural intent independently of runtime host roles; system context has independent businessTenancy, authorization, dataIsolation and deliveryModel choices. Read their schemas from applyOperations. Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
   validateDesign: "The current findings (readiness problems) of the design, with pending edits.",
@@ -170,6 +171,7 @@ export class Workspace {
   patternRevisionBound = false;
   reviewRevisionBound = false;
   annotationRevisionBound = false;
+  deploymentRevisionBound = false;
   targetRequest: CreateTarget | undefined;
   createdTarget: { id: string; name: string } | undefined;
   question: ChatQuestion | undefined;
@@ -191,6 +193,7 @@ export class Workspace {
     this.patternRevisionBound = false;
     this.reviewRevisionBound = false;
     this.annotationRevisionBound = false;
+    this.deploymentRevisionBound = false;
     this.targetRequest = undefined;
   }
 
@@ -489,6 +492,11 @@ export class Workspace {
       )
     )
       this.annotationRevisionBound = true;
+    if (
+      ops.some((op) => op.op === "setArchitecture") &&
+      (this.working.architecture?.deployments || result.design.architecture?.deployments)
+    )
+      this.deploymentRevisionBound = true;
     this.working = result.design;
     this.pending.push(...ops);
     this.log("applyOperations", true, `Prepared ${plural(ops.length, "change")}`);

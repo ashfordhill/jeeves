@@ -507,3 +507,30 @@ it("previews sourced editable annotations with the same semantics as mouse and b
   expect(JSON.parse(copy.run("applyOperations", JSON.stringify({ ops: [op] }))).ok).toBe(false);
   expect(copy.pending).toEqual([]);
 });
+
+it("uses the same deployment validators as mouse authoring and binds edits to their saved revision", () => {
+  const planned = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/architecture-deployments.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const before = structuredClone(planned);
+  delete before.architecture!.deployments;
+  const workspace = new Workspace(registry, before);
+  const op = { op: "setArchitecture" as const, architecture: planned.architecture! };
+  const mouse = applyOperations(before, [op], registry);
+  expect(mouse.ok).toBe(true);
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops: [op] }))).ok).toBe(true);
+  if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
+  expect(workspace.deploymentRevisionBound).toBe(true);
+  expect(workspace.question).toBeUndefined();
+  const invalid = structuredClone(op);
+  invalid.architecture.deployments![0]!.instances[0]!.element = "email";
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops: [invalid] }))).ok).toBe(
+    false,
+  );
+  if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
+});

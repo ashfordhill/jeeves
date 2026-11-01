@@ -89,7 +89,7 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
       >
         <span className="architecture-card-kind">
           <TemplateIcon name={style.icon} size={21} />
-          {item.kind === "component" ? "Component" : style.label}
+          {item.deploymentKind ?? (item.kind === "component" ? "Component" : style.label)}
         </span>
         <strong style={{ fontSize: overview ? Math.min(28, 14 / Math.max(zoom, 0.25)) : 18 }}>
           {item.name}
@@ -438,6 +438,23 @@ export function ArchitectureGraph({
         style: CARD,
       };
     });
+    for (const group of projection.groups ?? []) {
+      const point = current.groups?.[group.id];
+      if (point)
+        nodes.unshift({
+          id: group.id,
+          type: "scope",
+          position: { x: point.x, y: point.y },
+          width: point.width,
+          height: point.height,
+          data: { label: group.name },
+          style: { width: point.width, height: point.height },
+          zIndex: -1,
+          selectable: false,
+          draggable: false,
+          focusable: false,
+        });
+    }
     if (current.scope)
       nodes.unshift({
         id: SCOPE_ID,

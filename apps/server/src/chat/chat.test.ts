@@ -1078,3 +1078,82 @@ it("saves the same sourced annotation draft as mouse, including the saved projec
     await h.app.close();
   }
 });
+
+it.each([false, true])(
+  "saves deployment plans as one mouse-equivalent undo step and refuses stale replay (concurrent=%s)",
+  async (concurrent) => {
+    const base = designSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL("../../../../fixtures/designs/architecture-deployments.json", import.meta.url),
+          "utf8",
+        ),
+      ),
+    );
+    const architecture = base.architecture!;
+    let id = "";
+    const scripted = withHook(
+      [
+        { toolCalls: [{ name: "getDesign", arguments: {} }] },
+        {
+          toolCalls: [
+            {
+              name: "applyOperations",
+              arguments: { ops: [{ op: "setArchitecture", architecture }] },
+            },
+          ],
+        },
+        { text: "Save planned deployment intent." },
+        { text: "Read the current design before trying again." },
+      ],
+      async (call) => {
+        if (concurrent && call === 2)
+          await h.call("POST", `/projects/${id}/operations`, {
+            baseRevision: 1,
+            ops: [{ op: "setNotes", id: "redirect", notes: "Concurrent source edit" }],
+          });
+      },
+    );
+    const h = harness(scripted);
+    try {
+      id = await h.project();
+      const initial = structuredClone(architecture);
+      delete initial.deployments;
+      expect(
+        (
+          await h.call("POST", `/projects/${id}/operations`, {
+            baseRevision: 0,
+            ops: [
+              ...base.elements.map((element) => ({ op: "addElement", element })),
+              ...base.connections.map((connection) => ({ op: "connect", connection })),
+              { op: "setArchitecture", architecture: initial },
+            ],
+          })
+        ).status,
+      ).toBe(200);
+      const before = (await h.design(id)).design;
+      const result = await h.chat(id, "Save the hosted deployment plan");
+      const actual = (await h.design(id)).design;
+      if (concurrent) {
+        expect(result.turn.operationId).toBeNull();
+        expect(actual.architecture?.deployments).toBeUndefined();
+        expect(actual.elements[0]!.notes).toBe("Concurrent source edit");
+      } else {
+        const mouse = applyOperations(
+          before,
+          [{ op: "setArchitecture", architecture }],
+          builtinRegistry(),
+        );
+        expect(mouse.ok).toBe(true);
+        if (mouse.ok) expect(actual).toEqual(mouse.design);
+        expect(result.turn.operationId).not.toBeNull();
+        expect(
+          (await h.call("POST", `/projects/${id}/undo`, { baseRevision: 2 })).body.design
+            .architecture.deployments,
+        ).toBeUndefined();
+      }
+    } finally {
+      await h.app.close();
+    }
+  },
+);

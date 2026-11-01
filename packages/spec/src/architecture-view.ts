@@ -46,6 +46,9 @@ export interface ArchitectureViewNode {
   missing?: string[];
   unassigned?: boolean;
   technical?: boolean;
+  /** Deployment placement only; never an additional logical owner. */
+  parent?: string;
+  deploymentKind?: "Infrastructure" | "Container instance" | "Logical channel";
 }
 export interface ArchitectureViewEdge {
   id: string;
@@ -64,7 +67,7 @@ export interface ArchitectureViewEdge {
   contractCount?: number;
 }
 export interface ArchitectureProjection {
-  level: "context" | "containers" | "components";
+  level: "context" | "containers" | "components" | "deployment";
   name: string;
   description: string;
   container?: string;
@@ -72,6 +75,7 @@ export interface ArchitectureProjection {
   pool?: ReturnType<typeof localHttpPoolFor>;
   nodes: ArchitectureViewNode[];
   edges: ArchitectureViewEdge[];
+  groups?: { id: string; name: string; parent?: string }[];
   resources: {
     element: string;
     attachment: string;

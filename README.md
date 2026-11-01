@@ -57,7 +57,9 @@ See the [target workspace guide](docs/architecture-targets.md).
 
 **Inspect evidence** shows the latest recorded generation and implementation run beside the current design revision. It separates readiness stages, template conformance and application acceptance, scopes named checks to their actual service, and marks stale/different-output evidence. **Supplied & project work** describes current responsibilities. Refresh is read-only; Open Generate and Open Runs lead to the actual workflows. Stored results do not inspect current files or live deployments.
 
-These are C4-informed derived views, not a claim of production certification or automatic internal-call discovery. Custom per-view layouts, behavioral/screen views and deployment profiles remain future packages. See [P20 evidence and comparison](docs/evidence/p20/README.md).
+**Deployment plans** in Editor actions adds editable hosted/private placement alternatives over the same logical C2 identities. Declare nested hosting boundaries, container replicas, broker infrastructure with distinct logical channels, external products and traced interactions. Save/Cancel, semantic history and P49 diagram layout stay separate from runtime evidence. Existing infrastructure can be explicitly mapped after review; source C2 is retained. **Local deployment** remains P33's derived read-only view for supported HTTP templates. Neither view provisions resources or proves capacity/failover. See the [deployment planning contract](docs/architecture-deployments.md).
+
+These are C4-informed views, not a claim of production certification or automatic internal-call discovery. Focused views and saved layouts are available; further scenario outcomes/client journeys remain P54 work. See [P20 evidence and comparison](docs/evidence/p20/README.md) for the original scope.
 
 ## User guide: from a brief to a running app
 

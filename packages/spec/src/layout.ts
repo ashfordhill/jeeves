@@ -70,6 +70,18 @@ export function pruneArchitectureLayout(
 ): LayoutDocument {
   if (!layout.architecture) return layout;
   const alive = (key: string): boolean => {
+    if (key.startsWith("deployment:")) {
+      const [, environment, id, replica] = key.split(":");
+      const env = design.architecture?.deployments?.find((e) => e.id === environment);
+      return (
+        !!env &&
+        (replica
+          ? env.instances.some(
+              (i) => i.id === id && Number(replica) >= 1 && Number(replica) <= i.replicas,
+            )
+          : [...env.nodes, ...env.externals].some((i) => i.id === id))
+      );
+    }
     const [kind, owner, attachment, memberKind, member] = key.split(":");
     if (kind === "context")
       return owner === "system" || !!design.architecture?.nodes.some((node) => node.id === owner);
@@ -99,6 +111,11 @@ export function pruneArchitectureLayout(
   };
   const architecture = Object.fromEntries(
     Object.entries(layout.architecture).flatMap(([key, view]) => {
+      if (
+        key.startsWith("deployment:") &&
+        !design.architecture?.deployments?.some((e) => e.id === key.slice(11))
+      )
+        return [];
       if (
         key.startsWith("components:") &&
         !design.elements.some((item) => item.id === key.slice(11))

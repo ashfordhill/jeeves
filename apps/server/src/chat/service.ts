@@ -397,6 +397,14 @@ export class ChatService {
       }
       if (result.reason === "conflict") {
         const current = result.state.design;
+        if (workspace.deploymentRevisionBound) {
+          workspace.reset(current);
+          return {
+            ok: false,
+            message:
+              "Deployment planning inputs changed. Nothing was saved; read the current design and review the placements and logical relationships again.",
+          };
+        }
         if (workspace.annotationRevisionBound) {
           workspace.reset(current);
           return {

@@ -43,6 +43,7 @@ import { canRedo, canUndo, useDraw } from "../draw/store.ts";
 import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { useGenerate } from "../generate/store.ts";
 import { ArchitectureData } from "./ArchitectureData.tsx";
+import { ArchitectureDeployments } from "./ArchitectureDeployments.tsx";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
@@ -110,6 +111,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     setApiOpen(true);
   };
   const [deployment, setDeployment] = useState<{ element?: string }>();
+  const [deploymentPlans, setDeploymentPlans] = useState(false);
   const [focusedView, setFocusedView] = useState("");
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const layoutViews = loaded.layout.architecture;
@@ -398,6 +400,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               >
                 Local deployment
               </Menu.Item>
+              <Menu.Item onClick={() => setDeploymentPlans(true)}>Deployment plans</Menu.Item>
               <Menu.Item disabled={!currentEvidence} onClick={() => setEvidenceOpen(true)}>
                 Inspect evidence
               </Menu.Item>
@@ -1055,6 +1058,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           onRefresh={() => setAttempt((value) => value + 1)}
           onClose={() => setEvidenceOpen(false)}
           onBoard={() => openContainer(node?.binding?.element)}
+        />
+      ) : null}
+      {deploymentPlans ? (
+        <ArchitectureDeployments
+          design={design}
+          projectName={project.name}
+          onClose={() => setDeploymentPlans(false)}
         />
       ) : null}
       {deployment ? (

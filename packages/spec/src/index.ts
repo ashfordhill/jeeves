@@ -7,6 +7,7 @@ export * from "./architecture.ts";
 export * from "./architecture-bindings.ts";
 export * from "./architecture-choices.ts";
 export * from "./architecture-contracts.ts";
+export * from "./architecture-deployments.ts";
 export * from "./architecture-examples.ts";
 export * from "./architecture-pattern-provenance.ts";
 export * from "./architecture-patterns.ts";
