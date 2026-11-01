@@ -20,6 +20,15 @@ not establish a complete design. The [direction review](docs/reviews/c4-directio
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
 specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) [P52 evidence](docs/evidence/p52/README.md) and [P53 evidence](docs/evidence/p53/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
 
+P55 adds **Saved architecture templates** in the Library: save a C3 responsibility or
+C2 composition as a reviewed local draft, publish immutable architecture-only versions,
+and preview insertion with named required roles, exact interfaces and policy guarantees.
+Instances have independent identities and pinned source content/version; v2 publication,
+local customization and retirement preserve existing consumers. Runtime-owned source shapes
+require explicit portable planned contracts. No executable availability or verification is
+added. See the [local library contract](docs/architecture-library.md) and
+[P55 evidence](docs/evidence/p55/README.md).
+
 P53 adds **Deployment plans** in Editor actions: alternative hosted/private environments,
 nested placement boundaries, declared container replicas and infrastructure operation ownership.
 Instances reference logical C2 applications/stores; named queues/topics stay separate on a

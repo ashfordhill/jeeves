@@ -1,0 +1,14 @@
+.architecture-template-primary:hover:not(:disabled) {
+  background-color: var(--mantine-color-cyan-9);
+}
+
+.architecture-library {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.architecture-template-error {
+  max-height: 120px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}

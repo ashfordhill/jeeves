@@ -4250,3 +4250,90 @@ force. `git worktree list` now reports only `/home/ash/github/jeeves` on `main`.
 / 118 files**, Vitest **38.73s**; run
 `2026-11-01T16-18-28-953Z-check-97126211`. No implementation or dependency changed.
 `git diff --check` passes. Commit this recovery separately from P55.
+
+
+## 2026-11-01 — P55: user-defined reusable architecture library
+
+Implemented P55 only, after restoring the primary `/home/ash/github/jeeves` checkout
+on `main` at the user's request. The preceding stale-worktree prerequisite note is resolved:
+P52–P54 were already committed on this branch. Both detached Codex worktrees were removed
+without force, their unique note was preserved, and recovery was committed separately as
+`e7b62f4`. No new branches, worktrees or delegated agents were used.
+
+[Evidence and six inspected captures](evidence/p55/README.md) and the
+[local library contract](architecture-library.md) describe the implementation. Library → Saved
+architecture templates extracts a selected C3 responsibility or C2 composition into P50's
+versioned declarative format. Dependencies become named required hosts/components/context
+roles and exact interfaces; external ownership is retained. The review exposes purpose,
+compatible hosts, required roles, invariant declarations, finite options and extension points.
+Source graph identities are replaced with fragment-local identities. Project/system identity,
+private/unknown/free-text configuration, attachments/implementation notes, annotation provenance,
+placement and run evidence do not enter the artifact. P54 actor/client/main/alternative paths,
+linked requirements/decisions and exact binding references remap without authored review evidence.
+
+The server-owned local catalog uses bounded schemas, SHA-256 canonical content and owner-only
+atomic file replacement under JEEVES_HOME. Drafts have revision guards and can be deleted before
+publication. Published versions are immutable; new versions are separate drafts. Retirement
+removes new insertion while retaining published source records and consumer provenance. Service
+and app restart tests retain the catalog. No database migration or new dependency is needed.
+
+Mouse and chat share P50 expansion and the normal operation validator. Required responsibilities
+check host/ownership/configuration, exact interface directions/versions/shapes and current policy
+declarations. Missing roles, ambiguity and weaker guarantees remain visible. Independent instances
+get fresh identities; required role bindings deliberately retain their contract identities, and
+other shared definitions can be selected explicitly with every exact version/shape checked.
+Multiple versions of one definition retain one identity. Optional libraryContentHash/libraryOptions
+extend pinned historical pattern provenance. Instance customization does not edit its source;
+v2 publication does not update v1 consumers. New planned architecture retains generation blocks.
+
+Fixed insertion actions/errors, Save/Cancel, mouse selection, semantic undo/redo and reload work.
+Empty composition-name drafts report validation without crashing; multiline invariants remain
+editable. An asynchronous source recheck also verifies the project and local semantic revision
+again before applying, so stale snapshots cannot overwrite a locally refreshed design. Scripted
+chat uses exact source/version/content, commits one undoable edit and inherits pattern stale-replay
+protection. Ordinary supplied planning choices require no extra approval.
+
+Final verification, with unchanged Git fingerprints during each recorded run:
+
+- `pnpm work run unit packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-patterns.test.ts apps/server/src/architecture/architecture-library.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts packages/generator/src/architecture.test.ts`:
+  **72 tests / 6 files**, Vitest **5.36s**, profile **5.9s**;
+  `2026-11-01T16-48-46-257Z-unit-c700cdc6`.
+- `pnpm work run browser-preview apps/web/e2e/architecture-library.spec.ts apps/web/e2e/architecture-patterns.spec.ts apps/web/e2e/architecture-scenarios.spec.ts`:
+  **8 passed**, profile **18.8s**; `2026-11-01T16-49-40-080Z-browser-preview-bfbe696c`.
+  Production assets, strict diagnostics, axe, narrow overflow, P50/P45/P54 regressions,
+  semantic history, published versions/retirement and retained conflicts pass.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **900 tests / 120 files**
+  passed, Vitest **36.08s**, profile **44.4s**;
+  `2026-11-01T16-50-44-669Z-check-2ed683d4`. Biome checked **778 files**:
+  **1725 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- Inspected all six final **1440 × 900 light / 390 × 844 dark** captures: component and
+  multi-container drafts, required interface binding, independent expansion, published v2,
+  and a retained conflict. Text wraps and fixed actions/errors remain reachable while content scrolls.
+- Generator compatibility preserves executable files/contracts, artifacts and ownership;
+  only its intentionally lossless design snapshot gains library provenance. No golden refresh.
+  Changed-document local links (**204 targets**) and `git diff --check` pass; earlier handoff
+  bytes are preserved. Database inspection found **zero** remaining P55 fixture projects.
+  The source left by the first browser timeout was deleted by its exact observed ID/name.
+
+Interim checks corrected a fake-provider argument, exact fixture binding/client references,
+optional empty collection emission affecting an existing conflict guard, a hidden dropdown
+covering Save, hover contrast, actual application theme switching and a strict alert selector.
+Review added exact multi-version definition merging, finite-option provenance, explicit external
+ownership and the asynchronous project/revision guard. No automatic retries, timeout increases,
+diagnostic suppression, dependency/runner configuration changes or golden updates were used.
+Earlier failed/source-changing runs are not final release evidence.
+
+Deliberate portability limit: runtime-owned component members and source-backed contracts are
+refused with instructions to supply explicit portable planned responsibilities/contracts. Copying
+those project-owned source shapes could include private runtime configuration or falsely infer
+portable equivalence. Unknown runtime families/deployment infrastructure likewise need an explicit
+planned boundary. Extraction preserves portable planned selections and every required reference;
+it never silently removes unsupported executable behavior to make a template appear reusable.
+The catalog assumes one local server process. Hashes identify content, not execution or security.
+
+No runtime/template/recipe implementation, generator filtering, code upload/marketplace, automatic
+upgrade/dependency resolution, lockfile change, paid model call, provisioning or live QRWTY
+application/design edits. Shared Postgres/live data were retained. Catalog, roadmap and entry/agent
+pointers describe actual architecture-only availability. Stop after P55 and its scoped local
+commit on `main`; P56's combined QRWTY/non-QR proof is next only when requested. Continue in the
+primary checkout without additional worktrees or branches.

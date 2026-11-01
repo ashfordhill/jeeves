@@ -21,6 +21,7 @@ import {
   type LayoutDocument,
 } from "@jeeves/spec";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import type { ArchitectureLibrary } from "../architecture/library.ts";
 import type { Db } from "../db/client.ts";
 import {
   type ChatActivity,
@@ -94,6 +95,7 @@ export class ChatService {
     private readonly design: DesignService,
     private readonly registry: Registry,
     private readonly models: ModelSource,
+    private readonly library?: ArchitectureLibrary,
   ) {}
 
   async listTurns(projectId: string): Promise<ChatTurn[]> {
@@ -194,7 +196,13 @@ export class ChatService {
     emit({ type: "turn", turn: (await this.toTurns([row]))[0] as ChatTurn });
 
     const project = await this.design.getProject(projectId);
-    const workspace = new Workspace(this.registry, initial.design, initial.design, project?.name);
+    const workspace = new Workspace(
+      this.registry,
+      initial.design,
+      initial.design,
+      project?.name,
+      this.library,
+    );
     const usage: ChatUsage = { inputTokens: 0, outputTokens: 0, known: true };
     let reply = "";
     let operationId: number | null = null;

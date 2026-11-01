@@ -15,6 +15,7 @@ import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api } from "../draw/api.ts";
 import { type Tool, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { ArchitectureLibrary } from "./ArchitectureLibrary.tsx";
 import { ExampleMiniature } from "./ExampleMiniature.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
@@ -43,6 +44,7 @@ export function CapabilityCatalog({
       item.scope === "container" ||
       Boolean(owner && componentCompatible(item, componentHostRole(owner, builtinRegistry()))),
   );
+  const [localLibrary, setLocalLibrary] = useState(false);
   const [pattern, setPattern] = useState<string>();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("All");
@@ -84,6 +86,8 @@ export function CapabilityCatalog({
       setCreating(false);
     }
   };
+  if (localLibrary)
+    return <ArchitectureLibrary onClose={onClose} onBack={() => setLocalLibrary(false)} />;
   if (pattern)
     return (
       <PatternComposer
@@ -104,6 +108,9 @@ export function CapabilityCatalog({
         after review; the original C2 relationships stay intact. Runtime host compatibility is
         separate.
       </p>
+      <Button variant="default" mb="md" onClick={() => setLocalLibrary(true)}>
+        Saved architecture templates
+      </Button>
       <Button variant="default" mb="md" onClick={onStarter}>
         Use an implemented starter or recipe
       </Button>

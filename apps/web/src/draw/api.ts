@@ -6,13 +6,17 @@ import type { TemplateDescription } from "@jeeves/registry";
 import type {
   ApiPreview,
   ArchitectureEvidence,
+  ArchitectureLibraryEntry,
   ArchitectureReviewReport,
   ArchitectureViews,
   CreateTarget,
   DesignDocument,
   Finding,
   LayoutDocument,
+  LibraryInsertInput,
+  LibraryMetadata,
   OperationInput,
+  PatternPreview,
   SubtypeReview,
   TargetChange,
   TargetOrigin,
@@ -428,6 +432,46 @@ export interface ArchitectureStarter {
 }
 
 export const api = {
+  architectureLibrary: () =>
+    request<{ entries: ArchitectureLibraryEntry[] }>("/architecture-library?all=true").then(
+      (r) => r.entries,
+    ),
+  saveArchitectureTemplate: (input: {
+    id: string;
+    version: string;
+    name: string;
+    purpose: string;
+    projectId: string;
+    baseRevision: number;
+    selection: { elements: string[]; components: string[] };
+  }) =>
+    request<{ entry: ArchitectureLibraryEntry }>("/architecture-library", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }).then((r) => r.entry),
+  changeLibrary: (
+    id: string,
+    version: string,
+    input: {
+      action: "edit" | "publish" | "retire" | "delete";
+      draftRevision: number;
+      metadata?: LibraryMetadata;
+    },
+  ) =>
+    request<{ entry?: ArchitectureLibraryEntry }>(`/architecture-library/${id}/${version}/change`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }).then((r) => r.entry),
+  cloneLibrary: (id: string, version: string, next: string) =>
+    request<{ entry: ArchitectureLibraryEntry }>(`/architecture-library/${id}/${version}/clone`, {
+      method: "POST",
+      body: JSON.stringify({ version: next }),
+    }).then((r) => r.entry),
+  previewLibrary: (projectId: string, input: LibraryInsertInput) =>
+    request<PatternPreview>(`/projects/${projectId}/architecture-library/preview`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
   apiPreview: (id: string) => request<ApiPreview>(`/projects/${id}/api-preview`),
   starters: () =>
     request<{ starters: ArchitectureStarter[] }>("/starters").then((result) => result.starters),

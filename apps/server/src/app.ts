@@ -1,3 +1,4 @@
+import { dirname } from "node:path";
 import { stubExecutor, type TaskExecutor } from "@jeeves/orchestrator";
 import { builtinRegistry, type Registry } from "@jeeves/registry";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -6,11 +7,13 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import { ArchitectureLibrary } from "./architecture/library.ts";
 import { providerModels } from "./chat/models.ts";
 import { ChatService, type ModelSource } from "./chat/service.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
 import { GenerationService, type GeneratorRunner } from "./generate/service.ts";
+import { architectureLibraryRoutes } from "./routes/architecture-library.ts";
 import { chatRoutes } from "./routes/chat.ts";
 import { generateRoutes } from "./routes/generate.ts";
 import { projectRoutes } from "./routes/projects.ts";
@@ -99,7 +102,9 @@ export function buildApp({
   });
 
   const design = new DesignService(db, registry);
-  const chat = new ChatService(db, design, registry, models);
+  const library = new ArchitectureLibrary(dirname(settings.configPath));
+  const chat = new ChatService(db, design, registry, models, library);
+  app.register(architectureLibraryRoutes, { library, design, registry });
 
   const generation = new GenerationService(db, design, generator, projectsDir);
   const runs = new RunService(db, design, models, registry, jobs, executor);

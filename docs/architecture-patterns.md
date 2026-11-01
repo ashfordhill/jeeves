@@ -56,8 +56,8 @@ fresh instance. Their reuse requires an explicit choice of a prior pinned expans
 ownership, exact contract identities/versions/shapes and original policies/guarantees still match
 the configured fragment. Names and family alone cannot establish compatibility. Matching is
 conservative: same tenant/channel/bounds and intact fragment obligations are required; added
-interfaces/dependencies and display customizations are retained. Arbitrary manual responsibility
-adoption and user-saved templates are separate future work in P55.
+interfaces/dependencies and display customizations are retained. P55 adds [user-saved templates and required-role binding](architecture-library.md); copied-role
+reuse retains these conservative provenance checks.
 
 Existing C2 relationships can be selected explicitly when endpoints, protocol and interaction
 match. Multiple exact-version bindings may share one connection; this never changes its executable
@@ -76,4 +76,4 @@ The saved base remains provenance while pending edits are included in expansion.
 commits as one undo step. Unambiguous or supplied choices need no separate approval flow.
 
 See [P50 evidence](evidence/p50/README.md) and the [three-container fixture](../fixtures/designs/pattern-composition.json).
-P51 requirement-based review/decisions are next; no additional runtime work is included here.
+P51 review/decisions and P55 local templates extend this authoring model; no additional runtime work is included here.

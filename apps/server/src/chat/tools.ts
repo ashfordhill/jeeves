@@ -20,6 +20,7 @@ import {
   findingCatalog,
   findingCodes,
   idSchema,
+  libraryInsertSchema,
   type OperationInput,
   operationSchema,
   patternConfigSchema,
@@ -28,6 +29,7 @@ import {
   plannedCapability,
   plannedConfigSchema,
   previewArchitecturePattern,
+  previewArchitectureTemplate,
   resolveContractSource,
   reviewArchitecture,
   reviewTemplateUpgrade,
@@ -38,6 +40,7 @@ import {
   validateDesign,
 } from "@jeeves/spec";
 import { z } from "zod";
+import type { ArchitectureLibrary } from "../architecture/library.ts";
 import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
 
 const argsSchemas = {
@@ -52,6 +55,13 @@ const argsSchemas = {
   describePlannedCapability: z.strictObject({
     id: z.string().describe("Capability ID from listPlannedCapabilities"),
   }),
+  listArchitectureLibrary: z.strictObject({ query: z.string().max(200).optional() }),
+  describeArchitectureLibrary: z.strictObject({
+    id: idSchema,
+    version: templateRefSchema.shape.version,
+  }),
+  previewArchitectureLibrary: libraryInsertSchema,
+  applyArchitectureLibrary: libraryInsertSchema,
   listArchitecturePatterns: z.strictObject({}),
   describeArchitecturePattern: z.strictObject({
     id: idSchema,
@@ -107,6 +117,14 @@ const descriptions: Record<ToolName, string> = {
     "Create a separate planning target from this saved design and baseRevision, with an immutable baseline and provenance. Stable identities, pins and configuration copy; output ownership and history do not. Generation/runs are refused. Keep protected-copy by default; conceptual-replacement requires an explicit planning reason and retains the original recipe in its baseline. Cannot combine target creation with edits in the same turn. Creation commits when the turn finishes. Never copy source output or claim deployment.",
   getArchitectureReview:
     "Read requirement-based architecture review with concern groups, assumptions, linked inputs, fingerprints, completion and decisions. Save reviewRequirements and decisions using setArchitecture; preserve other metadata. Accepted decisions need context, decision/reason, consequence, linked identities and exact finding/fingerprint acknowledgements. Contradictions cannot be acknowledged away. Changed relevant inputs expire acceptance; no review supplies runtime evidence or changes Generate. Ordinary planning edits need no additional approval.",
+  listArchitectureLibrary:
+    "Search the local published architecture-only library. Returns exact immutable versions and content hashes; runtime availability is separate.",
+  describeArchitectureLibrary:
+    "Read an exact local architecture version, required roles, interfaces, guarantees, exposed finite options and extension points. Retired entries remain describable but cannot be inserted.",
+  previewArchitectureLibrary:
+    "Preview the exact published local version using the same fragment binding rules as mouse insertion. Keep contentHash and getDesign.patternBaseRevision. Required roles cannot be created implicitly; incompatible exact contracts/guarantees block insertion.",
+  applyArchitectureLibrary:
+    "Apply the previewed local version as editable instances in one undoable chat turn. Preserve pinned version/content hash. Ordinary supplied planning edits need no separate approval. Never replay on a concurrent revision.",
   listArchitecturePatterns:
     "List four versioned architecture patterns and their variants. Design intent only; no runtime adoption.",
   describeArchitecturePattern:
@@ -185,6 +203,7 @@ export class Workspace {
     public base: DesignDocument,
     public working: DesignDocument = base,
     private readonly projectName = "Application",
+    private readonly library?: ArchitectureLibrary,
   ) {}
 
   /** Starts over from a newer committed design, dropping pending edits. */
@@ -273,6 +292,59 @@ export class Workspace {
             ),
           }),
         };
+      }
+      case "listArchitectureLibrary": {
+        const entries =
+          this.library?.list((args as z.infer<typeof argsSchemas.listArchitectureLibrary>).query) ??
+          [];
+        this.log(tool, true, "Listed local published architecture templates");
+        return {
+          entries: entries.map((entry) => ({
+            id: entry.id,
+            version: entry.version,
+            name: entry.metadata.name,
+            purpose: entry.metadata.purpose,
+            contentHash: entry.contentHash,
+            availability: entry.availability,
+          })),
+          availability: "architecture only",
+        };
+      }
+      case "describeArchitectureLibrary": {
+        const req = args as z.infer<typeof argsSchemas.describeArchitectureLibrary>;
+        try {
+          if (!this.library)
+            return { ok: false, error: "Local architecture library is unavailable." };
+          const entry = this.library.get(req.id, req.version);
+          this.log(tool, true, "Read exact local architecture version");
+          return { entry };
+        } catch (e) {
+          return { ok: false, error: (e as Error).message };
+        }
+      }
+      case "previewArchitectureLibrary":
+      case "applyArchitectureLibrary": {
+        const req = args as z.infer<typeof libraryInsertSchema>;
+        try {
+          if (!this.library)
+            return { ok: false, error: "Local architecture library is unavailable." };
+          const preview = previewArchitectureTemplate(
+            { ...this.working, revision: this.base.revision },
+            this.library.get(req.id, req.version),
+            req,
+            this.registry,
+          );
+          this.log(tool, preview.ok, "Previewed exact local architecture version");
+          if (tool === "previewArchitectureLibrary" || !preview.ok) return preview;
+          return {
+            ...this.applyOperations({ ops: preview.ops }),
+            additions: preview.additions,
+            patternBaseRevision: this.base.revision,
+          };
+        } catch (e) {
+          this.log(tool, false, "Local architecture insertion refused");
+          return { ok: false, error: (e as Error).message };
+        }
       }
       case "listArchitecturePatterns":
         this.log(tool, true, "Listed architecture patterns");

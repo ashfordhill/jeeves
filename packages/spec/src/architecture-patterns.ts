@@ -17,26 +17,30 @@ import {
   type Element,
   elementSchema,
 } from "./design.ts";
-import { idSchema } from "./ids.ts";
+import { idSchema, versionSchema } from "./ids.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import type { OperationInput } from "./operations.ts";
-import { componentHostRole } from "./planned-capabilities.ts";
+import { componentHostRole, plannedCapability } from "./planned-capabilities.ts";
 
 const roleSchema = z.strictObject({
   id: idSchema,
   name: z.string().min(1).max(120),
   purpose: z.string().min(1).max(500),
-  kind: z.enum(["host", "boundary", "component"]),
+  kind: z.enum(["host", "boundary", "component", "context"]),
+  /** Required dependencies are bound explicitly and never copied. */
+  required: z.boolean().optional(),
+  contextKind: z.enum(["person", "external-system"]).optional(),
+  ownership: z.enum(["System responsibility", "External responsibility", "Unspecified"]).optional(),
   host: idSchema.optional(),
   classification: z.enum(["Application", "Data store", "External system"]).optional(),
-  hostRoles: z.array(z.enum(["service", "worker", "database", "external"])),
+  hostRoles: z.array(z.enum(["frontend", "service", "worker", "database", "external"])),
   storeKind: z.literal("relational-records").optional(),
   create: elementSchema.optional(),
 });
 export const architectureFragmentSchema = z.strictObject({
   formatVersion: z.literal(1),
   id: idSchema,
-  version: z.literal("1.0.0"),
+  version: versionSchema,
   name: z.string(),
   description: z.string(),
   roles: z.array(roleSchema).max(20),
@@ -56,7 +60,7 @@ export const patternChoiceSchema = z.discriminatedUnion("mode", [
 ]);
 export const patternRequestSchema = z.strictObject({
   pattern: idSchema,
-  version: z.literal("1.0.0"),
+  version: versionSchema,
   variant: z.enum(["standard", "best-effort", "transactional-outbox"]).default("standard"),
   instanceId: idSchema.max(22),
   baseRevision: z.int().nonnegative(),
@@ -64,6 +68,7 @@ export const patternRequestSchema = z.strictObject({
   roles: z.record(idSchema, patternChoiceSchema).default({}),
   /** Optional explicit reuse of an existing C2 relationship. */
   relationships: z.record(idSchema, idSchema).default({}),
+  definitions: z.record(idSchema, idSchema).optional(),
 });
 export type PatternRequest = z.output<typeof patternRequestSchema>;
 export type PatternRequestInput = z.input<typeof patternRequestSchema>;
@@ -766,7 +771,7 @@ export function describeArchitecturePattern(
   return architectureFragmentSchema.parse(fragment);
 }
 
-function mappedArchitecture(
+export function mappedArchitecture(
   fragment: ArchitectureFragment,
   ids: Record<string, string>,
 ): Architecture {
@@ -779,6 +784,49 @@ function mappedArchitecture(
   const a = fragment.architecture;
   return {
     ...a,
+    nodes: a.nodes.map((n) => ({
+      ...n,
+      id: ref(n.id),
+      ...(n.container ? { container: ref(n.container) } : {}),
+    })),
+    relationships: a.relationships.map((r) => ({
+      ...r,
+      id: ref(r.id),
+      from: ref(r.from),
+      to: ref(r.to),
+      ...(r.container ? { container: ref(r.container) } : {}),
+    })),
+    objectives: a.objectives?.map((o) => ({
+      ...o,
+      id: ref(o.id),
+      scope: o.scope.kind === "system" ? o.scope : { ...o.scope, id: ref(o.scope.id) },
+    })),
+    reviewRequirements: a.reviewRequirements?.map((r) => ({
+      ...r,
+      id: ref(r.id),
+      ...("binding" in r && r.binding ? { binding: ref(r.binding) } : {}),
+      ...(r.kind === "cache"
+        ? {
+            ...(r.fallback ? { fallback: ref(r.fallback) } : {}),
+            ...(r.update ? { update: ref(r.update) } : {}),
+          }
+        : {}),
+      ...(r.kind === "delivery"
+        ? {
+            ...(r.channel ? { channel: ref(r.channel) } : {}),
+            ...(r.responsible ? { responsible: owner(r.responsible) } : {}),
+          }
+        : {}),
+    })),
+    decisions: a.decisions?.map((d) => ({
+      ...d,
+      id: ref(d.id),
+      acknowledgements: [],
+      links: d.links.map((l) => ({
+        ...l,
+        id: l.kind === "contract" ? `${ref(l.id.split("@")[0]!)}@${l.id.split("@")[1]}` : ref(l.id),
+      })),
+    })),
     components: a.components?.map((c) => ({
       ...c,
       id: ref(c.id),
@@ -822,7 +870,32 @@ function mappedArchitecture(
         s.scope.level === "components"
           ? { ...s.scope, container: ref(s.scope.container) }
           : s.scope,
-      steps: s.steps.map((step) => ({ ...step, relationship: owner(step.relationship) })),
+      ...(s.actor ? { actor: ref(s.actor) } : {}),
+      review: undefined,
+      outcomes: s.outcomes?.map((o) => ({
+        ...o,
+        requirements: o.requirements.map(ref),
+        decisions: o.decisions.map(ref),
+      })),
+      steps: s.steps.map((step) => ({
+        ...step,
+        relationship: owner(step.relationship),
+        ...(step.binding ? { binding: ref(step.binding) } : {}),
+        ...(step.client
+          ? { client: { ...step.client, component: ref(step.client.component) } }
+          : {}),
+      })),
+      alternatives: s.alternatives?.map((alt) => ({
+        ...alt,
+        steps: alt.steps.map((step) => ({
+          ...step,
+          relationship: owner(step.relationship),
+          ...(step.binding ? { binding: ref(step.binding) } : {}),
+          ...(step.client
+            ? { client: { ...step.client, component: ref(step.client.component) } }
+            : {}),
+        })),
+      })),
     })),
   };
 }
@@ -864,7 +937,12 @@ function contains(actual: unknown, expected: unknown): boolean {
     );
   return actual === expected;
 }
-const collections = [
+export const fragmentCollections = [
+  "nodes",
+  "relationships",
+  "objectives",
+  "reviewRequirements",
+  "decisions",
   "components",
   "contracts",
   "interfaces",
@@ -879,7 +957,7 @@ function occupiedIds(design: DesignDocument): Set<string> {
     ...design.elements.flatMap((e) => [e.id, ...e.attachments.map((a) => a.id)]),
     ...design.connections.map((c) => c.id),
     ...design.annotations.map((a) => a.id),
-    ...["nodes", "relationships", "patternInstances", ...collections].flatMap((key) =>
+    ...["nodes", "relationships", "patternInstances", ...fragmentCollections].flatMap((key) =>
       (
         (design.architecture as unknown as Record<string, { id: string }[]> | undefined)?.[key] ??
         []
@@ -887,12 +965,14 @@ function occupiedIds(design: DesignDocument): Set<string> {
     ),
   ]);
 }
-function fragmentIds(fragment: ArchitectureFragment) {
+export function fragmentIds(fragment: ArchitectureFragment) {
   return [
     ...new Set([
       ...fragment.roles.map((r) => r.id),
       ...fragment.connections.map((c) => c.id),
-      ...collections.flatMap((key) => fragment.architecture[key]?.map((item) => item.id) ?? []),
+      ...fragmentCollections.flatMap(
+        (key) => fragment.architecture[key]?.map((item) => item.id) ?? [],
+      ),
     ]),
   ];
 }
@@ -909,13 +989,33 @@ function sourceMatches(
   if (fragmentIds(fragment).some((id) => !ids[id])) return false;
   const expected = mappedArchitecture(fragment, ids);
   for (const role of fragment.roles.filter((r) => r.kind !== "component")) {
+    if (role.kind === "context") {
+      const node = design.architecture?.nodes.find((n) => n.id === ids[role.id]);
+      if (
+        !node ||
+        node.kind !== role.contextKind ||
+        (role.host && node.container !== ids[role.host])
+      )
+        return false;
+      continue;
+    }
     const element = design.elements.find((e) => e.id === ids[role.id]);
     if (!element || !hostMatches(element, role, lookup)) return false;
-    if (role.create && (element.template || element.planned !== role.create.planned)) return false;
+    if (
+      role.kind === "boundary" &&
+      role.create &&
+      (element.template || element.planned !== role.create.planned)
+    )
+      return false;
   }
-  for (const key of collections) {
+  for (const key of fragmentCollections) {
     for (const item of expected[key] ?? []) {
-      const actual = design.architecture?.[key]?.find((v) => v.id === item.id);
+      const actual = design.architecture?.[key]?.find(
+        (v) =>
+          v.id === item.id &&
+          (key !== "contracts" ||
+            (v as ArchitectureContract).version === (item as ArchitectureContract).version),
+      );
       if (key === "contracts") {
         // Exact version/identity and shape; subset/schema inference is not compatibility.
         if (
@@ -952,13 +1052,92 @@ function hostMatches(
       element.template?.id === "postgres") &&
     classification.kind === role.classification &&
     classification.ownership ===
-      (role.classification === "External system"
-        ? "External responsibility"
-        : "System responsibility") &&
+      (role.ownership ??
+        (role.classification === "External system"
+          ? "External responsibility"
+          : "System responsibility")) &&
+    (!role.required ||
+      !role.create ||
+      ((element.planned ??
+        {
+          "http-service": "application-api",
+          "web-app": "browser-client",
+          postgres: "relational-store",
+        }[element.template?.id ?? ""]) === role.create.planned &&
+        contains(
+          {
+            ...Object.fromEntries(
+              (plannedCapability(element.planned)?.fields ?? []).map((f) => [f.key, f.default]),
+            ),
+            ...element.config,
+          },
+          role.create.config,
+        ))) &&
     (!role.hostRoles.length ||
       role.hostRoles.includes(componentHostRole(element, lookup) as "service"))
   );
 }
+
+/** Match an external role without inferring schema compatibility or adopting another owner. */
+function sameDefinition(a: ArchitectureContract, b: ArchitectureContract) {
+  return (
+    a.version === b.version &&
+    a.kind === b.kind &&
+    !!a.shape &&
+    contractCanonical(a.shape) === contractCanonical(b.shape)
+  );
+}
+function matchRequiredInterfaces(
+  design: DesignDocument,
+  fragment: ArchitectureFragment,
+  local: string,
+  target: string,
+): Record<string, string> | undefined {
+  const mappings: Record<string, string> = {};
+  for (const expected of fragment.architecture.interfaces?.filter((i) => i.owner.id === local) ??
+    []) {
+    const definition = fragment.architecture.contracts?.find(
+      (c) => c.id === expected.contract.id && c.version === expected.contract.version,
+    );
+    const matches = (design.architecture?.interfaces ?? []).filter(
+      (i) =>
+        i.owner.id === target &&
+        i.owner.kind === expected.owner.kind &&
+        i.direction === expected.direction &&
+        i.necessity === expected.necessity &&
+        design.architecture?.contracts?.some(
+          (c) =>
+            c.id === i.contract.id &&
+            c.version === i.contract.version &&
+            definition &&
+            sameDefinition(definition, c),
+        ),
+    );
+    if (matches.length !== 1) return undefined;
+    const match = matches[0]!;
+    for (const guarantee of fragment.architecture.bindings?.filter(
+      (b) => b.provided === expected.id || b.required === expected.id,
+    ) ?? []) {
+      if (
+        guarantee.policies &&
+        !design.architecture?.bindings?.some(
+          (binding) =>
+            (binding.provided === match.id || binding.required === match.id) &&
+            binding.role === guarantee.role &&
+            binding.operation === guarantee.operation &&
+            contains(binding.policies, guarantee.policies),
+        )
+      )
+        return undefined;
+    }
+    if (mappings[expected.contract.id] && mappings[expected.contract.id] !== match.contract.id)
+      return undefined;
+    mappings[expected.id] = match.id;
+    mappings[expected.contract.id] = match.contract.id;
+  }
+  return mappings;
+}
+
 const connectionProtocol = (c: Connection) => c.planned?.protocol ?? c.protocol;
 const connectionInteraction = (c: Connection) => c.planned?.interaction ?? c.interaction;
 export interface PatternPreview {
@@ -985,6 +1164,11 @@ export function previewArchitecturePattern(
   design: DesignDocument,
   input: PatternRequestInput,
   lookup: TemplateLookup,
+  source?: {
+    fragment: ArchitectureFragment;
+    contentHash: string;
+    options?: Record<string, string>;
+  },
 ): PatternPreview {
   const result: PatternPreview = {
     ok: false,
@@ -1008,7 +1192,10 @@ export function previewArchitecturePattern(
     );
   let fragment: ArchitectureFragment;
   try {
-    fragment = describeArchitecturePattern(req.pattern, req.variant, req.config);
+    fragment =
+      source?.fragment ?? describeArchitecturePattern(req.pattern, req.variant, req.config);
+    if (fragment.id !== req.pattern || fragment.version !== req.version)
+      throw new Error("Choose the exact published architecture version.");
   } catch (error) {
     result.errors.push((error as Error).message);
     return result;
@@ -1031,6 +1218,9 @@ export function previewArchitecturePattern(
     const { name: _name, ...config } = instance.config;
     const { name: _newName, ...newConfig } = req.config;
     return (
+      instance.libraryContentHash === source?.contentHash &&
+      contractCanonical(instance.libraryOptions ?? {}) ===
+        contractCanonical(source?.options ?? {}) &&
       instance.variant === req.variant &&
       contractCanonical(config) === contractCanonical(newConfig) &&
       sourceMatches(design, instance, fragment, lookup)
@@ -1038,7 +1228,38 @@ export function previewArchitecturePattern(
   });
   for (const role of fragment.roles) {
     const candidates: PatternPreview["roles"][number]["candidates"] = [];
-    if (role.kind === "host") {
+    if (role.kind === "context") {
+      for (const node of design.architecture?.nodes ?? [])
+        if (
+          node.kind === role.contextKind &&
+          (!role.host || node.container === ids[role.host]) &&
+          matchRequiredInterfaces(design, fragment, role.id, node.id)
+        )
+          candidates.push({
+            id: node.id,
+            name: node.name,
+            reason: "Explicit context role and exact interfaces; existing identity is retained.",
+          });
+    } else if (role.required && role.kind !== "host") {
+      for (const component of design.architecture?.components ?? []) {
+        if (component.element !== ids[role.host!]) continue;
+        const expected = fragment.architecture.components?.find((c) => c.id === role.id);
+        if (
+          !expected ||
+          component.capability !== expected.capability ||
+          !contains(component.config, expected.config)
+        )
+          continue;
+        const matches = matchRequiredInterfaces(design, fragment, role.id, component.id);
+        if (matches)
+          candidates.push({
+            id: component.id,
+            name: component.name,
+            reason:
+              "Explicit required role, compatible host, exact interface shape/version and declared configuration.",
+          });
+      }
+    } else if (role.kind === "host") {
       for (const e of design.elements.filter((e) => hostMatches(e, role, lookup)))
         candidates.push({
           id: e.id,
@@ -1065,7 +1286,7 @@ export function previewArchitecturePattern(
     }
     const choice =
       req.roles[role.id] ??
-      (role.kind === "host"
+      (role.kind === "host" || role.required
         ? candidates.length === 1
           ? { mode: "reuse" as const, id: candidates[0]!.id }
           : { mode: "unfilled" as const }
@@ -1074,14 +1295,14 @@ export function previewArchitecturePattern(
       id: role.id,
       name: role.name,
       purpose: role.purpose,
-      create: role.kind !== "host",
+      create: role.kind !== "host" && !role.required,
       selected: choice.mode === "reuse" ? choice.id : choice.mode,
       candidates,
     });
     if (choice.mode === "unfilled")
       result.unfilled.push(`${role.name}: choose a compatible role binding.`);
     else if (choice.mode === "create") {
-      if (role.kind === "host")
+      if (role.kind === "host" || role.required)
         result.errors.push(`${role.name}: select an existing host explicitly.`);
     } else if (!candidates.some((c) => c.id === choice.id))
       result.errors.push(
@@ -1090,7 +1311,19 @@ export function previewArchitecturePattern(
     else {
       ids[role.id] = choice.id;
       reused.add(role.id);
-      if (role.kind !== "host") {
+      if (role.required) {
+        const matches = matchRequiredInterfaces(design, fragment, role.id, choice.id);
+        if (!matches)
+          result.errors.push(`${role.name}: exact required interfaces are missing or ambiguous.`);
+        else
+          for (const [local, target] of Object.entries(matches)) {
+            if (contracts.has(local) && contracts.get(local) !== target)
+              result.errors.push(
+                "Required roles use different shared definition identities. Bind an explicit adapter instead.",
+              );
+            contracts.set(local, target);
+          }
+      } else if (role.kind !== "host") {
         const source = sources.find((s) => s.identities[role.id] === choice.id)!;
         for (const c of fragment.architecture.contracts ?? []) {
           const existing = contracts.get(c.id);
@@ -1103,6 +1336,21 @@ export function previewArchitecturePattern(
         }
       }
     }
+  }
+  for (const [local, target] of Object.entries(req.definitions ?? {})) {
+    const expected = fragment.architecture.contracts?.filter((c) => c.id === local) ?? [];
+    if (
+      !expected.length ||
+      !expected.every((definition) =>
+        design.architecture?.contracts?.some(
+          (actual) => actual.id === target && sameDefinition(definition, actual),
+        ),
+      )
+    )
+      result.errors.push(`Definition ${local}: every exact version and shape must match.`);
+    else if (contracts.has(local) && contracts.get(local) !== target)
+      result.errors.push(`Definition ${local}: conflicts with a required interface identity.`);
+    else contracts.set(local, target);
   }
   for (const [local, id] of contracts) {
     ids[local] = id;
@@ -1119,12 +1367,12 @@ export function previewArchitecturePattern(
           connectionInteraction(item) === connectionInteraction(c),
       )
       .map((item) => ({ id: item.id, name: item.planned?.label ?? item.label ?? item.id }));
-    result.relationships.push({ id: c.id, name: c.planned!.label, candidates });
+    result.relationships.push({ id: c.id, name: c.planned?.label ?? c.label ?? c.id, candidates });
     const selected = req.relationships[c.id];
     if (selected) {
       if (!candidates.some((item) => item.id === selected))
         result.errors.push(
-          `${c.planned!.label}: existing relationship endpoints, protocol and interaction must match.`,
+          `${c.planned?.label ?? c.label ?? c.id}: existing relationship endpoints, protocol and interaction must match.`,
         );
       else {
         ids[c.id] = selected;
@@ -1149,7 +1397,7 @@ export function previewArchitecturePattern(
   const ops: OperationInput[] = [];
   const title = (name: string) => `${req.config.name}: ${name}`.slice(0, 120);
   for (const role of fragment.roles) {
-    if (role.create && !reused.has(role.id)) {
+    if (role.create && role.kind !== "host" && !reused.has(role.id)) {
       const element = { ...role.create, id: ids[role.id]!, name: title(role.create.name) };
       ops.push({ op: "addElement", element });
       result.additions.push({ kind: "container", id: element.id, name: element.name });
@@ -1157,10 +1405,22 @@ export function previewArchitecturePattern(
   }
   for (const c of fragment.connections.filter((c) => !reused.has(c.id)))
     ops.push({ op: "connect", connection: mappedConnection(c, ids) });
-  for (const key of collections) {
+  for (const key of fragmentCollections) {
+    if (!expanded[key]?.length && !architecture[key]) continue;
     const current = (architecture[key] ?? []) as { id: string; name?: string }[];
     for (const item of expanded[key] ?? []) {
-      const existing = current.find((v) => v.id === item.id);
+      const local = Object.keys(ids).find((local) => ids[local] === item.id) ?? "";
+      if (
+        reused.has(local) &&
+        (key !== "components" || fragment.roles.find((r) => r.id === local)?.required)
+      )
+        continue;
+      const existing = current.find(
+        (v) =>
+          v.id === item.id &&
+          (key !== "contracts" ||
+            (v as ArchitectureContract).version === (item as ArchitectureContract).version),
+      );
       if (existing && key === "components") {
         const component = existing as ArchitectureComponent;
         component.usesConnections = [
@@ -1192,6 +1452,9 @@ export function previewArchitecturePattern(
       config: req.config,
       identities: ids,
       invariants: fragment.invariants,
+      ...(source
+        ? { libraryContentHash: source.contentHash, libraryOptions: source.options ?? {} }
+        : {}),
     },
   ];
   ops.push({ op: "setArchitecture", architecture });

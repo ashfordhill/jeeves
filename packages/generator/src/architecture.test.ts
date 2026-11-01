@@ -583,6 +583,8 @@ it("keeps historical architecture pattern provenance out of executable outputs a
       config: patternConfigSchema.parse({ name: "Historical lookup intent" }),
       identities: {},
       invariants: ["Historical provenance does not attach or certify a runtime."],
+      libraryContentHash: "a".repeat(64),
+      libraryOptions: { "r1.trafficPattern": "Steady" },
     },
   ];
   const after = planProject(design, templates, { projectName: "QR" });

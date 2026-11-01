@@ -18,6 +18,11 @@ export const patternInstanceSchema = z.strictObject({
   version: versionSchema,
   variant: z.enum(["standard", "best-effort", "transactional-outbox"]),
   baseRevision: z.int().nonnegative(),
+  libraryOptions: z.record(z.string(), z.string()).optional(),
+  libraryContentHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   config: patternConfigSchema,
   /** Fragment-local identity → expanded identity, including explicitly reused roles. */
   identities: z.record(idSchema, idSchema),
