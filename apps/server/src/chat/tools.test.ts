@@ -208,3 +208,97 @@ it("chat exposes architectural kinds and saves independent P46 choices through s
   expect(workspace.working.architecture!.system).not.toHaveProperty("deliveryModel");
   expect(workspace.working.architecture!.system.dataIsolation).toBe("Shared scoped data");
 });
+
+it("chat discovers authoritative sources and edits reusable exact versions through shared operations", async () => {
+  const { architectureContractReview, architectureSchema } = await import("@jeeves/spec");
+  const before = design();
+  const workspace = new Workspace(registry, before);
+  const discovery = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
+  const source = discovery.sources.find((item: { kind: string }) => item.kind === "api");
+  expect(source.source.element).toBe("links");
+  const architecture = architectureSchema.parse({
+    system: { name: "Chat contracts" },
+    contracts: [
+      {
+        id: "update-destination",
+        name: "UpdateDestination",
+        version: "v1",
+        kind: "api",
+        source: source.source,
+        sourceSnapshot: source.sourceSnapshot,
+        sourceDesignRevision: source.sourceDesignRevision,
+      },
+    ],
+    interfaces: [
+      {
+        id: "required-update",
+        name: "UpdateDestination use",
+        owner: { kind: "element", id: "links" },
+        direction: "required",
+        necessity: "required",
+        contract: { id: "update-destination", version: "v1" },
+      },
+    ],
+  });
+  expect(
+    JSON.parse(
+      workspace.run(
+        "applyOperations",
+        JSON.stringify({ ops: [{ op: "setArchitecture", architecture }] }),
+      ),
+    ).ok,
+  ).toBe(true);
+  expect(workspace.pending).toHaveLength(1);
+  expect(architectureContractReview(workspace.working)[0]?.code).toBe("UNBOUND_REQUIRED");
+  const bad = structuredClone(architecture);
+  bad.contracts![0]!.sourceSnapshot = "{}";
+  expect(
+    JSON.parse(
+      workspace.run(
+        "applyOperations",
+        JSON.stringify({ ops: [{ op: "setArchitecture", architecture: bad }] }),
+      ),
+    ).ok,
+  ).toBe(false);
+  expect(workspace.working.architecture).toEqual(architecture);
+});
+
+it("contract source references survive multiple tool edits committed as one chat undo step", () => {
+  const before = design();
+  const workspace = new Workspace(registry, before);
+  expect(
+    JSON.parse(
+      workspace.run(
+        "applyOperations",
+        JSON.stringify({ ops: [{ op: "setNotes", id: "links", notes: "Prepare interfaces" }] }),
+      ),
+    ).ok,
+  ).toBe(true);
+  const discovery = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
+  const source = discovery.sources.find((item: { kind: string }) => item.kind === "api");
+  const architecture = {
+    system: { name: "Multi-tool contracts" },
+    contracts: [
+      {
+        id: "legacy-contract",
+        name: "Legacy operation",
+        kind: "api",
+        version: "v1",
+        source: source.source,
+        sourceSnapshot: source.sourceSnapshot,
+        sourceDesignRevision: source.sourceDesignRevision,
+      },
+    ],
+  };
+  expect(
+    JSON.parse(
+      workspace.run(
+        "applyOperations",
+        JSON.stringify({ ops: [{ op: "setArchitecture", architecture }] }),
+      ),
+    ).ok,
+  ).toBe(true);
+  const committed = applyOperations(before, workspace.pending, registry);
+  expect(committed.ok).toBe(true);
+  if (committed.ok) expect(committed.design.revision).toBe(before.revision + 1);
+});

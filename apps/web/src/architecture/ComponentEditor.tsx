@@ -98,6 +98,9 @@ export function ComponentEditor({
       ?.filter((item) => item.id !== draft.id && item.element === element)
       .flatMap((item) => item.members.map(memberKey)),
   );
+  const hasInterfaces = design.architecture?.interfaces?.some(
+    (item) => item.owner.kind === "component" && item.owner.id === initial?.id,
+  );
   const parsed = architectureComponentSchema.safeParse(draft);
   const architecture = {
     ...(design.architecture ?? {
@@ -257,12 +260,15 @@ export function ComponentEditor({
             {error ?? problems[0]?.message}
           </Alert>
         ) : null}
+        {hasInterfaces ? (
+          <Alert>Remove this component’s interfaces before removing the component.</Alert>
+        ) : null}
         {initial ? (
           <Button
             variant="subtle"
             color="red"
             size="xs"
-            disabled={saving}
+            disabled={saving || hasInterfaces}
             onClick={async () => {
               if (useDraw.getState().loaded?.design.revision !== baseRevision) {
                 setError("The design changed. Cancel and reopen before removing this component.");
@@ -279,6 +285,7 @@ export function ComponentEditor({
               };
               if (await useDraw.getState().edit([{ op: "setArchitecture", architecture: next }]))
                 onClose();
+              else setError(useDraw.getState().notice?.message ?? "Could not remove component.");
             }}
           >
             Remove component

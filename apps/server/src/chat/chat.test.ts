@@ -207,6 +207,7 @@ describe("design chat", () => {
       "listPlannedCapabilities",
       "describePlannedCapability",
       "getDesign",
+      "getArchitectureContracts",
       "reviewSubtype",
       "applyOperations",
       "validateDesign",

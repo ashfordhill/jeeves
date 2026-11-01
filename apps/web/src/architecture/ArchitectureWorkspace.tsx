@@ -43,6 +43,8 @@ import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { type ArchitectureCameraCache, ArchitectureGraph } from "./ArchitectureGraph.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
+import { InterfaceSummary } from "./InterfaceEditor.tsx";
+import "./contracts.css";
 import { ComponentEditor } from "./ComponentEditor.tsx";
 import { ComponentRelationshipEditor } from "./ComponentRelationshipEditor.tsx";
 import { ContextInspector } from "./ContextInspector.tsx";
@@ -666,6 +668,30 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               <h3>Local execution · {(node?.execution ?? projection?.execution)!.preset}</h3>
               <ExecutionPolicySummary policy={(node?.execution ?? projection?.execution)!} />
             </section>
+          ) : null}
+          {level === "containers" && boardElement ? (
+            <InterfaceSummary
+              key={`element:${boardElement.id}`}
+              owner={{ kind: "element", id: boardElement.id }}
+            />
+          ) : level === "components" && node?.binding?.component ? (
+            <InterfaceSummary
+              key={`component:${node.binding.component}`}
+              owner={{ kind: "component", id: node.binding.component }}
+            />
+          ) : level === "components" && selectedElement ? (
+            <InterfaceSummary
+              key={`element:${selectedElement.id}`}
+              owner={{ kind: "element", id: selectedElement.id }}
+            />
+          ) : node?.id.startsWith("context:") &&
+            design.architecture?.nodes.some(
+              (item) => `context:${item.id}` === node.id && item.kind === "external-system",
+            ) ? (
+            <InterfaceSummary
+              key={node.id}
+              owner={{ kind: "external-system", id: node.id.slice(8) }}
+            />
           ) : null}
         </aside>
       </div>

@@ -18,7 +18,7 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md) records the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md) and [P47 evidence](docs/evidence/p47/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
 
 P46 adds independent **system choices** (business tenancy, authorization intent, data
 isolation and delivery model) through Edit context or system inspection. C1 shows only the
@@ -27,6 +27,15 @@ not populate the new choices. Container inspection also records classification, 
 ownership and operation independently of runtime compatibility. An externally operated store
 can remain inside the system; an owned telemetry collector can be an application. These are
 saved design declarations, not implemented access or deployment policies.
+
+P47 adds **Manage interfaces** to component, container and external-system inspection.
+Project-local definitions describe planned API/in-process operations, event payloads and
+logical datasets; instances provide or require an exact contract version. Definitions can
+also reference existing REST/resource or durable-event members with read-only authoritative
+shapes and visible source staleness. Renames preserve references; changing an in-use shape
+requires an explicit new version and a preview of instance updates. Unresolved drafts and
+required-but-unbound interfaces remain saveable design review. These declarations add no
+runtime wiring; relationship bindings and policies follow in P48. See [P47 evidence](docs/evidence/p47/README.md).
 
 ## Availability and reuse
 

@@ -18,7 +18,7 @@ Before changing C1/C2/C3 authoring, the catalog, connections or architecture pat
 reusable composition; new application runtime/code-generation work is deferred to a separate
 task. The [revised P46–P57 roadmap](docs/build-plan-c4-evolution.md) is the planning
 specification; the [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
-explains its rationale. P46 is complete; P47 is next. When asked to execute, start with the requested package,
+explains its rationale. P46 and P47 are complete; P48 is next. When asked to execute, start with the requested package,
 not the whole sequence.
 Keep architecture intent, template availability and verification evidence distinct.
 

@@ -378,3 +378,54 @@ it("keeps P46 classification and independent system choices out of generated beh
   expect(after.elements).toEqual(before.elements);
   expect(after.artifacts).toEqual(before.artifacts);
 });
+
+it("keeps interface contracts in the lossless design snapshot without changing executable generation", async () => {
+  const { architectureContractReview, contractCanonical, contractSources, resolveContractSource } =
+    await import("@jeeves/spec");
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  const source = contractSources(design).find((item) => item.source.kind === "rest-operation")!;
+  design.architecture!.contracts = [
+    {
+      id: "existing-api",
+      name: "Existing API",
+      version: "v1",
+      kind: "api",
+      description: "",
+      source: source.source,
+      sourceSnapshot: contractCanonical(resolveContractSource(design, source.source)),
+      sourceDesignRevision: design.revision,
+    },
+    {
+      id: "planned-api",
+      name: "UpdateDestination",
+      version: "v1",
+      kind: "in-process",
+      description: "",
+      shape: { operations: [], payload: [] },
+    },
+  ];
+  design.architecture!.interfaces = [
+    {
+      id: "browser-contract-use",
+      name: "Required update",
+      direction: "required",
+      necessity: "required",
+      owner: { kind: "element", id: design.elements[0]!.id },
+      contract: { id: "planned-api", version: "v1" },
+    },
+  ];
+  expect(architectureContractReview(design).map((item) => item.code)).toEqual([
+    "UNRESOLVED_CONTRACT",
+    "UNBOUND_REQUIRED",
+  ]);
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((file) => file.path === "jeeves/design.json")?.contents).toContain(
+    "planned-api",
+  );
+});

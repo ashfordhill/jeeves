@@ -5,6 +5,7 @@ export * from "./api-preview.ts";
 export * from "./apply.ts";
 export * from "./architecture.ts";
 export * from "./architecture-choices.ts";
+export * from "./architecture-contracts.ts";
 export * from "./architecture-examples.ts";
 export * from "./architecture-view.ts";
 export * from "./config.ts";

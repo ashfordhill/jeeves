@@ -1,6 +1,11 @@
 /** Architectural intent is semantic documentation; only explicit element bindings are executable. */
 import { z } from "zod";
 import { isExternalResponsibility, systemChoicesSchema } from "./architecture-choices.ts";
+import {
+  architectureContractSchema,
+  architectureInterfaceSchema,
+  validateArchitectureContracts,
+} from "./architecture-contracts.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
@@ -71,6 +76,8 @@ export const architectureSchema = z.strictObject({
   relationships: z.array(contextRelationshipSchema).max(100).default([]),
   components: z.array(architectureComponentSchema).max(200).optional(),
   scenarios: z.array(architectureScenarioSchema).max(50).optional(),
+  contracts: z.array(architectureContractSchema).max(200).optional(),
+  interfaces: z.array(architectureInterfaceSchema).max(500).optional(),
   componentRelationships: z
     .array(
       z.strictObject({
@@ -305,7 +312,7 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
         );
     });
   }
-  return findings;
+  return [...findings, ...validateArchitectureContracts(design)];
 }
 
 export function resolveArchitectureMember(

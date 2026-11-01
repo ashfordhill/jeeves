@@ -1,10 +1,10 @@
 # C4 authoring roadmap: reusable designs ready for implementation (P46–P57)
 
-**Revised 31 October 2026 at the user's request. P46 is implemented and verified; P47–P57 remain planned.**
+**Revised 31 October 2026 at the user's request. P46 and P47 are implemented and verified; P48–P57 remain planned.**
 This replaces the original P46–P53 proposal retained in Git at `ee31075`. It incorporates
 [the direction review](reviews/c4-direction-review-2026-10-31.md) and
 [C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. The next implementation
-package, when execution is requested, is **P47 only**. See [P46 evidence](evidence/p46/README.md).
+package, when execution is requested, is **P48 only**. See [P46 evidence](evidence/p46/README.md) and [P47 evidence](evidence/p47/README.md).
 
 The outcome is an engineer using Jeeves to compose, inspect and revise a credible qrwty-sized
 SaaS architecture through C2/C3 diagrams and reusable architecture templates. The result
@@ -171,6 +171,8 @@ the picker. Existing catalog, authoring and example browser suites pass.
 **Excluded:** deployment editor, provider runtime changes, automatic migration of live designs.
 
 ## P47 — Interface and contract authoring
+
+**Complete.** [Evidence and compatibility limits](evidence/p47/README.md).
 
 **Outcome:** a C3 responsibility says what it provides and requires, with reusable definitions.
 

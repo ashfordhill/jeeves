@@ -3595,3 +3595,65 @@ projects remain. Existing shared Postgres and live project data were retained.
 
 Updated catalog, roadmap/entry pointers and agent guidance. Stop after this package; P47 is
 specified by the revised roadmap and requires its own implementation session/commit.
+
+## 2026-10-31 — P47: reusable interface and contract authoring
+
+Implemented P47 only. [Release evidence and five inspected captures](evidence/p47/README.md)
+record exact-version authoring and source staleness. P48 relationship bindings and policies
+are next; this package supplies no runtime ports/adapters or contract compilation.
+
+Added optional project-local `architecture.contracts` and `architecture.interfaces` collections.
+Definitions carry stable IDs, explicit versions, kind/name/description and bounded planned
+operation input/output or event/dataset fields. Instances identify component, container or
+external-system providers/consumers and reference exact definitions. Domain-specific interfaces
+need no new catalog family. Names/descriptions preserve references; in-use shapes require a
+new version and explicit instance updates. Unreferenced drafts remain editable. Required-but-
+unbound uses and unresolved fields are saveable, separate design-review findings, outside the
+existing generation gate. Duplicate/dangling identities and invalid ownership reject batches.
+Component removal explains that its interfaces must be removed first.
+
+Existing P38 REST operations use element/attachment/member identities, including generated
+resource operations and sessions. Resource datasets and durable-event members reuse their
+existing schemas. Read-only current source shapes and canonical saved source snapshots expose
+staleness when a relevant source shape changes or disappears. The saved base revision records
+authoring provenance; exact source equality, not semver inference or general schema matching,
+determines whether the reference is current. A referenced source cannot be edited or silently
+refreshed through this UI. Legacy REST/recipe protection and executable generation remain intact;
+only the lossless design snapshot includes declarations.
+
+Manage interfaces appears in C3, container and external-system inspection, with provided/
+required summaries, Save/Cancel, history/reload and explicit consumer-update previews. A
+conflicting dialog retains its original base snapshot and draft; another Save cannot overwrite
+the concurrent revision. Chat discovery returns sources, reusable definitions and separate
+review results through `getArchitectureContracts`; shared operations keep one undo step per
+turn, including multi-tool source capture. No new provider calls are needed for verification.
+
+Final verification (fingerprints unchanged during each recorded final run):
+
+- `pnpm work run unit packages/spec/src/architecture-contracts.test.ts packages/generator/src/architecture.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts`:
+  **40 passed / 4 files**, Vitest **4.39s**, profile **5.0s**;
+  `2026-11-01T03-05-38-772Z-unit-46283bf6`.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **769 tests / 111 files**
+  passed, Vitest **41.18s**, profile **52.2s**;
+  `2026-11-01T03-05-57-218Z-check-c0b9716b`. Biome checked 733 files:
+  **771 warnings / 75 infos / no errors**. Existing four-worker concurrency policy retained.
+- `pnpm work run browser-preview apps/web/e2e/architecture-contracts.spec.ts apps/web/e2e/api-contracts.spec.ts apps/web/e2e/architecture-authoring.spec.ts`:
+  **10 passed**, Playwright **21.2s**, profile **24.0s**;
+  `2026-11-01T03-05-57-218Z-browser-preview-c5d57e6d`.
+  Strict browser diagnostics, scoped expected conflicts, axe and narrow overflow checks pass.
+- Opened all five final desktop-light/narrow-dark captures, including the explicit subset
+  update and scrolled payload. Protected text/required-field labels remain readable and
+  Save/Cancel stay fixed while the body scrolls. Whitespace and changed-document links pass.
+
+Interim checks found required-label test selectors, a non-searchable update control, a stale
+base snapshot after conflict and the chat test's explicit tool-list expectation. Corrected the
+selectors/control and conflict behavior, tightened orphan-component ownership, and updated the
+expected tool list. No retries, timeout increases, diagnostic suppression, dependency/config
+or golden changes. Earlier source-changing or failed runs are not final evidence. Screenshot
+review improved protected field/label contrast and added a focused payload capture.
+
+No material scope deviation. Updated catalog, roadmap/entry pointers and agent guidance.
+No runtime/template, generated contract/output/golden, lockfile or live QRWTY edits. Removed
+four exact-ID E2E projects left by early timed-out runs; final journeys remove their own
+projects. Existing shared Postgres and other saved data were retained. Evidence images and
+this final record were archived after the code checks. Stop after P47 and its local commit.

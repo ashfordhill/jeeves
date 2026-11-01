@@ -7,7 +7,10 @@ import type { ToolDefinition } from "@jeeves/providers";
 import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
+  architectureContractReview,
   componentCompatible,
+  contractCanonical,
+  contractSources,
   type DesignDocument,
   type FindingCode,
   findingCatalog,
@@ -18,6 +21,7 @@ import {
   plannedCapabilities,
   plannedCapability,
   plannedConfigSchema,
+  resolveContractSource,
   reviewTemplateUpgrade,
   subtypeDiscards,
   templateRefSchema,
@@ -39,6 +43,7 @@ const argsSchemas = {
     id: z.string().describe("Capability ID from listPlannedCapabilities"),
   }),
   getDesign: z.strictObject({}),
+  getArchitectureContracts: z.strictObject({}),
   reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
   applyOperations: z.strictObject({
     ops: z
@@ -72,6 +77,8 @@ const descriptions: Record<ToolName, string> = {
     "Read a planned family's options, defaults, config JSON Schema and compatible component host roles. Container IDs go in element.planned with template:null; component IDs go in architecture.components[].capability, never in template IDs.",
   reviewSubtype:
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
+  getArchitectureContracts:
+    "Inspect project-local contract definitions, provided/required interfaces, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
     "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Element classification:{kind,ownership,operation} describes architectural intent independently of runtime host roles; system context has independent businessTenancy, authorization, dataIsolation and deliveryModel choices. Read their schemas from applyOperations. Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
@@ -215,6 +222,18 @@ export class Workspace {
           }),
         };
       }
+      case "getArchitectureContracts":
+        this.log(tool, true, "Read architecture contracts and sources");
+        return {
+          contracts: this.working.architecture?.contracts ?? [],
+          interfaces: this.working.architecture?.interfaces ?? [],
+          review: architectureContractReview(this.working),
+          sources: contractSources(this.working).map((item) => ({
+            ...item,
+            sourceSnapshot: contractCanonical(resolveContractSource(this.working, item.source)),
+            sourceDesignRevision: this.base.revision,
+          })),
+        };
       case "getDesign":
         this.log(tool, true, "Read the design");
         return { design: this.working, findings: validateDesign(this.working, this.registry) };
