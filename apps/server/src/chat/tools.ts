@@ -8,6 +8,7 @@ import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
   architecturePatterns,
+  architectureProofOperations,
   architectureReview,
   type CreateTarget,
   componentCompatible,
@@ -30,6 +31,7 @@ import {
   plannedConfigSchema,
   previewArchitecturePattern,
   previewArchitectureTemplate,
+  proofSteps,
   resolveContractSource,
   reviewArchitecture,
   reviewTemplateUpgrade,
@@ -63,6 +65,17 @@ const argsSchemas = {
   previewArchitectureLibrary: libraryInsertSchema,
   applyArchitectureLibrary: libraryInsertSchema,
   listArchitecturePatterns: z.strictObject({}),
+  listArchitectureStudies: z.strictObject({}),
+  previewArchitectureStudyStage: z.strictObject({
+    product: z.enum(["qrwty", "inventory"]),
+    stage: z.enum(["start", "tenant", "delivery", "billing", "lookup", "behavior"]),
+    baseRevision: z.int().nonnegative(),
+  }),
+  applyArchitectureStudyStage: z.strictObject({
+    product: z.enum(["qrwty", "inventory"]),
+    stage: z.enum(["start", "tenant", "delivery", "billing", "lookup", "behavior"]),
+    baseRevision: z.int().nonnegative(),
+  }),
   describeArchitecturePattern: z.strictObject({
     id: idSchema,
     version: z.literal("1.0.0").default("1.0.0"),
@@ -127,6 +140,12 @@ const descriptions: Record<ToolName, string> = {
     "Apply the previewed local version as editable instances in one undoable chat turn. Preserve pinned version/content hash. Ordinary supplied planning edits need no separate approval. Never replay on a concurrent revision.",
   listArchitecturePatterns:
     "List four versioned architecture patterns and their variants. Design intent only; no runtime adoption.",
+  listArchitectureStudies:
+    "List bounded QRWTY and Inventory architecture composition exercises and their ordered stages. Start only in an empty project. Numerical policies are illustrative examples; production objectives remain unresolved. No live adoption or runtime implementation.",
+  previewArchitectureStudyStage:
+    "Preview a supplied study stage using the same operation builder and validators as the mouse workshop. Use getDesign.patternBaseRevision, including pending edits. Inspect exact contracts, policies, scenario paths and open decisions; prose cannot replace semantic fields or dismiss findings.",
+  applyArchitectureStudyStage:
+    "Apply a supplied QRWTY or Inventory study stage as editable architecture intent. Use the listed stage order and saved baseRevision. Ordinary supplied study choices need no separate approval. Whole chat turn is one undo step; stale revisions refuse all edits. No generation or verification is performed.",
   describeArchitecturePattern:
     "Read a pinned declarative fragment, required host/boundary roles, exact contracts, policies, invariants and extension points. Asynchronous delivery requires best-effort or transactional-outbox explicitly.",
   previewArchitecturePattern:
@@ -352,6 +371,42 @@ export class Workspace {
           patterns: architecturePatterns.map((p) => ({ ...p, version: "1.0.0" })),
           availability: "Editable design intent; runtime support and verification are separate.",
         };
+      case "listArchitectureStudies":
+        this.log(tool, true, "Listed architecture studies");
+        return {
+          studies: (["qrwty", "inventory"] as const).map((product) => ({
+            product,
+            stages: proofSteps(product),
+          })),
+          availability: "Architecture intent only; production objectives require owner decisions.",
+        };
+      case "previewArchitectureStudyStage":
+      case "applyArchitectureStudyStage": {
+        const request = args as z.infer<typeof argsSchemas.applyArchitectureStudyStage>;
+        if (request.baseRevision !== this.base.revision)
+          return {
+            ok: false,
+            error: "Study base revision changed; read the design and preview again.",
+          };
+        try {
+          const base = { ...this.working, revision: this.base.revision };
+          const ops = architectureProofOperations(
+            base,
+            request.product,
+            request.stage,
+            this.registry,
+          );
+          const result = applyOperations(base, ops, this.registry);
+          if (!result.ok) return result;
+          if (tool === "previewArchitectureStudyStage")
+            return { ok: true, ops, review: reviewArchitecture(result.design) };
+          this.log(tool, true, "Applied editable architecture study stage");
+          return this.applyOperations({ ops });
+        } catch (e) {
+          this.log(tool, false, "Architecture study stage refused");
+          return { ok: false, error: (e as Error).message };
+        }
+      }
       case "describeArchitecturePattern": {
         const { id, variant, config } = args as z.infer<
           typeof argsSchemas.describeArchitecturePattern

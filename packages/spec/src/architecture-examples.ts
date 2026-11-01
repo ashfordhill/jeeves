@@ -1,5 +1,6 @@
 /** Editable planning examples, not assertions about the internals of any named company. */
 import type { Architecture, ArchitectureComponent } from "./architecture.ts";
+import { architectureProof } from "./architecture-proofs.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import type { LayoutDocument } from "./layout.ts";
 
@@ -39,6 +40,15 @@ export const architectureExamples = [
 ] as const;
 
 export function architectureExample(id: string): {
+  name: string;
+  design: DesignDocument;
+  layout: LayoutDocument;
+} {
+  return id === "qrwty-target" ? architectureProof("qrwty") : legacyArchitectureExample(id);
+}
+
+/** Historical P43/P45 fixture retained for lossless migration and authoring regression checks. */
+export function legacyArchitectureExample(id: string): {
   name: string;
   design: DesignDocument;
   layout: LayoutDocument;

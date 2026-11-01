@@ -114,7 +114,7 @@ for (const example of architectureExamples) {
         await page.getByLabel("Component container").selectOption("api");
         await settled(page, "components");
         await page
-          .getByRole("button", { name: "Inspect Organizations & members", exact: true })
+          .getByRole("button", { name: "Inspect Tenant access: Workspace membership", exact: true })
           .click();
         const details = page.getByRole("complementary", { name: "Architecture details" });
         await details.getByRole("button", { name: "Configure component", exact: true }).click();
@@ -132,16 +132,18 @@ for (const example of architectureExamples) {
         await expect
           .poll(
             async () =>
-              (await read()).architecture!.components!.find((item) => item.id === "organizations")!
-                .config.teams,
+              (await read()).architecture!.components!.find(
+                (item) => item.id === "tenant-workspace",
+              )!.config.teams,
           )
-          .toBe("Organizations with shared link libraries");
+          .toBeUndefined();
         await page.getByRole("button", { name: "Redo", exact: true }).click();
         await expect
           .poll(
             async () =>
-              (await read()).architecture!.components!.find((item) => item.id === "organizations")!
-                .config.teams,
+              (await read()).architecture!.components!.find(
+                (item) => item.id === "tenant-workspace",
+              )!.config.teams,
           )
           .toBe("Teams with shared campaigns");
         // Binding is editable on C1, separate from the application end of a relationship.
@@ -150,7 +152,7 @@ for (const example of architectureExamples) {
         await page.getByRole("button", { name: "Inspect Payment provider", exact: true }).click();
         await details.getByLabel("External block on C2").selectOption("");
         await details.getByRole("button", { name: "Cancel", exact: true }).click();
-        await expect(details.getByLabel("External block on C2")).toHaveValue("billing");
+        await expect(details.getByLabel("External block on C2")).toHaveValue("billing-provider");
         await details.getByLabel("External block on C2").selectOption("");
         await details.getByRole("button", { name: "Save context", exact: true }).click();
         await expect
@@ -167,7 +169,7 @@ for (const example of architectureExamples) {
               (await read()).architecture!.nodes.find((node) => node.id === "payment-provider")!
                 .container,
           )
-          .toBe("billing");
+          .toBe("billing-provider");
       }
       const saved = await read();
       await page.reload();
@@ -190,6 +192,10 @@ for (const example of architectureExamples) {
         (await (await request.get(`/api/projects/${seed}/design`)).json()).design.elements,
       ).toEqual([]);
     } finally {
+      const cancel = page.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true });
+      if (await cancel.count()) await cancel.click();
+      await page.getByRole("tab", { name: "Runs", exact: true }).click();
+      await page.waitForLoadState("networkidle");
       if (id !== seed) await request.delete(`/api/projects/${id}`);
       await request.delete(`/api/projects/${seed}`);
     }

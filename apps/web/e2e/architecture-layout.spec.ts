@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
-import { architectureExample, type DesignDocument, type LayoutDocument } from "@jeeves/spec";
+import {
+  legacyArchitectureExample as architectureExample,
+  type DesignDocument,
+  type LayoutDocument,
+} from "@jeeves/spec";
 import type { Page } from "@playwright/test";
 import { expect, test } from "./browser-test.ts";
 import { diagramAction, editorAction, inspectObject, openNewProject } from "./helpers.ts";

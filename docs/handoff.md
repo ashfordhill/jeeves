@@ -4337,3 +4337,116 @@ application/design edits. Shared Postgres/live data were retained. Catalog, road
 pointers describe actual architecture-only availability. Stop after P55 and its scoped local
 commit on `main`; P56's combined QRWTY/non-QR proof is next only when requested. Continue in the
 primary checkout without additional worktrees or branches.
+
+## 2026-11-01 — P56: QRWTY architecture proof and small Inventory reuse study
+
+Implemented P56 only in the primary `/home/ash/github/jeeves` checkout on `main`,
+starting at P55 (`68633de`). No branches, worktrees or delegated agents were used.
+[Evidence and ten inspected captures](evidence/p56/README.md), the refreshed
+[QRWTY study](examples/qrwty-target.md) and [Inventory study](examples/inventory-architecture.md)
+explain the delivered model. P57's implementation brief/export is next only when requested.
+
+New QRWTY targets compose four initial hosts through pinned tenant-access, asynchronous
+visit-delivery, billing/entitlements and cached-lookup patterns, then specialize product intent.
+The thirteen logical blocks keep payment/e-mail/DNS/certificate/integration boundaries external;
+relational analytics is the baseline, with analytical storage/private delivery optional growth
+choices. Hosted placement identifies application/data operation, broker-hosted named channels
+and TLS responsibility without provisioning or inventing production region/replica capacity.
+Existing saved targets are not migrated; original P43/P45 examples remain historical fixtures
+for lossless authoring, classification and focused-layout regression checks.
+
+C3 separates stable printed link identity/destination, encoded payloads, hosted page content and
+artwork. Tenant/session/API-key checks, membership revocation, worker/export access, billing
+adapter/policy/entitlements, custom-domain lifecycle, abuse, redacted audit, reporting and data
+lifecycle have exact provided/required interfaces, data authority/access and linked decisions.
+Client areas include Library/creation, Studio, reporting/exports, team/billing/domains and staff.
+Source-backed runtime configuration and live projects never enter the examples.
+
+Six scenario families use actual relationship and binding identities, with named alternatives
+for cache/source/channel failure, API-key revocation, duplicate signed callback, domain transfer/
+removal/abuse, deletion and recovery. Outcomes link policy requirements and consequential
+choices. Browser follows returned Location; redirect never fetches destination. Visit delivery
+requires no persisted acknowledgement and selects illustrative bounded loss; billing persists
+and deduplicates before acknowledgement/effects. Authenticated monotonic mutations retain pending
+propagation intent, bounded freshness/retry and fail-closed escalation. Downgrade preserves safe
+printed links/content while new paid features/exports stop; abuse/domain revocation overrides grace.
+
+Production workload, SLO, RPO/RTO, commercial retention and freshness choices remain explicitly
+Unresolved with product-owner/operations ownership and blocked production scope. Numerical
+policy values are marked illustrative examples. The recovery objective has no invented value.
+Review retains this unresolved objective/decision; selected tenant/cache-failure/loss conflicts
+cannot be waived by decision acceptance. Missing critical contracts reject operations atomically.
+Scenario expectations start Needs review, relevant changes make authored review stale, and no
+scenario/architecture review supplies runtime verification or a ready-for-production label.
+Generic unresolved fragment payloads become explicit v2 definitions with reviewed consumer
+migration; referenced v1 shapes are never rewritten. Provenance stays historical.
+
+Library → Build a study step by step exposes concrete boundaries, exact contracts/policies,
+decisions and outcomes before each validated atomic save. Fixed actions/errors, Cancel, mouse
+selection, semantic undo/redo, save/reload and retained revision conflicts work. Shared stage
+operations preserve unrelated context/scenarios and selected lifecycle choices. Ordinary
+inspectors remain available for editing responsibilities and material decisions. Important C2
+operations share communication arrows while retaining C3 ownership and exact binding identities.
+Management, public redirect and analytics focus the same model; C3 mouse focus and interfaces
+provide detail beyond its whole-host overview.
+
+Chat lists/previews/applies bounded supplied study stages through the same operation builder and
+validators, uses the saved base revision including pending edits and commits one undoable turn.
+Scripted QRWTY/Inventory journeys exercise real persisted operations, open review and reload.
+Existing pattern/snapshot concurrency guards refuse stale study replay and preserve concurrent
+work. No paid model was called and no extra approval flow was introduced.
+
+Inventory uses five logical blocks, the same exact tenant-access shape and transactional-outbox
+stock intent: atomic state/event persistence, retained delivery progress, persisted acknowledgement,
+retry and idempotent handling. It does not independently write stock before atomic commit.
+The real local catalog also publishes portable tenant/delivery selections from QR's early
+composition stages and reuses their exact version/content pins against explicit compatible
+Inventory host/store interfaces. A copied best-effort informational channel stays separate
+from durable stock work; names/families alone never establish compatibility.
+
+Final verification, with unchanged source fingerprints during both recorded runs:
+
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: lint, every typecheck and **913 tests / 121 files**
+  passed; Vitest **38.03s**, profile **48.1s**. Run
+  `2026-11-01T17-41-14-339Z-check-410ef773`. Biome checked **782 files**:
+  **1876 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- `pnpm work run browser-preview apps/web/e2e/qrwty-design-readiness.spec.ts apps/web/e2e/architecture-examples.spec.ts apps/web/e2e/architecture-scenarios.spec.ts apps/web/e2e/chat-planning.spec.ts apps/web/e2e/architecture-library.spec.ts apps/web/e2e/architecture-patterns.spec.ts apps/web/e2e/architecture-layout.spec.ts`:
+  **22 passed**, Playwright **48.8s**, profile **50.6s**. Run
+  `2026-11-01T17-42-12-898Z-browser-preview-3a527be3`. Production assets, strict diagnostics,
+  exactly registered HTTP revision conflicts, axe, narrow overflow, P43/P45/P49/P50/P54/P55
+  regressions, version/retirement, semantic history and both input paths pass.
+- Inspected all ten final captures: **1440 × 900 light / 390 × 844 dark**. Focused C2,
+  selected C3/contract detail, scenario step list and fixed review/conflict actions are readable.
+  Whole-system and management C3 diagrams remain overviews.
+- Generator compatibility, executable files/contracts, artifacts and ownership pass in the
+  required gate. No golden refresh, executable template or application behavior changed.
+- E2E database inspection found **zero** P56 projects after removing three earlier failed-run
+  leftovers by exact observed ID/name: `61553126-f9b2-4167-8eac-644a291a31a2` (Inventory),
+  `18dee12e-286d-428d-a8e0-3f989fab3e6e` and `dac2e184-16da-4cc5-b6af-6ccba905c549` (QRWTY).
+  The final browser run cleaned its fixtures normally; shared/live data were retained.
+- The live QRWTY checkout retained HEAD `7e3ff68775c80a1b629b8c9099779dd2b8a57f63`,
+  tracked-diff SHA-256 `7637c088bb713a3398231a3fa13334a99f934dffec3c3aa71b557af718a74d4e`
+  and status SHA-256 `2c649534094db69634e301041f2152fa75538792d3890b9347094064ea7e1532`.
+  Its existing business-analysis changes were preserved; no source application files were written.
+
+Interim work corrected historical-target selector/required-label assumptions, exact stage/scope
+references, interface-definition selection, hover contrast, completion-before-commit test races
+and dialog/layout cleanup. One concurrent heavy unit/browser attempt produced resource-related
+hook/screenshot/health failures; final gates ran sequentially without timeout increases, automatic
+retries or diagnostic suppression. Earlier failed/source-changing runs are not final evidence.
+The first complete 913-test gate also passed; final semantic typing/propagation refinements were
+followed by the recorded repeated gate above.
+
+No material scope deviation. Two existing boundaries remain explicit: semantic undo/redo does
+not reconstruct focus membership removed by layout pruning, and fully coupled product selections
+can exceed the local template's 20-role portability bound. Save bounded portable selections before
+product-specific contract/scenario coupling or author a smaller explicit boundary; no references
+are silently dropped. P56 adds no runtime/template/recipe implementation, generator filtering,
+new infrastructure, dependency/lockfile, paid model call, provisioning, live adoption, implementation
+tasks or P57 export. Catalog/roadmap/agent pointers describe architecture availability only.
+Only evidence, documentation and this append-only handoff were written after the final gates.
+Stop after P56 and its scoped local commit on `main`; continue with P57 only when requested.
+
+Final documentation validation: all **180 changed-document local file targets** resolve,
+earlier **517,012 handoff bytes** are preserved, and `git diff --check` passes.
+P56 is complete and ready for its scoped local commit.

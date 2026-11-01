@@ -5,6 +5,7 @@ import { createFakeProvider } from "@jeeves/providers";
 import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
+  architectureProofOperations,
   type DesignDocument,
   designSchema,
   extractArchitectureTemplate,
@@ -25,6 +26,97 @@ const directory = () => {
 };
 afterAll(() => {
   for (const dir of directories) rmSync(dir, { recursive: true, force: true });
+});
+
+it("P56 publishes portable tenant and delivery selections from QR composition stages and reuses their exact local versions in an Inventory study", () => {
+  const library = new ArchitectureLibrary(directory());
+  let qr = designSchema.parse({ schemaVersion: 2, revision: 0 });
+  let inventory = designSchema.parse({ schemaVersion: 2, revision: 0 });
+  const start = applyOperations(
+    inventory,
+    architectureProofOperations(inventory, "inventory", "start", registry),
+    registry,
+  );
+  if (!start.ok) throw new Error(JSON.stringify(start.errors));
+  inventory = start.design;
+  // Required stores supply explicit matching interfaces/guarantees before local reuse.
+  for (const stage of ["tenant", "delivery"] as const) {
+    const seeded = applyOperations(
+      inventory,
+      architectureProofOperations(inventory, "inventory", stage, registry),
+      registry,
+    );
+    if (!seeded.ok) throw new Error(JSON.stringify(seeded.errors));
+    inventory = seeded.design;
+  }
+  for (const stage of ["start", "tenant", "delivery"] as const) {
+    const composed = applyOperations(
+      qr,
+      architectureProofOperations(qr, "qrwty", stage, registry),
+      registry,
+    );
+    if (!composed.ok) throw new Error(JSON.stringify(composed.errors));
+    qr = composed.design;
+    if (stage === "start") continue;
+    const extracted = extractArchitectureTemplate(
+      qr,
+      stage === "tenant"
+        ? { components: ["tenant-workspace", "tenant-access"] }
+        : { elements: ["delivery-channel"], components: ["delivery-producer", "delivery-handler"] },
+      {
+        id: `p56-${stage}`,
+        version: "1.0.0",
+        name: `Reusable ${stage}`,
+        purpose:
+          stage === "tenant"
+            ? "Shared tenant access authority"
+            : "Informational notifications with explicit bounded loss; never authoritative stock changes",
+      },
+      registry,
+    );
+    const draft = library.create(extracted.fragment, extracted.metadata);
+    const entry = library.change(draft.id, draft.version, draft.draftRevision, "publish")!;
+    const roles = Object.fromEntries(
+      entry.fragment.roles
+        .filter((r) => r.required)
+        .map((r) => [
+          r.id,
+          {
+            mode: "reuse" as const,
+            id:
+              r.name === "Primary data" ? "db" : r.name === "Background worker" ? "worker" : "api",
+          },
+        ]),
+    );
+    const preview = previewArchitectureTemplate(
+      inventory,
+      entry,
+      {
+        id: entry.id,
+        version: entry.version,
+        contentHash: entry.contentHash,
+        instanceId: `reused-${stage}`,
+        baseRevision: inventory.revision,
+        name: `Inventory ${stage}`,
+        roles,
+      },
+      registry,
+    );
+    expect(preview.errors).toEqual([]);
+    expect(preview.unfilled).toEqual([]);
+    const applied = applyOperations(inventory, preview.ops, registry);
+    if (!applied.ok) throw new Error(JSON.stringify(applied.errors));
+    inventory = applied.design;
+    expect(inventory.architecture!.patternInstances!.at(-1)!.libraryContentHash).toBe(
+      entry.contentHash,
+    );
+    expect(library.get(entry.id, entry.version)).toEqual(entry);
+  }
+  expect(inventory.architecture!.patternInstances).toHaveLength(4);
+  expect(inventory.elements.every((e) => e.template === null)).toBe(true);
+  expect(
+    inventory.architecture!.components!.some((c) => c.name.includes("Tenant access checks")),
+  ).toBe(true);
 });
 const registry = builtinRegistry();
 function source() {

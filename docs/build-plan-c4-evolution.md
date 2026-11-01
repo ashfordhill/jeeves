@@ -1,10 +1,10 @@
 # C4 authoring roadmap: reusable designs ready for implementation (P46–P57)
 
-**Revised 31 October 2026 at the user's request. P46–P55 are implemented and verified; P56–P57 remain planned.**
+**Revised 31 October 2026 at the user's request. P46–P56 are implemented and verified; P57 remains planned.**
 This replaces the original P46–P53 proposal retained in Git at `ee31075`. It incorporates
 [the direction review](reviews/c4-direction-review-2026-10-31.md) and
 [C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. The next implementation
-package, when execution is requested, is **P56 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md), [P50 evidence](evidence/p50/README.md), [P51 evidence](evidence/p51/README.md), [P52 evidence](evidence/p52/README.md), [P53 evidence](evidence/p53/README.md) [P54 evidence](evidence/p54/README.md) and [P55 evidence](evidence/p55/README.md).
+package, when execution is requested, is **P57 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md), [P50 evidence](evidence/p50/README.md), [P51 evidence](evidence/p51/README.md), [P52 evidence](evidence/p52/README.md), [P53 evidence](evidence/p53/README.md), [P54 evidence](evidence/p54/README.md), [P55 evidence](evidence/p55/README.md) and [P56 evidence](evidence/p56/README.md).
 
 The outcome is an engineer using Jeeves to compose, inspect and revise a credible qrwty-sized
 SaaS architecture through C2/C3 diagrams and reusable architecture templates. The result
@@ -468,6 +468,8 @@ persistence conventions. Add `architecture-library.test.ts` / `architecture-libr
 packaging, automatic upgrades, general dependency-resolution machinery.
 
 ## P56 — qrwty architecture proof
+
+**Implemented:** [P56 evidence](evidence/p56/README.md), [QRWTY study](examples/qrwty-target.md) and [Inventory reuse study](examples/inventory-architecture.md). Production objectives remain assigned open decisions; no runtime availability or live adoption is implied.
 
 **Outcome:** demonstrate that the editor and reusable catalog can specify a serious QR SaaS.
 

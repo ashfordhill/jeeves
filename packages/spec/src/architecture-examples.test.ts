@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import { containerContext } from "./architecture.ts";
-import { architectureExample, architectureExamples } from "./architecture-examples.ts";
+import {
+  architectureExample,
+  architectureExamples,
+  legacyArchitectureExample,
+} from "./architecture-examples.ts";
 import { architectureViews } from "./architecture-view.ts";
 import { testLookup } from "./test-support.ts";
 
@@ -27,7 +31,9 @@ for (const example of architectureExamples) {
     }
     const views = architectureViews(design, testLookup, example.name);
     for (const view of views.components) {
-      expect(view.nodes.filter((node) => node.kind === "component").length).toBeLessThanOrEqual(10);
+      expect(view.nodes.filter((node) => node.kind === "component").length).toBeLessThanOrEqual(
+        example.id === "qrwty-target" ? 14 : 10,
+      );
       for (const edge of view.edges) {
         expect(edge.description).not.toMatch(
           /^(calls|uses-database|depends-on|Declared use|Uses store)$/,
@@ -40,14 +46,22 @@ for (const example of architectureExamples) {
         else expect(edge.from).toBe(`container:${connection.from.element}`);
       }
     }
-    expect(views.containers.nodes.filter((node) => node.name === "Payment provider")).toHaveLength(
-      1,
-    );
     expect(
-      views.containers.nodes.filter((node) => node.name === "E-mail delivery provider"),
+      views.containers.nodes.filter(
+        (node) =>
+          node.name ===
+          (example.id === "qrwty-target" ? "Billing: Payment provider" : "Payment provider"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      views.containers.nodes.filter(
+        (node) =>
+          node.name ===
+          (example.id === "qrwty-target" ? "E-mail provider" : "E-mail delivery provider"),
+      ),
     ).toHaveLength(1);
     expect(views.context.nodes.filter((node) => node.kind === "external-system")).toHaveLength(
-      example.id === "qrwty-target" ? 3 : 2,
+      example.id === "qrwty-target" ? 5 : 2,
     );
     expect(
       views.containers.edges.every(
@@ -60,43 +74,37 @@ for (const example of architectureExamples) {
 describe("QRWTY target study", () => {
   it("includes the reviewed product scope while keeping destination navigation in the visitor browser", () => {
     const { design } = architectureExample("qrwty-target");
-    expect(design.elements).toHaveLength(14);
+    expect(design.elements).toHaveLength(13);
     expect(design.architecture!.system.name).toContain("target architecture");
     expect(design.architecture!.nodes.map((node) => node.name)).toEqual([
       "Link owner",
       "QR visitor",
-      "Team administrator",
-      "Destination website",
+      "Support staff",
       "Payment provider",
-      "E-mail delivery provider",
+      "E-mail provider",
+      "DNS and certificate provider",
+      "Destination website",
+      "Developer integration",
     ]);
-    const counts = Object.fromEntries(
-      ["api", "redirect", "worker", "web", "admin"].map((id) => [
-        id,
-        design.architecture!.components!.filter((component) => component.element === id).length,
-      ]),
-    );
-    expect(counts).toEqual({ api: 8, redirect: 2, worker: 3, web: 5, admin: 1 });
+    expect(design.architecture!.scenarios).toHaveLength(6);
+    expect(design.architecture!.system.deliveryModel).toBe("Hosted");
     expect(design.connections.some((connection) => connection.to.element === "destination")).toBe(
       false,
     );
     expect(
       design.architecture!.relationships.find((relation) => relation.to === "destination"),
     ).toMatchObject({ from: "visitor" });
-    expect(design.elements.find((element) => element.id === "admin")!.config.audience).toBe(
-      "Internal staff & admins",
-    );
   });
   it("creates independent editable copies", () => {
     const first = architectureExample("qrwty-target");
     first.design.elements[0]!.name = "Changed";
-    expect(architectureExample("qrwty-target").design.elements[0]!.name).toBe("Owner web app");
+    expect(architectureExample("qrwty-target").design.elements[0]!.name).toBe("Application API");
     expect(() => architectureExample("unknown")).toThrow("Unknown architecture example");
   });
 });
 
 it("external context bindings reject invalid reuse atomically and survive renames without matching names", () => {
-  const { design } = architectureExample("qrwty-target");
+  const { design } = legacyArchitectureExample("qrwty-target");
   const before = structuredClone(design);
   for (const container of ["missing", "api", "db"]) {
     const architecture = structuredClone(design.architecture!);

@@ -6,7 +6,7 @@ import {
   isExternalResponsibility,
   outsideSystem,
 } from "./architecture-choices.ts";
-import { architectureExample } from "./architecture-examples.ts";
+import { legacyArchitectureExample as architectureExample } from "./architecture-examples.ts";
 import { designSchema, elementSchema } from "./design.ts";
 import { blocksGenerate } from "./findings.ts";
 import {

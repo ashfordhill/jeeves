@@ -59,7 +59,7 @@ See the [target workspace guide](docs/architecture-targets.md).
 
 **Deployment plans** in Editor actions adds editable hosted/private placement alternatives over the same logical C2 identities. Declare nested hosting boundaries, container replicas, broker infrastructure with distinct logical channels, external products and traced interactions. Save/Cancel, semantic history and P49 diagram layout stay separate from runtime evidence. Existing infrastructure can be explicitly mapped after review; source C2 is retained. **Local deployment** remains P33's derived read-only view for supported HTTP templates. Neither view provisions resources or proves capacity/failover. See the [deployment planning contract](docs/architecture-deployments.md).
 
-These are C4-informed views, not a claim of production certification or automatic internal-call discovery. Focused views and saved layouts are available; P54 adds scenario outcomes/client journeys, and P55 adds [local reusable architecture templates](docs/architecture-library.md). See [P20 evidence and comparison](docs/evidence/p20/README.md) for the original scope.
+These are C4-informed views, not a claim of production certification or automatic internal-call discovery. Focused views and saved layouts are available; P54 adds scenario outcomes/client journeys, and P55 adds [local reusable architecture templates](docs/architecture-library.md). P56 adds [staged QRWTY and Inventory design proofs](docs/evidence/p56/README.md), with six QR scenario families and open production objectives. See [P20 evidence and comparison](docs/evidence/p20/README.md) for the original scope.
 
 ## User guide: from a brief to a running app
 

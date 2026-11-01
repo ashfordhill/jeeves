@@ -119,3 +119,48 @@ test("chat plans C1, C2 and C3 from the library, with one-step undo, redo and re
     await request.delete(`/api/projects/${id}`);
   }
 });
+
+for (const product of ["qrwty", "inventory"] as const) {
+  test(`P56 chat assembles the ${product} study using semantic stages and preserves open review through history`, async ({
+    page,
+    request,
+  }) => {
+    const id = await openNewProject(page, request, `P56 chat ${product}`);
+    const read = async (): Promise<DesignDocument> =>
+      (await (await request.get(`/api/projects/${id}/design`)).json()).design;
+    try {
+      await page.getByRole("button", { name: "Open chat", exact: true }).click();
+      const chat = page.getByRole("complementary", { name: "Chat panel" });
+      await chat.getByRole("textbox", { name: "Message" }).fill(`Assemble P56 ${product} study`);
+      await chat.getByRole("button", { name: "Send", exact: true }).click();
+      await expect(
+        chat.getByText(
+          /Production workload, SLO and recovery objectives remain unresolved owner decisions/,
+        ),
+      ).toBeVisible();
+      await expect(chat.getByText(/Applied .* changes as one undo step/)).toBeVisible();
+      await expect.poll(async () => (await read()).revision).toBe(1);
+      const saved = await read();
+      expect(saved.revision).toBe(1);
+      expect(saved.architecture!.scenarios).toHaveLength(product === "qrwty" ? 6 : 3);
+      expect(
+        saved.architecture!.decisions!.find((d) => d.id === "production-objectives")!.status,
+      ).toBe("Unresolved");
+      expect(saved.elements.every((e) => e.template === null)).toBe(true);
+      await page.screenshot({
+        path: `test-results/p56-chat-${product}-light.png`,
+        animations: "disabled",
+      });
+      await chat.getByRole("button", { name: "Undo", exact: true }).click();
+      await expect.poll(async () => (await read()).elements).toEqual([]);
+      await page.getByRole("button", { name: "Redo", exact: true }).click();
+      await expect.poll(async () => (await read()).architecture).toEqual(saved.architecture);
+      await page.reload();
+      expect((await read()).architecture).toEqual(saved.architecture);
+    } finally {
+      await page.getByRole("tab", { name: "Runs", exact: true }).click();
+      await page.waitForLoadState("networkidle");
+      await request.delete(`/api/projects/${id}`);
+    }
+  });
+}

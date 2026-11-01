@@ -1,104 +1,118 @@
 # QRWTY target architecture
 
-This is an editable **planned SaaS study**, separate from the QR Studio recipe and
-from the live QRWTY repository or saved design. Open **Library → Architecture
-examples → Create qrwty target architecture**. Jeeves creates a new project; the
-current project is preserved. The proposed technologies, queues, failure policies,
-team access, billing and API behavior are design intent. None is provisioned or
-verified by this example, and planned capabilities block generation.
+P56 refreshes this **separate editable planned SaaS study**. It never opens or changes the
+live QRWTY repository, project, saved design or QR Studio recipe. Existing saved P43/P45
+studies remain lossless and editable; newly created targets use the expanded model.
+[Evidence](../evidence/p56/README.md) records actual authoring checks, separately from intent.
 
-The [P43 specification and decisions](../build-plan-c4-saas.md#p43--qrwty-target-architecture-example-and-example-refresh)
-define the scope. The executable source for this and the three refreshed studies is
-[architecture-examples.ts](../../packages/spec/src/architecture-examples.ts).
+## Assemble and inspect
 
-P49 adds **Management**, **Public redirect** and **Analytics** to the C2 view selector.
-Management and analytics use explicit flow membership; redirect includes immediate dependencies.
-The whole-system board remains available, and each focus links all hidden relationships.
-Edit view changes membership/filtering without changing architecture; drag/nudge and camera
-changes persist separately. See [P49 evidence](../evidence/p49/README.md).
+For a complete independent example, open **Library → Architecture examples → Create qrwty
+target architecture**. For the staged exercise, create an empty project, open **Library →
+Build a study step by step**, select **QRWTY**, and review/apply each stage:
 
-## Context
+1. Four logical blocks: management API, public redirect, background worker and primary data.
+2. Tenant workspace and access, with shared scoped data and independent authorization intent.
+3. A named visit channel and explicitly best-effort analytics delivery.
+4. Signed billing callbacks, durable deduplication and entitlement ownership.
+5. Public lookup with authoritative source fallback and bounded change/disable propagation.
+6. Product responsibilities, exact contracts, datasets, policies, six scenario families,
+   consequential decisions and illustrative hosted placement.
 
-Link owners manage their QR links and artwork. Team administrators manage membership
-and billing. QR visitors follow short links; **their browser** follows the returned
-destination. The redirect service does not fetch destination websites. The e-mail
-provider delivers transactional messages; the payment provider handles subscriptions.
-C1 keeps these responsibilities free of technology tags.
+Each preview exposes boundaries/responsibilities, contract fields, policies, decisions and
+scenario outcomes before an atomic save. Cancel changes nothing. Each stage is one semantic
+undo step; chat commits the supplied stages in one turn/undo step. Every result remains editable
+through ordinary C1/C2/C3, contract/binding, dataset, review, deployment and scenario inspectors.
+Concurrent edits retain the old preview and require reopening it. No automatic retry overwrites
+concurrent work. The stage builder is [architecture-proofs.ts](../../packages/spec/src/architecture-proofs.ts).
 
-## Containers
+Chat discovers `listArchitectureStudies`, then previews/applies a supplied study stage with
+`previewArchitectureStudyStage` / `applyArchitectureStudyStage`, `product: qrwty`, the listed
+stage identity and `getDesign.patternBaseRevision`. These call the same operation builder and
+validators as the mouse workshop. [Scripted journeys](../../fixtures/chat/e2e-script.json) use
+no paid model calls. `getArchitectureReview` exposes real semantic findings and expectation
+fingerprints; an assistant's prose cannot fill missing fields or dismiss a selected conflict.
 
-The fourteen planned blocks are:
+## Small baseline and optional growth
 
-| Boundary | Proposed technology | Responsibility |
-| --- | --- | --- |
-| Owner web app | React / TypeScript | Customer landing, sign-in, library, Studio, analytics and settings |
-| Admin console | React / TypeScript | Staff account and subscription support |
-| Application API | Node.js / Fastify | Accounts, teams, link management, plans and developer access |
-| Redirect service | Node.js / Fastify | Public destination lookup and visit capture |
-| Primary data | PostgreSQL | Authoritative accounts, links, ownership and memberships |
-| Lookup cache | Redis compatible | Derived lookups with source fallback |
-| Artwork storage | S3 compatible | Versioned artwork and expiring export files |
-| Visit queue | RabbitMQ | Asynchronous visit and background work delivery |
-| Analytics worker | Node.js / TypeScript | Aggregation, scheduled reports and message delivery |
-| Analytics store | ClickHouse | Customer-facing aggregate visit reporting |
-| CDN & edge | HTTPS CDN | Static client assets and public artwork; redirects stay uncached |
-| Payment provider | Provider API | Subscriptions and signed billing events |
-| E-mail delivery provider | Provider API | Account, invitation and report-ready delivery |
-| Observability | OpenTelemetry collector | Redacted logs, metrics and traces |
+The thirteen logical blocks are owner and staff web clients, management API, separately scaled
+public redirect, background worker, relational authority, derived lookup cache, named visit
+channel, artwork/export object storage, and external payment, e-mail, DNS/certificate and API-key
+integration boundaries. Managed hosting does not change their C4 level. A broker hosts the named
+channel in deployment; it is not an extra application. The hosted placement explains application,
+data/broker and TLS operation responsibilities without choosing production capacity or a region.
 
-Relationships state their verbs, protocols and interaction style. Queued work, billing
-events and telemetry are asynchronous; browser/API requests and storage queries are
-request/response. A provider's C1 object explicitly binds to its planned external C2
-block, so C2 reuses the block and an existing matching connection. This is identity
-reuse, with no name matching or added wiring. **External block on C2** in the context
-inspector edits that binding with Save/Cancel and history. Removing its block retains
-the context object. Other context relationships retain their separate system-end
-application binding. Managed providers and edge delivery sit outside the system.
+Analytics initially uses relational data. Analytical storage and private delivery are explicit
+optional growth decisions, absent from the baseline topology. No Kubernetes, infrastructure per
+QR content type, multi-region or enterprise runtime is inferred. Numerical policies below are
+**illustrative examples**, not production workload, SLO, recovery or scalability evidence.
 
-## Components
+**Management**, **Public redirect** and **Analytics** focus the same C2 identities and retain
+navigation to hidden relationships. C3 scopes one host. The management API's cohesive modules
+cover tenant membership/access, billing adapter/policy/entitlements, stable links, encoded payloads,
+hosted landing content, artwork, custom domains, abuse, audit and reporting/data lifecycle. Owner
+features cover Library/creation, Studio/payload editing, Analytics/exports and team/billing/domain
+settings. Staff has its own audited support boundary. No client routing or widgets are generated.
 
-Select **C3 Components**, then choose an application with the mouse.
+## Trace the six scenario families
 
-- Application API: Accounts & sessions, Organizations & members, Link management,
-  QR artwork, Analytics queries, Billing & plans, Developer API & webhooks,
-  Notifications adapter (eight responsibilities). Explicit in-process relationships
-  resolve member access, execute link operations and resolve the billing organization.
-- Redirect service: Destination lookup and Visit capture.
-- Analytics worker: Visit aggregation, Scheduled exports and Notification delivery.
-- Owner web app: Public landing & sign-in, Library & create, Studio, Analytics,
-  Settings & billing (five screen groups). These describe feature boundaries, not routing.
-- Admin console: Support & administration.
+Select a saved scenario in C2 **Editor actions**. Its main path and named alternatives reference
+real relationships and exact bindings; outcomes link requirements and decisions. For C3 detail,
+follow the binding's provided/required interface to its owner, then inspect that component and
+the same C2 boundary. Several operations share one C2 arrow without losing their C3 ownership.
 
-Each authored component has a description and proposed technology. Dependencies reuse
-existing container relationships, including their incoming direction for queue delivery
-and signed provider events. Databases, queue infrastructure and external vendor internals
-have no authored application decomposition in this study. Desktop fitted views retain
-stereotypes, descriptions and technology; narrow fitted views are overviews. Mouse zoom,
-selection and the inspector expose details. Navigation and zoom do not change the design.
+| Family | Identity path and important outcomes |
+| --- | --- |
+| Create/edit link, artwork or hosted content | `member` → `library` / `studio` → `manage`, `payload-binding`, `content-binding`, `artwork-binding` → `records`, `payloads`, `content`, `artwork` → their exact authority datasets. Printed URL is stable; encoded payload and page/artwork versions remain distinct. Static printed payload changes require reprint. `lookup-change` reaches `lookup-updates` and its authority/invalidation bindings. |
+| Follow QR during cache/queue failure | `visitor` → `lookup-lookup` → `lookup-read-cache-binding`, `lookup-read-source-binding`; `delivery-publish-work-binding` reaches the named visit channel. Cache miss/failure falls back to authority; disabled/unknown/source failure fails closed. Channel failure can return Location without persisted analytics acknowledgement. Browser follows the destination; service never fetches it. |
+| Invite/restrict a member or use an API key | `members` → `tenant-workspace` / `tenant-access`; `developer` → `api-key` → `records`. `worker-access`, `export-access` and `aggregate-export` retain principal/tenant and data scope through background work and downloads. Revocation denies the next authorization check and cancels revoked jobs. |
+| Duplicate billing webhook / downgrade | `payment-provider` → `billing-receive-callback-binding` → `billing-adapter` → `billing-billing` → `billing-entitlements`. Persist/deduplicate provider event and tenant before acknowledgement/side effects. Duplicates acknowledge accepted work; reconcile out-of-order versions. Downgrade blocks new paid features/exports while preserving safe existing printed links/content; abuse/domain revocation overrides grace. |
+| Domain attach/transfer/removal and abuse | `domains-binding` → `domains` → external `dns-binding`, authority and `domain-change`; staff enters `abuse-binding` → `abuse`, audit and `abuse-change`. Ownership/TLS precede routing; transfer revokes old tenant first, removal fails closed and paths remain stable. Abuse shutdown has bounded monitored propagation. |
+| Analytics query/export/delete and recovery | `reports` → `reporting`, `aggregate-query`; `export-job` → `export-jobs`, `export-access`, `aggregate-export` and expiring objects. Named delete/recovery alternatives persist tombstones, cancel downloads and reapply deletion before restored reads. Operations owns restoration/reconciliation; product owner must approve production objectives. |
 
-## Reuse
+## Policies and remaining decisions
 
-The [catalog](../../CATALOG.md#qrwty-target-architecture) links these C1/C2/C3 boundaries.
-Links & QR, Community & discussion and Social & content retain their original focus and
-now include identity, billing, e-mail delivery, CDN and observability, within fifteen
-blocks each. Their actual compositions also drive the library miniatures. Social includes
-mobile API/offline responsibilities; Community includes subscription-message delivery.
-Technology tags describe choices for these studies, not claims about a named company.
+The illustrative cache attempt is 25 ms with source fallback; source reads fail closed within
+250 ms. Update/disable propagation and maximum stale lookup age are 15 seconds. Monotonic
+revisions prevent an older update restoring a disabled destination. Authenticated mutations
+commit authority before acknowledgement and retry failed propagation within the selected bound.
 
-## Dynamic scenarios
+Best-effort visit publication has a 25 ms attempt, no persisted-ack prerequisite, and a 60-second
+loss window. Beyond that window, visits circuit-break until recovery; redirects can continue and
+analytics exposes gaps. Lost visits are never invented during recovery. A visit means an accepted
+public resolution attempt, not a unique human or confirmed destination page view. Billing has
+at-least-once durable acceptance and tenant/provider-event deduplication; its guarantees are
+separate from analytics delivery.
 
-On C2, open **Editor actions** and choose **Visitor follows a QR** or **Owner creates
-a link**. Numbered badges reuse existing arrows; the adjacent list describes their
-order, conditional cache misses and asynchronous visit processing. The visitor's
-browser follows the destination; the redirect service does not fetch it. The owner
-flow reuses the web/API arrow for request and response.
+Datasets identify exact versions, authority, authorized readers/writers, tenant scope, retention,
+deletion and export policy. Illustrative reporting retention is 90 days, export objects 7 days
+and redacted security audit 365 days. Restore reapplies deletion tombstones before access.
+The **production-objectives** decision remains **Unresolved**, with product owner/operations
+ownership and blocked production sizing/recovery scope. The recovery objective has a measurement
+boundary but no invented production value/unit/window. Contract specializations use explicit v2
+shapes and migrated consumers; referenced v1 shapes are not rewritten.
 
-**Add scenario** opens a draft in the current C2 or C3 scope. Choose existing
-relationships, describe each step, and use **Move up**, **Move down** and **Remove**.
-Save is one undo step; Cancel discards the draft. C3 also offers the picker under
-**Diagram options**. Relationship removal requires updating its scenario steps in
-the same batch, or removing those steps first. See [P45 evidence](../evidence/p45/README.md).
+Architecture review remains incomplete for the assigned production decisions. A scenario starts
+**Needs review**; agreeing to expectations is a separate authored action, never a test result.
+Contradictory selected tenant, cache-failure or visit-loss policies fail review and cannot be
+waived by accepting a decision. Structural dangling contracts fail the whole edit. A legitimate
+availability/loss tradeoff remains visible with its consequence.
 
-No live adoption, runtime implementation, generated behavior or page routing is
-supplied by this study. P44 supplies chat-library access; P45 supplies the saved
-scenario explanations above. Planned blocks continue to prevent generation.
+## Reuse and limits
+
+The same pinned tenant and asynchronous delivery patterns form the five-block
+[Inventory study](inventory-architecture.md), which selects durable transactional-outbox stock
+work instead of the public redirect's best-effort visits. Portable selections can be saved to
+[P55's local library](../architecture-library.md) at the composition stages before product-specific
+v2 specialization and broader scenario coupling. Required hosts must already supply matching exact
+interfaces/guarantees. Reuse never follows family/name alone. Published content/version provenance
+stays historical; independent consumer edits and contract migration do not upgrade the source.
+
+The whole C3 management topology is an overview; use mouse zoom, selection and inspectors for
+individual contracts. Focused view membership follows existing layout pruning when referenced
+objects are removed/undone; semantic redo does not reconstruct pruned layout membership. Existing
+view editing restores a desired focus independently of semantic history.
+
+This study supplies no runtime, executable template, generation filter, generated application,
+load/security certification, provisioning, production capacity claim or live QRWTY adoption.
+P57's portable implementation brief and diagram export remain a separate package.

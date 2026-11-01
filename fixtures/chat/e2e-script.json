@@ -4,7 +4,7 @@
       "match": "Plan an app like bit.ly",
       "steps": [
         {
-          "text": "I’ll use the planning library to sketch the architecture.",
+          "text": "I\u2019ll use the planning library to sketch the architecture.",
           "toolCalls": [
             {
               "name": "listPlannedCapabilities",
@@ -219,7 +219,7 @@
                           "id": "link-access",
                           "element": "short-api",
                           "name": "Owner access",
-                          "responsibility": "Authorizes changes to the authenticated owner’s links.",
+                          "responsibility": "Authorizes changes to the authenticated owner\u2019s links.",
                           "technology": "TypeScript",
                           "capability": "authorization-module",
                           "config": {
@@ -526,6 +526,262 @@
         },
         {
           "text": "No template sends SMS yet, so I added an element that needs a template."
+        }
+      ]
+    },
+    {
+      "match": "Assemble P56 qrwty study",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "listArchitectureStudies",
+              "arguments": {}
+            },
+            {
+              "name": "getDesign",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "start",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "start",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "tenant",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "tenant",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "delivery",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "delivery",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "billing",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "billing",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "lookup",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "lookup",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "behavior",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "qrwty",
+                "stage": "behavior",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "getArchitectureReview",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "text": "Saved the qrwty architecture study as editable intent. Production workload, SLO and recovery objectives remain unresolved owner decisions. Planned templates still block generation; no runtime evidence is supplied."
+        }
+      ]
+    },
+    {
+      "match": "Assemble P56 inventory study",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "listArchitectureStudies",
+              "arguments": {}
+            },
+            {
+              "name": "getDesign",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "start",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "start",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "tenant",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "tenant",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "delivery",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "delivery",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "previewArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "behavior",
+                "baseRevision": 0
+              }
+            },
+            {
+              "name": "applyArchitectureStudyStage",
+              "arguments": {
+                "product": "inventory",
+                "stage": "behavior",
+                "baseRevision": 0
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "getArchitectureReview",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "text": "Saved the inventory architecture study as editable intent. Production workload, SLO and recovery objectives remain unresolved owner decisions. Planned templates still block generation; no runtime evidence is supplied."
         }
       ]
     }

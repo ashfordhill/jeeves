@@ -182,23 +182,37 @@ API and data capabilities with a domain implementation.
 
 ### QRWTY target architecture
 
-**Planned architecture example.** A separate editable SaaS target for QRWTY, with
-teams, developer access, billing, staff administration and edge delivery. It does
-not change the live QRWTY project or supply those features through the QR Studio recipe.
+**Planned architecture example and composition workshop.** A separate editable hosted-first
+QR SaaS target with six scenario families, exact versioned contracts and linked policies/data.
+No live QRWTY project or QR Studio recipe behavior changes.
 
-- C2: customer and staff [web clients](#c2-web), [application API](#c2-application),
-  redirect service, [relational data](#c2-data), [cache](#c2-cache),
-  [artwork storage](#c2-storage), [visit queue](#c2-messaging),
-  [analytics worker](#c2-worker), [analytical storage](#c2-analytics-store),
-  [CDN](#c2-edge), payment and e-mail [providers](#c2-third-party),
-  [observability](#c2-integrations).
-- C3: [accounts](#c3-accounts), [organizations](#c3-organizations),
-  [link operations](#c3-domain), [artwork](#c3-media), [analytics](#c3-analytics),
-  [billing](#c3-billing), [developer access](#c3-developer),
-  [integration adapter](#c3-integration), [reports](#c3-reports),
-  [notifications](#c3-notifications), [client feature areas](#c3-screens).
-- [Study, proposed technologies and navigation](docs/examples/qrwty-target.md).
-  All fourteen containers and nineteen responsibilities are planned; generation remains blocked.
+- C2: owner/staff [web clients](#c2-web), management API and separately scaled public
+  [redirect application](#c2-application), [relational authority](#c2-data),
+  [lookup cache](#c2-cache), [artwork/export objects](#c2-storage), named
+  [visit channel](#c2-messaging), [background worker](#c2-worker), external payment,
+  e-mail, DNS/certificate providers and developer integration. Analytical storage and
+  private delivery remain optional growth decisions, absent from the baseline topology.
+- C3: [tenant access](#c3-organizations), stable links, encoded payloads and hosted content
+  as distinct [domain responsibilities](#c3-domain), [artwork](#c3-media),
+  [billing and entitlements](#c3-billing), [custom domains](#c3-domains),
+  [abuse](#c3-abuse), [audit](#c3-audit), reporting/data lifecycle and
+  corresponding [client feature areas](#c3-screens), including Studio and staff support.
+- [Study, staged mouse assembly and trace table](docs/examples/qrwty-target.md).
+  [P56 evidence](docs/evidence/p56/README.md) separates structural/scenario intent,
+  unresolved production objectives, template availability and runtime verification.
+  The thirteen logical blocks remain planned and block generation.
+
+### Inventory architecture reuse study
+
+**Planned architecture composition exercise.** A five-block non-QR study reuses the same
+[tenant access](#c3-organizations) and [asynchronous delivery patterns](docs/architecture-patterns.md),
+with transactional outbox intent for authoritative stock changes. Required local template
+versions can also be saved before product specialization and inserted through exact compatible
+role/interface bindings. Informational best-effort notifications remain distinct from durable stock work.
+
+- [Mouse/chat assembly, reuse and boundaries](docs/examples/inventory-architecture.md).
+- This is separate from the executable Resource workspace starter and the Inventory template
+  acceptance fixture. It supplies no stock runtime or additional generation capability.
 
 ### Links and QR platform
 

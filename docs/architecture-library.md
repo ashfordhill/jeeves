@@ -76,4 +76,4 @@ published source and design revision before applying. Conflicts retain the draft
 `getDesign.patternBaseRevision`. The whole turn is one undo step. Pattern-bearing turns refuse
 generic stale-operation replay; ordinary supplied planning choices need no extra approval.
 
-See [P55 evidence](evidence/p55/README.md). P56's combined QRWTY/non-QR proof remains separate.
+See [P55 evidence](evidence/p55/README.md). [P56's QRWTY/Inventory proof](evidence/p56/README.md) exercises local reuse before product-specific contract/scenario specialization; runtime availability is unchanged.

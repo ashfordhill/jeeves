@@ -7,7 +7,7 @@ import {
   contractSources,
   resolveContractSource,
 } from "./architecture-contracts.ts";
-import { architectureExample } from "./architecture-examples.ts";
+import { legacyArchitectureExample as architectureExample } from "./architecture-examples.ts";
 import { designSchema } from "./design.ts";
 import {
   type ArchitectureScenario,

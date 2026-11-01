@@ -16,6 +16,7 @@ import { api } from "../draw/api.ts";
 import { type Tool, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import { ArchitectureLibrary } from "./ArchitectureLibrary.tsx";
+import { ArchitectureProofWorkshop } from "./ArchitectureProofWorkshop.tsx";
 import { ExampleMiniature } from "./ExampleMiniature.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
@@ -45,6 +46,7 @@ export function CapabilityCatalog({
       Boolean(owner && componentCompatible(item, componentHostRole(owner, builtinRegistry()))),
   );
   const [localLibrary, setLocalLibrary] = useState(false);
+  const [workshop, setWorkshop] = useState(false);
   const [pattern, setPattern] = useState<string>();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("All");
@@ -86,6 +88,7 @@ export function CapabilityCatalog({
       setCreating(false);
     }
   };
+  if (workshop) return <ArchitectureProofWorkshop onClose={onClose} />;
   if (localLibrary)
     return <ArchitectureLibrary onClose={onClose} onBack={() => setLocalLibrary(false)} />;
   if (pattern)
@@ -110,6 +113,9 @@ export function CapabilityCatalog({
       </p>
       <Button variant="default" mb="md" onClick={() => setLocalLibrary(true)}>
         Saved architecture templates
+      </Button>
+      <Button variant="default" mb="md" onClick={() => setWorkshop(true)}>
+        Build a study step by step
       </Button>
       <Button variant="default" mb="md" onClick={onStarter}>
         Use an implemented starter or recipe

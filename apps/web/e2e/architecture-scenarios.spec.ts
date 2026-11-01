@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import {
-  architectureExample,
+  legacyArchitectureExample as architectureExample,
   type DesignDocument,
   designSchema,
   scenarioReview,

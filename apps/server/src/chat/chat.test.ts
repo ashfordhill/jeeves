@@ -12,11 +12,14 @@ import {
 import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
+  architectureProofOperations,
   type DesignDocument,
   designSchema,
   type OperationInput,
   type PatternRequestInput,
   previewArchitecturePattern,
+  proofSteps,
+  reviewArchitecture,
 } from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -219,6 +222,9 @@ describe("design chat", () => {
       "previewArchitectureLibrary",
       "applyArchitectureLibrary",
       "listArchitecturePatterns",
+      "listArchitectureStudies",
+      "previewArchitectureStudyStage",
+      "applyArchitectureStudyStage",
       "describeArchitecturePattern",
       "previewArchitecturePattern",
       "applyArchitecturePattern",
@@ -1250,3 +1256,86 @@ it.each([false, true])(
     }
   },
 );
+
+it.each(["qrwty", "inventory"] as const)(
+  "P56 scripted %s study preserves semantic authoring, open decisions, one undo step and reload",
+  async (product) => {
+    const scripts = JSON.parse(
+      readFileSync(new URL("../../../../fixtures/chat/e2e-script.json", import.meta.url), "utf8"),
+    ) as ScriptByMessage;
+    const message = `Assemble P56 ${product} study`;
+    const steps = scripts.turns.find((t) => t.match === message)!.steps;
+    const h = harness(steps);
+    const id = await h.project();
+    let expected = designSchema.parse({ schemaVersion: 2, revision: 0 });
+    for (const stage of proofSteps(product)) {
+      const base = { ...expected, revision: 0 };
+      const result = applyOperations(
+        base,
+        architectureProofOperations(base, product, stage.id, builtinRegistry()),
+        builtinRegistry(),
+      );
+      if (!result.ok) throw new Error(JSON.stringify(result.errors));
+      expected = result.design;
+    }
+    const { state, turn } = await h.chat(id, message);
+    expect(state.design).toEqual(expected);
+    expect(turn.operationId).not.toBeNull();
+    expect(reviewArchitecture(state.design).unresolvedDecisions).toEqual(["production-objectives"]);
+    expect(reviewArchitecture(state.design).complete).toBe(false);
+    expect(turn.activity.filter((a) => !a.ok)).toEqual([]);
+    const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+    expect(undone.body.design.elements).toEqual([]);
+    const redone = await h.call("POST", `/projects/${id}/redo`, {
+      baseRevision: undone.body.design.revision,
+    });
+    expect(redone.body.design.architecture).toEqual(expected.architecture);
+    expect((await h.design(id)).design.architecture).toEqual(expected.architecture);
+  },
+);
+
+it("P56 study stages refuse stale chat replay and preserve concurrent work", async () => {
+  let h: ReturnType<typeof harness>;
+  let id: string;
+  const { models } = withHook(
+    [
+      {
+        toolCalls: [
+          {
+            name: "applyArchitectureStudyStage",
+            arguments: { product: "qrwty", stage: "start", baseRevision: 0 },
+          },
+          {
+            name: "applyArchitectureStudyStage",
+            arguments: { product: "qrwty", stage: "tenant", baseRevision: 0 },
+          },
+        ],
+      },
+      { text: "Prepared the supplied study stages." },
+      { text: "Concurrent work changed the saved base; no study was replayed." },
+    ],
+    async (call) => {
+      if (call === 1)
+        expect(
+          (
+            await h.call("POST", `/projects/${id}/operations`, {
+              baseRevision: 0,
+              ops: [service("concurrent")],
+            })
+          ).status,
+        ).toBe(200);
+    },
+  );
+  h = harness({ models });
+  id = await h.project();
+  const { state, turn } = await h.chat(
+    id,
+    "Compose the supplied QR study start and tenant stages.",
+  );
+  expect(state.design.elements.map((e) => e.id)).toEqual(["concurrent"]);
+  expect(state.design.architecture).toBeUndefined();
+  expect(turn.operationId).toBeNull();
+  expect(
+    turn.activity.some((a) => a.summary === "Pattern revision conflict; nothing was added"),
+  ).toBe(true);
+});

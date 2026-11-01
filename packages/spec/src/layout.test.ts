@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { architectureExample } from "./architecture-examples.ts";
+import { legacyArchitectureExample as architectureExample } from "./architecture-examples.ts";
 import { architectureViews } from "./architecture-view.ts";
 import { focusedArchitectureView } from "./focused-views.ts";
 import { layoutSchema, pruneArchitectureLayout, pruneLayout } from "./layout.ts";
