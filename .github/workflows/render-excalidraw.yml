@@ -32,6 +32,25 @@ jobs:
         with:
           format: 'svg'
 
+      - name: Add accessible diagram titles
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html import escape
+          import re
+
+          for source in Path('.').rglob('*.excalidraw'):
+              output = source.with_suffix('.svg')
+              if not output.exists():
+                  continue
+              svg = output.read_text()
+              svg = re.sub(r'<title\b[^>]*>\s*</title>', '', svg)
+              if not re.search(r'<title\b', svg):
+                  title = escape(source.stem.replace('-', ' ').replace('_', ' ') + ' architecture diagram')
+                  svg = re.sub(r'(<svg\b[^>]*>)', lambda m: m[1] + '<title>' + title + '</title>', svg, count=1)
+              output.write_text(svg)
+          PY
+
       - name: Commit rendered files
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"

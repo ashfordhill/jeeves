@@ -4733,3 +4733,17 @@ Workflow YAML, push/manual trigger declarations, embedded shell syntax, local RE
 FieldOps design/layout schemas and `git diff --check` pass. No application source changed;
 the preceding UX2 typecheck/build/browser verification remains applicable. Unit/E2E suites
 remain deferred per the user's instruction. No credential/config files are added.
+
+## 2026-11-01 — REPO2: accessible titles for rendered Excalidraw SVGs
+
+The first render bot commit (`b833f33`) introduced `docs/examples/qrwty.svg` without a
+`title`, which fails Biome's SVG accessibility rule. Added its descriptive title and a
+post-render workflow step that supplies missing/empty titles from each source filename.
+Existing nonempty titles are preserved, and only corresponding rendered SVGs are touched.
+This is a small prerequisite cleanup discovered during UX3 validation, committed separately.
+
+Validation: workflow YAML parses; its extracted Python step compiles and was exercised in
+an isolated temporary directory against missing, empty and existing titles. A second run is
+byte-identical. `pnpm lint` passes (798 files; warnings remain, zero errors). No unit/E2E
+suite or application runtime work. The workflow change is local and has not been pushed or
+executed by GitHub Actions. Concurrent README edits and the in-progress UX3 files are excluded.
