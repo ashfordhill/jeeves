@@ -28,6 +28,11 @@ offers the existing resource starter and product recipe. The library is not a
 claim that every possible combination is compatible. Unsupported attachments and
 connections retain their existing validation.
 
+The design assistant can use the same planned C2/C3 families and options to sketch
+context, containers and responsibilities from a brief. Chat edits use the shared
+validation and one undo step per turn. Planned choices keep their availability
+label and generation block; see [P44 evidence](docs/evidence/p44/README.md).
+
 C1 offerings below are compositions, not separate runtime templates.
 Optional SaaS extensions reuse [organizations](#c3-organizations), [billing](#c3-billing),
 [developer access](#c3-developer), [notifications](#c3-notifications),

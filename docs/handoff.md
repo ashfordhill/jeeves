@@ -3318,3 +3318,72 @@ Postgres. Existing Jeeves health on 4310 remains OK.
 Next: **P44**, design-assistant awareness of the completed planning library, followed
 by P45 dynamic scenarios. No chat support, page routing or live adoption is implied.
 Continue current-branch, one-agent, scoped local commits.
+
+## 2026-10-31 — P44: design assistant knows the library
+
+Completed [P44](build-plan-c4-saas.md#p44--design-assistant-knows-the-library) on the
+existing `main` checkout, starting clean at `140f956`. Followed AGENTS, PLAN §15,
+latest handoffs and the approved C4 decisions. One agent, sequential work, no
+branches, worktrees or delegation.
+
+Added planned-family discovery and detail tools backed by the existing C2/C3
+catalog, including every field/choice/default, config schema and compatible host
+roles. Per-turn context now retains planned identities, selected options,
+description/technology, relationship metadata and complete C1/C3 architecture.
+Prompt rules cover C4 levels, one-line descriptions, verb/protocol relationships,
+bounded initial diagrams, host compatibility, external identity reuse, honest
+planning availability and preservation when replacing architecture. Unknown IDs
+and invalid options retain shared atomic validation and placeholder recovery.
+The existing operations schema already supported the required metadata and
+`setArchitecture`; no separate editing path or model migration was needed.
+CATALOG.md documents assistant access; planning pointers advance to P45.
+
+Verification and eight inspected captures are in [P44 evidence](evidence/p44/README.md):
+
+- **`pnpm work run unit apps/server/src/chat/chat.test.ts apps/server/src/chat/context.test.ts apps/server/src/chat/tools.test.ts`**:
+  **18 tests / 3 files passed**, Vitest **3.66s**, profile **4.1s**;
+  `2026-11-01T00-27-09-788Z-unit-ef8330b1`. Catalog exposure, scope/host filtering,
+  complete context, invented IDs/options/incompatible C3 rejection with no partial
+  writes, honest fallback and the multi-batch bit.ly C1/C2/C3 turn at one revision
+  with undo/redo/persistence and next-turn context all pass.
+- **`pnpm work run browser-preview apps/web/e2e/chat-planning.spec.ts apps/web/e2e/chat.spec.ts`**:
+  **6 tests passed**, Playwright **10.6s** / profile **12.8s**, no retries, strict
+  diagnostics, unchanged fingerprints; `2026-11-01T00-29-10-612Z-browser-preview-64462c8b`.
+  Mouse sends the brief, navigates all three C4 levels, undoes/redoes/reloads the
+  whole turn, then configures a chat-created responsibility with Cancel/Save/
+  undo/redo/reload. Axe passes on all captured views and the narrow options dialog.
+  Existing runtime-template chat, subtype review, questions, uploads and settings pass.
+- **`pnpm work run check` → `pnpm check` passed**, **42.2s**;
+  `2026-11-01T00-29-23-534Z-check-34a16d0c`. All workspace/script typechecks pass;
+  **742 tests / 108 files**, Vitest **34.04s**. Biome **718 files**, **645 warnings /
+  75 infos / no errors**. Generator golden/ownership checks pass unchanged. The
+  runner correctly flags changed fingerprints: only eight screenshot copies and
+  sanitized real-provider JSON were added under `docs/evidence/p44` during the
+  check. Code/tests/existing fixtures/planning docs were unchanged; evidence JSON
+  was separately formatted/checked and final `pnpm lint` also passed on **719 files**, with **645 warnings / 75 infos / no errors**, covering the completed evidence.
+- Real configured **Codex / provider default** smoke completed in **55.277s**, four
+  model rounds, **94,657 input / 2,357 output tokens** reported. The isolated
+  ChatService/API/PGlite study created three planned C2 containers, two C1 actors
+  and four API responsibilities as **one revision / seven operations**, with only
+  nine expected planning findings. All tool calls succeeded. One undo cleared the
+  design and architecture; redo restored them. [Sanitized evidence](evidence/p44/real-provider.json)
+  includes the exact brief/result. No real model ID is invented where the adapter
+  does not report it. Provider credentials/settings and live projects were untouched.
+- Opened all eight captures at **1440 × 900 light** / **390 × 844 dark**, including
+  chat, C1/C2/C3 and editable component options. Narrow views remain fitted overviews
+  with mouse zoom/inspection. `git diff --check` and local documentation links checked.
+
+Interim logs retain a corrected finding-count expectation (planned edges also
+produce findings) and a corrected browser assertion that now finds components by
+stable ID after the existing editor reorders an edited item. No product change,
+increased timeout/retry policy or suppressed diagnostics was required for either.
+No material scope deviation. No runtime/template/recipe/generator implementation,
+output, golden, dependency/lockfile or live QRWTY edits. Planned capabilities still
+block generation; the provider sample makes no broad quality/capacity claim.
+Removed twelve exact-ID session-created E2E projects and 129 session-created
+settings/output directories; the new journey deletes its own project even on
+failure. Retained pre-existing data/logs/shared Postgres; health on 4310 remains OK.
+
+Next: **P45**, dynamic scenarios over existing relationships. C4 code views, page
+flows, runtime expansion and live adoption remain separate. Continue the existing
+current-branch, one-agent, scoped local commit policy.

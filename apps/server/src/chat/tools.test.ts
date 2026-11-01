@@ -84,3 +84,99 @@ it("chat routes same-template review to a compatible upgrade without an unusable
   expect(workspace.working.elements[0]!.attachments).toEqual(before.elements[0]!.attachments);
   expect(workspace.working.elements[0]!.template).toEqual(to);
 });
+
+it("exposes all planned options with exact defaults, schemas and compatible host roles", async () => {
+  const { componentCompatible, emptyDesign, plannedCapabilities, plannedConfigSchema } =
+    await import("@jeeves/spec");
+  const { z } = await import("zod");
+  const workspace = new Workspace(registry, emptyDesign());
+  const list = (scope?: string) =>
+    JSON.parse(workspace.run("listPlannedCapabilities", JSON.stringify({ scope }))).capabilities;
+  expect(list().map((entry: { id: string }) => entry.id)).toEqual(
+    plannedCapabilities.map((entry) => entry.id),
+  );
+  for (const scope of ["container", "component"]) {
+    expect(list(scope).map((entry: { id: string }) => entry.id)).toEqual(
+      plannedCapabilities.filter((entry) => entry.scope === scope).map((entry) => entry.id),
+    );
+  }
+  for (const entry of plannedCapabilities) {
+    const result = JSON.parse(
+      workspace.run("describePlannedCapability", JSON.stringify({ id: entry.id })),
+    );
+    expect(result.capability).toEqual(JSON.parse(JSON.stringify(entry)));
+    expect(result.configSchema).toEqual(
+      z.toJSONSchema(plannedConfigSchema(entry.id), { io: "input" }),
+    );
+    expect(result.availability).toContain("no runtime; blocks generation");
+    if (entry.scope === "component") {
+      expect(result.compatibleHostRoles).toEqual(
+        ["frontend", "service", "worker", "database", "external"].filter((role) =>
+          componentCompatible(entry, role),
+        ),
+      );
+    }
+  }
+  expect(workspace.pending).toEqual([]);
+  expect(
+    JSON.parse(workspace.run("describePlannedCapability", '{"id":"quantum-transport"}')),
+  ).toMatchObject({ ok: false, error: expect.stringContaining("never invent IDs") });
+});
+
+it("rejects invented planning IDs/options and incompatible C3 atomically, then accepts an honest placeholder", async () => {
+  const { emptyDesign } = await import("@jeeves/spec");
+  const workspace = new Workspace(registry, emptyDesign());
+  const add = {
+    op: "addElement",
+    element: {
+      id: "quantum",
+      name: "Quantum transport",
+      template: null,
+      planned: "quantum-transport",
+      notes: "Requires a capability outside the library.",
+    },
+  };
+  const run = (ops: unknown[]) =>
+    JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops })));
+  expect(run([add]).ok).toBe(false);
+  expect(workspace.pending).toEqual([]);
+  expect(
+    run([
+      {
+        ...add,
+        element: {
+          ...add.element,
+          planned: "browser-client",
+          config: { audience: "Invented audience" },
+        },
+      },
+    ]).ok,
+  ).toBe(false);
+  expect(workspace.working.elements).toEqual([]);
+  expect(
+    run([
+      { ...add, element: { ...add.element, planned: "browser-client" } },
+      {
+        op: "setArchitecture",
+        architecture: {
+          system: { name: "Test" },
+          components: [
+            {
+              id: "bad-backend",
+              element: "quantum",
+              name: "Backend on client",
+              capability: "billing-module",
+            },
+          ],
+        },
+      },
+    ]).ok,
+  ).toBe(false);
+  expect(workspace.working.elements).toEqual([]);
+  const { planned: _planned, ...placeholder } = add.element;
+  expect(run([{ ...add, element: placeholder }])).toMatchObject({
+    ok: true,
+    findings: [{ code: "NEEDS_TEMPLATE" }],
+  });
+  expect(workspace.working.elements[0]?.planned).toBeUndefined();
+});

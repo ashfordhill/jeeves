@@ -1,8 +1,9 @@
 # C4 authoring for SaaS: notation fidelity and catalog coverage (P39–P45)
 
-**Status: approved with recorded decisions, 2026-10-31. P39–P42 are complete; P43 is next.**
+**Status: approved with recorded decisions, 2026-10-31. P39–P44 are complete; P45 is next.**
 [P39 evidence](evidence/p39/README.md), [P40 evidence](evidence/p40/README.md),
-[P41 evidence](evidence/p41/README.md) and [P42 evidence](evidence/p42/README.md) record the implementations, checks and screenshots.
+[P41 evidence](evidence/p41/README.md), [P42 evidence](evidence/p42/README.md),
+[P43 evidence](evidence/p43/README.md) and [P44 evidence](evidence/p44/README.md) record the implementations, checks and screenshots.
 The plan was written after P38 (`f8aeea0`) from a read-only inspection of the editor,
 planned-capability catalog, architecture examples, P36/P37 evidence and the Visual Paradigm
 C4 guides below. The user's accepted decisions at the end are binding. Each package is
@@ -283,4 +284,4 @@ The user accepted every recommended default. These are binding for P39–P45:
 | D15 | The expired Lens image is dropped; the Visual Paradigm guides are the reference. |
 | D16 | Commit planning documents immediately. Work on `main`, one agent at a time; no branches or worktrees. Commit history is disposable. |
 
-Status: **P39–P43 are complete. P44 is next, followed by P45.** Follow the package order and recorded decisions above.
+Status: **P39–P44 are complete. P45 is next.** Follow the package order and recorded decisions above.

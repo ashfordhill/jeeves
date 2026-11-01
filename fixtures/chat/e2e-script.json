@@ -1,6 +1,280 @@
 {
   "turns": [
     {
+      "match": "Plan an app like bit.ly",
+      "steps": [
+        {
+          "text": "I’ll use the planning library to sketch the architecture.",
+          "toolCalls": [
+            {
+              "name": "listPlannedCapabilities",
+              "arguments": {}
+            },
+            {
+              "name": "getDesign",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "describePlannedCapability",
+              "arguments": {
+                "id": "browser-client"
+              }
+            },
+            {
+              "name": "describePlannedCapability",
+              "arguments": {
+                "id": "application-api"
+              }
+            },
+            {
+              "name": "describePlannedCapability",
+              "arguments": {
+                "id": "relational-store"
+              }
+            },
+            {
+              "name": "describePlannedCapability",
+              "arguments": {
+                "id": "domain-module"
+              }
+            },
+            {
+              "name": "describePlannedCapability",
+              "arguments": {
+                "id": "authorization-module"
+              }
+            },
+            {
+              "name": "describePlannedCapability",
+              "arguments": {
+                "id": "analytics-module"
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "applyOperations",
+              "arguments": {
+                "ops": [
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "short-web",
+                      "name": "Link workspace",
+                      "template": null,
+                      "planned": "browser-client",
+                      "description": "Owners create links and review activity.",
+                      "technology": "React",
+                      "config": {
+                        "access": "Sign-in required"
+                      }
+                    }
+                  },
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "short-api",
+                      "name": "Short links API",
+                      "template": null,
+                      "planned": "application-api",
+                      "description": "Manages short links, redirects and owner access.",
+                      "technology": "Node.js / Fastify",
+                      "config": {
+                        "tenancy": "Owner scoped"
+                      }
+                    }
+                  },
+                  {
+                    "op": "addElement",
+                    "element": {
+                      "id": "short-db",
+                      "name": "Link records",
+                      "template": null,
+                      "planned": "relational-store",
+                      "description": "Persists links, ownership and click events.",
+                      "technology": "PostgreSQL",
+                      "config": {}
+                    }
+                  },
+                  {
+                    "op": "connect",
+                    "connection": {
+                      "id": "workspace-api",
+                      "kind": "calls",
+                      "from": {
+                        "element": "short-web"
+                      },
+                      "to": {
+                        "element": "short-api"
+                      },
+                      "planned": {
+                        "label": "Creates links and reads activity",
+                        "protocol": "HTTPS/JSON",
+                        "interaction": "Request / response",
+                        "security": "User identity"
+                      }
+                    }
+                  },
+                  {
+                    "op": "connect",
+                    "connection": {
+                      "id": "api-records",
+                      "kind": "uses-database",
+                      "from": {
+                        "element": "short-api"
+                      },
+                      "to": {
+                        "element": "short-db"
+                      },
+                      "planned": {
+                        "label": "Reads and writes links and click events",
+                        "protocol": "SQL",
+                        "interaction": "Request / response",
+                        "security": "User identity"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "applyOperations",
+              "arguments": {
+                "ops": [
+                  {
+                    "op": "setArchitecture",
+                    "architecture": {
+                      "system": {
+                        "name": "Short links",
+                        "description": "Owners share stable short links and review click activity."
+                      },
+                      "nodes": [
+                        {
+                          "id": "link-owner",
+                          "kind": "person",
+                          "name": "Link owner",
+                          "description": "Creates and manages their own short links."
+                        },
+                        {
+                          "id": "link-visitor",
+                          "kind": "person",
+                          "name": "Link visitor",
+                          "description": "Opens a shared short link."
+                        },
+                        {
+                          "id": "link-destination",
+                          "kind": "external-system",
+                          "name": "Destination website",
+                          "description": "Receives the visitor after a redirect."
+                        }
+                      ],
+                      "relationships": [
+                        {
+                          "id": "owner-workspace",
+                          "from": "link-owner",
+                          "to": "system",
+                          "description": "Creates links and reviews activity",
+                          "container": "short-web"
+                        },
+                        {
+                          "id": "visitor-redirect",
+                          "from": "link-visitor",
+                          "to": "system",
+                          "description": "Opens a short link",
+                          "container": "short-api"
+                        },
+                        {
+                          "id": "visitor-destination",
+                          "from": "link-visitor",
+                          "to": "link-destination",
+                          "description": "Follows the redirect to the destination"
+                        }
+                      ],
+                      "components": [
+                        {
+                          "id": "link-management",
+                          "element": "short-api",
+                          "name": "Link management",
+                          "responsibility": "Creates owner-scoped short links and resolves redirect destinations.",
+                          "technology": "TypeScript",
+                          "capability": "domain-module",
+                          "config": {
+                            "owns": "Short links",
+                            "operations": "Create, edit, resolve",
+                            "access": "Authenticated owner"
+                          },
+                          "usesConnections": ["api-records"]
+                        },
+                        {
+                          "id": "link-access",
+                          "element": "short-api",
+                          "name": "Owner access",
+                          "responsibility": "Authorizes changes to the authenticated owner’s links.",
+                          "technology": "TypeScript",
+                          "capability": "authorization-module",
+                          "config": {
+                            "policy": "Owner based"
+                          }
+                        },
+                        {
+                          "id": "link-activity",
+                          "element": "short-api",
+                          "name": "Click activity",
+                          "responsibility": "Records click events and aggregates activity for the owner.",
+                          "technology": "SQL",
+                          "capability": "analytics-module",
+                          "config": {
+                            "aggregation": "On demand",
+                            "dimensions": "link, UTC day"
+                          },
+                          "usesConnections": ["api-records"]
+                        }
+                      ],
+                      "componentRelationships": [
+                        {
+                          "id": "management-access",
+                          "from": "link-management",
+                          "to": "link-access",
+                          "description": "Checks ownership before changing links",
+                          "protocol": "In-process",
+                          "interaction": "Request / response"
+                        },
+                        {
+                          "id": "management-activity",
+                          "from": "link-management",
+                          "to": "link-activity",
+                          "description": "Records a click before returning the redirect",
+                          "protocol": "In-process",
+                          "interaction": "Request / response"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "validateDesign",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "text": "I planned a short-link workspace, API and database, with owners and visitors at C1 and link management, owner access and click activity at C3. These capabilities are design intent only; runtime generation is blocked."
+        }
+      ]
+    },
+    {
       "match": "review subtype of links",
       "steps": [
         {

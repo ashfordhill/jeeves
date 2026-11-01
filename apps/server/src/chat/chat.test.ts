@@ -6,6 +6,7 @@ import {
   type ModelItem,
   type ModelRequest,
   type Script,
+  type ScriptByMessage,
   type ScriptStep,
 } from "@jeeves/providers";
 import { type DesignDocument, designSchema, type OperationInput } from "@jeeves/spec";
@@ -203,6 +204,8 @@ describe("design chat", () => {
     expect(first.tools.map((t) => t.name)).toEqual([
       "listTemplates",
       "describeTemplate",
+      "listPlannedCapabilities",
+      "describePlannedCapability",
       "getDesign",
       "reviewSubtype",
       "applyOperations",
@@ -218,6 +221,73 @@ describe("design chat", () => {
     // Persisted, and sent as history with the next message.
     const listed = await h.call("GET", `/projects/${id}/chat`);
     expect(listed.body.turns).toEqual([turn]);
+  });
+
+  it("plans bit.ly C1, C2 and C3 through catalog tools in one persistent undo step", async () => {
+    const script = JSON.parse(
+      readFileSync(new URL("../../../../fixtures/chat/e2e-script.json", import.meta.url), "utf8"),
+    ) as ScriptByMessage;
+    const steps = script.turns.find((turn) => turn.match === "Plan an app like bit.ly")!.steps;
+    const h = harness(steps);
+    const id = await h.project();
+    const { turn, state } = await h.chat(id, "Plan an app like bit.ly");
+    expect(turn.status).toBe("done");
+    expect(turn.activity.every((activity) => activity.ok)).toBe(true);
+    expect(state.design.revision).toBe(1);
+    expect(state.design.elements.map((element) => element.planned)).toEqual([
+      "browser-client",
+      "application-api",
+      "relational-store",
+    ]);
+    expect(
+      state.design.elements.every(
+        (element) => element.template === null && element.description && element.technology,
+      ),
+    ).toBe(true);
+    expect(
+      state.design.connections.every(
+        (connection) => connection.planned?.label && connection.planned.protocol,
+      ),
+    ).toBe(true);
+    expect(state.design.architecture?.nodes.map((node) => node.kind)).toEqual([
+      "person",
+      "person",
+      "external-system",
+    ]);
+    expect(state.design.architecture?.components?.map((component) => component.capability)).toEqual(
+      ["domain-module", "authorization-module", "analytics-module"],
+    );
+    expect(state.findings).toHaveLength(8);
+    expect(state.findings.every((finding) => finding.code === "NEEDS_TEMPLATE")).toBe(true);
+    expect(turn.activity.at(-1)?.summary).toBe("Applied 6 changes as one undo step");
+    expect((await h.design(id)).design).toEqual(state.design);
+    // The model sees every catalog option through the detail tools and pending C3 findings.
+    const toolResults = h.requests.flatMap((request) =>
+      request.items
+        .filter((item) => item.type === "tool-result")
+        .map((item) => JSON.parse(item.output)),
+    );
+    expect(toolResults).toContainEqual(
+      expect.objectContaining({
+        capability: expect.objectContaining({ id: "browser-client" }),
+        configSchema: expect.objectContaining({
+          properties: expect.objectContaining({ audience: expect.any(Object) }),
+        }),
+      }),
+    );
+    const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+    expect(undone.body.design).toMatchObject({ elements: [], connections: [] });
+    expect(undone.body.design.architecture).toBeUndefined();
+    expect(undone.body.history.canUndo).toBe(false);
+    const redone = await h.call("POST", `/projects/${id}/redo`, { baseRevision: 2 });
+    expect(redone.body.design).toEqual({ ...state.design, revision: 3 });
+    // The next turn receives the complete saved C1/C3, planned IDs/options and labels.
+    const followup = harness([{ text: "These capabilities remain planned." }]);
+    await followup.chat(id, "Review this plan");
+    const context = followup.requests[0]!.items.map(textOf).join("\n");
+    expect(context).toContain("planned:application-api (no runtime)");
+    expect(context).toContain(JSON.stringify(state.design.architecture));
+    expect(context).toContain("Reads and writes links and click events");
   });
 
   it('turns an unknown capability into a "needs a template" element', async () => {

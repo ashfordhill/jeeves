@@ -7,6 +7,7 @@ import type { ToolDefinition } from "@jeeves/providers";
 import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
+  componentCompatible,
   type DesignDocument,
   type FindingCode,
   findingCatalog,
@@ -14,6 +15,9 @@ import {
   idSchema,
   type OperationInput,
   operationSchema,
+  plannedCapabilities,
+  plannedCapability,
+  plannedConfigSchema,
   reviewTemplateUpgrade,
   subtypeDiscards,
   templateRefSchema,
@@ -27,6 +31,12 @@ const argsSchemas = {
   describeTemplate: z.strictObject({
     id: z.string().describe("Template ID from listTemplates"),
     version: z.string().optional().describe("Exact version; latest if omitted"),
+  }),
+  listPlannedCapabilities: z.strictObject({
+    scope: z.enum(["container", "component"]).optional(),
+  }),
+  describePlannedCapability: z.strictObject({
+    id: z.string().describe("Capability ID from listPlannedCapabilities"),
   }),
   getDesign: z.strictObject({}),
   reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
@@ -56,11 +66,15 @@ const descriptions: Record<ToolName, string> = {
     "List every template in the registry: element templates (with their kind) and attachment templates.",
   describeTemplate:
     "Full details of one template: config JSON Schema with defaults, presets, ports (connection kinds, direction, required), and attachment slots.",
+  listPlannedCapabilities:
+    "List design-only C2 container and C3 component families. These are planned, have no runtime, and block generation. Filter by scope if needed.",
+  describePlannedCapability:
+    "Read a planned family's options, defaults, config JSON Schema and compatible component host roles. Container IDs go in element.planned with template:null; component IDs go in architecture.components[].capability, never in template IDs.",
   reviewSubtype:
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
-    "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
+    "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
   validateDesign: "The current findings (readiness problems) of the design, with pending edits.",
   explainFinding: "What a finding code means and how to resolve it.",
   askUser:
@@ -83,11 +97,11 @@ const explanations: Record<FindingCode, string> = {
   DUPLICATE_ID: "Two items share an ID. IDs must be unique across the whole design; pick another.",
   UNKNOWN_REFERENCE: "Something refers to an ID that doesn't exist. Check the IDs with getDesign.",
   UNKNOWN_TEMPLATE:
-    'The template ID or version isn\'t in the registry. Use listTemplates; for a capability with no template use "template": null.',
+    'The template ID or version isn\'t in the registry. Use listTemplates for runtimes or listPlannedCapabilities for design intent; planned containers need a known planned ID and "template": null.',
   TEMPLATE_KIND_MISMATCH:
     "An element template was used as an attachment or the other way round. Check the kind in listTemplates.",
   CONFIG_INVALID:
-    "A config value is malformed or the key doesn't exist. Read the config schema with describeTemplate.",
+    "A config value is malformed or the key doesn't exist. Read the config schema with describeTemplate or describePlannedCapability.",
   ATTACHMENT_INCOMPATIBLE:
     "The element's template has no slot for this attachment, or the slot is full. See attachmentSlots in describeTemplate.",
   PORT_INCOMPATIBLE:
@@ -95,7 +109,7 @@ const explanations: Record<FindingCode, string> = {
   PORT_MULTIPLICITY: "The port allows a single connection and already has one.",
   DUPLICATE_CONNECTION: "The same connection already exists.",
   NEEDS_TEMPLATE:
-    "The element has no template yet. It can't be generated until a template exists; keep the requirement in its notes.",
+    "The element has no template yet. It can't be generated until a template exists; planned capabilities describe intent only and block generation too. Keep unsupported requirements in notes.",
   CONFIG_REQUIRED:
     "A required config value has no default. Set it with updateElement or updateAttachment.",
   UNCONNECTED_REQUIRED_PORT:
@@ -160,6 +174,46 @@ export class Workspace {
         return this.listTemplates();
       case "describeTemplate":
         return this.describeTemplate(args);
+      case "listPlannedCapabilities": {
+        const { scope } = args as z.infer<typeof argsSchemas.listPlannedCapabilities>;
+        this.log(tool, true, "Listed planned capabilities");
+        return {
+          availability: "planned; no runtime; blocks generation",
+          capabilities: plannedCapabilities
+            .filter((entry) => !scope || entry.scope === scope)
+            .map(({ id, name, scope, role, description }) => ({
+              id,
+              name,
+              scope,
+              role,
+              description,
+            })),
+        };
+      }
+      case "describePlannedCapability": {
+        const { id } = args as z.infer<typeof argsSchemas.describePlannedCapability>;
+        const entry = plannedCapability(id);
+        this.log(
+          tool,
+          !!entry,
+          entry ? `Read planned capability ${entry.name}` : `No planned capability ${id}`,
+        );
+        if (!entry)
+          return {
+            ok: false,
+            error: `There is no planned capability "${id}". Use listPlannedCapabilities; never invent IDs.`,
+          };
+        return {
+          capability: entry,
+          availability: "planned; no runtime; blocks generation",
+          configSchema: z.toJSONSchema(plannedConfigSchema(id), { io: "input" }),
+          ...(entry.scope === "component" && {
+            compatibleHostRoles: ["frontend", "service", "worker", "database", "external"].filter(
+              (role) => componentCompatible(entry, role),
+            ),
+          }),
+        };
+      }
       case "getDesign":
         this.log(tool, true, "Read the design");
         return { design: this.working, findings: validateDesign(this.working, this.registry) };
