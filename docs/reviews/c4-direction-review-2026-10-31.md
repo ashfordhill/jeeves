@@ -1,5 +1,10 @@
 # Jeeves direction review: make the architecture meaningful before generating it
 
+**Planning follow-through:** the [revised P46–P57 roadmap](../build-plan-c4-evolution.md)
+now incorporates this review. Package numbers and criticisms below describe the original
+P46–P53 proposal at the reviewed revision, not the replacement specification. Implementation
+has not started.
+
 31 October 2026. Reviewed at `4683fe6`, after P45. **The direction is sound; P46–P53 should not be implemented as currently written.** Keep the shared model, scoped C3 views, planned catalog, stable identities and scenarios. Prioritize relationship semantics and reusable composition. Defer new generation behavior under the user's current instruction.
 
 This is a design review, not approval or implementation of the proposed packages. The accompanying [business assessment](../../../qrwty/business-analysis/decision-review.md) favors a bounded hosted-product test; it does not justify making private deployment the default requirement.

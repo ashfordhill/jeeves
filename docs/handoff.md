@@ -3507,3 +3507,36 @@ Verification:
 Next: refine a bounded C2/C3 interface-and-relationship authoring package from the review,
 then reusable patterns and readable qrwty views. Do not start the old P46–P53 sequence
 unchanged or infer that the new planning contracts are already implemented.
+
+## 2026-10-31 — Revised P46–P57 roadmap (planning only)
+
+At the user's request, replaced the original P46–P53 proposal with the
+[P46–P57 authoring specification](build-plan-c4-evolution.md). The earlier proposal is
+retained in Git at `ee31075`; its unapproved D17–D30 questionnaire is superseded.
+No implementation package was started.
+
+The revised order establishes catalog semantics, interfaces and relationship policies
+before focused views, composition and architecture advice. It replaces partial-generation
+horizons/live uplift with separate baseline-linked planning targets and preserves generation
+readiness. Deployment refers to logical identities. Four added packages cover scenarios and
+client outcomes (P54), a user-defined local architecture library (P55), qrwty plus non-QR
+reuse proof (P56), and a revision-bound implementation brief/SVG export (P57).
+
+Every package has prerequisites, outcome, build scope, acceptance, code pointers and exclusions.
+Shared rules cover incomplete work, exact contract references, generation/evidence separation,
+mouse/history behavior, chat parity and focused verification. Review findings remain separate
+from the existing `blocksGenerate` error gate. New runtime/templates, code generation,
+provisioning and live qrwty changes remain outside the sequence.
+
+Updated AGENTS, PLAN, improvements, catalog and modeling guidance to point to the replacement;
+marked the earlier review as historical rationale and updated the completed P39–P45 plan's
+follow-up links. Catalog/runtime availability is unchanged.
+
+Verification: changed planning-document links and sequential P46–P57 IDs/delivery sections
+passed; `git diff --check` passed. `VITEST_MAX_WORKERS=4 pnpm work run check` passed all
+typechecks and **748 tests / 109 files**, Vitest **35.13s**, recorded under
+`2026-11-01T02-19-40-117Z-check-6327078a`. No UI/runtime changes or new browser journeys;
+no live designs/applications were changed by this planning task.
+
+Next when execution is requested: **P46 only**, following the revised roadmap and C4 guide.
+Proceed sequentially; planning this sequence does not execute or complete its packages.

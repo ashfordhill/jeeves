@@ -45,4 +45,4 @@ For each important journey, identify the actor, responsible components, authorit
 
 Show a readable overview plus focused views of the same model. Use technology as an explicit choice or unresolved decision. Preserve mouse-only editing, Save/Cancel, undo/redo, reload and revision conflict handling. Layout changes must not change semantics.
 
-The [qrwty review and six-scenario gate](reviews/c4-direction-review-2026-10-31.md) are the current reference. The proposed [P46–P53 plan](build-plan-c4-evolution.md) needs those corrections before package execution. Keep future runtime implementation details out of the architecture task unless the user expands its scope.
+The [qrwty review and six-scenario gate](reviews/c4-direction-review-2026-10-31.md) explain the rationale. The [revised P46–P57 roadmap](build-plan-c4-evolution.md) incorporates the corrections and is the current planning specification. Its shared model contract and each package's acceptance criteria govern implementation when that work is requested. Keep future runtime implementation details out of the architecture task unless the user expands its scope.

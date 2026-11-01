@@ -17,7 +17,8 @@ For modeling and contribution rules, read [C4 modeling guidance](docs/c4-modelin
 Families are reusable starting points, not an exhaustive list of permitted architectures.
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
-identifies the next contract/composition work without changing availability below.
+identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
+specifies that work, including reusable architecture templates; it changes no availability below.
 
 ## Availability and reuse
 

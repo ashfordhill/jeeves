@@ -16,8 +16,10 @@ Work sequentially in the current checkout and branch. The user is running one ag
 Before changing C1/C2/C3 authoring, the catalog, connections or architecture patterns, read
 [C4 modeling guidance](docs/c4-modeling.md). The current user priority is C2/C3 design and
 reusable composition; new application runtime/code-generation work is deferred to a separate
-task. Read the [direction review](docs/reviews/c4-direction-review-2026-10-31.md) before
-refining the proposed P46–P53 packages. They remain proposals, not an approved execution queue.
+task. The [revised P46–P57 roadmap](docs/build-plan-c4-evolution.md) is the planning
+specification; the [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
+explains its rationale. Planning is complete; implementation has not started. When asked
+to execute, start with the requested package (P46 is next), not the whole sequence.
 Keep architecture intent, template availability and verification evidence distinct.
 
 ## Repo conventions
