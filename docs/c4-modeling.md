@@ -30,6 +30,11 @@ Validate structural contradictions as errors. Present requirement-dependent conc
 
 ## Reusable catalog and patterns
 
+- Prefer existing libraries behind a meaningful capability. Record the selected implementation
+  and integration contract at design time; C3 does not require writing a player, editor or
+  realtime client from scratch. Individual controls and page layout belong in the future UI
+  designer. Docker/Kubernetes, routing, replicas and failure placement must be easy to reach
+  through the companion Deployment view; they are not C4 code-detail work.
 - A C3 family is a reusable responsibility with a host, interfaces, dependencies, configuration and extension boundary. It is not necessarily a separate service or package. One instance can use several libraries.
 - Separate organization structure, authorization, data isolation and deployment. Organization tenants can use shared or dedicated infrastructure. Private deployment does not automatically imply SSO, airgap or multi-region requirements.
 - Distinguish application notification policy from an external email provider; billing policy from a payment adapter. Consolidate aliases without losing different responsibilities.

@@ -4747,3 +4747,59 @@ an isolated temporary directory against missing, empty and existing titles. A se
 byte-identical. `pnpm lint` passes (798 files; warnings remain, zero errors). No unit/E2E
 suite or application runtime work. The workflow change is local and has not been pushed or
 executed by GitHub Actions. Concurrent README edits and the in-progress UX3 files are excluded.
+
+## 2026-11-01 — UX3: Mattermost reference architecture and visible deployment design
+
+The user rejected Streamly's vague client components and requested a real application with
+published diagrams as a test of Jeeves. They selected **Mattermost**. Read the GIF at
+`.docs/mvp-flow.gif`, C4 guidance, official Mattermost application/HA diagrams, operator docs,
+and selected source files. Runtime generation and unit/E2E suite maintenance remain deferred.
+
+- Added the default **Mattermost · architecture reference** example through the normal project
+  creation path. Seven C2 boundaries, twelve C3 responsibilities, ten C2 / eleven local C3
+  relationships, three explicitly partial contracts, four directionally checked bindings,
+  one dataset, three focused views and a messaging/reconnect scenario. C3 starts with the
+  application server. Every component links to the inspected public source snapshot.
+- Source provenance and translation limits are recorded in the model and
+  [Mattermost walkthrough](examples/mattermost.md). C3 is our decomposition, not a claim that
+  upstream supplied that exact drawing. The API array field is explicitly unresolved; no
+  invented generic outcomes or complete-contract claims. Latency values remain undecided.
+- Added AWS placement matching the selected published 5,000-user image and a separately
+  labelled Kubernetes adaptation. Logical server/store identities are reused across instances.
+  Load balancing, app/job hosting, writer/reader roles, S3, peer exchange and database replication
+  are visible. Detailed controller/image/resource/autoscaling and recovery settings remain open.
+- Added validated `replica` deployment interactions between separate instances of the same
+  application/store. They cannot invent cross-application dependencies or duplicate logical
+  queue/topic replicas. Existing logical and infrastructure interactions retain their semantics.
+- Added visible **Deployment** access beside C1/C2/C3, a full-screen editor and placement choices
+  for Kubernetes, pods, Docker, VMs, managed database, load balancing, Services and brokers.
+- Added the reusable realtime-client C3 family with implementation/recovery choices. Component
+  inspection exposes the selected implementation and clickable source/design decisions.
+  Updated the catalog and current guidance. Existing projects, including Streamly, remain intact.
+- Created live project `b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62`, revision 1:
+  `http://127.0.0.1:4300/?project=b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62&level=containers&view=focus-messaging`.
+
+Checks, without persistent test code or unit/E2E suites:
+
+- `pnpm typecheck`: passed across all workspaces and scripts. Final web typecheck passed
+  after adding component source inspection.
+- `pnpm --filter @jeeves/web build`: passed; existing large-bundle advisory remains.
+- `pnpm lint`: passed, 798 files, zero errors (1997 warnings / 75 infos). An older bot-rendered
+  SVG accessibility failure was fixed separately in REPO2 before this handoff.
+- Direct schema/architecture validation: zero structural findings; NEEDS_TEMPLATE remains the
+  expected availability finding. All three C3 projections resolve. AWS has 10 visible objects /
+  18 interactions; Kubernetes has 11 / 19; no dangling projected edges.
+- Temporary validation rejects replica links across containers, self-placement links, missing
+  elements, external endpoints and named channel replication without crashing.
+- Direct live-browser inspection covered whole C2, server C3, both deployment views, source
+  reference selection, placement preset/cancel, replica-link edit/save/reload and undo/redo.
+  The edited disposable design reached revision 4. All temporary projects were deleted by exact ID.
+- Axe WCAG 2A/2AA/2.1AA: zero violations for selected C3, desktop deployment and 390×844
+  deployment. Narrow document width stays 390px; zero page errors. Screenshots reviewed under
+  `/tmp`; no extra evidence-image clutter was added. Local links and scoped diff checks pass.
+
+Limits: whole-system graphs still need zoom/focused views; nested payloads, richer workload
+units, structured deployment policies and route-to-contract tracing remain design gaps. This
+example is not a complete production or generation specification. No GitHub push was performed.
+The user's concurrent README draft is preserved outside this commit. Their subsequent request
+for an aggressive UI text/badge cleanup is the next package (UX4), not part of this completion.

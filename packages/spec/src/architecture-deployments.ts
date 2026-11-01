@@ -73,6 +73,14 @@ export const deploymentEnvironmentSchema = z.strictObject({
           description: z.string().trim().min(1).max(240),
           protocol: z.string().trim().min(1).max(120),
         }),
+        z.strictObject({
+          id: idSchema,
+          kind: z.literal("replica"),
+          from: deploymentEndpointSchema,
+          to: deploymentEndpointSchema,
+          description: z.string().trim().min(1).max(240),
+          protocol: z.string().trim().min(1).max(120),
+        }),
       ]),
     )
     .max(200)
@@ -311,6 +319,24 @@ export function validateArchitectureDeployments(design: DesignDocument): Finding
             interaction.id,
             "UNKNOWN_REFERENCE",
           );
+      } else if (interaction.kind === "replica") {
+        const from = env.instances.find((i) => i.id === interaction.from.id);
+        const to = env.instances.find((i) => i.id === interaction.to.id);
+        const element = design.elements.find((e) => e.id === from?.element);
+        if (
+          interaction.from.kind !== "instance" ||
+          interaction.to.kind !== "instance" ||
+          !from ||
+          !to ||
+          from.id === to.id ||
+          from.element !== to.element ||
+          !element ||
+          isLogicalChannel(element)
+        )
+          error(
+            "Replica communication must connect distinct placements of the same logical application or store. Named channels do not replicate independently of their broker.",
+            interaction.id,
+          );
       } else if (
         ![interaction.from, interaction.to].some(
           (e) => e.kind === "node" && nodes.get(e.id)?.kind === "infrastructure",
@@ -406,13 +432,13 @@ export function deploymentProjection(
         from,
         to,
         description:
-          interaction.kind === "infrastructure"
-            ? interaction.description
-            : (presentation?.description ?? context?.description ?? "Logical interaction"),
+          interaction.kind === "logical"
+            ? (presentation?.description ?? context?.description ?? "Logical interaction")
+            : interaction.description,
         protocol:
-          interaction.kind === "infrastructure"
-            ? `${interaction.protocol} · deployment only`
-            : (presentation?.protocol ?? "Context relationship"),
+          interaction.kind === "logical"
+            ? (presentation?.protocol ?? "Context relationship")
+            : `${interaction.protocol} · ${interaction.kind === "replica" ? "replica communication" : "deployment only"}`,
         connection: logical?.id,
         context: context?.id,
         planned: true,

@@ -98,11 +98,21 @@ export function ComponentDetails({
   const loaded = useDraw((state) => state.loaded)!;
   const element = loaded.design.elements.find((item) => item.id === node.binding?.element);
   const attachment = element?.attachments.find((item) => item.id === node.binding?.attachment);
+  const decisions = (loaded.design.architecture?.decisions ?? []).filter((decision) =>
+    decision.links.some((link) => link.kind === "component" && link.id === node.binding?.component),
+  );
   return (
     <section className="component-details" data-family={nodeFamily(node, loaded.design)}>
       <TypeBadge family={nodeFamily(node, loaded.design)} />
       <h2>{node.name}</h2>
       <p>{node.description}</p>
+      {node.technology ? (
+        <p>
+          <strong>Implementation choice</strong>
+          <br />
+          {node.technology}
+        </p>
+      ) : null}
       {node.support === "planned" ? <span className="capability-status">Planned</span> : null}
       {node.binding?.component ||
       node.members?.some((member) => member.binding?.resource || member.binding?.extension) ? (
@@ -117,6 +127,28 @@ export function ComponentDetails({
       ) : null}
       {node.unassigned ? (
         <p className="planned-footnote">Not yet grouped into a responsibility.</p>
+      ) : null}
+      {decisions.length ? (
+        <details className="component-technical">
+          <summary>Sources and design decisions</summary>
+          {decisions.map((decision) => (
+            <div key={decision.id}>
+              <p>
+                <strong>{decision.name}</strong> · {decision.status}
+              </p>
+              <p>
+                {/^https?:\/\/\S+$/.test(decision.decision) ? (
+                  <a href={decision.decision} target="_blank" rel="noreferrer">
+                    Open source reference ↗
+                  </a>
+                ) : (
+                  decision.decision
+                )}
+              </p>
+              <p>{decision.consequence}</p>
+            </div>
+          ))}
+        </details>
       ) : null}
       {node.members?.map((member) => (
         <MemberDetails
@@ -165,7 +197,6 @@ export function ComponentDetails({
       <details className="component-technical">
         <summary>Technical details</summary>
         <p>{supportLabel[node.support]}</p>
-        <p>{node.technology}</p>
         {node.provenance ? <p>{node.provenance}</p> : null}
         <Button variant="subtle" size="xs" onClick={onContainer}>
           Open in C2

@@ -9,19 +9,25 @@ export function ConfigurationDialog({
   onClose,
   children,
   footer,
+  fullScreen = false,
 }: {
   title: string;
   size: "lg" | "xl";
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  fullScreen?: boolean;
 }) {
   return (
-    <Modal.Root opened onClose={onClose} size={size}>
+    <Modal.Root opened onClose={onClose} size={size} fullScreen={fullScreen}>
       <Modal.Overlay />
       <Modal.Content
         aria-label={title}
-        className={footer ? "configuration-dialog-fixed" : undefined}
+        className={
+          footer
+            ? `configuration-dialog-fixed${fullScreen ? " configuration-dialog-full" : ""}`
+            : undefined
+        }
       >
         <Modal.Header role="presentation">
           <Modal.Title>{title}</Modal.Title>

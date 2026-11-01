@@ -1081,6 +1081,25 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     ],
     "component",
   ),
+  capability(
+    "realtime-client",
+    "Realtime client",
+    "Client components",
+    "frontend",
+    "plug",
+    "Reuses a streaming client to receive events, reconnect and reconcile application state.",
+    [
+      choice("transport", "Transport", ["WebSocket", "Server-sent events"]),
+      text("implementation", "Client library / implementation"),
+      choice("recovery", "After connection loss", [
+        "Resynchronize from source",
+        "Resume from cursor",
+        "Explicit policy",
+      ]),
+      text("authority", "Authoritative source for missed updates"),
+    ],
+    "component",
+  ),
 ];
 
 export function plannedCapability(id: string | undefined) {

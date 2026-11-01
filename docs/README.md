@@ -5,7 +5,8 @@ Start with the [architecture studio guide](architecture-studio.md),
 
 | Task | Documentation |
 | --- | --- |
-| Explore a complete high-traffic design | [Streamly video platform](examples/streamly.md) |
+| Compare a real system's C2/C3 and deployment | [Mattermost architecture reference](examples/mattermost.md) |
+| Explore an earlier illustrative media design | [Streamly video platform](examples/streamly.md) |
 | Compose reusable architecture | [Patterns](architecture-patterns.md), [saved templates](architecture-library.md) |
 | Review intent and unresolved decisions | [Architecture review](architecture-review.md) |
 | Capture an implementation brief | [Portable handoff](architecture-handoff.md) |

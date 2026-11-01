@@ -14,6 +14,7 @@ for authoring, [C4 guidance](docs/c4-modeling.md) for classification, and the
 | Choose an application, store or external provider | C2 → Add container |
 | Compose responsibilities inside one application | C3 → Add component |
 | Connect containers or internal responsibilities | Visible Connect actions; select arrows for contracts |
+| Design hosting, load balancing and replication | Deployment beside C1/C2/C3 |
 | Record ownership, lifecycle and capacity assumptions | Data & objectives |
 | Reuse a composition | Library → Patterns or Saved architecture templates |
 | Find missing decisions and interface obligations | Review |
@@ -61,9 +62,25 @@ one deployed service or database.
 
 ## C1 system offerings
 
+### Mattermost architecture reference
+
+**Default architecture study, editable.** A source-backed translation of published Mattermost
+application and scaling diagrams. Seven C2 boundaries, twelve C3 components, three focused
+views, a message-delivery scenario and two deployment environments. The AWS layout follows
+the selected published image; Kubernetes is a separate proposed adaptation.
+
+The server's REST handlers, post service, WebSocket hub, SQL store, file adapter and notifications
+trace to public source modules. Client components reuse the REST/realtime client implementation.
+Arrows distinguish REST commands, streaming events, SQL reads/writes and deployment replica
+communication. Contract excerpts and unresolved array fields are labelled honestly.
+
+See the [source mapping and limitations](docs/examples/mattermost.md) and
+[tracked example](packages/spec/src/mattermost-example.ts). This is architectural intent,
+not a supplied Mattermost runtime, capacity result or production deployment specification.
+
 ### Streamly video platform
 
-**Default architecture study, editable.** A YouTube-style product with public discovery,
+**Earlier illustrative study, editable.** A YouTube-style product with public discovery,
 playback, creator uploads, media processing and staff moderation. It models a proposed design,
 not YouTube's private implementation. See the [walkthrough](docs/examples/streamly.md).
 
@@ -374,6 +391,10 @@ traffic. Private responses and application authorization need explicit handling.
 | Observability | Planned logs, metrics, traces and retention intent. | All service families, especially [workload verification](#workload-intent); not an existing monitoring deployment. |
 
 ## C3 shared components
+
+The **Realtime client** family records WebSocket/SSE transport, the chosen client implementation,
+reconnection policy and authoritative recovery source. It is a reusable integration boundary;
+page layout and individual controls remain outside C3.
 
 C3 components are cohesive responsibilities within a C2 container. They can group
 existing generated or recipe-owned operations, or describe planned capabilities.

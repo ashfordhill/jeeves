@@ -16,6 +16,7 @@ import {
   Alert,
   Button,
   Group,
+  Menu,
   NativeSelect,
   NumberInput,
   Stack,
@@ -37,6 +38,58 @@ const endpointValue = (value: string): DeploymentEndpoint => {
   const [kind, id] = value.split(":");
   return { kind: kind as DeploymentEndpoint["kind"], id: id ?? "" };
 };
+
+const placementChoices = [
+  {
+    kind: "deployment",
+    name: "Kubernetes cluster",
+    technology: "Kubernetes",
+    responsibility: "Cluster placement, region and failure boundaries.",
+  },
+  {
+    kind: "deployment",
+    name: "Application pods",
+    technology: "OCI container image · Kubernetes Deployment",
+    responsibility:
+      "Application replica placement. Set image, resource requests and scaling policy in the design decisions.",
+  },
+  {
+    kind: "deployment",
+    name: "Docker host",
+    technology: "Docker Engine",
+    responsibility: "Host for application container instances.",
+  },
+  {
+    kind: "deployment",
+    name: "Virtual machine",
+    technology: "Virtual machine",
+    responsibility: "VM placement; choose instance size and availability requirements.",
+  },
+  {
+    kind: "deployment",
+    name: "Managed database",
+    technology: "Managed PostgreSQL",
+    responsibility: "Database placement, writer/reader roles, backup and failover.",
+  },
+  {
+    kind: "infrastructure",
+    name: "Load balancer",
+    technology: "HTTP / WebSocket load balancer",
+    responsibility: "TLS termination, health checks and routing to healthy application instances.",
+  },
+  {
+    kind: "infrastructure",
+    name: "Kubernetes Service",
+    technology: "Kubernetes Service",
+    responsibility: "Stable service address and routing to ready pods.",
+  },
+  {
+    kind: "infrastructure",
+    name: "Message broker",
+    technology: "Broker technology undecided",
+    responsibility: "Hosts named C2 queues/topics; replication belongs to this infrastructure.",
+  },
+] as const;
 
 export function ArchitectureDeployments({
   design,
@@ -122,6 +175,7 @@ export function ArchitectureDeployments({
     <ConfigurationDialog
       title="Deployment plans"
       size="xl"
+      fullScreen
       onClose={onClose}
       footer={
         <Group justify="flex-end">
@@ -173,9 +227,9 @@ export function ArchitectureDeployments({
       ) : null}
       <Stack gap="md" className="deployment-planning">
         <Text size="sm">
-          Planned placement · unverified. Environments are alternatives over the same logical
-          architecture. Regions and replicas declare intent; capacity, failover and running health
-          require separate evidence.
+          Place C2 applications and stores on Docker hosts, Kubernetes or managed services. Add load
+          balancing, replicas and network routes. Each environment is an editable design; capacity
+          and failover need separate verification.
         </Text>
         <Group align="end" grow>
           <NativeSelect
@@ -273,7 +327,7 @@ export function ArchitectureDeployments({
                   {i.id}:{" "}
                   {i.kind === "logical"
                     ? `Logical ${i.relationship.kind} ${i.relationship.id}`
-                    : `Deployment only · ${i.description} · ${i.protocol}`}
+                    : `${i.kind === "replica" ? "Replica communication" : "Deployment only"} · ${i.description} · ${i.protocol}`}
                 </p>
               ))}
             </details>
@@ -350,20 +404,23 @@ function DeploymentFields({
   const instance = env.instances.find((i) => `instance:${i.id}` === selected);
   const external = env.externals.find((e) => `external:${e.id}` === selected);
   const interaction = env.interactions.find((i) => `interaction:${i.id}` === selected);
-  const addNode = (kind: "deployment" | "infrastructure") => {
+  const addNode = (
+    kind: "deployment" | "infrastructure",
+    preset?: (typeof placementChoices)[number],
+  ) => {
     const next: DeploymentEnvironment = {
       ...env,
       nodes: [
         ...env.nodes,
         {
           id: identity("node"),
-          name: kind === "deployment" ? "Hosting boundary" : "Broker / edge infrastructure",
+          name: preset?.name ?? (kind === "deployment" ? "Hosting boundary" : "Infrastructure"),
           kind,
           replicas: 1,
-          technology: "",
+          technology: preset?.technology ?? "",
           region: "",
           zone: "",
-          responsibility: "",
+          responsibility: preset?.responsibility ?? "",
           operation: "Unspecified",
           mappingReason: "",
         },
@@ -399,22 +456,28 @@ function DeploymentFields({
   return (
     <Stack gap="sm">
       <Group gap="xs">
-        <Button
-          size="xs"
-          variant="default"
-          onClick={() => addNode("deployment")}
-          disabled={env.nodes.length >= 100}
-        >
-          Add placement
-        </Button>
-        <Button
-          size="xs"
-          variant="default"
-          onClick={() => addNode("infrastructure")}
-          disabled={env.nodes.length >= 100}
-        >
-          Add infrastructure
-        </Button>
+        {(["deployment", "infrastructure"] as const).map((kind) => (
+          <Menu key={kind} withinPortal>
+            <Menu.Target>
+              <Button size="xs" variant="default" disabled={env.nodes.length >= 100}>
+                {kind === "deployment" ? "Add placement" : "Add infrastructure"}
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {placementChoices
+                .filter((choice) => choice.kind === kind)
+                .map((choice) => (
+                  <Menu.Item key={choice.name} onClick={() => addNode(kind, choice)}>
+                    {choice.name}
+                  </Menu.Item>
+                ))}
+              <Menu.Divider />
+              <Menu.Item onClick={() => addNode(kind)}>
+                Custom {kind === "deployment" ? "placement" : "infrastructure"}
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        ))}
         <Button
           size="xs"
           variant="default"
@@ -707,6 +770,10 @@ function DeploymentFields({
             data={[
               { value: "logical", label: "Trace logical relationship" },
               { value: "infrastructure", label: "Deployment-only infrastructure wiring" },
+              {
+                value: "replica",
+                label: "Replication / communication between instances of one C2 container",
+              },
             ]}
             onChange={(e) => {
               const common = { id: interaction.id, from: interaction.from, to: interaction.to };
@@ -722,9 +789,15 @@ function DeploymentFields({
                     }
                   : {
                       ...common,
-                      kind: "infrastructure" as const,
-                      description: "Routes traffic",
-                      protocol: "HTTPS",
+                      kind:
+                        e.currentTarget.value === "replica"
+                          ? ("replica" as const)
+                          : ("infrastructure" as const),
+                      description:
+                        e.currentTarget.value === "replica"
+                          ? "Synchronizes replicas"
+                          : "Routes traffic",
+                      protocol: "Undecided",
                     };
               onChange({
                 ...env,
@@ -783,7 +856,7 @@ function DeploymentFields({
           ) : (
             <>
               <TextInput
-                label="Infrastructure interaction purpose"
+                label="Deployment interaction purpose"
                 value={interaction.description}
                 maxLength={240}
                 required
@@ -799,7 +872,7 @@ function DeploymentFields({
                 }
               />
               <TextInput
-                label="Infrastructure protocol"
+                label="Deployment protocol"
                 value={interaction.protocol}
                 maxLength={120}
                 required

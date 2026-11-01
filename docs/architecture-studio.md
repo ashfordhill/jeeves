@@ -17,6 +17,10 @@ See the [modeling guidance](c4-modeling.md) for the full boundary rules.
   responsibilities can share API/worker hosts; client responsibilities stay in a client.
 - **Connect components** authors local collaboration. Select a declared component and use
   **Connect dependency** to add a C2 relationship and that component's use in one undoable save.
+- **Deployment**, beside C1/C2/C3, opens a full-screen hosting diagram and editor. Place C2
+  identities on Docker/Kubernetes/VMs or managed services; add load balancing and replica links.
+  Replica communication connects distinct instances of the same C2 identity, without adding a
+  fictitious logical application. Each environment is an alternative over the shared design.
 - Legacy REST/resource implementations show capability groups instead of one component per
   endpoint/table. **Define responsibility** groups their existing members under an authored name.
   Operations remain available in inspection; **Show implementation adapters** reveals transport detail.
@@ -39,7 +43,7 @@ remain under Editor actions; architecture diagrams are the default.
 
 The library separates **Containers · C2**, **Components · C3**, **Patterns**, **Examples** and
 **Runtime templates**. Provider presets do not crowd out application choices. Infrastructure
-placement belongs in deployment plans. Traffic targets and legacy tenancy fields are disclosures
+placement is available through **Deployment**. Traffic targets and legacy tenancy fields are disclosures
 inside option forms; they do not dominate ordinary responsibility editing.
 
 C3 includes request handling, data access/transactions, cache freshness, workflows,
@@ -49,8 +53,14 @@ transaction; a queue and worker alone do not supply that property.
 
 Interfaces, policies, objectives, data ownership and decisions remain part of the shared model.
 Saved architecture templates and patterns retain their existing compatibility/revision guards.
-The new [Streamly study](examples/streamly.md) exercises the full authoring path. Its numeric
-objectives are assumptions, and its decisions are example decisions, not production approval.
+The default [Mattermost reference](examples/mattermost.md) translates published diagrams and
+selected source modules into C2/C3, with AWS and Kubernetes deployment alternatives. Its source
+mapping distinguishes documented facts, our decomposition, and unresolved implementation choices.
+The earlier [Streamly study](examples/streamly.md) remains available as an illustrative design.
+
+Choose existing libraries behind meaningful responsibilities. Component **Technology** can name
+the implementation; the realtime-client family also records its client library and recovery policy.
+Individual controls and page layout belong in the future UI/page-flow designer.
 
 Generation remains a secondary, separate workflow. There is no new runtime, provisioning,
 C4 code editor or capacity verification in this UX package. Legacy test suites have not been

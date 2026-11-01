@@ -519,6 +519,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               {item.slice(1)}
             </button>
           ))}
+          <button type="button" aria-haspopup="dialog" onClick={() => setDeploymentPlans(true)}>
+            Deployment
+          </button>
         </nav>
         <Group gap="xs" className="editor-primary-actions">
           {level === "components" ? (

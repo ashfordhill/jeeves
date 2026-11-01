@@ -179,14 +179,14 @@ export function ComponentEditor({
         />
         <Textarea
           label="Responsibility"
-          description="One concise statement of what this component owns."
+          description="The interface or behavior this component supplies, and the decisions it owns. Page layout belongs in UI design."
           maxLength={240}
           value={draft.responsibility}
           onChange={(event) => setDraft({ ...draft, responsibility: event.currentTarget.value })}
         />
         <TextInput
           label="Technology"
-          description="Optional design tag, such as REST controller or Repository."
+          description="Chosen framework, library or source module. Reuse an existing implementation where possible; this choice does not install a runtime template."
           maxLength={120}
           value={draft.technology ?? ""}
           onChange={(event) =>
