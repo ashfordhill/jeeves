@@ -70,7 +70,6 @@ export function CapabilityFields({
             {fields.some((field) => workload.has(field.key)) ? (
               <details className="capability-field-group">
                 <summary>Traffic & performance targets</summary>
-                <p>Planning assumptions. Record measurement boundaries under Data & objectives.</p>
                 <Stack gap="sm">
                   {fields.filter((field) => workload.has(field.key)).map(render)}
                 </Stack>

@@ -258,9 +258,15 @@
   font-family: inherit;
 }
 .architecture-relation-label {
-  border: 1px solid var(--grid-dot);
+  border: 0;
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
+}
+.architecture-relation-label:hover,
+.architecture-relation-label:focus-visible {
+  outline: 2px solid var(--ink-soft);
+  outline-offset: 2px;
 }
 .draw-board[data-tool="planned"] .react-flow__pane {
   cursor: crosshair;
@@ -350,11 +356,6 @@
   font-size: 12px;
   line-height: 1.6;
 }
-.catalog-example small {
-  color: var(--ink-soft);
-  font-size: 10px;
-  margin-bottom: 10px;
-}
 .catalog-example button {
   margin-top: auto;
   height: auto;
@@ -363,31 +364,6 @@
 }
 .catalog-example button .mantine-Button-label {
   white-space: normal;
-}
-.example-miniature {
-  width: 100%;
-  height: 185px;
-  border-radius: 8px;
-  background: var(--paper);
-}
-.example-miniature rect {
-  fill: var(--paper);
-  stroke: var(--ink-soft);
-  stroke-width: 2;
-}
-.example-miniature g[data-family="client"] rect {
-  fill: color-mix(in srgb, var(--paper) 88%, var(--type-color));
-}
-.example-miniature g[data-family="data"] rect {
-  fill: color-mix(in srgb, var(--paper) 88%, var(--type-color));
-}
-.example-miniature g[data-family="external"] rect {
-  fill: color-mix(in srgb, var(--paper) 88%, var(--type-color));
-}
-.example-miniature text {
-  fill: var(--ink);
-  font-size: 16px;
-  font-weight: 700;
 }
 .architecture-card[data-overview="true"] {
   justify-content: center;
@@ -508,7 +484,7 @@
   z-index: 5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 6px 12px;
   background: var(--cream);
   border-bottom: 1px solid var(--grid-dot);
@@ -628,7 +604,7 @@
   background: color-mix(in srgb, var(--type-color) 9%, var(--cream));
 }
 .element-card-icon,
-.catalog-card > .mantine-Group-root > svg {
+.catalog-card > svg {
   color: var(--type-color);
 }
 .attachment-box[data-family],
@@ -787,13 +763,6 @@
   flex: 1;
   overflow-wrap: anywhere;
 }
-.outline-level {
-  font-size: 9px;
-  color: var(--ink-soft);
-  border: 1px solid var(--grid-dot);
-  border-radius: 4px;
-  padding: 2px 3px;
-}
 .outline-container details {
   margin: 0 4px 0 29px;
 }
@@ -878,10 +847,13 @@
   width: 100%;
 }
 .architecture-card[data-has-responsibilities="true"] {
-  height: 188px;
-  flex: 0 0 188px;
+  height: 172px;
+  flex: 0 0 172px;
   border-bottom: 0;
   border-radius: 10px 10px 0 0;
+}
+.architecture-card[data-has-responsibilities="true"] .architecture-card-description {
+  -webkit-line-clamp: 2;
 }
 .architecture-card-responsibilities {
   flex: 1;
@@ -912,9 +884,9 @@
   font-size: 11px;
   font-weight: 700;
   color: var(--ink);
-  background: var(--cream);
-  border: 1px solid color-mix(in srgb, var(--type-color) 45%, var(--cream));
-  border-radius: 5px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   text-align: left;
   cursor: pointer;
   white-space: nowrap;
@@ -925,7 +897,7 @@
 }
 .architecture-card-responsibilities button:hover {
   background: var(--paper);
-  border-color: var(--type-color);
+  text-decoration: underline;
 }
 .architecture-card-open {
   position: absolute;
@@ -963,11 +935,6 @@
 }
 .catalog-content {
   padding-top: 16px;
-}
-.catalog-scope {
-  font-size: 11px;
-  color: var(--ink-soft);
-  font-weight: 800;
 }
 .catalog-footer {
   border-top: 1px solid var(--grid-dot);

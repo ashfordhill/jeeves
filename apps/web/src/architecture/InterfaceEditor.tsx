@@ -125,7 +125,7 @@ export function InterfaceSummary({ owner }: { owner: ContractOwner }) {
   const review = architectureContractReview(design);
   return (
     <section className="interface-summary" aria-label="Provided and required interfaces">
-      <h3>Interfaces</h3>
+      {uses.length ? <h3>Interfaces</h3> : null}
       {uses.length ? (
         <ul>
           {uses.map((use) => {
@@ -156,11 +156,9 @@ export function InterfaceSummary({ owner }: { owner: ContractOwner }) {
             );
           })}
         </ul>
-      ) : (
-        <p>No interfaces declared.</p>
-      )}
+      ) : null}
       <Button variant="default" fullWidth onClick={() => setOpen(true)}>
-        Manage interfaces
+        {uses.length ? "Edit interfaces" : "Add interface"}
       </Button>
       {open ? (
         <InterfaceEditor

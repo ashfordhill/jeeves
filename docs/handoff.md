@@ -4803,3 +4803,58 @@ units, structured deployment policies and route-to-contract tracing remain desig
 example is not a complete production or generation specification. No GitHub push was performed.
 The user's concurrent README draft is preserved outside this commit. Their subsequent request
 for an aggressive UI text/badge cleanup is the next package (UX4), not part of this completion.
+
+## 2026-11-01 — UX4: remove repetitive UI copy and visual clutter
+
+The user requested a UI/UX review followed by aggressive removal of unnecessary explanations,
+chips and labels. Reviewed C2/C3, the explorer, selected-object inspectors, the library, project
+creation and deployment in the browser. Kept architecture meaning, authoring actions and errors.
+
+- Removed repeated Planned card badges, Component labels inside C3, duplicate level captions,
+  explorer C2 chips/totals, option-count labels, runtime-template badges within their own tab,
+  generic library introductions and project-creation marketing/boilerplate. The footer version
+  number is gone; server health and the theme switch remain.
+- Simplified C2 child responsibilities to clickable rows, and removed repeated in-process arrow
+  subtitles and chip borders. Drag grips appear on hover/focus (always on touch). Retained names,
+  responsibilities, useful technologies, protocols, exceptional binding warnings and all actions.
+- Removed unreadable miniature example diagrams, their unused component and CSS. Example cards
+  retain the distinguishing description and a concise Use example action.
+- Component/source detail and availability remain available through selection and disclosure.
+  Empty interface/contract sections now offer an action without repeating an empty-state sentence.
+  Notes are collapsed; edit forms retain labels, validation and Save/Cancel behavior.
+- Deployment now opens directly on its environment and diagram. Moved descriptive prose below
+  the diagram into Notes & references, shortened actions, and removed repeated instance/ownership
+  boilerplate. Placement technology is visible on instance cards; the object picker distinguishes
+  repeated identities by placement. Selected replica arrows still disclose their meaning.
+- Reduced card geometry where labels were removed, recovered the old caption space, and fixed
+  the focused-view hidden-connections action so it does not collide with Diagram options.
+  SVG export positions child rows from actual card height, preserving them after compaction.
+- Updated the studio guide. Model descriptions, contracts, source decisions, review findings and
+  runtime availability were not discarded as a substitute for UI cleanup.
+
+Validation (no unit/E2E suite or persistent test changes):
+
+- `pnpm lint`: passed, **797 files**, zero errors; 1995 warnings and 75 infos remain.
+- `pnpm typecheck`: all workspaces/scripts passed. Final web/spec and subsequent final web
+  typechecks passed after the presentation adjustments.
+- `pnpm --filter @jeeves/web build`: final production build passed; existing large-chunk
+  advisory remains.
+- Temporary live-browser scripts verified source inspection, deployment preset/cancel,
+  replica edit/save/reload/undo/redo, component creation from the library and undo, and the
+  Mattermost default in New project. Ordinary mouse controls were used.
+- Axe WCAG 2A/2AA/2.1AA: zero violations for selected C3, desktop/narrow deployment,
+  focused C2, component library, project chooser, dark C3, dark deployment and narrow examples.
+  Menu transitions were allowed to settle before final accessibility checks.
+- No browser page errors in final inspections; no card-content overflow in the inspected C2 or
+  deployment view. Both narrow deployment and library remain exactly 390px wide at 390×844.
+  The hidden-connections action was directly clicked at 1600px and 390px and opened its dialog.
+- Real handoff SVG download succeeded. All nine C3 rows in the focused messaging C2 export
+  fit inside their parent cards. Reviewed screenshots stay under `/tmp`, not in repository clutter.
+- Main Mattermost project remains revision 1 with seven containers and twelve components.
+  All UX3/UX4 disposable inspection projects were deleted by exact ID; none remain.
+- Scoped diff/format checks pass. Historical handoff bytes remain untouched before this entry.
+
+The user's README was edited and staged concurrently. Both its working copy and staged content
+are preserved; the scoped commit excludes it. No GitHub push, generation expansion or capacity
+claim. Dense whole-system diagrams still require zoom or focused views; this pass reduces UI
+noise without pretending an arbitrary large architecture can be legible at every zoom level.

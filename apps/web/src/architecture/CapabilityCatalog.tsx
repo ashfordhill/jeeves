@@ -8,7 +8,7 @@ import {
   type PlannedCapability,
   plannedCapabilities,
 } from "@jeeves/spec";
-import { Alert, Badge, Button, Group, NativeSelect, Tabs, TextInput } from "@mantine/core";
+import { Alert, Button, Group, NativeSelect, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
@@ -17,7 +17,6 @@ import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import { ArchitectureLibrary } from "./ArchitectureLibrary.tsx";
 import { ArchitectureProofWorkshop } from "./ArchitectureProofWorkshop.tsx";
 import { createExampleProject } from "./create-example.ts";
-import { ExampleMiniature } from "./ExampleMiniature.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
 
@@ -107,9 +106,6 @@ export function CapabilityCatalog({
     );
   return (
     <ConfigurationDialog title="Architecture library" size="xl" onClose={onClose}>
-      <p className="catalog-intro">
-        Compose your system from applications, stores and the responsibilities inside them.
-      </p>
       {error ? (
         <Alert color="red" role="alert">
           {error}
@@ -134,28 +130,17 @@ export function CapabilityCatalog({
         {tab === "containers" || tab === "components" ? (
           <div className="catalog-content">
             {tab === "components" ? (
-              <>
-                <NativeSelect
-                  label="Add inside application"
-                  value={host}
-                  data={
-                    hosts.length
-                      ? hosts.map((e) => ({ value: e.id, label: e.name }))
-                      : [{ value: "", label: "Add a C2 application first" }]
-                  }
-                  onChange={(e) => setHost(e.currentTarget.value)}
-                />
-                <p className="catalog-intro">
-                  A component owns a cohesive responsibility inside one application. Its interfaces,
-                  dependencies and design options stay editable.
-                </p>
-              </>
-            ) : (
-              <p className="catalog-intro">
-                Applications and logical data stores belong inside your system. Providers stay
-                outside its boundary. Replicas and infrastructure belong in deployment plans.
-              </p>
-            )}
+              <NativeSelect
+                label="Add inside application"
+                value={host}
+                data={
+                  hosts.length
+                    ? hosts.map((e) => ({ value: e.id, label: e.name }))
+                    : [{ value: "", label: "Add a C2 application first" }]
+                }
+                onChange={(e) => setHost(e.currentTarget.value)}
+              />
+            ) : null}
             <TextInput
               aria-label="Search building blocks"
               placeholder={
@@ -191,32 +176,16 @@ export function CapabilityCatalog({
                     item.scope === "component" ? onComponent(item.id, host) : onPlace(item.id)
                   }
                 >
-                  <Group justify="space-between">
-                    <TemplateIcon name={typeStyles[capabilityFamily(item.id)].icon} size={22} />
-                    <span className="catalog-scope">
-                      {item.scope === "component" ? "C3" : "C2"}
-                    </span>
-                  </Group>
+                  <TemplateIcon name={typeStyles[capabilityFamily(item.id)].icon} size={22} />
                   <strong>{item.name}</strong>
                   <span>{item.description}</span>
-                  <small>
-                    {item.architectureKind ?? "In-process responsibility"} ·{" "}
-                    {item.fields.filter((f) => f.key !== "tenancy").length} design options
-                  </small>
                 </button>
               ))}
             </div>
             {!shown.length ? <p>No matching options. Try another search or category.</p> : null}
-            <p className="catalog-intro">
-              {shown.length} design options. Architecture choices do not require a runtime template.
-            </p>
           </div>
         ) : null}
         <Tabs.Panel value="implementation" pt="md">
-          <p className="catalog-intro">
-            Optional implementation bindings for the freeform board. Architecture authoring is
-            independent of these runtimes.
-          </p>
           <Button variant="default" mb="md" onClick={onStarter}>
             Use an implemented starter or recipe
           </Button>
@@ -234,9 +203,6 @@ export function CapabilityCatalog({
                   })
                 }
               >
-                <Badge size="xs" color="teal" variant="light">
-                  Runtime template
-                </Badge>
                 <strong>{template.displayName}</strong>
                 <span>{template.description}</span>
                 <small>
@@ -292,24 +258,19 @@ export function CapabilityCatalog({
           </div>
         </Tabs.Panel>
         <Tabs.Panel value="examples" pt="md">
-          <p className="catalog-intro">
-            Create a separate editable design. These are architecture studies, with planned
-            capabilities throughout.
-          </p>
           <div className="catalog-examples">
             {architectureExamples.map((example) => (
               <article key={example.id} className="catalog-example" data-accent={example.accent}>
-                <ExampleMiniature id={example.id} />
                 <h3>{example.name}</h3>
                 <p>{example.description}</p>
-                <small>{example.useCases}</small>
                 <Button
                   variant="default"
                   mt="md"
                   loading={creating}
+                  aria-label={`Create ${example.name.toLowerCase()}`}
                   onClick={() => void create(example.id)}
                 >
-                  Create {example.name.toLowerCase()}
+                  Use example
                 </Button>
               </article>
             ))}

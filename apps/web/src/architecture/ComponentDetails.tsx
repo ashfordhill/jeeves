@@ -10,7 +10,7 @@ import { AttachmentPanel } from "../draw/inspector/Inspector.tsx";
 import { ResourceConfiguration } from "../draw/inspector/ResourceEditor.tsx";
 import { useDraw } from "../draw/store.ts";
 import { supportLabel } from "./ArchitectureGraph.tsx";
-import { nodeFamily, TypeBadge } from "./type-style.tsx";
+import { nodeFamily } from "./type-style.tsx";
 
 function MemberDetails({
   node,
@@ -103,7 +103,6 @@ export function ComponentDetails({
   );
   return (
     <section className="component-details" data-family={nodeFamily(node, loaded.design)}>
-      <TypeBadge family={nodeFamily(node, loaded.design)} />
       <h2>{node.name}</h2>
       <p>{node.description}</p>
       {node.technology ? (
@@ -113,7 +112,6 @@ export function ComponentDetails({
           {node.technology}
         </p>
       ) : null}
-      {node.support === "planned" ? <span className="capability-status">Planned</span> : null}
       {node.binding?.component ||
       node.members?.some((member) => member.binding?.resource || member.binding?.extension) ? (
         <Button fullWidth variant="default" onClick={onConfigure}>
@@ -145,7 +143,7 @@ export function ComponentDetails({
                   decision.decision
                 )}
               </p>
-              <p>{decision.consequence}</p>
+              {/^https?:\/\/\S+$/.test(decision.decision) ? null : <p>{decision.consequence}</p>}
             </div>
           ))}
         </details>

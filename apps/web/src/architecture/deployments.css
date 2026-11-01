@@ -1,6 +1,6 @@
 .deployment-plan-diagram {
   position: relative;
-  height: max(480px, calc(100dvh - 360px));
+  height: max(480px, calc(100dvh - 250px));
   min-height: 320px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -12,6 +12,10 @@
 }
 .deployment-planning {
   min-width: 0;
+}
+.deployment-toolbar .mantine-NativeSelect-root {
+  flex: 1;
+  min-width: 220px;
 }
 .deployment-planning p,
 .deployment-planning li {

@@ -122,8 +122,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
         if (!busy.current) onClose();
       }}
       footer={
-        <Group justify="space-between">
-          <Text size="xs">Creates a separate diagram. Your current project stays as it is.</Text>
+        <Group justify="flex-end">
           <Group>
             <Button variant="default" disabled={saving} onClick={onClose}>
               Cancel
@@ -142,11 +141,6 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
       }
     >
       <Stack gap="lg">
-        <div className="project-chooser-intro">
-          <span>START WITH INTENT</span>
-          <h2>Give your idea a working architecture.</h2>
-          <p>Choose a starting point, make it yours, then generate the application.</p>
-        </div>
         <fieldset className="project-choices" aria-label="Project starting points">
           {(
             [
@@ -154,29 +148,24 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 id: "study",
                 icon: <IconSitemap size={24} />,
                 title: "Architecture study",
-                kind: "C1–C3 design, editable",
-                description:
-                  "A complete enterprise web application: people, containers, components and journeys.",
+                description: "Start from an existing architecture example.",
               },
               {
                 id: "resource",
                 icon: <IconLayoutDashboard size={24} />,
                 title: "Resource workspace",
-                kind: "Editable starter",
                 description: "Accounts, private records and forms. Shape the data and screens.",
               },
               {
                 id: "recipe",
                 icon: <IconQrcode size={24} />,
                 title: "QR Studio",
-                kind: "Protected product recipe",
                 description: "A complete QR library, artwork studio and analytics product.",
               },
               {
                 id: "blank",
                 icon: <IconPencil size={24} />,
                 title: "Blank canvas",
-                kind: "Your architecture",
                 description: "Draw your own applications, data stores and connections.",
               },
             ] as const
@@ -195,7 +184,6 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
             >
               {item.icon}
               <strong>{item.title}</strong>
-              <small>{item.kind}</small>
               <span>{item.description}</span>
             </button>
           ))}
@@ -222,7 +210,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
         ) : null}
         <fieldset disabled={saving} className="project-chooser-fields">
           <TextInput
-            label="Project and product name"
+            label="Project name"
             value={name}
             maxLength={80}
             required
@@ -236,16 +224,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 data={architectureExamples.map((item) => ({ value: item.id, label: item.name }))}
                 onChange={(event) => setStudy(event.currentTarget.value)}
               />
-              {example ? (
-                <>
-                  <Text size="sm">{example.description}</Text>
-                  <Text size="xs" c="dimmed">
-                    {example.useCases}. Every box is a planned capability with a proposed
-                    technology; rename, remove or reconnect any of them. Generation needs templates,
-                    which a study does not select.
-                  </Text>
-                </>
-              ) : null}
+              {example ? <Text size="sm">{example.description}</Text> : null}
             </>
           ) : choice === "resource" && starter ? (
             <>
@@ -349,12 +328,6 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 onChange={(event) => setDays(event.currentTarget.value)}
               />
             </>
-          ) : choice === "blank" ? (
-            <Text size="sm">
-              Begin with an empty board. Add applications and data stores, connect their
-              capabilities and describe the behavior you need. Supplied components and any
-              implementation work remain visible.
-            </Text>
           ) : null}
         </fieldset>
         {error ? (

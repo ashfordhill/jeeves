@@ -160,7 +160,7 @@ export function ComponentEditor({
     >
       <Stack gap="md">
         <p className="catalog-intro">
-          Inside <strong>{owner.name}</strong> · C3 responsibility
+          Inside <strong>{owner.name}</strong>
         </p>
         {draft.annotationOrigin ? (
           <Text size="sm">
@@ -179,14 +179,13 @@ export function ComponentEditor({
         />
         <Textarea
           label="Responsibility"
-          description="The interface or behavior this component supplies, and the decisions it owns. Page layout belongs in UI design."
           maxLength={240}
           value={draft.responsibility}
           onChange={(event) => setDraft({ ...draft, responsibility: event.currentTarget.value })}
         />
         <TextInput
           label="Technology"
-          description="Chosen framework, library or source module. Reuse an existing implementation where possible; this choice does not install a runtime template."
+          placeholder="Framework, library or source module"
           maxLength={120}
           value={draft.technology ?? ""}
           onChange={(event) =>
@@ -197,7 +196,7 @@ export function ComponentEditor({
           label="Component type"
           data={[
             { value: "", label: "Group existing capabilities" },
-            ...compatible.map((item) => ({ value: item.id, label: `${item.name} · planned` })),
+            ...compatible.map((item) => ({ value: item.id, label: item.name })),
           ]}
           value={draft.capability ?? ""}
           onChange={(event) =>

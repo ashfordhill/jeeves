@@ -62,6 +62,11 @@ Choose existing libraries behind meaningful responsibilities. Component **Techno
 the implementation; the realtime-client family also records its client library and recovery policy.
 Individual controls and page layout belong in the future UI/page-flow designer.
 
+The canvas keeps names, responsibilities, technologies and relationship verbs visible. Repeated
+planning badges and level explanations are omitted. Select an object for its implementation,
+contracts and errors; expand notes or source references when needed. Deployment notes live under
+**Notes & references**. Availability remains in technical details, Review and implementation handoff.
+
 Generation remains a secondary, separate workflow. There is no new runtime, provisioning,
 C4 code editor or capacity verification in this UX package. Legacy test suites have not been
 updated for the new labels, geometry or default study. The user's current priority explicitly

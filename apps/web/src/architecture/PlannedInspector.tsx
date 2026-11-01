@@ -14,7 +14,7 @@ import { ClassificationFields } from "./ArchitectureChoices.tsx";
 import { CapabilityFields } from "./CapabilityFields.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
 import { BindingSummary } from "./RelationshipBindings.tsx";
-import { elementFamily, TypeBadge } from "./type-style.tsx";
+import { elementFamily } from "./type-style.tsx";
 
 export function PlannedElementInspector({
   element,
@@ -87,12 +87,7 @@ export function PlannedElementInspector({
       data-family={elementFamily(element)}
       aria-label={`Configure ${element.name}`}
     >
-      <Group gap="xs">
-        <TypeBadge family={elementFamily(element)} />
-        <span className="capability-status">Planned capability</span>
-      </Group>
       <h2>{element.name}</h2>
-      <p className="inspector-empty">{capability.description}</p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -134,14 +129,17 @@ export function PlannedElementInspector({
             config={draft.config}
             onChange={(config) => setDraft({ ...draft, config })}
           />
-          <Textarea
-            label="Responsibility & design notes"
-            minRows={3}
-            autosize
-            maxRows={7}
-            value={draft.notes}
-            onChange={(event) => setDraft({ ...draft, notes: event.currentTarget.value })}
-          />
+          <details className="component-technical">
+            <summary>Notes</summary>
+            <Textarea
+              aria-label="Responsibility & design notes"
+              minRows={3}
+              autosize
+              maxRows={7}
+              value={draft.notes}
+              onChange={(event) => setDraft({ ...draft, notes: event.currentTarget.value })}
+            />
+          </details>
           {error ? (
             <Alert color="red" role="alert">
               {error}
@@ -184,9 +182,6 @@ export function PlannedElementInspector({
           Open components
         </Button>
       ) : null}
-      <p className="planned-footnote">
-        Saved as architecture intent. Runtime and generation come later.
-      </p>
       <Button
         variant="subtle"
         color="red"

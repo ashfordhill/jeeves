@@ -83,9 +83,6 @@ export function ContainerEditor({
       }
     >
       <Stack gap="md">
-        <p className="catalog-intro">
-          {capability.architectureKind} · C2. Give this boundary a name and a clear responsibility.
-        </p>
         <TextInput
           label="Container name"
           value={name}
@@ -101,7 +98,6 @@ export function ContainerEditor({
         />
         <TextInput
           label="Technology"
-          description="Optional. Leave blank while evaluating options."
           placeholder="e.g. Kotlin · Spring Boot"
           value={technology}
           maxLength={120}

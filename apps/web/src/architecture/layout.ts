@@ -7,8 +7,11 @@ export function architectureCardSize(
   node: ArchitectureViewNode,
   level: ArchitectureProjection["level"],
 ) {
+  if (level === "deployment" && !node.description) return { width: CARD.width, height: 148 };
+  if (level === "components" && node.kind === "component")
+    return { width: CARD.width, height: 160 };
   return level === "containers" && node.responsibilities?.length
-    ? { width: 292, height: CARD.height + 32 + node.responsibilities.length * 30 }
+    ? { width: 292, height: 172 + 32 + node.responsibilities.length * 30 }
     : CARD;
 }
 export const SCOPE_ID = "architecture:scope";
@@ -106,7 +109,9 @@ export function architectureLayoutInput(
   if (projection.groups) {
     const groupChildren = (parent?: string): ElkNode[] =>
       [
-        ...nodes.filter((n) => n.parent === parent).map((n) => ({ id: n.id, ...CARD })),
+        ...nodes
+          .filter((n) => n.parent === parent)
+          .map((n) => ({ id: n.id, ...architectureCardSize(n, projection.level) })),
         ...projection
           .groups!.filter((g) => g.parent === parent)
           .map((g) => ({
@@ -140,7 +145,7 @@ export function architectureLayoutInput(
               ...size,
               height:
                 size.height +
-                (edge.protocol ? 20 : 0) +
+                (edge.protocol && edge.protocol !== "In process" ? 20 : 0) +
                 (edge.planned && !projection.edges.filter((e) => !e.context).every((e) => e.planned)
                   ? 20
                   : 0),

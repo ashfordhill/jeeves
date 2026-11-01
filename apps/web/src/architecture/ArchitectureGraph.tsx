@@ -59,6 +59,7 @@ type CardNode = Node<
   {
     item: ArchitectureViewNode;
     showTechnology: boolean;
+    showKind: boolean;
     onSelect: (id: string) => void;
     onOpen?: (element: string, component?: string) => void;
     showResponsibilities: boolean;
@@ -95,15 +96,17 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
           aria-pressed={selected}
           aria-label={`Inspect ${item.name}`}
         >
-          <span className="architecture-card-kind">
-            <TemplateIcon name={style.icon} size={21} />
-            {item.deploymentKind ??
-              (item.kind === "component"
-                ? "Component"
-                : item.kind === "binding"
-                  ? "Capability group"
-                  : style.label)}
-          </span>
+          {data.showKind ? (
+            <span className="architecture-card-kind">
+              <TemplateIcon name={style.icon} size={21} />
+              {item.deploymentKind ??
+                (item.kind === "component"
+                  ? "Component"
+                  : item.kind === "binding"
+                    ? "Capability group"
+                    : style.label)}
+            </span>
+          ) : null}
           <strong
             style={{
               fontSize: overview
@@ -113,27 +116,25 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
           >
             {item.name}
           </strong>
-          <span className="architecture-card-description">{item.description}</span>
+          {item.description ? (
+            <span className="architecture-card-description">{item.description}</span>
+          ) : null}
           {data.showTechnology && item.technology ? (
             <span className="architecture-card-technology">{item.technology}</span>
           ) : null}
-          {item.support === "planned" || item.missing?.length || item.unassigned ? (
+          {item.missing?.length || item.unassigned ? (
             <span
               className="architecture-support"
               data-support={item.support}
               style={overview ? { fontSize: 9 / Math.max(zoom, 0.25) } : undefined}
             >
-              {item.missing?.length
-                ? "Binding needs attention"
-                : item.unassigned
-                  ? "Ungrouped"
-                  : "Planned"}
+              {item.missing?.length ? "Binding needs attention" : "Ungrouped"}
             </span>
           ) : null}
         </button>
         {data.showResponsibilities && item.responsibilities?.length ? (
           <div className="architecture-card-responsibilities nodrag nopan" data-family={family}>
-            <span>Inside this application · C3</span>
+            <span>Components</span>
             {item.responsibilities.map((member) => (
               <button
                 type="button"
@@ -141,7 +142,7 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
                 title={member.description}
                 onClick={() => data.onOpen?.(item.binding!.element, member.id)}
               >
-                <span aria-hidden="true">▧</span> {member.name}
+                {member.name}
                 <span aria-hidden="true">›</span>
               </button>
             ))}
@@ -209,6 +210,9 @@ function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
         >
           <RelationshipLabel
             {...data.presentation}
+            protocol={
+              data.presentation.protocol === "In process" ? undefined : data.presentation.protocol
+            }
             contractCount={undefined}
             scenarioRelationship={
               data.presentation.componentRelationship
@@ -516,6 +520,7 @@ export function ArchitectureGraph({
           onOpen,
           showResponsibilities: projection.level === "containers",
           showTechnology: projection.level !== "context",
+          showKind: projection.level !== "components" || item.kind !== "component",
           connected:
             !selected ||
             item.id === selected ||

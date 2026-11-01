@@ -364,7 +364,7 @@ export function deploymentProjection(
       kind: "binding",
       deploymentKind: "Infrastructure",
       name: node.name,
-      description: `${node.responsibility || "Infrastructure responsibility undecided"} · ${node.replicas} declared copies`,
+      description: `${node.responsibility}${node.replicas > 1 ? ` · ${node.replicas} replicas` : ""}`,
       technology: node.technology || "Technology undecided",
       support: "planned",
       acceptance: [],
@@ -376,6 +376,7 @@ export function deploymentProjection(
     });
   for (const instance of env.instances) {
     const element = design.elements.find((e) => e.id === instance.element);
+    const placement = env.nodes.find((n) => n.id === instance.node);
     for (let replica = 1; replica <= instance.replicas; replica++)
       nodes.push({
         id: key(`${instance.id}:${replica}`),
@@ -383,11 +384,8 @@ export function deploymentProjection(
         deploymentKind:
           element && isLogicalChannel(element) ? "Logical channel" : "Container instance",
         name: `${element?.name ?? instance.element}${instance.replicas > 1 ? ` · ${replica}/${instance.replicas}` : ""}`,
-        description:
-          element && isLogicalChannel(element)
-            ? `Named channel · ${element?.id}`
-            : `Instance of C2 ${instance.element}`,
-        technology: element?.technology || "Technology undecided",
+        description: element && isLogicalChannel(element) ? `Named channel · ${element?.id}` : "",
+        technology: [element?.technology, placement?.technology].filter(Boolean).join(" · "),
         support: "planned",
         acceptance: [],
         binding: { element: instance.element },
@@ -403,7 +401,7 @@ export function deploymentProjection(
       id: key(external.id),
       kind: "external-system",
       name: choice?.label ?? external.reference.id,
-      description: "External product · outside deployment ownership",
+      description: "",
       technology: "",
       support: "external",
       acceptance: [],
@@ -438,7 +436,7 @@ export function deploymentProjection(
         protocol:
           interaction.kind === "logical"
             ? (presentation?.protocol ?? "Context relationship")
-            : `${interaction.protocol} · ${interaction.kind === "replica" ? "replica communication" : "deployment only"}`,
+            : interaction.protocol,
         connection: logical?.id,
         context: context?.id,
         planned: true,

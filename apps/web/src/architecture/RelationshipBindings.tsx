@@ -153,7 +153,7 @@ export function BindingSummary({ relationship }: { relationship: BindingRelation
   const review = relatedReview(architectureReview(design), bindings);
   return (
     <section className="interface-summary" aria-label="Relationship contracts and policies">
-      <h3>Contracts and policies</h3>
+      {bindings.length ? <h3>Contracts and policies</h3> : null}
       {bindings.length ? (
         <ul>
           {bindings.map((item) => (
@@ -166,16 +166,14 @@ export function BindingSummary({ relationship }: { relationship: BindingRelation
             </li>
           ))}
         </ul>
-      ) : (
-        <p>No interface bindings declared.</p>
-      )}
+      ) : null}
       {review.map((item) => (
         <p className="contract-review" key={`${item.code}:${item.message}`}>
           {item.message}
         </p>
       ))}
       <Button variant="default" fullWidth onClick={() => setOpen(true)}>
-        Manage relationship contracts
+        {bindings.length ? "Edit contracts" : "Add contract"}
       </Button>
       {open ? (
         <RelationshipBindings

@@ -119,6 +119,9 @@ export function ArchitectureDeployments({
   const view = savedEnv ? deploymentProjection(design, savedEnv) : undefined;
   const inspectedNode = view?.nodes.find((n) => n.id === diagramSelected);
   const inspectedEdge = view?.edges.find((e) => e.id === diagramSelected);
+  const inspectedInteraction = savedEnv?.interactions.find((interaction) =>
+    inspectedEdge?.id.startsWith(`deployment:${savedEnv.id}:${interaction.id}:`),
+  );
   const parsed = architectureSchema.safeParse(draft);
   const problems = parsed.success
     ? validateArchitectureDeployments({ ...design, architecture: parsed.data })
@@ -173,7 +176,7 @@ export function ArchitectureDeployments({
   };
   return (
     <ConfigurationDialog
-      title="Deployment plans"
+      title="Deployment"
       size="xl"
       fullScreen
       onClose={onClose}
@@ -183,16 +186,22 @@ export function ArchitectureDeployments({
             color="cyan.9"
             disabled={!view || editing || dirty}
             onClick={() => setHandoffOpen(true)}
+            aria-label="Export deployment handoff"
           >
-            Export deployment handoff
+            Export
           </Button>
           <Button variant="default" onClick={onClose} disabled={saving}>
             Done
           </Button>
           {editing || dirty ? (
             <>
-              <Button variant="default" onClick={cancel} disabled={saving}>
-                Cancel changes
+              <Button
+                variant="default"
+                onClick={cancel}
+                disabled={saving}
+                aria-label="Cancel changes"
+              >
+                Cancel
               </Button>
               <Button
                 color="cyan.9"
@@ -200,8 +209,9 @@ export function ArchitectureDeployments({
                 onClick={() => void save()}
                 loading={saving}
                 disabled={!dirty || !parsed.success || problems.length > 0}
+                aria-label="Save deployment plan"
               >
-                Save deployment plan
+                Save
               </Button>
             </>
           ) : (
@@ -210,8 +220,9 @@ export function ArchitectureDeployments({
               className="deployment-plan-action"
               disabled={!env}
               onClick={() => setEditing(true)}
+              aria-label="Edit deployment plan"
             >
-              Edit deployment plan
+              Edit
             </Button>
           )}
         </Group>
@@ -226,20 +237,15 @@ export function ArchitectureDeployments({
         />
       ) : null}
       <Stack gap="md" className="deployment-planning">
-        <Text size="sm">
-          Place C2 applications and stores on Docker hosts, Kubernetes or managed services. Add load
-          balancing, replicas and network routes. Each environment is an editable design; capacity
-          and failover need separate verification.
-        </Text>
-        <Group align="end" grow>
+        <Group align="end" className="deployment-toolbar">
           <NativeSelect
-            label="Planning environment"
+            label="Environment"
             value={environment}
             data={[
               { value: "", label: "Choose an environment" },
               ...(draft.deployments ?? []).map((e) => ({
                 value: e.id,
-                label: `${e.name} · ${e.kind} · planned`,
+                label: e.name,
               })),
             ]}
             onChange={(e) => {
@@ -255,11 +261,7 @@ export function ArchitectureDeployments({
             Add environment
           </Button>
         </Group>
-        {!env ? (
-          <Text size="sm">
-            Add a hosted environment to begin. Private delivery is an optional alternative.
-          </Text>
-        ) : editing ? (
+        {!env ? null : editing ? (
           <DeploymentFields
             design={design}
             env={env}
@@ -276,17 +278,15 @@ export function ArchitectureDeployments({
           />
         ) : savedEnv ? (
           <>
-            <Text size="sm">
-              {savedEnv.description || "Deployment intent"} ·{" "}
-              {savedEnv.instances.reduce((n, i) => n + i.replicas, 0)} declared instances. Logical
-              connections keep their direction; deployment-only wiring is labeled separately.
-            </Text>
             <NativeSelect
-              label="Inspect deployment object"
+              aria-label="Inspect deployment object"
               value={diagramSelected}
               data={[
-                { value: "", label: "Select a placement instance or interaction" },
-                ...(view?.nodes ?? []).map((n) => ({ value: n.id, label: n.name })),
+                { value: "", label: "Find an object or connection…" },
+                ...(view?.nodes ?? []).map((n) => ({
+                  value: n.id,
+                  label: `${n.name}${n.parent ? ` · ${view?.groups?.find((g) => g.id === n.parent)?.name ?? ""}` : ""}`,
+                })),
                 ...(view?.edges ?? []).map((e) => ({
                   value: e.id,
                   label: `${e.description} · ${e.connection ?? e.context ?? "deployment only"}`,
@@ -296,9 +296,11 @@ export function ArchitectureDeployments({
             />
             {inspectedNode ? (
               <Text size="sm">
-                <strong>{inspectedNode.name}</strong> · {inspectedNode.description} ·{" "}
-                {inspectedNode.technology || "Externally supplied"}. Use Diagram options → Focus
-                selected object to read its surroundings.
+                <strong>{inspectedNode.name}</strong>
+                {[inspectedNode.description, inspectedNode.technology]
+                  .filter(Boolean)
+                  .map((text) => ` · ${text}`)
+                  .join("")}
               </Text>
             ) : null}
             {inspectedEdge ? (
@@ -308,7 +310,9 @@ export function ArchitectureDeployments({
                   ? `C2 relationship ${inspectedEdge.connection}`
                   : inspectedEdge.context
                     ? `Context relationship ${inspectedEdge.context}`
-                    : "Deployment-only identity; no application contract"}
+                    : inspectedInteraction?.kind === "replica"
+                      ? "Replica communication"
+                      : "Infrastructure connection"}
               </Text>
             ) : null}
             <div className="deployment-plan-diagram">
@@ -320,7 +324,8 @@ export function ArchitectureDeployments({
               />
             </div>
             <details>
-              <summary>Placement responsibilities and logical references</summary>
+              <summary>Notes & references</summary>
+              {savedEnv.description ? <p>{savedEnv.description}</p> : null}
               <PlacementTree env={savedEnv} design={design} />
               {savedEnv.interactions.map((i) => (
                 <p key={i.id}>
@@ -715,10 +720,6 @@ function DeploymentFields({
             max={32}
             onChange={(value) => changeInstance({ replicas: Number(value) })}
           />
-          <Text size="sm">
-            Named queues/topics are separate logical channels on broker infrastructure, each with
-            count 1. Broker replication is infrastructure intent.
-          </Text>
           <Button
             color="red"
             variant="subtle"
@@ -749,7 +750,6 @@ function DeploymentFields({
               });
             }}
           />
-          <Text size="sm">This product remains outside your deployment ownership.</Text>
           <Button
             color="red"
             variant="subtle"
@@ -772,7 +772,7 @@ function DeploymentFields({
               { value: "infrastructure", label: "Deployment-only infrastructure wiring" },
               {
                 value: "replica",
-                label: "Replication / communication between instances of one C2 container",
+                label: "Replica communication",
               },
             ]}
             onChange={(e) => {

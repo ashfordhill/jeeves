@@ -55,15 +55,6 @@ export function ArchitectureOutline({
         onChange={(e) => setQuery(e.currentTarget.value)}
       />
       <div className="outline-tree">
-        <p className="outline-caption">
-          {containers.length} containers & systems ·{" "}
-          {components.reduce(
-            (sum, view) =>
-              sum + view.nodes.filter((n) => n.binding?.element === view.container).length,
-            0,
-          )}{" "}
-          responsibilities
-        </p>
         {containers.map((node) => {
           const view = components.find((view) => view.container === node.binding!.element);
           const children = view?.nodes.filter((n) => n.binding?.element === view.container) ?? [];
@@ -76,9 +67,7 @@ export function ArchitectureOutline({
                 aria-pressed={selected === node.id}
                 onClick={() => onContainer(node.binding!.element)}
               >
-                <span className="outline-level">C2</span>
                 <strong>{node.name}</strong>
-                {view ? <small>{children.length}</small> : null}
               </button>
               {view ? (
                 <details open={projection?.container === view.container || !!query || undefined}>

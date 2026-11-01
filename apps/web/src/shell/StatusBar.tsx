@@ -1,6 +1,6 @@
 /**
  * Full-width bottom status bar, adapted from automation-pitch's StatusBar:
- * server health on the left; color scheme and version on the right.
+ * server health on the left; color scheme on the right.
  */
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import type { ColorScheme } from "./useColorScheme.ts";
@@ -39,9 +39,6 @@ export function StatusBar({
           {dark ? <IconMoon size={14} aria-hidden /> : <IconSun size={14} aria-hidden />}
           Dark mode
         </button>
-        <span className="status-version" title={`Jeeves version ${__APP_VERSION__}`}>
-          v{__APP_VERSION__}
-        </span>
       </div>
     </footer>
   );

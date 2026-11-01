@@ -680,7 +680,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           <Button size="xs" variant="subtle" color="var(--ink)" onClick={() => setDataOpen(true)}>
             Data & objectives
           </Button>
-          <span className="studio-save-state">Saved · r{design.revision}</span>
+          <span className="studio-save-state" title={`Revision ${design.revision}`}>
+            Saved
+          </span>
         </div>
       </section>
       <div className="editor-body">
@@ -743,25 +745,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               </div>
             ) : projection ? (
               <div className="architecture-stage">
-                <div className="architecture-scope-caption">
-                  <strong>{projection.name}</strong>
-                  <span>
-                    {level === "context"
-                      ? "People, purpose & external systems"
-                      : level === "containers"
-                        ? focused
-                          ? `${views?.containers.name} · focused C2`
-                          : "Applications, data stores & external systems"
-                        : "Responsibilities within one application"}
-                  </span>
-                </div>
-                {focusedProjection ? (
+                {focusedProjection?.hidden.length ? (
                   <button
                     type="button"
                     className="focused-hidden-link"
                     onClick={() => setHiddenOpen(true)}
                   >
-                    {focusedProjection.hidden.length} hidden relationships · Whole system
+                    {focusedProjection.hidden.length} hidden connections
                   </button>
                 ) : null}
                 {level === "context" && !design.architecture ? (
@@ -837,7 +827,6 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           hidden={!inspectorOpen}
         >
           <div className="inspector-toolbar">
-            <span>Selection</span>
             <ActionIcon
               variant="subtle"
               color="var(--ink)"

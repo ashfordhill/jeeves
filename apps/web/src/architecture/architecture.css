@@ -97,6 +97,9 @@
   min-width: 0;
   position: relative;
 }
+.architecture-stage > .architecture-graph {
+  inset: 0;
+}
 .architecture-scope-caption {
   display: flex;
   gap: 14px;
@@ -430,8 +433,9 @@
 }
 .focused-hidden-link {
   position: absolute;
-  right: 12px;
-  top: 12px;
+  right: 68px;
+  top: 20px;
+  z-index: 6;
   background: var(--cream);
   color: var(--ink);
   border: 0;
@@ -449,6 +453,16 @@
   color: var(--ink);
   background: var(--cream);
   border-radius: 4px;
+  opacity: 0;
+}
+.react-flow__node:hover .architecture-drag-handle,
+.react-flow__node:focus-within .architecture-drag-handle {
+  opacity: 1;
+}
+@media (hover: none) {
+  .architecture-drag-handle {
+    opacity: 1;
+  }
 }
 .architecture-selection-summary {
   margin-left: 48px;
@@ -471,17 +485,9 @@
   .focused-view-toolbar .mantine-NativeSelect-root {
     max-width: 155px;
   }
-  .architecture-scope-caption:has(+ .focused-hidden-link) {
-    padding-bottom: 30px;
-    height: 75px;
-  }
   .focused-hidden-link {
-    top: 45px;
     left: 16px;
-    right: auto;
-  }
-  .architecture-stage:has(.focused-hidden-link) .architecture-graph {
-    top: 75px;
+    text-align: left;
   }
 }
 .architecture-graph .react-flow__node-scope,
