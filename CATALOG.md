@@ -18,7 +18,7 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md) and [P49 evidence](docs/evidence/p49/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md) and [P50 evidence](docs/evidence/p50/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
 
 P46 adds independent **system choices** (business tenancy, authorization intent, data
 isolation and delivery model) through Edit context or system inspection. C1 shows only the
@@ -59,6 +59,20 @@ view/object identity in layout storage; mouse drag/nudge, Fit selected, Reset la
 Undo/Redo layout do not change semantic revision. C1 and scoped C3 use the same persistence.
 Relationship labels summarize contract counts; selection expands exact names and versions.
 QRWTY defaults expose management, redirect and analytics separately. See [P49 evidence](docs/evidence/p49/README.md).
+
+P50 adds **Patterns** in the Architecture library: tenant workspace/access, billing and
+entitlements, cached public lookup with update/disable propagation, and asynchronous work
+delivery. Delivery has separate best-effort and transactional-outbox variants. Preview host,
+boundary and responsibility choices, exact contracts, policies and additions before applying
+one undoable edit. Unique compatible hosts resolve automatically; ambiguous hosts require a
+choice. Component/channel reuse requires explicit pinned role, ownership, contract and policy
+matches, preserving existing customizations. Different business channels remain distinct.
+
+Outbox intent requires atomic domain/event persistence and a delivery responsibility; a queue
+and handler cannot establish it. Saved compositions retain pinned historical provenance and
+required invariants. These editable patterns supply no runtime implementation or observed
+guarantees. See the [fragment/reuse contract](docs/architecture-patterns.md) and
+[P50 evidence](docs/evidence/p50/README.md). P51 review and decisions are next.
 
 ## Availability and reuse
 

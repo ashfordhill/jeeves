@@ -492,3 +492,22 @@
   font-size: 0.85em;
   font-weight: 600;
 }
+
+.pattern-composer {
+  overflow-wrap: anywhere;
+}
+.pattern-composer h3,
+.pattern-composer h4 {
+  margin: 0 0 8px;
+}
+.pattern-composer p {
+  font-size: 14px;
+}
+.pattern-additions {
+  padding-left: 22px;
+  font-size: 14px;
+}
+
+.pattern-composer .mantine-Alert-label {
+  color: var(--mantine-color-text);
+}

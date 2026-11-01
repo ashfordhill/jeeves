@@ -1,10 +1,10 @@
 # C4 authoring roadmap: reusable designs ready for implementation (P46–P57)
 
-**Revised 31 October 2026 at the user's request. P46–P49 are implemented and verified; P50–P57 remain planned.**
+**Revised 31 October 2026 at the user's request. P46–P50 are implemented and verified; P51–P57 remain planned.**
 This replaces the original P46–P53 proposal retained in Git at `ee31075`. It incorporates
 [the direction review](reviews/c4-direction-review-2026-10-31.md) and
 [C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. The next implementation
-package, when execution is requested, is **P50 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md) and [P49 evidence](evidence/p49/README.md).
+package, when execution is requested, is **P51 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md) and [P50 evidence](evidence/p50/README.md).
 
 The outcome is an engineer using Jeeves to compose, inspect and revise a credible qrwty-sized
 SaaS architecture through C2/C3 diagrams and reusable architecture templates. The result
@@ -269,6 +269,8 @@ ArchitectureGraph,layout,layout-client}.ts*`, draw layout persistence. Extend
 **Excluded:** a new canvas engine, arbitrary nesting or workflow semantics in layout objects.
 
 ## P50 — Contract-aware pattern composition
+
+**Complete.** [Evidence and compatibility limits](evidence/p50/README.md); [fragment and reuse contract](architecture-patterns.md).
 
 **Outcome:** compose useful architecture in a few edits while preserving its guarantees.
 

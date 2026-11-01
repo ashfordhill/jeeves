@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { unbindArchitecture, validateArchitecture } from "./architecture.ts";
 import { validateContractTransition } from "./architecture-contracts.ts";
+import { validatePatternTransition } from "./architecture-pattern-provenance.ts";
 import {
   type Annotation,
   annotationSchema,
@@ -93,7 +94,10 @@ export function applyOperations(
     throw error;
   }
 
-  const contractErrors = validateContractTransition(design, draft);
+  const contractErrors = [
+    ...validateContractTransition(design, draft),
+    ...validatePatternTransition(design, draft),
+  ];
   if (contractErrors.length) return { ok: false, errors: contractErrors };
   const before = new Set(validateDesign(design, lookup).filter(isStructural).map(findingKey));
   if (parsed.data.some((op) => op.op === "setArchitecture")) {

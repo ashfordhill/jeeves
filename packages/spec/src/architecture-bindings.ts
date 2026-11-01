@@ -156,6 +156,7 @@ export function validateRelationshipBindings(design: DesignDocument): Finding[] 
     ...design.annotations.map((item) => item.id),
     ...[
       model.nodes,
+      model.patternInstances,
       model.relationships,
       model.components,
       model.componentRelationships,

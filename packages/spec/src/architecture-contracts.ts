@@ -322,6 +322,7 @@ export function validateArchitectureContracts(design: DesignDocument): Finding[]
     "system",
     ...model.nodes.map((item) => item.id),
     ...(model.components ?? []).map((item) => item.id),
+    ...(model.patternInstances ?? []).map((item) => item.id),
     ...model.relationships.map((item) => item.id),
     ...(model.componentRelationships ?? []).map((item) => item.id),
     ...(model.scenarios ?? []).map((item) => item.id),

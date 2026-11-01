@@ -7,20 +7,25 @@ import type { ToolDefinition } from "@jeeves/providers";
 import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
+  architecturePatterns,
   architectureReview,
   componentCompatible,
   contractCanonical,
   contractSources,
   type DesignDocument,
+  describeArchitecturePattern,
   type FindingCode,
   findingCatalog,
   findingCodes,
   idSchema,
   type OperationInput,
   operationSchema,
+  patternConfigSchema,
+  patternRequestSchema,
   plannedCapabilities,
   plannedCapability,
   plannedConfigSchema,
+  previewArchitecturePattern,
   resolveContractSource,
   reviewTemplateUpgrade,
   subtypeDiscards,
@@ -42,6 +47,15 @@ const argsSchemas = {
   describePlannedCapability: z.strictObject({
     id: z.string().describe("Capability ID from listPlannedCapabilities"),
   }),
+  listArchitecturePatterns: z.strictObject({}),
+  describeArchitecturePattern: z.strictObject({
+    id: idSchema,
+    version: z.literal("1.0.0").default("1.0.0"),
+    variant: z.enum(["standard", "best-effort", "transactional-outbox"]).default("standard"),
+    config: patternConfigSchema.optional(),
+  }),
+  previewArchitecturePattern: patternRequestSchema,
+  applyArchitecturePattern: patternRequestSchema,
   getDesign: z.strictObject({}),
   getArchitectureContracts: z.strictObject({}),
   reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
@@ -79,6 +93,14 @@ const descriptions: Record<ToolName, string> = {
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getArchitectureContracts:
     "Inspect project-local contract definitions, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
+  listArchitecturePatterns:
+    "List four versioned architecture patterns and their variants. Design intent only; no runtime adoption.",
+  describeArchitecturePattern:
+    "Read a pinned declarative fragment, required host/boundary roles, exact contracts, policies, invariants and extension points. Asynchronous delivery requires best-effort or transactional-outbox explicitly.",
+  previewArchitecturePattern:
+    "Preview additions and candidate role/relationship bindings at getDesign.patternBaseRevision (the saved base, including pending edits), using the same expansion as the editor. Unique compatible host roles resolve automatically; ambiguous stores/hosts require a choice. Non-host reuse requires explicit matching ownership, tenant scope, exact contracts and guarantees. No change is made.",
+  applyArchitecturePattern:
+    "Apply a versioned architecture pattern with fresh instanceId and explicit role choices in one validated edit. Use preview for ambiguity. Unfilled or incompatible roles and stale revisions change nothing. Ordinary unambiguous/provided choices need no extra approval. Expansion is editable intent, never runtime implementation or proof of outbox atomicity.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
     "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Element classification:{kind,ownership,operation} describes architectural intent independently of runtime host roles; system context has independent businessTenancy, authorization, dataIsolation and deliveryModel choices. Read their schemas from applyOperations. Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
@@ -131,6 +153,8 @@ const explanations: Record<FindingCode, string> = {
 export class Workspace {
   /** Edits not committed yet, in order. */
   pending: OperationInput[] = [];
+  /** Pattern expansion cannot be replayed over a concurrent revision. */
+  patternRevisionBound = false;
   question: ChatQuestion | undefined;
   activity: ChatActivity[] = [];
 
@@ -146,6 +170,7 @@ export class Workspace {
     this.base = base;
     this.working = base;
     this.pending = [];
+    this.patternRevisionBound = false;
   }
 
   /** Runs one tool call and returns its JSON result for the model. */
@@ -222,6 +247,51 @@ export class Workspace {
           }),
         };
       }
+      case "listArchitecturePatterns":
+        this.log(tool, true, "Listed architecture patterns");
+        return {
+          patterns: architecturePatterns.map((p) => ({ ...p, version: "1.0.0" })),
+          availability: "Editable design intent; runtime support and verification are separate.",
+        };
+      case "describeArchitecturePattern": {
+        const { id, variant, config } = args as z.infer<
+          typeof argsSchemas.describeArchitecturePattern
+        >;
+        try {
+          const entry = architecturePatterns.find((p) => p.id === id);
+          const fragment = describeArchitecturePattern(
+            id,
+            variant,
+            config ?? { name: entry?.name ?? id },
+          );
+          this.log(tool, true, "Read architecture pattern");
+          return { fragment, configSchema: z.toJSONSchema(patternConfigSchema, { io: "input" }) };
+        } catch (error) {
+          this.log(tool, false, "Unknown pattern or variant");
+          return { ok: false, error: (error as Error).message };
+        }
+      }
+      case "previewArchitecturePattern":
+      case "applyArchitecturePattern": {
+        const preview = previewArchitecturePattern(
+          { ...this.working, revision: this.base.revision },
+          args,
+          this.registry,
+        );
+        this.log(
+          tool,
+          preview.ok,
+          preview.ok ? "Expanded architecture pattern" : "Pattern needs compatible role choices",
+        );
+        if (tool === "previewArchitecturePattern" || !preview.ok) return preview;
+        return {
+          ...this.applyOperations({ ops: preview.ops }),
+          additions: preview.additions,
+          review: preview.review,
+          revision: this.working.revision,
+          patternBaseRevision: this.base.revision,
+        };
+      }
       case "getArchitectureContracts":
         this.log(tool, true, "Read architecture contracts and sources");
         return {
@@ -239,7 +309,11 @@ export class Workspace {
         };
       case "getDesign":
         this.log(tool, true, "Read the design");
-        return { design: this.working, findings: validateDesign(this.working, this.registry) };
+        return {
+          design: this.working,
+          patternBaseRevision: this.base.revision,
+          findings: validateDesign(this.working, this.registry),
+        };
       case "reviewSubtype": {
         const { id, template } = args as z.infer<typeof argsSchemas.reviewSubtype>;
         const element = this.working.elements.find((e) => e.id === id);
@@ -268,7 +342,12 @@ export class Workspace {
           question: `Change subtype of ${element.name}? Discard: ${discarded.join("; ") || "no customized data"}.`,
           choices: ["Confirm subtype change", "Cancel"],
           allowFreeText: false,
-          subtypeReview: { id, template, revision: this.working.revision, discarded },
+          subtypeReview: {
+            id,
+            template,
+            revision: this.working.revision,
+            discarded,
+          },
         };
         this.log(tool, true, "Requested human subtype review");
         return {
@@ -328,6 +407,11 @@ export class Workspace {
       this.log("applyOperations", false, `Edit refused: ${result.errors[0]?.message ?? "invalid"}`);
       return { ok: false, errors: result.errors, note: "Nothing was changed." };
     }
+    const priorPatterns = new Set(
+      this.working.architecture?.patternInstances?.map((item) => item.id),
+    );
+    if (result.design.architecture?.patternInstances?.some((item) => !priorPatterns.has(item.id)))
+      this.patternRevisionBound = true;
     this.working = result.design;
     this.pending.push(...ops);
     this.log("applyOperations", true, `Prepared ${plural(ops.length, "change")}`);

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "revision": 0,
+  "elements": [
+    {
+      "id": "api",
+      "name": "Selected API",
+      "template": null,
+      "planned": "application-api",
+      "config": { "interface": "REST" },
+      "notes": "Keep my custom brief"
+    },
+    { "id": "worker", "name": "Selected worker", "template": null, "planned": "background-worker" },
+    { "id": "store", "name": "Selected store", "template": null, "planned": "relational-store" }
+  ],
+  "architecture": {
+    "system": { "name": "Pattern composition", "businessTenancy": "Personal workspaces" }
+  }
+}

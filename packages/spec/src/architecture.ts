@@ -12,6 +12,7 @@ import {
   architectureInterfaceSchema,
   validateArchitectureContracts,
 } from "./architecture-contracts.ts";
+import { patternInstanceSchema } from "./architecture-pattern-provenance.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
@@ -87,6 +88,7 @@ export const architectureSchema = z.strictObject({
   bindings: z.array(architectureBindingSchema).max(500).optional(),
   datasets: z.array(architectureDatasetSchema).max(200).optional(),
   objectives: z.array(architectureObjectiveSchema).max(200).optional(),
+  patternInstances: z.array(patternInstanceSchema).max(100).optional(),
   componentRelationships: z
     .array(
       z.strictObject({
@@ -189,6 +191,22 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
           target,
         ),
       );
+  }
+  for (const instance of model.patternInstances ?? []) {
+    if (
+      ids.has(instance.id) ||
+      design.elements.some(
+        (item) => item.id === instance.id || item.attachments.some((a) => a.id === instance.id),
+      ) ||
+      design.connections.some((item) => item.id === instance.id) ||
+      design.annotations.some((item) => item.id === instance.id)
+    )
+      findings.push(
+        finding("DUPLICATE_ID", `Pattern identity ${instance.id} is repeated.`, {
+          path: ["architecture", "patternInstances", instance.id],
+        }),
+      );
+    ids.add(instance.id);
   }
   const memberships = new Set<string>();
   for (const component of model.components ?? []) {

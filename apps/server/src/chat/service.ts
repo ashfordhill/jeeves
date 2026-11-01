@@ -366,6 +366,15 @@ export class ChatService {
       }
       if (result.reason === "conflict") {
         const current = result.state.design;
+        if (workspace.patternRevisionBound) {
+          workspace.log("commit", false, "Pattern revision conflict; nothing was added");
+          workspace.reset(current);
+          return {
+            ok: false,
+            message:
+              "The pattern preview is stale. No pattern edits were added. Read the current design and preview compatible choices again.",
+          };
+        }
         const replay = applyOperations(current, workspace.pending, this.registry);
         if (!replay.ok) {
           workspace.log("commit", false, "The design changed meanwhile; redoing the edits");

@@ -2,6 +2,7 @@ import { builtinRegistry } from "@jeeves/registry";
 import {
   architectureExample,
   architectureExamples,
+  architecturePatterns,
   componentCompatible,
   componentHostRole,
   type PlannedCapability,
@@ -15,6 +16,7 @@ import { api } from "../draw/api.ts";
 import { type Tool, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import { ExampleMiniature } from "./ExampleMiniature.tsx";
+import { PatternComposer } from "./PatternComposer.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
 
 export function CapabilityCatalog({
@@ -41,6 +43,7 @@ export function CapabilityCatalog({
       item.scope === "container" ||
       Boolean(owner && componentCompatible(item, componentHostRole(owner, builtinRegistry()))),
   );
+  const [pattern, setPattern] = useState<string>();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("All");
   const [error, setError] = useState<string>();
@@ -81,6 +84,14 @@ export function CapabilityCatalog({
       setCreating(false);
     }
   };
+  if (pattern)
+    return (
+      <PatternComposer
+        pattern={pattern}
+        onClose={() => setPattern(undefined)}
+        onApplied={onClose}
+      />
+    );
   return (
     <ConfigurationDialog title="Architecture library" size="xl" onClose={onClose}>
       <p className="catalog-intro">
@@ -104,6 +115,7 @@ export function CapabilityCatalog({
         <Tabs.List>
           <Tabs.Tab value="blocks">Building blocks</Tabs.Tab>
           <Tabs.Tab value="examples">Architecture examples</Tabs.Tab>
+          <Tabs.Tab value="patterns">Patterns</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="blocks" pt="md">
           <TextInput
@@ -200,6 +212,51 @@ export function CapabilityCatalog({
           ) ? (
             <p>No matching blocks. Try another search or category.</p>
           ) : null}
+        </Tabs.Panel>
+        <Tabs.Panel value="patterns" pt="md">
+          {loaded.design.architecture?.patternInstances?.length ? (
+            <details className="pattern-composer">
+              <summary>
+                Compositions in this design ({loaded.design.architecture.patternInstances.length})
+              </summary>
+              {loaded.design.architecture.patternInstances.map((instance) => (
+                <article key={instance.id}>
+                  <h4>{instance.config.name}</h4>
+                  <p>
+                    {instance.pattern} · v{instance.version} · {instance.variant} · authored from
+                    revision {instance.baseRevision}
+                  </p>
+                  {instance.invariants.map((text) => (
+                    <p key={text}>{text}</p>
+                  ))}
+                  <small>
+                    Historical provenance records intent; current contracts and policies may have
+                    been edited.
+                  </small>
+                </article>
+              ))}
+            </details>
+          ) : null}
+
+          <p className="catalog-intro">
+            Compose editable responsibilities, exact contracts and policies in this design. Preview
+            explicit reuse and additions. Architecture patterns do not supply runtime
+            implementations.
+          </p>
+          <div className="catalog-grid">
+            {architecturePatterns.map((entry) => (
+              <button
+                type="button"
+                key={entry.id}
+                className="catalog-card"
+                onClick={() => setPattern(entry.id)}
+              >
+                <strong>{entry.name}</strong>
+                <span>{entry.description}</span>
+                <small>v1.0.0 · {entry.variants.join(" / ")}</small>
+              </button>
+            ))}
+          </div>
         </Tabs.Panel>
         <Tabs.Panel value="examples" pt="md">
           <p className="catalog-intro">

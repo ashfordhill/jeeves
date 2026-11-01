@@ -531,3 +531,30 @@ it("preserves executable outputs and ownership with relationship policies, data 
     "record-binding",
   );
 });
+
+it("keeps historical architecture pattern provenance out of executable outputs and ownership", async () => {
+  const { patternConfigSchema } = await import("@jeeves/spec");
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  design.architecture!.patternInstances = [
+    {
+      id: "historical-pattern",
+      pattern: "cached-public-lookup",
+      version: "1.0.0",
+      variant: "standard",
+      baseRevision: design.revision,
+      config: patternConfigSchema.parse({ name: "Historical lookup intent" }),
+      identities: {},
+      invariants: ["Historical provenance does not attach or certify a runtime."],
+    },
+  ];
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((file) => file.path === "jeeves/design.json")!.contents).toContain(
+    "historical-pattern",
+  );
+});

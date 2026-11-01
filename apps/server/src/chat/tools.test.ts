@@ -342,3 +342,97 @@ it("chat discovers relationship policies and saves review conflicts through the 
   expect(edit(invalid).ok).toBe(false);
   expect(workspace.working.architecture).toEqual(architecture);
 });
+
+it("previews and applies architecture patterns through shared expansion without a separate approval, refusing incompatible or stale choices", async () => {
+  const { previewArchitecturePattern, patternRequestSchema } = await import("@jeeves/spec");
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/pattern-composition.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const workspace = new Workspace(registry, base);
+  const run = (tool: string, args = {}) => JSON.parse(workspace.run(tool, JSON.stringify(args)));
+  expect(run("listArchitecturePatterns").patterns).toHaveLength(4);
+  expect(run("describeArchitecturePattern", { id: "asynchronous-work-delivery" }).ok).toBe(false);
+  const req = patternRequestSchema.parse({
+    pattern: "asynchronous-work-delivery",
+    version: "1.0.0",
+    variant: "transactional-outbox",
+    instanceId: "billing",
+    baseRevision: 0,
+    config: { name: "Billing delivery", channel: "Billing jobs" },
+    roles: {
+      api: { mode: "reuse", id: "api" },
+      store: { mode: "reuse", id: "store" },
+      worker: { mode: "reuse", id: "worker" },
+    },
+  });
+  expect(
+    run("describeArchitecturePattern", {
+      id: req.pattern,
+      variant: req.variant,
+    }).fragment.invariants.join(),
+  ).toContain("one atomic transaction");
+  const preview = run("previewArchitecturePattern", req);
+  expect(preview).toEqual(previewArchitecturePattern(base, req, registry));
+  expect(workspace.pending).toEqual([]);
+  expect(workspace.working).toEqual(base);
+  expect(
+    run("applyArchitecturePattern", {
+      ...req,
+      roles: { ...req.roles, store: { mode: "reuse", id: "api" } },
+    }).ok,
+  ).toBe(false);
+  expect(workspace.pending).toEqual([]);
+  expect(run("applyArchitecturePattern", req).ok).toBe(true);
+  expect(workspace.question).toBeUndefined();
+  const mouse = applyOperations(base, preview.ops, registry);
+  expect(mouse.ok).toBe(true);
+  if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
+  const after = structuredClone(workspace.working);
+  expect(run("applyArchitecturePattern", req).ok).toBe(false);
+  expect(workspace.working).toEqual(after);
+});
+
+it("several pattern applications keep saved-base provenance and one pending transaction", async () => {
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/pattern-composition.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const workspace = new Workspace(registry, base);
+  for (const [instanceId, pattern] of [
+    ["tenant", "tenant-workspace-access"],
+    ["lookup", "cached-public-lookup"],
+  ]) {
+    const result = JSON.parse(
+      workspace.run(
+        "applyArchitecturePattern",
+        JSON.stringify({
+          pattern,
+          version: "1.0.0",
+          instanceId,
+          baseRevision: 0,
+          config: { name: instanceId },
+          roles: { api: { mode: "reuse", id: "api" }, store: { mode: "reuse", id: "store" } },
+        }),
+      ),
+    );
+    expect(result.ok).toBe(true);
+  }
+  expect(workspace.patternRevisionBound).toBe(true);
+  const committed = applyOperations(base, workspace.pending, registry);
+  expect(committed.ok).toBe(true);
+  if (committed.ok) {
+    expect(committed.design.revision).toBe(1);
+    expect(committed.design.architecture!.patternInstances!.map((p) => p.baseRevision)).toEqual([
+      0, 0,
+    ]);
+  }
+});

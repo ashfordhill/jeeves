@@ -9,7 +9,15 @@ import {
   type ScriptByMessage,
   type ScriptStep,
 } from "@jeeves/providers";
-import { type DesignDocument, designSchema, type OperationInput } from "@jeeves/spec";
+import { builtinRegistry } from "@jeeves/registry";
+import {
+  applyOperations,
+  type DesignDocument,
+  designSchema,
+  type OperationInput,
+  type PatternRequestInput,
+  previewArchitecturePattern,
+} from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
@@ -206,6 +214,10 @@ describe("design chat", () => {
       "describeTemplate",
       "listPlannedCapabilities",
       "describePlannedCapability",
+      "listArchitecturePatterns",
+      "describeArchitecturePattern",
+      "previewArchitecturePattern",
+      "applyArchitecturePattern",
       "getDesign",
       "getArchitectureContracts",
       "reviewSubtype",
@@ -625,4 +637,124 @@ describe("chat files", () => {
     });
     expect(noName.statusCode).toBe(400);
   });
+});
+
+it("scripted pattern application matches mouse expansion and is one undo step with all discovery tools", async () => {
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/pattern-composition.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const req: PatternRequestInput = {
+    pattern: "cached-public-lookup",
+    version: "1.0.0",
+    instanceId: "lookup",
+    baseRevision: 1,
+    config: { name: "Public redirect", maxAgeSeconds: 15 },
+    roles: { api: { mode: "reuse", id: "api" }, store: { mode: "reuse", id: "store" } },
+  };
+  const h = harness([
+    {
+      toolCalls: [
+        { name: "listArchitecturePatterns", arguments: {} },
+        { name: "describeArchitecturePattern", arguments: { id: req.pattern } },
+        { name: "previewArchitecturePattern", arguments: req },
+      ],
+    },
+    { toolCalls: [{ name: "applyArchitecturePattern", arguments: req }] },
+    {
+      text: "Added cached public lookup with source fallback and bounded disable propagation as design intent.",
+    },
+  ]);
+  const id = await h.project();
+  await h.call("POST", `/projects/${id}/operations`, {
+    baseRevision: 0,
+    ops: [
+      ...base.elements.map((element) => ({ op: "addElement", element })),
+      { op: "setArchitecture", architecture: base.architecture },
+    ],
+  });
+  const before = (await h.design(id)).design;
+  const preview = previewArchitecturePattern(before, req, builtinRegistry());
+  const expected = applyOperations(before, preview.ops, builtinRegistry());
+  expect(expected.ok).toBe(true);
+  const { state, turn } = await h.chat(
+    id,
+    "Add cached public lookup using the selected API and store.",
+  );
+  expect(turn.status).toBe("done");
+  expect(turn.question).toBeNull();
+  if (expected.ok) expect(state.design).toEqual(expected.design);
+  const undone = await h.call("POST", `/projects/${id}/undo`, {
+    baseRevision: state.design.revision,
+  });
+  expect(undone.body.design.elements).toEqual(before.elements);
+  expect(undone.body.design.architecture).toEqual(before.architecture);
+  const redone = await h.call("POST", `/projects/${id}/redo`, {
+    baseRevision: undone.body.design.revision,
+  });
+  expect(redone.body.design.architecture).toEqual(state.design.architecture);
+});
+
+it("never replays a pattern snapshot over concurrent architecture edits", async () => {
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/pattern-composition.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const req = {
+    pattern: "tenant-workspace-access",
+    version: "1.0.0",
+    instanceId: "tenant",
+    baseRevision: 1,
+    config: { name: "Tenant access" },
+    roles: { api: { mode: "reuse", id: "api" }, store: { mode: "reuse", id: "store" } },
+  };
+  let h: ReturnType<typeof harness>;
+  let id: string;
+  const { models } = withHook(
+    [
+      { toolCalls: [{ name: "applyArchitecturePattern", arguments: req }] },
+      { text: "Prepared tenant access." },
+      { text: "The revision changed; the stale pattern was not applied." },
+    ],
+    async (call) => {
+      if (call === 1) {
+        const current = (await h.design(id)).design;
+        const architecture = structuredClone(current.architecture!);
+        architecture.system.description = "Concurrent context customization";
+        expect(
+          (
+            await h.call("POST", `/projects/${id}/operations`, {
+              baseRevision: current.revision,
+              ops: [{ op: "setArchitecture", architecture }],
+            })
+          ).status,
+        ).toBe(200);
+      }
+    },
+  );
+  h = harness({ models });
+  id = await h.project();
+  await h.call("POST", `/projects/${id}/operations`, {
+    baseRevision: 0,
+    ops: [
+      ...base.elements.map((element) => ({ op: "addElement", element })),
+      { op: "setArchitecture", architecture: base.architecture },
+    ],
+  });
+  const { state, turn } = await h.chat(id, "Add tenant access with the selected hosts.");
+  expect(state.design.revision).toBe(2);
+  expect(state.design.architecture!.system.description).toBe("Concurrent context customization");
+  expect(state.design.architecture!.patternInstances).toBeUndefined();
+  expect(turn.operationId).toBeNull();
+  expect(
+    turn.activity.some((a) => a.summary === "Pattern revision conflict; nothing was added"),
+  ).toBe(true);
 });

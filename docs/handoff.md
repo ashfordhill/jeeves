@@ -3798,3 +3798,79 @@ validation and `NEEDS_TEMPLATE` remain unchanged. Layout history is session-loca
 certify arbitrary manually overlapping diagrams or supply runtime evidence. The existing shared
 Postgres/live data were retained; the single P49 fixture left by an early timed-out test was removed
 by its exact ID. Stop after P49; execute P50 only when requested, in this checkout and branch.
+
+## 2026-10-31 — P50: contract-aware pattern composition
+
+Implemented P50 only. [Release evidence and seven inspected captures](evidence/p50/README.md)
+and the [fragment/reuse contract](architecture-patterns.md) record the result. P51 requirement-
+based advice and recorded decisions are next, only when requested.
+
+Added versioned declarative architecture fragments using the existing P47/P48 contracts,
+interfaces, bindings, datasets, relationship policies and scenario schemas. Required host,
+boundary and component roles, bounded configuration, invariants and extension points expand
+through one pure preview function. Four patterns cover tenant workspace/access, billing and
+entitlements, cached public lookup with source fallback/update/disable propagation, and
+asynchronous delivery. Best-effort and transactional-outbox variants remain explicitly distinct.
+Outbox declares an atomic domain/event writer, two datasets in the same store, retained intent,
+delivery/progress responsibility and idempotent consumption. No queue/handler substitution,
+runtime attachment, actual transaction or measured guarantee is inferred.
+
+Library → Patterns previews additions, unfilled roles and compatible candidates. Unique hosts
+resolve automatically; multiple APIs/stores need an explicit choice. These SQL-based built-ins
+use a relational-store/Postgres hosting role; caches/channels cannot match authority storage.
+Boundary/component reuse is conservative: explicit pinned role and ownership, same configured
+tenant/channel/bounds, exact contract identity/version/shape, and intact current fragment
+policies/guarantees. Names/families alone never establish compatibility. Existing C2 connections
+can be selected explicitly for matching endpoints/protocol/interaction; bindings share that
+identity. Fresh visit and billing channels remain distinct even if a later deployment shares
+one broker. Reused host configuration, display customizations and added dependencies remain.
+
+Apply sends one validated operation batch with fresh identities and pinned historical provenance.
+Recorded provenance is immutable within an edit; expanded architecture stays editable. Saved
+compositions expose their original requirements separately from current graph satisfaction.
+Fixed Apply/Cancel, one-step undo/redo, reload and retained conflict drafts work by mouse.
+Unfilled structural host choices block Apply visibly. Domain payloads/lifecycle choices stay
+explicit separate design-review work; existing generation findings and NEEDS_TEMPLATE are intact.
+
+Chat exposes list/describe/preview/apply using the same expansion and validator without another
+approval flow for ordinary supplied/unambiguous choices. Multiple applications retain the saved
+base revision in provenance and commit once per turn. Pattern batches refuse the chat service's
+generic stale-operation replay path: a concurrent revision adds nothing and requires a fresh
+preview. Scripted chat matches mouse expansion and preserves concurrent context customization.
+
+Final verification (unchanged fingerprints during each recorded run):
+
+- `pnpm work run unit packages/spec/src/architecture-patterns.test.ts packages/spec/src/architecture-bindings.test.ts packages/spec/src/architecture-contracts.test.ts packages/generator/src/architecture.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts`:
+  **65 passed / 6 files**, Vitest **4.24s**, profile **4.8s**;
+  `2026-11-01T04-14-07-641Z-unit-e037669d`.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **800 tests / 114 files**
+  passed, Vitest **37.57s**, profile **45.6s**;
+  `2026-11-01T04-15-32-832Z-check-cecb6c50`. Biome checked **748 files**:
+  **1131 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- `pnpm work run browser-preview apps/web/e2e/architecture-patterns.spec.ts apps/web/e2e/architecture-authoring.spec.ts apps/web/e2e/architecture-examples.spec.ts`:
+  **9 passed**, Playwright **27.0s**, profile **28.9s**;
+  `2026-11-01T04-14-37-414Z-browser-preview-4f9b5122`.
+  Strict diagnostics, narrowly registered expected revision conflict, axe and narrow overflow pass.
+- Opened all seven final **1440 × 900 light / 390 × 844 dark** captures: role/freshness preview,
+  explicit compatible reuse, outbox guarantees, completed scoped delivery layout and narrow
+  controls/requirements. Fixed actions remain reachable. Scoped C3 retains separate channels.
+- Generator compatibility preserves executable files/artifacts/ownership; only the intentionally
+  lossless design snapshot reflects provenance. Actual planned expansions still block Generate.
+  Changed-document local links (**108 targets**) and `git diff --check` pass. Read-only E2E
+  database inspection found **zero** remaining projects with either P50 fixture name.
+
+Interim checks caught a spec-test dependency boundary, planned security enum/type issues, a
+missing undo base revision and an unintended subtype-review property; fixed before final gates.
+Browser/visual review fixed Apply/alert contrast, removed an inaccessible nested scroll area,
+tightened SQL-store eligibility and waited for completed C3 geometry before capture. Source
+review caught and fixed stale chat pattern replay, with a focused concurrent-edit regression.
+No retries, timeout increases, diagnostic suppression, dependency/config changes or golden
+refresh. Earlier source-changing or failed runs are not final evidence.
+
+No material scope deviation. Current built-ins deliberately use SQL hosting and conservative
+reuse of intact pinned fragments; arbitrary manual responsibility adoption and user-published
+storage remain P55 work. Updated catalog, roadmap and entry/agent pointers for actual authoring
+availability. No new runtime/template/recipe, generated contract/output/golden, dependency,
+lockfile, live QRWTY design/application, paid model or provisioning changes. Existing shared
+Postgres and live data were retained. Evidence archives and this append-only record follow the
+checks. Stop after P50 and its local commit; execute P51 separately in this checkout/branch.
