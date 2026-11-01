@@ -4705,3 +4705,31 @@ The Streamly workload figures and scenario outcomes are proposed design assumpti
 measured traffic evidence. C4a/C4b, template expansion and production capacity validation remain
 separate work. This package completes the requested authoring/cleanup pass; it does not restart
 any completed P46–P57 sequence.
+
+## 2026-11-01 — REPO1: include user drafts and configure GitHub diagram rendering
+
+The user explicitly authorized committing all remaining work, including their README, drawings,
+FieldOps fixtures and cleanup, and creating/pushing `ashfordhill/jeeves`. They selected **private**.
+`gh auth status` confirmed the active `ashfordhill` account with repo/workflow access.
+Created [ashfordhill/jeeves](https://github.com/ashfordhill/jeeves) as a private repository and
+configured `origin`; existing local commit history is retained for publication on `main`.
+
+- Included the user's README draft and all four `.docs/` assets. Kept their prose, fixed the
+  diagram/catalog/Automation Illustrator links, trimmed trailing whitespace and added the final newline.
+- Included both FieldOps architecture/layout fixtures. Biome formatted the architecture JSON;
+  before/after parsed content is identical. Shared schemas accept 26 elements, 49 components
+  and 26 layout items.
+- Copied `.github/workflows/render-excalidraw.yml` from the local `automation-pitch` repository
+  (GitHub `ashfordhill/automation-illustrator`). Retained the user's SVG renderer, pinned the
+  existing checkout v4 / renderer v1 references to their observed commit SHAs, added manual
+  dispatch and workflow-change triggers, limited automatic runs to main, and serialized runs.
+  The bot stages only SVG output and restores source files before committing.
+- `.docs/c4-flow.excalidraw` is an empty placeholder. The workflow skips empty files in its
+  temporary checkout so the existing valid `docs/examples/qrwty.excalidraw` can still render.
+  The original placeholder remains in Git. README displays the existing C4 PNG.
+
+Checks: full `pnpm lint` passes (**797 files**, 1979 existing warnings / 75 infos / zero errors).
+Workflow YAML, push/manual trigger declarations, embedded shell syntax, local README links,
+FieldOps design/layout schemas and `git diff --check` pass. No application source changed;
+the preceding UX2 typecheck/build/browser verification remains applicable. Unit/E2E suites
+remain deferred per the user's instruction. No credential/config files are added.

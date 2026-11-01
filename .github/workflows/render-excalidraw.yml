@@ -1,0 +1,42 @@
+name: Render Excalidraw
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.excalidraw'
+      - '.github/workflows/render-excalidraw.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-excalidraw-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      # Empty source placeholders are retained in Git but cannot be rendered.
+      - name: Skip empty diagram placeholders
+        run: find . -type f -name '*.excalidraw' -empty -print -delete
+
+      - uses: ashfordhill/action-excalidraw-render@9c349e220f9e5c2c4efa5a9bed652c8ca9360276 # v1
+        with:
+          format: 'svg'
+
+      - name: Commit rendered files
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git restore -- '*.excalidraw'
+          git add -- '*.svg'
+          git diff --staged --quiet || git commit -m "chore: render excalidraw files [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
