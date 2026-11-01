@@ -65,14 +65,16 @@ one deployed service or database.
 ### Mattermost architecture reference
 
 **Default architecture study, editable.** A source-backed translation of published Mattermost
-application and scaling diagrams. Seven C2 boundaries, twelve C3 components, three focused
-views, a message-delivery scenario and two deployment environments. The AWS layout follows
-the selected published image; Kubernetes is a separate proposed adaptation.
+application and scaling diagrams. Seven C2 boundaries, thirteen C3 components, three focused
+views, three backend scenarios with failure branches and two deployment environments. The AWS
+layout follows the selected published image; Kubernetes is a separate proposed adaptation.
 
 The server's REST handlers, post service, WebSocket hub, SQL store, file adapter and notifications
 trace to public source modules. Client components reuse the REST/realtime client implementation.
 Arrows distinguish REST commands, streaming events, SQL reads/writes and deployment replica
-communication. Contract excerpts and unresolved array fields are labelled honestly.
+communication. Nine partial contracts describe nested payloads, internal operations, state outcomes
+and retry/implementation boundaries. Channel permissions use resource scoping, distinct from tenant
+isolation. See the [backend design review](docs/reviews/mattermost-backend-review-2026-11-01.md).
 
 See the [source mapping and limitations](docs/examples/mattermost.md) and
 [tracked example](packages/spec/src/mattermost-example.ts). This is architectural intent,
@@ -415,6 +417,8 @@ client feature areas. Its [study](docs/examples/qrwty-target.md) records the com
 | <a id="c3-request"></a>Request handling | Planned validation, caller context, error contracts and interface versioning. | API/worker hosts; [Streamly](#streamly-video-platform) request boundary. |
 | <a id="c3-transactions"></a>Data access & transactions | Planned aggregate persistence, concurrent writes and atomic transaction boundary. | API/worker hosts; catalog ownership and outbox recording. |
 | <a id="c3-cache-policy"></a>Cache & freshness | Planned cache strategy, TTL, invalidation, coalescing and source fallback. | API/worker hosts; read-heavy products and playback metadata. |
+| <a id="c3-realtime"></a>Realtime delivery | Planned subscriptions, recipient authorization, delivery/ordering, reconnect, backpressure, revocation and cross-instance fan-out. | API/worker hosts; [Mattermost](#mattermost-architecture-reference) live hub, optionally inside a dedicated [realtime service](#c2-realtime). |
+| <a id="c3-files"></a>File lifecycle | Planned upload path/limits, content acceptance, access, attachment state, metadata/bytes consistency and orphan cleanup. | API/worker hosts with [object storage](#c2-storage) and [data](#c2-data); [Mattermost](#mattermost-architecture-reference) attachments. |
 | <a id="c3-workflow"></a>Workflow & orchestration | Planned durable business steps, idempotency, deadlines and recovery/compensation. | API/worker hosts; upload pipelines, orders and approvals. |
 | <a id="c3-outbox"></a>Transactional event publishing | Planned atomic domain/outbox recording, at-least-once publication and duplicate-safe consumer requirements. | API/worker hosts; durable integration and processing intent. |
 | <a id="c3-traffic-policy"></a>Rate limits & admission | Planned per-principal/tenant budgets, bursts, concurrency and overload outcomes. | API/worker hosts; public endpoints and shared enterprise capacity. |
@@ -471,8 +475,9 @@ engineer, with appropriate data and assertions.
 ### Workload intent
 
 Planned API/service, worker, data and component blocks expose a traffic pattern,
-peak target with a unit, and a P95 latency target. Zero means unspecified for the
-numeric targets. These are saved design goals, not benchmark results or automatic
+peak target with a unit, a measurement boundary, and a P95 latency target. Units include
+concurrent connections, messages/second and bytes/second for streaming and file workloads.
+Zero means unspecified for the numeric targets. These are saved design goals, not benchmark results or automatic
 topology changes. Other planned controls describe cache behavior, concurrency,
 instance counts and availability. Existing executable templates retain their
 documented options.

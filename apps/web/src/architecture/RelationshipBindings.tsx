@@ -10,6 +10,7 @@ import {
   type RelationshipBinding,
   type RelationshipPolicies,
   sameBindingRelationship,
+  tenantScopeSchema,
   validateArchitecture,
 } from "@jeeves/spec";
 import {
@@ -28,7 +29,7 @@ import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
 
 export const architectureId = (prefix: string) => `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
-export const tenantChoices = ["Unknown", "Public", "Tenant scoped", "Cross tenant"];
+export const tenantChoices = tenantScopeSchema.options;
 export function Choice({
   label,
   value,
@@ -201,7 +202,7 @@ function PolicyFields({
   onChange: (policies: RelationshipPolicies) => void;
 }) {
   const groupLabels = {
-    access: "Identity and tenant scope",
+    access: "Identity and data scope",
     failure: "Timeout and failure",
     retry: "Retry and idempotency",
     delivery: "Event delivery",
@@ -261,7 +262,7 @@ function PolicyFields({
             onChange={(v) => change({ identity: v as typeof p.identity })}
           />
           <Choice
-            label="Tenant scope"
+            label="Data / resource scope"
             value={p.tenant}
             options={tenantChoices}
             onChange={(v) => change({ tenant: v as typeof p.tenant })}

@@ -43,7 +43,7 @@ and [job status operations](https://github.com/mattermost/mattermost/blob/2b3fb2
 
 ## Components and implementation choices
 
-The server C3 contains REST handlers, session/channel authorization, the post service,
+The server C3 contains REST handlers, session/channel authorization, channels/membership, the post service,
 WebSocket hub, SQL store, file service/backend and notification service. These describe
 interfaces, owned behavior and dependencies that an implementation can preserve.
 They are grouped responsibilities, not one box per function or endpoint.
@@ -70,9 +70,10 @@ The CreatePost contract uses actual field names from the
 [upstream API definition](https://github.com/mattermost/mattermost/blob/2b3fb21fe39e6d8178625aabd8b9176596ad4cf5/api/v4/source/posts.yaml).
 The `posted` event excerpt comes from
 [notification.go](https://github.com/mattermost/mattermost/blob/2b3fb21fe39e6d8178625aabd8b9176596ad4cf5/server/channels/app/notification.go).
-Contract excerpts identify themselves as excerpts. `file_ids` is explicitly unresolved because
-the current field editor cannot represent arrays. Full nested payloads, API errors and event
-envelopes stay defined upstream; they have not been replaced by invented text fields.
+Contract excerpts carry **Partial** coverage. `file_ids` now has a string-array shape and the
+selected priority metadata has nested object fields. Internal post, membership and job-claim
+contracts record behavior, outcomes and retry boundaries. Full Post/API errors and event
+envelopes remain upstream; history’s dynamic-key `posts` map remains explicitly unresolved.
 
 The message scenario follows authorization, persistence and live delivery, with reconnect/history
 reconciliation. It does not assert durable WebSocket delivery or an atomic outbox. Teams and
@@ -110,9 +111,23 @@ leaves latency values undecided and records measurement boundaries for post ackn
 and cross-replica event delivery. Active sockets, messages/second, recipients/message, attachment
 traffic, reconnect bursts and operation with a failed replica determine the actual workload.
 
-Remaining model gaps are explicit: nested/array contract fields and full API import; structured
+Remaining model gaps are explicit: maps/unions, reusable types and full API import; structured
 image/resource/autoscaling/probe policies; deployment routes traced through intermediaries to a
-single C2 relationship; and workload units such as concurrent sockets and bytes/second.
+single C2 relationship; and machine-linked transaction/state-transition/effect definitions.
+Workload controls now include concurrent connections and bytes/second with measurement boundaries.
 The selected deployment omits detailed job-node cluster coordination, network/security rules,
 secrets, monitoring and recovery procedures. Those are follow-on design depth, not evidence that
 this snapshot is ready to deploy or generate a complete Mattermost implementation.
+
+## Backend design review
+
+[UX5’s review](../reviews/mattermost-backend-review-2026-11-01.md) explains the library changes,
+source findings, template/application boundaries and remaining design work. The example now has
+seven containers, thirteen components, nine partial contracts, twelve bindings, three datasets
+and three scenarios: messaging/reconnect/lost acknowledgement, attachment metadata failure, and
+competing/interrupted jobs. Recovery choices labelled proposed remain open design work.
+
+Select **Post service → Inspect contract** for operation behavior and outcomes. Select
+**WebSocket hub** or **File service & backend → Configure component** for their specialized
+options. Referenced definitions are protected: **Create version** makes an editable successor.
+Create a fresh Mattermost project to use the expanded example; existing projects keep their design.

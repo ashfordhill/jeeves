@@ -4938,3 +4938,74 @@ contains exactly Linux AMD64 and ARM64. Verified index:
 (revision 54551a3; workflow 41353635480 passed). GitHub confirms the source repository is private.
 Updated the Docker guide to reflect public availability; no additional root README changes.
 Removed the public-image inspection containers and volumes. Public pull verification is complete.
+
+
+## 2026-11-01 — UX5: Mattermost backend design review and richer C3 contracts
+
+The user requested a review of Mattermost through Jeeves to improve C2/C3 backend design and
+component configuration ahead of deterministic TypeScript templates. Read README, PLAN §1–§15,
+C4 guidance, roadmap/direction review, studio guide and recent handoffs. Inspected the official
+Mattermost architecture and pinned API/post/channel/file/WebSocket/job source. Page layout and
+new runtime/code generation remain outside this work.
+
+- Recorded the findings, C2 decisions, template/application boundaries and prioritized remaining
+  design work in [the backend review](reviews/mattermost-backend-review-2026-11-01.md). Keep seven
+  C2 boundaries; additional processes/infrastructure require a specific design reason.
+- Added reusable Realtime delivery and File lifecycle C3 families. Expanded authorization,
+  repository, workflow, notification and worker options. Removed the repository's unearned
+  default outbox guarantee; added database polling and more appropriate workload units/boundaries.
+- Added bounded nested object/array shapes, nullable values, text enumerations and type-appropriate
+  numeric/length/item constraints. Invalid combinations, duplicate fields, inconsistent bounds
+  and excessive nesting are rejected. Unknown nested shapes remain saveable and reviewable.
+- Added operation behavior and outcomes: access, preconditions, state/transaction boundaries,
+  idempotency, effects, acceptance criteria and template/hook ownership; outcome status, state,
+  retry decision and optional payload. These are design specifications, not executable rules.
+- Added explicit contract coverage and review findings for partial/unreviewed definitions and
+  missing operation decisions. Referenced coverage, shapes and behavior remain immutable by exact
+  version. Handoff JSON and Markdown retain coverage independently from shape resolution.
+- Component sidebars show operations/outcomes and open the selected contract. Nested fields and
+  review details are collapsible. Resource-scoped access can now be distinguished from customer
+  tenant isolation in bindings and dataset configuration.
+- Expanded the Mattermost example to thirteen C3 components, nine explicitly partial contracts,
+  twelve bindings, three datasets and three scenarios with failure branches. Added membership
+  ownership, internal post and job-claim contracts, typed file IDs/nested metadata, history
+  reconciliation, lost acknowledgement, partial file persistence and interrupted job effects.
+  Proposed TypeScript hooks and recovery choices are distinguished from inspected source facts.
+- Created persistent local project `9928f0b6-c54c-4081-b8d4-5bdff0b5875c`, revision 1, named
+  **Mattermost · backend design review** through the normal example workflow:
+  `http://127.0.0.1:4300/?project=9928f0b6-c54c-4081-b8d4-5bdff0b5875c&level=components&container=server`.
+  Confirmed the original Mattermost project's complete design response remains unchanged.
+  Fresh example creation uses the expanded model; existing projects are not silently migrated.
+
+Validation (the standing UI-work instruction defers unit/E2E suites and their maintenance):
+
+- `pnpm typecheck`: passed across all workspaces and scripts.
+- `pnpm lint`: passed; `Checked 802 files in 389ms. No fixes applied.` Zero errors,
+  2025 warnings / 75 infos.
+- `pnpm --filter @jeeves/web build`: passed; 7446 modules transformed, existing large-chunk
+  advisory only.
+- Temporary direct validation: all seven built-in examples parse and have zero structural
+  errors excluding expected NEEDS_TEMPLATE availability findings. Checked nested constraints,
+  recursive unresolved review, bounds, duplicate identities, excessive nesting, immutable
+  referenced shapes/outcomes/coverage, explicit successor versions and operation-tool JSON
+  Schema conversion. Handoff round trip retains the exact authored operation shape and coverage;
+  extracting the Post service into a reusable library fragment retains its behavior.
+- Direct Playwright browser interaction, without the E2E runner or persistent test code: new
+  family selection, configure/cancel/save/reload/undo/redo, protected contract inspection, explicit
+  successor creation, nested field/constraint and behavior editing, saved reload and selected
+  contract navigation. All passed.
+- Axe WCAG 2A/2AA/2.1AA: zero violations for protected operation behavior, file lifecycle options,
+  390×844 file configuration and the C3 sidebar. Zero browser page errors; narrow document width
+  remains 390px. Screenshots inspected under `/tmp/jeeves-mattermost-review/`; no tracked image
+  clutter. Confirmed the persistent review project reports **Design review incomplete**.
+- Removed all disposable inspection projects by their exact IDs. Development web/API remain
+  available on their usual loopback ports. Scoped diff and local documentation links checked.
+
+Compatibility and remaining work: optional contract fields preserve old saved designs; older
+planned contracts now receive explicit coverage/behavior advice rather than an implied complete
+review. Legacy suites may need expectation updates when their maintenance resumes. Dynamic-key
+map/union/reference schemas, full API import, structured aggregate/state-machine rules and exact
+operation-to-effect links remain gaps, documented with priority. The history dictionary stays
+explicitly unresolved. Lifecycle, revocation, recovery and workload budgets remain open choices.
+The whole C3 graph still needs zoom/focus at overview scale. No new runtime/template generation,
+capacity verification, GitHub push or container publication.

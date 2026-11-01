@@ -13,6 +13,7 @@ export type CapabilityField = {
   label: string;
   description?: string;
   options?: readonly string[];
+  multiline?: boolean;
   default: string | number | boolean;
 };
 export type PlannedCapability = {
@@ -41,6 +42,11 @@ const number = (key: string, label: string, value: number): CapabilityField => (
   key,
   label,
   default: value,
+});
+const note = (key: string, label: string, description: string): CapabilityField => ({
+  ...text(key, label),
+  multiline: true,
+  description,
 });
 const toggle = (key: string, label: string, value = true): CapabilityField => ({
   key,
@@ -108,7 +114,15 @@ const capability = (
             "Jobs / second",
             "Events / second",
             "Data operations / second",
+            "Concurrent connections",
+            "Messages / second",
+            "Bytes / second",
           ]),
+          note(
+            "workloadBoundary",
+            "Measurement boundary & workload",
+            "Operation mix, payload size, fan-out, duration and degraded conditions; numeric targets alone are insufficient.",
+          ),
           {
             ...number("p95LatencyMs", "P95 latency target (ms)", 0),
             description:
@@ -193,13 +207,25 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "cpu",
     "Consumes jobs or events outside the request path.",
     [
-      choice("trigger", "Trigger", ["Job queue", "Event stream", "Schedule"]),
+      choice("trigger", "Trigger", [
+        "Unspecified",
+        "Database polling",
+        "Job queue",
+        "Event stream",
+        "Schedule",
+      ]),
       number("concurrency", "Concurrency target", 4),
       choice("delivery", "Delivery expectation", [
+        "Unspecified",
         "At least once; idempotent handler",
         "Best effort",
       ]),
       toggle("deadLetter", "Dead-letter handling"),
+      note(
+        "claiming",
+        "Claim & recovery policy",
+        "Atomic claim, lease/heartbeat, concurrent workers, cancellation and recovery after a crash.",
+      ),
     ],
   ),
   capability(
@@ -543,6 +569,21 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "Decides which principals can act on which records.",
     [
       choice("policy", "Policy model", ["Owner based", "Roles + permissions", "Attribute based"]),
+      note(
+        "principal",
+        "Principal & session source",
+        "Who establishes identity; session expiration and revocation.",
+      ),
+      note(
+        "scope",
+        "Resource scope & permission rules",
+        "Action, resource, membership/role source, inherited permissions and deny rules.",
+      ),
+      note(
+        "revocation",
+        "Permission changes",
+        "How permission changes affect cached decisions, active connections and background work.",
+      ),
       isolation(),
       toggle("audit", "Audit privileged actions"),
     ],
@@ -582,7 +623,16 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
         "Pessimistic locking",
         "Append only",
       ]),
-      text("atomicity", "Atomic changes", "Domain state and outbox intent share one transaction"),
+      note(
+        "atomicity",
+        "Atomic changes",
+        "Specify the actual transaction. Include outbox intent only if the design explicitly requires it.",
+      ),
+      note(
+        "readRouting",
+        "Read routing & freshness",
+        "Primary/replica policy, read-after-write requirements and stale-read handling.",
+      ),
     ],
     "component",
   ),
@@ -627,6 +677,11 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
       ]),
       text("idempotency", "Idempotency key"),
       text("timeout", "Completion deadline"),
+      note(
+        "claiming",
+        "Work ownership & crash recovery",
+        "Claim/lease, heartbeat, abandoned work and restart behavior.",
+      ),
     ],
     "component",
   ),
@@ -670,6 +725,101 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
         "Degrade optional work",
       ]),
       text("bypass", "Trusted caller policy"),
+    ],
+    "component",
+  ),
+  capability(
+    "realtime-hub",
+    "Realtime delivery",
+    "Application components",
+    "service",
+    "plug",
+    "Owns live subscriptions, authorization, fan-out and recovery inside an application; a separate C2 service is optional.",
+    [
+      choice("transport", "Transport", ["Unspecified", "WebSocket", "Server-sent events"]),
+      note(
+        "audience",
+        "Subscription & audience rules",
+        "How channels are subscribed, authorized and filtered for each recipient.",
+      ),
+      choice("delivery", "Delivery guarantee", [
+        "Unspecified",
+        "Best effort; source reconciliation",
+        "Retained replay window",
+        "Durable acknowledged delivery",
+      ]),
+      choice("ordering", "Ordering scope", [
+        "Unspecified",
+        "Per connection",
+        "Per channel",
+        "Per aggregate",
+        "No ordering guarantee",
+      ]),
+      note(
+        "recovery",
+        "Reconnect & missed events",
+        "Resume cursor/window, duplicate handling and authoritative resynchronization.",
+      ),
+      note(
+        "backpressure",
+        "Slow consumer & buffer policy",
+        "Bounded buffers, overflow behavior and disconnect/recovery policy.",
+      ),
+      note(
+        "revocation",
+        "Session & membership changes",
+        "Revalidate recipients and revoke existing subscriptions when access changes.",
+      ),
+      choice("fanout", "Cross-instance fan-out", [
+        "Unspecified",
+        "Single instance",
+        "Peer exchange",
+        "Shared pub/sub",
+        "Durable stream",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "file-lifecycle",
+    "File lifecycle",
+    "Application components",
+    "service",
+    "archive",
+    "Coordinates upload authorization, content validation, metadata, bytes and cleanup across a database and file backend.",
+    [
+      choice("upload", "Upload path", [
+        "Unspecified",
+        "Through application",
+        "Direct signed upload",
+        "Resumable upload",
+      ]),
+      number("maxBytes", "Maximum upload bytes (0 = undecided)", 0),
+      note(
+        "validation",
+        "Content acceptance",
+        "Allowed content, actual content inspection, scan/quarantine policy and decompression limits.",
+      ),
+      note(
+        "authorization",
+        "Upload / download / attach rules",
+        "Owner, channel membership, metadata visibility and signed-link expiration.",
+      ),
+      note(
+        "lifecycle",
+        "File states & attachment ownership",
+        "Pending, available, attached and deleted states; one authority for each transition.",
+      ),
+      note(
+        "consistency",
+        "Metadata / bytes consistency",
+        "Write order and recovery when only the database or the object store succeeds.",
+      ),
+      note(
+        "cleanup",
+        "Orphans & retention",
+        "When abandoned uploads and derived assets are removed; retries and retention holds.",
+      ),
     ],
     "component",
   ),
@@ -761,6 +911,16 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
       choice("channels", "Channels", ["Email", "Email + push", "Email + SMS + push"]),
       text("templates", "Message templates"),
       toggle("preferences", "Recipient preferences"),
+      note(
+        "audience",
+        "Recipient eligibility",
+        "Membership, mentions, muted channels, presence and user preferences.",
+      ),
+      note(
+        "delivery",
+        "Delivery failure & duplicates",
+        "Commit ordering, retries, deduplication, provider failures and sensitive payload policy.",
+      ),
     ],
     "component",
   ),

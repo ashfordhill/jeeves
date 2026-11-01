@@ -128,6 +128,7 @@ export const architectureHandoffSchema = z
         kind: z.enum(["api", "in-process", "event", "data"]),
         description: z.string(),
         source: contractSourceSchema.optional(),
+        coverage: z.enum(["Unspecified", "Partial", "Complete"]).optional(),
         sourceRevision: z.number().optional(),
         status: z.enum(["resolved", "unavailable", "stale"]),
         definition: json.optional(),
@@ -336,6 +337,7 @@ export async function buildArchitectureHandoff(input: {
       name: c.name,
       kind: c.kind,
       description: c.description,
+      ...(c.coverage && { coverage: c.coverage }),
       ...(c.source && { source: c.source, sourceRevision: c.sourceDesignRevision }),
       status:
         definition === undefined
@@ -721,7 +723,7 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
   section("contracts", "Contracts, interfaces and bindings", [
     ...s.contracts.map(
       (c) =>
-        `- ${mdEscape(contractKey(c))}: ${mdEscape(c.name)} (${c.kind}, ${c.status}); resolved shape in [JSON](./architecture-handoff.json).`,
+        `- ${mdEscape(contractKey(c))}: ${mdEscape(c.name)} (${c.kind}, ${c.status}; coverage ${c.coverage ?? "Unspecified"}); definition, behavior and outcomes in [JSON](./architecture-handoff.json).`,
     ),
     ...(s.intent.interfaces ?? []).map(
       (i) =>

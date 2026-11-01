@@ -232,7 +232,7 @@ export function ArchitectureData({
                 {access("readers", "Permitted readers")}
                 {access("writers", "Permitted writers")}
                 <Choice
-                  label="Dataset tenant scope"
+                  label="Dataset access scope"
                   value={dataset.tenant}
                   options={tenantChoices}
                   onChange={(v) => updateData({ tenant: v as ArchitectureDataset["tenant"] })}

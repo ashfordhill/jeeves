@@ -12,6 +12,7 @@ import {
 } from "./architecture-deployments.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import type { LayoutDocument } from "./layout.ts";
+import { deepenMattermostBackend } from "./mattermost-backend.ts";
 
 export const MATTERMOST_EXAMPLE = {
   id: "mattermost-reference",
@@ -370,7 +371,7 @@ export function mattermostExample(): {
   local("workers-store", "workers", "job-store", "Claims pending jobs / records outcome");
   local("client-recovery", "client-events", "client-api", "Refreshes history after reconnect");
 
-  // Keep real field types and disclose the current schema's limits rather than inventing generic outcomes.
+  // Source excerpts stay explicitly partial; the backend review adds behavior and richer shapes.
   const field = (
     name: string,
     type: ContractShape["payload"][number]["type"],
@@ -402,12 +403,16 @@ export function mattermostExample(): {
               field("channel_id", "text", "Target channel."),
               field("message", "text", "Post content."),
               field("root_id", "text", "Parent post for a thread.", false),
-              field(
-                "file_ids",
-                "unresolved",
-                "Upstream type is string[]. Jeeves does not yet model array fields.",
-                false,
-              ),
+              {
+                ...field(
+                  "file_ids",
+                  "array",
+                  "Attachment IDs; the API documents at most five files per post.",
+                  false,
+                ),
+                items: { type: "text" },
+                maxItems: 5,
+              },
             ],
             output: postFields,
           },
@@ -748,6 +753,7 @@ export function mattermostExample(): {
   design.elements.forEach((item, index) => {
     layout.items[item.id] = { x: (index % 3) * 440, y: Math.floor(index / 3) * 520 };
   });
+  deepenMattermostBackend(design);
   return { name: MATTERMOST_EXAMPLE.name, design, layout };
 }
 

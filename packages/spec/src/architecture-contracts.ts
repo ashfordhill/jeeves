@@ -1,32 +1,20 @@
 /** Project-local design contracts. Declarations never supply executable runtime bindings. */
 import { z } from "zod";
+import {
+  contractFieldsSchema as fields,
+  operationBehaviorSchema,
+  operationOutcomeSchema,
+  unresolvedContractValue,
+} from "./contract-shapes.ts";
 import { deliveryConfigSchema } from "./delivery.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import { resourceConfigSchema } from "./resources.ts";
 
+export * from "./contract-shapes.ts";
+
 const text = z.string().trim().max(1200);
-export const contractFieldSchema = z.strictObject({
-  id: idSchema,
-  name: z
-    .string()
-    .trim()
-    .regex(/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/),
-  type: z.enum(["unresolved", "text", "integer", "boolean", "uuid", "http-url", "timestamp"]),
-  required: z.boolean(),
-  description: text.default(""),
-});
-const fields = z
-  .array(contractFieldSchema)
-  .max(40)
-  .superRefine((items, ctx) => {
-    if (
-      new Set(items.map((item) => item.name)).size !== items.length ||
-      new Set(items.map((item) => item.id)).size !== items.length
-    )
-      ctx.addIssue({ code: "custom", message: "Field names must be unique within a payload." });
-  });
 export const contractShapeSchema = z.strictObject({
   operations: z
     .array(
@@ -36,6 +24,18 @@ export const contractShapeSchema = z.strictObject({
         description: text.default(""),
         input: fields,
         output: fields,
+        behavior: operationBehaviorSchema.optional(),
+        outcomes: z
+          .array(operationOutcomeSchema)
+          .max(30)
+          .superRefine((items, ctx) => {
+            if (new Set(items.map((item) => item.id)).size !== items.length)
+              ctx.addIssue({
+                code: "custom",
+                message: "Outcome identities must be unique within an operation.",
+              });
+          })
+          .optional(),
       }),
     )
     .max(30)
@@ -91,6 +91,8 @@ export const architectureContractSchema = z
     name: z.string().trim().min(1).max(120),
     kind: z.enum(["api", "in-process", "event", "data"]),
     description: text.default(""),
+    /** Explicit coverage of this declaration, independent of template availability or verification. */
+    coverage: z.enum(["Unspecified", "Partial", "Complete"]).optional(),
     shape: contractShapeSchema.optional(),
     source: contractSourceSchema.optional(),
     /** Exact canonical source shape, authored from sourceDesignRevision (the saved base), not a compatibility assertion. */
@@ -403,7 +405,12 @@ export function validateArchitectureContracts(design: DesignDocument): Finding[]
 }
 
 export interface ContractReviewFinding {
-  code: "UNBOUND_REQUIRED" | "UNRESOLVED_CONTRACT" | "SOURCE_STALE";
+  code:
+    | "UNBOUND_REQUIRED"
+    | "UNRESOLVED_CONTRACT"
+    | "SOURCE_STALE"
+    | "CONTRACT_COVERAGE"
+    | "OPERATION_BEHAVIOR";
   message: string;
   contract?: string;
   interface?: string;
@@ -412,6 +419,45 @@ export interface ContractReviewFinding {
 export function architectureContractReview(design: DesignDocument): ContractReviewFinding[] {
   const result: ContractReviewFinding[] = [];
   for (const contract of design.architecture?.contracts ?? []) {
+    if (!contract.source && contract.coverage !== "Complete")
+      result.push({
+        code: "CONTRACT_COVERAGE",
+        message: `${contract.name} ${contract.version}: ${contract.coverage === "Partial" ? "partial contract; omitted behavior still needs design" : "contract coverage has not been reviewed"}.`,
+        contract: contractKey(contract),
+      });
+    for (const operation of contract.shape?.operations ?? []) {
+      const b = operation.behavior;
+      const missing = [
+        !b?.kind || b.kind === "Unspecified" ? "command/query intent" : "",
+        !b?.authorization?.trim() ? "authorization" : "",
+        !b?.idempotency || b.idempotency === "Unspecified" ? "retry/idempotency semantics" : "",
+        b?.idempotency === "Deduplication key" && !b.idempotencyKey?.trim()
+          ? "deduplication scope and lifetime"
+          : "",
+        b?.kind === "Command" && (!b.stateChanges?.trim() || !b.transaction?.trim())
+          ? "state change and transaction boundary"
+          : "",
+        !b?.implementation || b.implementation === "Unspecified" ? "implementation boundary" : "",
+        ["Application hook", "Composition"].includes(b?.implementation ?? "") &&
+        !b?.extensionPoint?.trim()
+          ? "application hook contract"
+          : "",
+        !b?.acceptance?.trim() ? "acceptance criteria" : "",
+        !operation.outcomes?.some((o) => o.kind === "Success") ? "success outcome" : "",
+        !operation.outcomes?.some((o) => o.kind !== "Success") ? "failure/rejection outcome" : "",
+        operation.outcomes?.some(
+          (o) => !o.condition.trim() || o.state === "Unspecified" || o.retry === "Unspecified",
+        )
+          ? "outcome state and retry decisions"
+          : "",
+      ].filter(Boolean);
+      if (missing.length)
+        result.push({
+          code: "OPERATION_BEHAVIOR",
+          message: `${contract.name} / ${operation.name}: specify ${missing.join(", ")}.`,
+          contract: contractKey(contract),
+        });
+    }
     if (contract.source) {
       const current = resolveContractSource(design, contract.source);
       if (current === undefined || contractCanonical(current) !== contract.sourceSnapshot)
@@ -427,8 +473,12 @@ export function architectureContractReview(design: DesignDocument): ContractRevi
         : !contract.shape.payload.length) ||
         [
           ...contract.shape.payload,
-          ...contract.shape.operations.flatMap((op) => [...op.input, ...op.output]),
-        ].some((field) => field.type === "unresolved"))
+          ...contract.shape.operations.flatMap((op) => [
+            ...op.input,
+            ...op.output,
+            ...(op.outcomes ?? []).flatMap((o) => o.payload ?? []),
+          ]),
+        ].some(unresolvedContractValue))
     )
       result.push({
         code: "UNRESOLVED_CONTRACT",
@@ -482,6 +532,7 @@ export function validateContractTransition(
       );
     const semantics = (item: ArchitectureContract) => ({
       kind: item.kind,
+      coverage: item.coverage,
       shape: item.shape,
       source: item.source,
       sourceSnapshot: item.sourceSnapshot,

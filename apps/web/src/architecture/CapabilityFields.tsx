@@ -1,5 +1,5 @@
 import { type ConfigValues, plannedCapability } from "@jeeves/spec";
-import { NativeSelect, NumberInput, Stack, Switch, TextInput } from "@mantine/core";
+import { NativeSelect, NumberInput, Stack, Switch, Textarea, TextInput } from "@mantine/core";
 
 /** The planning catalog owns both options and their field labels. No raw JSON menu. */
 export function CapabilityFields({
@@ -20,6 +20,19 @@ export function CapabilityFields({
           const value = config[field.key] ?? field.default;
           const change = (next: unknown) => onChange({ ...config, [field.key]: next });
           const common = { label: field.label, description: field.description, size: "sm" };
+          if (field.multiline)
+            return (
+              <Textarea
+                key={field.key}
+                {...common}
+                value={String(value)}
+                maxLength={2000}
+                autosize
+                minRows={2}
+                maxRows={5}
+                onChange={(event) => change(event.currentTarget.value)}
+              />
+            );
           if (field.options)
             return (
               <NativeSelect
@@ -61,7 +74,13 @@ export function CapabilityFields({
           );
         };
         const fields = plannedCapability(capability)?.fields ?? [];
-        const workload = new Set(["workloadShape", "peakRate", "workloadUnit", "p95LatencyMs"]);
+        const workload = new Set([
+          "workloadShape",
+          "peakRate",
+          "workloadUnit",
+          "p95LatencyMs",
+          "workloadBoundary",
+        ]);
         return (
           <>
             {fields

@@ -19,7 +19,6 @@ import {
 import {
   Alert,
   Button,
-  Checkbox,
   Group,
   MultiSelect,
   NativeSelect,
@@ -33,93 +32,16 @@ import { useApiPreview } from "../api-reference/preview.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
 
+import { PayloadFields } from "./ContractFields.tsx";
+import { OperationBehaviorFields } from "./OperationBehaviorFields.tsx";
+
 const newId = (prefix: string) => `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
 const emptyShape = (): ContractShape => ({ operations: [], payload: [] });
-
-function PayloadFields({
-  label,
-  fields,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  fields: ContractShape["payload"];
-  onChange: (fields: ContractShape["payload"]) => void;
-  disabled: boolean;
-}) {
-  return (
-    <fieldset className="contract-payload" disabled={disabled}>
-      <legend>{label}</legend>
-      {!fields.length ? (
-        <Text size="sm">No fields declared. Empty payloads may remain a draft.</Text>
-      ) : null}
-      {fields.map((field, index) => {
-        const change = (patch: Partial<typeof field>) =>
-          onChange(fields.map((item, i) => (i === index ? { ...item, ...patch } : item)));
-        return (
-          <div className="contract-field" key={field.id}>
-            <TextInput
-              label={`${label} field ${index + 1} name`}
-              value={field.name}
-              maxLength={64}
-              onChange={(e) => change({ name: e.currentTarget.value })}
-            />
-            <NativeSelect
-              label={`${label} field ${index + 1} type`}
-              value={field.type}
-              data={["unresolved", "text", "integer", "boolean", "uuid", "http-url", "timestamp"]}
-              onChange={(e) => change({ type: e.currentTarget.value as typeof field.type })}
-            />
-            <TextInput
-              label={`${label} field ${index + 1} description`}
-              value={field.description}
-              maxLength={1200}
-              onChange={(e) => change({ description: e.currentTarget.value })}
-            />
-            <Group justify="space-between">
-              <Checkbox
-                label={`${label} field ${index + 1} required`}
-                checked={field.required}
-                onChange={(e) => change({ required: e.currentTarget.checked })}
-              />
-              <Button
-                size="compact-xs"
-                color="red"
-                variant="subtle"
-                onClick={() => onChange(fields.filter((_, i) => i !== index))}
-              >
-                Remove {label.toLowerCase()} field {index + 1}
-              </Button>
-            </Group>
-          </div>
-        );
-      })}
-      <Button
-        size="xs"
-        variant="default"
-        disabled={disabled || fields.length >= 40}
-        onClick={() =>
-          onChange([
-            ...fields,
-            {
-              id: newId("field"),
-              name: `field${fields.length + 1}`,
-              type: "unresolved",
-              required: true,
-              description: "",
-            },
-          ])
-        }
-      >
-        Add {label.toLowerCase()} field
-      </Button>
-    </fieldset>
-  );
-}
 
 export function InterfaceSummary({ owner }: { owner: ContractOwner }) {
   const design = useDraw((state) => state.loaded)!.design;
   const [open, setOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<string>();
   const uses =
     design.architecture?.interfaces?.filter((item) => sameContractOwner(item.owner, owner)) ?? [];
   const review = architectureContractReview(design);
@@ -142,22 +64,69 @@ export function InterfaceSummary({ owner }: { owner: ContractOwner }) {
                   {def?.source ? "Source reference" : "Planned"}
                   {use.direction === "required" ? ` · ${use.necessity}` : ""}
                 </span>
-                {review
-                  .filter(
+                {def?.shape?.operations.map((operation) => (
+                  <details key={operation.id}>
+                    <summary>{operation.name}</summary>
+                    <p>{operation.behavior?.authorization || operation.description}</p>
+                    <p>{operation.behavior?.transaction}</p>
+                    <p>
+                      {operation.behavior?.implementation &&
+                      operation.behavior.implementation !== "Unspecified"
+                        ? `Implementation boundary: ${operation.behavior.implementation}`
+                        : "Implementation boundary undecided"}
+                    </p>
+                    <ul>
+                      {operation.outcomes?.map((outcome) => (
+                        <li key={outcome.id}>
+                          {outcome.status ? `${outcome.status} · ` : ""}
+                          {outcome.name} · {outcome.state} · {outcome.retry}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                ))}
+                {(() => {
+                  const findings = review.filter(
                     (item) =>
                       item.interface === use.id || item.contract === contractKey(use.contract),
-                  )
-                  .map((item) => (
-                    <span className="contract-review" key={item.code}>
-                      {item.message}
-                    </span>
-                  ))}
+                  );
+                  return findings.length ? (
+                    <details>
+                      <summary>
+                        {findings.length} open design {findings.length === 1 ? "detail" : "details"}
+                      </summary>
+                      {findings.map((item) => (
+                        <p className="contract-review" key={`${item.code}:${item.message}`}>
+                          {item.message}
+                        </p>
+                      ))}
+                    </details>
+                  ) : null;
+                })()}
+                <Button
+                  variant="subtle"
+                  size="compact-xs"
+                  mt="xs"
+                  onClick={() => {
+                    setSelectedContract(contractKey(use.contract));
+                    setOpen(true);
+                  }}
+                >
+                  Inspect contract
+                </Button>
               </li>
             );
           })}
         </ul>
       ) : null}
-      <Button variant="default" fullWidth onClick={() => setOpen(true)}>
+      <Button
+        variant="default"
+        fullWidth
+        onClick={() => {
+          setSelectedContract(uses[0] && contractKey(uses[0].contract));
+          setOpen(true);
+        }}
+      >
         {uses.length ? "Edit interfaces" : "Add interface"}
       </Button>
       {open ? (
@@ -165,6 +134,7 @@ export function InterfaceSummary({ owner }: { owner: ContractOwner }) {
           key={`${owner.kind}:${owner.id}`}
           design={design}
           owner={owner}
+          initialContract={selectedContract}
           onClose={() => setOpen(false)}
         />
       ) : null}
@@ -301,6 +271,11 @@ export function InterfaceEditor({
       }
     >
       <Stack gap="md" className="interface-editor">
+        {!parsed.success ? (
+          <Alert color="red" role="alert">
+            {parsed.error.issues[0]?.path.join(".")}: {parsed.error.issues[0]?.message}
+          </Alert>
+        ) : null}
         <Text size="sm">
           Project-local definitions are reused by exact version. Planned declarations document
           intent. Existing source shapes are read-only; bindings follow separately.
@@ -401,6 +376,20 @@ export function InterfaceEditor({
                 value={contract.description}
                 onChange={(e) => updateContract({ description: e.currentTarget.value })}
               />
+              {!contract.source ? (
+                <NativeSelect
+                  label="Contract coverage"
+                  disabled={locked}
+                  value={contract.coverage ?? "Unspecified"}
+                  data={["Unspecified", "Partial", "Complete"]}
+                  description="Coverage is an authored claim; template availability and verification are separate."
+                  onChange={(e) =>
+                    updateContract({
+                      coverage: e.currentTarget.value as ArchitectureContract["coverage"],
+                    })
+                  }
+                />
+              ) : null}
               <NativeSelect
                 label="Definition source"
                 disabled={locked}
@@ -516,6 +505,11 @@ export function InterfaceEditor({
                               onChange={(e) =>
                                 changeOperation({ description: e.currentTarget.value })
                               }
+                            />
+                            <OperationBehaviorFields
+                              operation={operation}
+                              disabled={locked}
+                              onChange={changeOperation}
                             />
                             <PayloadFields
                               label={`Operation ${index + 1} input`}

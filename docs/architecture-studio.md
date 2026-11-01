@@ -47,8 +47,8 @@ placement is available through **Deployment**. Traffic targets and legacy tenanc
 inside option forms; they do not dominate ordinary responsibility editing.
 
 C3 includes request handling, data access/transactions, cache freshness, workflows,
-transactional event publishing and traffic admission alongside the existing business/client
-families. A transactional outbox explicitly requires domain state and event intent to share a
+transactional event publishing, realtime delivery, file lifecycle and traffic admission alongside
+the existing business/client families. A transactional outbox explicitly requires domain state and event intent to share a
 transaction; a queue and worker alone do not supply that property.
 
 Interfaces, policies, objectives, data ownership and decisions remain part of the shared model.
@@ -71,3 +71,10 @@ Generation remains a secondary, separate workflow. There is no new runtime, prov
 C4 code editor or capacity verification in this UX package. Legacy test suites have not been
 updated for the new labels, geometry or default study. The user's current priority explicitly
 defers that maintenance.
+
+Contract inspection also exposes nested payloads, field constraints, operation behavior and outcomes.
+Use **Inspect contract** on a component to open that exact definition. Partial/unspecified coverage
+and missing behavioral decisions appear in Review; “Complete” is an authored coverage claim, not
+verification or template availability. New versions preserve the existing reference guards.
+See the [Mattermost backend review](reviews/mattermost-backend-review-2026-11-01.md) for a worked
+example and remaining gaps before deterministic implementation.

@@ -23,7 +23,13 @@ export const bindingRelationshipSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("connection"), id: idSchema }),
   z.strictObject({ kind: z.literal("component-relationship"), id: idSchema }),
 ]);
-export const tenantScopeSchema = z.enum(["Unknown", "Public", "Tenant scoped", "Cross tenant"]);
+export const tenantScopeSchema = z.enum([
+  "Unknown",
+  "Public",
+  "Resource scoped",
+  "Tenant scoped",
+  "Cross tenant",
+]);
 export const relationshipPoliciesSchema = z.strictObject({
   access: z
     .strictObject({
@@ -408,13 +414,13 @@ export function architectureReview(design: DesignDocument): ArchitectureReviewFi
       if (contractKey(binding.contract) !== contractKey(dataset.contract)) continue;
       const access = binding.policies?.access;
       if (
-        dataset.tenant === "Tenant scoped" &&
+        ["Tenant scoped", "Resource scoped"].includes(dataset.tenant) &&
         access &&
         ["Public", "Cross tenant"].includes(access.tenant)
       )
         result.push({
           code: "TENANT_CONFLICT",
-          message: `${binding.name}: ${access.tenant} access conflicts with tenant-scoped dataset ${dataset.name}.`,
+          message: `${binding.name}: ${access.tenant} access conflicts with ${dataset.tenant.toLowerCase()} dataset ${dataset.name}.`,
           binding: binding.id,
           dataset: dataset.id,
         });
