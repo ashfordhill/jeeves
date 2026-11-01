@@ -436,3 +436,42 @@ it("several pattern applications keep saved-base provenance and one pending tran
     ]);
   }
 });
+
+it("chat review shares the mouse report and saves scoped decisions through the same validator", async () => {
+  const { reviewArchitecture } = await import("@jeeves/spec");
+  const before = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/architecture-review.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const r = before.architecture!.reviewRequirements!.find((r) => r.kind === "cache")!;
+  if (r.kind === "cache") delete r.update;
+  const workspace = new Workspace(registry, before);
+  const report = JSON.parse(workspace.run("getArchitectureReview", "{}"));
+  expect(report.findings).toEqual(reviewArchitecture(before).findings);
+  const f = report.findings[0];
+  const architecture = structuredClone(before.architecture!);
+  architecture.decisions = [
+    {
+      id: "defer-update",
+      name: "Defer update",
+      context: f.message,
+      decision: "Accept bounded exploration risk",
+      consequence: "Must resolve before implementation",
+      status: "Accepted",
+      links: f.inputs,
+      acknowledgements: [{ finding: f.id, fingerprint: f.fingerprint }],
+    },
+  ];
+  const op = { op: "setArchitecture" as const, architecture };
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops: [op] }))).ok).toBe(true);
+  const mouse = applyOperations(before, [op], registry);
+  expect(mouse.ok).toBe(true);
+  if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
+  expect(workspace.reviewRevisionBound).toBe(true);
+  expect(workspace.question).toBeUndefined();
+  expect(JSON.parse(workspace.run("getArchitectureReview", "{}")).complete).toBe(true);
+});

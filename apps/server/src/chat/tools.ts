@@ -27,6 +27,7 @@ import {
   plannedConfigSchema,
   previewArchitecturePattern,
   resolveContractSource,
+  reviewArchitecture,
   reviewTemplateUpgrade,
   subtypeDiscards,
   templateRefSchema,
@@ -58,6 +59,7 @@ const argsSchemas = {
   applyArchitecturePattern: patternRequestSchema,
   getDesign: z.strictObject({}),
   getArchitectureContracts: z.strictObject({}),
+  getArchitectureReview: z.strictObject({}),
   reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
   applyOperations: z.strictObject({
     ops: z
@@ -93,6 +95,8 @@ const descriptions: Record<ToolName, string> = {
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getArchitectureContracts:
     "Inspect project-local contract definitions, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
+  getArchitectureReview:
+    "Read requirement-based architecture review with concern groups, assumptions, linked inputs, fingerprints, completion and decisions. Save reviewRequirements and decisions using setArchitecture; preserve other metadata. Accepted decisions need context, decision/reason, consequence, linked identities and exact finding/fingerprint acknowledgements. Contradictions cannot be acknowledged away. Changed relevant inputs expire acceptance; no review supplies runtime evidence or changes Generate. Ordinary planning edits need no additional approval.",
   listArchitecturePatterns:
     "List four versioned architecture patterns and their variants. Design intent only; no runtime adoption.",
   describeArchitecturePattern:
@@ -155,6 +159,7 @@ export class Workspace {
   pending: OperationInput[] = [];
   /** Pattern expansion cannot be replayed over a concurrent revision. */
   patternRevisionBound = false;
+  reviewRevisionBound = false;
   question: ChatQuestion | undefined;
   activity: ChatActivity[] = [];
 
@@ -171,6 +176,7 @@ export class Workspace {
     this.working = base;
     this.pending = [];
     this.patternRevisionBound = false;
+    this.reviewRevisionBound = false;
   }
 
   /** Runs one tool call and returns its JSON result for the model. */
@@ -292,6 +298,13 @@ export class Workspace {
           patternBaseRevision: this.base.revision,
         };
       }
+      case "getArchitectureReview":
+        this.log(tool, true, "Read architecture review and decisions");
+        return {
+          ...reviewArchitecture(this.working),
+          requirements: this.working.architecture?.reviewRequirements ?? [],
+          decisions: this.working.architecture?.decisions ?? [],
+        };
       case "getArchitectureContracts":
         this.log(tool, true, "Read architecture contracts and sources");
         return {
@@ -412,6 +425,14 @@ export class Workspace {
     );
     if (result.design.architecture?.patternInstances?.some((item) => !priorPatterns.has(item.id)))
       this.patternRevisionBound = true;
+    if (
+      ops.some((op) => op.op === "setArchitecture") &&
+      (this.working.architecture?.decisions ||
+        this.working.architecture?.reviewRequirements ||
+        result.design.architecture?.decisions ||
+        result.design.architecture?.reviewRequirements)
+    )
+      this.reviewRevisionBound = true;
     this.working = result.design;
     this.pending.push(...ops);
     this.log("applyOperations", true, `Prepared ${plural(ops.length, "change")}`);

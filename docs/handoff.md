@@ -3874,3 +3874,80 @@ availability. No new runtime/template/recipe, generated contract/output/golden, 
 lockfile, live QRWTY design/application, paid model or provisioning changes. Existing shared
 Postgres and live data were retained. Evidence archives and this append-only record follow the
 checks. Stop after P50 and its local commit; execute P51 separately in this checkout/branch.
+
+## 2026-11-01 — P51: architecture review findings and decisions
+
+Implemented P51 only. [Release evidence and seven inspected captures](evidence/p51/README.md)
+and the [review/decision contract](architecture-review.md) record the result. P52 linked
+current/target workspaces are next, only when requested.
+
+Added optional typed selected requirements for access, cache-aside, delivery and failure.
+The shared review report groups those with the existing P47/P48 contract, identity/tenant,
+dataset authority/access/lifecycle and objective checks. Every finding carries concern,
+assumption, linked inputs, conflict/unresolved state and a relevant-input fingerprint.
+The production architecture API returns review separately; generation findings and
+blocksGenerate are unchanged. Selected contradictions remain saveable but prevent review
+completion. Structural invalidity still rejects the whole operation, including dangling
+review/decision links, with historical repair preserved.
+
+Cache checks follow the application's source fallback and bounded change/disable propagation,
+without a cache→store dependency. Source/cache representations can have separate explicit
+contracts; each binding still checks its own exact version. Schedule/request workers need no
+queue; declared external consumers can supply channel delivery. Synchronous search, personal
+billing and async-send-then-response are valid. No warnings derive solely from counts, duplicate
+families, visitor-facing services, private hosting or line style; no inferred SSO/SCIM requirement.
+
+Architecture review in Editor actions/Findings has concern groups, relevant editor selection,
+cache/delivery pattern previews and requirement editing. Decisions retain context, decision/reason,
+consequence, status and linked identities. Accepted scoped tradeoffs remain visible; only matching
+fingerprints and relevant links acknowledge them. Changes to relevant requirement/binding/contract/
+source inputs reactivate findings; unrelated revision, layout and notes/context wording do not.
+Conflicts cannot be acknowledged away. Explicit Unresolved decisions prevent completion.
+Fixed Save/Cancel, semantic undo/redo, reload and retained invalid/conflicting drafts work by mouse.
+Dirty review drafts require Save or Cancel before a separate editor/pattern navigation.
+
+Chat's getArchitectureReview uses the same report, schemas and operation validator. Ordinary
+supplied planning edits need no additional approval. Scripted chat matches mouse output, commits
+one undo step and preserves history. Review-bearing snapshots refuse generic stale-operation
+replay so a concurrent edit saves nothing and requires a new read of relevant inputs.
+
+Final verification (fingerprints unchanged during each recorded run):
+
+- `pnpm work run unit packages/spec/src/architecture-review.test.ts packages/spec/src/architecture-bindings.test.ts packages/spec/src/architecture-contracts.test.ts packages/generator/src/architecture.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts`:
+  **85 passed / 6 files**, Vitest **9.16s**, profile **9.9s**;
+  `2026-11-01T04-59-58-310Z-unit-1cb468e2`.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **825 tests / 115 files**
+  passed, Vitest **36.53s**, profile **44.6s**;
+  `2026-11-01T05-00-52-064Z-check-e72a087f`. Biome checked **755 files**:
+  **1273 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- `pnpm work run browser-preview apps/web/e2e/architecture-review.spec.ts apps/web/e2e/architecture-bindings.spec.ts apps/web/e2e/architecture-patterns.spec.ts`:
+  **8 passed**, Playwright **20.6s**, profile **23.1s**;
+  `2026-11-01T04-59-58-308Z-browser-preview-0a2dc5af`.
+  Strict diagnostics, narrowly registered expected HTTP conflict, axe and narrow overflow pass.
+- Opened all seven final **1440 × 900 light / 390 × 844 dark** captures. Assumptions,
+  exact-version conflicts, expired acceptance, decision text and narrow requirement fields are
+  readable; fixed actions remain reachable while content scrolls.
+- Generator compatibility preserves executable outputs, contracts, artifacts and ownership;
+  only the intentionally lossless design snapshot retains new review metadata. No golden refresh.
+  Changed-document local links and `git diff --check` pass. E2E database inspection found
+  **zero** remaining projects with any of the three P51 fixture names after exact-ID cleanup.
+
+Interim verification caught an exact chat-tool-list assertion and a required-label selector.
+Accessibility review caught new badge contrast and the linked policy editor's hover contrast;
+corrected before final gates. Semantic review removed an overly strict source/cache-contract
+identity assumption and added a separate-representation regression. One full-check run overlapped
+focused/browser suites and timed out two existing five-second database tests (project restart
+history and legacy usage migration). The unchanged standalone four-worker gate then passed.
+No automatic retries, timeout increases, diagnostic suppression, runner/dependency changes or
+golden refresh were used. Earlier source-changing/failed runs are not final evidence.
+
+No material scope deviation. Review is calculated from the revision; selected requirements and
+decisions persist as semantic metadata. Fingerprints are non-security change detectors, not
+signatures. Declared cache fallback/propagation, failure outcomes and delivery responsibility do
+not prove code execution, capacity or security. Existing example gaps remain visible; no example
+was rewritten to force a zero-finding result. Updated catalog and roadmap/entry/agent pointers
+for actual authoring availability. No new runtime/template/recipe, generated output/golden,
+dependency, lockfile, paid model, provisioning or live QRWTY design/application changes. Shared
+Postgres/live data were retained; the single P51 fixture left by the early timeout was removed
+by its exact ID. Evidence archives and this append-only record follow the checks. Stop after
+P51 and its scoped local commit; execute P52 separately in this checkout/branch when requested.

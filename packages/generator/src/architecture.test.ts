@@ -558,3 +558,40 @@ it("keeps historical architecture pattern provenance out of executable outputs a
     "historical-pattern",
   );
 });
+
+it("preserves review decisions and requirements without changing generated outputs, contracts or ownership", async () => {
+  const { reviewArchitecture } = await import("@jeeves/spec");
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  design.architecture!.reviewRequirements = [
+    {
+      id: "scheduled-review",
+      name: "Scheduled cleanup",
+      kind: "delivery",
+      trigger: "Schedule",
+      responsible: { kind: "element", id: "qrwty" },
+    },
+  ];
+  design.architecture!.decisions = [
+    {
+      id: "hosted-first",
+      name: "Hosted first",
+      context: "Current product scope",
+      decision: "Keep shared hosting for the first release",
+      consequence: "Private delivery remains a future choice",
+      status: "Accepted",
+      links: [{ kind: "system", id: "system" }],
+      acknowledgements: [],
+    },
+  ];
+  expect(reviewArchitecture(design).complete).toBe(true);
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((file) => file.path === "jeeves/design.json")!.contents).toContain(
+    "hosted-first",
+  );
+});

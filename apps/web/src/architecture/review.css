@@ -1,0 +1,25 @@
+.architecture-review {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.architecture-review h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+.review-finding {
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 10px;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.review-finding details {
+  font-size: 0.8rem;
+}
+.review-finding code {
+  white-space: normal;
+}
+.architecture-review .mantine-Tabs-list {
+  flex-wrap: wrap;
+}

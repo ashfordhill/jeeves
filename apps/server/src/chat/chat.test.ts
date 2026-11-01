@@ -220,6 +220,7 @@ describe("design chat", () => {
       "applyArchitecturePattern",
       "getDesign",
       "getArchitectureContracts",
+      "getArchitectureReview",
       "reviewSubtype",
       "applyOperations",
       "validateDesign",
@@ -756,5 +757,138 @@ it("never replays a pattern snapshot over concurrent architecture edits", async 
   expect(turn.operationId).toBeNull();
   expect(
     turn.activity.some((a) => a.summary === "Pattern revision conflict; nothing was added"),
+  ).toBe(true);
+});
+
+it("records requirement-based review decisions in one scripted chat undo step", async () => {
+  const { reviewArchitecture } = await import("@jeeves/spec");
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/architecture-review.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const cache = base.architecture!.reviewRequirements!.find((r) => r.kind === "cache")!;
+  if (cache.kind === "cache") delete cache.update;
+  const f = reviewArchitecture(base).findings[0]!;
+  const architecture = structuredClone(base.architecture!);
+  architecture.decisions = [
+    {
+      id: "exploration-risk",
+      name: "Exploration risk",
+      context: f.message,
+      decision: "Accept bounded exploration risk",
+      consequence: "Resolve before implementation",
+      status: "Accepted",
+      links: f.inputs,
+      acknowledgements: [{ finding: f.id, fingerprint: f.fingerprint }],
+    },
+  ];
+  const op = { op: "setArchitecture" as const, architecture };
+  const h = harness([
+    { toolCalls: [{ name: "getArchitectureReview", arguments: {} }] },
+    { toolCalls: [{ name: "applyOperations", arguments: { ops: [op] } }] },
+    { text: "Recorded the scoped tradeoff. Implementation remains unverified." },
+  ]);
+  const id = await h.project();
+  await h.call("POST", `/projects/${id}/operations`, {
+    baseRevision: 0,
+    ops: [
+      ...base.elements.map((element) => ({ op: "addElement", element })),
+      ...base.connections.map((connection) => ({ op: "connect", connection })),
+      { op: "setArchitecture", architecture: base.architecture },
+    ],
+  });
+  const before = (await h.design(id)).design;
+  const { state, turn } = await h.chat(
+    id,
+    "Accept the stated cache update gap while exploring, with its consequence.",
+  );
+  const mouse = applyOperations(before, [op], builtinRegistry());
+  expect(mouse.ok).toBe(true);
+  if (mouse.ok) expect(state.design).toEqual(mouse.design);
+  expect(reviewArchitecture(state.design).complete).toBe(true);
+  expect(turn.operationId).not.toBeNull();
+  const undone = await h.call("POST", `/projects/${id}/undo`, {
+    baseRevision: state.design.revision,
+  });
+  expect(undone.body.design.architecture).toEqual(before.architecture);
+  const redone = await h.call("POST", `/projects/${id}/redo`, {
+    baseRevision: undone.body.design.revision,
+  });
+  expect(redone.body.design.architecture).toEqual(state.design.architecture);
+});
+
+it("refuses stale chat review snapshots instead of overwriting concurrent architecture", async () => {
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/architecture-review.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const architecture = structuredClone(base.architecture!);
+  architecture.decisions = [
+    {
+      id: "open-choice",
+      name: "Open choice",
+      context: "Compare options",
+      decision: "Unresolved",
+      consequence: "Needs a choice",
+      status: "Unresolved",
+      links: [{ kind: "system", id: "system" }],
+      acknowledgements: [],
+    },
+  ];
+  let h: ReturnType<typeof harness>;
+  let id: string;
+  const { models } = withHook(
+    [
+      {
+        toolCalls: [
+          {
+            name: "applyOperations",
+            arguments: { ops: [{ op: "setArchitecture", architecture }] },
+          },
+        ],
+      },
+      { text: "Prepared review." },
+      { text: "The review changed. Read current inputs again." },
+    ],
+    async (call) => {
+      if (call === 1) {
+        const current = (await h.design(id)).design;
+        const concurrent = structuredClone(current.architecture!);
+        concurrent.system.description = "Concurrent design context";
+        expect(
+          (
+            await h.call("POST", `/projects/${id}/operations`, {
+              baseRevision: current.revision,
+              ops: [{ op: "setArchitecture", architecture: concurrent }],
+            })
+          ).status,
+        ).toBe(200);
+      }
+    },
+  );
+  h = harness({ models });
+  id = await h.project();
+  await h.call("POST", `/projects/${id}/operations`, {
+    baseRevision: 0,
+    ops: [
+      ...base.elements.map((element) => ({ op: "addElement", element })),
+      ...base.connections.map((connection) => ({ op: "connect", connection })),
+      { op: "setArchitecture", architecture: base.architecture },
+    ],
+  });
+  const { state, turn } = await h.chat(id, "Record the open design choice.");
+  expect(state.design.architecture!.system.description).toBe("Concurrent design context");
+  expect(state.design.architecture!.decisions).toBeUndefined();
+  expect(turn.operationId).toBeNull();
+  expect(
+    turn.activity.some((a) => a.summary === "Review revision conflict; nothing was saved"),
   ).toBe(true);
 });

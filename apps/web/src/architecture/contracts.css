@@ -69,3 +69,7 @@
 .interface-editor fieldset:disabled .mantine-Checkbox-label {
   color: var(--ink);
 }
+
+.contract-save:hover {
+  background: var(--mantine-color-cyan-9);
+}

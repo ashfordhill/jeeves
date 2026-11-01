@@ -366,6 +366,15 @@ export class ChatService {
       }
       if (result.reason === "conflict") {
         const current = result.state.design;
+        if (workspace.reviewRevisionBound) {
+          workspace.log("commit", false, "Review revision conflict; nothing was saved");
+          workspace.reset(current);
+          return {
+            ok: false,
+            message:
+              "The architecture review is stale. No review edits were saved. Read the current design and review relevant inputs again.",
+          };
+        }
         if (workspace.patternRevisionBound) {
           workspace.log("commit", false, "Pattern revision conflict; nothing was added");
           workspace.reset(current);

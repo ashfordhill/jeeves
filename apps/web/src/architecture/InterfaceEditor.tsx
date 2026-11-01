@@ -177,10 +177,12 @@ export function InterfaceSummary({ owner }: { owner: ContractOwner }) {
 export function InterfaceEditor({
   design: initialDesign,
   owner,
+  initialContract,
   onClose,
 }: {
   design: DesignDocument;
   owner: ContractOwner;
+  initialContract?: string;
   onClose: () => void;
 }) {
   const [design] = useState(initialDesign);
@@ -195,7 +197,13 @@ export function InterfaceEditor({
       },
     ),
   );
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(() =>
+    Math.max(
+      0,
+      initialDesign.architecture?.contracts?.findIndex((c) => contractKey(c) === initialContract) ??
+        0,
+    ),
+  );
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
   const contracts = draft.contracts ?? [];

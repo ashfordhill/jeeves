@@ -3,8 +3,11 @@ import {
   type ArchitectureEvidence,
   type ArchitectureViews,
   componentPresentation,
+  contractKey,
   focusedArchitectureView,
   hasLocalDeploymentView,
+  type ReviewFinding,
+  reviewArchitecture,
 } from "@jeeves/spec";
 import {
   ActionIcon,
@@ -43,11 +46,13 @@ import { ArchitectureData } from "./ArchitectureData.tsx";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
+import { ArchitectureReview } from "./ArchitectureReview.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
 import { FocusedViews } from "./FocusedViews.tsx";
-import { InterfaceSummary } from "./InterfaceEditor.tsx";
-import { BindingSummary } from "./RelationshipBindings.tsx";
+import { InterfaceEditor, InterfaceSummary } from "./InterfaceEditor.tsx";
+import { PatternComposer } from "./PatternComposer.tsx";
+import { BindingSummary, RelationshipBindings } from "./RelationshipBindings.tsx";
 import "./contracts.css";
 import { ComponentEditor } from "./ComponentEditor.tsx";
 import { ComponentRelationshipEditor } from "./ComponentRelationshipEditor.tsx";
@@ -93,6 +98,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [apiOpen, setApiOpen] = useState(false);
   const [dataOpen, setDataOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewEditor, setReviewEditor] = useState<Pick<ReviewFinding, "editor" | "inputs">>();
+  const [reviewPattern, setReviewPattern] = useState<string>();
   const [apiSelection, setApiSelection] = useState<ApiSelection>({});
   const openApi = (selection: ApiSelection) => {
     setApiSelection(selection);
@@ -141,6 +149,16 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     undefined,
   );
   const { project, design } = loaded;
+  const reviewReport = useMemo(() => reviewArchitecture(design), [design]);
+  const reviewBinding = design.architecture?.bindings?.find(
+    (b) => b.id === reviewEditor?.inputs.find((r) => r.kind === "binding")?.id,
+  );
+  const reviewContract = reviewEditor?.inputs.find((r) => r.kind === "contract")?.id;
+  const reviewInterface = design.architecture?.interfaces?.find(
+    (i) =>
+      i.id === reviewEditor?.inputs.find((r) => r.kind === "interface")?.id ||
+      (!!reviewContract && contractKey(i.contract) === reviewContract),
+  );
   useEffect(() => {
     let active = true;
     const key = `${project.id}:${design.revision}:${attempt}:${generationState}`;
@@ -359,6 +377,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               <Menu.Item onClick={() => setApiOpen(true)}>API contracts</Menu.Item>
               <Menu.Item onClick={() => setDataOpen(true)}>
                 Data responsibilities and objectives
+              </Menu.Item>
+              <Menu.Item onClick={() => setReviewOpen(true)}>
+                Architecture review ({reviewReport.findings.filter((f) => !f.acceptedBy).length})
               </Menu.Item>
               <Menu.Item onClick={() => setFindingsOpen(true)}>
                 Findings ({loaded.findings.length})
@@ -864,6 +885,10 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           closeButtonProps={{ "aria-label": "Close findings" }}
         >
           <FindingsPanel
+            onReview={() => {
+              setFindingsOpen(false);
+              setReviewOpen(true);
+            }}
             onNavigate={() => {
               setFindingsOpen(false);
               setInspectorOpen(true);
@@ -872,7 +897,17 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           />
         </Modal>
       ) : null}
-      {dataOpen ? <ArchitectureData design={design} onClose={() => setDataOpen(false)} /> : null}
+      {dataOpen ? (
+        <ArchitectureData
+          design={design}
+          initialDataset={reviewEditor?.inputs.find((r) => r.kind === "dataset")?.id}
+          initialObjective={reviewEditor?.inputs.find((r) => r.kind === "objective")?.id}
+          onClose={() => {
+            setDataOpen(false);
+            setReviewEditor(undefined);
+          }}
+        />
+      ) : null}
       {legendOpen ? (
         <Modal
           opened
@@ -907,6 +942,48 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 }
               : undefined
           }
+        />
+      ) : null}
+      {reviewOpen ? (
+        <ArchitectureReview
+          design={design}
+          onClose={() => setReviewOpen(false)}
+          onEdit={(f) => {
+            setReviewOpen(false);
+            setReviewEditor(f);
+            if (f.editor === "data") setDataOpen(true);
+          }}
+          onPattern={(pattern) => {
+            setReviewOpen(false);
+            setReviewPattern(pattern);
+          }}
+        />
+      ) : null}
+      {reviewEditor?.editor === "binding" && reviewBinding ? (
+        <RelationshipBindings
+          design={design}
+          relationship={reviewBinding.relationship}
+          initialBinding={reviewBinding.id}
+          onClose={() => setReviewEditor(undefined)}
+        />
+      ) : null}
+      {reviewEditor?.editor === "contracts" ? (
+        <InterfaceEditor
+          design={design}
+          owner={
+            reviewInterface?.owner ?? { kind: "element", id: design.elements[0]?.id ?? "system" }
+          }
+          initialContract={
+            reviewContract ?? (reviewInterface && contractKey(reviewInterface.contract))
+          }
+          onClose={() => setReviewEditor(undefined)}
+        />
+      ) : null}
+      {reviewPattern ? (
+        <PatternComposer
+          pattern={reviewPattern}
+          onClose={() => setReviewPattern(undefined)}
+          onApplied={() => setReviewPattern(undefined)}
         />
       ) : null}
       {componentEditor && actualContainer ? (

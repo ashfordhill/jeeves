@@ -30,17 +30,23 @@ import {
 const ownerKey = (owner: ContractOwner) => `${owner.kind}:${owner.id}`;
 export function ArchitectureData({
   design,
+  initialDataset,
+  initialObjective,
   onClose,
 }: {
   design: DesignDocument;
+  initialDataset?: string;
+  initialObjective?: string;
   onClose: () => void;
 }) {
   const { draft, setDraft, saving, error, issues, review, save } = useArchitectureDraft(
     design,
     onClose,
   );
-  const [datasetId, setDatasetId] = useState(draft.datasets?.[0]?.id ?? "");
-  const [objectiveId, setObjectiveId] = useState(draft.objectives?.[0]?.id ?? "");
+  const [datasetId, setDatasetId] = useState(initialDataset ?? draft.datasets?.[0]?.id ?? "");
+  const [objectiveId, setObjectiveId] = useState(
+    initialObjective ?? draft.objectives?.[0]?.id ?? "",
+  );
   const dataset = draft.datasets?.find((item) => item.id === datasetId);
   const objective = draft.objectives?.find((item) => item.id === objectiveId);
   const updateData = (patch: Partial<ArchitectureDataset>) =>

@@ -11,6 +11,7 @@ import {
   type Finding,
   type LayoutDocument,
   type OperationInput,
+  reviewArchitecture,
   upgradeDesign,
   validateDesign,
 } from "@jeeves/spec";
@@ -127,6 +128,7 @@ export class DesignService {
     return {
       revision: state.design.revision,
       views: architectureViews(state.design, this.registry, project.name, provision),
+      review: reviewArchitecture(state.design),
       evidence: await this.architectureEvidence(project, state.design.revision),
     };
   }

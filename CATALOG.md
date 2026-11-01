@@ -18,7 +18,7 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md) and [P50 evidence](docs/evidence/p50/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md) and [P51 evidence](docs/evidence/p51/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
 
 P46 adds independent **system choices** (business tenancy, authorization intent, data
 isolation and delivery model) through Edit context or system inspection. C1 shows only the
@@ -72,7 +72,20 @@ Outbox intent requires atomic domain/event persistence and a delivery responsibi
 and handler cannot establish it. Saved compositions retain pinned historical provenance and
 required invariants. These editable patterns supply no runtime implementation or observed
 guarantees. See the [fragment/reuse contract](docs/architecture-patterns.md) and
-[P50 evidence](docs/evidence/p50/README.md). P51 review and decisions are next.
+[P50 evidence](docs/evidence/p50/README.md).
+
+P51 adds **Architecture review and decisions** in Editor actions and Findings. Findings group
+selected contract, access/authority, cache, delivery/failure and objective concerns with their
+assumptions and linked inputs. Optional typed requirements name applicable access boundaries,
+cache fallback/update bindings, channel/schedule/request responsibility and required failure
+outcomes. Existing editors and relevant pattern previews remain directly reachable.
+
+Decisions retain context, reason, consequence, status and linked identities. Accepted scoped
+tradeoffs remain visible and expire when relevant inputs change. Contradictions still prevent
+review completion; unresolved findings/decisions remain saveable. Review is separate from
+structural validity, Generate and runtime evidence. Mouse/chat share the validator and revision
+protection. See the [review contract](docs/architecture-review.md) and
+[P51 evidence](docs/evidence/p51/README.md). P52 linked current/target workspaces are next.
 
 ## Availability and reuse
 

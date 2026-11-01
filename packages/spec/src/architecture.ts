@@ -13,6 +13,11 @@ import {
   validateArchitectureContracts,
 } from "./architecture-contracts.ts";
 import { patternInstanceSchema } from "./architecture-pattern-provenance.ts";
+import {
+  architectureDecisionSchema,
+  reviewRequirementSchema,
+  validateArchitectureReview,
+} from "./architecture-review-model.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
@@ -89,6 +94,8 @@ export const architectureSchema = z.strictObject({
   datasets: z.array(architectureDatasetSchema).max(200).optional(),
   objectives: z.array(architectureObjectiveSchema).max(200).optional(),
   patternInstances: z.array(patternInstanceSchema).max(100).optional(),
+  reviewRequirements: z.array(reviewRequirementSchema).max(200).optional(),
+  decisions: z.array(architectureDecisionSchema).max(200).optional(),
   componentRelationships: z
     .array(
       z.strictObject({
@@ -343,6 +350,7 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
     ...findings,
     ...validateArchitectureContracts(design),
     ...validateRelationshipBindings(design),
+    ...validateArchitectureReview(design),
   ];
 }
 

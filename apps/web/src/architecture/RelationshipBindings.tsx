@@ -381,13 +381,15 @@ function PolicyFields({
   );
 }
 
-function RelationshipBindings({
+export function RelationshipBindings({
   design,
   relationship,
+  initialBinding,
   onClose,
 }: {
   design: DesignDocument;
   relationship: BindingRelationship;
+  initialBinding?: string;
   onClose: () => void;
 }) {
   const { draft, setDraft, error, saving, issues, review, save } = useArchitectureDraft(
@@ -397,7 +399,7 @@ function RelationshipBindings({
   const bindings =
     draft.bindings?.filter((item) => sameBindingRelationship(item.relationship, relationship)) ??
     [];
-  const [selected, setSelected] = useState(bindings[0]?.id);
+  const [selected, setSelected] = useState(initialBinding ?? bindings[0]?.id);
   const binding = bindings.find((item) => item.id === selected);
   const update = (patch: Partial<RelationshipBinding>) =>
     setDraft({
@@ -427,6 +429,7 @@ function RelationshipBindings({
           </Button>
           <Button
             color="cyan.9"
+            className="contract-save"
             disabled={!!issues.length}
             loading={saving}
             onClick={() => void save()}
