@@ -3731,3 +3731,70 @@ Policies and objectives remain intent; exact identity/version matching supplies 
 compatibility, authorization, event execution or benchmark evidence. Existing shared Postgres and
 live data were retained. Stop after P48; execute P49 only when requested, on the current branch
 with the existing sequential one-agent, scoped local commit policy.
+
+## 2026-10-31 — P49: focused views and stable layout
+
+Implemented P49 only. [Release evidence and seven inspected captures](evidence/p49/README.md)
+record the result. P50 contract-aware pattern composition is next, only when requested.
+
+Named C2 views select a responsibility/flow and optionally its immediate dependencies (one hop).
+New/Edit view has Save/Cancel and deletion; the editable whole-system board remains available.
+Focused diagrams retain the system boundary and actor/external-system identities. A count/link
+accounts for every hidden relationship and navigates back to its actual whole-system identity.
+QRWTY defaults now expose compact management and analytics flows plus redirect dependencies.
+These defaults live in the example's layout, without changing its semantic topology.
+
+Optional `layout.architecture` entries store membership/filter, positions, direction and camera
+by stable view/projection identity. Legacy layout documents remain lossless with no migration.
+C1 and each container's C3 scope use the same storage. Positions survive rename/configuration,
+evidence refresh and technical-component filtering. Architecture pruning removes deleted identities
+while retaining board placements awaiting semantic operations. The board's positions/camera and
+existing history remain intact. Camera changes persist during viewport movement so immediate scope
+navigation cannot lose the last zoom; reload restores the same saved C2/C3 camera and positions.
+
+Mouse drag handles, four nudge actions, Fit selected (box or relationship endpoints), Reset layout,
+and separate Undo/Redo layout are available. Reset returns deterministic worker geometry. Layout
+history is local to the session and never records semantic edits; saved views/geometry/cameras
+survive reload. Editor actions exposes layout history even after deleting the active focus.
+Existing inspectors edit the same C2 outer endpoints and C3 responsibilities, with no new wiring.
+Contract-bearing labels show a concise interface-contract count; selection expands exact contract
+names/versions at screen size. Directed manual routes reserve label space outside cards.
+
+Final verification (unchanged fingerprints during each recorded run):
+
+- `pnpm work run unit packages/spec/src/layout.test.ts apps/web/src/architecture/layout.test.ts apps/web/src/draw/store.test.ts packages/generator/src/architecture.test.ts packages/spec/src/architecture-examples.test.ts`:
+  **43 passed / 5 files**, Vitest **7.59s**, profile **8.3s**;
+  `2026-11-01T03-43-49-017Z-unit-f679ccf4`.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **790 tests / 113 files**
+  passed, Vitest **36.41s**, profile **49.9s**;
+  `2026-11-01T03-44-25-202Z-check-a3f0dcc7`. Biome checked **742 files**:
+  **1017 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- `pnpm work run browser-preview apps/web/e2e/architecture-layout.spec.ts apps/web/e2e/draw.spec.ts apps/web/e2e/architecture-authoring.spec.ts`:
+  **10 passed**, Playwright **20.3s**, profile **22.2s**;
+  `2026-11-01T03-44-19-597Z-browser-preview-4d50c22b`.
+  Strict diagnostics, existing narrowly registered conflicts, axe and narrow overflow checks pass.
+- Opened all seven final **1440 × 900 light / 390 × 844 dark** captures. Management, redirect
+  selection, analytics, exact contract versions and narrow dialog/inspector text are readable.
+  Narrow fitted diagrams remain overviews; dialog Save/Cancel stay fixed and reachable.
+- The representative browser/spec fixture extends the actual **14-container** target with two
+  independent stores to exercise the **15+** acceptance boundary. No live design or example
+  topology was expanded to satisfy that count. Generator compatibility tests pass without a
+  golden refresh. Changed-document local links (**103 targets**) and `git diff --check` pass.
+
+Interim checks caught a missing test lookup method, outdated fixture counts, an unsupported
+hover matcher and formatting; corrected before the final gates. Browser work found the system
+frame intercepting labels after dragging was enabled, so scope/bounds nodes are explicitly passive.
+Visual review reduced default flow membership, moved selected summaries clear of the chat handle,
+fixed dark Save contrast and retained exact version text without an invented prefix. A repeated
+navigation journey exposed end-of-zoom camera loss; viewport-change persistence fixes it. The taller
+C2 bar could reposition the native palette source; Draw now verifies its actual hovered source and
+uses an explicit source point before native drag/drop. No retries, timeout increases, diagnostic
+suppression or runner configuration changes were used. Earlier runs are not final release evidence.
+
+No material scope deviation. Updated catalog, target documentation and roadmap/entry pointers for
+actual authoring availability. No runtime/template/recipe/dependency/lockfile changes, generated
+contract/golden changes, paid model calls or live QRWTY design/application edits. Existing generation
+validation and `NEEDS_TEMPLATE` remain unchanged. Layout history is session-local; this does not
+certify arbitrary manually overlapping diagrams or supply runtime evidence. The existing shared
+Postgres/live data were retained; the single P49 fixture left by an early timed-out test was removed
+by its exact ID. Stop after P49; execute P50 only when requested, in this checkout and branch.

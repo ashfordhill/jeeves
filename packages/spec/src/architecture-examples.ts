@@ -782,5 +782,37 @@ export function architectureExample(id: string): {
     )
       internal++;
   }
+  if (id === "qrwty-target")
+    layout.architecture = {
+      "focus-management": {
+        name: "Management",
+        members: [
+          "container:web",
+          "container:api",
+          "container:db",
+          "container:assets",
+          "context:member",
+        ],
+        includeDependencies: false,
+        positions: {},
+      },
+      "focus-redirect": {
+        name: "Public redirect",
+        members: ["container:redirect"],
+        includeDependencies: true,
+        positions: {},
+      },
+      "focus-analytics": {
+        name: "Analytics",
+        members: [
+          "container:redirect",
+          "container:queue",
+          "container:worker",
+          "container:analytics-data",
+        ],
+        includeDependencies: false,
+        positions: {},
+      },
+    };
   return { name: example.name, design, layout };
 }

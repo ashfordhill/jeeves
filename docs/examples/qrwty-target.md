@@ -11,6 +11,12 @@ The [P43 specification and decisions](../build-plan-c4-saas.md#p43--qrwty-target
 define the scope. The executable source for this and the three refreshed studies is
 [architecture-examples.ts](../../packages/spec/src/architecture-examples.ts).
 
+P49 adds **Management**, **Public redirect** and **Analytics** to the C2 view selector.
+Management and analytics use explicit flow membership; redirect includes immediate dependencies.
+The whole-system board remains available, and each focus links all hidden relationships.
+Edit view changes membership/filtering without changing architecture; drag/nudge and camera
+changes persist separately. See [P49 evidence](../evidence/p49/README.md).
+
 ## Context
 
 Link owners manage their QR links and artwork. Team administrators manage membership

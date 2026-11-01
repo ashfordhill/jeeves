@@ -112,7 +112,11 @@ export function architectureLayoutInput(
             const size = labelSize(edge.description, projection.level !== "context");
             return {
               ...size,
-              height: size.height + (edge.protocol ? 26 : 0) + (edge.planned ? 28 : 0),
+              height:
+                size.height +
+                (edge.protocol ? 26 : 0) +
+                (edge.planned ? 28 : 0) +
+                (edge.contractCount ? 24 : 0),
             };
           })(),
           layoutOptions: { "elk.edgeLabels.inline": "true" },
@@ -173,4 +177,94 @@ export function architectureBounds(geometry: ArchitectureGeometry): Box {
     width: Math.max(...boxes.map((item) => item.x + item.width)) - x,
     height: Math.max(...boxes.map((item) => item.y + item.height)) - y,
   };
+}
+
+/** Re-route incident edges after a manual move; reserve labels outside cards and other labels. */
+export function positionedArchitectureGeometry(
+  base: ArchitectureGeometry,
+  projection: ArchitectureProjection,
+  positions: Record<string, ElkPoint>,
+): ArchitectureGeometry {
+  const moved = Object.keys(positions).filter(
+    (id) =>
+      base.nodes[id] &&
+      (positions[id]?.x !== base.nodes[id]?.x || positions[id]?.y !== base.nodes[id]?.y),
+  );
+  if (!moved.length) return base;
+  const nodes = Object.fromEntries(
+    Object.entries(base.nodes).map(([id, box]) => [id, { ...box, ...positions[id] }]),
+  );
+  const overlaps = (a: Box, b: Box) =>
+    a.x < b.x + b.width + 8 &&
+    a.x + a.width + 8 > b.x &&
+    a.y < b.y + b.height + 8 &&
+    a.y + a.height + 8 > b.y;
+  const reserved = [...Object.values(nodes)];
+  const edges: ArchitectureGeometry["edges"] = {};
+  for (const edge of [...projection.edges].sort(compare)) {
+    const original = base.edges[edge.id];
+    const from = nodes[edge.from],
+      to = nodes[edge.to];
+    if (!original || !from || !to) continue;
+    let points = original.points;
+    let label = original.label;
+    if (reserved.some((box) => overlaps(label, box))) {
+      const center = {
+        x: (from.x + to.x + from.width) / 2 - label.width / 2,
+        y: (from.y + to.y) / 2,
+      };
+      // A bounded search with a guaranteed clear fallback beyond all cards/labels.
+      const candidates = Array.from({ length: 80 }, (_, index) => ({
+        ...label,
+        x: center.x + ((index % 5) - 2) * (label.width + 20),
+        y: center.y + Math.floor(index / 5) * (label.height + 20),
+      }));
+      label = candidates.find((candidate) => !reserved.some((box) => overlaps(candidate, box))) ?? {
+        ...label,
+        x: Math.max(...reserved.map((box) => box.x + box.width)) + 24,
+      };
+    }
+    if (moved.includes(edge.from) || moved.includes(edge.to) || label !== original.label) {
+      const start = { x: from.x + from.width, y: from.y + from.height / 2 };
+      const end = { x: to.x, y: to.y + to.height / 2 };
+      const labelY = label.y + label.height / 2;
+      points = [
+        start,
+        { x: start.x + 24, y: start.y },
+        { x: start.x + 24, y: labelY },
+        { x: label.x, y: labelY },
+        { x: label.x + label.width, y: labelY },
+        { x: end.x - 24, y: labelY },
+        { x: end.x - 24, y: end.y },
+        end,
+      ];
+    }
+    reserved.push(label);
+    edges[edge.id] = { points, label };
+  }
+  const inner = projection.nodes
+    .filter(
+      (node) =>
+        node.binding &&
+        node.kind !== "external-system" &&
+        node.kind !== "binding" &&
+        (projection.level === "containers" || node.binding.element === projection.container),
+    )
+    .flatMap((node) => (nodes[node.id] ? [nodes[node.id]!] : []));
+  const scope =
+    base.scope && inner.length
+      ? {
+          x: Math.min(...inner.map((box) => box.x)) - 28,
+          y: Math.min(...inner.map((box) => box.y)) - 48,
+          width:
+            Math.max(...inner.map((box) => box.x + box.width)) -
+            Math.min(...inner.map((box) => box.x)) +
+            56,
+          height:
+            Math.max(...inner.map((box) => box.y + box.height)) -
+            Math.min(...inner.map((box) => box.y)) +
+            76,
+        }
+      : base.scope;
+  return { nodes, edges, ...(scope && { scope }) };
 }

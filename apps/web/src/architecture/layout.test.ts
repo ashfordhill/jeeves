@@ -174,3 +174,26 @@ it("fits labels and routed bends beyond card/scope bounds without changing layou
   expect(geometry).toEqual(before);
   expect(architectureBounds({ nodes: {}, edges: {} })).toEqual({ x: 0, y: 0, width: 1, height: 1 });
 });
+
+it("manual positions preserve identities and keep re-routed labels clear of all cards", async () => {
+  const { positionedArchitectureGeometry } = await import("./layout.ts");
+  const geometry = await checkView(projection);
+  const before = structuredClone(geometry);
+  const point = geometry.nodes.api!;
+  const positions = { api: { x: point.x + 180, y: point.y + 160 } };
+  const result = positionedArchitectureGeometry(geometry, projection, positions);
+  expect(result.nodes.api).toMatchObject(positions.api);
+  expect(result.edges.calls?.points).not.toEqual(geometry.edges.calls?.points);
+  for (const edge of Object.values(result.edges))
+    for (const box of Object.values(result.nodes)) expect(overlaps(edge.label, box)).toBe(false);
+  expect(geometry).toEqual(before);
+  expect(
+    positionedArchitectureGeometry(
+      geometry,
+      projection,
+      Object.fromEntries(
+        Object.entries(geometry.nodes).map(([id, box]) => [id, { x: box.x, y: box.y }]),
+      ),
+    ),
+  ).toBe(geometry);
+});

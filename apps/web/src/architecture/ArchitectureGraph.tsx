@@ -37,6 +37,7 @@ import {
   architectureBounds,
   architectureLayoutInput,
   CARD,
+  positionedArchitectureGeometry,
   type RelationGeometry,
   relationshipPath,
   SCOPE_ID,
@@ -71,6 +72,9 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
     <>
       <Handle type="source" position={Position.Right} />
       <Handle type="target" position={Position.Left} />
+      <span className="architecture-drag-handle" title="Drag to move" aria-hidden="true">
+        ⠿
+      </span>
       <button
         type="button"
         className="architecture-card nodrag nopan"
@@ -232,14 +236,29 @@ function ResizeCamera() {
 
 function DiagramOptions({
   selected,
+  projection,
   down,
   onDirection,
+  onNudge,
+  onReset,
 }: {
   selected?: string;
+  projection: ArchitectureProjection;
   down: boolean;
   onDirection: () => void;
+  onNudge: (x: number, y: number) => void;
+  onReset: () => void;
 }) {
   const { fitView } = useReactFlow();
+  const undoable = useDraw((state) => state.architectureUndo.length > 0);
+  const redoable = useDraw((state) => state.architectureRedo.length > 0);
+  const edge = projection.edges.find((edge) => edge.id === selected);
+  const selectedNodes = edge
+    ? [{ id: edge.from }, { id: edge.to }]
+    : selected
+      ? [{ id: selected }]
+      : [];
+  const movable = projection.nodes.some((node) => node.id === selected);
   return (
     <Panel position="top-right">
       <Menu position="bottom-end" shadow="md">
@@ -252,13 +271,47 @@ function DiagramOptions({
           <Menu.Item onClick={onDirection}>{down ? "Flow right" : "Flow down"}</Menu.Item>
           <Menu.Item
             disabled={!selected}
-            onClick={() => {
-              if (selected)
-                void fitView({ nodes: [{ id: selected }], minZoom: 1, maxZoom: 1, duration: 200 });
-            }}
+            onClick={() =>
+              void fitView({ nodes: selectedNodes, minZoom: 0.65, maxZoom: 1, duration: 200 })
+            }
+          >
+            Fit selected
+          </Menu.Item>
+          <Menu.Item
+            disabled={!selected}
+            onClick={() =>
+              void fitView({ nodes: selectedNodes, minZoom: 1, maxZoom: 1, duration: 200 })
+            }
           >
             Focus selected object
           </Menu.Item>
+          <Menu.Label>Move selected object</Menu.Label>
+          <Menu.Item disabled={!movable} onClick={() => onNudge(-24, 0)}>
+            Nudge left
+          </Menu.Item>
+          <Menu.Item disabled={!movable} onClick={() => onNudge(24, 0)}>
+            Nudge right
+          </Menu.Item>
+          <Menu.Item disabled={!movable} onClick={() => onNudge(0, -24)}>
+            Nudge up
+          </Menu.Item>
+          <Menu.Item disabled={!movable} onClick={() => onNudge(0, 24)}>
+            Nudge down
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Item
+            disabled={!undoable}
+            onClick={() => useDraw.getState().undoArchitectureLayout()}
+          >
+            Undo layout
+          </Menu.Item>
+          <Menu.Item
+            disabled={!redoable}
+            onClick={() => useDraw.getState().redoArchitectureLayout()}
+          >
+            Redo layout
+          </Menu.Item>
+          <Menu.Item onClick={onReset}>Reset layout</Menu.Item>
           <ScenarioMenuItems />
         </Menu.Dropdown>
       </Menu>
@@ -266,28 +319,47 @@ function DiagramOptions({
   );
 }
 
-/** Layout never writes the semantic model or editable board positions. */
-export type ArchitectureCameraCache = {
-  directions: Map<string, boolean>;
-  viewports: Map<string, { key: string; viewport: Viewport }>;
-};
+/** Geometry, membership and cameras persist independently of semantic edits. */
 export function ArchitectureGraph({
-  projection,
+  projection: sourceProjection,
   selected,
   onSelect,
-  cameraCache,
+  viewKey,
 }: {
   projection: ArchitectureProjection;
   selected?: string;
   onSelect: (id: string) => void;
-  cameraCache?: ArchitectureCameraCache;
+  viewKey?: string;
 }) {
+  const design = useDraw((state) => state.loaded!.design);
+  const projection = useMemo(
+    () => ({
+      ...sourceProjection,
+      edges: sourceProjection.edges.map((edge) => ({
+        ...edge,
+        contractCount:
+          design.architecture?.bindings?.filter((binding) =>
+            binding.relationship.kind === "connection"
+              ? binding.relationship.id === edge.connection
+              : binding.relationship.id === edge.componentRelationship,
+          ).length ?? 0,
+      })),
+    }),
+    [sourceProjection, design.architecture?.bindings],
+  );
   const { ref, width } = useElementSize<HTMLElement>();
   const compact = width > 0 && width < 900;
-  const scope = `${projection.level}:${projection.container ?? "system"}`;
-  const [directions, setDirections] = useState<Record<string, boolean>>({});
-  const direction = directions[scope] ?? cameraCache?.directions.get(scope);
-  const down = direction ?? compact;
+  const scope = viewKey ?? `${projection.level}:${projection.container ?? "system"}`;
+  const saved = useDraw((state) => state.loaded?.layout.architecture?.[scope]);
+  const [dragging, setDragging] = useState<Record<string, { x: number; y: number }>>({});
+  const [reset, setReset] = useState(0);
+  const down = saved?.down ?? compact;
+  const update = (patch: Partial<NonNullable<typeof saved>>, undoable = false) => {
+    const previous = useDraw.getState().loaded?.layout.architecture?.[scope];
+    useDraw
+      .getState()
+      .setArchitectureView(scope, { positions: {}, ...previous, ...patch }, undoable);
+  };
   const key = useMemo(
     () => JSON.stringify(architectureLayoutInput(projection, down)),
     [projection, down],
@@ -314,7 +386,39 @@ export function ArchitectureGraph({
     );
     return () => controller.abort();
   }, [request, ready]);
-  const current = result?.key === key ? result.geometry : undefined;
+  useEffect(() => {
+    if (result?.key !== key) return;
+    const previous = useDraw.getState().loaded?.layout.architecture?.[scope];
+    const missing = Object.entries(result.geometry.nodes).filter(([id]) => !saved?.positions[id]);
+    if (!missing.length) return;
+    useDraw.getState().setArchitectureView(scope, {
+      ...previous,
+      down,
+      positions: {
+        ...previous?.positions,
+        ...Object.fromEntries(missing.map(([id, point]) => [id, { x: point.x, y: point.y }])),
+      },
+    });
+  }, [result, key, scope, down, saved?.positions]);
+  const current = useMemo(
+    () =>
+      result?.key === key
+        ? positionedArchitectureGeometry(result.geometry, projection, {
+            ...saved?.positions,
+            ...dragging,
+          })
+        : undefined,
+    [result, key, projection, saved?.positions, dragging],
+  );
+  const selectedEdge = projection.edges.find((edge) => edge.id === selected);
+  const bindings =
+    design.architecture?.bindings?.filter(
+      (binding) =>
+        selectedEdge &&
+        (binding.relationship.kind === "connection"
+          ? binding.relationship.id === selectedEdge.connection
+          : binding.relationship.id === selectedEdge.componentRelationship),
+    ) ?? [];
   const graph = useMemo(() => {
     if (!current) return undefined;
     const nodes: (CardNode | ScopeNode | BoundsNode)[] = projection.nodes.map((item) => {
@@ -323,6 +427,7 @@ export function ArchitectureGraph({
       return {
         id: item.id,
         type: "architecture",
+        dragHandle: ".architecture-drag-handle",
         ariaRole: "group",
         position: { x: point.x, y: point.y },
         width: CARD.width,
@@ -340,10 +445,16 @@ export function ArchitectureGraph({
         position: { x: current.scope.x, y: current.scope.y },
         width: current.scope.width,
         height: current.scope.height,
-        data: { label: projection.name },
+        data: {
+          label:
+            projection.level === "containers"
+              ? (design.architecture?.system.name ?? projection.name)
+              : projection.name,
+        },
         style: { width: current.scope.width, height: current.scope.height },
         zIndex: 0,
         selectable: false,
+        draggable: false,
         focusable: false,
       });
     // React Flow's Fit View uses node bounds. A presentation-only extent also covers
@@ -384,7 +495,7 @@ export function ArchitectureGraph({
       };
     });
     return { nodes, edges };
-  }, [projection, selected, onSelect, current]);
+  }, [projection, selected, onSelect, current, design.architecture?.system.name]);
   return (
     <section
       ref={ref}
@@ -410,41 +521,74 @@ export function ArchitectureGraph({
       ) : (
         <ReactFlowProvider>
           <ReactFlow
-            key={`${projection.level}:${projection.container ?? "system"}:${down}`}
+            key={`${scope}:${down}:${reset}`}
             nodes={graph.nodes}
             edges={graph.edges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            nodesDraggable={false}
+            nodesDraggable
             nodesConnectable={false}
             elementsSelectable={false}
             minZoom={0.1}
             maxZoom={1.5}
             proOptions={{ hideAttribution: true }}
-            onMoveEnd={(_, viewport) =>
-              cameraCache?.viewports.set(`${scope}:${down}`, { key, viewport })
-            }
+            onNodeDrag={(_, node) => setDragging({ [node.id]: node.position })}
+            onNodeDragStop={(_, node) => {
+              update({ positions: { ...saved?.positions, [node.id]: node.position } }, true);
+              setDragging({});
+            }}
+            onViewportChange={(viewport) => {
+              const previous = useDraw.getState().loaded?.layout.architecture?.[scope]?.viewport;
+              if (JSON.stringify(previous) !== JSON.stringify(viewport)) update({ viewport, down });
+            }}
             onEdgeClick={(_, edge) => onSelect(edge.id)}
             onPaneClick={() => onSelect("")}
           >
-            <InitialCamera
-              key={key}
-              restored={
-                cameraCache?.viewports.get(`${scope}:${down}`)?.key === key
-                  ? cameraCache.viewports.get(`${scope}:${down}`)?.viewport
-                  : undefined
-              }
-              onReady={cameraReady}
-            />
+            <InitialCamera key={key} restored={saved?.viewport} onReady={cameraReady} />
             <ResizeCamera />
+            {selectedEdge ? (
+              <Panel position="top-left" className="architecture-selection-summary">
+                <strong>{selectedEdge.description}</strong>
+                <span>{selectedEdge.protocol}</span>
+                {bindings.length ? (
+                  bindings.map((binding) => {
+                    const contract = design.architecture?.contracts?.find(
+                      (contract) => contract.id === binding.contract.id,
+                    );
+                    return (
+                      <span key={binding.id}>
+                        {contract?.name ?? binding.contract.id} · {binding.contract.version}
+                      </span>
+                    );
+                  })
+                ) : (
+                  <span>No interface contracts bound</span>
+                )}
+              </Panel>
+            ) : null}
             <Background color="var(--grid-dot)" gap={24} size={1} />
             <Controls showInteractive={false} />
             <DiagramOptions
               selected={selected}
+              projection={projection}
               down={down}
-              onDirection={() => {
-                setDirections((current) => ({ ...current, [scope]: !down }));
-                cameraCache?.directions.set(scope, !down);
+              onDirection={() => update({ down: !down, positions: {}, viewport: undefined }, true)}
+              onNudge={(x, y) => {
+                const point = selected && current?.nodes[selected];
+                if (point && selected)
+                  update(
+                    {
+                      positions: {
+                        ...saved?.positions,
+                        [selected]: { x: point.x + x, y: point.y + y },
+                      },
+                    },
+                    true,
+                  );
+              }}
+              onReset={() => {
+                update({ positions: {}, viewport: undefined }, true);
+                setReset((value) => value + 1);
               }}
             />
           </ReactFlow>

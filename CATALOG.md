@@ -18,7 +18,7 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md) and [P48 evidence](docs/evidence/p48/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md) and [P49 evidence](docs/evidence/p49/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
 
 P46 adds independent **system choices** (business tenancy, authorization intent, data
 isolation and delivery model) through Edit context or system inspection. C1 shows only the
@@ -51,6 +51,14 @@ and service objectives carry a value, unit, measurement boundary and window. Unk
 and selected version/policy conflicts remain visible design review; malformed references are
 rejected. These are unverified declarations with no new runtime or generation behavior.
 See [P48 evidence](docs/evidence/p48/README.md) and the [policy example](fixtures/designs/relationship-policies.json).
+
+P49 adds **named focused C2 views** beside the whole-system board. Choose selected flow
+members and optionally their immediate dependencies. Every view keeps the system boundary
+and a count/link to hidden relationships. Positions, direction and camera persist by stable
+view/object identity in layout storage; mouse drag/nudge, Fit selected, Reset layout and
+Undo/Redo layout do not change semantic revision. C1 and scoped C3 use the same persistence.
+Relationship labels summarize contract counts; selection expands exact names and versions.
+QRWTY defaults expose management, redirect and analytics separately. See [P49 evidence](docs/evidence/p49/README.md).
 
 ## Availability and reuse
 

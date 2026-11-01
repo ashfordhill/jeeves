@@ -410,3 +410,85 @@
 .architecture-relation-label {
   row-gap: 2px;
 }
+
+.focused-view-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--grid-dot);
+}
+.focused-view-toolbar .mantine-NativeSelect-root {
+  max-width: 200px;
+}
+.focused-view-members {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--grid-dot);
+}
+.focused-hidden-link {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  background: var(--cream);
+  color: var(--ink);
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+}
+.architecture-drag-handle {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  padding: 3px 7px;
+  z-index: 3;
+  cursor: grab;
+  color: var(--ink);
+  background: var(--cream);
+  border-radius: 4px;
+}
+.architecture-selection-summary {
+  margin-left: 48px;
+  display: grid;
+  gap: 4px;
+  max-width: min(340px, calc(100% - 130px));
+  padding: 10px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 759px) {
+  .focused-view-toolbar {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+  .focused-view-toolbar .mantine-NativeSelect-root {
+    max-width: 155px;
+  }
+  .architecture-scope-caption:has(+ .focused-hidden-link) {
+    padding-bottom: 30px;
+    height: 75px;
+  }
+  .focused-hidden-link {
+    top: 45px;
+    left: 16px;
+    right: auto;
+  }
+  .architecture-stage:has(.focused-hidden-link) .architecture-graph {
+    top: 75px;
+  }
+}
+.architecture-graph .react-flow__node-scope,
+.architecture-graph .react-flow__node-bounds {
+  pointer-events: none;
+}
+.relationship-contracts {
+  font-size: 0.85em;
+  font-weight: 600;
+}

@@ -15,17 +15,24 @@ export function RelationshipLabel({
   protocol,
   planned,
   scenarioRelationship,
+  contractCount,
 }: {
   description: string;
   protocol?: string;
   planned?: boolean;
   scenarioRelationship?: ScenarioRelationship;
+  contractCount?: number;
 }) {
   return (
     <>
       <ScenarioNumbers relationship={scenarioRelationship} />
       <span className="relationship-description">{description}</span>
       {protocol ? <span className="relationship-protocol">{protocol}</span> : null}
+      {contractCount ? (
+        <span className="relationship-contracts">
+          {contractCount} interface {contractCount === 1 ? "contract" : "contracts"}
+        </span>
+      ) : null}
       {planned ? <span className="relationship-planned">Planned</span> : null}
     </>
   );

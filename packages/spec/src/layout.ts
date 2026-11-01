@@ -3,6 +3,19 @@ import { type DesignDocument, designIds } from "./design.ts";
 import { idSchema } from "./ids.ts";
 
 const pointSchema = z.strictObject({ x: z.number(), y: z.number() });
+const cameraSchema = z.strictObject({ x: z.number(), y: z.number(), zoom: z.number().positive() });
+const viewIdentity = z.string().min(1).max(300);
+
+/** Projection identities (container:…, responsibility:…) refer to the same semantic objects. */
+export const architectureLayoutViewSchema = z.strictObject({
+  name: z.string().trim().min(1).max(120).optional(),
+  members: z.array(viewIdentity).max(200).optional(),
+  includeDependencies: z.boolean().optional(),
+  positions: z.record(viewIdentity, pointSchema).default({}),
+  viewport: cameraSchema.optional(),
+  down: z.boolean().optional(),
+});
+export type ArchitectureLayoutView = z.output<typeof architectureLayoutViewSchema>;
 
 export const layoutItemSchema = z.strictObject({
   x: z.number(),
@@ -24,9 +37,9 @@ export type LayoutItem = z.infer<typeof layoutItemSchema>;
 export const layoutSchema = z.strictObject({
   schemaVersion: z.literal(1),
   items: z.record(idSchema, layoutItemSchema).default({}),
-  viewport: z
-    .strictObject({ x: z.number(), y: z.number(), zoom: z.number().positive() })
-    .optional(),
+  viewport: cameraSchema.optional(),
+  /** Optional so old board layout documents round-trip without migration or new defaults. */
+  architecture: z.record(viewIdentity, architectureLayoutViewSchema).optional(),
 });
 export type LayoutDocument = z.output<typeof layoutSchema>;
 
@@ -47,5 +60,63 @@ export function pruneLayout(layout: LayoutDocument, design: DesignDocument): Lay
       items[id] = item;
     }
   }
-  return { ...layout, items };
+  return pruneArchitectureLayout({ ...layout, items }, design);
+}
+
+/** Architecture pruning must not discard a board placement awaiting its semantic operation. */
+export function pruneArchitectureLayout(
+  layout: LayoutDocument,
+  design: DesignDocument,
+): LayoutDocument {
+  if (!layout.architecture) return layout;
+  const alive = (key: string): boolean => {
+    const [kind, owner, attachment, memberKind, member] = key.split(":");
+    if (kind === "context")
+      return owner === "system" || !!design.architecture?.nodes.some((node) => node.id === owner);
+    if (kind === "responsibility")
+      return !!design.architecture?.components?.some((component) => component.id === owner);
+    const element = design.elements.find((element) => element.id === owner);
+    if (!element) return false;
+    if (kind === "container") return true;
+    if (kind !== "component") return false;
+    if (["workspace", "workspace-extension"].includes(attachment ?? "")) return true;
+    const capability = element.attachments.find((item) => item.id === attachment);
+    if (!capability) return false;
+    if (!member || !memberKind) return true;
+    const config = capability.config;
+    const model = config.model as
+      | { resources?: { id: string }[]; extensions?: { id: string }[] }
+      | undefined;
+    const members =
+      memberKind === "resource"
+        ? model?.resources
+        : memberKind === "extension"
+          ? model?.extensions
+          : memberKind === "event"
+            ? (config.events as { id: string }[] | undefined)
+            : undefined;
+    return Array.isArray(members) && members.some((item) => item.id === member);
+  };
+  const architecture = Object.fromEntries(
+    Object.entries(layout.architecture).flatMap(([key, view]) => {
+      if (
+        key.startsWith("components:") &&
+        !design.elements.some((item) => item.id === key.slice(11))
+      )
+        return [];
+      return [
+        [
+          key,
+          {
+            ...view,
+            ...(view.members && { members: view.members.filter(alive) }),
+            positions: Object.fromEntries(
+              Object.entries(view.positions).filter(([id]) => alive(id)),
+            ),
+          },
+        ],
+      ];
+    }),
+  );
+  return { ...layout, architecture };
 }

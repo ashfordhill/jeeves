@@ -28,9 +28,15 @@ test("builds a service + REST server + Postgres board that survives a reload", a
 
   // Drag-to-place: drop Postgres onto empty board.
   await page.getByRole("button", { name: "Elements" }).click();
-  await page
-    .getByRole("button", { name: /^PostgreSQL/ })
-    .dragTo(pane, { targetPosition: { x: 900, y: 480 } });
+  const postgres = page.getByRole("button", { name: /^PostgreSQL/ });
+  // The taller C2 view bar can move the floating palette during scroll-into-view.
+  // Establish the actual hovered source before starting the native drag.
+  await postgres.hover();
+  await expect.poll(() => postgres.evaluate((element) => element.matches(":hover"))).toBe(true);
+  await postgres.dragTo(pane, {
+    sourcePosition: { x: 15, y: 15 },
+    targetPosition: { x: 900, y: 480 },
+  });
   const db = card(page, "PostgreSQL, PostgreSQL");
   await expect(db).toBeVisible();
 

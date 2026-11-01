@@ -9,12 +9,14 @@
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type {
+  ArchitectureLayoutView,
   DesignDocument,
   Finding,
   LayoutDocument,
   LayoutItem,
   OperationInput,
 } from "@jeeves/spec";
+import { pruneArchitectureLayout } from "@jeeves/spec";
 import { create } from "zustand";
 import {
   ApiError,
@@ -95,6 +97,23 @@ type DrawState = {
   architectureSelection?: string[];
   undoSteps: Step[];
   redoSteps: Step[];
+  architectureUndo: {
+    key: string;
+    before?: ArchitectureLayoutView;
+    after?: ArchitectureLayoutView;
+  }[];
+  architectureRedo: {
+    key: string;
+    before?: ArchitectureLayoutView;
+    after?: ArchitectureLayoutView;
+  }[];
+  setArchitectureView(
+    key: string,
+    view: ArchitectureLayoutView | undefined,
+    undoable?: boolean,
+  ): void;
+  undoArchitectureLayout(): void;
+  redoArchitectureLayout(): void;
 
   open(projectId?: string): Promise<void>;
   edit(ops: OperationInput[]): Promise<boolean>;
@@ -185,16 +204,20 @@ export const useDraw = create<DrawState>()((set, get) => {
   const adopt = (state: DesignState) => {
     const loaded = get().loaded;
     if (!loaded || loaded.project.id !== state.projectId) return;
+    const layout = pruneArchitectureLayout(loaded.layout, state.design);
+    const layoutChanged = JSON.stringify(layout) !== JSON.stringify(loaded.layout);
     set({
       loaded: {
         ...loaded,
         project: { ...loaded.project, revision: state.design.revision },
         design: state.design,
+        layout,
         findings: state.findings,
         findingIndex: indexFindings(state.design, state.findings),
         history: state.history,
       },
     });
+    if (layoutChanged) scheduleLayoutSave();
   };
 
   /** Adopts a change result. Returns whether it applied; conflicts and refusals set the notice. */
@@ -283,6 +306,8 @@ export const useDraw = create<DrawState>()((set, get) => {
     railTab: "inspector",
     undoSteps: [],
     redoSteps: [],
+    architectureUndo: [],
+    architectureRedo: [],
 
     async open(projectId) {
       await get().flushLayout();
@@ -307,13 +332,15 @@ export const useDraw = create<DrawState>()((set, get) => {
         set({
           status: "ready",
           layoutDirty: false,
+          architectureUndo: [],
+          architectureRedo: [],
           loaded: {
             project,
             design: state.design,
             findings: state.findings,
             findingIndex: indexFindings(state.design, state.findings),
             history: state.history,
-            layout,
+            layout: pruneArchitectureLayout(layout, state.design),
             catalog,
             templates: new Map(catalog.templates.map((t) => [templateKey(t), t])),
           },
@@ -404,6 +431,47 @@ export const useDraw = create<DrawState>()((set, get) => {
       if (marker >= 0) steps.splice(marker, 1);
       set({ undoSteps: steps });
       return serverStep("undo");
+    },
+
+    setArchitectureView(key, view, undoable = false) {
+      const loaded = get().loaded;
+      if (!loaded) return;
+      const before = loaded.layout.architecture?.[key];
+      const architecture = { ...loaded.layout.architecture };
+      if (view) architecture[key] = view;
+      else delete architecture[key];
+      const layout = pruneArchitectureLayout({ ...loaded.layout, architecture }, loaded.design);
+      if (JSON.stringify(layout) === JSON.stringify(loaded.layout)) return;
+      if (undoable)
+        set({
+          architectureUndo: [...get().architectureUndo, { key, before, after: view }],
+          architectureRedo: [],
+        });
+      set({
+        loaded: {
+          ...loaded,
+          layout,
+        },
+      });
+      scheduleLayoutSave();
+    },
+    undoArchitectureLayout() {
+      const step = get().architectureUndo.at(-1);
+      if (!step) return;
+      get().setArchitectureView(step.key, step.before);
+      set({
+        architectureUndo: get().architectureUndo.slice(0, -1),
+        architectureRedo: [...get().architectureRedo, step],
+      });
+    },
+    redoArchitectureLayout() {
+      const step = get().architectureRedo.at(-1);
+      if (!step) return;
+      get().setArchitectureView(step.key, step.after);
+      set({
+        architectureRedo: get().architectureRedo.slice(0, -1),
+        architectureUndo: [...get().architectureUndo, step],
+      });
     },
 
     setLayoutItems(items, options) {

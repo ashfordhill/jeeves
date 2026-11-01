@@ -3,6 +3,7 @@ import {
   type ArchitectureEvidence,
   type ArchitectureViews,
   componentPresentation,
+  focusedArchitectureView,
   hasLocalDeploymentView,
 } from "@jeeves/spec";
 import {
@@ -41,9 +42,10 @@ import { useGenerate } from "../generate/store.ts";
 import { ArchitectureData } from "./ArchitectureData.tsx";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
-import { type ArchitectureCameraCache, ArchitectureGraph } from "./ArchitectureGraph.tsx";
+import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
+import { FocusedViews } from "./FocusedViews.tsx";
 import { InterfaceSummary } from "./InterfaceEditor.tsx";
 import { BindingSummary } from "./RelationshipBindings.tsx";
 import "./contracts.css";
@@ -73,6 +75,8 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const loaded = useDraw((state) => state.loaded)!;
   const notice = useDraw((state) => state.notice);
   const boardSelection = useDraw((state) => state.selection);
+  const layoutUndoable = useDraw((state) => state.architectureUndo.length > 0);
+  const layoutRedoable = useDraw((state) => state.architectureRedo.length > 0);
   const tool = useDraw((state) => state.tool.kind);
   const undoable = useDraw(canUndo),
     redoable = useDraw(canRedo);
@@ -95,7 +99,12 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     setApiOpen(true);
   };
   const [deployment, setDeployment] = useState<{ element?: string }>();
+  const [focusedView, setFocusedView] = useState("");
+  const [hiddenOpen, setHiddenOpen] = useState(false);
+  const layoutViews = loaded.layout.architecture;
+  const focused = focusedView ? layoutViews?.[focusedView] : undefined;
   const [level, setLevel] = useState<Level>("containers");
+  const overview = level === "containers" && !focused;
   const navigationRequest = useRef(0);
   const [container, setContainer] = useState<string>();
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -128,10 +137,6 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       setRailTab("inspector");
     }
   }, [railTab, setRailTab]);
-  const cameraCache = useRef<ArchitectureCameraCache>({
-    directions: new Map(),
-    viewports: new Map(),
-  });
   const request = useRef<{ key: string; pending: ReturnType<typeof api.architecture> } | undefined>(
     undefined,
   );
@@ -172,23 +177,36 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       : level === "containers"
         ? views?.containers
         : (views?.components.find((view) => view.container === container) ?? views?.components[0]);
-  const projection = useMemo(
-    () => (sourceProjection ? componentPresentation(sourceProjection, showTechnical) : undefined),
-    [sourceProjection, showTechnical],
+  const focusedProjection = useMemo(
+    () =>
+      sourceProjection && focused && level === "containers"
+        ? focusedArchitectureView(sourceProjection, focused)
+        : undefined,
+    [sourceProjection, focused, level],
   );
-  const scope = level === "components" ? `components:${projection?.container}` : level;
-  const selected =
-    level === "containers"
-      ? boardSelection.edges[0]
-        ? boardSelection.edges[0].startsWith("context:")
-          ? boardSelection.edges[0]
-          : `connection:${boardSelection.edges[0]}`
-        : boardSelection.nodes[0]
-          ? boardSelection.nodes[0].startsWith("context:")
-            ? boardSelection.nodes[0]
-            : `container:${boardSelection.nodes[0]}`
-          : undefined
-      : selections[scope];
+  const projection = useMemo(
+    () =>
+      focusedProjection?.projection ??
+      (sourceProjection ? componentPresentation(sourceProjection, showTechnical) : undefined),
+    [sourceProjection, focusedProjection, showTechnical],
+  );
+  const scope =
+    level === "components"
+      ? `components:${projection?.container}`
+      : level === "containers" && focused
+        ? focusedView
+        : level;
+  const selected = overview
+    ? boardSelection.edges[0]
+      ? boardSelection.edges[0].startsWith("context:")
+        ? boardSelection.edges[0]
+        : `connection:${boardSelection.edges[0]}`
+      : boardSelection.nodes[0]
+        ? boardSelection.nodes[0].startsWith("context:")
+          ? boardSelection.nodes[0]
+          : `container:${boardSelection.nodes[0]}`
+        : undefined
+    : selections[scope];
   const inspectorOpen = inspectorViews[scope] ?? Boolean(selected);
   const setInspectorOpen = useCallback(
     (open: boolean) => setInspectorViews((current) => ({ ...current, [scope]: open })),
@@ -201,8 +219,20 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       setSelections((current) => ({ ...current, [scope]: id }));
       setInspectorOpen(Boolean(id));
       setRailTab("inspector");
+      if (level === "containers")
+        useDraw
+          .getState()
+          .setSelection(
+            id.startsWith("container:")
+              ? { nodes: [id.slice(10)], edges: [] }
+              : id.startsWith("connection:")
+                ? { nodes: [], edges: [id.slice(11)] }
+                : projection?.edges.some((edge) => edge.id === id)
+                  ? { nodes: [], edges: [id] }
+                  : { nodes: id ? [id] : [], edges: [] },
+          );
     },
-    [scope, setRailTab, setInspectorOpen],
+    [scope, level, projection, setRailTab, setInspectorOpen],
   );
   const currentEvidence = evidence?.revision === design.revision ? evidence : undefined;
   const changeLevel = async (next: Level) => {
@@ -219,6 +249,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     void changeLevel("components");
   };
   const openContainer = (id?: string) => {
+    setFocusedView("");
     if (id) useDraw.getState().focus({ nodes: [id], edges: [] });
     setInspectorViews((current) => ({ ...current, containers: true }));
     setRailTab("inspector");
@@ -283,6 +314,18 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item onClick={() => setFindOpen(true)}>Find object</Menu.Item>
+              <Menu.Item
+                disabled={!layoutUndoable}
+                onClick={() => useDraw.getState().undoArchitectureLayout()}
+              >
+                Undo layout
+              </Menu.Item>
+              <Menu.Item
+                disabled={!layoutRedoable}
+                onClick={() => useDraw.getState().redoArchitectureLayout()}
+              >
+                Redo layout
+              </Menu.Item>
               <Menu.Item onClick={() => setInspectorOpen(!inspectorOpen)}>
                 {inspectorOpen ? "Hide inspector" : "Show inspector"}
               </Menu.Item>
@@ -399,7 +442,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           <GenerateButton />
         </Group>
       </header>
-      {level !== "containers" && notice ? (
+      {!overview && notice ? (
         <Alert
           color={notice.tone === "error" ? "red" : "blue"}
           role="alert"
@@ -421,6 +464,16 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
             Refresh architecture
           </Button>
         </Alert>
+      ) : null}
+      {level === "containers" ? (
+        <FocusedViews
+          source={views?.containers}
+          active={focused ? focusedView : ""}
+          onChange={(key) => {
+            void useDraw.getState().flushLayout();
+            setFocusedView(key);
+          }}
+        />
       ) : null}
       <div className="editor-body">
         {!chatOpen ? (
@@ -460,7 +513,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           }}
         >
           <div className="scenario-diagram">
-            {level === "containers" ? (
+            {overview ? (
               board
             ) : !views ? (
               <div className="architecture-loading">
@@ -473,9 +526,20 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                   <span>
                     {level === "context"
                       ? "People, purpose & external systems"
-                      : "Responsibilities within one application"}
+                      : level === "containers"
+                        ? `${views?.containers.name} · focused C2`
+                        : "Responsibilities within one application"}
                   </span>
                 </div>
+                {focusedProjection ? (
+                  <button
+                    type="button"
+                    className="focused-hidden-link"
+                    onClick={() => setHiddenOpen(true)}
+                  >
+                    {focusedProjection.hidden.length} hidden relationships · Whole system
+                  </button>
+                ) : null}
                 {level === "context" && !design.architecture ? (
                   <div className="editor-empty context-empty">
                     <span className="editor-empty-eyebrow">System context</span>
@@ -491,9 +555,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 ) : projection.nodes.length ? (
                   <ArchitectureGraph
                     projection={projection}
-                    selected={node?.id}
+                    selected={selected}
                     onSelect={choose}
-                    cameraCache={cameraCache.current}
+                    viewKey={scope}
                   />
                 ) : (
                   <div className="editor-empty">
@@ -514,7 +578,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 </Button>
               </div>
             )}
-            {level === "containers" &&
+            {overview &&
             design.elements.length === 0 &&
             design.annotations.length === 0 &&
             (tool === "select" || tool === "hand") ? (
@@ -711,6 +775,47 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           ) : null}
         </aside>
       </div>
+      {hiddenOpen && focusedProjection ? (
+        <Modal opened onClose={() => setHiddenOpen(false)} title="Hidden relationships">
+          <p>
+            {focusedProjection.hidden.length} relationships are outside {focused?.name}. They remain
+            part of {views?.containers.name}.
+          </p>
+          <Button
+            variant="default"
+            onClick={() => {
+              setFocusedView("");
+              setHiddenOpen(false);
+            }}
+          >
+            Open whole system
+          </Button>
+          <div className="scope-relationships">
+            {focusedProjection.hidden.map((relation) => (
+              <button
+                type="button"
+                key={relation.id}
+                onClick={() => {
+                  setFocusedView("");
+                  setHiddenOpen(false);
+                  useDraw
+                    .getState()
+                    .focus({ nodes: [], edges: [relation.connection ?? relation.id] });
+                  setInspectorViews((current) => ({ ...current, containers: true }));
+                }}
+              >
+                <strong>
+                  {views?.containers.nodes.find((node) => node.id === relation.from)?.name} →{" "}
+                  {views?.containers.nodes.find((node) => node.id === relation.to)?.name}
+                </strong>
+                <span>
+                  {relation.description} · {relation.protocol}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Modal>
+      ) : null}
       {findOpen ? (
         <Modal
           opened
@@ -732,7 +837,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
             onChange={(event) => {
               const value = event.currentTarget.value;
               if (!value) return;
-              if (level === "containers")
+              if (overview)
                 useDraw
                   .getState()
                   .focus(

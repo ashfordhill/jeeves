@@ -66,6 +66,37 @@ describe("draw store", () => {
     expect(api.state.calls.slice(before)).toEqual([`PUT /projects/${TEST_PROJECT}/layout`]);
   });
 
+  it("keeps focused-view history independent of semantic edits, cameras and board layout", async () => {
+    await useDraw.getState().edit([
+      {
+        op: "addElement",
+        element: { id: "links", name: "Links", template: ref("http-service") },
+      },
+    ]);
+    const initial = {
+      name: "Management",
+      members: ["container:links"],
+      positions: { "container:links": { x: 20, y: 30 } },
+    };
+    useDraw.getState().setArchitectureView("focus-management", initial, true);
+    const revision = useDraw.getState().loaded!.design.revision;
+    await useDraw.getState().edit([{ op: "updateElement", id: "links", name: "Renamed links" }]);
+    expect(useDraw.getState().loaded!.layout.architecture!["focus-management"]).toEqual(initial);
+    const semanticSteps = useDraw.getState().undoSteps;
+    useDraw.getState().undoArchitectureLayout();
+    expect(useDraw.getState().loaded!.layout.architecture!["focus-management"]).toBeUndefined();
+    expect(useDraw.getState().loaded!.design.revision).toBe(revision + 1);
+    expect(useDraw.getState().undoSteps).toBe(semanticSteps);
+    useDraw.getState().redoArchitectureLayout();
+    expect(useDraw.getState().loaded!.layout.architecture!["focus-management"]).toEqual(initial);
+    await useDraw.getState().flushLayout();
+    expect(api.state.layout.architecture!["focus-management"]).toEqual(initial);
+    await useDraw.getState().edit([{ op: "removeElement", id: "links" }]);
+    expect(useDraw.getState().loaded!.layout.architecture!["focus-management"]!.positions).toEqual(
+      {},
+    );
+  });
+
   it("undoes and redoes design edits through the server", async () => {
     const { edit } = useDraw.getState();
     await edit([

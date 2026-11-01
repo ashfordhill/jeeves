@@ -60,6 +60,8 @@ export interface ArchitectureViewEdge {
   context?: string;
   declared?: boolean;
   componentRelationship?: string;
+  /** Presentation summary only; exact identities remain in architecture bindings. */
+  contractCount?: number;
 }
 export interface ArchitectureProjection {
   level: "context" | "containers" | "components";
