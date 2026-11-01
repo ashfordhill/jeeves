@@ -4,7 +4,7 @@ import type {
   ArchitectureViewEdge,
   ArchitectureViewNode,
 } from "@jeeves/spec";
-import { ActionIcon, Menu } from "@mantine/core";
+import { ActionIcon, Button, Group, Menu } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { IconDots } from "@tabler/icons-react";
 import {
@@ -36,7 +36,6 @@ import {
   type ArchitectureGeometry,
   architectureBounds,
   architectureLayoutInput,
-  CARD,
   positionedArchitectureGeometry,
   type RelationGeometry,
   relationshipPath,
@@ -57,7 +56,14 @@ export const supportLabel: Record<ArchitectureSupport, string> = {
   mixed: "Mixed ownership",
 };
 type CardNode = Node<
-  { item: ArchitectureViewNode; showTechnology: boolean; onSelect: (id: string) => void },
+  {
+    item: ArchitectureViewNode;
+    showTechnology: boolean;
+    onSelect: (id: string) => void;
+    onOpen?: (element: string, component?: string) => void;
+    showResponsibilities: boolean;
+    connected?: boolean;
+  },
   "architecture"
 >;
 function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
@@ -75,43 +81,82 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
       <span className="architecture-drag-handle" title="Drag to move" aria-hidden="true">
         ⠿
       </span>
-      <button
-        type="button"
-        className="architecture-card nodrag nopan"
-        data-selected={selected}
-        data-kind={item.kind}
-        data-family={family}
-        data-support={item.support}
-        data-overview={overview}
-        onClick={() => data.onSelect(item.id)}
-        aria-pressed={selected}
-        aria-label={`Inspect ${item.name}`}
-      >
-        <span className="architecture-card-kind">
-          <TemplateIcon name={style.icon} size={21} />
-          {item.deploymentKind ?? (item.kind === "component" ? "Component" : style.label)}
-        </span>
-        <strong style={{ fontSize: overview ? Math.min(28, 14 / Math.max(zoom, 0.25)) : 18 }}>
-          {item.name}
-        </strong>
-        <span className="architecture-card-description">{item.description}</span>
-        {data.showTechnology && item.technology ? (
-          <span className="architecture-card-technology">{item.technology}</span>
-        ) : null}
-        {item.support === "planned" || item.missing?.length || item.unassigned ? (
-          <span
-            className="architecture-support"
-            data-support={item.support}
-            style={overview ? { fontSize: 9 / Math.max(zoom, 0.25) } : undefined}
-          >
-            {item.missing?.length
-              ? "Binding needs attention"
-              : item.unassigned
-                ? "Ungrouped"
-                : "Planned"}
+      <div className="architecture-card-shell" data-dimmed={data.connected === false}>
+        <button
+          type="button"
+          className="architecture-card nodrag nopan"
+          data-selected={selected}
+          data-kind={item.kind}
+          data-has-responsibilities={data.showResponsibilities && !!item.responsibilities?.length}
+          data-family={family}
+          data-support={item.support}
+          data-overview={overview}
+          onClick={() => data.onSelect(item.id)}
+          aria-pressed={selected}
+          aria-label={`Inspect ${item.name}`}
+        >
+          <span className="architecture-card-kind">
+            <TemplateIcon name={style.icon} size={21} />
+            {item.deploymentKind ??
+              (item.kind === "component"
+                ? "Component"
+                : item.kind === "binding"
+                  ? "Capability group"
+                  : style.label)}
           </span>
+          <strong
+            style={{
+              fontSize: overview
+                ? Math.min(28, 14 / Math.max(zoom, 0.25))
+                : Math.min(26, Math.max(18, 12 / zoom)),
+            }}
+          >
+            {item.name}
+          </strong>
+          <span className="architecture-card-description">{item.description}</span>
+          {data.showTechnology && item.technology ? (
+            <span className="architecture-card-technology">{item.technology}</span>
+          ) : null}
+          {item.support === "planned" || item.missing?.length || item.unassigned ? (
+            <span
+              className="architecture-support"
+              data-support={item.support}
+              style={overview ? { fontSize: 9 / Math.max(zoom, 0.25) } : undefined}
+            >
+              {item.missing?.length
+                ? "Binding needs attention"
+                : item.unassigned
+                  ? "Ungrouped"
+                  : "Planned"}
+            </span>
+          ) : null}
+        </button>
+        {data.showResponsibilities && item.responsibilities?.length ? (
+          <div className="architecture-card-responsibilities nodrag nopan" data-family={family}>
+            <span>Inside this application · C3</span>
+            {item.responsibilities.map((member) => (
+              <button
+                type="button"
+                key={member.id}
+                title={member.description}
+                onClick={() => data.onOpen?.(item.binding!.element, member.id)}
+              >
+                <span aria-hidden="true">▧</span> {member.name}
+                <span aria-hidden="true">›</span>
+              </button>
+            ))}
+          </div>
         ) : null}
-      </button>
+        {data.onOpen && item.binding && item.responsibilities && !item.responsibilities.length ? (
+          <button
+            type="button"
+            className="architecture-card-open nodrag nopan"
+            onClick={() => data.onOpen?.(item.binding!.element)}
+          >
+            Design components →
+          </button>
+        ) : null}
+      </div>
     </>
   );
 }
@@ -135,7 +180,6 @@ type RelationEdge = Edge<
   "relation"
 >;
 function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
-  const { zoom } = useViewport();
   if (!data) return null;
   const { label, points } = data.geometry;
   return (
@@ -159,12 +203,13 @@ function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
             top: label.y,
             width: label.width,
             height: label.height,
-            fontSize: Math.min(20, 11 / zoom),
+            fontSize: 12,
             lineHeight: data.presentation.protocol ? "1.2" : undefined,
           }}
         >
           <RelationshipLabel
             {...data.presentation}
+            contractCount={undefined}
             scenarioRelationship={
               data.presentation.componentRelationship
                 ? { kind: "componentRelationship", id: data.presentation.componentRelationship }
@@ -219,18 +264,29 @@ function InitialCamera({ onReady, restored }: { onReady: () => void; restored?: 
   return null;
 }
 
-function ResizeCamera() {
+function FocusSelection({
+  request,
+  selected,
+  projection,
+  ready,
+}: {
+  request: number;
+  selected?: string;
+  projection: ArchitectureProjection;
+  ready: boolean;
+}) {
+  const { fitView } = useReactFlow();
   const width = useStore((state) => state.width);
-  const height = useStore((state) => state.height);
-  const previous = useRef(width);
-  const { setViewport, getNodes, getNodesBounds } = useReactFlow();
+  const previous = useRef("");
   useEffect(() => {
-    if (width > 0 && height > 0 && previous.current > width && getNodes().length)
-      void setViewport(
-        getViewportForBounds(getNodesBounds(getNodes()), width, height, 0.1, 1, 0.12),
-      );
-    previous.current = width;
-  }, [width, height, setViewport, getNodes, getNodesBounds]);
+    const key = `${request}:${width}`;
+    if (!ready || !selected || !request || key === previous.current) return;
+    const edge = projection.edges.find((edge) => edge.id === selected);
+    const nodes = edge ? [{ id: edge.from }, { id: edge.to }] : [{ id: selected }];
+    if (!nodes.some((node) => projection.nodes.some((item) => item.id === node.id))) return;
+    previous.current = key;
+    void fitView({ nodes, minZoom: 0.75, maxZoom: 1, duration: 200 });
+  }, [request, selected, ready, projection, fitView, width]);
   return null;
 }
 
@@ -260,62 +316,88 @@ function DiagramOptions({
       : [];
   const movable = projection.nodes.some((node) => node.id === selected);
   return (
-    <Panel position="top-right">
-      <Menu position="bottom-end" shadow="md">
-        <Menu.Target>
-          <ActionIcon variant="default" aria-label="Diagram options" size="lg">
-            <IconDots size={19} />
-          </ActionIcon>
-        </Menu.Target>
-        <Menu.Dropdown>
-          <Menu.Item onClick={onDirection}>{down ? "Flow right" : "Flow down"}</Menu.Item>
-          <Menu.Item
+    <>
+      <Panel position="bottom-center" className="diagram-view-controls">
+        <Group gap={5}>
+          <Button
+            size="compact-xs"
+            variant="default"
+            onClick={() => void fitView({ padding: 0.08, duration: 200 })}
+          >
+            Fit diagram
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="default"
             disabled={!selected}
             onClick={() =>
-              void fitView({ nodes: selectedNodes, minZoom: 0.65, maxZoom: 1, duration: 200 })
+              void fitView({ nodes: selectedNodes, minZoom: 0.8, maxZoom: 1, duration: 200 })
             }
           >
-            Fit selected
-          </Menu.Item>
-          <Menu.Item
-            disabled={!selected}
-            onClick={() =>
-              void fitView({ nodes: selectedNodes, minZoom: 1, maxZoom: 1, duration: 200 })
-            }
-          >
-            Focus selected object
-          </Menu.Item>
-          <Menu.Label>Move selected object</Menu.Label>
-          <Menu.Item disabled={!movable} onClick={() => onNudge(-24, 0)}>
-            Nudge left
-          </Menu.Item>
-          <Menu.Item disabled={!movable} onClick={() => onNudge(24, 0)}>
-            Nudge right
-          </Menu.Item>
-          <Menu.Item disabled={!movable} onClick={() => onNudge(0, -24)}>
-            Nudge up
-          </Menu.Item>
-          <Menu.Item disabled={!movable} onClick={() => onNudge(0, 24)}>
-            Nudge down
-          </Menu.Item>
-          <Menu.Divider />
-          <Menu.Item
-            disabled={!undoable}
-            onClick={() => useDraw.getState().undoArchitectureLayout()}
-          >
-            Undo layout
-          </Menu.Item>
-          <Menu.Item
-            disabled={!redoable}
-            onClick={() => useDraw.getState().redoArchitectureLayout()}
-          >
-            Redo layout
-          </Menu.Item>
-          <Menu.Item onClick={onReset}>Reset layout</Menu.Item>
-          <ScenarioMenuItems />
-        </Menu.Dropdown>
-      </Menu>
-    </Panel>
+            Focus selection
+          </Button>
+          <Button size="compact-xs" variant="default" onClick={onReset}>
+            Auto-arrange
+          </Button>
+        </Group>
+      </Panel>
+      <Panel position="top-right">
+        <Menu position="bottom-end" shadow="md">
+          <Menu.Target>
+            <ActionIcon variant="default" aria-label="Diagram options" size="lg">
+              <IconDots size={19} />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item onClick={onDirection}>{down ? "Flow right" : "Flow down"}</Menu.Item>
+            <Menu.Item
+              disabled={!selected}
+              onClick={() =>
+                void fitView({ nodes: selectedNodes, minZoom: 0.65, maxZoom: 1, duration: 200 })
+              }
+            >
+              Fit selected
+            </Menu.Item>
+            <Menu.Item
+              disabled={!selected}
+              onClick={() =>
+                void fitView({ nodes: selectedNodes, minZoom: 1, maxZoom: 1, duration: 200 })
+              }
+            >
+              Focus selected object
+            </Menu.Item>
+            <Menu.Label>Move selected object</Menu.Label>
+            <Menu.Item disabled={!movable} onClick={() => onNudge(-24, 0)}>
+              Nudge left
+            </Menu.Item>
+            <Menu.Item disabled={!movable} onClick={() => onNudge(24, 0)}>
+              Nudge right
+            </Menu.Item>
+            <Menu.Item disabled={!movable} onClick={() => onNudge(0, -24)}>
+              Nudge up
+            </Menu.Item>
+            <Menu.Item disabled={!movable} onClick={() => onNudge(0, 24)}>
+              Nudge down
+            </Menu.Item>
+            <Menu.Divider />
+            <Menu.Item
+              disabled={!undoable}
+              onClick={() => useDraw.getState().undoArchitectureLayout()}
+            >
+              Undo layout
+            </Menu.Item>
+            <Menu.Item
+              disabled={!redoable}
+              onClick={() => useDraw.getState().redoArchitectureLayout()}
+            >
+              Redo layout
+            </Menu.Item>
+            <Menu.Item onClick={onReset}>Auto-arrange diagram</Menu.Item>
+            <ScenarioMenuItems />
+          </Menu.Dropdown>
+        </Menu>
+      </Panel>
+    </>
   );
 }
 
@@ -325,16 +407,26 @@ export function ArchitectureGraph({
   selected,
   onSelect,
   viewKey,
+  onOpen,
+  focusRequest = 0,
 }: {
   projection: ArchitectureProjection;
   selected?: string;
   onSelect: (id: string) => void;
   viewKey?: string;
+  focusRequest?: number;
+  onOpen?: (element: string, component?: string) => void;
 }) {
   const design = useDraw((state) => state.loaded!.design);
   const projection = useMemo(
     () => ({
       ...sourceProjection,
+      nodes: sourceProjection.nodes.filter(
+        (node) =>
+          sourceProjection.level !== "containers" ||
+          node.kind !== "system" ||
+          sourceProjection.edges.some((edge) => edge.from === node.id || edge.to === node.id),
+      ),
       edges: sourceProjection.edges.map((edge) => ({
         ...edge,
         contractCount:
@@ -386,20 +478,6 @@ export function ArchitectureGraph({
     );
     return () => controller.abort();
   }, [request, ready]);
-  useEffect(() => {
-    if (result?.key !== key) return;
-    const previous = useDraw.getState().loaded?.layout.architecture?.[scope];
-    const missing = Object.entries(result.geometry.nodes).filter(([id]) => !saved?.positions[id]);
-    if (!missing.length) return;
-    useDraw.getState().setArchitectureView(scope, {
-      ...previous,
-      down,
-      positions: {
-        ...previous?.positions,
-        ...Object.fromEntries(missing.map(([id, point]) => [id, { x: point.x, y: point.y }])),
-      },
-    });
-  }, [result, key, scope, down, saved?.positions]);
   const current = useMemo(
     () =>
       result?.key === key
@@ -430,12 +508,26 @@ export function ArchitectureGraph({
         dragHandle: ".architecture-drag-handle",
         ariaRole: "group",
         position: { x: point.x, y: point.y },
-        width: CARD.width,
-        height: CARD.height,
-        data: { item, onSelect, showTechnology: projection.level !== "context" },
+        width: point.width,
+        height: point.height,
+        data: {
+          item,
+          onSelect,
+          onOpen,
+          showResponsibilities: projection.level === "containers",
+          showTechnology: projection.level !== "context",
+          connected:
+            !selected ||
+            item.id === selected ||
+            projection.edges.some(
+              (edge) =>
+                (edge.id === selected && [edge.from, edge.to].includes(item.id)) ||
+                ([edge.from, edge.to].includes(selected) && [edge.from, edge.to].includes(item.id)),
+            ),
+        },
         selected: item.id === selected,
         zIndex: 1,
-        style: CARD,
+        style: { width: point.width, height: point.height },
       };
     });
     for (const group of projection.groups ?? []) {
@@ -508,6 +600,10 @@ export function ArchitectureGraph({
           geometry,
           onSelect,
         },
+        className:
+          selected && edge.id !== selected && edge.from !== selected && edge.to !== selected
+            ? "architecture-edge-muted"
+            : undefined,
         style: {
           stroke: "var(--line)",
           strokeWidth: 2,
@@ -521,7 +617,7 @@ export function ArchitectureGraph({
       };
     });
     return { nodes, edges };
-  }, [projection, selected, onSelect, current, design.architecture?.system.name]);
+  }, [projection, selected, onSelect, onOpen, current, design.architecture?.system.name]);
   return (
     <section
       ref={ref}
@@ -571,7 +667,13 @@ export function ArchitectureGraph({
             onPaneClick={() => onSelect("")}
           >
             <InitialCamera key={key} restored={saved?.viewport} onReady={cameraReady} />
-            <ResizeCamera />
+            <FocusSelection
+              request={focusRequest}
+              selected={selected}
+              projection={projection}
+              ready={cameraReadyKey === key}
+            />
+
             {selectedEdge ? (
               <Panel position="top-left" className="architecture-selection-summary">
                 <strong>{selectedEdge.description}</strong>

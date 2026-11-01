@@ -1,5 +1,7 @@
 # Jeeves and Draw Jeeves
 
+**Current product direction:** [C2/C3 architecture studio](docs/architecture-studio.md). UX2 makes architecture authoring the primary experience. Runtime/code generation is deferred. The sections below retain the implementation contracts and historical package sequence.
+
 Architecture and build plan. Rewritten 2026-10-28 after the plan review ([SRC-15](docs/sources.md)). Progress is recorded in `docs/handoff.md`: S1–S12 implemented; S13 acceptance is partial (provider credits stopped the first coding task). The current improvement specification is [docs/improvements.md](docs/improvements.md); its ordered delivery and explicit review checkpoints supersede conflicting future-work statements below. The original S1–S14 sections remain the historical build sequence. The continuing product/component packages are specified in [docs/build-plan-execution.md](docs/build-plan-execution.md); P19 provides a complete deterministic QR Studio recipe, and P20 makes C4 scope and configuration intentional in the current design; P23–P26 add structured resource/screen authoring and an editable application starter.
 
 **Agents:** if you were told "work section N", read [§15](#15-build-sections) first. It tells you exactly what to read and do.
@@ -16,7 +18,7 @@ Related documents:
 - [docs/templates/](docs/templates/README.md): one brief per template
 - [docs/examples/](docs/examples/): prototype project briefs (qrwty, inventory labeling, storefront, grocery review), with qrwty now the first proving application; other briefs remain future work
 - [docs/reference/automation-pitch.md](docs/reference/automation-pitch.md): editor and style reuse notes
-- [docs/archive/PLAN-v1.md](docs/archive/PLAN-v1.md): the previous, much larger plan, kept for reference only
+- The obsolete original plan is available in Git: `git show c6c3ad5:docs/archive/PLAN-v1.md`.
 - `docs/handoff.md`: append-only log written by each build agent (created in S1)
 
 ## 1. What we're building
@@ -502,7 +504,7 @@ These are reversible implementation choices; the section agent may change them i
 
 ## 17. Decision log
 
-- 2026-10-28: Initial architecture. Two modes, Agent Slices, templates, shared tests, a UI, and provider abstraction (SRC-01). Draw Jeeves as an integrated typed canvas with chat that edits the board directly; local Docker plus Google Cloud; Jeeves hosted locally (SRC-03 to SRC-08). Reference projects added (SRC-09 to SRC-13). Full detail is in [docs/archive/PLAN-v1.md](docs/archive/PLAN-v1.md).
+- 2026-10-28: Initial architecture. Two modes, Agent Slices, templates, shared tests, a UI, and provider abstraction (SRC-01). Draw Jeeves as an integrated typed canvas with chat that edits the board directly; local Docker plus Google Cloud; Jeeves hosted locally (SRC-03 to SRC-08). Reference projects added (SRC-09 to SRC-13). Full detail remains in Git: `git show c6c3ad5:docs/archive/PLAN-v1.md`.
 - 2026-10-28: Plan review and rewrite (SRC-15). Ticket mode dropped; orchestration redefined as implementing generated template projects; templates are option (b); elements are design-level, with attachments as mini-boxes; automation-pitch style; chat file input; Temporal dropped in favor of pg-boss on Postgres; v1 is local Docker only; prototypes and the template catalog moved to their own briefs; Jeeves is built in thirteen sequential single-agent sections.
 - 2026-10-28: User confirmed TypeScript for v1 templates, React Flow over an Excalidraw fork, five reference templates in v1, that Jeeves is not built by Jeeves, and design-edit-regenerate as the post-v1 change path (SRC-16).
 - 2026-10-29: Provider-agnostic model selection (SRC-17). Each role picks a provider and model in Settings; Codex can back the design chat and planner on a ChatGPT plan; local models get their own section (S14); a Claude adapter stays after v1 because it needs an Anthropic API key.

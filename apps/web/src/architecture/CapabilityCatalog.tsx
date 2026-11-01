@@ -4,10 +4,11 @@ import {
   architecturePatterns,
   componentCompatible,
   componentHostRole,
+  containerClassification,
   type PlannedCapability,
   plannedCapabilities,
 } from "@jeeves/spec";
-import { Alert, Badge, Button, Group, Tabs, TextInput } from "@mantine/core";
+import { Alert, Badge, Button, Group, NativeSelect, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
@@ -20,6 +21,7 @@ import { ExampleMiniature } from "./ExampleMiniature.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
 
+type CatalogTab = "containers" | "components" | "examples" | "patterns";
 export function CapabilityCatalog({
   onClose,
   onPlace,
@@ -27,23 +29,29 @@ export function CapabilityCatalog({
   onStarter,
   onComponent,
   componentContainer,
-  initialTab = "blocks",
+  initialTab = "containers",
 }: {
   onClose: () => void;
   onPlace: (id: string) => void;
   onTemplate: (tool: Tool) => void;
   onStarter: () => void;
-  onComponent?: (id: string) => void;
+  onComponent: (id: string, host: string) => void;
   componentContainer?: string;
-  initialTab?: "blocks" | "examples";
+  initialTab?: CatalogTab;
 }) {
   const loaded = useDraw((state) => state.loaded)!;
-  const owner = loaded.design.elements.find((item) => item.id === componentContainer);
-  const capabilities = plannedCapabilities.filter(
-    (item) =>
-      item.scope === "container" ||
-      Boolean(owner && componentCompatible(item, componentHostRole(owner, builtinRegistry()))),
+  const hosts = loaded.design.elements.filter(
+    (element) =>
+      containerClassification(element).kind === "Application" &&
+      ["service", "frontend", "worker"].includes(
+        componentHostRole(element, builtinRegistry()) ?? "",
+      ),
   );
+  const [host, setHost] = useState(
+    hosts.find((e) => e.id === componentContainer)?.id ?? hosts[0]?.id ?? "",
+  );
+  const owner = hosts.find((e) => e.id === host);
+  const [tab, setTab] = useState<string>(initialTab);
   const [localLibrary, setLocalLibrary] = useState(false);
   const [workshop, setWorkshop] = useState(false);
   const [pattern, setPattern] = useState<string>();
@@ -51,20 +59,27 @@ export function CapabilityCatalog({
   const [group, setGroup] = useState("All");
   const [error, setError] = useState<string>();
   const [creating, setCreating] = useState(false);
-  const latest = new Map<string, (typeof loaded.catalog.templates)[number]>();
-  for (const template of loaded.catalog.templates) {
-    if (builtinRegistry().latest(template.id)?.version === template.version)
-      latest.set(template.id, template);
-  }
+  const capabilities = plannedCapabilities.filter((item) =>
+    tab === "components"
+      ? item.scope === "component" &&
+        (!owner || componentCompatible(item, componentHostRole(owner, builtinRegistry())))
+      : item.scope === "container" &&
+        item.architectureKind !== "Deployment infrastructure" &&
+        item.id !== "billing-provider",
+  );
   const matches = (name: string, description: string) =>
     `${name} ${description}`.toLowerCase().includes(query.toLowerCase());
   const matchesCapability = (item: PlannedCapability) =>
     matches(
       item.name,
-      `${item.description} ${item.fields
-        .map((field) => `${field.label} ${field.options?.join(" ") ?? ""}`)
-        .join(" ")}`,
+      `${item.description} ${item.fields.map((field) => `${field.label} ${field.options?.join(" ") ?? ""}`).join(" ")}`,
     );
+  const shown = capabilities.filter(
+    (item) => (group === "All" || group === item.group) && matchesCapability(item),
+  );
+  const latest = loaded.catalog.templates.filter(
+    (template) => builtinRegistry().latest(template.id)?.version === template.version,
+  );
   const create = async (id: string) => {
     setCreating(true);
     setError(undefined);
@@ -93,46 +108,67 @@ export function CapabilityCatalog({
   return (
     <ConfigurationDialog title="Architecture library" size="xl" onClose={onClose}>
       <p className="catalog-intro">
-        Choose the responsibilities your system needs. Planned blocks have editable design options;
-        runtime implementation comes later.
+        Compose your system from applications, stores and the responsibilities inside them.
       </p>
-      <p className="catalog-intro">
-        Choose a logical application, data store or external system. Deployment infrastructure
-        records placement concerns. Deployment plans can map an existing infrastructure identity
-        after review; the original C2 relationships stay intact. Runtime host compatibility is
-        separate.
-      </p>
-      <Button variant="default" mb="md" onClick={() => setLocalLibrary(true)}>
-        Saved architecture templates
-      </Button>
-      <Button variant="default" mb="md" onClick={() => setWorkshop(true)}>
-        Build a study step by step
-      </Button>
-      <Button variant="default" mb="md" onClick={onStarter}>
-        Use an implemented starter or recipe
-      </Button>
       {error ? (
         <Alert color="red" role="alert">
           {error}
         </Alert>
       ) : null}
-      <Tabs defaultValue={initialTab}>
+      <Tabs
+        keepMounted={false}
+        value={tab}
+        onChange={(value) => {
+          setTab(value ?? "containers");
+          setGroup("All");
+          setQuery("");
+        }}
+      >
         <Tabs.List>
-          <Tabs.Tab value="blocks">Building blocks</Tabs.Tab>
-          <Tabs.Tab value="examples">Architecture examples</Tabs.Tab>
+          <Tabs.Tab value="containers">Containers · C2</Tabs.Tab>
+          <Tabs.Tab value="components">Components · C3</Tabs.Tab>
           <Tabs.Tab value="patterns">Patterns</Tabs.Tab>
+          <Tabs.Tab value="examples">Examples</Tabs.Tab>
+          <Tabs.Tab value="implementation">Runtime templates</Tabs.Tab>
         </Tabs.List>
-        <Tabs.Panel value="blocks" pt="md">
-          <TextInput
-            aria-label="Search building blocks"
-            placeholder="Search cache, identity, storage…"
-            leftSection={<IconSearch size={16} />}
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-          />
-          <div className="catalog-filters">
-            {["All", ...new Set(capabilities.map((item) => item.group)), "Implemented"].map(
-              (item) => (
+        {tab === "containers" || tab === "components" ? (
+          <div className="catalog-content">
+            {tab === "components" ? (
+              <>
+                <NativeSelect
+                  label="Add inside application"
+                  value={host}
+                  data={
+                    hosts.length
+                      ? hosts.map((e) => ({ value: e.id, label: e.name }))
+                      : [{ value: "", label: "Add a C2 application first" }]
+                  }
+                  onChange={(e) => setHost(e.currentTarget.value)}
+                />
+                <p className="catalog-intro">
+                  A component owns a cohesive responsibility inside one application. Its interfaces,
+                  dependencies and design options stay editable.
+                </p>
+              </>
+            ) : (
+              <p className="catalog-intro">
+                Applications and logical data stores belong inside your system. Providers stay
+                outside its boundary. Replicas and infrastructure belong in deployment plans.
+              </p>
+            )}
+            <TextInput
+              aria-label="Search building blocks"
+              placeholder={
+                tab === "components"
+                  ? "Search authorization, workflow, caching…"
+                  : "Search web app, API, cache, queue…"
+              }
+              leftSection={<IconSearch size={16} />}
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+            />
+            <div className="catalog-filters">
+              {["All", ...new Set(capabilities.map((item) => item.group))].map((item) => (
                 <button
                   type="button"
                   key={item}
@@ -141,82 +177,74 @@ export function CapabilityCatalog({
                 >
                   {item}
                 </button>
-              ),
-            )}
-          </div>
-          <div className="catalog-grid">
-            {(group === "All" || group === "Implemented") &&
-              [...latest.values()]
-                .filter((item) => matches(item.displayName, item.description))
-                .map((template) => (
-                  <button
-                    type="button"
-                    key={template.id}
-                    className="catalog-card"
-                    data-family={templateFamily(template.id)}
-                    onClick={() => {
-                      onTemplate({
-                        kind: template.kind,
-                        template: { id: template.id, version: template.version },
-                      });
-                    }}
-                  >
-                    <Group justify="space-between">
-                      <TemplateIcon name={typeStyles[templateFamily(template.id)].icon} size={22} />
-                      <Badge size="xs" color="teal" variant="light">
-                        Implemented
-                      </Badge>
-                    </Group>
-                    <strong>{template.displayName}</strong>
-                    <span>{template.description}</span>
-                    <small>
-                      {template.kind === "attachment" ? "Add to an application" : "Place on C2"}
-                    </small>
-                  </button>
-                ))}
-            {capabilities
-              .filter(
-                (item) => (group === "All" || group === item.group) && matchesCapability(item),
-              )
-              .map((item) => (
+              ))}
+            </div>
+            <div className="catalog-grid">
+              {shown.map((item) => (
                 <button
                   type="button"
                   key={item.id}
                   className="catalog-card"
                   data-family={capabilityFamily(item.id)}
-                  disabled={item.scope === "component" && !onComponent}
+                  disabled={item.scope === "component" && !owner}
                   onClick={() =>
-                    item.scope === "component" ? onComponent?.(item.id) : onPlace(item.id)
+                    item.scope === "component" ? onComponent(item.id, host) : onPlace(item.id)
                   }
                 >
                   <Group justify="space-between">
                     <TemplateIcon name={typeStyles[capabilityFamily(item.id)].icon} size={22} />
-                    <span className="capability-status">Planned</span>
+                    <span className="catalog-scope">
+                      {item.scope === "component" ? "C3" : "C2"}
+                    </span>
                   </Group>
                   <strong>{item.name}</strong>
                   <span>{item.description}</span>
                   <small>
-                    {item.architectureKind ? `${item.architectureKind} · ` : ""}
-                    {item.scope === "component"
-                      ? onComponent
-                        ? "Add inside selected application"
-                        : "Select a C3 application to add"
-                      : "Place on C2"}{" "}
-                    · {item.fields.length} options
+                    {item.architectureKind ?? "In-process responsibility"} ·{" "}
+                    {item.fields.filter((f) => f.key !== "tenancy").length} design options
                   </small>
                 </button>
               ))}
+            </div>
+            {!shown.length ? <p>No matching options. Try another search or category.</p> : null}
+            <p className="catalog-intro">
+              {shown.length} design options. Architecture choices do not require a runtime template.
+            </p>
           </div>
-          {!capabilities.some(
-            (item) => (group === "All" || group === item.group) && matchesCapability(item),
-          ) &&
-          ![...latest.values()].some(
-            (item) =>
-              (group === "All" || group === "Implemented") &&
-              matches(item.displayName, item.description),
-          ) ? (
-            <p>No matching blocks. Try another search or category.</p>
-          ) : null}
+        ) : null}
+        <Tabs.Panel value="implementation" pt="md">
+          <p className="catalog-intro">
+            Optional implementation bindings for the freeform board. Architecture authoring is
+            independent of these runtimes.
+          </p>
+          <Button variant="default" mb="md" onClick={onStarter}>
+            Use an implemented starter or recipe
+          </Button>
+          <div className="catalog-grid">
+            {latest.map((template) => (
+              <button
+                type="button"
+                key={template.id}
+                className="catalog-card"
+                data-family={templateFamily(template.id)}
+                onClick={() =>
+                  onTemplate({
+                    kind: template.kind,
+                    template: { id: template.id, version: template.version },
+                  })
+                }
+              >
+                <Badge size="xs" color="teal" variant="light">
+                  Runtime template
+                </Badge>
+                <strong>{template.displayName}</strong>
+                <span>{template.description}</span>
+                <small>
+                  {template.kind === "attachment" ? "Attach on board" : "Place on board"}
+                </small>
+              </button>
+            ))}
+          </div>
         </Tabs.Panel>
         <Tabs.Panel value="patterns" pt="md">
           {loaded.design.architecture?.patternInstances?.length ? (
@@ -288,6 +316,14 @@ export function CapabilityCatalog({
           </div>
         </Tabs.Panel>
       </Tabs>
+      <Group className="catalog-footer" mt="lg">
+        <Button variant="default" onClick={() => setLocalLibrary(true)}>
+          Saved architecture templates
+        </Button>
+        <Button variant="subtle" color="var(--ink)" onClick={() => setWorkshop(true)}>
+          Guided studies
+        </Button>
+      </Group>
     </ConfigurationDialog>
   );
 }

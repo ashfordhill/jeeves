@@ -2,11 +2,13 @@
 
 Status: the user approved the resource pattern, React Flow recommendation, and qrwty service/auth boundaries on 2026-10-29 (SRC-18 in `docs/sources.md`). The production editor and provider adapters have not been replaced. Read with [the resource specification](improvements.md) and [qrwty acceptance](examples/qrwty.md).
 
-## Runnable editor comparison
+## Historical editor comparison
 
-Run `pnpm --filter @jeeves/web dev`, then open <http://127.0.0.1:4300/editor-review.html>. This separate Vite entry makes no API calls and saves no projects. Choose an engine at the top. Add a Service rectangle, choose its subtype, and select compatible components in the inspector. Changing a configured subtype opens a discard confirmation. Postgres is a separate cylinder-shaped element. The prototype uses React Flow 12.11.6 (existing) and Excalidraw 0.18.0 (exact dev dependency, stable release predating this work by more than two weeks, supporting React 19). No source is copied from Excalidraw; its dependency retains its package license.
-
-The temporary node/config data is only spike state; it is not a second production design format. Both production engines would still have to adapt the existing validated spec/operations API and separate layout document. The spike deliberately does not implement saving, undo reconciliation, database migrations, production findings, or complete connection semantics.
+The temporary React Flow / Excalidraw comparison was retired in UX2 after the React Flow
+choice had shipped. Its standalone page, obsolete browser spec and Excalidraw dependency
+were removed. To inspect the historical spike, use
+`git show c6c3ad5:apps/web/src/editor-review/main.tsx`.
+The following findings explain the engine choice; they are not current run instructions.
 
 | Interaction | React Flow spike / existing API | Excalidraw spike / public API |
 | --- | --- | --- |
@@ -19,9 +21,9 @@ The temporary node/config data is only spike state; it is not a second productio
 | Inspector | Existing production forms can be reused directly | Existing forms can be kept outside the canvas; inline React controls on generic shapes require additional work |
 | History/layout | Existing operations API plus layout history | Need to reconcile Excalidraw scene history, deletion, duplication, and transforms with semantic operation history |
 
-Mouse evidence is recorded by `apps/web/e2e/editor-review.spec.ts`. The spike includes native engine gestures instead of mocks: outer connections, reconnection, actual outer-node width changes after resize, and subtype/component controls. The Excalidraw test also draws an arrow from an inner component and verifies its native binding contains `service-component-0`: grouping alone does not enforce outer-only endpoints. Its exposed binding IDs and geometry make limitations inspectable. Neither comparison demonstrates obstacle avoidance, dense-board routing quality, or a production migration. Those require their own examples if later needed.
+Historical mouse evidence was recorded by the retired `apps/web/e2e/editor-review.spec.ts`. The spike includes native engine gestures instead of mocks: outer connections, reconnection, actual outer-node width changes after resize, and subtype/component controls. The Excalidraw test also draws an arrow from an inner component and verifies its native binding contains `service-component-0`: grouping alone does not enforce outer-only endpoints. Its exposed binding IDs and geometry make limitations inspectable. Neither comparison demonstrates obstacle avoidance, dense-board routing quality, or a production migration. Those require their own examples if later needed.
 
-Spike limitations: native Excalidraw drawing remains unrestricted and state is temporary; it can demonstrate incompatible arrows that a production adapter would have to reject. React Flow resize gestures currently produce browser ResizeObserver notification warnings while their geometry assertions pass. Excalidraw's transitive Radix dependencies declare older React peers, so `pnpm peers check` reports warnings with React 19 even though the exercised interactions work. Keep this dev dependency isolated or remove it after the engine review; do not treat the spike as production-ready UI.
+Spike limitations: native Excalidraw drawing remains unrestricted and state is temporary; it can demonstrate incompatible arrows that a production adapter would have to reject. React Flow resize gestures currently produce browser ResizeObserver notification warnings while their geometry assertions pass. Excalidraw's transitive Radix dependencies declare older React peers, so `pnpm peers check` reports warnings with React 19 even though the exercised interactions work. These were spike limitations; the comparison and its dependency have now been removed.
 
 Recommendation: **retain React Flow**, update the product interaction to generic Service → subtype → compatible internal components, remove internal connection handles, give databases a distinct shape, and validate outer connections/reconnections through the registry. This preserves working forms, layout persistence, operations, and findings while implementing the requested hierarchy. React Flow's built-in paths do not provide automatic obstacle avoidance; keep the current routing scope explicit.
 
@@ -72,4 +74,4 @@ Keep the current persisted `roles` map and read compatibility for legacy `models
 2. **Approved:** retain React Flow with the demonstrated hierarchy and outer-only connections.
 3. **Approved:** the single API service + frontend + Postgres boundary and email/password with server sessions in [the qrwty brief](examples/qrwty.md#approved-architecture).
 
-These review checkpoints were satisfied by the user's explicit approval, not by prototype test results. P3 has implemented the approved production hierarchy and outer connections; continue with P4. Do not repeat the approval request. The prototype remains temporary; Settings/provider simplification is still outstanding.
+These review checkpoints were satisfied by the user's explicit approval, not by prototype test results. P3 has implemented the approved production hierarchy and outer connections; continue with P4. Do not repeat the approval request. The prototype is retired. Current work is described in [the studio guide](architecture-studio.md).

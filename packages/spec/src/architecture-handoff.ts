@@ -41,6 +41,7 @@ export const handoffDiagramSchema = z.strictObject({
       description: z.string(),
       technology: z.string(),
       support: z.string(),
+      responsibilities: z.array(z.strictObject({ id: z.string(), name: z.string() })).optional(),
       box: boxSchema,
     }),
   ),

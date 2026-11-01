@@ -1,127 +1,27 @@
-# Jeeves building-block catalog
+# Jeeves architecture catalog
 
-Use this catalog to compose applications from reusable responsibilities. Start with
-a [C1 offering](#c1-system-offerings), follow its links to shared
-[C2 containers](#c2-shared-containers-and-capabilities), then choose the
-[C3 components](#c3-shared-components) inside those containers. The same component
-type can serve several systems; its configured instances belong to their own
-containers. [C4](#c4-implementation-and-verification) connects these choices to
-code, libraries and verification without making every implementation detail a
-diagram option.
+Choose the boundaries and responsibilities your system needs. C1 describes a product, C2 its
+applications/stores, and C3 the cohesive responsibilities within an application. A design can
+be useful before its runtime templates exist.
 
-Jeeves is an engineering tool. Its diagrams express boundaries, responsibilities,
-contracts and requirements. The application engineer still owns domain behavior,
-data choices and the quality of custom implementation.
+**Library** separates Containers · C2, Components · C3, Patterns, Examples and Runtime templates.
+All current options are editable through the UI. See the [studio guide](docs/architecture-studio.md)
+for authoring, [C4 guidance](docs/c4-modeling.md) for classification, and the
+[completed architecture roadmap](docs/build-plan-c4-evolution.md) for model contracts.
 
-For modeling and contribution rules, read [C4 modeling guidance](docs/c4-modeling.md).
-Families are reusable starting points, not an exhaustive list of permitted architectures.
-An instance needs meaningful interfaces and dependencies; adding a family name alone does
-not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
-explains the contract/composition direction. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-records the delivered authoring sequence, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) [P52 evidence](docs/evidence/p52/README.md) and [P53 evidence](docs/evidence/p53/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+| Design task | Entry point |
+| --- | --- |
+| Choose an application, store or external provider | C2 → Add container |
+| Compose responsibilities inside one application | C3 → Add component |
+| Connect containers or internal responsibilities | Visible Connect actions; select arrows for contracts |
+| Record ownership, lifecycle and capacity assumptions | Data & objectives |
+| Reuse a composition | Library → Patterns or Saved architecture templates |
+| Find missing decisions and interface obligations | Review |
+| Export a portable brief and the selected diagram | Editor actions → Implementation handoff |
 
-P57 adds **Implementation handoff** in Editor actions: revision-bound scope and approval,
-exact portable contracts/manifests, separate template/recipe/planned/custom coverage,
-identity-linked acceptance obligations and recorded evidence without inherited passes.
-Markdown/JSON and the selected logical/deployment SVG share the captured snapshot; layout
-and semantic fingerprints remain separate. Partial-scope approval never enables partial
-generation. See the [handoff contract](docs/architecture-handoff.md) and
-[P57 evidence](docs/evidence/p57/README.md). P46–P57 architecture authoring is complete;
-runtime/template and generation planning is separate.
-
-P55 adds **Saved architecture templates** in the Library: save a C3 responsibility or
-C2 composition as a reviewed local draft, publish immutable architecture-only versions,
-and preview insertion with named required roles, exact interfaces and policy guarantees.
-Instances have independent identities and pinned source content/version; v2 publication,
-local customization and retirement preserve existing consumers. Runtime-owned source shapes
-require explicit portable planned contracts. No executable availability or verification is
-added. See the [local library contract](docs/architecture-library.md) and
-[P55 evidence](docs/evidence/p55/README.md).
-
-P53 adds **Deployment plans** in Editor actions: alternative hosted/private environments,
-nested placement boundaries, declared container replicas and infrastructure operation ownership.
-Instances reference logical C2 applications/stores; named queues/topics stay separate on a
-broker, and external providers retain their boundary. Interactions trace existing relationships
-or explicitly declare deployment-only infrastructure wiring. A reviewed legacy mapping preserves
-its C2 identity and direction. Layout is independent, and declarations supply no capacity,
-failover or runtime evidence. P33's supported local arrangement remains derived and read-only.
-See the [deployment contract](docs/architecture-deployments.md) and
-[example](fixtures/designs/architecture-deployments.json). No runtime availability changes.
-
-P52 adds **planning targets** from any saved design: an immutable baseline, a separate editable
-model, stable-identity changes and source drift. Protected recipe copies retain constraints;
-a conceptual replacement requires an explicit planning reason and keeps the original baseline.
-Explicit auth/resource/extension bindings can suggest editable C1/C3 annotations with provenance.
-Targets inherit no output ownership, generation/run history or verification evidence; their
-APIs refuse generation and runs. No new catalog family or executable availability is added.
-See the [workspace contract](docs/architecture-targets.md).
-
-P46 adds independent **system choices** (business tenancy, authorization intent, data
-isolation and delivery model) through Edit context or system inspection. C1 shows only the
-tenant audience. Existing combined tenancy settings remain labeled legacy intent; they do
-not populate the new choices. Container inspection also records classification, responsibility
-ownership and operation independently of runtime compatibility. An externally operated store
-can remain inside the system; an owned telemetry collector can be an application. These are
-saved design declarations, not implemented access or deployment policies.
-
-P47 adds **Manage interfaces** to component, container and external-system inspection.
-Project-local definitions describe planned API/in-process operations, event payloads and
-logical datasets; instances provide or require an exact contract version. Definitions can
-also reference existing REST/resource or durable-event members with read-only authoritative
-shapes and visible source staleness. Renames preserve references; changing an in-use shape
-requires an explicit new version and a preview of instance updates. Unresolved drafts and
-required-but-unbound interfaces remain saveable design review. These declarations add no
-runtime wiring. See [P47 evidence](docs/evidence/p47/README.md).
-
-P48 adds **Manage relationship contracts** to C2 connections and local C3 relationships.
-Several exact-version interface bindings can share a connection; cross-container C3 uses
-trace through that same C2 identity. Request, publish, consume, callback, read and write
-roles stay separate from transport and business synchrony. Optional policy groups describe
-identity/tenant scope, timeout/failure, retries/idempotency, delivery/acknowledgement and
-freshness/invalidation. Private reachability never supplies caller identity.
-
-**Data responsibilities and objectives** in Editor actions assigns logical dataset authority,
-store, readers/writers and tenant/lifecycle/export policy to an exact data contract, including
-an existing resource reference. Shared authority requires an explicit decision. Scoped workload
-and service objectives carry a value, unit, measurement boundary and window. Unknown choices
-and selected version/policy conflicts remain visible design review; malformed references are
-rejected. These are unverified declarations with no new runtime or generation behavior.
-See [P48 evidence](docs/evidence/p48/README.md) and the [policy example](fixtures/designs/relationship-policies.json).
-
-P49 adds **named focused C2 views** beside the whole-system board. Choose selected flow
-members and optionally their immediate dependencies. Every view keeps the system boundary
-and a count/link to hidden relationships. Positions, direction and camera persist by stable
-view/object identity in layout storage; mouse drag/nudge, Fit selected, Reset layout and
-Undo/Redo layout do not change semantic revision. C1 and scoped C3 use the same persistence.
-Relationship labels summarize contract counts; selection expands exact names and versions.
-QRWTY defaults expose management, redirect and analytics separately. See [P49 evidence](docs/evidence/p49/README.md).
-
-P50 adds **Patterns** in the Architecture library: tenant workspace/access, billing and
-entitlements, cached public lookup with update/disable propagation, and asynchronous work
-delivery. Delivery has separate best-effort and transactional-outbox variants. Preview host,
-boundary and responsibility choices, exact contracts, policies and additions before applying
-one undoable edit. Unique compatible hosts resolve automatically; ambiguous hosts require a
-choice. Component/channel reuse requires explicit pinned role, ownership, contract and policy
-matches, preserving existing customizations. Different business channels remain distinct.
-
-Outbox intent requires atomic domain/event persistence and a delivery responsibility; a queue
-and handler cannot establish it. Saved compositions retain pinned historical provenance and
-required invariants. These editable patterns supply no runtime implementation or observed
-guarantees. See the [fragment/reuse contract](docs/architecture-patterns.md) and
-[P50 evidence](docs/evidence/p50/README.md).
-
-P51 adds **Architecture review and decisions** in Editor actions and Findings. Findings group
-selected contract, access/authority, cache, delivery/failure and objective concerns with their
-assumptions and linked inputs. Optional typed requirements name applicable access boundaries,
-cache fallback/update bindings, channel/schedule/request responsibility and required failure
-outcomes. Existing editors and relevant pattern previews remain directly reachable.
-
-Decisions retain context, reason, consequence, status and linked identities. Accepted scoped
-tradeoffs remain visible and expire when relevant inputs change. Contradictions still prevent
-review completion; unresolved findings/decisions remain saveable. Review is separate from
-structural validity, Generate and runtime evidence. Mouse/chat share the validator and revision
-protection. See the [review contract](docs/architecture-review.md) and
-[P51 evidence](docs/evidence/p51/README.md). P52 linked current/target workspaces are next.
+Architecture intent, runtime/template availability and observed verification remain separate.
+New runtime/code-generation work is deferred. Existing template details stay in their own
+[documentation](docs/templates/README.md); this catalog describes reusable conceptual boundaries.
 
 ## Availability and reuse
 
@@ -132,8 +32,7 @@ protection. See the [review contract](docs/architecture-review.md) and
 | Product recipe | A composition with reviewed domain implementation and protected acceptance supplied by the recipe. |
 | Planned | A block with editable design options or an architecture example. It has no runtime implementation or capacity proof. It prevents generation until the unsupported intent is resolved. |
 
-**Library** exposes implemented templates and planned blocks. Its **Architecture
-examples** tab creates separate editable planning projects. **New project** also
+**Library** exposes implemented templates and planned blocks. Its **Examples** tab creates separate editable planning projects. **New project** also
 offers the existing resource starter and product recipe. The library is not a
 claim that every possible combination is compatible. Unsupported attachments and
 connections retain their existing validation.
@@ -162,10 +61,24 @@ one deployed service or database.
 
 ## C1 system offerings
 
+### Streamly video platform
+
+**Default architecture study, editable.** A YouTube-style product with public discovery,
+playback, creator uploads, media processing and staff moderation. It models a proposed design,
+not YouTube's private implementation. See the [walkthrough](docs/examples/streamly.md).
+
+- C1: viewers, creators and trust/safety staff; external identity, media delivery and email.
+- C2: two clients, a modular API, an independent playback path, two worker applications,
+  authoritative data, derived cache/search, private originals, immutable renditions and named channels.
+- C3: 26 cohesive responsibilities with local and traced cross-container collaboration.
+- Six focused C2 views; four scenarios including cache/authority failure and durable queue recovery;
+  51 exact-version contracts, three datasets, five unverified objectives and explicit tradeoffs.
+- Source: [video-platform-example.ts](packages/spec/src/video-platform-example.ts).
+
+
 ### Enterprise web application
 
-**Default architecture study, editable.** The design a fresh Jeeves installation
-opens with, and the preselected choice under New project. Customers order through
+**Architecture study, editable.** Available under New project and Library → Examples. Customers order through
 a web app; operations and finance staff work in a back-office console; one Orders
 API owns customers, catalog, orders and payment state; an order worker captures
 payments, notifies and reconciles asynchronously. Identity, payment and e-mail
@@ -468,7 +381,7 @@ Their names and grouping do not duplicate handlers or create runtime calls.
 Declared uses/arrows describe intent; actual generated wiring keeps its own identity.
 The library and component type picker show backend families for service/worker hosts
 and client families for frontend hosts. Optional technology tags describe design
-intent. **Show technical components** in Editor actions reveals the derived HTTP
+intent. **Show implementation adapters** in Editor actions reveals the derived HTTP
 resource boundary and typed API adapter; it starts off and preserves operation groups.
 See [P42's specification](docs/build-plan-c4-saas.md#p42--c3-catalog-saas-responsibilities-and-client-components)
 for the planning scope; page-flow routing remains separate.
@@ -478,6 +391,12 @@ client feature areas. Its [study](docs/examples/qrwty-target.md) records the com
 
 | Component family | Availability and responsibility | Hosts and C1 reuse |
 | --- | --- | --- |
+| <a id="c3-request"></a>Request handling | Planned validation, caller context, error contracts and interface versioning. | API/worker hosts; [Streamly](#streamly-video-platform) request boundary. |
+| <a id="c3-transactions"></a>Data access & transactions | Planned aggregate persistence, concurrent writes and atomic transaction boundary. | API/worker hosts; catalog ownership and outbox recording. |
+| <a id="c3-cache-policy"></a>Cache & freshness | Planned cache strategy, TTL, invalidation, coalescing and source fallback. | API/worker hosts; read-heavy products and playback metadata. |
+| <a id="c3-workflow"></a>Workflow & orchestration | Planned durable business steps, idempotency, deadlines and recovery/compensation. | API/worker hosts; upload pipelines, orders and approvals. |
+| <a id="c3-outbox"></a>Transactional event publishing | Planned atomic domain/outbox recording, at-least-once publication and duplicate-safe consumer requirements. | API/worker hosts; durable integration and processing intent. |
+| <a id="c3-traffic-policy"></a>Rate limits & admission | Planned per-principal/tenant budgets, bursts, concurrency and overload outcomes. | API/worker hosts; public endpoints and shared enterprise capacity. |
 | <a id="c3-accounts"></a>Accounts and access | Implemented session/account behavior through compatible REST attachments; planned authorization module for broader access/tenancy choices. | [Application API](#c2-application), optionally [identity provider](#c2-integrations); all C1 offerings. |
 | <a id="c3-resources"></a>Resource operations | Implemented configured CRUD/list operations and ownership rules within supported resource models. | [Application API](#c2-application) + [data](#c2-data); [resource workspace](#resource-workspace), [QR Studio](#qr-studio); analogous future post/profile models need their own definitions. |
 | <a id="c3-client"></a>Client adapter and resource screens | Implemented `rest-api-client` and `resource-workspace` attachments for typed API use and supported resource views. Arbitrary page flows remain future work. | [Web client](#c2-web), or compatible service for a client adapter; primarily the [resource starter](#resource-workspace). |

@@ -20,28 +20,6 @@ import { useDraw } from "../draw/store.ts";
 import "./generate.css";
 import { useGenerate } from "./store.ts";
 
-export function GenerateButton() {
-  const open = useGenerate((s) => s.open);
-  const setOpen = useGenerate((s) => s.setOpen);
-  const running = useGenerate((s) => s.generation?.status === "running");
-  return (
-    <button
-      type="button"
-      className="generate-button"
-      aria-expanded={open}
-      aria-controls="generate-drawer"
-      onClick={() => setOpen(!open)}
-    >
-      {running ? (
-        <Loader size={14} color="currentColor" />
-      ) : (
-        <IconPlayerPlay size={16} aria-hidden />
-      )}
-      {running ? "Generating…" : "Generate"}
-    </button>
-  );
-}
-
 /** The drawer's one-word verdict: "Green" only when the baseline check ran and passed. */
 export function statusText(generation: Generation): string {
   switch (generation.status) {

@@ -475,15 +475,6 @@
 .editor-primary-actions .mantine-NativeSelect-root {
   max-width: 170px;
 }
-.editor-primary-actions .generate-button {
-  position: static;
-  margin: 0;
-  padding: 7px 12px;
-  font-size: 13px;
-  border-width: 1px;
-  border-radius: 7px;
-  box-shadow: none;
-}
 .editor-chat-handle {
   position: absolute;
   z-index: 20;
@@ -720,4 +711,327 @@
 }
 .architecture-card[data-family="data"] .architecture-card-description {
   font-size: 12px;
+}
+
+/* Architecture studio: visible authoring actions and one navigable model. */
+.studio-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 9px 14px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--grid-dot);
+}
+.studio-toolbar-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.studio-save-state {
+  color: var(--ink-soft);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.architecture-outline {
+  flex: 0 0 242px;
+  width: 242px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--grid-dot);
+  background: var(--cream);
+  z-index: 22;
+}
+.architecture-outline > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.architecture-outline > .mantine-TextInput-root {
+  margin: 0 10px 10px;
+}
+.outline-tree {
+  overflow: auto;
+  padding: 0 10px 18px;
+}
+.outline-caption {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 4px 4px 12px;
+}
+.outline-container {
+  border-bottom: 1px solid var(--grid-dot);
+  padding: 6px 0;
+}
+.outline-object {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  padding: 7px 4px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.outline-object strong {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.outline-level {
+  font-size: 9px;
+  color: var(--ink-soft);
+  border: 1px solid var(--grid-dot);
+  border-radius: 4px;
+  padding: 2px 3px;
+}
+.outline-container details {
+  margin: 0 4px 0 29px;
+}
+.outline-container summary {
+  font-size: 11px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 3px 0;
+}
+.outline-component,
+.outline-drill,
+.outline-context button {
+  width: 100%;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 6px 7px;
+  cursor: pointer;
+}
+.outline-drill {
+  font-weight: 800;
+}
+.outline-object:hover,
+.outline-component:hover,
+.outline-drill:hover,
+.outline-context button:hover {
+  background: var(--paper);
+}
+.outline-tree [aria-pressed="true"] {
+  background: color-mix(in srgb, var(--type-color, #2676bd) 14%, var(--cream));
+  box-shadow: inset 3px 0 #2676bd;
+}
+.outline-relationships h3,
+.outline-context h3 {
+  font-size: 11px;
+  margin: 18px 4px 7px;
+}
+.outline-relationships button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin: 6px 0;
+  padding: 9px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.outline-relationships button > span {
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+.outline-relationships button > strong {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.outline-relationships button > small {
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+.architecture-card-shell {
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.architecture-card-shell[data-dimmed="true"] {
+  filter: saturate(0.35);
+}
+.architecture-card-shell > .architecture-card {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.architecture-card[data-has-responsibilities="true"] {
+  height: 188px;
+  flex: 0 0 188px;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+}
+.architecture-card-responsibilities {
+  flex: 1;
+  padding: 0 10px 10px;
+  border: 2px solid var(--type-color);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: color-mix(in srgb, var(--type-color) 6%, var(--cream));
+}
+.architecture-card-responsibilities > span {
+  display: block;
+  height: 22px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.architecture-card-responsibilities button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  height: 27px;
+  margin-bottom: 3px;
+  padding: 3px 8px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1px solid color-mix(in srgb, var(--type-color) 45%, var(--cream));
+  border-radius: 5px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.architecture-card-responsibilities button span:last-child {
+  margin-left: auto;
+}
+.architecture-card-responsibilities button:hover {
+  background: var(--paper);
+  border-color: var(--type-color);
+}
+.architecture-card-open {
+  position: absolute;
+  bottom: 7px;
+  left: 12px;
+  right: 12px;
+  padding: 4px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 5px;
+  background: var(--cream);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.architecture-edge-muted {
+  opacity: 0.18;
+}
+.capability-field-group {
+  border: 1px solid var(--grid-dot);
+  border-radius: 7px;
+  padding: 10px;
+}
+.capability-field-group > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+.capability-field-group > p {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.capability-field-group[open] > summary {
+  margin-bottom: 12px;
+}
+.catalog-content {
+  padding-top: 16px;
+}
+.catalog-scope {
+  font-size: 11px;
+  color: var(--ink-soft);
+  font-weight: 800;
+}
+.catalog-footer {
+  border-top: 1px solid var(--grid-dot);
+  padding-top: 16px;
+}
+.editor-chat-handle {
+  top: auto;
+  bottom: 28px;
+}
+.editor-inspector {
+  width: 350px;
+  flex-basis: 350px;
+}
+.architecture-card[data-kind="binding"] .architecture-support {
+  font-size: 10px;
+}
+@media (max-width: 1099px) {
+  .architecture-outline {
+    position: absolute;
+    inset: 0 auto 0 0;
+    box-shadow: var(--shadow);
+  }
+}
+@media (max-width: 759px) {
+  .studio-toolbar {
+    gap: 5px;
+    padding: 7px 8px;
+  }
+  .studio-toolbar-secondary {
+    margin-left: 0;
+    width: 100%;
+  }
+  .studio-save-state {
+    margin-left: auto;
+  }
+  .studio-toolbar .mantine-Button-root {
+    padding-inline: 8px;
+  }
+}
+.studio-toolbar .focused-view-toolbar {
+  border: 0;
+  padding: 0;
+  gap: 6px;
+  background: transparent;
+}
+.studio-toolbar .focused-view-toolbar select {
+  font-size: 12px;
+}
+.diagram-view-controls {
+  max-width: calc(100% - 65px);
+}
+.diagram-view-controls > div {
+  justify-content: center;
+}
+@media (max-width: 759px) {
+  .editor-primary-actions .mantine-NativeSelect-root {
+    max-width: 94px;
+  }
+  .editor-primary-actions .mantine-Button-root {
+    font-size: 12px;
+    padding-inline: 7px;
+  }
+  .studio-toolbar-secondary,
+  .studio-secondary-action {
+    display: none;
+  }
 }

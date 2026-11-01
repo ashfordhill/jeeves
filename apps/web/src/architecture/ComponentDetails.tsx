@@ -104,9 +104,10 @@ export function ComponentDetails({
       <h2>{node.name}</h2>
       <p>{node.description}</p>
       {node.support === "planned" ? <span className="capability-status">Planned</span> : null}
-      {node.binding?.component ? (
+      {node.binding?.component ||
+      node.members?.some((member) => member.binding?.resource || member.binding?.extension) ? (
         <Button fullWidth variant="default" onClick={onConfigure}>
-          Configure component
+          {node.binding?.component ? "Configure component" : "Define responsibility"}
         </Button>
       ) : null}
       {node.missing?.length ? (

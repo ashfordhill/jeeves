@@ -58,6 +58,7 @@ export function ComponentEditor({
   element,
   initial,
   capability,
+  members,
   onClose,
   onSaved,
 }: {
@@ -65,6 +66,7 @@ export function ComponentEditor({
   element: string;
   initial?: ArchitectureComponent;
   capability?: string;
+  members?: ArchitectureMember[];
   onClose: () => void;
   onSaved: (id: string) => void;
 }) {
@@ -83,9 +85,9 @@ export function ComponentEditor({
             plannedCapabilities.find((item) => item.id === capability)?.name ??
             "New responsibility",
           responsibility: "",
-          capability: capability ?? compatible[0]?.id,
+          capability: members?.length ? undefined : (capability ?? "domain-module"),
           config: {},
-          members: [],
+          members: members ?? [],
           usesResources: [],
           usesConnections: [],
         },
@@ -157,6 +159,9 @@ export function ComponentEditor({
       }
     >
       <Stack gap="md">
+        <p className="catalog-intro">
+          Inside <strong>{owner.name}</strong> · C3 responsibility
+        </p>
         {draft.annotationOrigin ? (
           <Text size="sm">
             Suggested from explicit bindings at revision {draft.annotationOrigin.revision}:{" "}

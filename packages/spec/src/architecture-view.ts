@@ -46,6 +46,8 @@ export interface ArchitectureViewNode {
   missing?: string[];
   unassigned?: boolean;
   technical?: boolean;
+  /** High-level responsibilities shown on a C2 application, using the same C3 identities. */
+  responsibilities?: { id: string; name: string; description: string }[];
   /** Deployment placement only; never an additional logical owner. */
   parent?: string;
   deploymentKind?: "Infrastructure" | "Container instance" | "Logical channel";
@@ -156,6 +158,7 @@ export function architectureViews(
     resources: [],
   };
   const components = design.elements.flatMap((element) => {
+    if (containerClassification(element).kind !== "Application") return [];
     const manifest = element.template && lookup.get(element.template);
     if (
       !element.planned &&
@@ -201,6 +204,14 @@ export function architectureViews(
       execution: localExecutionFor(element),
       pool: localHttpPoolFor(element),
       acceptance: [],
+      responsibilities: (() => {
+        const view = components.find((view) => view.container === element.id);
+        return view
+          ? componentPresentation(view, false)
+              .nodes.filter((node) => node.binding?.element === element.id)
+              .map(({ id, name, description }) => ({ id, name, description }))
+          : undefined;
+      })(),
       ...(support === "recipe" && provision
         ? { provenance: `${provision.id}@${provision.version}` }
         : {}),
@@ -245,7 +256,10 @@ export function architectureViews(
       c2Context.nodes.some((item) => node.id === `context:${item.id}`),
     ),
   );
-  containers.nodes.push(context.nodes[0]!);
+  if (
+    containers.edges.some((edge) => edge.from === "context:system" || edge.to === "context:system")
+  )
+    containers.nodes.push(context.nodes[0]!);
   return { context, containers, components, ...(provision && { provision }) };
 }
 
@@ -642,15 +656,87 @@ function memberMatches(node: ArchitectureViewNode, member: ArchitectureMember) {
       : node.binding.extension === member.ref;
 }
 
-/** View preference only: hiding technical adapters never changes bindings or operation groups. */
+/** Implementation members stay in inspection; an operation or table is not a C4 component. */
 export function componentPresentation(view: ArchitectureProjection, showTechnical: boolean) {
-  if (view.level !== "components" || showTechnical) return view;
-  const visible = new Set(view.nodes.filter((node) => !node.technical).map((node) => node.id));
-  const edges = view.edges.filter((edge) => visible.has(edge.from) && visible.has(edge.to));
+  if (view.level !== "components") return view;
+  const groups = new Map<string, ArchitectureViewNode[]>();
+  const grouped = new Map<string, string>();
+  for (const node of view.nodes) {
+    const binding = node.binding;
+    if (!binding || binding.element !== view.container || binding.component || !binding.attachment)
+      continue;
+    const kind = binding.resource
+      ? "resources"
+      : binding.extension
+        ? "operations"
+        : binding.event
+          ? "handlers"
+          : undefined;
+    if (!kind) continue;
+    const id = `component:${view.container}:${binding.attachment}:${kind}`;
+    groups.set(id, [...(groups.get(id) ?? []), node]);
+    grouped.set(node.id, id);
+  }
+  const nodes = view.nodes.filter(
+    (node) => !grouped.has(node.id) && (showTechnical || !node.technical),
+  );
+  for (const [id, members] of groups) {
+    const kind = id.split(":").at(-1);
+    const resource = kind === "resources";
+    const supports = new Set(members.map((node) => node.support));
+    nodes.push({
+      id,
+      kind: kind === "operations" ? "binding" : "component",
+      name: resource
+        ? "Resource management"
+        : kind === "handlers"
+          ? "Event handling"
+          : "Application operations",
+      description: resource
+        ? "Owns record lifecycle, validation and persistence through the declared resource contracts."
+        : kind === "handlers"
+          ? "Handles subscribed events and their domain effects within this application. Individual event definitions remain available in inspection."
+          : "Implementation capabilities awaiting an explicit responsibility. Group these into named components in the inspector.",
+      technology: `${members.length} ${resource ? "resource contracts" : "operations"}`,
+      support: supports.size > 1 ? "mixed" : members[0]!.support,
+      binding: { element: view.container!, attachment: members[0]!.binding!.attachment },
+      members,
+      unassigned: kind === "operations" || (resource && members.some((node) => node.unassigned)),
+      acceptance: [...new Set(members.flatMap((node) => node.acceptance))],
+    });
+  }
+  const visible = new Set(nodes.map((node) => node.id));
+  // Keep explicit adapter connections visible at C3 even when its implementation card is hidden.
+  const hiddenAdapters = view.nodes.filter((node) => node.technical && !visible.has(node.id));
+  const projected = view.edges.flatMap((edge) => {
+    const remap = (id: string): string[] => {
+      if (grouped.has(id)) return [grouped.get(id)!];
+      const adapter = hiddenAdapters.find((node) => node.id === id);
+      if (!adapter) return [id];
+      const owners = nodes.filter(
+        (node) =>
+          node.binding?.element === view.container &&
+          (node.binding?.attachment === adapter.binding?.attachment ||
+            node.members?.some(
+              (member) => member.binding?.attachment === adapter.binding?.attachment,
+            )),
+      );
+      return owners.map((node) => node.id);
+    };
+    return remap(edge.from).flatMap((from) =>
+      remap(edge.to).map((to) => ({
+        ...edge,
+        from,
+        to,
+        id: from === edge.from && to === edge.to ? edge.id : `${edge.id}:${from}:${to}`,
+      })),
+    );
+  });
+  const edges = projected.filter((edge) => visible.has(edge.from) && visible.has(edge.to));
   const connected = new Set(edges.flatMap((edge) => [edge.from, edge.to]));
   return {
     ...view,
-    nodes: view.nodes.filter(
+    nodes: nodes.filter(
       (node) =>
         visible.has(node.id) &&
         (node.binding?.element === view.container || connected.has(node.id)),

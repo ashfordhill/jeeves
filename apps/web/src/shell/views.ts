@@ -1,6 +1,6 @@
 /** The three top-level views. The selected one lives in the URL hash (#/draw, #/runs, #/settings). */
 export const VIEWS = [
-  { id: "draw", label: "Draw" },
+  { id: "draw", label: "Design" },
   { id: "runs", label: "Runs" },
   { id: "settings", label: "Settings" },
 ] as const;

@@ -1,6 +1,7 @@
 import {
   type ArchitectureComponent,
   type ArchitectureEvidence,
+  type ArchitectureMember,
   type ArchitectureViews,
   componentPresentation,
   contractKey,
@@ -40,7 +41,7 @@ import { ExecutionPolicySummary } from "../draw/inspector/LocalExecutionEditor.t
 import { LocalHttpPoolSummary } from "../draw/inspector/LocalHttpPoolEditor.tsx";
 import { ProjectChooser } from "../draw/ProjectChooser.tsx";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
-import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
+import { GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { useGenerate } from "../generate/store.ts";
 import { ArchitectureData } from "./ArchitectureData.tsx";
 import { ArchitectureDeployments } from "./ArchitectureDeployments.tsx";
@@ -48,10 +49,12 @@ import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
 import { ArchitectureHandoff } from "./ArchitectureHandoff.tsx";
+import { ArchitectureOutline } from "./ArchitectureOutline.tsx";
 import { ArchitectureReview } from "./ArchitectureReview.tsx";
 import { AnnotationDraft, TargetComparison } from "./ArchitectureTargets.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
+import { ContainerEditor, ContainerRelationshipEditor } from "./ContainerEditor.tsx";
 import { FocusedViews } from "./FocusedViews.tsx";
 import { InterfaceEditor, InterfaceSummary } from "./InterfaceEditor.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
@@ -114,21 +117,34 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   };
   const [deployment, setDeployment] = useState<{ element?: string }>();
   const [deploymentPlans, setDeploymentPlans] = useState(false);
-  const [focusedView, setFocusedView] = useState("");
+  const [focusedView, setFocusedView] = useState(
+    () => new URLSearchParams(window.location.search).get("view") ?? "",
+  );
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const layoutViews = loaded.layout.architecture;
   const focused = focusedView ? layoutViews?.[focusedView] : undefined;
-  const [level, setLevel] = useState<Level>("containers");
-  const overview = level === "containers" && !focused;
+  const [level, setLevel] = useState<Level>(() => {
+    const value = new URLSearchParams(window.location.search).get("level");
+    return value === "context" || value === "components" ? value : "containers";
+  });
+  const [focusRequest, setFocusRequest] = useState(0);
+  const [boardMode, setBoardMode] = useState(false);
+  const [explorerOpen, setExplorerOpen] = useState(() => window.innerWidth >= 1100);
+  const [containerEditor, setContainerEditor] = useState<string>();
+  const [containerRelationship, setContainerRelationship] = useState(false);
+  const overview = level === "containers" && !focused && boardMode;
   const navigationRequest = useRef(0);
-  const [container, setContainer] = useState<string>();
+  const [container, setContainer] = useState<string | undefined>(
+    () => new URLSearchParams(window.location.search).get("container") ?? undefined,
+  );
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [editor, setEditor] = useState<"context" | "product">();
-  const [catalog, setCatalog] = useState<"blocks" | "examples">();
+  const [catalog, setCatalog] = useState<"containers" | "components" | "examples" | "patterns">();
   const [starterOpen, setStarterOpen] = useState(false);
   const [componentEditor, setComponentEditor] = useState<{
     initial?: ArchitectureComponent;
     capability?: string;
+    members?: ArchitectureMember[];
   }>();
   const [relationshipEditor, setRelationshipEditor] = useState<{ id?: string }>();
   const [chatOpen, setChatOpen] = useState(false);
@@ -156,6 +172,15 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     undefined,
   );
   const { project, design } = loaded;
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("level", level);
+    if (container && level === "components") url.searchParams.set("container", container);
+    else url.searchParams.delete("container");
+    if (focusedView && level === "containers") url.searchParams.set("view", focusedView);
+    else url.searchParams.delete("view");
+    window.history.replaceState(null, "", url);
+  }, [level, container, focusedView]);
   const reviewReport = useMemo(() => reviewArchitecture(design), [design]);
   const reviewBinding = design.architecture?.bindings?.find(
     (b) => b.id === reviewEditor?.inputs.find((r) => r.kind === "binding")?.id,
@@ -221,17 +246,18 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       : level === "containers" && focused
         ? focusedView
         : level;
-  const selected = overview
-    ? boardSelection.edges[0]
-      ? boardSelection.edges[0].startsWith("context:")
-        ? boardSelection.edges[0]
-        : `connection:${boardSelection.edges[0]}`
-      : boardSelection.nodes[0]
-        ? boardSelection.nodes[0].startsWith("context:")
-          ? boardSelection.nodes[0]
-          : `container:${boardSelection.nodes[0]}`
-        : undefined
-    : selections[scope];
+  const selected =
+    level === "containers"
+      ? boardSelection.edges[0]
+        ? boardSelection.edges[0].startsWith("context:")
+          ? boardSelection.edges[0]
+          : `connection:${boardSelection.edges[0]}`
+        : boardSelection.nodes[0]
+          ? boardSelection.nodes[0].startsWith("context:")
+            ? boardSelection.nodes[0]
+            : `container:${boardSelection.nodes[0]}`
+          : undefined
+      : selections[scope];
   const inspectorOpen = inspectorViews[scope] ?? Boolean(selected);
   const setInspectorOpen = useCallback(
     (open: boolean) => setInspectorViews((current) => ({ ...current, [scope]: open })),
@@ -269,12 +295,21 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     useDraw.getState().setTool({ kind: "select" });
     setLevel(next);
   };
-  const openComponents = (id: string) => {
+  const openComponents = (id: string, component?: string) => {
+    if (window.innerWidth < 1100) setExplorerOpen(false);
     setContainer(id);
+    if (component) {
+      setFocusRequest((value) => value + 1);
+      setSelections((current) => ({ ...current, [`components:${id}`]: component }));
+      setInspectorViews((current) => ({ ...current, [`components:${id}`]: true }));
+    }
     void changeLevel("components");
   };
   const openContainer = (id?: string) => {
+    if (window.innerWidth < 1100) setExplorerOpen(false);
     setFocusedView("");
+    setBoardMode(false);
+    if (id) setFocusRequest((value) => value + 1);
     if (id) useDraw.getState().focus({ nodes: [id], edges: [] });
     setInspectorViews((current) => ({ ...current, containers: true }));
     setRailTab("inspector");
@@ -311,9 +346,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const boardElement = design.elements.find((element) => element.id === boardSelection.nodes[0]);
   const place = (id: string) => {
     setCatalog(undefined);
-    void changeLevel("containers").then(() =>
-      useDraw.getState().setTool({ kind: "planned", capability: id }),
-    );
+    setContainerEditor(id);
   };
   const workspace = (
     <section
@@ -345,7 +378,16 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Label>Board</Menu.Label>
+              <Menu.Label>Workspace</Menu.Label>
+              <Menu.Item
+                onClick={() => {
+                  setBoardMode(!boardMode);
+                  setFocusedView("");
+                  void changeLevel("containers");
+                }}
+              >
+                {boardMode ? "Architecture diagram" : "Freeform board & annotations"}
+              </Menu.Item>
               <Menu.Item onClick={() => setFindOpen(true)}>Find object</Menu.Item>
               <Menu.Item
                 disabled={!layoutUndoable}
@@ -375,13 +417,19 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                     onChange={setShowTechnical}
                     closeMenuOnClick
                   >
-                    Show technical components
+                    Show implementation adapters
                   </Menu.CheckboxItem>
                   <Menu.Item
                     disabled={declaredComponents.length < 2}
                     onClick={() => setRelationshipEditor({})}
                   >
                     Connect components
+                  </Menu.Item>
+                  <Menu.Item
+                    disabled={!definition || design.elements.length < 2}
+                    onClick={() => setContainerRelationship(true)}
+                  >
+                    Connect dependency
                   </Menu.Item>
                 </>
               ) : null}
@@ -425,6 +473,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               <ScenarioMenuItems />
               <Menu.Divider />
               <Menu.Item onClick={() => setLegendOpen(true)}>Type colors</Menu.Item>
+              <Menu.Label>Implementation · later</Menu.Label>
+              <Menu.Item
+                disabled={!!project.target}
+                onClick={() => useGenerate.getState().setOpen(true)}
+              >
+                Generate code
+              </Menu.Item>
               <Menu.Label>Saved revision {design.revision}</Menu.Label>
             </Menu.Dropdown>
           </Menu>
@@ -484,11 +539,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
             variant="default"
             size="sm"
             leftSection={<IconBook size={16} />}
-            onClick={() => setCatalog("blocks")}
+            onClick={() => setCatalog(level === "components" ? "components" : "containers")}
           >
             Library
           </Button>
-          {project.target ? <span>Planning target</span> : <GenerateButton />}
+          <Button variant="default" size="sm" onClick={() => setReviewOpen(true)}>
+            Review
+          </Button>
         </Group>
       </header>
       {project.target ? (
@@ -534,17 +591,110 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           </Button>
         </Alert>
       ) : null}
-      {level === "containers" ? (
-        <FocusedViews
-          source={views?.containers}
-          active={focused ? focusedView : ""}
-          onChange={(key) => {
-            void useDraw.getState().flushLayout();
-            setFocusedView(key);
-          }}
-        />
-      ) : null}
+      <section className="studio-toolbar" aria-label="Design tools">
+        <Button
+          size="xs"
+          variant="default"
+          aria-pressed={explorerOpen}
+          onClick={() => setExplorerOpen(!explorerOpen)}
+        >
+          Explorer
+        </Button>
+        {level === "context" ? (
+          <Button size="xs" color="cyan.9" onClick={() => setEditor("context")}>
+            Edit people & systems
+          </Button>
+        ) : level === "containers" ? (
+          <>
+            <Button size="xs" color="cyan.9" onClick={() => setCatalog("containers")}>
+              + Add container
+            </Button>
+            <Button
+              size="xs"
+              variant="default"
+              disabled={design.elements.length < 2}
+              onClick={() => setContainerRelationship(true)}
+            >
+              Connect containers
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              size="xs"
+              variant="subtle"
+              color="var(--ink)"
+              onClick={() => openContainer(actualContainer)}
+            >
+              ← C2
+            </Button>
+            <Button
+              size="xs"
+              color="cyan.9"
+              disabled={!actualContainer}
+              onClick={() => setCatalog("components")}
+            >
+              + Add component
+            </Button>
+            <Button
+              size="xs"
+              variant="default"
+              disabled={declaredComponents.length < 2}
+              onClick={() => setRelationshipEditor({})}
+            >
+              Connect components
+            </Button>
+            <Button
+              size="xs"
+              variant="default"
+              className="studio-secondary-action"
+              disabled={!definition || design.elements.length < 2}
+              onClick={() => setContainerRelationship(true)}
+            >
+              Connect dependency
+            </Button>
+          </>
+        )}
+        {level === "containers" ? (
+          <FocusedViews
+            source={views?.containers}
+            active={focused ? focusedView : ""}
+            onChange={(key) => {
+              void useDraw.getState().flushLayout();
+              setFocusedView(key);
+            }}
+          />
+        ) : null}
+        <div className="studio-toolbar-secondary">
+          <Button
+            size="xs"
+            variant="subtle"
+            color="var(--ink)"
+            onClick={() => setCatalog("patterns")}
+          >
+            Patterns
+          </Button>
+          <Button size="xs" variant="subtle" color="var(--ink)" onClick={() => setDataOpen(true)}>
+            Data & objectives
+          </Button>
+          <span className="studio-save-state">Saved · r{design.revision}</span>
+        </div>
+      </section>
       <div className="editor-body">
+        {explorerOpen ? (
+          <ArchitectureOutline
+            views={views}
+            projection={projection}
+            selected={selected}
+            onSelect={(id) => {
+              choose(id);
+              setFocusRequest((value) => value + 1);
+            }}
+            onContainer={openContainer}
+            onComponent={openComponents}
+            onClose={() => setExplorerOpen(false)}
+          />
+        ) : null}
         {!chatOpen ? (
           <button
             className="editor-chat-handle"
@@ -596,7 +746,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                     {level === "context"
                       ? "People, purpose & external systems"
                       : level === "containers"
-                        ? `${views?.containers.name} · focused C2`
+                        ? focused
+                          ? `${views?.containers.name} · focused C2`
+                          : "Applications, data stores & external systems"
                         : "Responsibilities within one application"}
                   </span>
                 </div>
@@ -627,6 +779,8 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                     selected={selected}
                     onSelect={choose}
                     viewKey={scope}
+                    onOpen={openComponents}
+                    focusRequest={focusRequest}
                   />
                 ) : (
                   <div className="editor-empty">
@@ -642,7 +796,10 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               <div className="editor-empty">
                 <h2>Start with an application</h2>
                 <p>Add a web app, API or worker in C2, then design its components here.</p>
-                <Button color="cyan.9" onClick={() => setCatalog("blocks")}>
+                <Button
+                  color="cyan.9"
+                  onClick={() => setCatalog(level === "components" ? "components" : "containers")}
+                >
                   Browse building blocks
                 </Button>
               </div>
@@ -662,7 +819,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                   <Button color="cyan.9" onClick={() => setCatalog("examples")}>
                     Explore SaaS examples
                   </Button>
-                  <Button variant="default" onClick={() => setCatalog("blocks")}>
+                  <Button variant="default" onClick={() => setCatalog("containers")}>
                     Browse building blocks
                   </Button>
                 </Group>
@@ -786,7 +943,34 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 <ComponentDetails
                   node={node}
                   onOperation={(attachment, operation) => openApi({ attachment, operation })}
-                  onConfigure={() => setComponentEditor({ initial: definition })}
+                  onConfigure={() =>
+                    setComponentEditor({
+                      initial: definition,
+                      members: !definition
+                        ? node.members?.flatMap((member): ArchitectureMember[] => {
+                            const binding = member.binding;
+                            if (!binding?.attachment) return [];
+                            if (binding.resource)
+                              return [
+                                {
+                                  attachment: binding.attachment,
+                                  kind: "resource",
+                                  ref: binding.resource,
+                                },
+                              ];
+                            if (binding.extension)
+                              return [
+                                {
+                                  attachment: binding.attachment,
+                                  kind: "extension",
+                                  ref: binding.extension,
+                                },
+                              ];
+                            return [];
+                          })
+                        : undefined,
+                    })
+                  }
                   onContainer={() => openContainer(node.binding?.element)}
                 />
               ) : null}
@@ -975,7 +1159,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       {catalog ? (
         <CapabilityCatalog
           initialTab={catalog}
-          componentContainer={level === "components" ? actualContainer : undefined}
+          componentContainer={level === "components" ? actualContainer : boardElement?.id}
           onClose={() => setCatalog(undefined)}
           onStarter={() => {
             setCatalog(undefined);
@@ -984,16 +1168,15 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           onPlace={place}
           onTemplate={(tool) => {
             setCatalog(undefined);
+            setBoardMode(true);
+            setFocusedView("");
             void changeLevel("containers").then(() => useDraw.getState().setTool(tool));
           }}
-          onComponent={
-            level === "components" && actualContainer
-              ? (capability) => {
-                  setCatalog(undefined);
-                  setComponentEditor({ capability });
-                }
-              : undefined
-          }
+          onComponent={(capability, host) => {
+            setCatalog(undefined);
+            openComponents(host);
+            setComponentEditor({ capability });
+          }}
         />
       ) : null}
       {reviewOpen ? (
@@ -1036,6 +1219,33 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           pattern={reviewPattern}
           onClose={() => setReviewPattern(undefined)}
           onApplied={() => setReviewPattern(undefined)}
+        />
+      ) : null}
+      {containerEditor ? (
+        <ContainerEditor
+          capability={containerEditor}
+          onClose={() => setContainerEditor(undefined)}
+          onSaved={(id) => {
+            openContainer(id);
+            if (focused) setFocusedView("");
+          }}
+        />
+      ) : null}
+      {containerRelationship ? (
+        <ContainerRelationshipEditor
+          from={level === "components" ? actualContainer : boardElement?.id}
+          component={level === "components" ? definition?.id : undefined}
+          onClose={() => setContainerRelationship(false)}
+          onSaved={(id) => {
+            if (level === "components" && definition) choose(`use:${definition.id}:${id}`);
+            else {
+              setBoardMode(false);
+              setFocusedView("");
+              void changeLevel("containers");
+              useDraw.getState().setSelection({ nodes: [], edges: [id] });
+            }
+            setFocusRequest((value) => value + 1);
+          }}
         />
       ) : null}
       {componentEditor && actualContainer ? (

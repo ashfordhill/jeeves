@@ -1,32 +1,4 @@
-/* Generate button (over the board, top right) and output drawer (along the board's bottom). */
-.generate-button {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  z-index: 10;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 3px solid var(--line);
-  border-radius: 14px;
-  background: var(--yellow);
-  color: var(--on-yellow);
-  font: inherit;
-  font-weight: 800;
-  box-shadow: var(--shadow);
-  cursor: pointer;
-}
-
-.generate-button:hover {
-  filter: brightness(1.05);
-}
-
-.generate-button:focus-visible {
-  outline: 3px solid var(--select-ring);
-  outline-offset: 2px;
-}
-
+/* Optional implementation output drawer, opened from Editor actions. */
 .generate-drawer {
   position: absolute;
   left: 0;

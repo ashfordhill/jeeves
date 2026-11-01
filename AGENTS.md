@@ -21,6 +21,9 @@ specification; the [direction review](docs/reviews/c4-direction-review-2026-10-3
 explains its rationale. P46–P57 are complete. Runtime/template and generation work needs a separate task. When asked to execute, start with the requested package,
 not the whole sequence.
 Keep architecture intent, template availability and verification evidence distinct.
+The current [studio guide](docs/architecture-studio.md) describes the post-roadmap C2/C3 UX.
+For this UX cleanup, the user explicitly defers unit/E2E test maintenance and suite execution.
+Use lint, typecheck, a production build and direct browser inspection instead of `pnpm check`.
 
 ## Repo conventions
 

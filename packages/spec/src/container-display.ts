@@ -15,6 +15,7 @@ export const templateTechnology: Readonly<Record<string, string>> = {
 };
 
 export function containerTechnology(element: Element): string {
+  if (element.technology?.trim()) return element.technology.trim();
   const capability = plannedCapability(element.planned);
   if (!capability) {
     const value = templateTechnology[element.template?.id ?? ""];

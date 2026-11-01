@@ -1,8 +1,16 @@
 /** Derived view geometry only. Stable input ordering makes layout independent of API array order. */
-import type { ArchitectureProjection } from "@jeeves/spec";
+import type { ArchitectureProjection, ArchitectureViewNode } from "@jeeves/spec";
 import type { ElkNode, ElkPoint, LayoutOptions } from "elkjs/lib/elk-api.js";
 
 export const CARD = { width: 252, height: 188 };
+export function architectureCardSize(
+  node: ArchitectureViewNode,
+  level: ArchitectureProjection["level"],
+) {
+  return level === "containers" && node.responsibilities?.length
+    ? { width: 292, height: CARD.height + 32 + node.responsibilities.length * 30 }
+    : CARD;
+}
 export const SCOPE_ID = "architecture:scope";
 const PACK_ID = "architecture:independent";
 export interface Box extends ElkPoint {
@@ -24,10 +32,10 @@ const compare = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.
 function labelSize(text: string, detailed = false): { width: number; height: number } {
   // Deliberately conservative, independent of browser font loading. CSS clamps to this box.
   const length = Array.from(text).length;
-  const characterWidth = detailed ? 11.5 : 7.5;
-  const width = Math.min(detailed ? 240 : 176, Math.max(56, length * characterWidth + 20));
+  const characterWidth = 7;
+  const width = Math.min(detailed ? 172 : 160, Math.max(56, length * characterWidth + 20));
   const lines = Math.min(3, Math.max(1, Math.ceil((length * characterWidth) / (width - 20))));
-  return { width, height: Math.max(42, lines * (detailed ? 24 : 17) + 12) };
+  return { width, height: Math.max(42, lines * 17 + 12) };
 }
 
 export function architectureLayoutInput(
@@ -44,12 +52,12 @@ export function architectureLayoutInput(
     // Stable sorted input + seed; model-order strategy breaks sparse compound graphs in ELK 0.12.
     "elk.randomSeed": "1",
     "elk.padding": "[top=48,left=28,bottom=28,right=28]",
-    "elk.spacing.nodeNode": "64",
+    "elk.spacing.nodeNode": "40",
     "elk.spacing.edgeNode": "24",
-    "elk.spacing.edgeEdge": "32",
+    "elk.spacing.edgeEdge": "20",
     "elk.spacing.edgeLabel": "10",
-    "elk.layered.spacing.nodeNodeBetweenLayers": "72",
-    "elk.layered.spacing.edgeNodeBetweenLayers": "40",
+    "elk.layered.spacing.nodeNodeBetweenLayers": "36",
+    "elk.layered.spacing.edgeNodeBetweenLayers": "20",
     "elk.layered.mergeEdges": "false",
   };
   const nodes = [...projection.nodes].sort(compare);
@@ -66,11 +74,11 @@ export function architectureLayoutInput(
   );
   const children: ElkNode[] = nodes
     .filter((node) => !inside.has(node.id))
-    .map((node) => ({ id: node.id, ...CARD }));
+    .map((node) => ({ id: node.id, ...architectureCardSize(node, projection.level) }));
   const connected = new Set(projection.edges.flatMap((edge) => [edge.from, edge.to]));
   const inner = nodes
     .filter((node) => inside.has(node.id))
-    .map((node) => ({ id: node.id, ...CARD }));
+    .map((node) => ({ id: node.id, ...architectureCardSize(node, projection.level) }));
   const independent = inner.filter((node) => !connected.has(node.id));
   const packed: ElkNode[] =
     independent.length < 3
@@ -132,9 +140,10 @@ export function architectureLayoutInput(
               ...size,
               height:
                 size.height +
-                (edge.protocol ? 26 : 0) +
-                (edge.planned ? 28 : 0) +
-                (edge.contractCount ? 24 : 0),
+                (edge.protocol ? 20 : 0) +
+                (edge.planned && !projection.edges.filter((e) => !e.context).every((e) => e.planned)
+                  ? 20
+                  : 0),
             };
           })(),
           layoutOptions: { "elk.edgeLabels.inline": "true" },

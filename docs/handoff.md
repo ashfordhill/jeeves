@@ -4596,3 +4596,112 @@ Known issues / next:
   whole-system view through ELK with saved overrides is the next UX step.
 - Template-backed projects still show one C3 component per REST operation unless they declare
   components; the C4 guidance says components are responsibilities, not endpoints.
+
+## 2026-11-01 — UX2: C2/C3 architecture studio, Streamly study and repository cleanup
+
+User-directed improvement package on `main` in the primary checkout. The user requested
+aggressive C2/C3 authoring and offering improvements, a high-traffic web-product study, and
+cleanup of obsolete repository material. Their explicit instruction defers unit/E2E suite
+execution and test maintenance, and keeps C4 implementation/runtime expansion out of scope.
+No branches, worktrees or delegated agents were used.
+
+Built:
+
+- Whole-system C2 now uses the routed architecture canvas, as C1/focused C2/C3 already did.
+  Variable-height application cards show their high-level responsibilities; each child opens
+  the same identity in C3. Label space is reserved by layout. Selection, Fit diagram,
+  Focus selection and Auto-arrange are directly available. Only deliberate position overrides
+  are saved; automatically laid-out coordinates no longer become stale manual geometry.
+- A searchable design explorer exposes boundaries, responsibilities and relationships.
+  Visible Add/Connect tools replace the hidden placement workflow for architecture intent.
+  C3 Connect dependency records its container relationship and owning component use in one
+  undoable operation. URLs retain the architecture level, application and focused-view key.
+  The freeform board/annotations and existing generation workflows remain secondary actions.
+- The library separates C2 containers, C3 components, patterns, examples and runtime templates.
+  C3 host choices enforce compatibility. Added request handling, data access/transactions,
+  cache freshness, workflow orchestration, transactional event publishing and traffic admission.
+  Workload and legacy tenancy options are disclosures. Deployment infrastructure and redundant
+  provider presets no longer crowd ordinary container choices.
+- Legacy template resources/REST extensions are grouped into capability responsibilities,
+  with Define responsibility preserving their actual members. Individual interface operations
+  remain inspectable. Technical adapters are optional, and queue/topic channels no longer
+  receive misleading application-component scopes. Event definitions are grouped as event handling.
+- C2 SVG export now includes the responsibilities visible inside application cards. The
+  portable diagram schema accepts these optional child identities/names without changing
+  semantic contracts. Selection emphasis retains text contrast. Desktop and narrow layouts
+  expose the same authoring actions through toolbar and menu controls.
+- Added the default **Streamly · video platform** study: a proposed YouTube-style product,
+  not an assertion about YouTube's private systems. Six applications, seven stores/channels,
+  three providers, 26 C3 responsibilities, 26 C2 connections, 22 local C3 relationships,
+  51 v1 contracts, six focused views and four scenarios. Explicit outbox atomicity,
+  duplicate-safe processing, cache/source authority, moderation/revocation bounds, data
+  ownership and five unverified workload objectives make its tradeoffs inspectable.
+  The enterprise orders study remains available. See [Streamly walkthrough](examples/streamly.md).
+- Created the actual live project `a6eeb601-6efd-46e0-9444-f0edddad8d2e`,
+  **Streamly · video platform**, revision 2. Start at
+  `http://127.0.0.1:4300/?project=a6eeb601-6efd-46e0-9444-f0edddad8d2e&level=containers&view=focus-watch`.
+  New-project creation uses the same tracked example source.
+
+Cleanup:
+
+- Removed the retired standalone editor comparison page and Excalidraw dev dependency,
+  its obsolete browser spec, unused StarterGuide/inspector Rail/GenerateButton, associated
+  styles, and the test that only imported the removed Rail. No replacement test scaffolding.
+- Removed the superseded 982-line original plan copy and five unreferenced evidence PNGs
+  (451,562 bytes). Retained linked historical evidence. Retired stale fresh-agent/next-package
+  prompts in the P12/P35 documents, retaining historical pointers and Git recovery commands.
+- Rewrote README and the catalog introduction around the current product; added a concise
+  documentation index, studio guide, runtime-workflow reference and Streamly walkthrough.
+  Catalog rows include the new C3 offerings. Historical handoff entries are unchanged.
+- The live database had nine projects at session start, not the 632 in the earlier handoff.
+  No 622-project purge was applicable. It now has ten: all nine original projects plus Streamly.
+  Every temporary project created for this session's direct UI inspections was deleted by its
+  exact ID. No original project was deleted or semantically edited.
+- Pre-existing untracked `.docs/` drawings and both FieldOps fixture files were preserved and
+  excluded from this commit. The removed package was used only by the retired comparison;
+  existing user Excalidraw files remain untouched.
+
+Validation (actual commands/results; no unit/E2E suites):
+
+- `pnpm typecheck`: all workspaces plus scripts passed. After the last projection/CSS adjustment,
+  `pnpm --filter @jeeves/spec --filter @jeeves/web typecheck` also passed.
+- `pnpm --filter @jeeves/web build`: passed, final Vite build 797 ms. Existing large-chunk
+  advisory remains; no bundling or runtime-generation expansion was attempted.
+- Biome error-level check over all tracked source/config/HTML files plus the three new TS/TSX
+  sources: **784 files, no errors**. `pnpm lint` / whole-repository Biome remains blocked solely
+  by formatting in the pre-existing untracked `fixtures/designs/fieldops-architecture.json`.
+  That unrelated fixture was not reformatted or staged. Existing repository warnings remain.
+- Direct schema/projection validation through `pnpm --filter @jeeves/server exec tsx -e ...`:
+  **16 containers, 26 components, 26 C2 / 22 C3 relationships, 51 contracts, six application
+  scopes, six focused views, zero structural errors**. Expected NEEDS_TEMPLATE findings are
+  retained; the study claims no runtime implementation or capacity verification.
+- Temporary Playwright inspection scripts under `/tmp` used the live dev API/UI, with no
+  persistent test code added. Add container → add two components → connect components → add
+  store → connect dependency → Undo/Redo → reload produced two containers, two components,
+  two relationships at revision 8 and **zero browser errors**.
+- A disposable copy of a legacy QRWTY template design grouped all **eight** extension operations
+  into an authored responsibility through Define responsibility; Undo/Redo/reload preserved
+  those member bindings, with **zero browser errors**. Original QRWTY was not edited.
+- Direct grip dragging saved exactly one manual override; reload retained it; Auto-arrange
+  cleared it; Undo layout restored it. Semantic revision remained 1, with zero browser errors.
+- Final desktop C2 child drill-down, focused C3 inspection, mobile C3 and mobile library were
+  visually inspected. Axe WCAG 2A/2AA/2.1AA reported **zero violations** in all four states.
+  At 390×844, document width remained 390 px; no horizontal overflow or browser errors.
+- Actual Implementation handoff → Download SVG produced a **10,088-character** focused C2
+  diagram including child responsibilities. Desktop C2/C3 and narrow captures were reviewed.
+- Changed-document check: **116 local file targets resolve** in the authored documentation.
+  `git diff --cached --check` passes for the package. The earlier **537,272 handoff bytes**
+  are preserved as the prefix of this appended record.
+- Concurrent edits to README appeared during final staging. The index contains
+  only this package's earlier README rewrite; the user's newer text remains untouched
+  in the working copy and outside the commit. Its unfinished image link/whitespace were not
+  silently edited as part of validation.
+
+Limits and next-work context: a dense whole-system view remains an overview; use focused
+views, explorer selection or zoom for legibility. Existing authored layout overrides are kept
+until Auto-arrange is chosen. Legacy test assertions have not been updated for new geometry,
+labels, default examples or the queue/component distinction, per the user's instruction.
+The Streamly workload figures and scenario outcomes are proposed design assumptions, not
+measured traffic evidence. C4a/C4b, template expansion and production capacity validation remain
+separate work. This package completes the requested authoring/cleanup pass; it does not restart
+any completed P46–P57 sequence.
