@@ -1,10 +1,10 @@
 # C4 authoring roadmap: reusable designs ready for implementation (P46–P57)
 
-**Revised 31 October 2026 at the user's request. P46–P56 are implemented and verified; P57 remains planned.**
+**Revised 31 October 2026 at the user's request. P46–P57 are implemented and verified.**
 This replaces the original P46–P53 proposal retained in Git at `ee31075`. It incorporates
 [the direction review](reviews/c4-direction-review-2026-10-31.md) and
-[C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. The next implementation
-package, when execution is requested, is **P57 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md), [P50 evidence](evidence/p50/README.md), [P51 evidence](evidence/p51/README.md), [P52 evidence](evidence/p52/README.md), [P53 evidence](evidence/p53/README.md), [P54 evidence](evidence/p54/README.md), [P55 evidence](evidence/p55/README.md) and [P56 evidence](evidence/p56/README.md).
+[C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. This architecture sequence is complete; runtime/template and generation
+planning requires a separately scoped next task. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md), [P50 evidence](evidence/p50/README.md), [P51 evidence](evidence/p51/README.md), [P52 evidence](evidence/p52/README.md), [P53 evidence](evidence/p53/README.md), [P54 evidence](evidence/p54/README.md), [P55 evidence](evidence/p55/README.md), [P56 evidence](evidence/p56/README.md) and [P57 evidence](evidence/p57/README.md).
 
 The outcome is an engineer using Jeeves to compose, inspect and revise a credible qrwty-sized
 SaaS architecture through C2/C3 diagrams and reusable architecture templates. The result
@@ -514,6 +514,8 @@ scenario gate in the direction review. Extend example/scenario/chat browser suit
 **Excluded:** a generated enterprise app, load/security certification, sales validation, live uplift.
 
 ## P57 — Review snapshot and implementation handoff
+
+**Delivered:** [implementation contract](architecture-handoff.md), [evidence and exported bundles](evidence/p57/README.md).
 
 **Outcome:** later implementation agents receive precise decisions, contracts and open work.
 

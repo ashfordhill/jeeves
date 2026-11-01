@@ -16,6 +16,7 @@ import {
   deploymentEnvironmentSchema,
   validateArchitectureDeployments,
 } from "./architecture-deployments.ts";
+import { handoffScopeSchema } from "./architecture-handoff-model.ts";
 import { patternInstanceSchema } from "./architecture-pattern-provenance.ts";
 import {
   architectureDecisionSchema,
@@ -96,6 +97,7 @@ export const architectureComponentSchema = z.strictObject({
 export type ArchitectureComponent = z.output<typeof architectureComponentSchema>;
 export type ArchitectureMember = z.output<typeof architectureMemberSchema>;
 export const architectureSchema = z.strictObject({
+  implementationHandoff: handoffScopeSchema.optional(),
   system: z.strictObject({
     name: z.string().trim().min(1).max(120),
     description,

@@ -9,6 +9,8 @@ export * from "./architecture-choices.ts";
 export * from "./architecture-contracts.ts";
 export * from "./architecture-deployments.ts";
 export * from "./architecture-examples.ts";
+export * from "./architecture-handoff.ts";
+export * from "./architecture-handoff-model.ts";
 export * from "./architecture-library.ts";
 export * from "./architecture-pattern-provenance.ts";
 export * from "./architecture-patterns.ts";

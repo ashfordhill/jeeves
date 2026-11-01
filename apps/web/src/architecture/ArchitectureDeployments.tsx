@@ -27,6 +27,7 @@ import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
 import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
+import { ArchitectureHandoff } from "./ArchitectureHandoff.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
 import "./deployments.css";
 
@@ -59,6 +60,7 @@ export function ArchitectureDeployments({
   const [diagramSelected, setDiagramSelected] = useState("");
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
   const env = draft.deployments?.find((e) => e.id === environment);
   const savedEnv = design.architecture?.deployments?.find((e) => e.id === environment);
   const view = savedEnv ? deploymentProjection(design, savedEnv) : undefined;
@@ -123,6 +125,13 @@ export function ArchitectureDeployments({
       onClose={onClose}
       footer={
         <Group justify="flex-end">
+          <Button
+            color="cyan.9"
+            disabled={!view || editing || dirty}
+            onClick={() => setHandoffOpen(true)}
+          >
+            Export deployment handoff
+          </Button>
           <Button variant="default" onClick={onClose} disabled={saving}>
             Done
           </Button>
@@ -154,6 +163,14 @@ export function ArchitectureDeployments({
         </Group>
       }
     >
+      {handoffOpen && view ? (
+        <ArchitectureHandoff
+          projection={view}
+          view={`deployment:${savedEnv?.id}`}
+          diagramRoot=".deployment-plan-diagram"
+          onClose={() => setHandoffOpen(false)}
+        />
+      ) : null}
       <Stack gap="md" className="deployment-planning">
         <Text size="sm">
           Planned placement · unverified. Environments are alternatives over the same logical

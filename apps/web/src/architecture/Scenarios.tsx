@@ -95,6 +95,14 @@ export function ScenarioProvider({
   );
 }
 
+/** Presentation selection only; export does not review or modify scenario intent. */
+export function useScenarioSnapshot() {
+  const controls = useContext(Scenarios);
+  return controls?.scenario
+    ? { id: controls.scenario.id, name: controls.scenario.name, path: controls.pathId }
+    : undefined;
+}
+
 /** Used by the C2 editor menu and the C3 diagram menu. */
 export function ScenarioMenuItems() {
   const controls = useContext(Scenarios);

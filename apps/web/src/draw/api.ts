@@ -6,6 +6,7 @@ import type { TemplateDescription } from "@jeeves/registry";
 import type {
   ApiPreview,
   ArchitectureEvidence,
+  ArchitectureHandoff,
   ArchitectureLibraryEntry,
   ArchitectureReviewReport,
   ArchitectureViews,
@@ -484,6 +485,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ name, starter, config }),
     }).then((result) => result.project),
+  architectureHandoff: (id: string, revision: number) =>
+    request<{ snapshot: ArchitectureHandoff }>(
+      `/projects/${id}/architecture-handoff?baseRevision=${revision}`,
+    ).then((r) => r.snapshot),
   architecture: (id: string) =>
     request<{
       revision: number;

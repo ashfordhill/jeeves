@@ -76,7 +76,6 @@ test("shows actual written-only and stale starter evidence without changing the 
     ).toBeInViewport();
     const camera = await viewport.getAttribute("style"),
       design = await read();
-    const layout = await (await request.get(`/api/projects/${id}/layout`)).json();
     await editorAction(page, "Inspect evidence");
     dialog = page.getByRole("dialog", { name: "Architecture evidence" });
     await expect(
@@ -108,6 +107,10 @@ test("shows actual written-only and stale starter evidence without changing the 
     );
     // Wait for the asynchronous resize layout and its camera fit before testing refresh alone.
     await expect(architecture.locator(".architecture-graph")).toHaveAttribute("aria-busy", "false");
+    // P49 persists newly visited geometry/camera. Capture the baseline after layout settles,
+    // so the assertion below measures evidence refresh rather than the earlier navigation.
+    await page.waitForLoadState("networkidle");
+    const layout = await (await request.get(`/api/projects/${id}/layout`)).json();
     const beforeRefresh = await viewport.getAttribute("style");
     expect(camera).toBeTruthy();
     await editorAction(page, "Inspect evidence");

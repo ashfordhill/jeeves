@@ -1,0 +1,35 @@
+.handoff-content {
+  overflow-wrap: anywhere;
+}
+.handoff-content [role="tabpanel"] {
+  padding-top: 16px;
+}
+.handoff-open {
+  padding: 12px;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 8px;
+}
+.handoff-table {
+  overflow: auto;
+}
+.handoff-table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.handoff-table th,
+.handoff-table td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  vertical-align: top;
+}
+.handoff-table small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.handoff-content fieldset {
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 8px;
+  min-width: 0;
+}

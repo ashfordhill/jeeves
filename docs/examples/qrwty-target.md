@@ -115,4 +115,7 @@ view editing restores a desired focus independently of semantic history.
 
 This study supplies no runtime, executable template, generation filter, generated application,
 load/security certification, provisioning, production capacity claim or live QRWTY adoption.
-P57's portable implementation brief and diagram export remain a separate package.
+P57 adds the [portable implementation handoff](../architecture-handoff.md) with exact
+contracts, assigned scope exclusions, availability/evidence and selected-diagram SVG.
+[Exported test-study bundles](../evidence/p57/README.md) demonstrate the workflow;
+fixture approval is not production acceptance or user approval of this target.

@@ -4450,3 +4450,103 @@ Stop after P56 and its scoped local commit on `main`; continue with P57 only whe
 Final documentation validation: all **180 changed-document local file targets** resolve,
 earlier **517,012 handoff bytes** are preserved, and `git diff --check` passes.
 P56 is complete and ready for its scoped local commit.
+
+## 2026-11-01 — P57: revision-bound implementation review and portable handoff
+
+Implemented P57 only in the primary `/home/ash/github/jeeves` checkout on `main`,
+starting at P56 (`bd7608c`). No branches, worktrees or delegated agents were used.
+[Usage/model contract](architecture-handoff.md) and [exact portable bundles, evidence and
+nine inspected captures](evidence/p57/README.md) describe the completed package.
+P46–P57 architecture authoring is complete; the runtime/template and generation phase
+requires a separately scoped task.
+
+Editor actions → Implementation handoff captures saved scope, actors, C2/C3 responsibilities,
+relationships, exact contracts/interfaces/versions, bindings, data ownership/policies,
+unverified objectives, scenarios/outcomes, decisions, deployment and pinned reusable provenance.
+The real versioned JSON schema resolves source shapes and locally available architecture
+manifests into portable sanitized definitions. Missing versions/content pins stay unavailable;
+there is no remote lookup or invented replacement. Opaque runtime config, local output paths
+and source example/default values are omitted explicitly. Known planning settings remain.
+
+Coverage separates exact executable versions, validated recipe behavior, planned architecture,
+custom obligations and external responsibility. Recorded checks retain project/revision/layer,
+check IDs, statuses, omitted counts and separately hashed historical environments. Target
+provenance retains source identity/revision without copying its private baseline or verification.
+No clone inherits runtime passes. Review fingerprints include project identity, so same-named
+copies cannot inherit ready approval.
+
+Scope, ownership and explicit partial-scope approval use ordinary semantic Save/Cancel and
+history. Structural problems, required-but-unbound interfaces, stale/unresolved contracts,
+required behavior/policy gaps and missing obligation boundaries/expectations prevent readiness.
+P51 exploration tradeoffs cannot waive those gaps. Capacity/commercial/recovery choices need
+owners, blocked scope and explicit exclusions. Objectives remain unverified targets. Scenario
+completeness/expectation-review states remain separate from runtime checks. Partial-scope
+approval never activates partial generation. Semantic/project/scope changes stale approval;
+revision counters, approval prose and layout/cameras do not. Captured dialogs retain their
+revision and refuse stale approval. Read-only capture requires a base revision, checks it again
+before returning, and sends no-store responses.
+
+Deterministic Markdown/JSON share the captured revision/fingerprint. SVG captures the selected
+C1, whole/focused C2, C3 or saved deployment view's actual geometry, title/legend, planned status
+and selected scenario numbers. Source dashes remain distinct for declared C1 context and
+asynchronous/streaming relationships. CSS world dimensions/subpixel normalization keep camera
+changes out of the layout fingerprint. Deployment drafts must be saved/cancelled before export.
+
+Final QRWTY has **33 contracts / 32 unique obligations**; Inventory has **14 / 18**. Obligations
+link exact boundaries/bindings to scenario outcomes or pinned pattern invariants and acceptance
+IDs, with explicit gaps. Neighboring containers repeated in C3 views are consolidated by stable
+identity. Archives contain the exact three browser downloads without reformatting JSON. Their
+approval is scripted fixture evidence, not user approval or production acceptance. All **55**
+Markdown links resolve inside the bundles; JSON/Markdown round-trip byte-for-byte through the
+real schema/serializers. Original manifest pins identify content before sanitization.
+
+Final verification:
+
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: lint, all typechecks and **925 tests / 123 files**
+  passed. Vitest **40.03s**, profile **51.5s**. Run
+  `2026-11-01T18-25-27-368Z-check-93aea51d`. Biome checked **796 files**:
+  **1942 warnings / 75 infos / no errors**. Existing four-worker unit policy retained.
+- `pnpm work run browser-preview apps/web/e2e/architecture-handoff.spec.ts apps/web/e2e/qrwty-design-readiness.spec.ts apps/web/e2e/architecture-review.spec.ts apps/web/e2e/architecture-evidence.spec.ts apps/web/e2e/architecture-targets.spec.ts apps/web/e2e/architecture-deployments.spec.ts apps/web/e2e/architecture-library.spec.ts apps/web/e2e/architecture-layout.spec.ts apps/web/e2e/architecture-scenarios.spec.ts`:
+  **26 passed**, Playwright **41.8s**, profile **43.6s**. Run
+  `2026-11-01T18-28-32-980Z-browser-preview-3a8e0df2`.
+- Both final runs have identical before/after source fingerprints (`sourceChanged: false`).
+  Strict diagnostics, axe, narrow overflow, no-write/revision guards, repeat downloads,
+  source staleness, recipe availability, critical-interface refusal, missing manifests,
+  mouse undo/redo/reload and camera independence pass. Generator compatibility/ownership
+  pass; no golden refresh or executable behavior changed.
+- Inspected all nine final archived captures: **1440 × 900** desktop, **390 × 844** narrow dark,
+  plus native focused C2/scenario, C1, C3 and deployment SVG renders. Focused views/review
+  actions are readable; whole-system/C3/deployment retain overview geometry with vector zoom.
+- Reparsed both archived JSON files with `architectureHandoffSchema`; exact JSON/Markdown
+  serialization, archive members/links, unique obligation IDs, assigned exclusions and
+  absence of inherited checks pass. Deterministic tar/gzip archives preserve original downloads.
+- Final E2E inspection found **zero P57 projects**. Two initial selector-timeout fixtures were
+  removed by exact observed ID/name: `63fc5b74-e636-4d66-8da7-c007addc95aa` (Inventory) and
+  `3995c2ca-8c7e-4d3c-a003-d185fa92007c` (QRWTY). The P53 cleanup-timeout fixture
+  `fb1572ff-aabe-40dc-93fc-9e8c8c8049d5` was likewise removed by exact ID/name.
+  Shared/live data were retained.
+- Live QRWTY retains HEAD `7e3ff68775c80a1b629b8c9099779dd2b8a57f63` and tracked-diff SHA-256
+  `7637c088bb713a3398231a3fa13334a99f934dffec3c3aa71b557af718a74d4e`.
+  Its status hash changed during the session; business-analysis work and an unrelated
+  untracked drawing were retained. This package wrote no source application files. A new
+  untracked `.docs/c4-flow.excalidraw` also appeared in Jeeves during a browser run; it was
+  left untouched and excluded from the P57 commit.
+
+Interim fixes covered schema alignment, selectors, contrast, asynchronous recapture, camera
+rounding and duplicate neighboring obligations. An older evidence test captured layout before
+P49's navigation save completed; it now captures the settled baseline immediately before
+refresh. A later P53 regression timed out only in network-idle cleanup; the final complete
+regression passed. An unrelated drawing changed that failed run's untracked fingerprint.
+No diagnostic suppression, automatic retries, timeout increases, dependency/runner changes
+or golden updates. Failed/source-changing/intermediate runs are not final evidence.
+
+No material scope deviation. Documented portability limits remain explicit: omitted opaque
+runtime config/source examples/defaults, unavailable definitions and overview-sized diagrams.
+The handoff path makes no generation/task calls; the separate historical evidence regression
+uses only its own disposable generated output. No runtime/template/recipe implementation,
+generator filtering, generated lock rewrite, implementation orchestration, provisioning, paid
+model call or live adoption. Only evidence/docs/handoff were written after final gates.
+Stop after P57 and its scoped local commit on `main`; do not start the separate next phase.
+
+Final document validation: **218 changed-document local file targets** resolve, all
+**526,137 earlier handoff bytes** are preserved, and `git diff --check` passes.

@@ -47,6 +47,7 @@ import { ArchitectureDeployments } from "./ArchitectureDeployments.tsx";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
+import { ArchitectureHandoff } from "./ArchitectureHandoff.tsx";
 import { ArchitectureReview } from "./ArchitectureReview.tsx";
 import { AnnotationDraft, TargetComparison } from "./ArchitectureTargets.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
@@ -103,6 +104,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const [targetTab, setTargetTab] = useState<"baseline" | "changes">();
   const [annotationOpen, setAnnotationOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
   const [reviewEditor, setReviewEditor] = useState<Pick<ReviewFinding, "editor" | "inputs">>();
   const [reviewPattern, setReviewPattern] = useState<string>();
   const [apiSelection, setApiSelection] = useState<ApiSelection>({});
@@ -321,6 +323,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       data-selection={selected ?? ""}
       data-inspector-open={inspectorOpen}
     >
+      {handoffOpen ? (
+        <ArchitectureHandoff
+          projection={projection}
+          view={scope}
+          onClose={() => setHandoffOpen(false)}
+        />
+      ) : null}
       <header className="editor-header">
         <ApiWorkspace
           opened={apiOpen}
@@ -385,6 +394,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               <Menu.Item onClick={() => setApiOpen(true)}>API contracts</Menu.Item>
               <Menu.Item onClick={() => setDataOpen(true)}>
                 Data responsibilities and objectives
+              </Menu.Item>
+              <Menu.Item disabled={loading || !projection} onClick={() => setHandoffOpen(true)}>
+                Implementation handoff
               </Menu.Item>
               <Menu.Item onClick={() => setReviewOpen(true)}>
                 Architecture review ({reviewReport.findings.filter((f) => !f.acceptedBy).length})

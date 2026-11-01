@@ -37,4 +37,6 @@ fragment's 20-role portability bound. Save the bounded reusable selection before
 or author an explicit smaller boundary; the catalog refuses rather than dropping references.
 
 Planned blocks/components still block generation. No stock runtime, generated UI, provider call,
-provisioning or live application change is supplied. P57 implementation handoff is next separately.
+provisioning or live application change is supplied. P57 adds the [portable implementation handoff](../architecture-handoff.md);
+[exported fixture bundles](../evidence/p57/README.md) retain the exact contracts,
+open production choices and separate evidence without supplying runtime behavior.

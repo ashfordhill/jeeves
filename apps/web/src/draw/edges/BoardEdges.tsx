@@ -29,6 +29,7 @@ function useGeometry(props: EdgeProps<BoardEdge>) {
 }
 
 function EdgeChip({
+  id,
   x,
   y,
   text,
@@ -36,6 +37,7 @@ function EdgeChip({
   onClick,
   size,
 }: {
+  id: string;
   x: number;
   y: number;
   text: ReactNode;
@@ -48,6 +50,7 @@ function EdgeChip({
       <button
         type="button"
         onClick={onClick}
+        data-edge-id={id}
         className={`edge-chip nodrag nopan ${className}`}
         style={{ ...size, transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
       >
@@ -156,6 +159,7 @@ export function ConnectionEdge(props: EdgeProps<BoardEdge>) {
       <LabelLeader x={x} y={y} label={label} />
       {presentation ? (
         <EdgeChip
+          id={props.id}
           x={label.x}
           y={label.y}
           size={label.size}
@@ -187,6 +191,7 @@ export function ArrowEdge(props: EdgeProps<BoardEdge>) {
       />
       {label ? (
         <EdgeChip
+          id={props.id}
           x={x}
           y={y}
           text={label}
@@ -208,6 +213,7 @@ export function ContextEdge(props: EdgeProps<BoardEdge>) {
       <BaseEdge id={props.id} path={path} markerEnd={props.markerEnd} className="connection-path" />
       <LabelLeader x={x} y={y} label={label} />
       <EdgeChip
+        id={props.id}
         x={label.x}
         y={label.y}
         size={label.size}

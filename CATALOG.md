@@ -17,8 +17,17 @@ For modeling and contribution rules, read [C4 modeling guidance](docs/c4-modelin
 Families are reusable starting points, not an exhaustive list of permitted architectures.
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
-identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) [P52 evidence](docs/evidence/p52/README.md) and [P53 evidence](docs/evidence/p53/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+explains the contract/composition direction. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
+records the delivered authoring sequence, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) [P52 evidence](docs/evidence/p52/README.md) and [P53 evidence](docs/evidence/p53/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+
+P57 adds **Implementation handoff** in Editor actions: revision-bound scope and approval,
+exact portable contracts/manifests, separate template/recipe/planned/custom coverage,
+identity-linked acceptance obligations and recorded evidence without inherited passes.
+Markdown/JSON and the selected logical/deployment SVG share the captured snapshot; layout
+and semantic fingerprints remain separate. Partial-scope approval never enables partial
+generation. See the [handoff contract](docs/architecture-handoff.md) and
+[P57 evidence](docs/evidence/p57/README.md). P46–P57 architecture authoring is complete;
+runtime/template and generation planning is separate.
 
 P55 adds **Saved architecture templates** in the Library: save a C3 responsibility or
 C2 composition as a reviewed local draft, publish immutable architecture-only versions,

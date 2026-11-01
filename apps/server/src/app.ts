@@ -13,6 +13,7 @@ import { ChatService, type ModelSource } from "./chat/service.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
 import { GenerationService, type GeneratorRunner } from "./generate/service.ts";
+import { architectureHandoffRoutes } from "./routes/architecture-handoff.ts";
 import { architectureLibraryRoutes } from "./routes/architecture-library.ts";
 import { chatRoutes } from "./routes/chat.ts";
 import { generateRoutes } from "./routes/generate.ts";
@@ -105,6 +106,7 @@ export function buildApp({
   const library = new ArchitectureLibrary(dirname(settings.configPath));
   const chat = new ChatService(db, design, registry, models, library);
   app.register(architectureLibraryRoutes, { library, design, registry });
+  app.register(architectureHandoffRoutes, { library, design, registry });
 
   const generation = new GenerationService(db, design, generator, projectsDir);
   const runs = new RunService(db, design, models, registry, jobs, executor);
