@@ -3387,3 +3387,86 @@ failure. Retained pre-existing data/logs/shared Postgres; health on 4310 remains
 Next: **P45**, dynamic scenarios over existing relationships. C4 code views, page
 flows, runtime expansion and live adoption remain separate. Continue the existing
 current-branch, one-agent, scoped local commit policy.
+
+## 2026-10-31 — P45: dynamic runtime scenarios
+
+Completed [P45](build-plan-c4-saas.md#p45--dynamic-runtime-scenario-view-optional)
+on the existing `main` checkout, starting clean at `9036f10`. Followed AGENTS,
+PLAN §1–§15, latest handoffs and approved C4 decisions. One agent, sequential work;
+no branches, worktrees or delegation.
+
+Added optional `architecture.scenarios`: stable scenario/step identities, name,
+C2 or one-container C3 scope, ordered existing-relationship references and short
+step text. Shared validation rejects missing/out-of-scope references, missing
+applications, duplicate identities and invalid/bounded content. Referenced wiring
+cannot disappear until its scenario steps are updated/removed, first or in the
+same atomic batch. Authored C3 storage uses and explicitly declared dependencies
+share their existing projection resolver with scenario validation. Old documents
+omit the new field without serialization changes.
+
+The diagram/editor menu picks, adds and edits scenarios. Numbered edge badges
+remain legible across zoom and list all reuse numbers; a scrollable step list sits
+beside the diagram, below it on narrow screens. Mouse controls add/reorder/remove
+steps with multiline text, fixed Save/Cancel and shared one-step history. Whole
+scenario removal, undo/redo, reload and retained revision-conflict drafts work.
+C1 has no overlay. QRWTY target seeds **Visitor follows a QR** and **Owner creates
+a link**, including conditional cache-miss, asynchronous analytics and request/
+response reuse. The browser follows the destination; no service fetch is implied.
+CATALOG, the target study and planning pointers record completion of P39–P45.
+
+Verification and seven inspected captures are in [P45 evidence](evidence/p45/README.md):
+
+- **`pnpm work run unit packages/spec/src/scenarios.test.ts packages/spec/src/architecture-examples.test.ts packages/generator/src/architecture.test.ts`**:
+  **23 tests / 3 files passed**, Vitest **2.52s**, profile **3.2s**;
+  `2026-11-01T00-47-32-325Z-unit-94d8ef0e`. Covers compatibility, independent
+  seeds, repeated references, bounds/identities, C3 scope, atomic removal,
+  projected authored storage uses and byte-identical generated behavior/ownership.
+- **`pnpm work run browser-preview apps/web/e2e/architecture-scenarios.spec.ts apps/web/e2e/architecture-examples.spec.ts apps/web/e2e/architecture-layout.spec.ts apps/web/e2e/architecture-authoring.spec.ts apps/web/e2e/draw.spec.ts apps/web/e2e/chat-planning.spec.ts`**:
+  **15 passed**, Playwright **30.0s** / profile **32.0s**, no retries, strict
+  diagnostics, unchanged fingerprints;
+  `2026-11-01T00-48-09-862Z-browser-preview-d34a58c6`. Add/reorder/remove,
+  Cancel/Save/undo/redo/reload, whole removal/undo, repeated numbers, C1 exclusion,
+  C3 scope navigation/filtering, missing-wiring rejection, conflict retention,
+  axe and narrow overflow checks pass. Existing all-example/C3 navigation,
+  grouped operations, worker retry, camera continuity, drawing and planned chat pass.
+- **`VITEST_MAX_WORKERS=4 pnpm work run check` → `pnpm check` passed**, **44.6s**,
+  unchanged fingerprints; `2026-11-01T00-51-47-010Z-check-8a6fec64`.
+  All workspace/script typechecks pass; **748 tests / 109 files**, Vitest **37.26s**.
+  Biome: **724 files**, **677 warnings / 75 infos / no errors**. Generator
+  golden/ownership checks pass with no fixture changes. The environment limits
+  concurrency only; no test/assertion/timeout/retry was changed or skipped.
+- Two default-concurrency full checks timed out the existing disk-backed server
+  restart/undo test at its unchanged **5000ms** limit, each **747 passed / 1 failed**:
+  `2026-11-01T00-49-35-459Z-check-183c982b` and
+  `2026-11-01T00-50-36-035Z-check-c8dd5930`. Its unchanged suite separately passed
+  **18 tests**, Vitest **6.46s**, profile **7.0s**;
+  `2026-11-01T00-50-25-455Z-unit-163111f9`. Default-concurrency timeout sensitivity
+  remains a known verification limitation; no unrelated runner/config change.
+- Opened all seven final **1440 × 900 light / 390 × 844 dark** captures, including
+  both QRWTY flows, an authored C3 flow and the narrow editor. Narrow diagrams
+  remain fitted overviews with mouse zoom/inspection; the list scrolls separately.
+  `git diff --check` and changed-document local links pass.
+
+Interim failures caught a component-use cleanup missing from an atomic-removal
+unit expectation, a narrow flex rule lost through the panel wrapper, exact test
+labels omitting required asterisks and the unregistered expected conflict response.
+All corrected; no diagnostic suppression or timeout/retry increases. Screenshot
+review led to zoom-independent numbers and multiline step drafts.
+
+No material scope deviation. Stable step IDs and shared authored-dependency
+resolution support safe reordering and reference validation. Scenarios describe
+order over authored relationships; hidden technical-only edges/C1 context arrows
+are not separate references, and one C3 connection can project onto several
+component arrows carrying the same step number. Selection is session-local;
+scenario content persists. No runtime/template/recipe/generator implementation,
+output/golden, dependency/lockfile or live QRWTY edits. Only the lossless design
+snapshot records metadata; planning blocks still prevent generation.
+Removed four exact-ID projects left by early timed-out browser runs and 48
+session-created E2E settings/output directories. Final journeys delete their own
+projects; no P45 scenario projects remain. Retained pre-existing data/logs/shared
+Postgres; existing Jeeves health on 4310 remains OK.
+
+The approved **P39–P45 sequence is complete**. No next package is specified.
+Implementation/code graphs, deeper data/deployment authoring, runtime expansion,
+page flows, developer testing and live adoption remain separately scoped work.
+Continue the existing current-branch, one-agent, scoped local commit policy.

@@ -1,9 +1,9 @@
 # C4 authoring for SaaS: notation fidelity and catalog coverage (P39–P45)
 
-**Status: approved with recorded decisions, 2026-10-31. P39–P44 are complete; P45 is next.**
+**Status: approved with recorded decisions, 2026-10-31. P39–P45 are complete. No next package is specified.**
 [P39 evidence](evidence/p39/README.md), [P40 evidence](evidence/p40/README.md),
 [P41 evidence](evidence/p41/README.md), [P42 evidence](evidence/p42/README.md),
-[P43 evidence](evidence/p43/README.md) and [P44 evidence](evidence/p44/README.md) record the implementations, checks and screenshots.
+[P43 evidence](evidence/p43/README.md), [P44 evidence](evidence/p44/README.md) and [P45 evidence](evidence/p45/README.md) record the implementations, checks and screenshots.
 The plan was written after P38 (`f8aeea0`) from a read-only inspection of the editor,
 planned-capability catalog, architecture examples, P36/P37 evidence and the Visual Paradigm
 C4 guides below. The user's accepted decisions at the end are binding. Each package is
@@ -241,6 +241,8 @@ provider is recorded if credentials exist; `pnpm check` passes.
 
 ### P45 — Dynamic (runtime) scenario view (optional)
 
+**Completed 2026-10-31.** [Evidence and inspected views](evidence/p45/README.md); verification is recorded in the latest [handoff](handoff.md).
+
 **Goal.** Explain a key flow as numbered steps over existing relationships, as a C4 dynamic
 diagram does, without creating new wiring.
 
@@ -284,4 +286,4 @@ The user accepted every recommended default. These are binding for P39–P45:
 | D15 | The expired Lens image is dropped; the Visual Paradigm guides are the reference. |
 | D16 | Commit planning documents immediately. Work on `main`, one agent at a time; no branches or worktrees. Commit history is disposable. |
 
-Status: **P39–P44 are complete. P45 is next.** Follow the package order and recorded decisions above.
+Status: **P39–P45 are complete. No next package is specified.** The recorded decisions above continue to constrain follow-up work.

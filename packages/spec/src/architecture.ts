@@ -15,6 +15,11 @@ import {
   relationshipProtocolSchema,
 } from "./relationship-display.ts";
 import { resourceConfigSchema } from "./resources.ts";
+import {
+  architectureScenarioSchema,
+  sameScenarioRelationship,
+  scenarioRelationships,
+} from "./scenarios.ts";
 
 const description = z.string().trim().max(1200).default("");
 export const architectureNodeSchema = z.strictObject({
@@ -60,6 +65,7 @@ export const architectureSchema = z.strictObject({
   nodes: z.array(architectureNodeSchema).max(50).default([]),
   relationships: z.array(contextRelationshipSchema).max(100).default([]),
   components: z.array(architectureComponentSchema).max(200).optional(),
+  scenarios: z.array(architectureScenarioSchema).max(50).optional(),
   componentRelationships: z
     .array(
       z.strictObject({
@@ -259,6 +265,45 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
         ),
       );
   }
+  for (const scenario of model.scenarios ?? []) {
+    const path = ["architecture", "scenarios", scenario.id];
+    const scope = scenario.scope;
+    if (ids.has(scenario.id))
+      findings.push(
+        finding("DUPLICATE_ID", `Scenario identity ${scenario.id} is repeated.`, { path }),
+      );
+    ids.add(scenario.id);
+    if (
+      scope.level === "components" &&
+      !design.elements.some((element) => element.id === scope.container)
+    )
+      findings.push(
+        finding(
+          "UNKNOWN_REFERENCE",
+          `Scenario “${scenario.name}” refers to a missing application.`,
+          { path },
+        ),
+      );
+    const available = scenarioRelationships(design, scenario.scope);
+    const stepIds = new Set<string>();
+    scenario.steps.forEach((step, index) => {
+      if (stepIds.has(step.id))
+        findings.push(
+          finding("DUPLICATE_ID", `Step identity ${step.id} is repeated in “${scenario.name}”.`, {
+            path: [...path, "steps", index],
+          }),
+        );
+      stepIds.add(step.id);
+      if (!available.some((item) => sameScenarioRelationship(item.relationship, step.relationship)))
+        findings.push(
+          finding(
+            "UNKNOWN_REFERENCE",
+            `Step ${index + 1} in “${scenario.name}” needs an existing relationship in its scope. Remove or update this scenario step before removing its relationship.`,
+            { path: [...path, "steps", index] },
+          ),
+        );
+    });
+  }
   return findings;
 }
 
@@ -330,4 +375,31 @@ export function containerContext(design: DesignDocument) {
     relationships.flatMap((relation) => [relation.source, relation.target]),
   );
   return { nodes: nodes.filter((node) => participants.has(`context:${node.id}`)), relationships };
+}
+
+/** Authored C3 dependencies share stable container wiring with the scenario validator. */
+export function componentConnections(design: DesignDocument, definition: ArchitectureComponent) {
+  const uses = new Map<string, { declared: boolean; resources: string[] }>();
+  for (const member of definition.members) {
+    if (member.kind === "extension") continue;
+    const binding = resolveArchitectureMember(design, definition.element, member);
+    if (binding?.model.storeConnection)
+      uses.set(binding.model.storeConnection, { declared: false, resources: [] });
+  }
+  for (const id of definition.usesConnections) uses.set(id, { declared: true, resources: [] });
+  for (const resource of definition.usesResources) {
+    const binding = resolveArchitectureMember(design, definition.element, {
+      attachment: resource.attachment,
+      kind: "resource",
+      ref: resource.resource,
+    });
+    if (binding?.model.storeConnection) {
+      const id = binding.model.storeConnection;
+      const use = uses.get(id) ?? { declared: true, resources: [] };
+      const name = binding.model.resources.find((item) => item.id === resource.resource)?.name;
+      if (name) use.resources.push(name);
+      uses.set(id, use);
+    }
+  }
+  return uses;
 }

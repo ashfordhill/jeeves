@@ -52,6 +52,7 @@ import { PlannedConnectionInspector, PlannedElementInspector } from "./PlannedIn
 import "./architecture.css";
 import "./editor.css";
 import { RelationshipLegend } from "./RelationshipLabel.tsx";
+import { ScenarioMenuItems, ScenarioPanel, ScenarioProvider } from "./Scenarios.tsx";
 import { TypeLegend } from "./type-style.tsx";
 
 type Level = "context" | "containers" | "components";
@@ -253,7 +254,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       useDraw.getState().setTool({ kind: "planned", capability: id }),
     );
   };
-  return (
+  const workspace = (
     <section
       className="architecture-workspace integrated-editor"
       aria-label="Architecture workspace"
@@ -323,6 +324,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 Inspect evidence
               </Menu.Item>
               <Menu.Item onClick={() => setLegendOpen(true)}>Type colors</Menu.Item>
+              <ScenarioMenuItems />
               <Menu.Label>Saved revision {design.revision}</Menu.Label>
             </Menu.Dropdown>
           </Menu>
@@ -449,79 +451,84 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               setInspectorOpen(true);
           }}
         >
-          {level === "containers" ? (
-            board
-          ) : !views ? (
-            <div className="architecture-loading">
-              <Loader size="sm" /> Loading architecture…
-            </div>
-          ) : projection ? (
-            <div className="architecture-stage">
-              <div className="architecture-scope-caption">
-                <strong>{projection.name}</strong>
-                <span>
-                  {level === "context"
-                    ? "People, purpose & external systems"
-                    : "Responsibilities within one application"}
-                </span>
+          <div className="scenario-diagram">
+            {level === "containers" ? (
+              board
+            ) : !views ? (
+              <div className="architecture-loading">
+                <Loader size="sm" /> Loading architecture…
               </div>
-              {level === "context" && !design.architecture ? (
-                <div className="editor-empty context-empty">
-                  <span className="editor-empty-eyebrow">System context</span>
-                  <h2>Who uses {project.name}?</h2>
-                  <p>
-                    Describe its purpose, the people who use it, and the systems it interacts with.
-                  </p>
-                  <Button color="cyan.9" onClick={() => setEditor("context")}>
-                    Describe this system
-                  </Button>
+            ) : projection ? (
+              <div className="architecture-stage">
+                <div className="architecture-scope-caption">
+                  <strong>{projection.name}</strong>
+                  <span>
+                    {level === "context"
+                      ? "People, purpose & external systems"
+                      : "Responsibilities within one application"}
+                  </span>
                 </div>
-              ) : projection.nodes.length ? (
-                <ArchitectureGraph
-                  projection={projection}
-                  selected={node?.id}
-                  onSelect={choose}
-                  cameraCache={cameraCache.current}
-                />
-              ) : (
-                <div className="editor-empty">
-                  <h2>Give this application its responsibilities</h2>
-                  <p>Add a component for each cohesive part of its behavior.</p>
-                  <Button color="cyan.9" onClick={() => setComponentEditor({})}>
-                    Add component
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="editor-empty">
-              <h2>Start with an application</h2>
-              <p>Add a web app, API or worker in C2, then design its components here.</p>
-              <Button color="cyan.9" onClick={() => setCatalog("blocks")}>
-                Browse building blocks
-              </Button>
-            </div>
-          )}
-          {level === "containers" &&
-          design.elements.length === 0 &&
-          design.annotations.length === 0 &&
-          (tool === "select" || tool === "hand") ? (
-            <div className="editor-empty">
-              <span className="editor-empty-eyebrow">From idea to architecture</span>
-              <h2>What are you building?</h2>
-              <p>
-                Start with an example, or choose the applications and data stores your system needs.
-              </p>
-              <Group justify="center">
-                <Button color="cyan.9" onClick={() => setCatalog("examples")}>
-                  Explore SaaS examples
-                </Button>
-                <Button variant="default" onClick={() => setCatalog("blocks")}>
+                {level === "context" && !design.architecture ? (
+                  <div className="editor-empty context-empty">
+                    <span className="editor-empty-eyebrow">System context</span>
+                    <h2>Who uses {project.name}?</h2>
+                    <p>
+                      Describe its purpose, the people who use it, and the systems it interacts
+                      with.
+                    </p>
+                    <Button color="cyan.9" onClick={() => setEditor("context")}>
+                      Describe this system
+                    </Button>
+                  </div>
+                ) : projection.nodes.length ? (
+                  <ArchitectureGraph
+                    projection={projection}
+                    selected={node?.id}
+                    onSelect={choose}
+                    cameraCache={cameraCache.current}
+                  />
+                ) : (
+                  <div className="editor-empty">
+                    <h2>Give this application its responsibilities</h2>
+                    <p>Add a component for each cohesive part of its behavior.</p>
+                    <Button color="cyan.9" onClick={() => setComponentEditor({})}>
+                      Add component
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="editor-empty">
+                <h2>Start with an application</h2>
+                <p>Add a web app, API or worker in C2, then design its components here.</p>
+                <Button color="cyan.9" onClick={() => setCatalog("blocks")}>
                   Browse building blocks
                 </Button>
-              </Group>
-            </div>
-          ) : null}
+              </div>
+            )}
+            {level === "containers" &&
+            design.elements.length === 0 &&
+            design.annotations.length === 0 &&
+            (tool === "select" || tool === "hand") ? (
+              <div className="editor-empty">
+                <span className="editor-empty-eyebrow">From idea to architecture</span>
+                <h2>What are you building?</h2>
+                <p>
+                  Start with an example, or choose the applications and data stores your system
+                  needs.
+                </p>
+                <Group justify="center">
+                  <Button color="cyan.9" onClick={() => setCatalog("examples")}>
+                    Explore SaaS examples
+                  </Button>
+                  <Button variant="default" onClick={() => setCatalog("blocks")}>
+                    Browse building blocks
+                  </Button>
+                </Group>
+              </div>
+            ) : null}
+          </div>
+          <ScenarioPanel />
         </div>
         <aside
           className="editor-inspector"
@@ -813,5 +820,20 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
         />
       ) : null}
     </section>
+  );
+  return (
+    <ScenarioProvider
+      scope={
+        level === "context"
+          ? undefined
+          : level === "containers"
+            ? { level: "containers" }
+            : actualContainer
+              ? { level: "components", container: actualContainer }
+              : undefined
+      }
+    >
+      {workspace}
+    </ScenarioProvider>
   );
 }

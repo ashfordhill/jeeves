@@ -33,6 +33,12 @@ context, containers and responsibilities from a brief. Chat edits use the shared
 validation and one undo step per turn. Planned choices keep their availability
 label and generation block; see [P44 evidence](docs/evidence/p44/README.md).
 
+Dynamic scenarios number existing C2 connections or authored C3 relationships and
+list their steps beside the diagram. The QRWTY target includes visitor and owner
+flows; other compositions can add their own through the diagram/editor menu.
+These are saved design explanations, with no new wiring or runtime availability.
+See [P45 evidence](docs/evidence/p45/README.md) for the contract and checks.
+
 C1 offerings below are compositions, not separate runtime templates.
 Optional SaaS extensions reuse [organizations](#c3-organizations), [billing](#c3-billing),
 [developer access](#c3-developer), [notifications](#c3-notifications),

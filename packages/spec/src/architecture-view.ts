@@ -1,10 +1,6 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
 
-import {
-  type ArchitectureMember,
-  containerContext,
-  resolveArchitectureMember,
-} from "./architecture.ts";
+import { type ArchitectureMember, componentConnections, containerContext } from "./architecture.ts";
 import { containerDescription, containerTechnology } from "./container-display.ts";
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
@@ -547,28 +543,7 @@ function componentView(
       missing,
       acceptance: [...new Set(members.flatMap((member) => member.acceptance))],
     });
-    const uses = new Map<string, { declared: boolean; resources: string[] }>();
-    for (const member of definition.members) {
-      if (member.kind === "extension") continue;
-      const binding = resolveArchitectureMember(design, element.id, member);
-      if (binding?.model.storeConnection)
-        uses.set(binding.model.storeConnection, { declared: false, resources: [] });
-    }
-    for (const id of definition.usesConnections) uses.set(id, { declared: true, resources: [] });
-    for (const resource of definition.usesResources) {
-      const binding = resolveArchitectureMember(design, element.id, {
-        attachment: resource.attachment,
-        kind: "resource",
-        ref: resource.resource,
-      });
-      if (binding?.model.storeConnection) {
-        const id = binding.model.storeConnection;
-        const use = uses.get(id) ?? { declared: true, resources: [] };
-        const name = binding.model.resources.find((item) => item.id === resource.resource)?.name;
-        if (name) use.resources.push(name);
-        uses.set(id, use);
-      }
-    }
+    const uses = componentConnections(design, definition);
     for (const [id, use] of uses) {
       const connection = design.connections.find((item) => item.id === id);
       if (!connection) continue;

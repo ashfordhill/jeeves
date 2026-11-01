@@ -1,0 +1,74 @@
+.scenario-panel {
+  flex: 0 0 270px;
+  width: 270px;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+  border-left: 1px solid var(--grid-dot);
+  background: var(--cream);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.scenario-panel h2 {
+  font-size: 18px;
+  margin: 6px 0 12px;
+}
+.scenario-panel ol {
+  padding-left: 24px;
+}
+.scenario-panel li {
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+.scenario-panel li::marker {
+  font-weight: 900;
+}
+.scenario-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+}
+.scenario-numbers {
+  position: absolute;
+  top: -9px;
+  left: -6px;
+  max-width: 100%;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 16px;
+  white-space: normal;
+}
+.scenario-step-editor {
+  border: 1px solid var(--grid-dot);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .editor-canvas-area:has(> .scenario-panel) {
+    flex-direction: column;
+  }
+  .scenario-panel {
+    flex: 0 0 210px;
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid var(--grid-dot);
+  }
+}
+.scenario-diagram {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.scenario-diagram > .architecture-stage {
+  flex: 1;
+  min-height: 0;
+}

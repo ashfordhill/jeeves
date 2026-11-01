@@ -1,4 +1,6 @@
-import type { RelationshipInteraction } from "@jeeves/spec";
+import type { RelationshipInteraction, ScenarioRelationship } from "@jeeves/spec";
+
+import { ScenarioNumbers } from "./Scenarios.tsx";
 
 export function relationshipLineStyle(interaction?: RelationshipInteraction) {
   return {
@@ -12,13 +14,16 @@ export function RelationshipLabel({
   description,
   protocol,
   planned,
+  scenarioRelationship,
 }: {
   description: string;
   protocol?: string;
   planned?: boolean;
+  scenarioRelationship?: ScenarioRelationship;
 }) {
   return (
     <>
+      <ScenarioNumbers relationship={scenarioRelationship} />
       <span className="relationship-description">{description}</span>
       {protocol ? <span className="relationship-protocol">{protocol}</span> : null}
       {planned ? <span className="relationship-planned">Planned</span> : null}

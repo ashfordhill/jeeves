@@ -705,6 +705,66 @@ export function architectureExample(id: string): {
         : []),
     ],
     components,
+    ...(id === "qrwty-target"
+      ? {
+          scenarios: [
+            {
+              id: "visitor-qr",
+              name: "Visitor follows a QR",
+              scope: { level: "containers" as const },
+              steps: [
+                {
+                  id: "qr-step-1",
+                  relationship: { kind: "connection" as const, id: "redirect-cache" },
+                  text: "A visitor opens the scanned short URL; the redirect service looks up its destination.",
+                },
+                {
+                  id: "qr-step-2",
+                  relationship: { kind: "connection" as const, id: "redirect-db" },
+                  text: "On a cache miss, read the saved destination from primary data.",
+                },
+                {
+                  id: "qr-step-3",
+                  relationship: { kind: "connection" as const, id: "redirect-queue" },
+                  text: "Queue a visit event and return the destination. The visitor browser follows it; the service does not fetch it.",
+                },
+                {
+                  id: "qr-step-4",
+                  relationship: { kind: "connection" as const, id: "queue-worker" },
+                  text: "The analytics worker consumes the visit asynchronously.",
+                },
+                {
+                  id: "qr-step-5",
+                  relationship: { kind: "connection" as const, id: "worker-analytics-data" },
+                  text: "Write aggregate visit metrics for later reporting.",
+                },
+              ],
+            },
+            {
+              id: "owner-link",
+              name: "Owner creates a link",
+              scope: { level: "containers" as const },
+              steps: [
+                {
+                  id: "qr-step-6",
+                  relationship: { kind: "connection" as const, id: "web-api" },
+                  text: "The signed-in owner submits a destination and alias from Library & create.",
+                },
+                {
+                  id: "qr-step-7",
+                  relationship: { kind: "connection" as const, id: "api-db" },
+                  text: "Validate ownership and save the new link in primary data.",
+                },
+                {
+                  id: "qr-step-8",
+                  relationship: { kind: "connection" as const, id: "web-api" },
+                  text: "Return the saved short URL to the owner's library.",
+                },
+              ],
+            },
+          ],
+        }
+      : {}),
     ...(componentRelationships.length ? { componentRelationships } : {}),
   };
   // Tags describe proposed choices. No example claims these technologies run today.

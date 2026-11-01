@@ -3,6 +3,7 @@ import {
   architectureViews,
   componentPresentation,
   type DesignDocument,
+  scenarioRelationships,
   validateArchitecture,
 } from "@jeeves/spec";
 import { expect, it } from "vitest";
@@ -304,4 +305,54 @@ it("ignores component technology in generated behavior and ownership", () => {
   );
   expect(after.artifacts).toEqual(before.artifacts);
   expect(after.elements).toEqual(before.elements);
+});
+
+it("keeps dynamic scenarios in the saved snapshot while leaving generated artifacts byte-identical", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  const edited = structuredClone(design);
+  edited.architecture!.scenarios = [
+    {
+      id: "owner-link",
+      name: "Owner creates a link",
+      scope: { level: "containers" },
+      steps: [
+        {
+          id: "save",
+          relationship: { kind: "connection", id: design.connections[0]!.id },
+          text: "Save a new link.",
+        },
+      ],
+    },
+  ];
+  const after = planProject(edited, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((file) => file.path === "jeeves/design.json")?.contents).toContain(
+    '"owner-link"',
+  );
+});
+
+it("offers projected authored C3 storage uses as scenario references", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const views = architectureViews(design, templates.lookup, "QR");
+  for (const view of views.components) {
+    const available = scenarioRelationships(design, {
+      level: "components",
+      container: view.container!,
+    });
+    for (const edge of componentPresentation(view, false).edges) {
+      if (edge.connection)
+        expect(
+          available.some(
+            (choice) =>
+              choice.relationship.kind === "connection" &&
+              choice.relationship.id === edge.connection,
+          ),
+        ).toBe(true);
+    }
+  }
 });

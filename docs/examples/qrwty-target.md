@@ -79,5 +79,20 @@ blocks each. Their actual compositions also drive the library miniatures. Social
 mobile API/offline responsibilities; Community includes subscription-message delivery.
 Technology tags describe choices for these studies, not claims about a named company.
 
-No live adoption, runtime implementation, generated output, page routing, chat-library
-support or dynamic scenarios is delivered here. P44 and P45 retain their separate scopes.
+## Dynamic scenarios
+
+On C2, open **Editor actions** and choose **Visitor follows a QR** or **Owner creates
+a link**. Numbered badges reuse existing arrows; the adjacent list describes their
+order, conditional cache misses and asynchronous visit processing. The visitor's
+browser follows the destination; the redirect service does not fetch it. The owner
+flow reuses the web/API arrow for request and response.
+
+**Add scenario** opens a draft in the current C2 or C3 scope. Choose existing
+relationships, describe each step, and use **Move up**, **Move down** and **Remove**.
+Save is one undo step; Cancel discards the draft. C3 also offers the picker under
+**Diagram options**. Relationship removal requires updating its scenario steps in
+the same batch, or removing those steps first. See [P45 evidence](../evidence/p45/README.md).
+
+No live adoption, runtime implementation, generated behavior or page routing is
+supplied by this study. P44 supplies chat-library access; P45 supplies the saved
+scenario explanations above. Planned blocks continue to prevent generation.

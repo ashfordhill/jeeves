@@ -159,7 +159,12 @@ export function ConnectionEdge(props: EdgeProps<BoardEdge>) {
           x={label.x}
           y={label.y}
           size={label.size}
-          text={<RelationshipLabel {...presentation} />}
+          text={
+            <RelationshipLabel
+              {...presentation}
+              scenarioRelationship={{ kind: "connection", id: props.id }}
+            />
+          }
           className={`connection-chip${props.selected ? " is-selected" : ""}`}
           onClick={() => useDraw.getState().focus({ nodes: [], edges: [props.id] })}
         />

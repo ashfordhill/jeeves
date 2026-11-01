@@ -43,6 +43,7 @@ import {
 } from "./layout.ts";
 import { layoutArchitecture } from "./layout-client.ts";
 import { RelationshipLabel, relationshipLineStyle } from "./RelationshipLabel.tsx";
+import { ScenarioMenuItems } from "./Scenarios.tsx";
 import { nodeFamily, typeStyles } from "./type-style.tsx";
 
 export const supportLabel: Record<ArchitectureSupport, string> = {
@@ -158,7 +159,16 @@ function Relation({ data, ...props }: EdgeProps<RelationEdge>) {
             lineHeight: data.presentation.protocol ? "1.2" : undefined,
           }}
         >
-          <RelationshipLabel {...data.presentation} />
+          <RelationshipLabel
+            {...data.presentation}
+            scenarioRelationship={
+              data.presentation.componentRelationship
+                ? { kind: "componentRelationship", id: data.presentation.componentRelationship }
+                : data.presentation.connection
+                  ? { kind: "connection", id: data.presentation.connection }
+                  : undefined
+            }
+          />
         </button>
       </EdgeLabelRenderer>
     </>
@@ -249,6 +259,7 @@ function DiagramOptions({
           >
             Focus selected object
           </Menu.Item>
+          <ScenarioMenuItems />
         </Menu.Dropdown>
       </Menu>
     </Panel>
