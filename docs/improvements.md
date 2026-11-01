@@ -1,5 +1,10 @@
 # Deterministic application behavior and the qrwty proof
 
+**Current design priority (2026-10-31):** improve C2/C3 authoring, relationships and reusable
+composition before new code-generation/runtime work. Read the [direction review](reviews/c4-direction-review-2026-10-31.md)
+and [C4 modeling guidance](c4-modeling.md) before refining P46–P53. That proposed sequence
+needs correction and is not an approved execution queue.
+
 **Latest package (2026-10-31): [P45 — Dynamic runtime scenarios](build-plan-c4-saas.md#p45--dynamic-runtime-scenario-view-optional), complete.** [P45 evidence](evidence/p45/README.md) records saved C2/C3 scenarios, numbered relationship overlays and mouse editing/history. The approved P39–P45 sequence is complete. The next sequence is proposed in [C4 evolution (P46–P53)](build-plan-c4-evolution.md), awaiting the user's decisions D17–D30. P44 supplies design-assistant access to the planned catalog; P43 supplies the separate editable [QRWTY target study](examples/qrwty-target.md). [P38's saved API contracts and reference](build-plan-p38-api.md) and [P37's compact shell](build-plan-p37-editor.md) remain available. Maintain the modular [CATALOG.md](../CATALOG.md); runtime availability remains unchanged. C4 implementation/code graphs, backend data/deployment authoring, runtime expansion, developer testing, page flows and live adoption remain separate. Live QRWTY has not adopted P35.
 
 **JEEVES-2 choices resolved:** focused C4 implementation with linked data/traffic settings, contextual menus for retained actions, and C3 responsibility groups. The [research review](reviews/jeeves-feedback-2-2026-10-31.md) remains background and must not be repeated. P38's specification records this bounded package and follow-up boundaries.

@@ -3470,3 +3470,40 @@ The approved **P39–P45 sequence is complete**. No next package is specified.
 Implementation/code graphs, deeper data/deployment authoring, runtime expansion,
 page flows, developer testing and live adoption remain separately scoped work.
 Continue the existing current-branch, one-agent, scoped local commit policy.
+
+## 2026-10-31 — Business synthesis and C4 direction review (documentation)
+
+Reviewed the qrwty business reports, selected supporting studies, current vendor offers,
+official C4 guidance, post-P45 architecture schemas/examples, P43 screenshots and proposed
+P46–P53 plan. Read-only live API inspection confirmed qrwty revision 17: three elements,
+two connections, no architecture metadata. No saved design was changed.
+
+Added [the direction review](reviews/c4-direction-review-2026-10-31.md), with corrections
+to classification, messaging, tenancy, horizons, patterns and advice; a relationship-contract
+proposal; and six qrwty scenarios as the design-to-implementation handoff gate. Added
+[durable C4 guidance](c4-modeling.md) and required reading from AGENTS.md. CATALOG clarifies
+logical boundaries and message channels without changing availability. Planning entry
+points now flag P46–P53 for revision and defer generator filtering under the user's
+C2/C3-first instruction. This review does not approve or implement those packages.
+
+The concise business assessment is in the separately owned qrwty repository at
+`business-analysis/decision-review.md`. It recommends a bounded hosted-product experiment
+and distinguishes enterprise-capable architecture from an enterprise sales/support business.
+Existing report reorganizations were preserved.
+
+Verification:
+
+- `VITEST_MAX_WORKERS=4 pnpm check` passed: all typechecks; **748 tests / 109 files**,
+  Vitest **35.80s**. Biome checked 724 files with 677 existing warnings and no errors.
+  Concurrency follows the limitation recorded in P45; no test/config changes.
+- Local Markdown file links and whitespace checked; scoped `git diff --check` passed.
+- Required qrwty commands passed: `pnpm install`, `pnpm typecheck`, `pnpm test`
+  (**29 API + 15 frontend tests**) and `docker compose up --build --wait`.
+  The Compose check rebuilt/started the existing application stack and left it healthy;
+  no application source, generated-owned files or saved design were edited.
+- No new UI/runtime code, dependencies, generated outputs or paid model calls.
+  Existing screenshot evidence was inspected; no new browser journey is claimed.
+
+Next: refine a bounded C2/C3 interface-and-relationship authoring package from the review,
+then reusable patterns and readable qrwty views. Do not start the old P46–P53 sequence
+unchanged or infer that the new planning contracts are already implemented.

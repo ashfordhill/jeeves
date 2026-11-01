@@ -11,6 +11,15 @@ The improvement-package ordering in `docs/improvements.md` supersedes the histor
 
 Work sequentially in the current checkout and branch. The user is running one agent at a time on Jeeves; do not create additional worktrees or branches, or delegate to other agents, unless the user changes that instruction. Keep committing completed packages locally.
 
+## Architecture work
+
+Before changing C1/C2/C3 authoring, the catalog, connections or architecture patterns, read
+[C4 modeling guidance](docs/c4-modeling.md). The current user priority is C2/C3 design and
+reusable composition; new application runtime/code-generation work is deferred to a separate
+task. Read the [direction review](docs/reviews/c4-direction-review-2026-10-31.md) before
+refining the proposed P46–P53 packages. They remain proposals, not an approved execution queue.
+Keep architecture intent, template availability and verification evidence distinct.
+
 ## Repo conventions
 
 - Maintain [CATALOG.md](CATALOG.md) when offerings, reusable C1/C2/C3 boundaries or availability change. Keep it conceptual and cross-linked; exact implementation details belong in the referenced template documentation.

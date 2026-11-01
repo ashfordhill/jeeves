@@ -1,5 +1,14 @@
 # C4 evolution: from a thin live design to a sound SaaS architecture (P46–P53)
 
+**Review required before execution (2026-10-31):** the user has prioritized C2/C3 authoring
+and reusable design over new generation/runtime implementation. The [direction review](reviews/c4-direction-review-2026-10-31.md)
+identifies corrections to this proposal: responsibility-based C4 classification, logical
+message channels, independent tenancy/deployment choices, interface/relationship contracts,
+safe pattern reuse and requirement-based advice. P47's generator filtering is deferred;
+current/target views can be designed independently. Refine the packages using that review
+and the [agent modeling guidance](c4-modeling.md). The original proposal below is retained
+for traceability; D17–D30 have not been approved by this review.
+
 **Status: proposed 2026-10-31, awaiting the user's decisions (D17–D30 below).** Written after
 P45 (`43dcb5c`) from a read-only inspection of the live Jeeves server, the saved QRWTY
 design, the planning catalog, the architecture schema, the P36–P45 evidence, and the

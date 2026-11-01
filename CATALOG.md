@@ -13,6 +13,12 @@ Jeeves is an engineering tool. Its diagrams express boundaries, responsibilities
 contracts and requirements. The application engineer still owns domain behavior,
 data choices and the quality of custom implementation.
 
+For modeling and contribution rules, read [C4 modeling guidance](docs/c4-modeling.md).
+Families are reusable starting points, not an exhaustive list of permitted architectures.
+An instance needs meaningful interfaces and dependencies; adding a family name alone does
+not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
+identifies the next contract/composition work without changing availability below.
+
 ## Availability and reuse
 
 | Label | What it means |
@@ -156,9 +162,12 @@ of a particular company's architecture.
 
 ## C2 shared containers and capabilities
 
-An application, worker, store or external service is a C2 boundary. Some existing
-Jeeves templates attach a capability or execution policy to that boundary; those
-attachments are not automatically separate deployable containers.
+C2 shows logical applications, workers and data stores within the system, with external
+software systems as supporting dependencies. Managed hosting does not determine whether
+something is a container or an external system. Some existing Jeeves templates attach a
+capability or execution policy to a container; those attachments are not automatically
+separate deployable containers. Instances, regions and load-balancer placement belong in
+deployment views.
 
 <a id="c2-web"></a>
 ### Clients
@@ -270,7 +279,10 @@ and event-distribution responsibilities. Ordering, retries and retention are
 explicit choices. They connect [application APIs](#c2-application) with
 [workers](#c2-worker) or other consumers in the three planned examples. The
 implemented in-service [durable events](#c2-worker) capability is available for its
-documented supported shape, not a substitute for every broker topology.
+documented supported shape, not a substitute for every broker topology. Model named logical
+queues/topics or named channels on relationships at C2; broker instances and clusters belong
+in deployment. Reuse channels by contract, ownership and delivery requirements, not merely
+because two blocks have the same family.
 
 <a id="c2-traffic"></a>
 ### Traffic routing and execution
