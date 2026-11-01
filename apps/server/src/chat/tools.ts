@@ -9,9 +9,11 @@ import {
   applyOperations,
   architecturePatterns,
   architectureReview,
+  type CreateTarget,
   componentCompatible,
   contractCanonical,
   contractSources,
+  createTargetSchema,
   type DesignDocument,
   describeArchitecturePattern,
   type FindingCode,
@@ -30,6 +32,7 @@ import {
   reviewArchitecture,
   reviewTemplateUpgrade,
   subtypeDiscards,
+  suggestArchitectureAnnotations,
   templateRefSchema,
   validateDesign,
 } from "@jeeves/spec";
@@ -60,6 +63,8 @@ const argsSchemas = {
   getDesign: z.strictObject({}),
   getArchitectureContracts: z.strictObject({}),
   getArchitectureReview: z.strictObject({}),
+  getArchitectureAnnotationDraft: z.strictObject({}),
+  createTargetWorkspace: createTargetSchema,
   reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
   applyOperations: z.strictObject({
     ops: z
@@ -95,6 +100,10 @@ const descriptions: Record<ToolName, string> = {
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getArchitectureContracts:
     "Inspect project-local contract definitions, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
+  getArchitectureAnnotationDraft:
+    "Suggest editable context and responsibility annotations from explicit saved auth/resource/extension bindings. Returns an architecture draft with revision and source references. Review and edit names/responsibilities, then apply using setArchitecture. Operation names do not prove behavior. Preserve provenance and existing architecture.",
+  createTargetWorkspace:
+    "Create a separate planning target from this saved design and baseRevision, with an immutable baseline and provenance. Stable identities, pins and configuration copy; output ownership and history do not. Generation/runs are refused. Keep protected-copy by default; conceptual-replacement requires an explicit planning reason and retains the original recipe in its baseline. Cannot combine target creation with edits in the same turn. Creation commits when the turn finishes. Never copy source output or claim deployment.",
   getArchitectureReview:
     "Read requirement-based architecture review with concern groups, assumptions, linked inputs, fingerprints, completion and decisions. Save reviewRequirements and decisions using setArchitecture; preserve other metadata. Accepted decisions need context, decision/reason, consequence, linked identities and exact finding/fingerprint acknowledgements. Contradictions cannot be acknowledged away. Changed relevant inputs expire acceptance; no review supplies runtime evidence or changes Generate. Ordinary planning edits need no additional approval.",
   listArchitecturePatterns:
@@ -160,6 +169,9 @@ export class Workspace {
   /** Pattern expansion cannot be replayed over a concurrent revision. */
   patternRevisionBound = false;
   reviewRevisionBound = false;
+  annotationRevisionBound = false;
+  targetRequest: CreateTarget | undefined;
+  createdTarget: { id: string; name: string } | undefined;
   question: ChatQuestion | undefined;
   activity: ChatActivity[] = [];
 
@@ -168,6 +180,7 @@ export class Workspace {
     /** The committed design the pending edits apply to. */
     public base: DesignDocument,
     public working: DesignDocument = base,
+    private readonly projectName = "Application",
   ) {}
 
   /** Starts over from a newer committed design, dropping pending edits. */
@@ -177,6 +190,8 @@ export class Workspace {
     this.pending = [];
     this.patternRevisionBound = false;
     this.reviewRevisionBound = false;
+    this.annotationRevisionBound = false;
+    this.targetRequest = undefined;
   }
 
   /** Runs one tool call and returns its JSON result for the model. */
@@ -298,6 +313,33 @@ export class Workspace {
           patternBaseRevision: this.base.revision,
         };
       }
+      case "createTargetWorkspace":
+        if (this.pending.length || this.targetRequest)
+          return {
+            ok: false,
+            error: "Create a target in a separate turn from design edits or another creation.",
+          };
+        this.targetRequest = args;
+        this.log(tool, true, "Prepared a separate planning target from the saved source revision");
+        return {
+          ok: true,
+          prepared: true,
+          baseRevision: this.base.revision,
+          note: "The target is created atomically when this turn finishes; its link is returned after commit.",
+        };
+      case "getArchitectureAnnotationDraft":
+        if (this.pending.length)
+          return {
+            ok: false,
+            error:
+              "Save pending edits before requesting an annotation draft with saved source provenance.",
+          };
+        this.annotationRevisionBound = true;
+        this.log(tool, true, "Read editable annotation suggestions with explicit sources");
+        return {
+          architecture: suggestArchitectureAnnotations(this.working, this.projectName),
+          sourceRevision: this.base.revision,
+        };
       case "getArchitectureReview":
         this.log(tool, true, "Read architecture review and decisions");
         return {
@@ -413,6 +455,11 @@ export class Workspace {
   }
 
   private applyOperations({ ops }: { ops: OperationInput[] }) {
+    if (this.targetRequest)
+      return {
+        ok: false,
+        error: "Target creation uses the saved source. Save design edits in a separate turn.",
+      };
     const result = applyOperations(this.working, ops, this.registry, {
       allowSubtypeConfirmation: false,
     });
@@ -433,6 +480,15 @@ export class Workspace {
         result.design.architecture?.reviewRequirements)
     )
       this.reviewRevisionBound = true;
+    if (
+      ops.some(
+        (op) =>
+          op.op === "setArchitecture" &&
+          (op.architecture?.nodes?.some((n) => n.annotationOrigin) ||
+            op.architecture?.components?.some((c) => c.annotationOrigin)),
+      )
+    )
+      this.annotationRevisionBound = true;
     this.working = result.design;
     this.pending.push(...ops);
     this.log("applyOperations", true, `Prepared ${plural(ops.length, "change")}`);

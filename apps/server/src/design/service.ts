@@ -5,13 +5,19 @@ import {
   type ArchitectureProvision,
   applyOperations,
   architectureViews,
+  type CreateTarget,
+  createTargetSchema,
   type DesignDocument,
+  designSchema,
   emptyDesign,
   emptyLayout,
   type Finding,
+  isStructural,
   type LayoutDocument,
   type OperationInput,
   reviewArchitecture,
+  type TargetOrigin,
+  targetChanges,
   upgradeDesign,
   validateDesign,
 } from "@jeeves/spec";
@@ -96,6 +102,99 @@ export class DesignService {
         .insert(layouts)
         .values({ projectId: project.id, document: initial?.layout ?? emptyLayout() });
       return project;
+    });
+  }
+
+  /** A locked source read and all target rows commit together. No output/history is copied. */
+  createTarget(sourceId: string, input: CreateTarget) {
+    const parsed = createTargetSchema.parse(input);
+    return this.db.transaction(async (tx) => {
+      const source = await lockProject(tx, sourceId);
+      if (!source) return { ok: false as const, reason: "not-found" as const };
+      const current = await this.current(tx, source);
+      if (source.revision !== parsed.baseRevision)
+        return this.conflict(tx, source, parsed.baseRevision, current);
+      const [snapshot] = await tx
+        .select({ document: designRevisions.document })
+        .from(designRevisions)
+        .where(
+          and(
+            eq(designRevisions.projectId, source.id),
+            eq(designRevisions.revision, source.revision),
+          ),
+        );
+      if (!snapshot) throw new Error("Source revision snapshot is missing");
+      const baseline = designSchema.parse(snapshot.document);
+      const design = { ...upgradeDesign(baseline), revision: 0 };
+      if (parsed.recipeMode === "conceptual-replacement") delete design.recipe;
+      const findings = this.findings(design);
+      const errors = findings.filter(isStructural);
+      // Faithful recipe copies still require the original protected contract to be sound.
+      if (parsed.recipeMode === "protected-copy")
+        errors.push(...recipeFindings(design, this.registry));
+      if (errors.length) return { ok: false as const, reason: "invalid" as const, errors };
+      const target: TargetOrigin = {
+        schemaVersion: 1,
+        sourceProjectId: source.id,
+        sourceProjectName: source.name,
+        sourceRevision: source.revision,
+        capturedAt: new Date().toISOString(),
+        baseline,
+        recipeMode: parsed.recipeMode,
+        ...(parsed.reason && { reason: parsed.reason }),
+      };
+      const [project] = await tx.insert(projects).values({ name: parsed.name, target }).returning();
+      if (!project) throw new Error("insert returned no target project");
+      await tx
+        .insert(designRevisions)
+        .values({ projectId: project.id, revision: 0, document: design, findings });
+      const [layout] = await tx.select().from(layouts).where(eq(layouts.projectId, source.id));
+      await tx
+        .insert(layouts)
+        .values({ projectId: project.id, document: layout?.document ?? emptyLayout() });
+      return { ok: true as const, project };
+    });
+  }
+
+  async targetComparison(projectId: string) {
+    // Lock target while reading its revision; source drift is a separately labeled observation.
+    return this.db.transaction(async (tx) => {
+      const project = await lockProject(tx, projectId);
+      if (!project?.target) return undefined;
+      const current = await this.current(tx, project);
+      // Read identity/revision/snapshot together: concurrent source deletion can only
+      // produce a retained observation or an unavailable source, never a torn read.
+      const [source] = await tx
+        .select({
+          id: projects.id,
+          name: projects.name,
+          revision: projects.revision,
+          document: designRevisions.document,
+        })
+        .from(projects)
+        .innerJoin(
+          designRevisions,
+          and(
+            eq(designRevisions.projectId, projects.id),
+            eq(designRevisions.revision, projects.revision),
+          ),
+        )
+        .where(eq(projects.id, project.target.sourceProjectId));
+      return {
+        origin: project.target,
+        revision: project.revision,
+        proposed: current.document,
+        changes: targetChanges(project.target.baseline, current.document),
+        source: source
+          ? {
+              id: source.id,
+              name: source.name,
+              revision: source.revision,
+              drift: targetChanges(project.target.baseline, source.document),
+              revisionChanged: source.revision !== project.target.sourceRevision,
+            }
+          : null,
+      };
     });
   }
 
@@ -240,7 +339,9 @@ export class DesignService {
     id: string,
     patch: { name?: string; outputDir?: string },
   ): Promise<Project | undefined> {
-    if (Object.keys(patch).length === 0) return this.getProject(id);
+    const current = await this.getProject(id);
+    if (current?.target && patch.outputDir !== undefined) throw new PlanningWorkspaceError();
+    if (Object.keys(patch).length === 0) return current;
     const [project] = await this.db
       .update(projects)
       .set({ ...patch, updatedAt: new Date() })
@@ -280,6 +381,26 @@ export class DesignService {
       );
       if (!result.ok) return { ok: false, reason: "invalid", errors: result.errors };
 
+      if (
+        project.target?.recipeMode === "protected-copy" &&
+        current.document.recipe &&
+        (!result.design.recipe ||
+          result.design.recipe.id !== current.document.recipe.id ||
+          result.design.recipe.version !== current.document.recipe.version)
+      )
+        return {
+          ok: false,
+          reason: "invalid",
+          errors: [
+            {
+              code: "CONFIG_INVALID",
+              severity: "error",
+              message:
+                "Protected target recipe binding cannot be removed or replaced. Create an explicit conceptual replacement target instead.",
+              target: {},
+            },
+          ],
+        };
       // Protected recipe contracts are also guarded at the shared mutation boundary.
       // Allow repair of historical invalid designs, but never break a valid recipe binding.
       if (current.document.recipe && !recipeFindings(current.document, this.registry).length) {
@@ -439,7 +560,7 @@ export class DesignService {
     project: Project,
     baseRevision: number,
     current: { document: DesignDocument; findings: Finding[] },
-  ): Promise<ChangeResult> {
+  ): Promise<Extract<ChangeResult, { reason: "conflict" }>> {
     return {
       ok: false,
       reason: "conflict",
@@ -500,4 +621,14 @@ async function history(db: Db | Tx, projectId: string): Promise<History> {
   };
   const latestEdit = await newest("applied");
   return { canUndo: latestEdit !== null, canRedo: (await newest("undone")) !== null, latestEdit };
+}
+
+export class PlanningWorkspaceError extends Error {
+  readonly statusCode = 422;
+  readonly code = "PLANNING_WORKSPACE";
+  constructor() {
+    super(
+      "Target workspaces are planning only. Output ownership, generation and runs are unavailable.",
+    );
+  }
 }

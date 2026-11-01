@@ -475,3 +475,35 @@ it("chat review shares the mouse report and saves scoped decisions through the s
   expect(workspace.question).toBeUndefined();
   expect(JSON.parse(workspace.run("getArchitectureReview", "{}")).complete).toBe(true);
 });
+
+it("previews sourced editable annotations with the same semantics as mouse and bounds target creation to a separate turn", () => {
+  const before = design();
+  const workspace = new Workspace(registry, before);
+  const draft = JSON.parse(workspace.run("getArchitectureAnnotationDraft", "{}"));
+  expect(draft.architecture.components.length).toBeGreaterThan(0);
+  const op = { op: "setArchitecture" as const, architecture: draft.architecture };
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops: [op] }))).ok).toBe(true);
+  const mouse = applyOperations(before, [op], registry);
+  expect(mouse.ok).toBe(true);
+  if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
+  expect(workspace.annotationRevisionBound).toBe(true);
+  expect(
+    JSON.parse(
+      workspace.run(
+        "createTargetWorkspace",
+        JSON.stringify({ name: "Target", baseRevision: before.revision }),
+      ),
+    ).ok,
+  ).toBe(false);
+  const copy = new Workspace(registry, before);
+  expect(
+    JSON.parse(
+      copy.run(
+        "createTargetWorkspace",
+        JSON.stringify({ name: "Target", baseRevision: before.revision }),
+      ),
+    ).prepared,
+  ).toBe(true);
+  expect(JSON.parse(copy.run("applyOperations", JSON.stringify({ ops: [op] }))).ok).toBe(false);
+  expect(copy.pending).toEqual([]);
+});

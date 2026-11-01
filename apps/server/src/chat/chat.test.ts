@@ -221,6 +221,8 @@ describe("design chat", () => {
       "getDesign",
       "getArchitectureContracts",
       "getArchitectureReview",
+      "getArchitectureAnnotationDraft",
+      "createTargetWorkspace",
       "reviewSubtype",
       "applyOperations",
       "validateDesign",
@@ -891,4 +893,188 @@ it("refuses stale chat review snapshots instead of overwriting concurrent archit
   expect(
     turn.activity.some((a) => a.summary === "Review revision conflict; nothing was saved"),
   ).toBe(true);
+});
+
+it("creates a planning target through scripted chat without source edits or inherited history", async () => {
+  const h = harness([
+    {
+      toolCalls: [
+        { name: "createTargetWorkspace", arguments: { name: "Chat target", baseRevision: 1 } },
+      ],
+    },
+    { text: "Prepared the separate planning workspace." },
+  ]);
+  try {
+    const id = await h.project();
+    await h.call("POST", `/projects/${id}/operations`, { baseRevision: 0, ops: linkShortenerOps });
+    const before = await h.design(id);
+    const result = await h.chat(id, "Create a target copy");
+    expect(result.turn.status).toBe("done");
+    expect(result.turn.operationId).toBeNull();
+    expect(result.turn.reply).toContain("Planning target created:");
+    const list = (await h.call("GET", "/projects")).body.projects;
+    const target = list.find(
+      (p: { target?: { sourceProjectId: string } }) => p.target?.sourceProjectId === id,
+    );
+    expect(target).toMatchObject({
+      name: "Chat target",
+      revision: 0,
+      outputDir: null,
+      target: { sourceRevision: 1 },
+    });
+    expect((await h.design(target.id)).design.elements).toEqual(before.design.elements);
+    expect(await h.design(id)).toEqual(before);
+  } finally {
+    await h.app.close();
+  }
+});
+
+it("creates no chat target on a stale saved source revision", async () => {
+  let id = "";
+  let edited = false;
+  const scripted = withHook(
+    [
+      {
+        toolCalls: [
+          {
+            name: "createTargetWorkspace",
+            arguments: { name: "Stale chat target", baseRevision: 0 },
+          },
+        ],
+      },
+      { text: "Finish." },
+      { text: "The source changed; a fresh baseline is needed." },
+    ],
+    async (call) => {
+      if (call === 1 && !edited) {
+        edited = true;
+        await h.call("POST", `/projects/${id}/operations`, {
+          baseRevision: 0,
+          ops: [service("concurrent")],
+        });
+      }
+    },
+  );
+  const h = harness(scripted);
+  try {
+    id = await h.project();
+    const result = await h.chat(id, "Copy target");
+    expect(result.turn.operationId).toBeNull();
+    expect(
+      (await h.call("GET", "/projects")).body.projects.some(
+        (p: { name: string }) => p.name === "Stale chat target",
+      ),
+    ).toBe(false);
+    expect((await h.design(id)).design.elements.map((e) => e.id)).toEqual(["concurrent"]);
+  } finally {
+    await h.app.close();
+  }
+});
+
+it("does not replay sourced annotation drafts over concurrent edits", async () => {
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/generated-workspace.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const { suggestArchitectureAnnotations } = await import("@jeeves/spec");
+  const architecture = suggestArchitectureAnnotations({ ...base, revision: 1 });
+  let id = "",
+    edited = false;
+  const script = withHook(
+    [
+      { toolCalls: [{ name: "getArchitectureAnnotationDraft", arguments: {} }] },
+      {
+        toolCalls: [
+          {
+            name: "applyOperations",
+            arguments: { ops: [{ op: "setArchitecture", architecture }] },
+          },
+        ],
+      },
+      { text: "Save annotations." },
+      { text: "The annotation sources changed; a fresh draft is required." },
+    ],
+    async (call) => {
+      if (call === 2 && !edited) {
+        edited = true;
+        await h.call("POST", `/projects/${id}/operations`, {
+          baseRevision: 1,
+          ops: [{ op: "setNotes", id: "inventory", notes: "Concurrent note" }],
+        });
+      }
+    },
+  );
+  const h = harness(script);
+  try {
+    id = await h.project();
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: 0,
+      ops: [
+        ...base.elements.map((element) => ({ op: "addElement", element })),
+        ...base.connections.map((connection) => ({ op: "connect", connection })),
+      ],
+    });
+    const result = await h.chat(id, "Suggest annotations");
+    expect(result.turn.operationId).toBeNull();
+    expect((await h.design(id)).design.architecture).toBeUndefined();
+    expect((await h.design(id)).design.elements[0]?.notes).toBe("Concurrent note");
+  } finally {
+    await h.app.close();
+  }
+});
+
+it("saves the same sourced annotation draft as mouse, including the saved project name, in one undo step", async () => {
+  const base = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/generated-workspace.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const { suggestArchitectureAnnotations } = await import("@jeeves/spec");
+  const h = harness((request, call) => {
+    if (call === 0)
+      return { toolCalls: [{ name: "getArchitectureAnnotationDraft", arguments: {} }] };
+    if (call === 1) {
+      const result = request.items.findLast((item) => item.type === "tool-result");
+      if (result?.type !== "tool-result") throw new Error("Missing annotation preview");
+      const draft = JSON.parse(result.output);
+      return {
+        toolCalls: [
+          {
+            name: "applyOperations",
+            arguments: { ops: [{ op: "setArchitecture", architecture: draft.architecture }] },
+          },
+        ],
+      };
+    }
+    return { text: "Saved sourced, editable annotations." };
+  });
+  try {
+    const id = await h.project();
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: 0,
+      ops: [
+        ...base.elements.map((element) => ({ op: "addElement", element })),
+        ...base.connections.map((connection) => ({ op: "connect", connection })),
+      ],
+    });
+    const before = await h.design(id);
+    const result = await h.chat(id, "Suggest sourced responsibilities");
+    expect(result.turn.status).toBe("done");
+    expect(result.turn.operationId).not.toBeNull();
+    expect(result.state.design.architecture).toEqual(
+      suggestArchitectureAnnotations(before.design, "Chat test"),
+    );
+    expect(result.state.design.revision).toBe(2);
+    const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 2 });
+    expect(undone.body.design.architecture).toBeUndefined();
+  } finally {
+    await h.app.close();
+  }
 });

@@ -8,7 +8,12 @@ import {
   starterConfigSchema,
 } from "@jeeves/generator";
 import { freePort } from "@jeeves/generator/baseline";
-import { layoutSchema, operationBatchSchema, templateRefSchema } from "@jeeves/spec";
+import {
+  createTargetSchema,
+  layoutSchema,
+  operationBatchSchema,
+  templateRefSchema,
+} from "@jeeves/spec";
 import type { FastifyReply } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
@@ -98,6 +103,20 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
       }
     },
   );
+
+  app.post(
+    "/projects/:id/targets",
+    { schema: { params: projectParams, body: createTargetSchema } },
+    async (req, reply) => {
+      const result = await service.createTarget(req.params.id, req.body);
+      if (result.ok) return reply.code(201).send({ project: result.project });
+      return sendChange(reply, result);
+    },
+  );
+  app.get("/projects/:id/target", { schema: { params: projectParams } }, async (req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return (await service.targetComparison(req.params.id)) ?? notFound(reply, "Target workspace");
+  });
 
   app.post("/projects", { schema: { body: projectBody } }, async (req, reply) => {
     const project = await service.createProject(req.body.name);

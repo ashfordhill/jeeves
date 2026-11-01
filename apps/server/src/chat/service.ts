@@ -193,7 +193,8 @@ export class ChatService {
     if (!row) throw new Error("insert returned no chat turn");
     emit({ type: "turn", turn: (await this.toTurns([row]))[0] as ChatTurn });
 
-    const workspace = new Workspace(this.registry, initial.design);
+    const project = await this.design.getProject(projectId);
+    const workspace = new Workspace(this.registry, initial.design, initial.design, project?.name);
     const usage: ChatUsage = { inputTokens: 0, outputTokens: 0, known: true };
     let reply = "";
     let operationId: number | null = null;
@@ -284,6 +285,11 @@ export class ChatService {
         const committed = await this.commit(projectId, workspace);
         flushActivity(before);
         if (committed.ok) {
+          if (workspace.createdTarget) {
+            const delta = `\n\nPlanning target created: [${workspace.createdTarget.name}](/?project=${workspace.createdTarget.id}#/draw).`;
+            reply += delta;
+            emit({ type: "text", delta });
+          }
           operationId = committed.operationId;
           changed = committed.changed;
           break;
@@ -347,6 +353,31 @@ export class ChatService {
   ): Promise<
     { ok: true; operationId: number | null; changed: string[] } | { ok: false; message: string }
   > {
+    if (workspace.targetRequest) {
+      const result = await this.design.createTarget(projectId, workspace.targetRequest);
+      if (result.ok) {
+        workspace.createdTarget = { id: result.project.id, name: result.project.name };
+        workspace.log(
+          "commit",
+          true,
+          `Created planning target ${result.project.name} (${result.project.id}); source unchanged`,
+        );
+        return { ok: true, operationId: null, changed: [] };
+      }
+      if (result.reason === "conflict") {
+        workspace.reset(result.state.design);
+        return {
+          ok: false,
+          message:
+            "The source revision changed. No target was created; read the source again before preparing a new target.",
+        };
+      }
+      if (result.reason === "invalid") {
+        workspace.targetRequest = undefined;
+        return { ok: false, message: describeErrors(result.errors) };
+      }
+      throw new TurnError("Source project not found.");
+    }
     if (workspace.pending.length === 0) return { ok: true, operationId: null, changed: [] };
     for (let attempt = 0; attempt <= MAX_REBASES; attempt++) {
       const result = await this.design.edit(projectId, {
@@ -366,6 +397,14 @@ export class ChatService {
       }
       if (result.reason === "conflict") {
         const current = result.state.design;
+        if (workspace.annotationRevisionBound) {
+          workspace.reset(current);
+          return {
+            ok: false,
+            message:
+              "Annotation sources changed. Nothing was saved; read and review a new annotation draft.",
+          };
+        }
         if (workspace.reviewRevisionBound) {
           workspace.log("commit", false, "Review revision conflict; nothing was saved");
           workspace.reset(current);

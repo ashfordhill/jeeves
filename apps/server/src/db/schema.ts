@@ -13,6 +13,7 @@ import type {
   LayoutDocument,
   OperationInput,
   SubtypeReview,
+  TargetOrigin,
 } from "@jeeves/spec";
 import {
   boolean,
@@ -32,6 +33,8 @@ const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull(
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  /** Immutable planning origin; never a source FK (snapshot survives source deletion). */
+  target: jsonb("target").$type<TargetOrigin>(),
   /** Current semantic revision; the matching `design_revisions` row holds the document. */
   revision: integer("revision").notNull().default(0),
   /** Where Generate writes the template project; `null` until chosen (a default is suggested). */

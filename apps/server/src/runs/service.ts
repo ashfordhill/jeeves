@@ -162,6 +162,12 @@ export class RunService {
   async readiness(projectId: string): Promise<Readiness | undefined> {
     const project = await this.design.getProject(projectId);
     if (!project) return undefined;
+    if (project.target)
+      return {
+        outputDir: null,
+        ready: false,
+        reason: "Target workspaces are planning only; runs are unavailable.",
+      };
     const { outputDir } = project;
     if (!outputDir) {
       return {
@@ -281,6 +287,14 @@ export class RunService {
     projectId: string,
     options: { executionMode?: ExecutionMode; kind?: "initial-build" | "feature" } = {},
   ): Promise<Result<{ run: Run }>> {
+    const planning = await this.design.getProject(projectId);
+    if (planning?.target)
+      return {
+        ok: false,
+        status: 422,
+        code: "PLANNING_WORKSPACE",
+        message: "Target workspaces are planning only; runs are unavailable.",
+      };
     const readiness = await this.readiness(projectId);
     if (!readiness) return notFound("Project");
     if (!readiness.ready || !readiness.outputDir) {

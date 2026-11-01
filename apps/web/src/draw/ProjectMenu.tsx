@@ -5,6 +5,7 @@
 import { Button, Menu, Modal, TextInput, UnstyledButton } from "@mantine/core";
 import { IconChevronDown, IconPencil, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
+import { TargetCreateDialog } from "../architecture/ArchitectureTargets.tsx";
 import { api, type Project } from "./api.ts";
 import { ProjectChooser } from "./ProjectChooser.tsx";
 import { RecipeDialog } from "./RecipeDialog.tsx";
@@ -13,6 +14,7 @@ import { useDraw } from "./store.ts";
 export function ProjectMenu() {
   const project = useDraw((s) => s.loaded?.project);
   const open = useDraw((s) => s.open);
+  const [targetOpen, setTargetOpen] = useState(false);
   const [recipeOpen, setRecipeOpen] = useState(false);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -62,6 +64,7 @@ export function ProjectMenu() {
             Rename project
           </Menu.Item>
           <Menu.Divider />
+          <Menu.Item onClick={() => setTargetOpen(true)}>Create target from this design</Menu.Item>
           <Menu.Label>Projects</Menu.Label>
           {projects.map((p) => (
             <Menu.Item key={p.id} disabled={p.id === project.id} onClick={() => void open(p.id)}>
@@ -77,6 +80,7 @@ export function ProjectMenu() {
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
+      {targetOpen ? <TargetCreateDialog onClose={() => setTargetOpen(false)} /> : null}
       {chooserOpen ? <ProjectChooser onClose={() => setChooserOpen(false)} /> : null}
       <RecipeDialog opened={recipeOpen} onClose={() => setRecipeOpen(false)} />
       <Modal opened={renaming !== null} onClose={() => setRenaming(null)} title="Rename project">

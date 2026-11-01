@@ -12,6 +12,7 @@ export * from "./architecture-pattern-provenance.ts";
 export * from "./architecture-patterns.ts";
 export * from "./architecture-review.ts";
 export * from "./architecture-review-model.ts";
+export * from "./architecture-targets.ts";
 export * from "./architecture-view.ts";
 export * from "./config.ts";
 export * from "./container-display.ts";

@@ -40,9 +40,25 @@ import {
 } from "./scenarios.ts";
 
 const description = z.string().trim().max(1200).default("");
+/** Historical suggestion inputs survive edits; they are provenance, not live ownership links. */
+export const annotationOriginSchema = z.strictObject({
+  revision: z.int().nonnegative(),
+  basis: z.string().max(1200),
+  bindings: z
+    .array(
+      z.strictObject({
+        element: idSchema,
+        attachment: idSchema,
+        kind: z.enum(["accounts", "resource", "extension"]),
+        ref: idSchema.optional(),
+      }),
+    )
+    .max(100),
+});
 export const architectureNodeSchema = z.strictObject({
   id: idSchema.refine((id) => id !== "system", "The system identity is reserved"),
   kind: z.enum(["person", "external-system"]),
+  annotationOrigin: annotationOriginSchema.optional(),
   name: z.string().trim().min(1).max(120),
   description,
   /** Reuse one planned external block at C2; C1 retains the technology-free context identity. */
@@ -66,6 +82,7 @@ export const architectureComponentSchema = z.strictObject({
   element: idSchema,
   name: z.string().trim().min(1).max(120),
   responsibility: z.string().trim().max(240).default(""),
+  annotationOrigin: annotationOriginSchema.optional(),
   technology: z.string().trim().max(120).optional(),
   capability: idSchema.optional(),
   config: z.record(z.string(), z.unknown()).default({}),

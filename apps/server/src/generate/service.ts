@@ -123,6 +123,13 @@ export class GenerationService {
     if (!state || !project) {
       return { ok: false, status: 404, code: "NOT_FOUND", message: "Project not found." };
     }
+    if (project.target)
+      return {
+        ok: false,
+        status: 422,
+        code: "PLANNING_WORKSPACE",
+        message: "Target workspaces are planning only; generation is unavailable.",
+      };
     let fixedAcceptance: FixedAcceptance[] | undefined;
     const packId = input.acceptancePack?.trim();
     if (packId) {

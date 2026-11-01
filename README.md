@@ -47,6 +47,14 @@ Open **Architecture** at the lower left of Draw to explore the same design as **
 
 **Edit context** saves one undoable semantic change. Unbound system interactions remain visible intent with a warning. **Product configuration** on a QR Studio recipe edits title, tagline and the default analytics range; Save is one undo step and Cancel discards the draft. Generate applies saved configuration to the generated app. Neither form restarts a running application. Stable printed-link origins require a separate reviewed migration.
 
+**Create target from this design** in the project menu creates a separate planning workspace with
+a frozen source baseline. Current baseline / Proposed target / Changes keeps the saved topologies
+and later source drift distinct. Targets copy pins/configuration and retain recipe protection;
+an explicit conceptual replacement records a reason and its original recipe in the baseline.
+Targets cannot take an output folder, generate or start runs, and inherit no verification passes.
+**Suggest responsibility annotations** previews editable C1/C3 drafts with exact binding sources.
+See the [target workspace guide](docs/architecture-targets.md).
+
 **Inspect evidence** shows the latest recorded generation and implementation run beside the current design revision. It separates readiness stages, template conformance and application acceptance, scopes named checks to their actual service, and marks stale/different-output evidence. **Supplied & project work** describes current responsibilities. Refresh is read-only; Open Generate and Open Runs lead to the actual workflows. Stored results do not inspect current files or live deployments.
 
 These are C4-informed derived views, not a claim of production certification or automatic internal-call discovery. Custom per-view layouts, behavioral/screen views and deployment profiles remain future packages. See [P20 evidence and comparison](docs/evidence/p20/README.md).

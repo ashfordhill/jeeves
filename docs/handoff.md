@@ -3951,3 +3951,95 @@ dependency, lockfile, paid model, provisioning or live QRWTY design/application 
 Postgres/live data were retained; the single P51 fixture left by the early timeout was removed
 by its exact ID. Evidence archives and this append-only record follow the checks. Stop after
 P51 and its scoped local commit; execute P52 separately in this checkout/branch when requested.
+
+## 2026-11-01 — P52: linked current/target planning workspaces
+
+Implemented P52 only, in `/home/ash/github/jeeves` on the existing `main` branch.
+[Release evidence and seven inspected captures](evidence/p52/README.md) and the
+[workspace/annotation contract](architecture-targets.md) describe the result. P53 deployment
+planning is next, only when requested.
+
+Create target from this design captures the source project/name/revision and immutable semantic
+snapshot, preserving stable identities, exact template pins, configuration, starter provenance
+and copied layout. The new project has separate design/layout history and no inherited output
+folder, generation/run history, chat or verification passes. Source edits produce separately
+labeled baseline drift; source deletion preserves the baseline. Source identity/revision/snapshot
+are observed together, avoiding a torn read during deletion. No automatic baseline refresh occurs.
+
+Creation locks the source and inserts the target project, revision zero and layout atomically.
+The scoped planning path admits structurally valid incomplete documents with their real readiness
+findings. Ordinary executable starter/recipe creation remains strict. Structural failure, stale
+revision and an injected failure after project/revision insertion leave no orphan target. Origin
+metadata lives outside semantic operations; PATCH cannot replace it. The additive nullable
+`projects.target` migration has generated snapshot metadata and no source-project foreign key.
+
+Protected recipe copies retain their binding/configuration and protected core validation;
+removing/replacing the binding is refused. An explicit conceptual-replacement creation requires
+a reason and retains original recipe/configuration/constraints in the immutable baseline while
+omitting the active binding only in the new planning design. API/service boundaries refuse target
+output assignment, generation and runs with PLANNING_WORKSPACE before filesystem access or
+scheduling. Generator subset behavior, ownership locks and source applications are unchanged.
+
+The planning editor offers Current baseline / Proposed target / Changes. Baseline and proposed
+snapshots are separate read-only topology/reference views; the normal target remains editable
+through C1/C2/C3. Identity-based additions/removals/changes include before/after values, exact
+contract versions and separate source drift. Revision/layout alone and top-level collection order
+add no semantic noise. Saved-design facts are distinct from deployment and verification evidence.
+
+Suggest responsibility annotations previews editable actor and C3 responsibility drafts from
+explicit session-auth/resource/extension bindings. Existing groups/memberships are preserved.
+Each suggestion retains saved revision, exact binding references and its stated basis. Resource
+and extension groups need human domain naming; operation names never prove business behavior.
+Legacy session config can suggest a generic actor without inventing resource components. Fixed
+Save/Cancel, retained invalid/conflicting drafts, semantic undo/redo and reload remain available.
+Existing context/component editors show provenance and preserve it through later edits.
+
+Chat uses the same creation schema/service and pure suggestion/operation validators, including
+the actual saved project name. Target creation commits at turn completion separately from design
+edits and returns a target link. Supplied ordinary planning actions need no extra approval. Stale
+source creation saves nothing; sourced annotation snapshots refuse generic concurrent replay.
+Mouse and scripted chat annotation results match and save as one undo step.
+
+Final verification (unchanged fingerprints during each recorded run):
+
+- `pnpm work run unit packages/spec/src/architecture-targets.test.ts apps/server/src/design/architecture-targets.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts packages/generator/src/architecture.test.ts`:
+  **61 passed / 5 files**, Vitest **5.30s**, profile **5.9s**;
+  `2026-11-01T05-35-38-699Z-unit-71ca9a0f`.
+- `pnpm work run browser-preview apps/web/e2e/architecture-targets.spec.ts apps/web/e2e/architecture-review.spec.ts apps/web/e2e/architecture-authoring.spec.ts`:
+  **9 passed**, Playwright **14.4s**, profile **16.6s**;
+  `2026-11-01T05-35-38-698Z-browser-preview-3678ec06`.
+  Strict diagnostics, the narrowly registered expected creation revision conflict, axe and narrow
+  overflow checks pass. Test cleanup flushes layout before deleting the active fixture project.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **843 tests / 117 files**
+  passed, Vitest **37.09s**, profile **45.0s**;
+  `2026-11-01T05-36-11-174Z-check-87d68e18`. Biome checked **761 files**:
+  **1303 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- Opened seven **1440 × 900 light / 390 × 844 dark** production captures. Topology, source drift,
+  replacement consequences, actor/group edits and exact source references are readable; narrow
+  form bodies scroll with fixed actions. Generator compatibility preserves executable files,
+  contracts, artifacts and ownership; only the intentionally lossless snapshot retains provenance.
+- Offline Drizzle generation matched the scoped SQL exactly; generated snapshot comparison adds
+  only nullable `projects.target`. `pnpm --filter @jeeves/server exec drizzle-kit check --dialect postgresql --out ./drizzle`:
+  **Everything's fine**. The new snapshot passes Biome. Migration metadata/evidence archives and
+  this append-only record follow the full gate; no application code changed after it.
+- Read-only E2E database inspection found **zero** projects with any of the six P52 fixture names.
+  The four fixtures left by the initial test timeout were removed using their exact IDs.
+
+Interim checks corrected required generation fixture fields, synchronous validation assertions,
+legacy baseline normalization, optional raw operation input typing and mouse/chat name parity.
+Browser work corrected modal theme-toggle ordering, asynchronous redo assertions and fixture
+cleanup racing layout saves. Visual review simplified annotation fields into named groups and
+kept source references readable. The migration tool required a relative temporary output path;
+its generated SQL and snapshot were checked before inclusion. No retries, increased timeouts,
+diagnostic suppression, dependency changes or golden refresh were used. Earlier failed or
+source-changing runs are not final evidence.
+
+No material scope deviation. Baseline comparison intentionally presents saved topology and full
+semantic snapshots; deployment diagrams remain P53. Provenance records historical suggestion
+inputs, not implementation evidence. No new runtime/template/recipe, generator filtering,
+generated output/golden, dependency/lockfile, paid model call, provisioning, live qrwty design or
+application changes. Shared Postgres/live data were retained. Stop after P52 and its scoped local
+commit; execute P53 separately in this checkout/branch when requested.
+
+Final documentation validation: all **40 changed-document local link targets** resolve and
+`git diff --check` passes. The completed P52 scope is ready for its local commit.

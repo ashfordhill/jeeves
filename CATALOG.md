@@ -18,7 +18,15 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md) and [P51 evidence](docs/evidence/p51/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md), [P48 evidence](docs/evidence/p48/README.md), [P49 evidence](docs/evidence/p49/README.md), [P50 evidence](docs/evidence/p50/README.md), [P51 evidence](docs/evidence/p51/README.md) and [P52 evidence](docs/evidence/p52/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+
+P52 adds **planning targets** from any saved design: an immutable baseline, a separate editable
+model, stable-identity changes and source drift. Protected recipe copies retain constraints;
+a conceptual replacement requires an explicit planning reason and keeps the original baseline.
+Explicit auth/resource/extension bindings can suggest editable C1/C3 annotations with provenance.
+Targets inherit no output ownership, generation/run history or verification evidence; their
+APIs refuse generation and runs. No new catalog family or executable availability is added.
+See the [workspace contract](docs/architecture-targets.md).
 
 P46 adds independent **system choices** (business tenancy, authorization intent, data
 isolation and delivery model) through Edit context or system inspection. C1 shows only the

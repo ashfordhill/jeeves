@@ -187,6 +187,15 @@ export function ContextEditor({
                     changeNode(node.id, { description: event.currentTarget.value })
                   }
                 />
+                {node.annotationOrigin ? (
+                  <Text size="sm">
+                    Draft from explicit bindings at revision {node.annotationOrigin.revision}:{" "}
+                    {node.annotationOrigin.bindings
+                      .map((b) => `${b.element}/${b.attachment}/${b.kind}`)
+                      .join(", ")}
+                    . {node.annotationOrigin.basis}
+                  </Text>
+                ) : null}
                 <Button
                   size="compact-xs"
                   variant="subtle"

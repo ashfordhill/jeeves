@@ -1,10 +1,10 @@
 # C4 authoring roadmap: reusable designs ready for implementation (P46–P57)
 
-**Revised 31 October 2026 at the user's request. P46–P51 are implemented and verified; P52–P57 remain planned.**
+**Revised 31 October 2026 at the user's request. P46–P52 are implemented and verified; P53–P57 remain planned.**
 This replaces the original P46–P53 proposal retained in Git at `ee31075`. It incorporates
 [the direction review](reviews/c4-direction-review-2026-10-31.md) and
 [C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. The next implementation
-package, when execution is requested, is **P52 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md), [P50 evidence](evidence/p50/README.md) and [P51 evidence](evidence/p51/README.md).
+package, when execution is requested, is **P53 only**. See [P46 evidence](evidence/p46/README.md), [P47 evidence](evidence/p47/README.md), [P48 evidence](evidence/p48/README.md), [P49 evidence](evidence/p49/README.md), [P50 evidence](evidence/p50/README.md), [P51 evidence](evidence/p51/README.md) and [P52 evidence](evidence/p52/README.md).
 
 The outcome is an engineer using Jeeves to compose, inspect and revise a credible qrwty-sized
 SaaS architecture through C2/C3 diagrams and reusable architecture templates. The result
@@ -337,6 +337,8 @@ add `architecture-review.ts` plus focused unit/browser suites. Preserve tests fo
 **Excluded:** capacity/security certification, blanket policy defaults, auto-applying advice.
 
 ## P52 — Current and target design workspaces
+
+**Complete.** [Evidence and limits](evidence/p52/README.md); [workspace and annotation contract](architecture-targets.md).
 
 **Outcome:** evolve an existing design without changing its executable source or losing context.
 

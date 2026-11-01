@@ -8,14 +8,23 @@ import type {
   ArchitectureEvidence,
   ArchitectureReviewReport,
   ArchitectureViews,
+  CreateTarget,
   DesignDocument,
   Finding,
   LayoutDocument,
   OperationInput,
   SubtypeReview,
+  TargetChange,
+  TargetOrigin,
 } from "@jeeves/spec";
 
-export type Project = { id: string; name: string; revision: number; updatedAt: string };
+export type Project = {
+  id: string;
+  name: string;
+  revision: number;
+  updatedAt: string;
+  target?: TargetOrigin | null;
+};
 
 export type DesignState = {
   projectId: string;
@@ -456,6 +465,25 @@ export const api = {
       body: JSON.stringify({ name }),
     }).then((r) => r.project),
 
+  createTarget: (id: string, input: CreateTarget) =>
+    request<{ project: Project }>(`/projects/${id}/targets`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }).then((r) => r.project),
+  targetComparison: (id: string) =>
+    request<{
+      origin: TargetOrigin;
+      revision: number;
+      proposed: DesignDocument;
+      changes: TargetChange[];
+      source: {
+        id: string;
+        name: string;
+        revision: number;
+        revisionChanged: boolean;
+        drift: TargetChange[];
+      } | null;
+    }>(`/projects/${id}/target`),
   createProject: (name: string) =>
     request<{ project: Project }>("/projects", {
       method: "POST",

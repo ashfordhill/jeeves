@@ -18,6 +18,7 @@ import {
   MultiSelect,
   NativeSelect,
   Stack,
+  Text,
   Textarea,
   TextInput,
 } from "@mantine/core";
@@ -156,6 +157,15 @@ export function ComponentEditor({
       }
     >
       <Stack gap="md">
+        {draft.annotationOrigin ? (
+          <Text size="sm">
+            Suggested from explicit bindings at revision {draft.annotationOrigin.revision}:{" "}
+            {draft.annotationOrigin.bindings
+              .map((b) => `${b.element}/${b.attachment}/${b.kind}/${b.ref ?? ""}`)
+              .join(", ")}
+            . {draft.annotationOrigin.basis}
+          </Text>
+        ) : null}
         <TextInput
           label="Component name"
           value={draft.name}

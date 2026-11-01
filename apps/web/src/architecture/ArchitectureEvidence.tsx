@@ -9,6 +9,7 @@ import {
 import { Alert, Button, Group, NativeSelect, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
+import { useDraw } from "../draw/store.ts";
 import { useGenerate } from "../generate/store.ts";
 import "./evidence.css";
 
@@ -57,6 +58,7 @@ export function ArchitectureEvidenceDialog({
   onClose: () => void;
   onBoard: () => void;
 }) {
+  const planning = useDraw((state) => Boolean(state.loaded?.project.target));
   const [tab, setTab] = useState<"checks" | "responsibilities">("checks");
   const [scope, setScope] = useState("");
   const summary = summarizeArchitectureEvidence(evidence),
@@ -132,7 +134,7 @@ export function ArchitectureEvidenceDialog({
             >
               Open Runs
             </Button>
-            <Button color="cyan.9" onClick={openGenerate}>
+            <Button color="cyan.9" disabled={planning} onClick={openGenerate}>
               Open Generate
             </Button>
             <Button variant="default" onClick={onClose}>
@@ -143,6 +145,12 @@ export function ArchitectureEvidenceDialog({
       }
     >
       <Stack gap="md">
+        {planning ? (
+          <Alert color="blue">
+            Planning target · no output ownership or inherited evidence. Generation and runs are
+            unavailable.
+          </Alert>
+        ) : null}
         {error ? (
           <Alert color="red" title="Evidence could not refresh">
             {error}

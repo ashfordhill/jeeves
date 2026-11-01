@@ -47,6 +47,7 @@ import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { ArchitectureGraph } from "./ArchitectureGraph.tsx";
 import { ArchitectureReview } from "./ArchitectureReview.tsx";
+import { AnnotationDraft, TargetComparison } from "./ArchitectureTargets.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
 import { FocusedViews } from "./FocusedViews.tsx";
@@ -98,6 +99,8 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [apiOpen, setApiOpen] = useState(false);
   const [dataOpen, setDataOpen] = useState(false);
+  const [targetTab, setTargetTab] = useState<"baseline" | "changes">();
+  const [annotationOpen, setAnnotationOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewEditor, setReviewEditor] = useState<Pick<ReviewFinding, "editor" | "inputs">>();
   const [reviewPattern, setReviewPattern] = useState<string>();
@@ -374,6 +377,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 <Menu.Item onClick={() => setEditor("product")}>Product configuration</Menu.Item>
               ) : null}
               <Menu.Divider />
+              <Menu.Item onClick={() => setAnnotationOpen(true)}>
+                Suggest responsibility annotations
+              </Menu.Item>
               <Menu.Item onClick={() => setApiOpen(true)}>API contracts</Menu.Item>
               <Menu.Item onClick={() => setDataOpen(true)}>
                 Data responsibilities and objectives
@@ -460,9 +466,29 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           >
             Library
           </Button>
-          <GenerateButton />
+          {project.target ? <span>Planning target</span> : <GenerateButton />}
         </Group>
       </header>
+      {project.target ? (
+        <nav className="target-navigation" aria-label="Target workspace navigation">
+          <strong>Planning target</strong>
+          <Button variant="default" size="xs" onClick={() => setTargetTab("baseline")}>
+            Current baseline
+          </Button>
+          <Button
+            variant="default"
+            size="xs"
+            aria-pressed={!targetTab}
+            onClick={() => setTargetTab(undefined)}
+          >
+            Proposed target
+          </Button>
+          <Button variant="default" size="xs" onClick={() => setTargetTab("changes")}>
+            Changes
+          </Button>
+          <span>Saved design · deployment unverified</span>
+        </nav>
+      ) : null}
       {!overview && notice ? (
         <Alert
           color={notice.tone === "error" ? "red" : "blue"}
@@ -919,7 +945,11 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           <RelationshipLegend />
         </Modal>
       ) : null}
-      <GenerateDrawer />
+      {!project.target ? <GenerateDrawer /> : null}
+      {targetTab ? (
+        <TargetComparison initialTab={targetTab} onClose={() => setTargetTab(undefined)} />
+      ) : null}
+      {annotationOpen ? <AnnotationDraft onClose={() => setAnnotationOpen(false)} /> : null}
       {catalog ? (
         <CapabilityCatalog
           initialTab={catalog}

@@ -595,3 +595,20 @@ it("preserves review decisions and requirements without changing generated outpu
     "hosted-first",
   );
 });
+
+it("keeps sourced architecture annotations out of executable outputs and ownership", async () => {
+  const { suggestArchitectureAnnotations } = await import("@jeeves/spec");
+  const design = fixtureDesign("generated-workspace");
+  const before = planProject(design, templates, { projectName: "Inventory" });
+  design.architecture = suggestArchitectureAnnotations(design, "Inventory");
+  expect(design.architecture.components?.length).toBeGreaterThan(0);
+  const after = planProject(design, templates, { projectName: "Inventory" });
+  expect(after.files.filter((f) => f.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((f) => f.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((f) => f.path === "jeeves/design.json")?.contents).toContain(
+    "annotationOrigin",
+  );
+});
