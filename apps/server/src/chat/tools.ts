@@ -74,7 +74,7 @@ const descriptions: Record<ToolName, string> = {
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
-    "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
+    "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Element classification:{kind,ownership,operation} describes architectural intent independently of runtime host roles; system context has independent businessTenancy, authorization, dataIsolation and deliveryModel choices. Read their schemas from applyOperations. Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
   validateDesign: "The current findings (readiness problems) of the design, with pending edits.",
   explainFinding: "What a finding code means and how to resolve it.",
   askUser:
@@ -181,11 +181,12 @@ export class Workspace {
           availability: "planned; no runtime; blocks generation",
           capabilities: plannedCapabilities
             .filter((entry) => !scope || entry.scope === scope)
-            .map(({ id, name, scope, role, description }) => ({
+            .map(({ id, name, scope, role, architectureKind, description }) => ({
               id,
               name,
               scope,
               role,
+              architectureKind,
               description,
             })),
         };

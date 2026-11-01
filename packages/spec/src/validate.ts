@@ -1,4 +1,5 @@
 import { validateArchitecture } from "./architecture.ts";
+import { containerClassification } from "./architecture-choices.ts";
 import { checkConfig } from "./config.ts";
 import { deliveryStore } from "./delivery.ts";
 import {
@@ -163,6 +164,18 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
 
   for (const element of design.elements) {
     validateElement(element, lookup, findings);
+    const classification = containerClassification(element);
+    if (
+      classification.kind === "External system" &&
+      classification.ownership === "System responsibility"
+    )
+      findings.push(
+        finding(
+          "CONFIG_INVALID",
+          "An external system cannot be a system-owned responsibility; choose Application or Data store.",
+          { element: element.id, path: ["classification"] },
+        ),
+      );
     for (const message of localHttpPoolProblems(design, element))
       findings.push(
         finding("CONFIG_REQUIRED", message, {

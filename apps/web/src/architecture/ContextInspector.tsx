@@ -1,7 +1,8 @@
-import { type Architecture, architectureSchema, plannedCapability } from "@jeeves/spec";
+import { type Architecture, architectureSchema, isExternalResponsibility } from "@jeeves/spec";
 import { Alert, Button, Group, NativeSelect, Stack, Textarea, TextInput } from "@mantine/core";
 import { useState } from "react";
 import { useDraw } from "../draw/store.ts";
+import { SystemChoiceFields } from "./ArchitectureChoices.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
 import { TypeBadge } from "./type-style.tsx";
 
@@ -139,13 +140,19 @@ export function ContextInspector({
                 data={[
                   { value: "", label: "Separate context object" },
                   ...loaded.design.elements
-                    .filter((element) => plannedCapability(element.planned)?.role === "external")
+                    .filter(isExternalResponsibility)
                     .map((element) => ({ value: element.id, label: element.name })),
                 ]}
                 value={participant.container ?? ""}
                 onChange={(event) =>
                   editNode({ container: event.currentTarget.value || undefined })
                 }
+              />
+            ) : null}
+            {id === "system" ? (
+              <SystemChoiceFields
+                system={draft.system}
+                onChange={(system) => setDraft({ ...draft, system })}
               />
             ) : null}
             <Textarea

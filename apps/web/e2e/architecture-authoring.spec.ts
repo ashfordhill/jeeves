@@ -206,6 +206,7 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
     expect((await read()).revision).toBe(before.revision + 1);
     await page.locator(".planned-card .element-card-name").nth(1).click();
     await details.getByLabel("Default TTL (seconds)", { exact: true }).fill("999");
+    await details.getByLabel("Operation", { exact: true }).selectOption("Externally operated");
     const current = await read();
     expect(
       (
@@ -227,6 +228,10 @@ test("planned blocks and arrows are authored by mouse and a conflicting save ret
     await details.getByRole("button", { name: "Save options", exact: true }).click();
     await expect(details.getByRole("alert")).toContainText("board was reloaded");
     await expect(details.getByLabel("Default TTL (seconds)", { exact: true })).toHaveValue("999");
+    await expect(details.getByLabel("Operation", { exact: true })).toHaveValue(
+      "Externally operated",
+    );
+    expect((await read()).elements[1].classification).toBeUndefined();
     expect((await read()).elements[1].config.ttl).toBeUndefined();
     conflict.finish();
     await details.getByRole("button", { name: "Cancel", exact: true }).click();

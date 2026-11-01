@@ -18,6 +18,8 @@ import { useState } from "react";
 import { ConfigurationDialog as ArchitectureDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
 
+import { SystemChoiceFields } from "./ArchitectureChoices.tsx";
+
 const errorText = () =>
   useDraw.getState().notice?.message ??
   "The design could not be saved. Close this dialog and reopen it to review the latest version.";
@@ -117,6 +119,10 @@ export function ContextEditor({
                 system: { ...draft.system, description: event.currentTarget.value },
               })
             }
+          />
+          <SystemChoiceFields
+            system={draft.system}
+            onChange={(system) => setDraft({ ...draft, system })}
           />
           <section className="architecture-editor-section" aria-label="People and external systems">
             <Group justify="space-between">

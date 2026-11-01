@@ -356,3 +356,25 @@ it("offers projected authored C3 storage uses as scenario references", () => {
     }
   }
 });
+
+it("keeps P46 classification and independent system choices out of generated behavior", () => {
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  design.elements[0]!.classification = {
+    kind: "Application",
+    ownership: "System responsibility",
+    operation: "Externally operated",
+  };
+  Object.assign(design.architecture!.system, {
+    businessTenancy: "Organizations",
+    authorization: "Roles and permissions",
+    dataIsolation: "Dedicated infrastructure",
+    deliveryModel: "Hosted",
+  });
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.elements).toEqual(before.elements);
+  expect(after.artifacts).toEqual(before.artifacts);
+});

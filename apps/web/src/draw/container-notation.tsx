@@ -1,5 +1,5 @@
 /** Derived C2 geometry. These nodes never enter the semantic document or saved layout. */
-import { containerContext, type DesignDocument, plannedCapability } from "@jeeves/spec";
+import { containerContext, type DesignDocument, outsideSystem } from "@jeeves/spec";
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import type { BoardNode } from "./flow.ts";
 import { TemplateIcon } from "./TemplateIcon.tsx";
@@ -23,8 +23,7 @@ export function withContainerNotation(
     (node) => node.type !== "context" && node.type !== "systemBoundary",
   );
   const internal = authored.filter(
-    (node) =>
-      node.type === "element" && plannedCapability(node.data.element.planned)?.role !== "external",
+    (node) => node.type === "element" && !outsideSystem(node.data.element),
   );
   if (!internal.length && !design.architecture) return authored;
   const left = internal.length ? Math.min(...internal.map((node) => node.position.x)) - 40 : 0;
@@ -77,7 +76,7 @@ export function withContainerNotation(
   }));
   // Planned external systems also belong outside. Their authored layout is left intact.
   const outside = authored.map((node) =>
-    node.type === "element" && plannedCapability(node.data.element.planned)?.role === "external"
+    node.type === "element" && outsideSystem(node.data.element)
       ? { ...node, position: { x: right + 100, y: top + 40 + external++ * 210 }, draggable: false }
       : node,
   );

@@ -1665,3 +1665,10 @@ button.finding-btn:hover {
   gap: 10px;
   margin: 8px 0;
 }
+
+.classification-summary {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}

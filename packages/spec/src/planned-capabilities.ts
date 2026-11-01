@@ -20,6 +20,7 @@ export type PlannedCapability = {
   name: string;
   group: string;
   scope: "container" | "component";
+  architectureKind?: "Application" | "Data store" | "External system" | "Deployment infrastructure";
   role: "frontend" | "service" | "worker" | "database" | "external";
   icon: string;
   description: string;
@@ -54,12 +55,12 @@ const availability = () =>
     "A design target; deployment and failover are not implemented.",
   );
 const isolation = () =>
-  choice("tenancy", "Tenant isolation", [
-    "Owner scoped",
-    "Organization scoped",
-    "Shared public data",
-    "Dedicated per tenant",
-  ]);
+  choice(
+    "tenancy",
+    "Legacy tenancy intent",
+    ["Owner scoped", "Organization scoped", "Shared public data", "Dedicated per tenant"],
+    "Legacy combined intent only. Choose business tenancy, authorization and isolation independently in system context.",
+  );
 const capability = (
   id: string,
   name: string,
@@ -74,6 +75,16 @@ const capability = (
   name,
   group,
   role,
+  architectureKind:
+    scope === "component"
+      ? undefined
+      : id === "load-balancer"
+        ? "Deployment infrastructure"
+        : ["job-queue", "event-stream"].includes(id) || role === "database"
+          ? "Data store"
+          : role === "external"
+            ? "External system"
+            : "Application",
   icon,
   description,
   scope,
@@ -405,7 +416,7 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "Messaging",
     "service",
     "list",
-    "Buffers background work with retry and failure handling.",
+    "A named logical work queue. Broker instances and clusters belong in deployment.",
     [
       choice("ordering", "Ordering", ["Best effort", "Per key", "FIFO"]),
       number("retries", "Retry limit target", 5),
@@ -419,7 +430,7 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "Messaging",
     "service",
     "activity",
-    "Retains domain events for independent consumers and replay.",
+    "A named logical event channel for consumers and replay. Broker placement belongs in deployment.",
     [
       text("partition", "Partition key", "aggregateId"),
       number("retention", "Retention (days)", 7),
@@ -462,7 +473,7 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "Integrations",
     "service",
     "mail",
-    "Delivers transactional messages and respects recipient preferences.",
+    "An internal application for notification delivery and recipient preferences; separate from an external delivery provider.",
     [
       choice("channels", "Channels", ["Email", "Email + push", "Email + SMS + push"]),
       toggle("preferences", "Recipient preferences"),
@@ -472,11 +483,11 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
   ),
   capability(
     "billing-provider",
-    "Billing integration",
+    "Payment provider preset",
     "Integrations",
     "external",
     "credit-card",
-    "Subscriptions, billing events and entitlement synchronization.",
+    "External payment-provider preset retained with its original options; application billing policy belongs in a C3 component.",
     [
       choice("pricing", "Pricing model", [
         "Subscription tiers",
@@ -494,7 +505,7 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
     "Operations",
     "external",
     "chart-bar",
-    "Logs, metrics, traces and actionable service alerts.",
+    "Telemetry collection and alerts. Classify an owned collector as Application, or an outside monitoring product as External system.",
     [
       toggle("logs", "Structured logs"),
       toggle("metrics", "Service metrics"),
@@ -755,6 +766,115 @@ export const plannedCapabilities: readonly PlannedCapability[] = [
       text("actor", "Actor attribution", "Principal, organization, request ID"),
       number("retention", "Audit retention (days)", 365),
       choice("access", "Audit access", ["Admins only", "Organization auditors", "Internal only"]),
+    ],
+    "component",
+  ),
+  capability(
+    "entitlements-module",
+    "Entitlements & quotas",
+    "Components",
+    "service",
+    "lock",
+    "Owns plan limits, usage decisions and downgrade policy.",
+    [
+      text("limits", "Plan limits"),
+      choice("usage", "Usage counters", ["Unspecified", "Per tenant", "Per principal", "Shared"]),
+      choice("enforcement", "Limit enforcement", ["Unspecified", "Hard limit", "Soft limit"]),
+      choice("downgrade", "Downgrade policy", [
+        "Unspecified",
+        "Retain existing access",
+        "Restrict new actions",
+        "Explicit transition policy",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "abuse-module",
+    "Abuse & trust/safety",
+    "Components",
+    "service",
+    "lock",
+    "Owns destination review, quarantine and abuse-report decisions.",
+    [
+      choice("screening", "Destination screening", [
+        "Unspecified",
+        "Before publication",
+        "Continuous review",
+        "On report",
+      ]),
+      choice("quarantine", "Quarantine policy", [
+        "Unspecified",
+        "Block pending review",
+        "Review before restriction",
+      ]),
+      choice("reports", "Report handling", [
+        "Unspecified",
+        "Staff review",
+        "Automated triage and review",
+      ]),
+      choice("appeals", "Appeal handling", ["Unspecified", "Staff review", "No appeal process"]),
+    ],
+    "component",
+  ),
+  capability(
+    "custom-domains-module",
+    "Custom domains",
+    "Components",
+    "service",
+    "world",
+    "Owns domain verification, transfer and removal. TLS termination and placement also belong in deployment.",
+    [
+      choice("verification", "Ownership verification", [
+        "Unspecified",
+        "DNS challenge",
+        "HTTP challenge",
+      ]),
+      choice("certificates", "Certificate lifecycle", [
+        "Unspecified",
+        "Provider managed",
+        "Application managed",
+      ]),
+      choice("transfer", "Domain transfer", [
+        "Unspecified",
+        "Reverify new owner",
+        "Reviewed handoff",
+      ]),
+      choice("takeover", "Takeover protection", [
+        "Unspecified",
+        "Reverify before activation",
+        "Reserve until reviewed removal",
+      ]),
+    ],
+    "component",
+  ),
+  capability(
+    "data-lifecycle-module",
+    "Data lifecycle",
+    "Components",
+    "service",
+    "database",
+    "Owns export, deletion, retention and anonymization policy for application data.",
+    [
+      choice("export", "Export access", [
+        "Unspecified",
+        "Tenant owner",
+        "Authorized roles",
+        "Staff only",
+      ]),
+      choice("deletion", "Deletion policy", [
+        "Unspecified",
+        "Immediate",
+        "Retention window",
+        "Reviewed request",
+      ]),
+      text("retention", "Retention policy"),
+      choice("anonymization", "Anonymization", [
+        "Unspecified",
+        "Before aggregation",
+        "On deletion",
+        "No anonymization",
+      ]),
     ],
     "component",
   ),

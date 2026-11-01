@@ -2,8 +2,7 @@
 
 **Planning follow-through:** the [revised P46–P57 roadmap](../build-plan-c4-evolution.md)
 now incorporates this review. Package numbers and criticisms below describe the original
-P46–P53 proposal at the reviewed revision, not the replacement specification. Implementation
-has not started.
+P46–P53 proposal at the reviewed revision, not the replacement specification. P46 is complete; the roadmap tracks the remaining implementation packages.
 
 31 October 2026. Reviewed at `4683fe6`, after P45. **The direction is sound; P46–P53 should not be implemented as currently written.** Keep the shared model, scoped C3 views, planned catalog, stable identities and scenarios. Prioritize relationship semantics and reusable composition. Defer new generation behavior under the user's current instruction.
 

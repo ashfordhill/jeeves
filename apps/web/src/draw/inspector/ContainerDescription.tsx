@@ -1,6 +1,7 @@
-import type { Element } from "@jeeves/spec";
+import { classificationSchema, type Element } from "@jeeves/spec";
 import { Alert, Button, Group, Stack, Textarea } from "@mantine/core";
 import { useState } from "react";
+import { ClassificationFields } from "../../architecture/ArchitectureChoices.tsx";
 import { useEditorDraft } from "../../architecture/editor-drafts.tsx";
 import { useDraw } from "../store.ts";
 
@@ -9,12 +10,17 @@ export function ContainerDescription({ element }: { element: Element }) {
   const loaded = useDraw((state) => state.loaded)!;
   const { draft, setDraft, baseRevision, resetDraft } = useEditorDraft(
     `description:${element.id}`,
-    element.description ?? "",
+    { description: element.description ?? "", classification: element.classification },
     loaded.design.revision,
   );
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
-  const changed = draft !== (element.description ?? "");
+  const changed =
+    JSON.stringify(draft) !==
+    JSON.stringify({
+      description: element.description ?? "",
+      classification: element.classification,
+    });
   const save = async () => {
     if (useDraw.getState().loaded?.design.revision !== baseRevision) {
       setError(
@@ -23,12 +29,20 @@ export function ContainerDescription({ element }: { element: Element }) {
       return;
     }
     setSaving(true);
-    const ok = await useDraw
-      .getState()
-      .edit([{ op: "updateElement", id: element.id, description: draft }]);
+    const ok = await useDraw.getState().edit([
+      {
+        op: "updateElement",
+        id: element.id,
+        description: draft.description,
+        classification: draft.classification,
+      },
+    ]);
     setSaving(false);
     if (ok) {
-      resetDraft(draft.trim(), useDraw.getState().loaded!.design.revision);
+      resetDraft(
+        { ...draft, description: draft.description.trim() },
+        useDraw.getState().loaded!.design.revision,
+      );
       setError(undefined);
     } else setError(useDraw.getState().notice?.message ?? "Could not save description.");
   };
@@ -37,10 +51,15 @@ export function ContainerDescription({ element }: { element: Element }) {
       <Textarea
         label="Description"
         description="One-line container responsibility (up to 240 characters)."
-        value={draft}
+        value={draft.description}
         maxLength={240}
         minRows={2}
-        onChange={(event) => setDraft(event.currentTarget.value)}
+        onChange={(event) => setDraft({ ...draft, description: event.currentTarget.value })}
+      />
+      <ClassificationFields
+        element={element}
+        value={draft.classification}
+        onChange={(classification) => setDraft({ ...draft, classification })}
       />
       {error ? (
         <Alert color="red" role="alert">
@@ -51,7 +70,11 @@ export function ContainerDescription({ element }: { element: Element }) {
         <Button
           size="xs"
           color="cyan.9"
-          disabled={!changed || draft.trim().length > 240}
+          disabled={
+            !changed ||
+            draft.description.trim().length > 240 ||
+            !classificationSchema.optional().safeParse(draft.classification).success
+          }
           loading={saving}
           onClick={() => void save()}
         >
@@ -62,7 +85,10 @@ export function ContainerDescription({ element }: { element: Element }) {
           variant="default"
           disabled={!changed || saving}
           onClick={() => {
-            resetDraft(element.description ?? "", loaded.design.revision);
+            resetDraft(
+              { description: element.description ?? "", classification: element.classification },
+              loaded.design.revision,
+            );
             setError(undefined);
           }}
         >

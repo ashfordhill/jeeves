@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
+import { classificationSchema } from "./architecture-choices.ts";
 import { idSchema, templateRefSchema } from "./ids.ts";
 import { plannedConnectionSchema } from "./planned-capabilities.ts";
 import {
@@ -37,6 +38,7 @@ export type AttachmentInput = z.input<typeof attachmentSchema>;
 export const elementSchema = z.strictObject({
   id: idSchema,
   name: z.string().trim().min(1).max(120),
+  classification: classificationSchema.optional(),
   /** C4 presentation metadata; never an implementation brief. */
   description: z.string().trim().max(240).optional(),
   technology: z.string().trim().max(120).optional(),

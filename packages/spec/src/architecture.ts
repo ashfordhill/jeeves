@@ -1,5 +1,6 @@
 /** Architectural intent is semantic documentation; only explicit element bindings are executable. */
 import { z } from "zod";
+import { isExternalResponsibility, systemChoicesSchema } from "./architecture-choices.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
@@ -61,7 +62,11 @@ export const architectureComponentSchema = z.strictObject({
 export type ArchitectureComponent = z.output<typeof architectureComponentSchema>;
 export type ArchitectureMember = z.output<typeof architectureMemberSchema>;
 export const architectureSchema = z.strictObject({
-  system: z.strictObject({ name: z.string().trim().min(1).max(120), description }),
+  system: z.strictObject({
+    name: z.string().trim().min(1).max(120),
+    description,
+    ...systemChoicesSchema.shape,
+  }),
   nodes: z.array(architectureNodeSchema).max(50).default([]),
   relationships: z.array(contextRelationshipSchema).max(100).default([]),
   components: z.array(architectureComponentSchema).max(200).optional(),
@@ -99,15 +104,11 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
       );
     if (node.container) {
       const element = design.elements.find((item) => item.id === node.container);
-      if (
-        node.kind !== "external-system" ||
-        !element ||
-        plannedCapability(element.planned)?.role !== "external"
-      )
+      if (node.kind !== "external-system" || !element || !isExternalResponsibility(element))
         findings.push(
           finding(
             "CONFIG_INVALID",
-            "A context provider must bind to an existing planned external block.",
+            "A context provider must bind to an existing external responsibility.",
             { path: ["architecture", "nodes", node.id] },
           ),
         );

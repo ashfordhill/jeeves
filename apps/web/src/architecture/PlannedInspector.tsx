@@ -1,5 +1,6 @@
 import {
   type Connection,
+  classificationSchema,
   containerTechnology,
   type Element,
   plannedCapability,
@@ -9,6 +10,7 @@ import {
 import { Alert, Button, Group, NativeSelect, Stack, Textarea, TextInput } from "@mantine/core";
 import { useState } from "react";
 import { useDraw } from "../draw/store.ts";
+import { ClassificationFields } from "./ArchitectureChoices.tsx";
 import { CapabilityFields } from "./CapabilityFields.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
 import { elementFamily, TypeBadge } from "./type-style.tsx";
@@ -25,6 +27,7 @@ export function PlannedElementInspector({
   const { draft, setDraft, baseRevision, setBaseRevision } = useEditorDraft(
     `element:${element.id}`,
     {
+      classification: element.classification,
       name: element.name,
       description: element.description ?? "",
       technology: element.technology ?? "",
@@ -40,10 +43,12 @@ export function PlannedElementInspector({
     draft.name.trim().length <= 120 &&
     draft.description.trim().length <= 240 &&
     draft.technology.trim().length <= 120 &&
-    plannedConfigSchema(capability.id).safeParse(draft.config).success;
+    plannedConfigSchema(capability.id).safeParse(draft.config).success &&
+    classificationSchema.optional().safeParse(draft.classification).success;
   const changed =
     JSON.stringify(draft) !==
     JSON.stringify({
+      classification: element.classification,
       name: element.name,
       description: element.description ?? "",
       technology: element.technology ?? "",
@@ -61,6 +66,7 @@ export function PlannedElementInspector({
       {
         op: "updateElement",
         id: element.id,
+        classification: draft.classification,
         name: draft.name,
         description: draft.description,
         technology: draft.technology,
@@ -117,6 +123,11 @@ export function PlannedElementInspector({
             maxLength={120}
             onChange={(event) => setDraft({ ...draft, technology: event.currentTarget.value })}
           />
+          <ClassificationFields
+            element={element}
+            value={draft.classification}
+            onChange={(classification) => setDraft({ ...draft, classification })}
+          />
           <CapabilityFields
             capability={capability.id}
             config={draft.config}
@@ -151,6 +162,7 @@ export function PlannedElementInspector({
               disabled={saving || !changed}
               onClick={() => {
                 setDraft({
+                  classification: element.classification,
                   name: element.name,
                   description: element.description ?? "",
                   technology: element.technology ?? "",

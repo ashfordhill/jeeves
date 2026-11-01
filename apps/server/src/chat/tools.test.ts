@@ -180,3 +180,31 @@ it("rejects invented planning IDs/options and incompatible C3 atomically, then a
   });
   expect(workspace.working.elements[0]?.planned).toBeUndefined();
 });
+
+it("chat exposes architectural kinds and saves independent P46 choices through shared operations", async () => {
+  const { emptyDesign } = await import("@jeeves/spec");
+  const workspace = new Workspace(registry, emptyDesign());
+  const list = JSON.parse(workspace.run("listPlannedCapabilities", "{}")).capabilities;
+  expect(list.find((e: { id: string }) => e.id === "job-queue").architectureKind).toBe(
+    "Data store",
+  );
+  expect(list.find((e: { id: string }) => e.id === "entitlements-module")).toBeDefined();
+  const ops = [
+    {
+      op: "setArchitecture",
+      architecture: {
+        system: {
+          name: "Teams",
+          description: "",
+          businessTenancy: "Organizations",
+          dataIsolation: "Shared scoped data",
+        },
+        nodes: [],
+        relationships: [],
+      },
+    },
+  ];
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops }))).ok).toBe(true);
+  expect(workspace.working.architecture!.system).not.toHaveProperty("deliveryModel");
+  expect(workspace.working.architecture!.system.dataIsolation).toBe("Shared scoped data");
+});

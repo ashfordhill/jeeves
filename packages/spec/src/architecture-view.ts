@@ -1,6 +1,7 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
 
 import { type ArchitectureMember, componentConnections, containerContext } from "./architecture.ts";
+import { containerClassification } from "./architecture-choices.ts";
 import { containerDescription, containerTechnology } from "./container-display.ts";
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
@@ -119,7 +120,10 @@ export function architectureViews(
         id: "context:system",
         kind: "system",
         name: systemName,
-        description,
+        description:
+          intent?.system.businessTenancy && intent.system.businessTenancy !== "Unspecified"
+            ? `${description} Audience: ${intent.system.businessTenancy}.`
+            : description,
         technology: "Software system",
         support: "intent",
         acceptance: [],
@@ -177,7 +181,12 @@ export function architectureViews(
     const role = planned?.role ?? (manifest?.kind === "element" ? manifest.elementKind : undefined);
     return {
       id: elementKey(element.id),
-      kind: role === "external" ? "external-system" : role === "library" ? "binding" : "container",
+      kind:
+        containerClassification(element).kind === "External system"
+          ? "external-system"
+          : role === "library"
+            ? "binding"
+            : "container",
       name: element.name,
       description: containerDescription(element),
       technology: containerTechnology(element),

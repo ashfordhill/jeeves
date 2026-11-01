@@ -3540,3 +3540,58 @@ no live designs/applications were changed by this planning task.
 
 Next when execution is requested: **P46 only**, following the revised roadmap and C4 guide.
 Proceed sequentially; planning this sequence does not execute or complete its packages.
+
+## 2026-10-31 — P46: catalog semantics and independent system choices
+
+Implemented P46 only. [Release evidence and five inspected captures](evidence/p46/README.md)
+record the mouse/editor result. P47 interface/contract authoring is next.
+
+Added optional architectural classification, responsibility ownership and operation metadata
+separately from runtime host role. Effective defaults do not rewrite old documents; changing
+classification alone does not infer ownership. C2 notation uses logical ownership and keeps
+externally operated stores inside the system when appropriate. Infrastructure remains visible
+with a placement-pending label and cannot bind as a C1 external provider. Owned collectors can
+be represented as applications; metadata never grants new runtime/component compatibility.
+
+System context now edits business tenancy, authorization intent, isolation and delivery
+independently, with unspecified choices. C1 exposes tenant audience without technical isolation.
+The legacy combined tenancy config remains unchanged and labeled legacy intent. Four planned
+C3 families cover entitlements, abuse, domains and data lifecycle with bounded, undecided policy
+defaults. Logical queue/channel help and the catalog distinguish infrastructure and internal
+notification responsibility from outside providers. The old billing-provider ID/options are
+retained under Payment provider preset; no genuinely equivalent schemas were merged.
+
+Shared UI/chat schemas and operations preserve draft/Cancel/history/conflict behavior.
+Added focused schema/operation/host-compatibility and chat checks plus generation equality
+coverage. No runtime, recipe, dependency/lockfile, generated contract/golden or live design
+change. Classification choices are authoring metadata; new component families still block
+runtime generation. A read-only live check confirmed qrwty remains revision 17 with three
+elements and no architecture; Jeeves health was OK.
+
+Final verification (all final run fingerprints unchanged):
+
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: passed all typechecks and **758 tests / 110 files**;
+  Vitest **47.61s**, profile **56.4s**; `2026-11-01T02-34-52-324Z-check-5278d4ea`.
+  Biome checked 728 files: **687 warnings / 75 infos / no errors**.
+- `pnpm work run browser-preview apps/web/e2e/architecture-choices.spec.ts apps/web/e2e/architecture-authoring.spec.ts apps/web/e2e/architecture-examples.spec.ts`:
+  **9 passed**, Playwright **36.1s**, profile **39.2s**;
+  `2026-11-01T02-34-53-515Z-browser-preview-3b3aaa12`.
+- `pnpm work run browser-preview apps/web/e2e/container-notation.spec.ts apps/web/e2e/saas-containers.spec.ts`:
+  **8 passed**, Playwright **11.6s**, profile **13.5s**;
+  `2026-11-01T02-35-57-677Z-browser-preview-1bf7a3c2`.
+- Repeated only the two P46 flows to archive final captures after the compatibility suite
+  replaced test-results: **2 passed**, profile **9.6s**;
+  `2026-11-01T02-37-07-117Z-browser-preview-6c460564`.
+- Strict browser diagnostics, scoped expected conflicts, axe and narrow overflow checks pass.
+  Local Markdown links and `git diff --check` pass; no golden fixtures changed.
+
+Interim checks caught a new test's capitalization mismatch and invalid-input TypeScript typing;
+fixed without retries, timeout increases or diagnostic suppression. Final source review also
+separated external responsibility from infrastructure placement and kept ownership defaults
+independent of classification. Earlier source-changing runs are not final evidence. Screenshot
+review corrected summary wrapping/badge overlap and used a generic Application label for
+non-API applications. Cleaned one exact-ID orphan from the timed-out fixture; no P46 test
+projects remain. Existing shared Postgres and live project data were retained.
+
+Updated catalog, roadmap/entry pointers and agent guidance. Stop after this package; P47 is
+specified by the revised roadmap and requires its own implementation session/commit.

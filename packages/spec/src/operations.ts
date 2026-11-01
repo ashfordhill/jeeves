@@ -26,6 +26,7 @@ export const operationSchema = z.discriminatedUnion("op", [
     name: elementSchema.shape.name.optional(),
     description: elementSchema.shape.description,
     technology: elementSchema.shape.technology,
+    classification: elementSchema.shape.classification,
     /** `null` turns the element into a "needs a template" placeholder. */
     template: templateRefSchema.nullable().optional(),
     /** Replaces the whole stored config. */

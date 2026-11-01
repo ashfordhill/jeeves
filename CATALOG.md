@@ -18,7 +18,15 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies that work, including reusable architecture templates; it changes no availability below.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md) records the implemented authoring changes; all new runtime capabilities remain planned.
+
+P46 adds independent **system choices** (business tenancy, authorization intent, data
+isolation and delivery model) through Edit context or system inspection. C1 shows only the
+tenant audience. Existing combined tenancy settings remain labeled legacy intent; they do
+not populate the new choices. Container inspection also records classification, responsibility
+ownership and operation independently of runtime compatibility. An externally operated store
+can remain inside the system; an owned telemetry collector can be an application. These are
+saved design declarations, not implemented access or deployment policies.
 
 ## Availability and reuse
 
@@ -47,7 +55,7 @@ These are saved design explanations, with no new wiring or runtime availability.
 See [P45 evidence](docs/evidence/p45/README.md) for the contract and checks.
 
 C1 offerings below are compositions, not separate runtime templates.
-Optional SaaS extensions reuse [organizations](#c3-organizations), [billing](#c3-billing),
+Optional SaaS extensions reuse [entitlements](#c3-entitlements), [data lifecycle](#c3-lifecycle), [custom domains](#c3-domains), [abuse handling](#c3-abuse), [organizations](#c3-organizations), [billing](#c3-billing),
 [developer access](#c3-developer), [notifications](#c3-notifications),
 [reports](#c3-reports), [audit](#c3-audit) and [client features](#c3-screens).
 The examples demonstrate selected choices; their blocks remain planned. A component
@@ -291,7 +299,7 @@ because two blocks have the same family.
 | Offering | Availability and boundary | Reuse |
 | --- | --- | --- |
 | API gateway | Planned routing, identity boundary and rate-policy intent. | Public application APIs across C1 offerings. |
-| Load balancer | Planned routing, instance and readiness intent. | Distributes traffic across instances of one logical C2 service. |
+| Load balancer | Planned routing, instance and readiness intent. | Distributes traffic across instances of one logical C2 service. Labeled as deployment infrastructure awaiting placement; retained visibly on C2 until deployment authoring is available. |
 | Local HTTP pool | Implemented attachment for a restricted generated resource API; [documented limits](templates/local-http-pool/README.md). | Multiple local instances, with shared data; not arbitrary-service or host failover. |
 | Local execution policy | Implemented finite resource/restart/shutdown choices; [documented limits](templates/local-execution/README.md). | Compatible HTTP services; resource ceilings do not establish throughput. |
 
@@ -344,6 +352,10 @@ client feature areas. Its [study](docs/examples/qrwty-target.md) records the com
 | <a id="c3-media"></a>Media module | Planned transform, delivery and storage intent. Specific rendering, QR encoding and file correctness remain implementation or recipe behavior. | [API](#c2-application) / [worker](#c2-worker), [object storage](#c2-storage); links, QR Studio, community and social offerings. |
 | <a id="c3-integration"></a>Integration adapter | Planned provider target, retries, timeout, request/response mapping and webhook verification. | [API](#c2-application) / [worker](#c2-worker) → [third-party provider](#c2-third-party); reusable for paid SaaS, notifications and external data in all C1 offerings. |
 | <a id="c3-notifications"></a>Notifications | Planned message channels, templates and recipient preferences. | [API](#c2-application) / [worker](#c2-worker), [delivery services](#c2-integrations); community, social and resource applications. |
+| <a id="c3-entitlements"></a>Entitlements & quotas | Planned limits, usage counters, enforcement and downgrade policy, with unspecified defaults. | API/worker hosts; paid products across offerings. |
+| <a id="c3-abuse"></a>Abuse & trust/safety | Planned destination screening, quarantine, reports and appeals. | API/worker hosts; QR/link safety, distinct from community content moderation. |
+| <a id="c3-domains"></a>Custom domains | Planned ownership verification, certificate lifecycle, transfer and takeover protection. TLS placement also belongs in deployment. | API/worker hosts; links, branded workspaces and other domain-based products. |
+| <a id="c3-lifecycle"></a>Data lifecycle | Planned export access, deletion, retention and anonymization. | API/worker hosts; all offerings with retained user or business data. |
 | <a id="c3-billing"></a>Billing & plans | Planned plans, trial duration, entitlements and provider synchronization. | [API](#c2-application) / [worker](#c2-worker), [billing provider](#c2-integrations); any paid links, community or resource product. |
 | <a id="c3-organizations"></a>Organizations & members | Planned team structure, invitations and membership roles. | [API](#c2-application) / [worker](#c2-worker); team-based resource, links, community and social offerings. |
 | <a id="c3-developer"></a>Developer API & webhooks | Planned API key access, rate targets, outbound webhooks and versioning. | [API](#c2-application) / [worker](#c2-worker), [external systems](#c2-third-party); developer access to links, community or resource products. |

@@ -1,10 +1,10 @@
 # C4 authoring roadmap: reusable designs ready for implementation (P46–P57)
 
-**Revised 31 October 2026 at the user's request. Planning only; no package below is implemented.**
+**Revised 31 October 2026 at the user's request. P46 is implemented and verified; P47–P57 remain planned.**
 This replaces the original P46–P53 proposal retained in Git at `ee31075`. It incorporates
 [the direction review](reviews/c4-direction-review-2026-10-31.md) and
 [C4 modeling guidance](c4-modeling.md). P39–P45 remain complete. The next implementation
-package, when execution is requested, is **P46 only**.
+package, when execution is requested, is **P47 only**. See [P46 evidence](evidence/p46/README.md).
 
 The outcome is an engineer using Jeeves to compose, inspect and revise a credible qrwty-sized
 SaaS architecture through C2/C3 diagrams and reusable architecture templates. The result
@@ -130,6 +130,8 @@ certification campaign or regenerate/restart live qrwty.
   capability is marked implemented by completing an authoring package.
 
 ## P46 — Catalog semantics and system choices
+
+**Complete.** [Evidence and compatibility limits](evidence/p46/README.md).
 
 **Outcome:** the library helps choose the right abstraction without destructive relabeling.
 

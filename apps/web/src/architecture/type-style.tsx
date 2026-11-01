@@ -1,5 +1,6 @@
 import {
   type ArchitectureViewNode,
+  containerClassification,
   type DesignDocument,
   type Element,
   plannedCapability,
@@ -8,7 +9,7 @@ import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 
 /** Presentation only. Identity and support/verification status are separate from family. */
 export const typeStyles = {
-  api: { label: "Application API", icon: "server" },
+  api: { label: "Application", icon: "server" },
   client: { label: "Client", icon: "browser" },
   endpoint: { label: "API capability", icon: "api" },
   domain: { label: "Responsibility", icon: "puzzle" },
@@ -59,6 +60,13 @@ export function capabilityFamily(id: string): TypeFamily {
   )[capability.role];
 }
 export function elementFamily(element?: Element): TypeFamily {
+  if (element?.classification) {
+    const kind = containerClassification(element).kind;
+    if (kind === "External system") return "external";
+    if (kind === "Data store") return "data";
+    if (kind === "Application" && plannedCapability(element.planned)?.role === "external")
+      return "api";
+  }
   return element?.planned
     ? capabilityFamily(element.planned)
     : templateFamily(element?.template?.id);

@@ -211,6 +211,7 @@ function applyOne(
       if (op.config !== undefined) element.config = op.config;
       if (op.description !== undefined) element.description = op.description;
       if (op.technology !== undefined) element.technology = op.technology;
+      if (op.classification !== undefined) element.classification = op.classification;
       return;
     }
     case "upgradeTemplate": {

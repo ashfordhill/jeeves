@@ -87,6 +87,11 @@ export function CapabilityCatalog({
         Choose the responsibilities your system needs. Planned blocks have editable design options;
         runtime implementation comes later.
       </p>
+      <p className="catalog-intro">
+        Choose a logical application, data store or external system. Deployment infrastructure
+        records placement concerns; it stays inspectable on C2 until deployment authoring is
+        available. Runtime host compatibility is separate.
+      </p>
       <Button variant="default" mb="md" onClick={onStarter}>
         Use an implemented starter or recipe
       </Button>
@@ -174,6 +179,7 @@ export function CapabilityCatalog({
                   <strong>{item.name}</strong>
                   <span>{item.description}</span>
                   <small>
+                    {item.architectureKind ? `${item.architectureKind} · ` : ""}
                     {item.scope === "component"
                       ? onComponent
                         ? "Add inside selected application"

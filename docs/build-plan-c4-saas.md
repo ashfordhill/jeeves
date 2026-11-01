@@ -1,6 +1,6 @@
 # C4 authoring for SaaS: notation fidelity and catalog coverage (P39–P45)
 
-**Status: approved with recorded decisions, 2026-10-31. P39–P45 are complete. The revised planning follow-up is [P46–P57](build-plan-c4-evolution.md); its implementation has not started.**
+**Status: approved with recorded decisions, 2026-10-31. P39–P45 are complete. The revised planning follow-up is [P46–P57](build-plan-c4-evolution.md); P46 is complete and P47 is next.**
 [P39 evidence](evidence/p39/README.md), [P40 evidence](evidence/p40/README.md),
 [P41 evidence](evidence/p41/README.md), [P42 evidence](evidence/p42/README.md),
 [P43 evidence](evidence/p43/README.md), [P44 evidence](evidence/p44/README.md) and [P45 evidence](evidence/p45/README.md) record the implementations, checks and screenshots.

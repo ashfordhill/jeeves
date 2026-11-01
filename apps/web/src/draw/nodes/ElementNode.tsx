@@ -6,6 +6,7 @@
 import type { TemplateDescription } from "@jeeves/registry";
 import {
   type ConfigValues,
+  containerClassification,
   containerDescription,
   containerTechnology,
   plannedCapability,
@@ -68,6 +69,7 @@ function Chips({ chips }: { chips: Chip[] }) {
 
 export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) {
   const { element, template, attachments } = data;
+  const classification = containerClassification(element);
   const planned = plannedCapability(element.planned);
   const { zoom } = useViewport();
   const graphWidth = useStore((state) => state.width);
@@ -92,7 +94,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
 
   return (
     <article
-      className={`element-card${planned ? " planned-card" : ""}${template?.elementKind === "database" || planned?.role === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
+      className={`element-card${planned ? " planned-card" : ""}${classification.kind === "Data store" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
       data-element-id={id}
       data-overview={zoom < 0.55 && graphWidth < 600}
       data-family={elementFamily(element)}
@@ -111,7 +113,11 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
         </span>
         <div className="element-card-titles">
           <span className="element-card-stereotype">
-            {planned?.role === "external" ? "External system" : "Container"}
+            {classification.kind === "Deployment infrastructure"
+              ? "Deployment infrastructure · placement pending"
+              : classification.kind === "External system"
+                ? "External system"
+                : "Container"}
           </span>
           <span className="element-card-name">{element.name}</span>
           {!planned && template?.elementKind !== "database" ? (
@@ -136,6 +142,11 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
       <p className="container-description" title={containerDescription(element)}>
         {containerDescription(element)}
       </p>
+      {element.classification ? (
+        <span className="classification-summary">
+          {classification.kind} · {classification.ownership} · {classification.operation}
+        </span>
+      ) : null}
       {planned ? <span className="capability-status">Planned</span> : null}
       <Chips chips={cardChips(template, element.config).slice(0, 2)} />
       {attachments.length > 0 ? (
