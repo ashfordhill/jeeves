@@ -232,6 +232,9 @@ importers:
       pg-boss:
         specifier: 12.35.1
         version: 12.35.1
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
       zod:
         specifier: 4.5.4
         version: 4.5.4
@@ -245,9 +248,6 @@ importers:
       drizzle-kit:
         specifier: 0.31.11
         version: 0.31.11
-      tsx:
-        specifier: 4.23.15
-        version: 4.23.15
 
   apps/web:
     dependencies:

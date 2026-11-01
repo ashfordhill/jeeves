@@ -18,6 +18,18 @@ By maintaining a diagram-based source of truth, the goal is to reduce the amount
 
 ![](.docs/mvp-flow.gif)
 
+## Mattermost example
+
+Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
+
+<p align="center"><img src=".docs/mattermost-c1.png" width="600"/></p>
+<p align="center"><img src=".docs/mattermost-c2.png" width="600"/></p>
+<p align="center"><img src=".docs/mattermost-c3.png" width="600"/></p>
+
+```sh
+
+```
+
 ## Planned Features
 
 - A chat helper on the side to help guide C2 and C3 design decisions.
