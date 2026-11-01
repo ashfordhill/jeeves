@@ -2,9 +2,12 @@
 import type { Architecture, ArchitectureComponent } from "./architecture.ts";
 import { architectureProof } from "./architecture-proofs.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
+import { ENTERPRISE_WEB_EXAMPLE, enterpriseWebExample } from "./enterprise-web-example.ts";
 import type { LayoutDocument } from "./layout.ts";
 
+/** The first entry is the default starting design for a new Jeeves installation. */
 export const architectureExamples = [
+  ENTERPRISE_WEB_EXAMPLE,
   {
     id: "qrwty-target",
     name: "QRWTY target architecture",
@@ -44,6 +47,7 @@ export function architectureExample(id: string): {
   design: DesignDocument;
   layout: LayoutDocument;
 } {
+  if (id === ENTERPRISE_WEB_EXAMPLE.id) return enterpriseWebExample();
   return id === "qrwty-target" ? architectureProof("qrwty") : legacyArchitectureExample(id);
 }
 

@@ -508,6 +508,7 @@ export const api = {
     }).then((r) => r.project),
   listProjects: () => request<{ projects: Project[] }>("/projects").then((r) => r.projects),
 
+  deleteProject: (id: string) => request<void>(`/projects/${id}`, { method: "DELETE" }),
   renameProject: (id: string, name: string) =>
     request<{ project: Project }>(`/projects/${id}`, {
       method: "PATCH",

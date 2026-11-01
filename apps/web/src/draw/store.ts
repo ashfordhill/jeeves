@@ -18,6 +18,7 @@ import type {
 } from "@jeeves/spec";
 import { pruneArchitectureLayout } from "@jeeves/spec";
 import { create } from "zustand";
+import { createExampleProject, DEFAULT_EXAMPLE_ID } from "../architecture/create-example.ts";
 import {
   ApiError,
   api,
@@ -180,7 +181,9 @@ async function resolveProject(requested: string | undefined): Promise<Project> {
     }
   }
   const [newest] = await api.listProjects();
-  return newest ?? (await api.createProject("Untitled design"));
+  if (newest) return newest;
+  // A fresh installation opens on the default architecture study instead of an empty board.
+  return createExampleProject(DEFAULT_EXAMPLE_ID);
 }
 
 function rememberProject(id: string) {

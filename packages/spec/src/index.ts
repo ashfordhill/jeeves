@@ -23,6 +23,7 @@ export * from "./config.ts";
 export * from "./container-display.ts";
 export * from "./delivery.ts";
 export * from "./design.ts";
+export * from "./enterprise-web-example.ts";
 export * from "./evidence.ts";
 export * from "./findings.ts";
 export * from "./focused-views.ts";

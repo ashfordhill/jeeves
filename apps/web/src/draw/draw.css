@@ -1672,3 +1672,71 @@ button.finding-btn:hover {
   font-size: 12px;
   line-height: 1.4;
 }
+
+/* Project browser: searchable list of every project with open and delete. */
+.project-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.project-browser-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 55vh;
+  overflow: auto;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 10px;
+}
+.project-browser-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+.project-browser-row:last-child {
+  border-bottom: 0;
+}
+.project-browser-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--mantine-color-text);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.project-browser-open:hover:not(:disabled) {
+  background: var(--mantine-color-default-hover);
+}
+.project-browser-open:disabled {
+  cursor: default;
+}
+.project-browser-open[aria-current="true"] strong::after {
+  content: " · open";
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+}
+.project-browser-open strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.project-browser-open small {
+  font-size: 11px;
+  color: var(--mantine-color-dimmed);
+}
+.project-browser-empty {
+  padding: 16px;
+  font-size: 13px;
+  color: var(--mantine-color-dimmed);
+}

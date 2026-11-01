@@ -345,6 +345,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
+              <Menu.Label>Board</Menu.Label>
               <Menu.Item onClick={() => setFindOpen(true)}>Find object</Menu.Item>
               <Menu.Item
                 disabled={!layoutUndoable}
@@ -388,22 +389,30 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 <Menu.Item onClick={() => setEditor("product")}>Product configuration</Menu.Item>
               ) : null}
               <Menu.Divider />
-              <Menu.Item onClick={() => setAnnotationOpen(true)}>
-                Suggest responsibility annotations
-              </Menu.Item>
+              <Menu.Label>Contracts and data</Menu.Label>
               <Menu.Item onClick={() => setApiOpen(true)}>API contracts</Menu.Item>
               <Menu.Item onClick={() => setDataOpen(true)}>
                 Data responsibilities and objectives
               </Menu.Item>
-              <Menu.Item disabled={loading || !projection} onClick={() => setHandoffOpen(true)}>
-                Implementation handoff
+              <Menu.Item onClick={() => setAnnotationOpen(true)}>
+                Suggest responsibility annotations
               </Menu.Item>
+              <Menu.Divider />
+              <Menu.Label>Review and handoff</Menu.Label>
               <Menu.Item onClick={() => setReviewOpen(true)}>
                 Architecture review ({reviewReport.findings.filter((f) => !f.acceptedBy).length})
               </Menu.Item>
               <Menu.Item onClick={() => setFindingsOpen(true)}>
                 Findings ({loaded.findings.length})
               </Menu.Item>
+              <Menu.Item disabled={!currentEvidence} onClick={() => setEvidenceOpen(true)}>
+                Inspect evidence
+              </Menu.Item>
+              <Menu.Item disabled={loading || !projection} onClick={() => setHandoffOpen(true)}>
+                Implementation handoff
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Label>Deployment</Menu.Label>
               <Menu.Item
                 disabled={!design.elements.some(hasLocalDeploymentView)}
                 onClick={() =>
@@ -413,11 +422,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 Local deployment
               </Menu.Item>
               <Menu.Item onClick={() => setDeploymentPlans(true)}>Deployment plans</Menu.Item>
-              <Menu.Item disabled={!currentEvidence} onClick={() => setEvidenceOpen(true)}>
-                Inspect evidence
-              </Menu.Item>
-              <Menu.Item onClick={() => setLegendOpen(true)}>Type colors</Menu.Item>
               <ScenarioMenuItems />
+              <Menu.Divider />
+              <Menu.Item onClick={() => setLegendOpen(true)}>Type colors</Menu.Item>
               <Menu.Label>Saved revision {design.revision}</Menu.Label>
             </Menu.Dropdown>
           </Menu>

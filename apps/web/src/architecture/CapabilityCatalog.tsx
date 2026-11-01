@@ -1,6 +1,5 @@
 import { builtinRegistry } from "@jeeves/registry";
 import {
-  architectureExample,
   architectureExamples,
   architecturePatterns,
   componentCompatible,
@@ -12,11 +11,11 @@ import { Alert, Badge, Button, Group, Tabs, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
-import { api } from "../draw/api.ts";
 import { type Tool, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import { ArchitectureLibrary } from "./ArchitectureLibrary.tsx";
 import { ArchitectureProofWorkshop } from "./ArchitectureProofWorkshop.tsx";
+import { createExampleProject } from "./create-example.ts";
 import { ExampleMiniature } from "./ExampleMiniature.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
@@ -71,15 +70,7 @@ export function CapabilityCatalog({
     setError(undefined);
     try {
       await useDraw.getState().flushLayout();
-      const example = architectureExample(id);
-      const project = await api.createProject(example.name);
-      const result = await api.edit(project.id, 0, [
-        ...example.design.elements.map((element) => ({ op: "addElement" as const, element })),
-        ...example.design.connections.map((connection) => ({ op: "connect" as const, connection })),
-        { op: "setArchitecture", architecture: example.design.architecture! },
-      ]);
-      if (!result.ok) throw new Error("The example could not be saved.");
-      await api.putLayout(project.id, example.layout);
+      const project = await createExampleProject(id);
       await useDraw.getState().open(project.id);
       onClose();
     } catch (error) {

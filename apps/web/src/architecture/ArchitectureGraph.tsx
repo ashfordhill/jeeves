@@ -490,6 +490,10 @@ export function ArchitectureGraph({
       focusable: false,
       zIndex: -1,
     });
+    // When every relationship in the view is planned, the per-edge badge says nothing new; the
+    // view subtitle and the node chips still carry the planned status.
+    const modeled = projection.edges.filter((edge) => !edge.context);
+    const allPlanned = modeled.length > 0 && modeled.every((edge) => edge.planned);
     const edges: RelationEdge[] = projection.edges.map((edge) => {
       const geometry = current.edges[edge.id];
       if (!geometry) throw new Error("Architecture relationship geometry is missing.");
@@ -498,7 +502,12 @@ export function ArchitectureGraph({
         source: edge.from,
         target: edge.to,
         type: "relation",
-        data: { description: edge.description, presentation: edge, geometry, onSelect },
+        data: {
+          description: edge.description,
+          presentation: allPlanned ? { ...edge, planned: false } : edge,
+          geometry,
+          onSelect,
+        },
         style: {
           stroke: "var(--line)",
           strokeWidth: 2,

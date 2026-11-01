@@ -162,6 +162,31 @@ one deployed service or database.
 
 ## C1 system offerings
 
+### Enterprise web application
+
+**Default architecture study, editable.** The design a fresh Jeeves installation
+opens with, and the preselected choice under New project. Customers order through
+a web app; operations and finance staff work in a back-office console; one Orders
+API owns customers, catalog, orders and payment state; an order worker captures
+payments, notifies and reconciles asynchronously. Identity, payment and e-mail
+providers stay outside the system boundary. Every box is a planned capability with
+a proposed technology; nothing in it selects a runtime template.
+
+- C1: three people (customer, operations staff, finance team) and three external
+  systems with directional, labelled relationships.
+- C2: two [web clients](#c2-web), the [application API](#c2-application) and
+  [background worker](#c2-worker), a [job queue](#c2-messaging),
+  [relational store](#c2-data), [cache](#c2-cache) and [object storage](#c2-storage),
+  plus provider blocks bound to the C1 external systems. Two focused views
+  (ordering path, external providers) keep the overview readable.
+- C3: components with in-container relationships for the API (authorization,
+  customers, catalog, orders, payment events, documents, audit), the worker
+  (fulfilment jobs, payment capture, notifications, reconciliation) and both
+  clients (session, screens, API client).
+- Dynamic: "Customer places an order" and "Provider reports a payment outcome".
+- Source: `packages/spec/src/enterprise-web-example.ts`; also listed under
+  Library → Examples.
+
 ### Resource workspace
 
 **Editable starter.** A signed-in user manages owned records and related records

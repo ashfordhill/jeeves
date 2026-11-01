@@ -1,5 +1,7 @@
 # Editable architecture starters
 
+The default starting design is the **Enterprise web application** architecture study (`packages/spec/src/enterprise-web-example.ts`, listed in [CATALOG.md](../CATALOG.md#enterprise-web-application)). It is a complete C1–C3 planned design with no runtime templates; the resource workspace below is the template-backed, generatable starter.
+
 Choose **New project → Resource workspace** (or **Explore starting points** on an empty board) to create a separate project with accounts, private resources, typed forms, related records, paging and intentional C4 context. Choose a product name, tagline, visual preset and page size. Inspect resources/screens to change the actual model, then Generate with its baseline check. Supplied behavior needs no implementation model; additional business actions still need explicit contracts and implementation.
 
 A starter is a versioned, hash-verified **editable copy** of a design and layout. `startedFrom` records its origin; it does not freeze the copied resources or certify the current application. Current template capabilities, generated ownership and verification determine what is supplied. A protected [product recipe](../recipes/README.md) also supplies fixed domain implementation/acceptance and has stronger core boundaries. A blank project supplies neither.

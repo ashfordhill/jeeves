@@ -61,7 +61,7 @@ for (const example of architectureExamples) {
       ),
     ).toHaveLength(1);
     expect(views.context.nodes.filter((node) => node.kind === "external-system")).toHaveLength(
-      example.id === "qrwty-target" ? 5 : 2,
+      example.id === "qrwty-target" ? 5 : example.id === "enterprise-web" ? 3 : 2,
     );
     expect(
       views.containers.edges.every(

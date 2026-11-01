@@ -44,12 +44,12 @@ export function architectureLayoutInput(
     // Stable sorted input + seed; model-order strategy breaks sparse compound graphs in ELK 0.12.
     "elk.randomSeed": "1",
     "elk.padding": "[top=48,left=28,bottom=28,right=28]",
-    "elk.spacing.nodeNode": "48",
+    "elk.spacing.nodeNode": "64",
     "elk.spacing.edgeNode": "24",
-    "elk.spacing.edgeEdge": "24",
+    "elk.spacing.edgeEdge": "32",
     "elk.spacing.edgeLabel": "10",
-    "elk.layered.spacing.nodeNodeBetweenLayers": "28",
-    "elk.layered.spacing.edgeNodeBetweenLayers": "24",
+    "elk.layered.spacing.nodeNodeBetweenLayers": "72",
+    "elk.layered.spacing.edgeNodeBetweenLayers": "40",
     "elk.layered.mergeEdges": "false",
   };
   const nodes = [...projection.nodes].sort(compare);

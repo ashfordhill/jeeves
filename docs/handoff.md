@@ -4550,3 +4550,49 @@ Stop after P57 and its scoped local commit on `main`; do not start the separate 
 
 Final document validation: **218 changed-document local file targets** resolve, all
 **526,137 earlier handoff bytes** are preserved, and `git diff --check` passes.
+
+## 2026-11-01 — UX: enterprise web application default project and project housekeeping
+
+User-directed UX pass outside the P-package sequence, in the primary checkout on `main`.
+Goal: a proper enterprise web application example at C1/C2/C3 as the default project, and
+less clutter in the editor shell. No runtime, template, generation or unit-test work.
+
+Built:
+
+- `packages/spec/src/enterprise-web-example.ts`: the **Enterprise web application** study
+  (`enterprise-web`), first entry in `architectureExamples`. Three people, three external
+  systems, eleven planned C2 containers with labelled protocols, 19 C3 components with
+  in-container relationships across the API, worker and both clients, two dynamic scenarios
+  and two focused C2 views. The examples test now allows three external context systems for it.
+- `apps/web/src/architecture/create-example.ts`: one shared "create project from example"
+  path used by Library → Examples, the project chooser and the first-open default. A fresh
+  installation (no projects) now opens on this study instead of an empty "Untitled design".
+- Project chooser: new first, preselected **Architecture study** choice with a study select
+  (all examples); four-column cards with a narrow-width fallback.
+- Project menu: shows the eight most recent projects plus **All projects…**, a searchable
+  browser (`ProjectBrowser.tsx`) with inline confirm-and-delete; `api.deleteProject` added
+  over the existing DELETE route. Deleting the open project switches to the newest other one.
+- Editor actions menu grouped under Board / Contracts and data / Review and handoff /
+  Deployment / Dynamic scenarios, with Type colors last.
+- Relationship labels drop the per-edge "Planned" badge when every modeled (non-context)
+  relationship in a view is planned; node chips and view text still carry the status.
+- ELK spacing widened (node 64, edge 32, between layers 72/40) for focused and C3 views.
+- CATALOG.md C1 entry and starters/README pointer.
+
+Checks: `vitest run packages/spec/src/architecture-examples.test.ts packages/spec/src/architecture.test.ts`
+(11 passed), `pnpm --filter @jeeves/web --filter @jeeves/spec typecheck` (clean),
+`biome check . --diagnostic-level=error` (no errors). The full `pnpm check` and E2E suites were
+not run at the user's instruction (UX first, tests later). Live verification: the study was
+created through the real API as project `dd45f916-e0ea-4152-aadf-bdbaaedc807e` ("Orders
+platform") and inspected at C1, C2 (whole and focused), C3, the browser and the chooser.
+
+Known issues / next:
+
+- The live database holds 622 leftover E2E projects (E2E *, Restart check, axe, Shot/Shots).
+  Bulk deletion was blocked by the agent's permission policy; delete them from All projects…
+  or with a scripted DELETE by ID. Root cause (specs not cleaning up) is not fixed.
+- The whole-system C2 view uses authored card positions with midpoint edge labels, so dense
+  designs still overlap labels; focused views and C3 use ELK and read cleanly. Routing the
+  whole-system view through ELK with saved overrides is the next UX step.
+- Template-backed projects still show one C3 component per REST operation unless they declare
+  components; the C4 guidance says components are responsibilities, not endpoints.

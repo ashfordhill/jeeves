@@ -1,3 +1,4 @@
+import { architectureExamples } from "@jeeves/spec";
 import {
   Alert,
   Badge,
@@ -16,18 +17,21 @@ import {
   IconPencil,
   IconQrcode,
   IconServer,
+  IconSitemap,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
+import { createExampleProject, DEFAULT_EXAMPLE_ID } from "../architecture/create-example.ts";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { type ArchitectureStarter, api, type ProductRecipe, type Project } from "./api.ts";
 import { useDraw } from "./store.ts";
 import "./project-chooser.css";
 
-type Choice = "resource" | "recipe" | "blank";
+type Choice = "study" | "resource" | "recipe" | "blank";
 /** A separate project, with the ownership of each starting point explained before creation. */
 export function ProjectChooser({ onClose }: { onClose: () => void }) {
-  const [choice, setChoice] = useState<Choice>("resource");
-  const [name, setName] = useState("My workspace");
+  const [choice, setChoice] = useState<Choice>("study");
+  const [study, setStudy] = useState<string>(DEFAULT_EXAMPLE_ID);
+  const [name, setName] = useState("Orders platform");
   const [tagline, setTagline] = useState("Inventory, without the busywork.");
   const [qrTagline, setQrTagline] = useState("One link. Room to change.");
   const [preset, setPreset] = useState<"midnight" | "paper">("midnight");
@@ -74,9 +78,12 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
   }, [attempt]);
   const starter = catalog?.starters.find((item) => item.id === "resource-workspace");
   const recipe = catalog?.recipes.find((item) => item.id === "qr-studio");
+  const example = architectureExamples.find((item) => item.id === study);
   const allowed =
     !!name.trim() &&
-    (choice === "blank" || (choice === "resource" ? !!starter : !!recipe && !!qrTagline.trim()));
+    (choice === "blank" ||
+      choice === "study" ||
+      (choice === "resource" ? !!starter : !!recipe && !!qrTagline.trim()));
   const create = async () => {
     if (!allowed || busy.current) return;
     busy.current = true;
@@ -85,6 +92,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
     try {
       let project: Project;
       if (choice === "blank") project = await api.createProject(name.trim());
+      else if (choice === "study") project = await createExampleProject(study, name.trim());
       else if (choice === "resource" && starter)
         project = await api.createFromStarter(
           name.trim(),
@@ -143,6 +151,14 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
           {(
             [
               {
+                id: "study",
+                icon: <IconSitemap size={24} />,
+                title: "Architecture study",
+                kind: "C1–C3 design, editable",
+                description:
+                  "A complete enterprise web application: people, containers, components and journeys.",
+              },
+              {
                 id: "resource",
                 icon: <IconLayoutDashboard size={24} />,
                 title: "Resource workspace",
@@ -199,7 +215,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
             </Stack>
           </Alert>
         ) : null}
-        {loading && choice !== "blank" ? (
+        {loading && choice !== "blank" && choice !== "study" ? (
           <Group role="status">
             <Loader size="sm" /> Loading starting architectures…
           </Group>
@@ -212,7 +228,26 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
             required
             onChange={(event) => setName(event.currentTarget.value)}
           />
-          {choice === "resource" && starter ? (
+          {choice === "study" ? (
+            <>
+              <NativeSelect
+                label="Study"
+                value={study}
+                data={architectureExamples.map((item) => ({ value: item.id, label: item.name }))}
+                onChange={(event) => setStudy(event.currentTarget.value)}
+              />
+              {example ? (
+                <>
+                  <Text size="sm">{example.description}</Text>
+                  <Text size="xs" c="dimmed">
+                    {example.useCases}. Every box is a planned capability with a proposed
+                    technology; rename, remove or reconnect any of them. Generation needs templates,
+                    which a study does not select.
+                  </Text>
+                </>
+              ) : null}
+            </>
+          ) : choice === "resource" && starter ? (
             <>
               <Group gap="xs">
                 <Badge variant="light" color="cyan">
