@@ -4858,3 +4858,51 @@ The user's README was edited and staged concurrently. Both its working copy and 
 are preserved; the scoped commit excludes it. No GitHub push, generation expansion or capacity
 claim. Dense whole-system diagrams still require zoom or focused views; this pass reduces UI
 noise without pretending an arbitrary large architecture can be legible at every zoom level.
+
+## 2026-11-01 — REPO3: publish a self-contained Jeeves Docker image
+
+The user requested an image built/published from main, a two-command run path, and Mattermost
+on first launch. They authorized pushes to main and chose a public image with a private source
+repository. Root README edits are limited to the two commands in their existing shell block.
+
+- Added an Alpine/Node 24 multi-stage image containing the production web build, API, PostgreSQL
+  17 and nginx. Moved the existing pinned tsx dependency into server production dependencies.
+  Workspace paths, template scaffolds and release artifacts remain available at runtime.
+- One named `/data` volume retains the database, settings/library and generated project folders.
+  Automatic migrations and the existing empty-install Mattermost flow require no manual setup.
+  Database and API remain bound to container loopback; the documented host port is also loopback.
+- Added an entrypoint with database readiness, process failure detection and ordered shutdown.
+  Postgres, API and nginx run unprivileged; startup adjusts persistent-directory ownership.
+  Nginx serves the built UI and streams API responses without proxy buffering. Health checks
+  exercise the API/database through the public container port.
+- Adapted automation-pitch's GHCR workflow, with pinned actions, AMD64/ARM64 builds, cache and
+  commit tags. Normal pushes to main and manual main runs publish a commit image. Only a candidate
+  that starts and restarts successfully is promoted to latest; concurrent builds are serialized.
+- Added docs/docker.md for persistence, updates, separate database configuration, image publication
+  and operational limits. The image does not include a Docker daemon for generated applications.
+  Public package visibility needs the owner's one-time GitHub web setting after first publication;
+  the supported Packages API and current gh session cannot change that setting.
+
+Validation before pushing this completion:
+
+- `docker build --progress=plain -t jeeves:repo3 .`: passed, including frozen production dependency
+  installation and the production web build (existing large-chunk advisory only).
+- `pnpm lint`: passed, 798 files; zero errors, 1995 warnings / 75 infos.
+- `pnpm typecheck`: passed across all workspaces and scripts. No unit/E2E suites or test maintenance.
+- Temporary real-browser inspection against the image on port 4320: fresh installation creates
+  exactly one Mattermost project with seven containers and twelve components. C2, C3 and Deployment
+  render; zero page errors. Screenshots stay in /tmp. No development database was used or changed.
+- Container health is healthy; UI returns 200 with no-cache, invalid API route returns JSON 404.
+  Process inspection confirms the API/nginx and Postgres run as non-root users.
+- Restart preserves project ID/name, revision and the entire design. Terminating the API makes
+  the container exit 1 and stop Postgres cleanly. Recreating the container on the same volume
+  preserves the edited project and a settings-file marker. A fresh browser reopens that project
+  without creating another example.
+- Bash syntax, parsed workflow YAML and scoped diff checks pass. The initial nginx stderr
+  permission problem was corrected and verified before this completion.
+
+The user's documentation commit edeb2df picked up the initial Docker scaffold during work.
+Preserved that commit and cancelled its incomplete first workflow run (41352127268); this follow-up
+contains the validated startup fixes and latest promotion guard. Publication and anonymous pull
+are verified after pushing this commit, using GitHub Actions and the owner's package visibility
+setting. The user's separate README prose edits remain outside this package commit.

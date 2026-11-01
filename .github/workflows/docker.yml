@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -35,7 +36,6 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=latest
             type=sha,format=long
 
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
@@ -60,3 +60,9 @@ jobs:
           curl --fail http://127.0.0.1:4300/ --output /dev/null
           docker restart --timeout 30 jeeves-smoke
           curl --fail --retry 30 --retry-delay 2 --retry-all-errors http://127.0.0.1:4300/api/health
+
+      - name: Publish latest after startup checks pass
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+          DIGEST: ${{ steps.image.outputs.digest }}
+        run: docker buildx imagetools create --tag "$IMAGE:latest" "$IMAGE@$DIGEST"

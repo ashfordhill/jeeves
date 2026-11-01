@@ -27,7 +27,8 @@ Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 <p align="center"><img src=".docs/mattermost-c3.png" width="600"/></p>
 
 ```sh
-
+docker pull ghcr.io/ashfordhill/jeeves:latest
+docker run -d --name jeeves --restart unless-stopped --stop-timeout 30 -p 127.0.0.1:4300:4300 -v jeeves-data:/data ghcr.io/ashfordhill/jeeves:latest
 ```
 
 ## Planned Features

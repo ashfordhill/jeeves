@@ -54,7 +54,7 @@ fi
 su-exec node node --import ./apps/server/node_modules/tsx/dist/loader.mjs \
   apps/server/src/main.ts &
 api_pid=$!
-su-exec node nginx -g 'daemon off;' &
+su-exec node nginx -e stderr -g 'daemon off;' &
 web_pid=$!
 
 # Any failed service stops the container so Docker's restart policy can recover it.
