@@ -9,7 +9,7 @@ Jeeves is built one section or improvement package at a time (PLAN.md §15). For
 
 The improvement-package ordering in `docs/improvements.md` supersedes the historical S14-next sequence.
 
-Work sequentially in the current checkout and branch. The user is running one agent at a time on Jeeves; do not create additional worktrees or branches, or delegate to other agents, unless the user changes that instruction. Keep committing completed packages locally.
+Work sequentially in the primary checkout, `/home/ash/github/jeeves`, on `main`. If a session starts in a Codex worktree, inspect its local changes and switch work to the primary checkout before implementation; preserve any unique work. The user is running one agent at a time on Jeeves; do not create additional worktrees or branches, or delegate to other agents, unless the user changes that instruction. Keep committing completed packages locally on `main`.
 
 ## Architecture work
 

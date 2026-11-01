@@ -4203,3 +4203,50 @@ checkout/branch when requested.
 
 Final documentation validation: all **131 changed-document local link targets** resolve,
 earlier handoff bytes are preserved, and `git diff --check` passes. P54 is ready for its local commit.
+
+## 2026-11-01 — P55: prerequisite review, implementation pending
+
+Reviewed the requested P55 package, PLAN §1–§15, C4 modeling guidance, the direction
+review, and the latest handoff before changing code. This checkout ends at
+`aa3d2d5` (`P51: add requirement-based architecture review and decisions`);
+`git log -8 --oneline` confirms P52–P54 are absent. P55 explicitly depends on
+P50 and P54 in `docs/build-plan-c4-evolution.md`. The current
+`packages/spec/src/scenarios.ts` implements P45's ordered relationship steps;
+P54's alternatives, outcomes and client journey references are not present.
+
+PLAN §15 requires preceding acceptance checks to pass and says to stop rather
+than guess when the plan blocks implementation. Asked the user whether to make
+an explicit sequencing exception and implement P55 against the current model,
+with its existing scenario schema, or complete P52–P54 first. No answer had
+arrived when this entry was written. No implementation, dependency, catalog,
+runtime, live project or generated output changed. Checks were limited to
+read-only Git/source/document inspection; no test suite ran because no code
+changed. This records an incomplete package, not release evidence; no completed
+P55 commit was created. Resume with the user's scope decision in this checkout
+and branch, without creating worktrees or delegating.
+
+
+## 2026-11-01 — Restore the primary main checkout
+
+The preceding P55 prerequisite note describes the stale detached worktree
+`/home/ash/.codex/worktrees/8f48/jeeves`, not the primary repository. On the
+user's request, inspected all registered worktrees, branches, local changes and
+recent history. P52 (`197c568`), P53 (`2b8b6f2`) and P54 (`3fead3d`) are already
+committed sequentially on `main` in `/home/ash/github/jeeves`. Their completed
+handoffs and evidence are present there; no merge, cherry-pick or prerequisite
+reimplementation is necessary.
+
+Both Codex worktrees point to P51. The `a136` worktree is clean, with no ignored
+or untracked files. The only change in `8f48` is the preceding note, preserved
+verbatim above before removal. The user authorized consolidating local work on
+`main` and leaving Codex worktrees. Updated AGENTS.md to require the primary
+checkout and `main`, preserving the one-agent, sequential-package policy.
+P55 remains the requested next package; its prerequisites are satisfied in this
+checkout. Validation and worktree removal results follow below.
+
+Both stale worktrees were removed with ordinary `git worktree remove`, without
+force. `git worktree list` now reports only `/home/ash/github/jeeves` on `main`.
+`VITEST_MAX_WORKERS=4 pnpm work run check` passed: all typechecks and **889 tests
+/ 118 files**, Vitest **38.73s**; run
+`2026-11-01T16-18-28-953Z-check-97126211`. No implementation or dependency changed.
+`git diff --check` passes. Commit this recovery separately from P55.
