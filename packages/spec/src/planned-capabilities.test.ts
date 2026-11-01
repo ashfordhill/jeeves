@@ -27,7 +27,7 @@ describe("planned architecture authoring", () => {
         ],
         testLookup,
       );
-      expect(result.ok).toBe(true);
+      expect(result.ok, JSON.stringify(result)).toBe(true);
       if (!result.ok) return;
       expect(result.design.revision).toBe(1);
       expect(result.findings.filter(isStructural)).toEqual([]);

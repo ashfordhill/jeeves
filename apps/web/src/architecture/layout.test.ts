@@ -1,7 +1,12 @@
 import type { ArchitectureProjection, ArchitectureViewNode } from "@jeeves/spec";
 import ELK from "elkjs/lib/elk.bundled.js";
 import { describe, expect, it } from "vitest";
-import { architectureGeometry, architectureLayoutInput, type Box } from "./layout.ts";
+import {
+  architectureBounds,
+  architectureGeometry,
+  architectureLayoutInput,
+  type Box,
+} from "./layout.ts";
 
 const card = (
   id: string,
@@ -148,4 +153,24 @@ describe("derived architecture layout", () => {
       architectureGeometry({ id: "root", edges: [{ id: "bad", sources: ["a"], targets: ["b"] }] }),
     ).toThrow("incomplete");
   });
+});
+
+it("fits labels and routed bends beyond card/scope bounds without changing layout geometry", () => {
+  const geometry = {
+    nodes: { api: { x: 0, y: 0, width: 252, height: 188 } },
+    scope: { x: -10, y: -10, width: 280, height: 220 },
+    edges: {
+      use: {
+        points: [
+          { x: 0, y: 20 },
+          { x: -90, y: 220 },
+        ],
+        label: { x: 270, y: -80, width: 240, height: 80 },
+      },
+    },
+  };
+  const before = structuredClone(geometry);
+  expect(architectureBounds(geometry)).toEqual({ x: -90, y: -80, width: 600, height: 300 });
+  expect(geometry).toEqual(before);
+  expect(architectureBounds({ nodes: {}, edges: {} })).toEqual({ x: 0, y: 0, width: 1, height: 1 });
 });

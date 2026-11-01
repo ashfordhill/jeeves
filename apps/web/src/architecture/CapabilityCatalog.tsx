@@ -14,6 +14,7 @@ import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api } from "../draw/api.ts";
 import { type Tool, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { ExampleMiniature } from "./ExampleMiniature.tsx";
 import { capabilityFamily, templateFamily, typeStyles } from "./type-style.tsx";
 
 export function CapabilityCatalog({
@@ -202,16 +203,7 @@ export function CapabilityCatalog({
           <div className="catalog-examples">
             {architectureExamples.map((example) => (
               <article key={example.id} className="catalog-example" data-accent={example.accent}>
-                <div className="example-miniature" aria-hidden>
-                  <span>Client</span>
-                  <i>→</i>
-                  <span>API</span>
-                  <i>→</i>
-                  <span>Data</span>
-                  <span>Cache</span>
-                  <span>Jobs</span>
-                  <span>Worker</span>
-                </div>
+                <ExampleMiniature id={example.id} />
                 <h3>{example.name}</h3>
                 <p>{example.description}</p>
                 <small>{example.useCases}</small>

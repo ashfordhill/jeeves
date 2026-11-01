@@ -48,6 +48,11 @@ test("actual starter routes reserve labels and inspection preserves semantic dat
     const levels = page.getByRole("navigation", { name: "Architecture levels" });
     await levels.getByRole("button", { name: /Components/ }).click();
     await page.getByLabel("Component container").selectOption("inventory");
+    // This route/geometry check intentionally inspects the full technical projection.
+    await page.getByRole("button", { name: "Editor actions", exact: true }).click();
+    await page
+      .getByRole("menuitemcheckbox", { name: "Show technical components", exact: true })
+      .click();
     await clearRelationships(page);
     await expect(page.locator(".architecture-card")).toHaveCount(6);
     await expect(page.locator(".architecture-relation-label")).toHaveCount(2);
@@ -125,6 +130,10 @@ test("unavailable worker offers Retry and a real QR component scope renders inde
       .click();
     await inspectObject(page, "container:qrwty");
     await page.getByRole("button", { name: "Open components", exact: true }).click();
+    await page.getByRole("button", { name: "Editor actions", exact: true }).click();
+    await page
+      .getByRole("menuitemcheckbox", { name: "Show technical components", exact: true })
+      .click();
     await clearRelationships(page);
     await expect(page.locator(".architecture-card")).toHaveCount(13);
     await expect(page.locator(".architecture-relation-label")).toHaveCount(2);

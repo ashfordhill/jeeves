@@ -3243,3 +3243,78 @@ Next: **P43**, QRWTY SaaS target architecture example and existing example refre
 Current examples are unchanged. Page-flow routing, generated component behavior and
 chat-library awareness remain separate. Continue the current-branch, one-agent,
 scoped-local-commit policy; no runtime expansion or live adoption is implied.
+
+## 2026-10-31 — P43: QRWTY target architecture and example refresh
+
+Completed [P43](build-plan-c4-saas.md#p43--qrwty-target-architecture-example-and-example-refresh)
+on the existing `main` checkout, starting clean at `39f86cd`. Read AGENTS, PLAN §15,
+the latest handoffs and approved C4 decisions. One agent, sequential work, no branches,
+worktrees, delegation or repeated external research.
+
+Added **QRWTY target architecture** as a separate editable library example: fourteen
+planned C2 blocks, the six requested C1 participants and nineteen authored responsibilities
+across API (8), redirect (2), worker (3), owner web app (5) and admin console (1). Teams,
+billing, developer access, CDN, analytical storage and e-mail/payment providers are
+explicit planning boundaries. The destination is followed by the visitor browser;
+there is no redirect-service fetch. The three existing studies now have descriptions,
+technology, verb/protocol labels, identity, billing, e-mail, CDN and observability,
+within thirteen/fourteen/fifteen blocks. Community includes subscription delivery;
+Social includes mobile API/offline responsibilities. Miniatures derive their actual
+nodes/edges from each composition. CATALOG.md and the [target study](examples/qrwty-target.md)
+record reusable boundaries and proposed choices.
+
+A small optional external context-to-block binding avoids duplicate providers at C2,
+with semantic validation, Save/Cancel, undo and reload on the existing inspector. It
+reuses directed connections by identity, survives renames and retains context when a
+block is removed. Corrected incoming declared C3 uses for queue/provider delivery.
+Desktop fitting retains C4 detail; C3 data neighbours are cylinders; text uses whole
+lines and narrow title growth is bounded. C2 labels can use full fitted bounds and
+the lower zoom floor fits larger narrow studies. C1/C3 camera fitting now includes
+labels and routed bends through a presentation-only extent. These supporting changes
+complete the example checklist without generating behavior or persisting derived geometry.
+
+Verification and all **53 inspected captures** are in [P43 evidence](evidence/p43/README.md):
+
+- Final **`pnpm work run browser-preview`** command there lists eleven suites:
+  **50 tests passed**, Playwright **56.3s** / profile **58.1s**, no retries, strict
+  diagnostics, unchanged fingerprints; `2026-11-01T00-19-13-368Z-browser-preview-eb355ccc`.
+  All four examples are created from the library by mouse, leaving their seed projects
+  empty, and traverse C1/C2/every authored C3. New checks cover actual miniature counts,
+  visible desktop notation, C3 data cylinders, fitted cards and relationship labels,
+  no narrow page overflow, planned atomic creation and persistent editable options.
+  Target team options cover Cancel/Save/undo/redo/reload; provider binding covers
+  Cancel/Save/undo/reload. Every captured diagram passes axe. Existing technical
+  projections, worker failure/retry, pins, retained conflicts, placement, operation
+  uniqueness, drawing and scripted chat pass.
+- **`pnpm work run check` → `pnpm check` passed**, **43.6s**, unchanged fingerprints;
+  `2026-11-01T00-20-14-035Z-check-028cd425`. All workspace/script typechecks pass;
+  **736 tests / 107 files**, Vitest **36.55s**; Biome **716 files**, **643 warnings /
+  75 infos / no errors**. Tests cover complete bounded example metadata, planned
+  generation blocking, independent copies, provider binding rejection/reuse/removal/
+  renaming, incoming C3 direction and camera bounds beyond cards. Generator golden/
+  ownership checks pass with no fixture edits. Focused unit/type checks also passed.
+- Reviewed all 53 final captures in five contact sheets and representative target
+  views at full size: **1440 × 900 light** and **390 × 844 dark**. Narrow views are
+  fitted overviews; mouse zoom/selection opens details. `git diff --check` and local
+  documentation links checked before commit. Only evidence/screenshot copies and
+  this handoff changed after final gates.
+- Interim evidence retains corrected catalog ID, C2 label crowding, hidden desktop
+  detail, narrow edge-label clipping and partial text lines. The first full check
+  received SIGTERM during unit execution after typechecking; the final run completed.
+  Two old layout tests now explicitly enable P42's default-off technical nodes,
+  preserving their full-projection assertions. A later run passed 49/50 and caught
+  the existing placement test racing its first saved card and reusing its ID; it
+  now waits for each visible card before the next gesture. No timeout/retry increase
+  or diagnostic suppression; final gates ran sequentially.
+
+No live QRWTY, template/runtime/recipe/generator implementation/output, dependency pin,
+lockfile or golden edits. All example blocks remain planned and block generation.
+Provider identity binding and the small rendering/camera corrections extend the
+existing surfaces to meet P43's checklist; no new runtime behavior. Removed **50**
+exact-name/session-time E2E projects and **132** session-created temporary E2E settings/
+output directories. No session projects remain; retained pre-existing data/logs/shared
+Postgres. Existing Jeeves health on 4310 remains OK.
+
+Next: **P44**, design-assistant awareness of the completed planning library, followed
+by P45 dynamic scenarios. No chat support, page routing or live adoption is implied.
+Continue current-branch, one-agent, scoped local commits.

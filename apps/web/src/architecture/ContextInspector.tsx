@@ -1,4 +1,4 @@
-import { type Architecture, architectureSchema } from "@jeeves/spec";
+import { type Architecture, architectureSchema, plannedCapability } from "@jeeves/spec";
 import { Alert, Button, Group, NativeSelect, Stack, Textarea, TextInput } from "@mantine/core";
 import { useState } from "react";
 import { useDraw } from "../draw/store.ts";
@@ -27,9 +27,10 @@ export function ContextInspector({
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
   const id = selected.replace(/^context:/, "");
-  const node = id === "system" ? draft.system : draft.nodes.find((item) => item.id === id);
+  const participant = draft.nodes.find((item) => item.id === id);
+  const node = id === "system" ? draft.system : participant;
   const edge = draft.relationships.find((item) => item.id === relationship);
-  const editNode = (patch: { name?: string; description?: string }) =>
+  const editNode = (patch: { name?: string; description?: string; container?: string }) =>
     setDraft(
       id === "system"
         ? { ...draft, system: { ...draft.system, ...patch } }
@@ -132,6 +133,21 @@ export function ContextInspector({
               value={node.name}
               onChange={(event) => editNode({ name: event.currentTarget.value })}
             />
+            {participant?.kind === "external-system" ? (
+              <NativeSelect
+                label="External block on C2"
+                data={[
+                  { value: "", label: "Separate context object" },
+                  ...loaded.design.elements
+                    .filter((element) => plannedCapability(element.planned)?.role === "external")
+                    .map((element) => ({ value: element.id, label: element.name })),
+                ]}
+                value={participant.container ?? ""}
+                onChange={(event) =>
+                  editNode({ container: event.currentTarget.value || undefined })
+                }
+              />
+            ) : null}
             <Textarea
               label="Responsibility"
               minRows={3}

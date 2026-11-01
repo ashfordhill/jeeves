@@ -22,6 +22,8 @@ export const architectureNodeSchema = z.strictObject({
   kind: z.enum(["person", "external-system"]),
   name: z.string().trim().min(1).max(120),
   description,
+  /** Reuse one planned external block at C2; C1 retains the technology-free context identity. */
+  container: idSchema.optional(),
 });
 export const contextRelationshipSchema = z.strictObject({
   id: idSchema,
@@ -89,6 +91,27 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
           path: ["architecture", "nodes"],
         }),
       );
+    if (node.container) {
+      const element = design.elements.find((item) => item.id === node.container);
+      if (
+        node.kind !== "external-system" ||
+        !element ||
+        plannedCapability(element.planned)?.role !== "external"
+      )
+        findings.push(
+          finding(
+            "CONFIG_INVALID",
+            "A context provider must bind to an existing planned external block.",
+            { path: ["architecture", "nodes", node.id] },
+          ),
+        );
+      if (model.nodes.some((other) => other.id !== node.id && other.container === node.container))
+        findings.push(
+          finding("CONFIG_INVALID", "An external block can bind to only one context provider.", {
+            path: ["architecture", "nodes", node.id],
+          }),
+        );
+    }
     nodes.add(node.id);
     ids.add(node.id);
   }
@@ -268,4 +291,43 @@ export function resolveArchitectureMember(
 export function unbindArchitecture(design: DesignDocument, element: string): void {
   for (const relationship of design.architecture?.relationships ?? [])
     if (relationship.container === element) delete relationship.container;
+  for (const node of design.architecture?.nodes ?? [])
+    if (node.container === element) delete node.container;
+}
+
+/** Reuse explicitly bound providers and their existing connections; never infer new wiring. */
+export function containerContext(design: DesignDocument) {
+  const nodes = design.architecture?.nodes ?? [];
+  const endpoint = (id: string) => {
+    const binding = nodes.find((node) => node.id === id)?.container;
+    return binding && design.elements.some((element) => element.id === binding)
+      ? binding
+      : `context:${id}`;
+  };
+  const relationships = (design.architecture?.relationships ?? []).flatMap((relation) => {
+    if (relation.from !== "system" && relation.to !== "system") return [];
+    const systemEnd = relation.container ?? "context:system";
+    const from = relation.from === "system" ? systemEnd : endpoint(relation.from);
+    const to = relation.to === "system" ? systemEnd : endpoint(relation.to);
+    if (
+      design.connections.some(
+        (connection) => connection.from.element === from && connection.to.element === to,
+      )
+    )
+      return [];
+    const host = design.elements.find((element) => element.id === systemEnd);
+    const protocol =
+      host &&
+      (plannedCapability(host.planned)?.role === "frontend" ||
+        host.planned === "application-api" ||
+        host.template?.id === "http-service" ||
+        host.template?.id === "web-app")
+        ? "HTTPS"
+        : "Undecided";
+    return [{ ...relation, source: from, target: to, protocol }];
+  });
+  const participants = new Set(
+    relationships.flatMap((relation) => [relation.source, relation.target]),
+  );
+  return { nodes: nodes.filter((node) => participants.has(`context:${node.id}`)), relationships };
 }

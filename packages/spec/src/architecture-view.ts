@@ -1,6 +1,10 @@
 /** Deterministic C4-informed projections. No view creates a second executable connection. */
 
-import { type ArchitectureMember, resolveArchitectureMember } from "./architecture.ts";
+import {
+  type ArchitectureMember,
+  containerContext,
+  resolveArchitectureMember,
+} from "./architecture.ts";
 import { containerDescription, containerTechnology } from "./container-display.ts";
 import { deliveryConfigSchema, deliveryStore } from "./delivery.ts";
 import { capabilityEndpoint, type DesignDocument, type Element } from "./design.ts";
@@ -213,25 +217,23 @@ export function architectureViews(
       if (!node.binding || node.binding.element === view.container) return node;
       return nodes.find((container) => container.id === node.id) ?? node;
     });
-  // Every participant with a system relationship appears; unbound ends target the boundary.
-  const participants = new Set<string>();
-  for (const relation of intent?.relationships ?? []) {
-    if (relation.from !== "system" && relation.to !== "system") continue;
-    const systemEnd = relation.container ? elementKey(relation.container) : "context:system";
-    const from = relation.from === "system" ? systemEnd : `context:${relation.from}`;
-    const to = relation.to === "system" ? systemEnd : `context:${relation.to}`;
-    if (relation.from !== "system") participants.add(from);
-    if (relation.to !== "system") participants.add(to);
+  const c2Context = containerContext(design);
+  for (const relation of c2Context.relationships) {
+    const key = (id: string) => (id.startsWith("context:") ? id : elementKey(id));
     containers.edges.push({
       id: `context:${relation.id}`,
-      from,
-      to,
+      from: key(relation.source),
+      to: key(relation.target),
       description: relation.description,
-      protocol: "Undecided",
+      protocol: relation.protocol,
       context: relation.id,
     });
   }
-  containers.nodes.push(...context.nodes.filter((node) => participants.has(node.id)));
+  containers.nodes.push(
+    ...context.nodes.filter((node) =>
+      c2Context.nodes.some((item) => node.id === `context:${item.id}`),
+    ),
+  );
   containers.nodes.push(context.nodes[0]!);
   return { context, containers, components, ...(provision && { provision }) };
 }
@@ -588,8 +590,8 @@ function componentView(
         });
       edges.push({
         id: `use:${definition.id}:${id}`,
-        from: nodeId,
-        to: outside,
+        from: connection.from.element === element.id ? nodeId : outside,
+        to: connection.from.element === element.id ? outside : nodeId,
         ...connectionPresentation(connection, design),
         ...(use.resources.length && {
           description: `Reads and writes ${[...new Set(use.resources)].join(", ")}`,

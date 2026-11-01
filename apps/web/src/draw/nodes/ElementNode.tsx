@@ -11,7 +11,14 @@ import {
   plannedCapability,
 } from "@jeeves/spec";
 import { IconAlertTriangle, IconX } from "@tabler/icons-react";
-import { Handle, type NodeProps, NodeResizer, Position, useViewport } from "@xyflow/react";
+import {
+  Handle,
+  type NodeProps,
+  NodeResizer,
+  Position,
+  useStore,
+  useViewport,
+} from "@xyflow/react";
 import { useCallback } from "react";
 import { elementFamily, templateFamily, typeStyles } from "../../architecture/type-style.tsx";
 import { type ElementNode as ElementNodeType, handleId } from "../flow.ts";
@@ -63,6 +70,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
   const { element, template, attachments } = data;
   const planned = plannedCapability(element.planned);
   const { zoom } = useViewport();
+  const graphWidth = useStore((state) => state.width);
   const onResizeEnd = useCallback(
     (_: unknown, size: { x: number; y: number; width: number; height: number }) => {
       const layout = useDraw.getState().loaded?.layout.items[id];
@@ -86,7 +94,7 @@ export function ElementNode({ id, data, selected }: NodeProps<ElementNodeType>) 
     <article
       className={`element-card${planned ? " planned-card" : ""}${template?.elementKind === "database" || planned?.role === "database" ? " database-card" : ""}${selected ? " is-selected" : ""}${pendingHere && !pending.attachment ? " is-pending" : ""}`}
       data-element-id={id}
-      data-overview={zoom < 0.55}
+      data-overview={zoom < 0.55 && graphWidth < 600}
       data-family={elementFamily(element)}
       aria-label={`${element.name}, ${label}`}
     >

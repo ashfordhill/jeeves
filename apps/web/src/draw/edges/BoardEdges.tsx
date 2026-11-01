@@ -2,7 +2,7 @@
  * C4 relationships (verb phrase, protocol and interaction style) and plain arrows (dashed, optional label).
  */
 
-import { connectionPresentation } from "@jeeves/spec";
+import { connectionPresentation, containerContext } from "@jeeves/spec";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -80,8 +80,8 @@ function useLabelPosition(
     ? {
         minX: Math.min(...boxes.map((box) => box.x)),
         minY: boundary.y + 40,
-        maxX: boundary.x + boundary.width,
-        maxY: boundary.y + boundary.height,
+        maxX: Math.max(...boxes.map((box) => box.x + box.width)),
+        maxY: Math.max(...boxes.map((box) => box.y + box.height)),
       }
     : undefined;
   const obstacles: LabelBox[] = boxes
@@ -94,22 +94,14 @@ function useLabelPosition(
       to: connection.to.element,
       ...connectionPresentation(connection, design),
     })),
-    ...(design.architecture?.relationships ?? [])
-      .filter((relation) => relation.from === "system" || relation.to === "system")
-      .map((relation) => ({
-        id: `context:${relation.id}`,
-        from:
-          relation.from === "system"
-            ? (relation.container ?? "context:system")
-            : `context:${relation.from}`,
-        to:
-          relation.to === "system"
-            ? (relation.container ?? "context:system")
-            : `context:${relation.to}`,
-        description: relation.description,
-        protocol: "Undecided",
-        planned: false,
-      })),
+    ...containerContext(design).relationships.map((relation) => ({
+      id: `context:${relation.id}`,
+      from: relation.source,
+      to: relation.target,
+      description: relation.description,
+      protocol: relation.protocol,
+      planned: false,
+    })),
   ].sort((a, b) => a.id.localeCompare(b.id));
   let result = { x, y, size: relationshipLabelSize(description, protocol, planned) };
   for (const relation of relations) {
@@ -204,7 +196,8 @@ export function ArrowEdge(props: EdgeProps<BoardEdge>) {
 export function ContextEdge(props: EdgeProps<BoardEdge>) {
   const [path, x, y] = useGeometry(props);
   const text = props.data && "context" in props.data ? props.data.label : "";
-  const label = useLabelPosition(props.id, x, y, text, "Undecided");
+  const protocol = props.data && "context" in props.data ? props.data.protocol : "HTTPS";
+  const label = useLabelPosition(props.id, x, y, text, protocol);
   return (
     <>
       <BaseEdge id={props.id} path={path} markerEnd={props.markerEnd} className="connection-path" />
@@ -213,7 +206,7 @@ export function ContextEdge(props: EdgeProps<BoardEdge>) {
         x={label.x}
         y={label.y}
         size={label.size}
-        text={<RelationshipLabel description={text} protocol="Undecided" />}
+        text={<RelationshipLabel description={text} protocol={protocol} />}
         className="context-chip"
         onClick={() => useDraw.getState().focus({ nodes: [], edges: [props.id] })}
       />

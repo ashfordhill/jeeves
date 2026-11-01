@@ -13,6 +13,7 @@ import type {
   LayoutDocument,
   LayoutItem,
 } from "@jeeves/spec";
+import { containerContext } from "@jeeves/spec";
 import { type Edge, MarkerType, type Node } from "@xyflow/react";
 import type { ContextBoardNode } from "./container-notation.tsx";
 
@@ -32,7 +33,7 @@ export type AnnotationNode = Node<AnnotationNodeData, "text" | "note" | "frame">
 export type BoardNode = ElementNode | AnnotationNode | ContextBoardNode;
 
 export type ConnectionEdgeData = { connection: Connection };
-export type ContextEdgeData = { context: string; label: string };
+export type ContextEdgeData = { context: string; label: string; protocol: string };
 export type ArrowEdgeData = { annotation: Extract<Annotation, { kind: "arrow" }> };
 export type BoardEdge =
   | Edge<ConnectionEdgeData, "connection">
@@ -180,18 +181,16 @@ export function buildEdges(
       ...(selected.has(annotation.id) ? { selected: true } : {}),
     });
   }
-  for (const relation of design.architecture?.relationships ?? []) {
-    if (relation.from !== "system" && relation.to !== "system") continue;
-    const end = relation.container ?? "context:system";
+  for (const relation of containerContext(design).relationships) {
     edges.push({
       id: `context:${relation.id}`,
       type: "context",
-      source: relation.from === "system" ? end : `context:${relation.from}`,
-      target: relation.to === "system" ? end : `context:${relation.to}`,
+      source: relation.source,
+      target: relation.target,
       sourceHandle: "out",
       targetHandle: "in",
       markerEnd: ARROW_HEAD,
-      data: { context: relation.id, label: relation.description },
+      data: { context: relation.id, label: relation.description, protocol: relation.protocol },
       ...(selected.has(`context:${relation.id}`) ? { selected: true } : {}),
     });
   }

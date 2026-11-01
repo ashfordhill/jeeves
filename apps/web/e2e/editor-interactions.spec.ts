@@ -75,10 +75,11 @@ test("selection keeps card geometry stable and opening the inspector fits the bo
 
   await editorAction(page, "Show inspector");
   const pane = page.locator(".react-flow__pane");
-  for (const x of [300, 1200]) {
+  for (const [index, x] of [300, 1200].entries()) {
     await page.getByRole("button", { name: "Elements", exact: true }).click();
     await page.getByRole("button", { name: /^HTTP service/ }).click();
     await pane.click({ position: { x, y: 330 } });
+    await expect(page.locator("[data-element-id]")).toHaveCount(index + 1);
   }
   const cards = page.locator("[data-element-id]");
   await expect(cards).toHaveCount(2);

@@ -4,7 +4,7 @@ import { architectureExample, type DesignDocument } from "@jeeves/spec";
 import { expect, test } from "./browser-test.ts";
 import { editorAction, inspectObject } from "./helpers.ts";
 
-for (const example of ["qr", "link-platform", "community", "social"] as const) {
+for (const example of ["qr", "qrwty-target", "link-platform", "community", "social"] as const) {
   test(`${example} C2/C3 relationships carry labels and protocols with interaction line styles`, async ({
     page,
     request,

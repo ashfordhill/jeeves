@@ -32,7 +32,7 @@ C1 offerings below are compositions, not separate runtime templates.
 Optional SaaS extensions reuse [organizations](#c3-organizations), [billing](#c3-billing),
 [developer access](#c3-developer), [notifications](#c3-notifications),
 [reports](#c3-reports), [audit](#c3-audit) and [client features](#c3-screens).
-These are available planning choices; current examples are unchanged. A component
+The examples demonstrate selected choices; their blocks remain planned. A component
 such as accounts, moderation or analytics can be reused under several C1 offerings
 through an appropriate C2 host. Reuse does not require those applications to share
 one deployed service or database.
@@ -66,6 +66,26 @@ API and data capabilities with a domain implementation.
 - See the [recipe catalog and boundaries](recipes/README.md). Its supplied QR
   handlers do not make the generic planned media or analytics blocks implemented.
 
+### QRWTY target architecture
+
+**Planned architecture example.** A separate editable SaaS target for QRWTY, with
+teams, developer access, billing, staff administration and edge delivery. It does
+not change the live QRWTY project or supply those features through the QR Studio recipe.
+
+- C2: customer and staff [web clients](#c2-web), [application API](#c2-application),
+  redirect service, [relational data](#c2-data), [cache](#c2-cache),
+  [artwork storage](#c2-storage), [visit queue](#c2-messaging),
+  [analytics worker](#c2-worker), [analytical storage](#c2-analytics-store),
+  [CDN](#c2-edge), payment and e-mail [providers](#c2-third-party),
+  [observability](#c2-integrations).
+- C3: [accounts](#c3-accounts), [organizations](#c3-organizations),
+  [link operations](#c3-domain), [artwork](#c3-media), [analytics](#c3-analytics),
+  [billing](#c3-billing), [developer access](#c3-developer),
+  [integration adapter](#c3-integration), [reports](#c3-reports),
+  [notifications](#c3-notifications), [client feature areas](#c3-screens).
+- [Study, proposed technologies and navigation](docs/examples/qrwty-target.md).
+  All fourteen containers and nineteen responsibilities are planned; generation remains blocked.
+
 ### Links and QR platform
 
 **Planned architecture example.** Owners manage links and artwork; visitors follow
@@ -77,11 +97,13 @@ workload requirements. This broader example is independent of the QR Studio reci
   [object storage](#c2-storage), [queue](#c2-messaging), [worker](#c2-worker).
 - C3: [accounts](#c3-accounts), [domain operations](#c3-domain),
   [media processing](#c3-media), [analytics](#c3-analytics).
-- Optional later choices: [traffic distribution](#c2-traffic) or
-  [edge delivery](#c2-edge), justified by measured workload and availability needs.
-  [Serverless functions](#c2-serverless), [analytical storage](#c2-analytics-store)
-  and [third-party providers](#c2-third-party) are reusable planning choices for a
-  broader SaaS design; the current example does not instantiate them.
+- Also includes [identity and billing](#c2-integrations), e-mail
+  [delivery](#c2-third-party), [edge delivery](#c2-edge) and
+  [observability](#c2-integrations). [Client feature areas](#c3-screens),
+  [billing](#c3-billing) and [notifications](#c3-notifications) are editable responsibilities.
+  [Serverless functions](#c2-serverless) and [analytical storage](#c2-analytics-store)
+  remain optional extensions; the [QRWTY target](#qrwty-target-architecture) demonstrates
+  analytical storage in a broader SaaS design.
 
 ### Community and discussion
 
@@ -95,6 +117,9 @@ have distinct responsibilities from storing the discussion itself.
   [notifications](#c2-integrations).
 - C3: [accounts](#c3-accounts), [domain operations](#c3-domain),
   [moderation](#c3-moderation), [media processing](#c3-media).
+- Also includes [identity and billing](#c2-integrations), e-mail
+  [delivery](#c2-third-party), [CDN](#c2-edge) and [observability](#c2-integrations),
+  with client and subscription-delivery responsibilities.
 - Reuses the same client, persistence, access and processing families as the
   [links platform](#links-and-qr-platform); posts need their own domain contracts.
 
@@ -111,6 +136,9 @@ of a particular company's architecture.
   [queue](#c2-messaging), [worker](#c2-worker).
 - C3: [accounts](#c3-accounts), [domain operations](#c3-domain),
   [feeds](#c3-feeds), [moderation](#c3-moderation), [media processing](#c3-media).
+- Also includes [identity and billing](#c2-integrations), e-mail
+  [delivery](#c2-third-party), [CDN](#c2-edge) and [observability](#c2-integrations),
+  plus [mobile API](#c3-facade) and [offline state](#c3-offline).
 - Reuses discussion and media concepts from the
   [community offering](#community-and-discussion) without requiring the same data
   model, ranking policy or implementation.
@@ -157,7 +185,7 @@ work outside the request path. It can host [domain jobs](#c3-domain),
 [analytics](#c3-analytics), plus planned [event handlers](#c3-events),
 [scheduled jobs](#c3-schedules), [indexing](#c3-indexing), [reports](#c3-reports)
 and [notifications](#c3-notifications). Used by the links, community and social examples;
-new families are reusable choices and are not automatically added to those examples.
+the [QRWTY target](#qrwty-target-architecture) also composes teams, developer access and reporting.
 
 <a id="c2-serverless"></a>
 The **serverless function** is a planned worker boundary for bounded HTTP-, queue-,
@@ -276,6 +304,9 @@ intent. **Show technical components** in Editor actions reveals the derived HTTP
 resource boundary and typed API adapter; it starts off and preserves operation groups.
 See [P42's specification](docs/build-plan-c4-saas.md#p42--c3-catalog-saas-responsibilities-and-client-components)
 for the planning scope; page-flow routing remains separate.
+The [QRWTY target](#qrwty-target-architecture) reuses accounts, domain/media/analytics,
+organizations, billing, developer access, integration, notifications, reports and
+client feature areas. Its [study](docs/examples/qrwty-target.md) records the composition.
 
 | Component family | Availability and responsibility | Hosts and C1 reuse |
 | --- | --- | --- |

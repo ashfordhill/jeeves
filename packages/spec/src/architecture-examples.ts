@@ -1,9 +1,17 @@
 /** Editable planning examples, not assertions about the internals of any named company. */
-import type { ArchitectureComponent } from "./architecture.ts";
+import type { Architecture, ArchitectureComponent } from "./architecture.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import type { LayoutDocument } from "./layout.ts";
 
 export const architectureExamples = [
+  {
+    id: "qrwty-target",
+    name: "QRWTY target architecture",
+    description:
+      "A planned SaaS for teams to manage QR links, artwork, billing and visit analytics.",
+    useCases: "Target architecture · editable study · separate from live QRWTY",
+    accent: "teal",
+  },
   {
     id: "link-platform",
     name: "Links & QR platform",
@@ -39,15 +47,33 @@ export function architectureExample(id: string): {
   if (!example) throw new Error("Unknown architecture example");
   const design = emptyDesign();
   const layout: LayoutDocument = { schemaVersion: 1, items: {} };
-  const add = (id: string, planned: string, name: string, x: number, y: number, notes = "") => {
-    design.elements.push({ id, name, planned, template: null, config: {}, attachments: [], notes });
-    layout.items[id] = { x, y };
+  const add = (
+    id: string,
+    planned: string,
+    name: string,
+    description: string,
+    technology: string,
+    config: Record<string, unknown> = {},
+  ) => {
+    design.elements.push({
+      id,
+      name,
+      planned,
+      template: null,
+      config,
+      attachments: [],
+      notes: "",
+      description,
+      technology,
+    });
   };
   const link = (
     from: string,
     to: string,
     label: string,
-    protocol: NonNullable<DesignDocument["connections"][number]["planned"]>["protocol"] = "HTTPS",
+    protocol: NonNullable<
+      DesignDocument["connections"][number]["planned"]
+    >["protocol"] = "HTTPS/JSON",
     async = false,
   ) => {
     design.connections.push({
@@ -63,19 +89,57 @@ export function architectureExample(id: string): {
       },
     });
   };
-  add("web", "browser-client", "Web application", 40, 40);
-  add("api", "application-api", "Application API", 420, 40);
-  add("db", "relational-store", "Primary data", 800, 40);
-  add("cache", "distributed-cache", "Application cache", 800, 310);
-  add("queue", "job-queue", "Background jobs", 420, 580);
-  add("worker", "background-worker", "Background worker", 800, 580);
+  add(
+    "web",
+    "browser-client",
+    id === "qrwty-target" ? "Owner web app" : "Web application",
+    "Creates and manages content through a signed-in browser experience.",
+    "React · TypeScript",
+    { audience: "Customers" },
+  );
+  add(
+    "api",
+    "application-api",
+    "Application API",
+    "Owns account access, domain operations and application contracts.",
+    "Node.js · Fastify",
+  );
+  add(
+    "db",
+    "relational-store",
+    "Primary data",
+    "Stores authoritative accounts, ownership and domain records.",
+    "PostgreSQL",
+  );
+  add(
+    "cache",
+    "distributed-cache",
+    id === "qrwty-target" ? "Lookup cache" : "Application cache",
+    "Caches derived lookups with bounded freshness and source fallback.",
+    "Redis compatible",
+  );
+  add(
+    "queue",
+    "job-queue",
+    id === "qrwty-target" ? "Visit queue" : "Background jobs",
+    "Buffers visit events and background tasks for independent processing.",
+    "RabbitMQ",
+  );
+  add(
+    "worker",
+    "background-worker",
+    id === "qrwty-target" ? "Analytics worker" : "Background worker",
+    "Processes queued work and scheduled tasks outside interactive requests.",
+    "Node.js · TypeScript",
+  );
   link("web", "api", "Uses application API");
   link("api", "db", "Reads / writes records", "SQL");
-  link("api", "cache", "Caches derived reads", "Cache protocol");
-  link("api", "queue", "Enqueues work", "Message protocol", true);
-  link("queue", "worker", "Delivers jobs", "Message protocol", true);
+  link("api", "cache", "Caches derived reads", "RESP/TLS");
+  link("api", "queue", "Enqueues work", "AMQP/TLS", true);
+  link("queue", "worker", "Delivers jobs", "AMQP/TLS", true);
   link("worker", "db", "Reads / writes task data", "SQL");
   const components: ArchitectureComponent[] = [];
+  const componentRelationships: NonNullable<Architecture["componentRelationships"]> = [];
   const component = (
     id: string,
     element: string,
@@ -91,6 +155,7 @@ export function architectureExample(id: string): {
       name,
       capability,
       responsibility,
+      technology: capability === "screen-group" ? "React · TypeScript" : "TypeScript module",
       config,
       members: [],
       usesConnections,
@@ -102,21 +167,28 @@ export function architectureExample(id: string): {
     "Accounts & access",
     "authorization-module",
     "Owns account access and tenant permissions.",
+    {},
+    ["api-db"],
   );
-  if (id === "link-platform") {
+  if (id === "link-platform" || id === "qrwty-target") {
     add(
       "redirect",
       "application-api",
       "Redirect service",
-      40,
-      310,
       "Resolves public short links independently of management requests.",
+      "Node.js · Fastify",
     );
-    add("assets", "object-storage", "Artwork storage", 1180, 40);
-    link("redirect", "cache", "Looks up destinations", "Cache protocol");
+    add(
+      "assets",
+      "object-storage",
+      "Artwork storage",
+      "Versions QR artwork and generated export objects.",
+      "S3-compatible storage",
+    );
+    link("redirect", "cache", "Looks up destinations", "RESP/TLS");
     link("redirect", "db", "Reads on cache miss", "SQL");
-    link("redirect", "queue", "Records visit events", "Message protocol", true);
-    link("api", "assets", "Stores artwork", "Object API");
+    link("redirect", "queue", "Records visit events", "AMQP/TLS", true);
+    link("api", "assets", "Stores artwork", "HTTPS/S3");
     component(
       "links",
       "api",
@@ -168,12 +240,26 @@ export function architectureExample(id: string): {
       "Visit aggregation",
       "analytics-module",
       "Processes visit events into queryable aggregates.",
+      {},
+      ["queue-worker", "worker-db"],
     );
   } else {
-    add("search", "search-index", "Discovery index", 1180, 40);
-    add("assets", "object-storage", "Media storage", 1180, 580);
+    add(
+      "search",
+      "search-index",
+      "Discovery index",
+      "Indexes public content for access-filtered discovery.",
+      "OpenSearch",
+    );
+    add(
+      "assets",
+      "object-storage",
+      "Media storage",
+      "Retains source media and derived delivery variants.",
+      "S3-compatible storage",
+    );
     link("api", "search", "Searches public content");
-    link("worker", "assets", "Processes media", "Object API");
+    link("worker", "assets", "Processes media", "HTTPS/S3");
     component(
       "content",
       "api",
@@ -211,20 +297,59 @@ export function architectureExample(id: string): {
       ["worker-assets"],
     );
     if (id === "social") {
-      add("mobile", "mobile-client", "Mobile application", 40, 580);
-      add("realtime", "realtime-service", "Realtime updates", 40, 310);
+      add(
+        "mobile",
+        "mobile-client",
+        "Mobile application",
+        "Provides mobile publishing, feeds and cached reading.",
+        "React Native · TypeScript",
+      );
+      add(
+        "realtime",
+        "realtime-service",
+        "Realtime updates",
+        "Distributes authorized presence and activity updates.",
+        "Node.js · WebSocket",
+      );
       link("mobile", "api", "Uses shared API");
       link("web", "realtime", "Receives updates", "WebSocket");
+      component(
+        "mobile-facade",
+        "mobile",
+        "Mobile API facade",
+        "api-facade",
+        "Maps shared API contracts to mobile publishing and feed features.",
+        {},
+        ["mobile-api"],
+      );
+      component(
+        "mobile-state",
+        "mobile",
+        "Offline reading",
+        "local-state",
+        "Retains cached feed entries for mobile reading.",
+        { sync: "Read cached content", data: "Recent feed entries" },
+        ["mobile-api"],
+      );
       component(
         "presence",
         "realtime",
         "Presence & activity",
         "domain-module",
         "Distributes authorized live updates to connected clients.",
+        {},
+        ["web-realtime"],
       );
     } else {
-      add("notifications", "notification-service", "Notifications", 1180, 310);
+      add(
+        "notifications",
+        "notification-service",
+        "Notifications",
+        "Composes subscription messages and respects delivery preferences.",
+        "Node.js · TypeScript",
+      );
       link("worker", "notifications", "Delivers subscriptions", "HTTPS", true);
+      // The delivery adapter is modeled after providers are added below.
       component(
         "communities",
         "api",
@@ -236,20 +361,297 @@ export function architectureExample(id: string): {
       );
     }
   }
+  add(
+    "billing",
+    "third-party-service",
+    "Payment provider",
+    "Processes subscriptions and sends signed billing events.",
+    "Payment provider API",
+    {
+      category: "Payments",
+      webhooks: true,
+      dataShared: "Customer identity and subscription reference",
+    },
+  );
+  add(
+    "email",
+    "third-party-service",
+    "E-mail delivery provider",
+    "Delivers transactional messages without owning application accounts.",
+    "E-mail provider API",
+    {
+      category: "E-mail delivery",
+      unavailable: "Queue and retry",
+      dataShared: "Recipient and message content",
+    },
+  );
+  add(
+    "edge",
+    "edge-delivery",
+    "CDN & edge",
+    "Delivers static application assets and public artwork; redirects remain uncached.",
+    "HTTPS CDN",
+  );
+  add(
+    "telemetry",
+    "observability",
+    "Observability",
+    "Collects redacted service logs, metrics and traces.",
+    "OpenTelemetry collector",
+  );
+  link("api", "billing", "Synchronizes plans and subscriptions");
+  link("billing", "api", "Delivers signed billing events", "HTTPS/JSON", true);
+  link("worker", "email", "Delivers transactional messages");
+  link("edge", "web", "Loads application assets", "HTTPS");
+  link("edge", "assets", "Loads public artwork and media", "HTTPS/S3");
+  link("api", "telemetry", "Exports redacted telemetry", "OTLP/HTTPS", true);
+  link("worker", "telemetry", "Exports job metrics and traces", "OTLP/HTTPS", true);
+  if (id === "community") {
+    link("notifications", "email", "Sends subscription messages");
+    component(
+      "subscription-delivery",
+      "notifications",
+      "Subscription messages",
+      "notifications-module",
+      "Applies subscriber preferences and sends discussion updates.",
+      {},
+      ["worker-notifications", "notifications-email"],
+    );
+  }
+  if (id !== "qrwty-target") {
+    add(
+      "identity",
+      "identity-provider",
+      "Identity provider",
+      "Authenticates members and supplies verified sign-in identities.",
+      "OpenID Connect provider",
+    );
+    link("web", "identity", "Authenticates members", "OIDC/HTTPS");
+    link("api", "identity", "Validates member identities", "OIDC/HTTPS");
+    component(
+      "billing-plans",
+      "api",
+      "Billing & plans",
+      "billing-module",
+      "Synchronizes subscriptions and evaluates feature entitlements.",
+      {},
+      ["api-billing", "billing-api", "api-db"],
+    );
+    component(
+      "delivery",
+      "worker",
+      "Notification delivery",
+      "notifications-module",
+      "Delivers preference-aware transactional messages.",
+      {},
+      ["worker-email"],
+    );
+    component(
+      "client-features",
+      "web",
+      "Content workspace",
+      "screen-group",
+      "Presents content management and discovery screens.",
+      {
+        pages: "Library, editor, discovery, settings",
+        access: "Signed-in",
+        dataUsed: "Owned and public content",
+      },
+      ["web-api"],
+    );
+  }
+  if (id === "qrwty-target") {
+    add(
+      "admin",
+      "browser-client",
+      "Admin console",
+      "Lets authorized staff investigate accounts and manage support actions.",
+      "React · TypeScript",
+      { audience: "Internal staff & admins", access: "Sign-in required" },
+    );
+    add(
+      "analytics-data",
+      "analytics-store",
+      "Analytics store",
+      "Retains aggregate visit metrics for customer reports.",
+      "ClickHouse",
+      { load: "Micro-batch", access: "Customer-facing reports", retention: 90 },
+    );
+    link("admin", "api", "Manages support and staff operations");
+    link("api", "analytics-data", "Queries aggregate visit reports", "HTTPS/SQL");
+    link("worker", "analytics-data", "Reads reports and writes visit aggregates", "HTTPS/SQL");
+    link("worker", "assets", "Stores scheduled exports", "HTTPS/S3");
+    link("redirect", "telemetry", "Exports redirect metrics", "OTLP/HTTPS", true);
+    // The visitor browser follows Location; the redirect service never fetches the destination.
+    component(
+      "organizations",
+      "api",
+      "Organizations & members",
+      "organizations-module",
+      "Owns team membership, invitations and organization roles.",
+      { teams: "Organizations with shared link libraries" },
+      [],
+    );
+    component(
+      "billing-plans",
+      "api",
+      "Billing & plans",
+      "billing-module",
+      "Synchronizes plans and evaluates team entitlements.",
+      { plans: "Free, Pro, Team", entitlements: "Team seats, link limits, exports" },
+      ["api-billing", "billing-api"],
+    );
+    component(
+      "developer-access",
+      "api",
+      "Developer API & webhooks",
+      "developer-api-module",
+      "Authenticates API keys and queues versioned outbound webhook work.",
+      {},
+      [],
+    );
+    component(
+      "notification-adapter",
+      "api",
+      "Notifications adapter",
+      "integration-adapter",
+      "Maps account and team events into queued delivery requests.",
+      {
+        target: "E-mail delivery provider via worker",
+        mapping: "Invitation and account event to message job",
+      },
+      ["api-queue"],
+    );
+    component(
+      "exports",
+      "worker",
+      "Scheduled exports",
+      "reports-module",
+      "Builds scheduled visit reports and stores expiring downloads.",
+      { formats: "CSV, JSON", retention: 7 },
+      ["worker-analytics-data", "worker-assets"],
+    );
+    component(
+      "delivery",
+      "worker",
+      "Notification delivery",
+      "notifications-module",
+      "Delivers invitation, account and report-ready messages.",
+      { templates: "Invitation, account verification, report ready" },
+      ["worker-email"],
+    );
+    for (const [key, name, pages, access, dataUsed] of [
+      [
+        "entry",
+        "Public landing & sign-in",
+        "Landing, sign-in, registration",
+        "Public",
+        "Account session",
+      ],
+      ["library", "Library & create", "Library, create link", "Signed-in", "Links and teams"],
+      ["studio", "Studio", "QR studio, artwork versions", "Signed-in", "Link identity and artwork"],
+      [
+        "analytics",
+        "Analytics",
+        "Visit overview, report downloads",
+        "Signed-in",
+        "Aggregate visits and exports",
+      ],
+      [
+        "settings",
+        "Settings & billing",
+        "Team settings, members, billing",
+        "Signed-in",
+        "Membership, plans, entitlements",
+      ],
+    ])
+      component(
+        `owner-${key}`,
+        "web",
+        name!,
+        "screen-group",
+        `Presents ${pages!.toLowerCase()} for link owners.`,
+        { pages, access, dataUsed },
+        ["web-api"],
+      );
+    component(
+      "staff-screens",
+      "admin",
+      "Support & administration",
+      "screen-group",
+      "Presents audited account and subscription support actions.",
+      {
+        pages: "Account lookup, support actions, billing review",
+        access: "Admin",
+        dataUsed: "Accounts and subscriptions",
+      },
+      ["admin-api"],
+    );
+    for (const [from, to, description] of [
+      ["organizations", "accounts", "Resolves member access"],
+      ["developer-access", "links", "Executes link operations"],
+      ["billing-plans", "organizations", "Resolves billing organization"],
+    ])
+      componentRelationships.push({
+        id: `${from}-${to}`,
+        from: from!,
+        to: to!,
+        description: description!,
+        protocol: "In process",
+        interaction: "Request / response",
+      });
+    components.find((c) => c.id === "accounts")!.name = "Accounts & sessions";
+    components.find((c) => c.id === "accounts")!.usesConnections = ["api-db"];
+    components.find((c) => c.id === "analytics")!.usesConnections = ["api-analytics-data"];
+    components.find((c) => c.id === "aggregation")!.usesConnections = [
+      "queue-worker",
+      "worker-analytics-data",
+    ];
+  }
   design.architecture = {
     system: { name: example.name, description: example.description },
     nodes: [
       {
         id: "member",
         kind: "person",
-        name: "Member",
-        description: "Creates and manages their content.",
+        name: id === "qrwty-target" ? "Link owner" : "Member",
+        description: "Creates and manages owned content.",
       },
       {
         id: "visitor",
         kind: "person",
-        name: "Visitor",
-        description: "Browses or follows publicly available content.",
+        name: id === "qrwty-target" ? "QR visitor" : "Visitor",
+        description: "Browses public content or follows a shared link.",
+      },
+      ...(id === "qrwty-target"
+        ? [
+            {
+              id: "team-admin",
+              kind: "person" as const,
+              name: "Team administrator",
+              description: "Manages team membership and subscriptions.",
+            },
+            {
+              id: "destination",
+              kind: "external-system" as const,
+              name: "Destination website",
+              description: "Receives the visitor after their browser follows a redirect.",
+            },
+          ]
+        : []),
+      {
+        id: "payment-provider",
+        kind: "external-system",
+        name: "Payment provider",
+        description: "Processes subscriptions and supplies billing events.",
+        container: "billing",
+      },
+      {
+        id: "email-provider",
+        kind: "external-system",
+        name: "E-mail delivery provider",
+        description: "Delivers account, invitation and report-ready messages.",
+        container: "email",
       },
     ],
     relationships: [
@@ -257,18 +659,68 @@ export function architectureExample(id: string): {
         id: "member-system",
         from: "member",
         to: "system",
-        description: "Manages content",
+        description: "Manages content and artwork",
         container: "web",
       },
       {
         id: "visitor-system",
         from: "visitor",
         to: "system",
-        description: id === "link-platform" ? "Follows a short link" : "Browses public content",
-        container: id === "link-platform" ? "redirect" : "web",
+        description:
+          id === "link-platform" || id === "qrwty-target"
+            ? "Follows a short link"
+            : "Browses public content",
+        container: id === "link-platform" || id === "qrwty-target" ? "redirect" : "web",
       },
+      {
+        id: "system-payment",
+        from: "system",
+        to: "payment-provider",
+        description: "Synchronizes subscriptions and entitlements",
+        container: "api",
+      },
+      {
+        id: "system-email",
+        from: "system",
+        to: "email-provider",
+        description: "Delivers transactional messages",
+        container: "worker",
+      },
+      ...(id === "qrwty-target"
+        ? [
+            {
+              id: "team-system",
+              from: "team-admin",
+              to: "system",
+              description: "Manages team members and billing",
+              container: "web",
+            },
+            {
+              id: "visitor-destination",
+              from: "visitor",
+              to: "destination",
+              description: "Follows the returned destination in their browser",
+            },
+          ]
+        : []),
     ],
     components,
+    ...(componentRelationships.length ? { componentRelationships } : {}),
   };
+  // Tags describe proposed choices. No example claims these technologies run today.
+  // Compact authored rows keep the editable board manageable; derived geometry stays unsaved.
+  let internal = 0;
+  for (const element of design.elements) {
+    layout.items[element.id] = {
+      x: (internal % 3) * 420 + 40,
+      y: Math.floor(internal / 3) * 310 + 40,
+    };
+    if (
+      !["third-party-service", "identity-provider", "edge-delivery", "observability"].includes(
+        element.planned!,
+      )
+    )
+      internal++;
+  }
   return { name: example.name, design, layout };
 }

@@ -34,6 +34,7 @@ import { useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import {
   type ArchitectureGeometry,
+  architectureBounds,
   architectureLayoutInput,
   CARD,
   type RelationGeometry,
@@ -60,7 +61,8 @@ type CardNode = Node<
 function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
   const item = data.item;
   const { zoom } = useViewport();
-  const overview = zoom < 0.65;
+  const graphWidth = useStore((state) => state.width);
+  const overview = zoom < 0.65 && graphWidth < 600;
   const design = useDraw((state) => state.loaded!.design);
   const family = nodeFamily(item, design);
   const style = typeStyles[family];
@@ -84,7 +86,9 @@ function ArchitectureCard({ data, selected }: NodeProps<CardNode>) {
           <TemplateIcon name={style.icon} size={21} />
           {item.kind === "component" ? "Component" : style.label}
         </span>
-        <strong style={{ fontSize: overview ? 14 / Math.max(zoom, 0.25) : 18 }}>{item.name}</strong>
+        <strong style={{ fontSize: overview ? Math.min(28, 14 / Math.max(zoom, 0.25)) : 18 }}>
+          {item.name}
+        </strong>
         <span className="architecture-card-description">{item.description}</span>
         {data.showTechnology && item.technology ? (
           <span className="architecture-card-technology">{item.technology}</span>
@@ -114,7 +118,8 @@ function ScopeFrame({ data }: NodeProps<ScopeNode>) {
     </div>
   );
 }
-const nodeTypes = { architecture: ArchitectureCard, scope: ScopeFrame };
+type BoundsNode = Node<Record<string, never>, "bounds">;
+const nodeTypes = { architecture: ArchitectureCard, scope: ScopeFrame, bounds: () => null };
 type RelationEdge = Edge<
   {
     description: string;
@@ -301,7 +306,7 @@ export function ArchitectureGraph({
   const current = result?.key === key ? result.geometry : undefined;
   const graph = useMemo(() => {
     if (!current) return undefined;
-    const nodes: (CardNode | ScopeNode)[] = projection.nodes.map((item) => {
+    const nodes: (CardNode | ScopeNode | BoundsNode)[] = projection.nodes.map((item) => {
       const point = current.nodes[item.id];
       if (!point) throw new Error("Architecture object geometry is missing.");
       return {
@@ -330,6 +335,22 @@ export function ArchitectureGraph({
         selectable: false,
         focusable: false,
       });
+    // React Flow's Fit View uses node bounds. A presentation-only extent also covers
+    // edge labels and routed bends, without adding an object to the semantic model.
+    const bounds = architectureBounds(current);
+    nodes.unshift({
+      id: "architecture:bounds",
+      type: "bounds",
+      position: { x: bounds.x, y: bounds.y },
+      width: bounds.width,
+      height: bounds.height,
+      data: {},
+      style: { width: bounds.width, height: bounds.height, pointerEvents: "none", opacity: 0 },
+      ariaRole: "presentation",
+      selectable: false,
+      focusable: false,
+      zIndex: -1,
+    });
     const edges: RelationEdge[] = projection.edges.map((edge) => {
       const geometry = current.edges[edge.id];
       if (!geometry) throw new Error("Architecture relationship geometry is missing.");

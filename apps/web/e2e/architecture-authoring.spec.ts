@@ -35,7 +35,7 @@ test("planned SaaS examples, typed options and C4 scopes share one persistent ed
     expect(id).not.toBe(seed);
     const read = async () =>
       (await (await request.get(`/api/projects/${id}/design`)).json()).design;
-    await expect(page.locator(".planned-card")).toHaveCount(9);
+    await expect(page.locator(".planned-card")).toHaveCount(14);
     await page.getByRole("button", { name: "Open chat", exact: true }).click();
     await page
       .getByRole("textbox", { name: "Message", exact: true })

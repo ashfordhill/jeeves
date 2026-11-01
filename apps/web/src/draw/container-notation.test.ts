@@ -14,7 +14,7 @@ import { buildEdges, buildNodes, type ElementNode } from "./flow.ts";
 it("derives an enclosing boundary from measured containers while excluding annotations and external blocks", () => {
   const { design, layout } = architectureExample("link-platform");
   design.elements.push({
-    id: "identity",
+    id: "other-identity",
     name: "Identity provider",
     template: null,
     planned: "identity-provider",
@@ -22,7 +22,7 @@ it("derives an enclosing boundary from measured containers while excluding annot
     attachments: [],
     notes: "",
   });
-  layout.items.identity = { x: 40, y: 40 };
+  layout.items["other-identity"] = { x: 40, y: 40 };
   design.annotations.push({ id: "far-note", kind: "text", text: "Outside annotation" });
   layout.items["far-note"] = { x: -5000, y: -5000 };
   const before = structuredClone({ design, layout });
@@ -39,7 +39,7 @@ it("derives an enclosing boundary from measured containers while excluding annot
     expect(node.position.x).toBeGreaterThanOrEqual(boundary.position.x);
     expect(node.position.y).toBeGreaterThanOrEqual(boundary.position.y);
   }
-  const external = result.find((node) => node.id === "identity")!;
+  const external = result.find((node) => node.id === "other-identity")!;
   expect(external.position.x).toBeGreaterThan(boundary.position.x + boundary.width!);
   expect(boundary.position.x).toBe(-240);
   expect(boundary.position.y).toBe(-160);

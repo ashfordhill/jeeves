@@ -1,5 +1,5 @@
 /** Derived C2 geometry. These nodes never enter the semantic document or saved layout. */
-import { type DesignDocument, plannedCapability } from "@jeeves/spec";
+import { containerContext, type DesignDocument, plannedCapability } from "@jeeves/spec";
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
 import type { BoardNode } from "./flow.ts";
 import { TemplateIcon } from "./TemplateIcon.tsx";
@@ -58,34 +58,27 @@ export function withContainerNotation(
       kind: "system",
     },
   };
-  const participants = new Set(
-    (design.architecture?.relationships ?? [])
-      .filter((r) => r.from === "system" || r.to === "system")
-      .flatMap((r) => [r.from, r.to]),
-  );
   let person = 0,
     external = 0;
-  const context: ContextBoardNode[] = (design.architecture?.nodes ?? [])
-    .filter((node) => participants.has(node.id))
-    .map((node) => ({
-      id: `context:${node.id}`,
-      type: "context",
-      width: 250,
-      height: 150,
-      measured: { width: 250, height: 150 },
-      selected: nodes.find((item) => item.id === `context:${node.id}`)?.selected,
-      position: {
-        x: node.kind === "person" ? left - 350 : right + 100,
-        y: top + 40 + (node.kind === "person" ? person++ : external++) * 200,
-      },
-      data: node,
-      draggable: false,
-      connectable: false,
-    }));
+  const context: ContextBoardNode[] = containerContext(design).nodes.map((node) => ({
+    id: `context:${node.id}`,
+    type: "context",
+    width: 250,
+    height: 150,
+    measured: { width: 250, height: 150 },
+    selected: nodes.find((item) => item.id === `context:${node.id}`)?.selected,
+    position: {
+      x: node.kind === "person" ? left - 350 : right + 100,
+      y: top + 40 + (node.kind === "person" ? person++ : external++) * 200,
+    },
+    data: node,
+    draggable: false,
+    connectable: false,
+  }));
   // Planned external systems also belong outside. Their authored layout is left intact.
   const outside = authored.map((node) =>
     node.type === "element" && plannedCapability(node.data.element.planned)?.role === "external"
-      ? { ...node, position: { x: right + 100, y: top + 40 + external++ * 240 }, draggable: false }
+      ? { ...node, position: { x: right + 100, y: top + 40 + external++ * 210 }, draggable: false }
       : node,
   );
   return [boundary, ...outside, ...context];

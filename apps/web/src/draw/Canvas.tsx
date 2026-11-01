@@ -535,7 +535,7 @@ export function Canvas() {
           elementsSelectable={tool.kind === "select"}
           deleteKeyCode={null}
           zoomOnDoubleClick={false}
-          minZoom={0.2}
+          minZoom={0.04}
           maxZoom={2}
           proOptions={{ hideAttribution: true }}
         >

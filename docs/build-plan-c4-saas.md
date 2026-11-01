@@ -195,6 +195,10 @@ every operation exactly once; unit tests cover schemas and role filtering; `pnpm
 
 ### P43 — QRWTY target architecture example and example refresh
 
+**Completed 2026-10-31.** [Evidence and inspected views](evidence/p43/README.md);
+[study and proposed technologies](examples/qrwty-target.md). Verification is recorded
+in the latest [handoff](handoff.md).
+
 **Goal.** One reviewed, editable C1–C3 planning example of QRWTY as a SaaS that exercises the
 new blocks, separate from the live project, plus the three existing examples brought up to the
 checklist.
@@ -279,4 +283,4 @@ The user accepted every recommended default. These are binding for P39–P45:
 | D15 | The expired Lens image is dropped; the Visual Paradigm guides are the reference. |
 | D16 | Commit planning documents immediately. Work on `main`, one agent at a time; no branches or worktrees. Commit history is disposable. |
 
-Status: **P39–P41 are complete. P42 is next.** Follow the package order and recorded decisions above.
+Status: **P39–P43 are complete. P44 is next, followed by P45.** Follow the package order and recorded decisions above.

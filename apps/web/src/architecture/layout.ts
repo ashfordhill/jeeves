@@ -153,3 +153,24 @@ export function architectureGeometry(root: ElkNode): ArchitectureGeometry {
 export function relationshipPath(points: ElkPoint[]): string {
   return points.map((point, index) => `${index ? "L" : "M"} ${point.x},${point.y}`).join(" ");
 }
+
+/** Camera bounds include labels and routed bends, which can extend beyond every card. */
+export function architectureBounds(geometry: ArchitectureGeometry): Box {
+  const boxes = [
+    ...Object.values(geometry.nodes),
+    ...(geometry.scope ? [geometry.scope] : []),
+    ...Object.values(geometry.edges).flatMap((edge) => [
+      edge.label,
+      ...edge.points.map((point) => ({ ...point, width: 0, height: 0 })),
+    ]),
+  ];
+  if (!boxes.length) return { x: 0, y: 0, width: 1, height: 1 };
+  const x = Math.min(...boxes.map((item) => item.x));
+  const y = Math.min(...boxes.map((item) => item.y));
+  return {
+    x,
+    y,
+    width: Math.max(...boxes.map((item) => item.x + item.width)) - x,
+    height: Math.max(...boxes.map((item) => item.y + item.height)) - y,
+  };
+}
