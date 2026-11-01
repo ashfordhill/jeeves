@@ -4925,3 +4925,16 @@ setting. The user's separate README prose edits remain outside this package comm
   Anonymous pull verification remains pending that external setting; do not claim it has passed.
 - The root README commit changes only the existing shell block (two command lines). The user's
   separately staged prose and untracked component-library screenshot remain outside our commits.
+
+### REPO3 public image verified
+
+The owner changed the package to Public. Confirmed an anonymous `docker pull` using an empty
+Docker configuration directory (no registry credentials), then ran that downloaded image on a
+fresh named volume. Mattermost opened automatically with seven containers and twelve components;
+C2, C3 and Deployment rendered with zero browser errors. The published ARM64 image also pulled
+anonymously and reached healthy API/database status under Docker's ARM emulation. The manifest
+contains exactly Linux AMD64 and ARM64. Verified index:
+`sha256:7dbd252471a1cbc099eac5a679957bcfa59614743092c5122c78429acb1b7c6f`
+(revision 54551a3; workflow 41353635480 passed). GitHub confirms the source repository is private.
+Updated the Docker guide to reflect public availability; no additional root README changes.
+Removed the public-image inspection containers and volumes. Public pull verification is complete.

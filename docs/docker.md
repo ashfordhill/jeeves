@@ -63,9 +63,9 @@ overwrite a newer `latest`. The workflow starts the published commit image and c
 after a restart before moving `latest` to that image. GitHub's `[skip ci]` commit directive skips
 this workflow too.
 
-The repository stays private. The image is intended to be public so pulls need no login. GitHub
-initially creates a new package as private: after the first publication, its owner must change
-the **jeeves package's** visibility to **Public** in
+The repository stays private. The image is public, so pulls need no login. If publishing under
+a new package name, GitHub initially creates it as private: after the first publication, its
+owner must change the **package's** visibility to **Public** in
 [package settings](https://github.com/users/ashfordhill/packages/container/jeeves/settings).
 This is a one-time package setting, independent of repository visibility; GitHub does not expose
 it through the supported Packages REST API. See
