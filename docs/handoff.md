@@ -4906,3 +4906,22 @@ Preserved that commit and cancelled its incomplete first workflow run (413521272
 contains the validated startup fixes and latest promotion guard. Publication and anonymous pull
 are verified after pushing this commit, using GitHub Actions and the owner's package visibility
 setting. The user's separate README prose edits remain outside this package commit.
+
+### REPO3 publication evidence
+
+- Pushed 965cdef to main. GitHub Actions run
+  https://github.com/ashfordhill/jeeves/actions/runs/41352665991 passed in full: AMD64/ARM64 build,
+  registry push, pull/start, restart, and guarded latest promotion.
+- Published index digest:
+  `sha256:6eaea162db0315e699d1f0aa6c26856652be0eeede3b4417bc905d0e4e1142cc`.
+  Both published-image health checks returned `status: ok` and `database: ok`.
+- Independently verified the optional external-Postgres mode in isolated disposable containers:
+  healthy API, no bundled database initialized, and exactly one Mattermost example on browser open.
+- Removed every disposable inspection container, volume and network created for this package;
+  the user's development containers and database were not changed.
+- Confirmed the repository remains private. At this checkpoint the new image is also still private;
+  an unauthenticated registry-token request returns HTTP 401. Sent the owner the direct package
+  settings link and requested the one-time Public visibility change, as authorized by their choice.
+  Anonymous pull verification remains pending that external setting; do not claim it has passed.
+- The root README commit changes only the existing shell block (two command lines). The user's
+  separately staged prose and untracked component-library screenshot remain outside our commits.
