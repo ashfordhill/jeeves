@@ -431,6 +431,14 @@ export class ChatService {
               "The pattern preview is stale. No pattern edits were added. Read the current design and preview compatible choices again.",
           };
         }
+        if (workspace.scenarioRevisionBound) {
+          workspace.reset(current);
+          return {
+            ok: false,
+            message:
+              "Scenario inputs changed. Nothing was saved; read the current design and review relationships, contracts and expectations again.",
+          };
+        }
         const replay = applyOperations(current, workspace.pending, this.registry);
         if (!replay.ok) {
           workspace.log("commit", false, "The design changed meanwhile; redoing the edits");

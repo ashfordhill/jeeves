@@ -534,3 +534,33 @@ it("uses the same deployment validators as mouse authoring and binds edits to th
   );
   if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
 });
+
+it("shares scenario validators with mouse authoring and reports expectation freshness to chat", () => {
+  const full = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/architecture-scenarios.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const before = structuredClone(full);
+  delete before.architecture!.scenarios;
+  const workspace = new Workspace(registry, before);
+  const ops = [{ op: "setArchitecture" as const, architecture: full.architecture! }];
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops }))).ok).toBe(true);
+  expect(workspace.scenarioRevisionBound).toBe(true);
+  const mouse = applyOperations(before, ops, registry);
+  expect(mouse.ok).toBe(true);
+  if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
+  const report = JSON.parse(workspace.run("getArchitectureReview", "{}"));
+  expect(report.scenarios).toHaveLength(3);
+  expect(report.scenarios[0].status).toBe("Needs review");
+  expect(report.scenarios[0].fingerprint).toMatch(/^scenario-v1-/);
+  const invalid = structuredClone(ops);
+  invalid[0]!.architecture!.scenarios![2]!.alternatives![0]!.steps[0]!.binding =
+    "lookup-cache-binding";
+  expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops: invalid }))).ok).toBe(
+    false,
+  );
+});

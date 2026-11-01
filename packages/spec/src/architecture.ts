@@ -37,11 +37,7 @@ import {
   relationshipProtocolSchema,
 } from "./relationship-display.ts";
 import { resourceConfigSchema } from "./resources.ts";
-import {
-  architectureScenarioSchema,
-  sameScenarioRelationship,
-  scenarioRelationships,
-} from "./scenarios.ts";
+import { architectureScenarioSchema, validateScenarios } from "./scenarios.ts";
 
 const description = z.string().trim().max(1200).default("");
 /** Historical suggestion inputs survive edits; they are provenance, not live ownership links. */
@@ -331,45 +327,15 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
   }
   for (const scenario of model.scenarios ?? []) {
     const path = ["architecture", "scenarios", scenario.id];
-    const scope = scenario.scope;
     if (ids.has(scenario.id))
       findings.push(
         finding("DUPLICATE_ID", `Scenario identity ${scenario.id} is repeated.`, { path }),
       );
     ids.add(scenario.id);
-    if (
-      scope.level === "components" &&
-      !design.elements.some((element) => element.id === scope.container)
-    )
-      findings.push(
-        finding(
-          "UNKNOWN_REFERENCE",
-          `Scenario “${scenario.name}” refers to a missing application.`,
-          { path },
-        ),
-      );
-    const available = scenarioRelationships(design, scenario.scope);
-    const stepIds = new Set<string>();
-    scenario.steps.forEach((step, index) => {
-      if (stepIds.has(step.id))
-        findings.push(
-          finding("DUPLICATE_ID", `Step identity ${step.id} is repeated in “${scenario.name}”.`, {
-            path: [...path, "steps", index],
-          }),
-        );
-      stepIds.add(step.id);
-      if (!available.some((item) => sameScenarioRelationship(item.relationship, step.relationship)))
-        findings.push(
-          finding(
-            "UNKNOWN_REFERENCE",
-            `Step ${index + 1} in “${scenario.name}” needs an existing relationship in its scope. Remove or update this scenario step before removing its relationship.`,
-            { path: [...path, "steps", index] },
-          ),
-        );
-    });
   }
   return [
     ...findings,
+    ...validateScenarios(design),
     ...validateArchitectureContracts(design),
     ...validateRelationshipBindings(design),
     ...validateArchitectureReview(design),

@@ -125,11 +125,13 @@ context, containers and responsibilities from a brief. Chat edits use the shared
 validation and one undo step per turn. Planned choices keep their availability
 label and generation block; see [P44 evidence](docs/evidence/p44/README.md).
 
-Dynamic scenarios number existing C2 connections or authored C3 relationships and
-list their steps beside the diagram. The QRWTY target includes visitor and owner
-flows; other compositions can add their own through the diagram/editor menu.
-These are saved design explanations, with no new wiring or runtime availability.
-See [P45 evidence](docs/evidence/p45/README.md) for the contract and checks.
+Dynamic scenarios reference existing context/C2/C3 relationships, with actor/start conditions,
+main and named alternative/failure paths, expected outcomes/invariants linked to requirements
+and decisions, and client feature states coupled to exact bindings and operations. Mouse editing,
+history and scripted chat share validation. Expectation reviews become stale when relevant
+contracts change; they are authored design agreement, never test results. Legacy P45 scenarios
+remain lossless and explicitly incomplete. See the [scenario contract](docs/architecture-scenarios.md)
+and [P54 evidence](docs/evidence/p54/README.md). Runtime availability is unchanged.
 
 C1 offerings below are compositions, not separate runtime templates.
 Optional SaaS extensions reuse [entitlements](#c3-entitlements), [data lifecycle](#c3-lifecycle), [custom domains](#c3-domains), [abuse handling](#c3-abuse), [organizations](#c3-organizations), [billing](#c3-billing),

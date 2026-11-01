@@ -1,4 +1,9 @@
-import { type ArchitectureViewNode, type DesignDocument, resourceConfigSchema } from "@jeeves/spec";
+import {
+  type ArchitectureViewNode,
+  type DesignDocument,
+  resourceConfigSchema,
+  scenarioPaths,
+} from "@jeeves/spec";
 import { Button } from "@mantine/core";
 import { OperationLabel, useApiPreview } from "../api-reference/preview.tsx";
 import { AttachmentPanel } from "../draw/inspector/Inspector.tsx";
@@ -135,6 +140,25 @@ export function ComponentDetails({
           <ul className="component-configuration">
             <AttachmentPanel element={element} attachment={attachment} findings={loaded.findings} />
           </ul>
+        </details>
+      ) : null}
+      {loaded.design.architecture?.components?.some(
+        (c) => c.id === node.binding?.component && c.capability === "screen-group",
+      ) ? (
+        <details className="component-technical">
+          <summary>Client journey expectations</summary>
+          {(loaded.design.architecture?.scenarios ?? []).flatMap((s) =>
+            scenarioPaths(s).flatMap((p) =>
+              p.steps
+                .filter((step) => step.client?.component === node.binding?.component)
+                .map((step) => (
+                  <p key={`${s.id}:${step.id}`}>
+                    {s.name} / {p.name}: {step.client?.state} — {step.text} (binding {step.binding}
+                    ). Authored expectation.
+                  </p>
+                )),
+            ),
+          )}
         </details>
       ) : null}
       <details className="component-technical">

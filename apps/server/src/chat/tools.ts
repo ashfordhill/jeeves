@@ -31,6 +31,7 @@ import {
   resolveContractSource,
   reviewArchitecture,
   reviewTemplateUpgrade,
+  scenarioReview,
   subtypeDiscards,
   suggestArchitectureAnnotations,
   templateRefSchema,
@@ -115,7 +116,7 @@ const descriptions: Record<ToolName, string> = {
   applyArchitecturePattern:
     "Apply a versioned architecture pattern with fresh instanceId and explicit role choices in one validated edit. Use preview for ambiguity. Unfilled or incompatible roles and stale revisions change nothing. Ordinary unambiguous/provided choices need no extra approval. Expansion is editable intent, never runtime implementation or proof of outbox atomicity.",
   getDesign:
-    "The current design document (with your pending edits applied) and its findings. architecture.deployments contains planned alternative environments: nested deployment/infrastructure nodes, instances referencing logical C2 identities (replicas 1–32), external references and interactions tracing exact logical relationships. Named channels remain separate on broker infrastructure. Legacy infrastructure mappings require source identity and review reason. No provisioning, generated wiring or observed health follows. Preserve all other architecture entries when editing deployments via setArchitecture.",
+    "The current design document (with your pending edits applied) and its findings. architecture.deployments contains planned alternative environments: nested deployment/infrastructure nodes, instances referencing logical C2 identities (replicas 1–32), external references and interactions tracing exact logical relationships. Named channels remain separate on broker infrastructure. Legacy infrastructure mappings require source identity and review reason. No provisioning, generated wiring or observed health follows. Preserve all other architecture entries when editing deployments via setArchitecture. Scenarios use optional actor, startCondition, mainOutcomes, outcomes (text, invariants, requirements, decisions), alternatives (name, kind, condition, afterStep, steps, outcomes), and expectation review fingerprint. Steps reference connection, componentRelationship or contextRelationship; optional binding must match that relationship. Optional phase request/response/continuation preserves static direction; client component must be a screen-group coupled by the binding interface with an operation, and state is loading/success/denied/failed. Main and alternatives are bounded ordered paths, never loops or executable simulation. Keep legacy fields lossless; missing new fields remain incomplete. Read getArchitectureReview for scenario fingerprints/status and record review only when asked; this never records a test result.",
   applyOperations:
     "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Element classification:{kind,ownership,operation} describes architectural intent independently of runtime host roles; system context has independent businessTenancy, authorization, dataIsolation and deliveryModel choices. Read their schemas from applyOperations. Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
   validateDesign: "The current findings (readiness problems) of the design, with pending edits.",
@@ -172,6 +173,7 @@ export class Workspace {
   reviewRevisionBound = false;
   annotationRevisionBound = false;
   deploymentRevisionBound = false;
+  scenarioRevisionBound = false;
   targetRequest: CreateTarget | undefined;
   createdTarget: { id: string; name: string } | undefined;
   question: ChatQuestion | undefined;
@@ -194,6 +196,7 @@ export class Workspace {
     this.reviewRevisionBound = false;
     this.annotationRevisionBound = false;
     this.deploymentRevisionBound = false;
+    this.scenarioRevisionBound = false;
     this.targetRequest = undefined;
   }
 
@@ -347,6 +350,11 @@ export class Workspace {
         this.log(tool, true, "Read architecture review and decisions");
         return {
           ...reviewArchitecture(this.working),
+          scenarios: (this.working.architecture?.scenarios ?? []).map((s) => ({
+            id: s.id,
+            name: s.name,
+            ...scenarioReview(this.working, s),
+          })),
           requirements: this.working.architecture?.reviewRequirements ?? [],
           decisions: this.working.architecture?.decisions ?? [],
         };
@@ -497,6 +505,11 @@ export class Workspace {
       (this.working.architecture?.deployments || result.design.architecture?.deployments)
     )
       this.deploymentRevisionBound = true;
+    if (
+      ops.some((op) => op.op === "setArchitecture") &&
+      (this.working.architecture?.scenarios || result.design.architecture?.scenarios)
+    )
+      this.scenarioRevisionBound = true;
     this.working = result.design;
     this.pending.push(...ops);
     this.log("applyOperations", true, `Prepared ${plural(ops.length, "change")}`);

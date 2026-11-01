@@ -54,7 +54,7 @@
     flex-direction: column;
   }
   .scenario-panel {
-    flex: 0 0 210px;
+    flex: 0 0 min(300px, 45vh);
     width: 100%;
     border-left: 0;
     border-top: 1px solid var(--grid-dot);
@@ -71,4 +71,30 @@
 .scenario-diagram > .architecture-stage {
   flex: 1;
   min-height: 0;
+}
+
+.scenario-step-detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.scenario-expectations {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.scenario-expectations summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.scenario-panel > .mantine-Group-root {
+  margin-top: 12px;
+}
+
+.scenario-save-action:hover {
+  background-color: var(--mantine-color-cyan-9);
+}
+
+.scenario-error {
+  max-height: 120px;
+  overflow: auto;
 }

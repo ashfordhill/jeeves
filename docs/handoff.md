@@ -4121,3 +4121,85 @@ Stop after P53 and its scoped local commit; execute P54 separately in this check
 
 Final documentation validation: all **47 changed-document local link targets** resolve, earlier
 handoff bytes are preserved, and `git diff --check` passes. P53 is ready for its local commit.
+
+## 2026-11-01 — P54: scenarios, outcomes and client journeys
+
+Implemented P54 only in `/home/ash/github/jeeves` on the existing `main` branch.
+[Evidence and eight inspected captures](evidence/p54/README.md) and the
+[scenario model/editor contract](architecture-scenarios.md) describe the result.
+P55's user-defined reusable architecture library is next, only when requested.
+
+Extended P45 scenarios losslessly with context actor/start condition, bounded main and named
+alternative/failure paths, branch points, expected outcomes/invariants and requirement/decision
+links. Steps reference existing authored context/C2/C3 relationships and exact P48 bindings.
+Request/response/continuation phases preserve static dependency direction; asynchronous work
+followed by a response is valid. Context references touch the system and C3 entry/exit references
+bind to its scoped application. Every path participates in structural/reference validation.
+Duplicate local identities, missing/cross-scope wiring, incompatible bindings, outcome links and
+client coupling errors reject the whole operation. Rename retains identities; referenced removal
+requires dependent edits in the same batch. New alternative path IDs reserve main, while existing
+P45 steps named main stay valid. Missing new fields remain saveable, explicitly incomplete intent.
+
+Client states reference screen-group responsibilities participating through a binding interface
+and a planned operation or authoritative REST-operation source. Loading/success/denied/failed
+states stay product journey intent. The client component inspector lists these expectations.
+The new separate scenario fixture covers redirect cache hit/miss/source fallback, visit-channel
+failure and bounded analytics degradation, duplicate billing acknowledgement, and owner success
+or denial. The original P45/QRWTY examples are unchanged.
+
+Expectation review has Incomplete / Needs review / Reviewed / Stale states. An explicit authored
+review records a deterministic non-security fingerprint of scenario intent and relevant actors,
+relationships, bindings/interfaces, exact contracts and live sources, client definitions and linked
+requirements/decisions. Related requirement bindings and decision-linked bindings/contracts are
+included. Relevant edits expire review; unrelated revision/layout/notes/contracts do not. These
+are authored acceptance expectations, never test results. Expectation freshness stays separate
+from generation findings and P51 requirement-review completion.
+
+Mouse editing adds/removes/reorders main and alternative steps, chooses outcome links and client
+states, and records review. Fixed Save/Cancel and bounded visible errors remain reachable while
+forms scroll. Invalid branches and revision conflicts retain drafts. Saves are one semantic undo
+step, support redo and reload. Chat uses the same schemas/validators, reports scenario fingerprints
+through getArchitectureReview and refuses stale scenario-bearing snapshot replay. Scenario-only
+scripted concurrency excludes review metadata to prove this guard independently. Existing pattern,
+review and deployment conflict handling retains its priority. Ordinary supplied planning edits need
+no extra approval; chat records expectation agreement only when explicitly requested.
+
+Final verification (unchanged Git fingerprints during each recorded run):
+
+- `pnpm work run unit packages/spec/src/scenarios.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts packages/generator/src/architecture.test.ts`:
+  **82 tests / 4 files**, Vitest **5.50s**, profile **6.0s**;
+  `2026-11-01T14-33-15-277Z-unit-a80f4c41`.
+- `pnpm work run browser-preview apps/web/e2e/architecture-scenarios.spec.ts apps/web/e2e/architecture-authoring.spec.ts`:
+  **7 passed**, Playwright **15.3s**, profile **17.1s**;
+  `2026-11-01T14-32-28-776Z-browser-preview-e890cdb5`.
+  Production assets, strict diagnostics with exactly registered expected HTTP revision conflicts,
+  axe, narrow overflow, P45 regressions, C3 authoring and client inspector all pass.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **889 tests / 118 files**
+  passed, Vitest **37.62s**, profile **45.6s**;
+  `2026-11-01T14-35-00-572Z-check-b8b2c5a1`. Biome checked **770 files**:
+  **1590 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- Inspected eight **1440 × 900 desktop / 390 × 844 dark narrow** captures. Alternative conditions,
+  client states, acceptance intent, stale review, fixed conflict messages and actions are readable.
+  The whole C2 topology remains an overview; the focused client C3 and step panel expose detail.
+- Generator compatibility preserves executable files/contracts, artifacts and ownership; only the
+  intentionally lossless design snapshot gains scenario metadata. No golden refresh. Read-only
+  E2E database inspection found **zero** projects with the P54/P45 scenario fixture names.
+
+Interim checks corrected relative locator/required-label assumptions, hidden multi-select input
+interaction, inherited save-button hover contrast and test-only optional architecture assertions.
+The contract freshness browser check now creates an explicit v2 and migrates its interfaces/binding,
+respecting P47's immutable referenced versions. Review caught legacy main-step compatibility and
+source-backed operation coupling. Visual review compacted the narrow panel and moved bounded
+conflict/reference errors beside fixed actions. No automatic retries, increased timeouts, diagnostic suppression,
+dependency changes or golden updates were used. Earlier failed runs are not final evidence.
+
+No material scope deviation. No workflow language, loops/scripts, executable simulation, UI/routing
+generation, automatic tests, new runtime/template/recipe, generator filtering, paid model call,
+provisioning, live qrwty adoption or application changes. No migrations are needed. Catalog and
+roadmap/agent/entry pointers describe actual authoring availability only. Shared Postgres/live data
+were retained. Evidence archives and this append-only record follow the final checks; no application
+code changed afterward. Stop after P54 and its scoped local commit; execute P55 separately in this
+checkout/branch when requested.
+
+Final documentation validation: all **131 changed-document local link targets** resolve,
+earlier handoff bytes are preserved, and `git diff --check` passes. P54 is ready for its local commit.

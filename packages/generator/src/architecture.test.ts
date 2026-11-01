@@ -315,6 +315,43 @@ it("keeps dynamic scenarios in the saved snapshot while leaving generated artifa
     {
       id: "owner-link",
       name: "Owner creates a link",
+      actor: edited.architecture!.nodes.find((n) => n.kind === "person")!.id,
+      startCondition: "Owner submits an authorized link command.",
+      outcomes: [
+        {
+          id: "saved-result",
+          text: "Link is saved.",
+          invariants: ["Printed identity stays stable."],
+          requirements: [],
+          decisions: [],
+        },
+        {
+          id: "denied-outcome",
+          text: "Owner sees permission denied.",
+          invariants: ["Denied commands change nothing."],
+          requirements: [],
+          decisions: [],
+        },
+      ],
+      mainOutcomes: ["saved-result"],
+      alternatives: [
+        {
+          id: "denial-path",
+          name: "Denied",
+          kind: "failure",
+          condition: "Permission is absent.",
+          afterStep: "save",
+          steps: [
+            {
+              id: "denied-result",
+              relationship: { kind: "connection", id: design.connections[0]!.id },
+              text: "Return permission denied.",
+              phase: "response",
+            },
+          ],
+          outcomes: ["denied-outcome"],
+        },
+      ],
       scope: { level: "containers" },
       steps: [
         {
