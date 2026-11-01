@@ -7,7 +7,7 @@ import type { ToolDefinition } from "@jeeves/providers";
 import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
-  architectureContractReview,
+  architectureReview,
   componentCompatible,
   contractCanonical,
   contractSources,
@@ -78,7 +78,7 @@ const descriptions: Record<ToolName, string> = {
   reviewSubtype:
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getArchitectureContracts:
-    "Inspect project-local contract definitions, provided/required interfaces, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
+    "Inspect project-local contract definitions, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
   getDesign: "The current design document (with your pending edits applied) and its findings.",
   applyOperations:
     "Edit the design. Ops: addElement, upgradeTemplate (only reviewed compatible same-template paths, exact from/to and current revision; preserves configuration and wiring), changeSubtype (use reviewSubtype for destructive changes), updateElement, removeElement, addAttachment, updateAttachment, removeAttachment, connect, disconnect, setNotes, addAnnotation, updateAnnotation, removeAnnotation, updateConnection (C4 label/protocol/interaction), setArchitecture (replaces the whole C1 context and C3 components/relationships; read getDesign and preserve existing entries). Element classification:{kind,ownership,operation} describes architectural intent independently of runtime host roles; system context has independent businessTenancy, authorization, dataIsolation and deliveryModel choices. Read their schemas from applyOperations. Planned containers use template:null, planned:<catalog ID>, config, description and technology; planned connections use planned:{label,protocol,interaction,security}. The batch applies all-or-nothing; a refusal returns errors and changes nothing. Returns the findings after the edit.",
@@ -227,7 +227,10 @@ export class Workspace {
         return {
           contracts: this.working.architecture?.contracts ?? [],
           interfaces: this.working.architecture?.interfaces ?? [],
-          review: architectureContractReview(this.working),
+          bindings: this.working.architecture?.bindings ?? [],
+          datasets: this.working.architecture?.datasets ?? [],
+          objectives: this.working.architecture?.objectives ?? [],
+          review: architectureReview(this.working),
           sources: contractSources(this.working).map((item) => ({
             ...item,
             sourceSnapshot: contractCanonical(resolveContractSource(this.working, item.source)),

@@ -38,12 +38,14 @@ import { ProjectChooser } from "../draw/ProjectChooser.tsx";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
 import { GenerateButton, GenerateDrawer } from "../generate/GenerateDrawer.tsx";
 import { useGenerate } from "../generate/store.ts";
+import { ArchitectureData } from "./ArchitectureData.tsx";
 import { ContextEditor, ProductConfiguration } from "./ArchitectureEditors.tsx";
 import { ArchitectureEvidenceDialog } from "./ArchitectureEvidence.tsx";
 import { type ArchitectureCameraCache, ArchitectureGraph } from "./ArchitectureGraph.tsx";
 import { CapabilityCatalog } from "./CapabilityCatalog.tsx";
 import { ComponentDetails } from "./ComponentDetails.tsx";
 import { InterfaceSummary } from "./InterfaceEditor.tsx";
+import { BindingSummary } from "./RelationshipBindings.tsx";
 import "./contracts.css";
 import { ComponentEditor } from "./ComponentEditor.tsx";
 import { ComponentRelationshipEditor } from "./ComponentRelationshipEditor.tsx";
@@ -86,6 +88,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   );
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [apiOpen, setApiOpen] = useState(false);
+  const [dataOpen, setDataOpen] = useState(false);
   const [apiSelection, setApiSelection] = useState<ApiSelection>({});
   const openApi = (selection: ApiSelection) => {
     setApiSelection(selection);
@@ -311,6 +314,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               ) : null}
               <Menu.Divider />
               <Menu.Item onClick={() => setApiOpen(true)}>API contracts</Menu.Item>
+              <Menu.Item onClick={() => setDataOpen(true)}>
+                Data responsibilities and objectives
+              </Menu.Item>
               <Menu.Item onClick={() => setFindingsOpen(true)}>
                 Findings ({loaded.findings.length})
               </Menu.Item>
@@ -613,12 +619,22 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                       <h2>{edge.description}</h2>
                       <p>Describes intended collaboration within this application.</p>
                       {edge.componentRelationship ? (
-                        <Button
-                          variant="default"
-                          onClick={() => setRelationshipEditor({ id: edge.componentRelationship })}
-                        >
-                          Edit relationship
-                        </Button>
+                        <>
+                          <Button
+                            variant="default"
+                            onClick={() =>
+                              setRelationshipEditor({ id: edge.componentRelationship })
+                            }
+                          >
+                            Edit relationship
+                          </Button>
+                          <BindingSummary
+                            relationship={{
+                              kind: "component-relationship",
+                              id: edge.componentRelationship,
+                            }}
+                          />
+                        </>
                       ) : null}
                     </section>
                   )}
@@ -751,6 +767,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           />
         </Modal>
       ) : null}
+      {dataOpen ? <ArchitectureData design={design} onClose={() => setDataOpen(false)} /> : null}
       {legendOpen ? (
         <Modal
           opened

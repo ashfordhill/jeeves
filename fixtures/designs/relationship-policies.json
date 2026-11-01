@@ -1,0 +1,851 @@
+{
+  "schemaVersion": 2,
+  "revision": 0,
+  "elements": [
+    {
+      "id": "management",
+      "name": "Management API",
+      "template": null,
+      "planned": "application-api",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "redirect",
+      "name": "Public redirect",
+      "template": null,
+      "planned": "application-api",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "cache",
+      "name": "Lookup cache",
+      "template": null,
+      "planned": "distributed-cache",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "records",
+      "name": "Authoritative records",
+      "template": null,
+      "planned": "relational-store",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "payment",
+      "name": "Payment provider",
+      "template": null,
+      "planned": "third-party-service",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "visits",
+      "name": "Visit channel",
+      "template": null,
+      "planned": "event-stream",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    },
+    {
+      "id": "worker",
+      "name": "Visit processing",
+      "template": null,
+      "planned": "background-worker",
+      "config": {},
+      "attachments": [],
+      "notes": ""
+    }
+  ],
+  "connections": [
+    {
+      "id": "lookup-cache",
+      "kind": "depends-on",
+      "from": {
+        "element": "redirect"
+      },
+      "to": {
+        "element": "cache"
+      },
+      "planned": {
+        "label": "Reads records from",
+        "protocol": "Redis protocol",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "lookup-store",
+      "kind": "depends-on",
+      "from": {
+        "element": "redirect"
+      },
+      "to": {
+        "element": "records"
+      },
+      "planned": {
+        "label": "Reads records from",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "update-store",
+      "kind": "depends-on",
+      "from": {
+        "element": "management"
+      },
+      "to": {
+        "element": "records"
+      },
+      "planned": {
+        "label": "Updates records in",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "invalidate-cache",
+      "kind": "depends-on",
+      "from": {
+        "element": "management"
+      },
+      "to": {
+        "element": "cache"
+      },
+      "planned": {
+        "label": "Updates records in",
+        "protocol": "Redis protocol",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "payment-callback",
+      "kind": "depends-on",
+      "from": {
+        "element": "payment"
+      },
+      "to": {
+        "element": "management"
+      },
+      "planned": {
+        "label": "Delivers signed billing callback to",
+        "protocol": "HTTPS",
+        "interaction": "Asynchronous",
+        "security": "Public"
+      }
+    },
+    {
+      "id": "publish-visits",
+      "kind": "depends-on",
+      "from": {
+        "element": "redirect"
+      },
+      "to": {
+        "element": "visits"
+      },
+      "planned": {
+        "label": "Publishes visits to",
+        "protocol": "Named channel: visits",
+        "interaction": "Asynchronous",
+        "security": "Public"
+      }
+    },
+    {
+      "id": "consume-visits",
+      "kind": "depends-on",
+      "from": {
+        "element": "worker"
+      },
+      "to": {
+        "element": "visits"
+      },
+      "planned": {
+        "label": "Consumes visits from",
+        "protocol": "Named channel: visits",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    }
+  ],
+  "annotations": [],
+  "architecture": {
+    "system": {
+      "name": "Bounded link service",
+      "description": "Relationship policies with independent authority and objectives",
+      "businessTenancy": "Organizations"
+    },
+    "nodes": [
+      {
+        "id": "payment-context",
+        "name": "Payment provider",
+        "description": "",
+        "kind": "external-system",
+        "container": "payment"
+      }
+    ],
+    "relationships": [],
+    "components": [
+      {
+        "id": "links",
+        "element": "management",
+        "name": "Link management",
+        "responsibility": "Link management",
+        "config": {},
+        "members": [],
+        "usesResources": [],
+        "usesConnections": []
+      },
+      {
+        "id": "billing",
+        "element": "management",
+        "name": "Billing policy",
+        "responsibility": "Billing policy",
+        "config": {},
+        "members": [],
+        "usesResources": [],
+        "usesConnections": []
+      },
+      {
+        "id": "lookup",
+        "element": "redirect",
+        "name": "Redirect lookup",
+        "responsibility": "Redirect lookup",
+        "config": {},
+        "members": [],
+        "usesResources": [],
+        "usesConnections": []
+      },
+      {
+        "id": "visit-processor",
+        "element": "worker",
+        "name": "Visit processing",
+        "responsibility": "Visit processing",
+        "config": {},
+        "members": [],
+        "usesResources": [],
+        "usesConnections": []
+      }
+    ],
+    "componentRelationships": [
+      {
+        "id": "check-entitlement",
+        "from": "links",
+        "to": "billing",
+        "description": "Checks entitlement before update",
+        "protocol": "In process"
+      }
+    ],
+    "contracts": [
+      {
+        "id": "link-records",
+        "version": "v1",
+        "name": "Link records",
+        "kind": "data",
+        "description": "",
+        "shape": {
+          "operations": [],
+          "payload": [
+            {
+              "id": "record-id",
+              "name": "recordId",
+              "type": "uuid",
+              "required": true,
+              "description": ""
+            }
+          ]
+        }
+      },
+      {
+        "id": "billing-callback",
+        "version": "v1",
+        "name": "BillingChanged",
+        "kind": "api",
+        "description": "",
+        "shape": {
+          "operations": [
+            {
+              "id": "billing-callback-op",
+              "name": "BillingChanged",
+              "description": "",
+              "input": [],
+              "output": []
+            }
+          ],
+          "payload": []
+        }
+      },
+      {
+        "id": "visit-recorded",
+        "version": "v1",
+        "name": "VisitRecorded",
+        "kind": "event",
+        "description": "",
+        "shape": {
+          "operations": [],
+          "payload": [
+            {
+              "id": "record-id",
+              "name": "recordId",
+              "type": "uuid",
+              "required": true,
+              "description": ""
+            }
+          ]
+        }
+      },
+      {
+        "id": "entitlement-check",
+        "version": "v1",
+        "name": "CheckEntitlement",
+        "kind": "in-process",
+        "description": "",
+        "shape": {
+          "operations": [
+            {
+              "id": "entitlement-check-op",
+              "name": "CheckEntitlement",
+              "description": "",
+              "input": [],
+              "output": []
+            }
+          ],
+          "payload": []
+        }
+      }
+    ],
+    "interfaces": [
+      {
+        "id": "cache-data",
+        "name": "Cache Data",
+        "owner": {
+          "kind": "element",
+          "id": "cache"
+        },
+        "direction": "provided",
+        "necessity": "required",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "store-data",
+        "name": "Store Data",
+        "owner": {
+          "kind": "element",
+          "id": "records"
+        },
+        "direction": "provided",
+        "necessity": "required",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "lookup-cache-use",
+        "name": "Lookup Cache Use",
+        "owner": {
+          "kind": "component",
+          "id": "lookup"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "lookup-store-use",
+        "name": "Lookup Store Use",
+        "owner": {
+          "kind": "component",
+          "id": "lookup"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "link-write",
+        "name": "Link Write",
+        "owner": {
+          "kind": "component",
+          "id": "links"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "cache-invalidation",
+        "name": "Cache Invalidation",
+        "owner": {
+          "kind": "component",
+          "id": "links"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "billing-handler",
+        "name": "Billing Handler",
+        "owner": {
+          "kind": "component",
+          "id": "billing"
+        },
+        "direction": "provided",
+        "necessity": "required",
+        "contract": {
+          "id": "billing-callback",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "payment-send",
+        "name": "Payment Send",
+        "owner": {
+          "kind": "external-system",
+          "id": "payment-context"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "billing-callback",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "visit-producer",
+        "name": "Visit Producer",
+        "owner": {
+          "kind": "component",
+          "id": "lookup"
+        },
+        "direction": "provided",
+        "necessity": "required",
+        "contract": {
+          "id": "visit-recorded",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "visit-ingress",
+        "name": "Visit Ingress",
+        "owner": {
+          "kind": "element",
+          "id": "visits"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "visit-recorded",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "visit-feed",
+        "name": "Visit Feed",
+        "owner": {
+          "kind": "element",
+          "id": "visits"
+        },
+        "direction": "provided",
+        "necessity": "required",
+        "contract": {
+          "id": "visit-recorded",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "visit-use",
+        "name": "Visit Use",
+        "owner": {
+          "kind": "component",
+          "id": "visit-processor"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "visit-recorded",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "entitlement-provider",
+        "name": "Entitlement Provider",
+        "owner": {
+          "kind": "component",
+          "id": "billing"
+        },
+        "direction": "provided",
+        "necessity": "required",
+        "contract": {
+          "id": "entitlement-check",
+          "version": "v1"
+        }
+      },
+      {
+        "id": "entitlement-use",
+        "name": "Entitlement Use",
+        "owner": {
+          "kind": "component",
+          "id": "links"
+        },
+        "direction": "required",
+        "necessity": "required",
+        "contract": {
+          "id": "entitlement-check",
+          "version": "v1"
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "id": "lookup-cache-binding",
+        "name": "Lookup Cache",
+        "relationship": {
+          "kind": "connection",
+          "id": "lookup-cache"
+        },
+        "provided": "cache-data",
+        "required": "lookup-cache-use",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        },
+        "role": "read",
+        "transport": "Redis protocol",
+        "businessSynchrony": "Synchronous",
+        "policies": {
+          "access": {
+            "identity": "Service",
+            "tenant": "Tenant scoped",
+            "network": "Private"
+          },
+          "failure": {
+            "timeoutMs": 25,
+            "outcome": "Source fallback",
+            "detail": "Redirect lookup reads authoritative records on cache miss or failure."
+          },
+          "freshness": {
+            "maxAgeSeconds": 30,
+            "invalidation": "Event driven",
+            "detail": "Link management invalidates on destination changes and abuse shutdown."
+          }
+        }
+      },
+      {
+        "id": "lookup-store-binding",
+        "name": "Lookup Store",
+        "relationship": {
+          "kind": "connection",
+          "id": "lookup-store"
+        },
+        "provided": "store-data",
+        "required": "lookup-store-use",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        },
+        "role": "read",
+        "transport": "SQL",
+        "businessSynchrony": "Synchronous",
+        "policies": {
+          "access": {
+            "identity": "Service",
+            "tenant": "Tenant scoped",
+            "network": "Private"
+          },
+          "failure": {
+            "timeoutMs": 150,
+            "outcome": "Fail request",
+            "detail": "Return unavailable when neither source is usable."
+          }
+        }
+      },
+      {
+        "id": "update-store-binding",
+        "name": "Update Store",
+        "relationship": {
+          "kind": "connection",
+          "id": "update-store"
+        },
+        "provided": "store-data",
+        "required": "link-write",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        },
+        "role": "write",
+        "transport": "SQL",
+        "businessSynchrony": "Synchronous",
+        "policies": {
+          "access": {
+            "identity": "Service",
+            "tenant": "Tenant scoped",
+            "network": "Private"
+          }
+        }
+      },
+      {
+        "id": "invalidate-cache-binding",
+        "name": "Invalidate Cache",
+        "relationship": {
+          "kind": "connection",
+          "id": "invalidate-cache"
+        },
+        "provided": "cache-data",
+        "required": "cache-invalidation",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        },
+        "role": "write",
+        "transport": "Redis protocol",
+        "businessSynchrony": "Synchronous",
+        "policies": {
+          "access": {
+            "identity": "Service",
+            "tenant": "Tenant scoped",
+            "network": "Private"
+          },
+          "freshness": {
+            "maxAgeSeconds": 30,
+            "invalidation": "On write",
+            "detail": "Link changes and disables invalidate the same lookup identity."
+          }
+        }
+      },
+      {
+        "id": "payment-callback-binding",
+        "name": "Payment Callback",
+        "relationship": {
+          "kind": "connection",
+          "id": "payment-callback"
+        },
+        "provided": "billing-handler",
+        "required": "payment-send",
+        "contract": {
+          "id": "billing-callback",
+          "version": "v1"
+        },
+        "role": "callback",
+        "transport": "HTTPS",
+        "businessSynchrony": "Asynchronous",
+        "policies": {
+          "access": {
+            "identity": "Signed callback",
+            "tenant": "Tenant scoped",
+            "network": "Public"
+          },
+          "retry": {
+            "maxAttempts": 4,
+            "idempotency": "Required",
+            "key": "Provider event ID in billing transaction"
+          },
+          "delivery": {
+            "guarantee": "At least once",
+            "ordering": "Per key",
+            "acknowledgement": "Persisted"
+          },
+          "failure": {
+            "timeoutMs": 1000,
+            "outcome": "Fail request",
+            "detail": "Acknowledge HTTP only after durable acceptance."
+          }
+        }
+      },
+      {
+        "id": "publish-visits-binding",
+        "name": "Publish Visits",
+        "relationship": {
+          "kind": "connection",
+          "id": "publish-visits"
+        },
+        "provided": "visit-producer",
+        "required": "visit-ingress",
+        "contract": {
+          "id": "visit-recorded",
+          "version": "v1"
+        },
+        "role": "publish",
+        "transport": "Named channel: visits",
+        "businessSynchrony": "Asynchronous",
+        "policies": {
+          "access": {
+            "identity": "Service",
+            "tenant": "Tenant scoped",
+            "network": "Private"
+          },
+          "failure": {
+            "timeoutMs": 10,
+            "outcome": "Bounded loss",
+            "detail": "Redirect succeeds; at most 60 seconds of analytics may be lost during channel failure."
+          },
+          "retry": {
+            "maxAttempts": 1,
+            "idempotency": "Not required",
+            "key": ""
+          },
+          "delivery": {
+            "guarantee": "At most once",
+            "ordering": "Unordered",
+            "acknowledgement": "Accepted",
+            "lossWindowSeconds": 60
+          }
+        }
+      },
+      {
+        "id": "consume-visits-binding",
+        "name": "Consume Visits",
+        "relationship": {
+          "kind": "connection",
+          "id": "consume-visits"
+        },
+        "provided": "visit-feed",
+        "required": "visit-use",
+        "contract": {
+          "id": "visit-recorded",
+          "version": "v1"
+        },
+        "role": "consume",
+        "transport": "Named channel: visits",
+        "businessSynchrony": "Asynchronous",
+        "policies": {
+          "access": {
+            "identity": "Service",
+            "tenant": "Tenant scoped",
+            "network": "Private"
+          },
+          "retry": {
+            "maxAttempts": 3,
+            "idempotency": "Required",
+            "key": "Visit ID per aggregate"
+          },
+          "delivery": {
+            "guarantee": "At least once",
+            "ordering": "Per key",
+            "acknowledgement": "Processed"
+          }
+        }
+      },
+      {
+        "id": "check-entitlement-binding",
+        "name": "Check entitlements",
+        "relationship": {
+          "kind": "component-relationship",
+          "id": "check-entitlement"
+        },
+        "provided": "entitlement-provider",
+        "required": "entitlement-use",
+        "contract": {
+          "id": "entitlement-check",
+          "version": "v1"
+        },
+        "role": "request",
+        "transport": "In process",
+        "businessSynchrony": "Synchronous"
+      }
+    ],
+    "datasets": [
+      {
+        "id": "links-dataset",
+        "name": "Link authority",
+        "contract": {
+          "id": "link-records",
+          "version": "v1"
+        },
+        "owners": [
+          {
+            "kind": "component",
+            "id": "links"
+          }
+        ],
+        "ownershipDecision": "",
+        "store": "records",
+        "readers": [
+          {
+            "kind": "component",
+            "id": "lookup"
+          }
+        ],
+        "writers": [
+          {
+            "kind": "component",
+            "id": "links"
+          }
+        ],
+        "tenant": "Tenant scoped",
+        "retentionDays": 365,
+        "deletion": "Delete",
+        "exportAccess": "Tenant admin"
+      }
+    ],
+    "objectives": [
+      {
+        "id": "redirect-response",
+        "name": "Redirect response time",
+        "scope": {
+          "kind": "binding",
+          "id": "lookup-store-binding"
+        },
+        "metric": "response-time",
+        "value": 200,
+        "unit": "milliseconds",
+        "boundary": "P95 redirect ingress to Location response; excludes analytics processing",
+        "window": "5 minutes at declared peak"
+      },
+      {
+        "id": "analytics-lag",
+        "name": "Visit analytics lag",
+        "scope": {
+          "kind": "binding",
+          "id": "consume-visits-binding"
+        },
+        "metric": "analytics-lag",
+        "value": 60,
+        "unit": "seconds",
+        "boundary": "P95 visit timestamp to aggregate visibility",
+        "window": "5 minutes at declared peak"
+      },
+      {
+        "id": "background-completion",
+        "name": "Visit job completion",
+        "scope": {
+          "kind": "binding",
+          "id": "consume-visits-binding"
+        },
+        "metric": "job-completion",
+        "value": 5,
+        "unit": "seconds",
+        "boundary": "P95 accepted visit job start to commit",
+        "window": "5 minutes at declared peak"
+      }
+    ]
+  }
+}

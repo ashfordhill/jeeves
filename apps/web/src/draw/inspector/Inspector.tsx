@@ -29,6 +29,7 @@ import {
   PlannedConnectionInspector,
   PlannedElementInspector,
 } from "../../architecture/PlannedInspector.tsx";
+import { BindingSummary } from "../../architecture/RelationshipBindings.tsx";
 import { elementFamily, templateFamily, typeStyles } from "../../architecture/type-style.tsx";
 import { connectionLabels } from "../connect.ts";
 import { templateKey } from "../flow.ts";
@@ -428,6 +429,7 @@ export function ConnectionInspector({ connection }: { connection: Connection }) 
           <FindingList findings={findings} />
         </Section>
       ) : null}
+      <BindingSummary relationship={{ kind: "connection", id: connection.id }} />
       <DeleteButton label="Delete connection" ops={[{ op: "disconnect", id: connection.id }]} />
     </section>
   );

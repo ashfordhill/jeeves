@@ -302,3 +302,43 @@ it("contract source references survive multiple tool edits committed as one chat
   expect(committed.ok).toBe(true);
   if (committed.ok) expect(committed.design.revision).toBe(before.revision + 1);
 });
+
+it("chat discovers relationship policies and saves review conflicts through the shared atomic validator", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { designSchema } = await import("@jeeves/spec");
+  const before = designSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL("../../../../fixtures/designs/relationship-policies.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  const workspace = new Workspace(registry, before);
+  const discovery = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
+  expect(discovery.bindings).toHaveLength(8);
+  expect(discovery.datasets).toHaveLength(1);
+  expect(discovery.objectives).toHaveLength(3);
+  expect(discovery.review).toEqual([]);
+  const architecture = structuredClone(before.architecture!);
+  architecture.bindings![0]!.policies!.access!.identity = "Public";
+  const edit = (value: typeof architecture) =>
+    JSON.parse(
+      workspace.run(
+        "applyOperations",
+        JSON.stringify({ ops: [{ op: "setArchitecture", architecture: value }] }),
+      ),
+    );
+  expect(edit(architecture).ok).toBe(true);
+  const review = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
+  expect(review.review.some((item: { code: string }) => item.code === "TENANT_CONFLICT")).toBe(
+    true,
+  );
+  expect(workspace.pending).toHaveLength(1);
+  const committed = applyOperations(before, workspace.pending, registry);
+  expect(committed.ok && committed.design.revision).toBe(before.revision + 1);
+  const invalid = structuredClone(architecture);
+  invalid.bindings![0]!.relationship.id = "missing";
+  expect(edit(invalid).ok).toBe(false);
+  expect(workspace.working.architecture).toEqual(architecture);
+});

@@ -429,3 +429,105 @@ it("keeps interface contracts in the lossless design snapshot without changing e
     "planned-api",
   );
 });
+
+it("preserves executable outputs and ownership with relationship policies, data authority and objectives", async () => {
+  const { architectureReview, contractCanonical, contractSources, resolveContractSource } =
+    await import("@jeeves/spec");
+  const design = fixtureDesign("qrwty-architecture");
+  const before = planProject(design, templates, { projectName: "QR" });
+  const source = contractSources(design).find((item) => item.kind === "data")!;
+  const architecture = design.architecture!;
+  architecture.contracts = [
+    {
+      id: "resource-data",
+      name: "QR records",
+      version: "v1",
+      kind: "data",
+      description: "",
+      source: source.source,
+      sourceSnapshot: contractCanonical(resolveContractSource(design, source.source)),
+      sourceDesignRevision: design.revision,
+    },
+    {
+      id: "store-interface",
+      name: "Record storage",
+      version: "v1",
+      kind: "data",
+      description: "",
+      shape: { operations: [], payload: [] },
+    },
+  ];
+  architecture.interfaces = [
+    {
+      id: "database-records",
+      name: "Stored records",
+      direction: "provided",
+      necessity: "required",
+      owner: { kind: "element", id: "qrwty-db" },
+      contract: { id: "store-interface", version: "v1" },
+    },
+    {
+      id: "record-writer",
+      name: "Record writes",
+      direction: "required",
+      necessity: "required",
+      owner: { kind: "component", id: "qr-management" },
+      contract: { id: "store-interface", version: "v1" },
+    },
+  ];
+  architecture.bindings = [
+    {
+      id: "record-binding",
+      name: "Record policy declaration",
+      relationship: { kind: "connection", id: "qrwty-uses-db" },
+      provided: "database-records",
+      required: "record-writer",
+      contract: { id: "store-interface", version: "v1" },
+      role: "write",
+      transport: "SQL",
+      businessSynchrony: "Synchronous",
+      policies: { access: { identity: "Unknown", tenant: "Tenant scoped", network: "Private" } },
+    },
+  ];
+  architecture.datasets = [
+    {
+      id: "qr-authority",
+      name: "QR authority",
+      contract: { id: "resource-data", version: "v1" },
+      owners: [{ kind: "component", id: "qr-management" }],
+      ownershipDecision: "",
+      store: "qrwty-db",
+      readers: [],
+      writers: [{ kind: "component", id: "qr-management" }],
+      tenant: "Tenant scoped",
+      retentionDays: 365,
+      deletion: "Delete",
+      exportAccess: "Owner",
+    },
+  ];
+  architecture.objectives = [
+    {
+      id: "redirect-goal",
+      name: "Redirect latency",
+      scope: { kind: "component", id: "redirect" },
+      metric: "response-time",
+      value: 100,
+      unit: "milliseconds",
+      boundary: "P95 ingress to Location header",
+      window: "5 minutes at peak",
+    },
+  ];
+  expect(
+    validateArchitecture(design, templates.lookup).filter((item) => item.severity === "error"),
+  ).toEqual([]);
+  expect(architectureReview(design).length).toBeGreaterThan(0);
+  const after = planProject(design, templates, { projectName: "QR" });
+  expect(after.files.filter((file) => file.path !== "jeeves/design.json")).toEqual(
+    before.files.filter((file) => file.path !== "jeeves/design.json"),
+  );
+  expect(after.artifacts).toEqual(before.artifacts);
+  expect(after.elements).toEqual(before.elements);
+  expect(after.files.find((file) => file.path === "jeeves/design.json")?.contents).toContain(
+    "record-binding",
+  );
+});

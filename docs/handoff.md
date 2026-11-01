@@ -3657,3 +3657,77 @@ No runtime/template, generated contract/output/golden, lockfile or live QRWTY ed
 four exact-ID E2E projects left by early timed-out runs; final journeys remove their own
 projects. Existing shared Postgres and other saved data were retained. Evidence images and
 this final record were archived after the code checks. Stop after P47 and its local commit.
+
+## 2026-10-31 — P48: relationship bindings and architecture policies
+
+Implemented P48 only. [Release evidence and eight inspected captures](evidence/p48/README.md)
+record the authoring result. P49 focused views and persistent layout are next.
+
+Added optional architecture bindings, logical datasets and scoped objectives. Exact provided/
+required interfaces bind to existing C2 connections or local C3 relationships, with optional
+operation selection. Several bindings share a connection; component-owned cross-container
+interfaces derive their C3 use through the same C2 ID without duplicated wiring. Endpoint
+ownership/containment, duplicate IDs and dangling references reject an atomic batch. Renames
+preserve references; removal requires explicit cleanup, including objectives that reference a
+binding/dataset. Existing executable connection endpoints and generation behavior are retained.
+
+Interaction roles, declared transport and business synchrony are independent. Applicable policy
+groups record caller identity/tenant/network, timeout/failure, retry/idempotency, event delivery/
+ordering/acknowledgement and freshness/invalidation. Unknown and omitted groups remain explicit;
+private reachability never establishes identity. The legend retains the asynchronous dashed-line
+convention and explains dependency/message direction separately from business/delivery policies.
+The new bounded link-service fixture models application→cache and application→store fallback,
+write invalidation, a signed billing callback with durable HTTP acceptance/idempotency, and a named
+visit channel with bounded analytics loss. These declarations supply no runtime guarantees.
+
+Logical data responsibilities reference exact data contracts, including existing resource sources,
+with authoritative owners/store, readers/writers and tenant/retention/deletion/export policy.
+Shared authority requires an explicit decision. Dataset/binding references protect in-use contract
+shapes alongside interfaces; source shape and staleness still use P47's read-only identity model.
+Objectives identify system/container/component/binding/dataset scope and value/unit/boundary/window.
+Redirect response time, analytics lag and background completion are separate unverified targets.
+
+Manage relationship contracts is available from C2 connections and scoped C3 relationships;
+Data responsibilities and objectives is in Editor actions. Fixed Save/Cancel actions, one-step
+history, reload continuity and conflict drafts use existing revisioned operations. A rejected
+conflict retains its opening snapshot; another Save cannot overwrite the concurrent revision.
+Long outcome, idempotency and measurement fields wrap. Chat discovery returns bindings, datasets,
+objectives and the shared architecture review; edits use the same validator and remain one undo
+step per turn. Review reports version/role/direction/tenant/delivery/access/unit conflicts and
+incomplete work separately from generation findings. No change to blocksGenerate or NEEDS_TEMPLATE.
+
+Final verification (fingerprints unchanged during each recorded run):
+
+- `pnpm work run unit packages/spec/src/architecture-bindings.test.ts packages/spec/src/architecture-contracts.test.ts packages/generator/src/architecture.test.ts apps/server/src/chat/tools.test.ts apps/server/src/chat/chat.test.ts`:
+  **55 passed / 5 files**, Vitest **4.38s**, profile **5.0s**;
+  `2026-11-01T03-23-05-243Z-unit-531b0bfd`.
+- `VITEST_MAX_WORKERS=4 pnpm work run check`: all typechecks and **784 tests / 112 files**
+  passed, Vitest **42.98s**, profile **51.8s**;
+  `2026-11-01T03-23-50-027Z-check-aa5e15e3`. Biome checked 739 files:
+  **945 warnings / 75 infos / no errors**. Existing four-worker policy retained.
+- `pnpm work run browser-preview apps/web/e2e/architecture-bindings.spec.ts apps/web/e2e/architecture-contracts.spec.ts apps/web/e2e/architecture-authoring.spec.ts`:
+  **9 passed**, Playwright **20.3s**, profile **23.1s**;
+  `2026-11-01T03-23-51-141Z-browser-preview-73e4c7c4`.
+  Strict diagnostics, narrowly registered expected HTTP conflicts, axe and narrow overflow pass.
+- Opened all eight final **1440 × 900 light / 390 × 844 dark** captures. Binding identities,
+  signed callback identity, cache invalidation, delivery bounds, shared authority, review text and
+  scoped objectives are readable. Fixed actions remain reachable while content scrolls.
+- Generator tests compare all executable outputs, contracts, artifacts and element ownership,
+  excluding only the intentionally lossless `jeeves/design.json` snapshot. No golden refresh.
+  Changed-document local links (**97 targets**) and `git diff --check` pass. Read-only E2E database
+  inspection found **zero** remaining projects named `P48 relationship policies`.
+
+Interim checks caught a type-name collision with the existing view binding, indexed generic UI
+narrowing/registry factory typing, a test that reused an already-invalid base, and two browser
+selectors (a local relationship ID and an unscoped option). Corrected these without retries,
+timeout increases, diagnostic suppression or configuration changes. Screenshot review prompted
+wrapping idempotency/measurement fields; final review added explicit role/direction and unknown
+failure-bound feedback. Earlier source-changing runs are not final evidence.
+
+No material scope deviation. Updated catalog and roadmap/entry pointers for actual authoring
+availability. No runtime/template/recipe/dependency/lockfile changes, generated contract/golden
+changes, live qrwty design/application edits, paid model calls or new deployment/generation work.
+Policies and objectives remain intent; exact identity/version matching supplies no inferred schema
+compatibility, authorization, event execution or benchmark evidence. Existing shared Postgres and
+live data were retained. Stop after P48; execute P49 only when requested, on the current branch
+with the existing sequential one-agent, scoped local commit policy.

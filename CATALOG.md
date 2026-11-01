@@ -18,7 +18,7 @@ Families are reusable starting points, not an exhaustive list of permitted archi
 An instance needs meaningful interfaces and dependencies; adding a family name alone does
 not establish a complete design. The [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 identifies the next contract/composition work. The [P46–P57 roadmap](docs/build-plan-c4-evolution.md)
-specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md) and [P47 evidence](docs/evidence/p47/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
+specifies the next work, including reusable architecture templates. [P46 evidence](docs/evidence/p46/README.md), [P47 evidence](docs/evidence/p47/README.md) and [P48 evidence](docs/evidence/p48/README.md) record the implemented authoring changes; all new runtime capabilities remain planned.
 
 P46 adds independent **system choices** (business tenancy, authorization intent, data
 isolation and delivery model) through Edit context or system inspection. C1 shows only the
@@ -35,7 +35,22 @@ also reference existing REST/resource or durable-event members with read-only au
 shapes and visible source staleness. Renames preserve references; changing an in-use shape
 requires an explicit new version and a preview of instance updates. Unresolved drafts and
 required-but-unbound interfaces remain saveable design review. These declarations add no
-runtime wiring; relationship bindings and policies follow in P48. See [P47 evidence](docs/evidence/p47/README.md).
+runtime wiring. See [P47 evidence](docs/evidence/p47/README.md).
+
+P48 adds **Manage relationship contracts** to C2 connections and local C3 relationships.
+Several exact-version interface bindings can share a connection; cross-container C3 uses
+trace through that same C2 identity. Request, publish, consume, callback, read and write
+roles stay separate from transport and business synchrony. Optional policy groups describe
+identity/tenant scope, timeout/failure, retries/idempotency, delivery/acknowledgement and
+freshness/invalidation. Private reachability never supplies caller identity.
+
+**Data responsibilities and objectives** in Editor actions assigns logical dataset authority,
+store, readers/writers and tenant/lifecycle/export policy to an exact data contract, including
+an existing resource reference. Shared authority requires an explicit decision. Scoped workload
+and service objectives carry a value, unit, measurement boundary and window. Unknown choices
+and selected version/policy conflicts remain visible design review; malformed references are
+rejected. These are unverified declarations with no new runtime or generation behavior.
+See [P48 evidence](docs/evidence/p48/README.md) and the [policy example](fixtures/designs/relationship-policies.json).
 
 ## Availability and reuse
 

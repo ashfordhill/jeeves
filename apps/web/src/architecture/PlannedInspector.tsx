@@ -13,6 +13,7 @@ import { useDraw } from "../draw/store.ts";
 import { ClassificationFields } from "./ArchitectureChoices.tsx";
 import { CapabilityFields } from "./CapabilityFields.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
+import { BindingSummary } from "./RelationshipBindings.tsx";
 import { elementFamily, TypeBadge } from "./type-style.tsx";
 
 export function PlannedElementInspector({
@@ -312,6 +313,7 @@ export function PlannedConnectionInspector({ connection }: { connection: Connect
       <p className="planned-footnote">
         Declares intended communication. It does not create runtime wiring.
       </p>
+      <BindingSummary relationship={{ kind: "connection", id: connection.id }} />
       <Button
         variant="subtle"
         color="red"

@@ -407,7 +407,7 @@ export interface ContractReviewFinding {
   contract?: string;
   interface?: string;
 }
-/** Review intent is separate from generation readiness; P48 will supply actual bindings. */
+/** Review intent is separate from generation readiness. */
 export function architectureContractReview(design: DesignDocument): ContractReviewFinding[] {
   const result: ContractReviewFinding[] = [];
   for (const contract of design.architecture?.contracts ?? []) {
@@ -436,10 +436,24 @@ export function architectureContractReview(design: DesignDocument): ContractRevi
       });
   }
   for (const use of design.architecture?.interfaces ?? [])
-    if (use.direction === "required" && use.necessity === "required")
+    if (
+      use.direction === "required" &&
+      use.necessity === "required" &&
+      !design.architecture?.bindings?.some((binding) => {
+        const provided = design.architecture?.interfaces?.find(
+          (item) => item.id === binding.provided,
+        );
+        return (
+          binding.required === use.id &&
+          provided?.direction === "provided" &&
+          contractKey(provided.contract) === contractKey(binding.contract) &&
+          contractKey(use.contract) === contractKey(binding.contract)
+        );
+      })
+    )
       result.push({
         code: "UNBOUND_REQUIRED",
-        message: `${use.name}: required interface is unbound. No relationship binding is declared.`,
+        message: `${use.name}: required interface is unbound. No compatible exact-version relationship binding is declared.`,
         interface: use.id,
       });
   return result;
@@ -455,9 +469,16 @@ export function validateContractTransition(
     const prior = before.architecture?.contracts?.find(
       (item) => contractKey(item) === contractKey(next),
     );
-    const referenced = before.architecture?.interfaces?.some(
-      (item) => contractKey(item.contract) === contractKey(next),
-    );
+    const referenced =
+      before.architecture?.interfaces?.some(
+        (item) => contractKey(item.contract) === contractKey(next),
+      ) ||
+      before.architecture?.bindings?.some(
+        (item) => contractKey(item.contract) === contractKey(next),
+      ) ||
+      before.architecture?.datasets?.some(
+        (item) => contractKey(item.contract) === contractKey(next),
+      );
     const semantics = (item: ArchitectureContract) => ({
       kind: item.kind,
       shape: item.shape,

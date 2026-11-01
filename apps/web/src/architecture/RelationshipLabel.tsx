@@ -51,6 +51,11 @@ export function RelationshipLegend() {
         </div>
       ))}
       <p>Planned badges describe design intent.</p>
+      <p>
+        Arrowheads show the authored dependency or message-flow direction; the verb states which.
+        Dashed lines retain the asynchronous interaction convention. Business synchrony, transport
+        acknowledgement and caller identity are separate policies in inspection.
+      </p>
     </section>
   );
 }

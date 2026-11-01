@@ -206,9 +206,11 @@ export function InterfaceEditor({
   );
   const locked =
     !!original &&
-    !!design.architecture?.interfaces?.some(
-      (item) => contractKey(item.contract) === contractKey(original),
-    );
+    [
+      design.architecture?.interfaces,
+      design.architecture?.bindings,
+      design.architecture?.datasets,
+    ].some((items) => items?.some((item) => contractKey(item.contract) === contractKey(original)));
   const sources = contractSources(design);
   const uses = interfaces.filter((item) => sameContractOwner(item.owner, owner));
   const updateContract = (patch: Partial<ArchitectureContract>) =>
@@ -610,8 +612,8 @@ export function InterfaceEditor({
                 <Button
                   variant="subtle"
                   color="red"
-                  disabled={interfaces.some(
-                    (item) => contractKey(item.contract) === contractKey(contract),
+                  disabled={[interfaces, draft.bindings, draft.datasets].some((items) =>
+                    items?.some((item) => contractKey(item.contract) === contractKey(contract)),
                   )}
                   onClick={() => {
                     setDraft({ ...draft, contracts: contracts.filter((_, i) => i !== selected) });

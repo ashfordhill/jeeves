@@ -4,6 +4,17 @@
   border-top: 1px solid var(--line);
   overflow-wrap: anywhere;
 }
+.policy-group {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.policy-group h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
 .interface-summary h3 {
   font-size: 1rem;
   margin: 0.5rem 0;

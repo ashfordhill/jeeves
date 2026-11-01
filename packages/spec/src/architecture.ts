@@ -1,5 +1,11 @@
 /** Architectural intent is semantic documentation; only explicit element bindings are executable. */
 import { z } from "zod";
+import {
+  architectureBindingSchema,
+  architectureDatasetSchema,
+  architectureObjectiveSchema,
+  validateRelationshipBindings,
+} from "./architecture-bindings.ts";
 import { isExternalResponsibility, systemChoicesSchema } from "./architecture-choices.ts";
 import {
   architectureContractSchema,
@@ -78,6 +84,9 @@ export const architectureSchema = z.strictObject({
   scenarios: z.array(architectureScenarioSchema).max(50).optional(),
   contracts: z.array(architectureContractSchema).max(200).optional(),
   interfaces: z.array(architectureInterfaceSchema).max(500).optional(),
+  bindings: z.array(architectureBindingSchema).max(500).optional(),
+  datasets: z.array(architectureDatasetSchema).max(200).optional(),
+  objectives: z.array(architectureObjectiveSchema).max(200).optional(),
   componentRelationships: z
     .array(
       z.strictObject({
@@ -312,7 +321,11 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
         );
     });
   }
-  return [...findings, ...validateArchitectureContracts(design)];
+  return [
+    ...findings,
+    ...validateArchitectureContracts(design),
+    ...validateRelationshipBindings(design),
+  ];
 }
 
 export function resolveArchitectureMember(
@@ -395,6 +408,18 @@ export function componentConnections(design: DesignDocument, definition: Archite
       uses.set(binding.model.storeConnection, { declared: false, resources: [] });
   }
   for (const id of definition.usesConnections) uses.set(id, { declared: true, resources: [] });
+  for (const binding of design.architecture?.bindings ?? []) {
+    if (binding.relationship.kind !== "connection") continue;
+    if (
+      design.architecture?.interfaces?.some(
+        (item) =>
+          (item.id === binding.provided || item.id === binding.required) &&
+          item.owner.kind === "component" &&
+          item.owner.id === definition.id,
+      )
+    )
+      uses.set(binding.relationship.id, { declared: true, resources: [] });
+  }
   for (const resource of definition.usesResources) {
     const binding = resolveArchitectureMember(design, definition.element, {
       attachment: resource.attachment,
