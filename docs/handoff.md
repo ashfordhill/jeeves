@@ -5009,3 +5009,52 @@ operation-to-effect links remain gaps, documented with priority. The history dic
 explicitly unresolved. Lifecycle, revocation, recovery and workload budgets remain open choices.
 The whole C3 graph still needs zoom/focus at overview scale. No new runtime/template generation,
 capacity verification, GitHub push or container publication.
+
+## 2026-11-01 — PLAN58: partitioned backend benchmark implementation roadmap
+
+The user requested a detailed plan for future implementation agents to build substantial Discourse,
+Vendure and Zammad backend foundations through Jeeves, aiming for at least 60% verified templated
+behavior and explicit remaining agent work. This package is documentation/planning only. Read the
+README intentions, PLAN §15 and relevant historical contracts, current C4/studio guidance, recent
+handoffs, UX5 review and current spec/registry/generator/runtime/acceptance/orchestrator code.
+Inspected the application baseline at `3ae6aff` on main and checked primary upstream documentation.
+
+- Added [the roadmap](build-plan-backend-benchmarks.md), with 53 delivery packages P58–P110 split
+  into [79 sequential agent assignments](plans/backend-benchmarks/execution-units.md). Each parent
+  specifies outcome, prerequisites, code pointers, ordered scope, acceptance, verification profile
+  and exclusions. Mandatory child boundaries keep larger work out of a single agent session.
+- Added a shared implementation contract, inspected gap map, finite backend model/configuration
+  vocabulary, precise generation/ownership/evidence rules, and explicit planned-C2/C3/relationship
+  compilation bridging. Existing validation and immutable artifacts are preserved.
+- Defined three frozen-scope proposals with 20 weighted capability rows each, 100 points per app,
+  a candidate 66-point template path, critical failure vetoes, five detailed scenarios per app,
+  all remaining hook contracts, and proposed measured workload profiles. These are bounded backend
+  adaptations, not full upstream clones or measured current generation coverage. Vendure's initial
+  REST adaptation and reference-provider versus real-provider coverage are explicit.
+- Added a worked private-topic trace through authoring, transaction/outbox, worker, ownership and
+  independent failure observations. Included source links and the requirement to pin inspected
+  upstream excerpts before implementation.
+- Added X1–X8 stretch scopes covering GraphQL, Medusa-style compensation, local social/realtime,
+  ActivityPub, GitLab-informed deployment, alternative search/cache, ERP workflow and contract import.
+- Linked the plan from AGENTS, PLAN, docs index and improvements. Preserved the UI-test deferral,
+  sequential primary-checkout workflow, local-commit rule and requirement to request an execution
+  unit before starting implementation. Root README and CATALOG offerings remain unchanged.
+
+Validation:
+
+- `pnpm lint`: passed, 802 files checked; zero errors, existing 2025 warnings / 75 infos.
+- Temporary documentation audit: 15 new/entry-point documents; 182 local links/anchors resolve;
+  53 unique ordered parent packages and 79 unique ordered work units; all parent sections have
+  scope/dependencies/checks/exclusions; dependency directions are acyclic by ordered package ID.
+- Each ledger has exactly 20 unique rows, weights total 100, and G target weights total 66. No
+  actual implementation or verification credit was invented. Markdown fences and JSON examples
+  validate. Scoped whitespace/diff checks pass.
+- No application source, runtime, dependency, database, generated project or UI changed; typecheck,
+  production build, unit/E2E suites and browser/runtime campaigns were not rerun for documentation.
+  The documentation audit script/result stayed under /tmp; no persistent test suite was added.
+- Earlier handoff content is retained byte-for-byte; only this entry is appended. No push or publish.
+
+All P58–P110 implementation packages remain **unstarted**. The next execution unit, if requested,
+is **P58**: record the concrete baseline and verification policy before new backend development.
+The plan makes the existing full-check versus deferred-UI-test boundary explicit for that future
+baseline; it does not silently authorize deferred UI suite maintenance or claim those suites pass.

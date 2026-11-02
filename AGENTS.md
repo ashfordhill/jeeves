@@ -20,6 +20,11 @@ task. The [revised P46–P57 roadmap](docs/build-plan-c4-evolution.md) is the pl
 specification; the [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
 explains its rationale. P46–P57 are complete. Runtime/template and generation work needs a separate task. When asked to execute, start with the requested package,
 not the whole sequence.
+The [backend benchmark roadmap](docs/build-plan-backend-benchmarks.md) now specifies future
+Discourse, Vendure and Zammad core foundations. It is a plan, not implemented capability or
+authorization to start the sequence. For that work, read its shared contract and
+[79-unit assignment queue](docs/plans/backend-benchmarks/execution-units.md). Execute one requested
+work unit at a time; split parents require separate child assignments and local commits.
 Keep architecture intent, template availability and verification evidence distinct.
 The current [studio guide](docs/architecture-studio.md) describes the post-roadmap C2/C3 UX.
 For this UX cleanup, the user explicitly defers unit/E2E test maintenance and suite execution.

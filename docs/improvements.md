@@ -1,5 +1,13 @@
 # Deterministic application behavior and the qrwty proof
 
+**Latest planning (2026-11-01):** the [backend benchmark roadmap](build-plan-backend-benchmarks.md)
+specifies future Discourse, Vendure and Zammad core foundations. Its P58–P110 delivery packages
+are divided into [79 sequential agent assignments](plans/backend-benchmarks/execution-units.md).
+None is implemented by the planning task. When execution is requested, start with the assigned
+unit (P58 if no more specific unit is given), not the historical sequence below. Existing
+ownership, C4 semantics and UI-test deferral remain in force; validation profiles are explicit
+in the new shared contract.
+
 **Current design priority (2026-10-31):** improve C2/C3 authoring, relationships and reusable
 composition before new code-generation/runtime work. The [revised P46–P57 roadmap](build-plan-c4-evolution.md)
 is the planning specification, incorporating the [direction review](reviews/c4-direction-review-2026-10-31.md)
