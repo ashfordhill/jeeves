@@ -4,6 +4,11 @@ Inspected 2026-10-30. These are selected architectural references, not a ranking
 
 Selection favors explicit contracts, clear ownership, useful extension seams, migrations, failure handling and an application that exercises the pattern. Popularity alone is insufficient. The snapshots are the inspected branch revisions, not dependency recommendations or promises that those development branches are stable releases.
 
+The later [backend benchmark reference packs](backend-benchmarks.md) add released source snapshots
+to the same cache catalog without replacing these five historical pins. P60a supplies Discourse;
+Vendure and Zammad remain separately assigned work. Their provenance is distinct from these original
+branch snapshots and from any runtime adoption or observed benchmark coverage.
+
 ## Selected applications and inspected seams
 
 | Reference | Useful pattern | Concrete limits and adoption decision |

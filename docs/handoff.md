@@ -5238,3 +5238,109 @@ reported debt. **P60a is the next unstarted work unit**, to pin Discourse excerp
 map without altering the frozen v1 ledger. Keep later source facts, design intent, actual template
 availability and independently observed passes distinct. No next task was started, no persistent
 project/database/output changed, and no push or publication occurred.
+
+## 2026-11-02 — P60a: pinned Discourse reference pack and complete D-row adaptation map
+
+Executed **P60a only** in `/home/ash/github/jeeves` on `main`, starting clean at P59 commit
+`6ecd5b3`. Read AGENTS, PLAN §15 and the relevant earlier sections, latest handoffs, backend
+roadmap/shared contract/benchmark scopes/assignment queue/P60, the enterprise reference review,
+cache manifest and reference-tool implementation. Used one worker with no delegation, branch or
+worktree. Applied the P59–P61d batch authorization: lint/types and focused offline backend checks
+replace full `pnpm check`; deferred UI suites/maintenance remain excluded.
+
+Built:
+
+- Appended `discourse` to [the existing source catalog](reference/architecture-sources.json).
+  Selected released **v3.5.0**, confirmed by the official 19 August 2025 announcement and annotated
+  tag `67904f7b4ce20bf74a2b2d8d3af6c0020d116585`, tagged at `2025-08-19T02:51:46Z`.
+  It resolves to full commit **`05a304006600f36c3e45d19c9c5919f43f5541c9`**, committed at
+  `2025-08-19T02:33:48Z`; the cached version constant also identifies 3.5.0. This is a released
+  research snapshot, not a latest-version/dependency/security recommendation. GitHub's releases
+  API lookup returned 404; the annotated tag and official release announcement establish the
+  release provenance without relying on that endpoint or a moving branch.
+- Added **21** selected source/license files (**304,410 bytes**) to the existing ignored cache
+  through `pnpm references fetch discourse`, all SHA-256 pinned in the catalog. Included
+  `LICENSE.txt` and `COPYRIGHT.md`: GPL v2 text and the program's GPL-2.0-or-later notice, plus
+  trademark/third-party notices. Selected files are open-source core. No separately licensed
+  feature was selected; plugins/themes/bundled third-party/hosted features remain outside the
+  inspection, with no conclusion about their licensing or availability.
+- Added [the source-backed review](reference/backend-benchmarks.md#discourse-core-p60a): principal
+  and category access; post/history permissions; topic/initial-post transaction; revision and
+  moderation/removal flows; subscription/notification eligibility; worker publication/error/mail
+  retry; search; upload classification/downloads; and durable session-token context. It records
+  exact source links, responsibilities, observed facts, limitations and deliberate adaptations.
+  Important differences include upstream grace-period revision rewriting, after-commit queue
+  publication, read-before-create notification suppression, offset search and signed byte URLs.
+  None is mislabeled as supplying Jeeves's immutable history, atomic intent, crash deduplication,
+  bounded keyset contract or immediate next-check byte revocation.
+- Satisfied P59's reserved locator with
+  [Discourse v1 source-map.json](../benchmarks/discourse-core/v1/source-map.json). It binds the
+  unchanged ledger integrity, release/tag/commit/date/license metadata, 21 exact paths/hashes,
+  **56 inspected ranges**, all **20 D rows / 66 mandatory observations**, source/adaptation
+  references and **eight explicit H hook seams**. Every hook has inputs, results,
+  rejection/recovery, safe unavailable behavior and the exact policy decisions still owned by
+  P61b/P71b. Uninspected trust/privacy/inbound-email implementations are explicitly uninspected,
+  not described as missing or separately licensed upstream features.
+- Recorded REST/JSON/OpenAPI as the shared benchmark choice, Vendure's GraphQL-to-REST adaptation
+  and the reduced Zammad first-response SLA policy. These are planning decisions, not Discourse
+  source facts or completion of P60b/c. Updated the benchmark guide, roadmap/improvements status
+  and enterprise-review cross-link. No CATALOG change: offerings, reusable C2/C3 boundaries and
+  template/runtime availability did not change.
+
+Checks, with installed **Node 24.21.0 / pnpm 12.16.1** selected by
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm references fetch discourse`: exit 0; **21 files downloaded and hash-verified**. No upstream
+  application/dependency was installed or executed. Cache location:
+  `.jeeves-work/references/discourse/05a304006600f36c3e45d19c9c5919f43f5541c9/`.
+- `pnpm references verify all`: exit 0, strictly offline, **6 references / 54 files / 0 downloads**;
+  all five prior pins and cached files verify alongside Discourse. Raw output:
+  `.jeeves-work/p60a/references-verify.log`. Separate `pnpm references verify discourse` also
+  passed for all 21 files with zero downloads.
+- `pnpm lint`: exit 0; `Checked 814 files in 407ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, no errors or new diagnostics. Raw output: `.jeeves-work/p60a/lint.log`.
+  `pnpm exec biome check docs/reference/architecture-sources.json benchmarks/discourse-core/v1/source-map.json`
+  also passed with zero diagnostics.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **8.4s**.
+  Evidence: `.jeeves-work/runs/2026-11-02T23-52-51-769Z-typecheck-8eea2e08.{json,log}`.
+- Exact focused offline compatibility/accounting selection:
+
+  ```bash
+  pnpm work run unit packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0: **6 files / 140 tests passed**, **4.3s** including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-02T23-52-51-765Z-unit-951f2a3f.{json,log}`. Both runner records have
+  `sourceChanged: false`. These checks establish ledger/selected legacy compatibility, not
+  generated Discourse behavior or benchmark points.
+- Temporary scoped audit `.jeeves-work/p60a/audit.py` → `audit.json`: passed JSON parsing,
+  canonical integrity and byte-for-byte preservation of **all nine P59 ledger files**, unchanged
+  metadata for all five earlier reference entries, release/tag metadata, source/cache hashes,
+  range bounds, complete/unique D-row and observation identities, eight hook seams, local
+  Markdown destinations/anchors, immutable source-link/range resolution and exact preservation
+  of the earlier handoff prefix. Two initial audit attempts caught source links spanning split
+  inspected-range records; consolidated those records to the already-read spans and reran to a
+  pass. No source pin or frozen requirement changed. `git diff --check` passed.
+
+Artifact pins:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Discourse source-map file bytes | `3ace90021fa47a42e510c1a3878e0369457fd44381f6c3059e34cf26eff4f2cf` |
+| Discourse canonical manifest (unchanged) | `4eeaa5032e48783091e2b3300c6df9feae574117bec432c5c1fe3a50ba1925a7` |
+| Discourse canonical requirements (unchanged) | `67ea5037e54172e1a73f2ee05b729152e0067f882192e44a2cd8aed09e844691` |
+
+Scope limits and next assignment:
+
+- No P60a blocker or plan deviation. Static excerpts do not establish an exhaustive upstream
+  security/concurrency audit. The review identifies exact remaining protocol/fixture/policy
+  decisions before P61b/P71a/b. The ignored cache must be fetched before an offline inspection;
+  its hashes/locators are committed, the upstream files are not vendored into Git or a runtime.
+- Full `pnpm check`, deferred UI unit/E2E suites/maintenance, production UI build/browser,
+  conformance, providers, generation and load/recovery/upgrade campaigns were not run. There is
+  no production UI/runtime change. P59's three confirmed historical architecture assertions
+  remain unchanged, separately recorded debt; this package did not rerun or repair them.
+- **P60a is complete. P60b is the next unstarted work unit**, for Vendure only. Parent P60 remains
+  incomplete until P60b/P60c and the combined reference review. No other unit was started, no
+  persistent application/database/output changed, and no push or publication occurred. Keep
+  inspected source facts, intended adaptations, template availability and observed passes distinct.

@@ -212,6 +212,113 @@
           "sha256": "582f8229d10bd8fddae82ab577d2223afa60e7ebbc2307872e21e89de613d239"
         }
       ]
+    },
+    {
+      "id": "discourse",
+      "repository": "discourse/discourse",
+      "commit": "05a304006600f36c3e45d19c9c5919f43f5541c9",
+      "observedAt": "2026-11-02",
+      "status": "inspected",
+      "license": {
+        "summary": "GPL-2.0-or-later program notice in COPYRIGHT.md; GPL v2 text in LICENSE.txt. Selected paths are open-source core, for architectural inspection only; no upstream runtime code adopted.",
+        "evidence": ["LICENSE.txt", "COPYRIGHT.md"],
+        "excluded": [
+          "Plugins, themes, bundled third-party code/assets and any separately licensed or hosted features are outside this reference pack. No license conclusion about those materials."
+        ]
+      },
+      "candidates": [
+        "discussion-access",
+        "topic-post-revisions",
+        "moderation-review",
+        "notification-eligibility",
+        "async-retry-boundaries"
+      ],
+      "files": [
+        {
+          "path": "LICENSE.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+        },
+        {
+          "path": "COPYRIGHT.md",
+          "sha256": "72aef96034240c4ad5de7ee98fd703e402771983b635f40e430a5a372dbe4c81"
+        },
+        {
+          "path": "lib/version.rb",
+          "sha256": "ff6e510ec4766007b7c15d8782de33ebb0368be7a5a4b5364cc7a7b81529c118"
+        },
+        {
+          "path": "lib/guardian.rb",
+          "sha256": "b4dd2af2053368eb57cb344c74d7a2e1b376e83a7e728858e3bc7014ef0030da"
+        },
+        {
+          "path": "lib/guardian/category_guardian.rb",
+          "sha256": "0d75eda19c0ab1c3b9cd0651aa162229a9745ca54cb3c2b90286ab4c2656f627"
+        },
+        {
+          "path": "lib/guardian/post_guardian.rb",
+          "sha256": "15c20bdfbb2cfb0506fcb53d581f51ab13b6b0fabfd564299e1377c53b12d945"
+        },
+        {
+          "path": "lib/guardian/post_revision_guardian.rb",
+          "sha256": "02d62a06412384f0eca9908045036de8adc29455b47cc1c24125f2ee0881b809"
+        },
+        {
+          "path": "lib/guardian/topic_guardian.rb",
+          "sha256": "8a0cec36782c80d763e01c803a02d3c8c0212299c1b5046326edecdaabe1ef51"
+        },
+        {
+          "path": "lib/post_creator.rb",
+          "sha256": "a29eb3669c4ad824e4b83f28aaea53a8ffc3ffcfe204694b88b754680b20f950"
+        },
+        {
+          "path": "lib/post_revisor.rb",
+          "sha256": "f73e63e5b0972ff70bec5b815a0d667852e5da6578eafdc796ba555be6a8fad1"
+        },
+        {
+          "path": "lib/post_destroyer.rb",
+          "sha256": "76af71244a8773b1a7b82c709613f876aba5b4425714492fa05c5c8e05286d09"
+        },
+        {
+          "path": "app/models/reviewable_flagged_post.rb",
+          "sha256": "7af527ec0c806cc80fed50b7c4b4cef77067ed97d9bf2c14bbc91f05768066d2"
+        },
+        {
+          "path": "app/models/topic_user.rb",
+          "sha256": "1fbb48c8525b0c1d97e46c3e136c5fba86de5003697f50a60d14afdcc0dda944"
+        },
+        {
+          "path": "app/services/post_alerter.rb",
+          "sha256": "d02ef98bbac750176036ede2aa4b7f68ef6684e6cf033d5dc625840f355d109c"
+        },
+        {
+          "path": "app/jobs/base.rb",
+          "sha256": "289972f5149a225a5516e4a26e4d941db479a15842cf3ed2f6881af67deedbab"
+        },
+        {
+          "path": "app/jobs/regular/user_email.rb",
+          "sha256": "7831302d824f518d14f463efbc3a8a1c62ef32add8eb27af1e07df843913deeb"
+        },
+        {
+          "path": "app/jobs/regular/delete_inaccessible_notifications.rb",
+          "sha256": "8515a3d38c8a74c6b48adcdd56308458a97e2e1fcb9a28e24691194151b936b2"
+        },
+        {
+          "path": "lib/search.rb",
+          "sha256": "d62bbddcda30d1766889c20eece430a523227862f3fcfdc0b0d9afdc1a05c542"
+        },
+        {
+          "path": "lib/upload_security.rb",
+          "sha256": "024c5f0c7e8e23e028c6f0f8d4e48c18c45ee1e15bfcfa8859fc340b2308b75d"
+        },
+        {
+          "path": "app/controllers/uploads_controller.rb",
+          "sha256": "ab2b797a468401969ae4ad42a21d5f4c5c44d568457fbe06e225b9a2f99d71be"
+        },
+        {
+          "path": "app/models/user_auth_token.rb",
+          "sha256": "66e51e641b32d82ff105db87d3f78e198c133d709040f7962bb2fcff099eefd0"
+        }
+      ]
     }
   ]
 }

@@ -19,8 +19,10 @@ engineering effort. Workload profiles are frozen **unmeasured targets**, includi
 offered rates, latency limits, reference-host guidance and measurement/recovery conditions.
 
 The manifest's `sourceMap.path` reserves a sibling `source-map.json` for its named P60a/P60b/P60c
-assignment. These source maps do not exist yet; the locator confers no inspected-source evidence.
-P60 adds sidecars without editing frozen v1 requirements. Likewise `fixtureVersion: v1` identifies
+assignment. P60a supplies the [Discourse source map](discourse-core/v1/source-map.json) and
+[inspected reference review](../docs/reference/backend-benchmarks.md#discourse-core-p60a);
+Vendure and Zammad source maps remain unstarted. P60 adds provenance sidecars without editing
+frozen v1 requirements or conferring implementation evidence. Likewise `fixtureVersion: v1` identifies
 the future P61 fixtures, not fixtures or contracts already supplied by P59. No runner alias is
 registered until its actual tests exist.
 

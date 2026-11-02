@@ -2,7 +2,9 @@
 
 Planning package **PLAN58**, 1 November 2026. Inspected Jeeves at `3ae6aff` on `main`, including
 the UX5 Mattermost work. **Planning, [P58's baseline](evidence/p58/README.md) and
-[P59's frozen ledgers/evaluator](../benchmarks/README.md) are complete; P60–P110 remain unstarted.**
+[P59's frozen ledgers/evaluator](../benchmarks/README.md) and
+[P60a's Discourse reference pack](reference/backend-benchmarks.md#discourse-core-p60a) are complete;
+P60b–P110 remain unstarted.**
 These foundations add no application runtime capability. This document specifies future
 execution; execute only the requested work unit. It does not authorize starting runtime packages,
 generating applications, publishing, or deploying them merely because they are planned.
@@ -35,8 +37,8 @@ Read [AGENTS](../AGENTS.md), [PLAN §15](../PLAN.md#15-build-sections), the late
 Continue sequentially in the primary checkout on `main`, one requested work unit per session and
 local commit. The 53 delivery packages are partitioned into **79 small agent assignments**;
 split parents are milestones, not single-session tasks. Start with **P58** when execution is
-requested without a more specific package and no baseline has been recorded. P58/P59 are complete;
-the next unstarted unit is **P60a**. For the authorized P59–P61d batch, the user explicitly permits
+requested without a more specific package and no baseline has been recorded. P58/P59/P60a are complete;
+the next unstarted unit is **P60b**. For the authorized P59–P61d batch, the user explicitly permits
 lint/types and focused offline backend semantic/compatibility tests instead of full `pnpm check`;
 UI unit/E2E execution and maintenance remain deferred. See P59's append-only handoff entry.
 Dependencies are completion requirements, not permission to run multiple agents or packages.
@@ -51,7 +53,9 @@ expansion during a design-only package.
 ## Delivery map
 
 P58 is **complete** with [baseline evidence](evidence/p58/README.md); P59 is **complete** with
-[frozen ledgers and pure accounting](../benchmarks/README.md). Remaining entries are **planned**.
+[frozen ledgers and pure accounting](../benchmarks/README.md). P60 is **partial**: its
+[Discourse child P60a](reference/backend-benchmarks.md#discourse-core-p60a) is complete;
+Vendure/Zammad and the combined reference review remain unstarted. Remaining entries are **planned**.
 Every package has a bounded outcome, ordered work, negative cases,
 checks, and explicit exclusions in its phase file. Follow the exact child order in the
 [assignment queue](plans/backend-benchmarks/execution-units.md), not the whole parent at once.
