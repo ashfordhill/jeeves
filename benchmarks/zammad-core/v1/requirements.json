@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "profile": "zammad-core",
+  "version": "v1",
+  "observations": [
+    {
+      "id": "Z01-session-capabilities",
+      "caseId": "Z01",
+      "category": "success",
+      "expected": "Customer, agent and administrator sessions permit their declared capabilities with protected identity.",
+      "critical": false
+    },
+    {
+      "id": "Z01-privileged-ticket-fields",
+      "caseId": "Z01",
+      "category": "rejection",
+      "expected": "A customer cannot self-promote or submit internal visibility, assignee, SLA override or other privileged ticket fields.",
+      "critical": false
+    },
+    {
+      "id": "Z01-session-restart",
+      "caseId": "Z01",
+      "category": "failure",
+      "expected": "Restart/replay preserves valid sessions without reviving logged-out sessions or cross-application authority.",
+      "critical": false
+    },
+    {
+      "id": "Z02-group-membership",
+      "caseId": "Z02",
+      "category": "success",
+      "expected": "Current organization/group memberships permit the declared ticket reads and eligible assignment.",
+      "critical": false
+    },
+    {
+      "id": "Z02-direct-cross-scope",
+      "caseId": "Z02",
+      "category": "rejection",
+      "expected": "Foreign/inaccessible direct ticket/group identities are denied without data disclosure.",
+      "critical": true
+    },
+    {
+      "id": "Z02-list-cross-scope",
+      "caseId": "Z02",
+      "category": "rejection",
+      "expected": "Scoped lists/counts omit unauthorized tickets and memberships before pagination.",
+      "critical": true
+    },
+    {
+      "id": "Z02-assignment-cross-scope",
+      "caseId": "Z02",
+      "category": "rejection",
+      "expected": "Cross-scope or unauthorized assignment cannot change ticket/group/assignee state.",
+      "critical": true
+    },
+    {
+      "id": "Z02-membership-recheck",
+      "caseId": "Z02",
+      "category": "failure",
+      "expected": "Retried commands recheck current persisted membership after revocation rather than trusting old request context.",
+      "critical": false
+    },
+    {
+      "id": "Z03-ticket-initial-article",
+      "caseId": "Z03",
+      "category": "success",
+      "expected": "Authorized create persists one ticket with one initial public article atomically.",
+      "critical": false
+    },
+    {
+      "id": "Z03-ticket-create-authority",
+      "caseId": "Z03",
+      "category": "rejection",
+      "expected": "Unauthorized customer/scope and privileged initial fields are rejected with no partial ticket/article.",
+      "critical": false
+    },
+    {
+      "id": "Z03-ticket-atomic-replay",
+      "caseId": "Z03",
+      "category": "failure",
+      "expected": "Failure before article insert leaves neither record; lost committed response retry returns one ticket and conversation entry.",
+      "critical": false
+    },
+    {
+      "id": "Z04-public-internal-articles",
+      "caseId": "Z04",
+      "category": "success",
+      "expected": "Authorized agents write public replies/internal notes with immutable author/time; customers see public replies only.",
+      "critical": false
+    },
+    {
+      "id": "Z04-internal-detail-history",
+      "caseId": "Z04",
+      "category": "rejection",
+      "expected": "Customers cannot read internal note text through article detail, ticket/conversation history or export projections.",
+      "critical": true
+    },
+    {
+      "id": "Z04-internal-attachment",
+      "caseId": "Z04",
+      "category": "rejection",
+      "expected": "Customers cannot read internal note attachment metadata or bytes.",
+      "critical": true
+    },
+    {
+      "id": "Z04-internal-search",
+      "caseId": "Z04",
+      "category": "rejection",
+      "expected": "Internal note text/snippets/counts are absent from customer search projections, including stale indexes.",
+      "critical": true
+    },
+    {
+      "id": "Z04-internal-notification",
+      "caseId": "Z04",
+      "category": "failure",
+      "expected": "Queued/retried customer notifications and email payloads never include internal note text or attachment references.",
+      "critical": true
+    },
+    {
+      "id": "Z05-eligible-assignment",
+      "caseId": "Z05",
+      "category": "success",
+      "expected": "An authorized expectedVersion command assigns/reassigns an eligible current group agent.",
+      "critical": false
+    },
+    {
+      "id": "Z05-revoked-assignee",
+      "caseId": "Z05",
+      "category": "rejection",
+      "expected": "Revoked membership and ineligible/foreign assignees are rejected without assignment mutation.",
+      "critical": false
+    },
+    {
+      "id": "Z05-assignment-race",
+      "caseId": "Z05",
+      "category": "failure",
+      "expected": "Two assignments using one version produce one winner and one next version; stale concurrent assignment conflicts.",
+      "critical": true
+    },
+    {
+      "id": "Z06-ticket-transitions",
+      "caseId": "Z06",
+      "category": "success",
+      "expected": "Allowed resolve/reopen/pending/close transitions maintain the declared article/deadline/audit consistency.",
+      "critical": false
+    },
+    {
+      "id": "Z06-invalid-ticket-transition",
+      "caseId": "Z06",
+      "category": "rejection",
+      "expected": "Forbidden transitions, including closed-to-open in core, reject without state changes.",
+      "critical": false
+    },
+    {
+      "id": "Z06-transition-rollback",
+      "caseId": "Z06",
+      "category": "failure",
+      "expected": "Failure/racing stale transition leaves ticket, article, deadline and audit in one consistent committed state.",
+      "critical": false
+    },
+    {
+      "id": "Z07-business-calendar",
+      "caseId": "Z07",
+      "category": "success",
+      "expected": "A 120-business-minute Friday 16:00 start is Monday 10:00, or Tuesday 10:00 with Monday a holiday, under the frozen calendar.",
+      "critical": true
+    },
+    {
+      "id": "Z07-timezone-boundaries",
+      "caseId": "Z07",
+      "category": "success",
+      "expected": "Exact UTC deadlines follow the immutable America/Chicago calendar; repeated fall-back time counts twice and missing spring time contributes nothing.",
+      "critical": true
+    },
+    {
+      "id": "Z07-clock-stop-policy",
+      "caseId": "Z07",
+      "category": "rejection",
+      "expected": "Internal notes/pending do not stop first response; only an authorized public agent reply stops it; closing cancels without marking met.",
+      "critical": true
+    },
+    {
+      "id": "Z07-calendar-snapshot",
+      "caseId": "Z07",
+      "category": "failure",
+      "expected": "Calendar/SLA edits do not change existing deadlines; restart/replay preserves their exact versioned UTC result and reopen creates no implicit clock.",
+      "critical": true
+    },
+    {
+      "id": "Z08-due-escalation",
+      "caseId": "Z08",
+      "category": "success",
+      "expected": "A currently due, unmet deadline produces its declared escalation and durable effects.",
+      "critical": false
+    },
+    {
+      "id": "Z08-cancelled-stale-deadline",
+      "caseId": "Z08",
+      "category": "rejection",
+      "expected": "Cancelled/satisfied or stale-version deadline jobs cannot escalate; transaction rechecks current state before commit.",
+      "critical": false
+    },
+    {
+      "id": "Z08-one-logical-escalation",
+      "caseId": "Z08",
+      "category": "failure",
+      "expected": "Worker restart, overdue catch-up and duplicate claims produce one logical escalation per deadline version in bounded batches.",
+      "critical": true
+    },
+    {
+      "id": "Z09-finite-routing",
+      "caseId": "Z09",
+      "category": "success",
+      "expected": "Declared finite conditions/actions execute with explicit priority and first/all-match semantics.",
+      "critical": false
+    },
+    {
+      "id": "Z09-routing-authority",
+      "caseId": "Z09",
+      "category": "rejection",
+      "expected": "Rules cannot grant access or mutate unauthorized/unknown fields and cannot execute arbitrary scripts.",
+      "critical": false
+    },
+    {
+      "id": "Z09-routing-loop-bound",
+      "caseId": "Z09",
+      "category": "failure",
+      "expected": "Repeated/cascading matches are bounded and deduplicated with audit; restart cannot create an endless loop.",
+      "critical": false
+    },
+    {
+      "id": "Z10-article-file-lifecycle",
+      "caseId": "Z10",
+      "category": "success",
+      "expected": "Authorized article/ticket uploads pass bounded inspection and can be associated/downloaded under parent visibility.",
+      "critical": false
+    },
+    {
+      "id": "Z10-bytes-authorization",
+      "caseId": "Z10",
+      "category": "rejection",
+      "expected": "Foreign or customer access to internal-note metadata/bytes is denied, including previously issued byte references.",
+      "critical": true
+    },
+    {
+      "id": "Z10-invalid-file",
+      "caseId": "Z10",
+      "category": "rejection",
+      "expected": "Oversized/disallowed MIME and incomplete/quarantined files are unavailable for association/download.",
+      "critical": false
+    },
+    {
+      "id": "Z10-partial-file-recovery",
+      "caseId": "Z10",
+      "category": "failure",
+      "expected": "Interrupted bytes/metadata persistence exposes no partial private file and permits bounded orphan cleanup without deleting a live association.",
+      "critical": false
+    },
+    {
+      "id": "Z11-scoped-search-audit",
+      "caseId": "Z11",
+      "category": "success",
+      "expected": "Authorized ticket search, cursor pages and audit reads use current policy before projections/counts.",
+      "critical": false
+    },
+    {
+      "id": "Z11-internal-note-search",
+      "caseId": "Z11",
+      "category": "rejection",
+      "expected": "Customer search/audit outputs never contain internal note text or hidden snippets/counts.",
+      "critical": false
+    },
+    {
+      "id": "Z11-revoked-group-projection",
+      "caseId": "Z11",
+      "category": "failure",
+      "expected": "After group revocation/move, stale search projections, cursor pages and audit reads do not disclose the now-inaccessible group/ticket.",
+      "critical": true
+    },
+    {
+      "id": "Z12-notification-preferences",
+      "caseId": "Z12",
+      "category": "success",
+      "expected": "Eligible customers/agents receive their selected channel and redacted durable inbox/delivery intent.",
+      "critical": false
+    },
+    {
+      "id": "Z12-notification-boundary",
+      "caseId": "Z12",
+      "category": "rejection",
+      "expected": "Unauthorized recipients, internal-note customer projections and another principal's preferences are rejected/hidden.",
+      "critical": false
+    },
+    {
+      "id": "Z12-notification-retry-revoke",
+      "caseId": "Z12",
+      "category": "failure",
+      "expected": "Duplicate delivery/worker restart preserves one logical inbox effect and revocation recheck prevents queued private disclosure.",
+      "critical": false
+    },
+    {
+      "id": "Z13-inbound-email",
+      "caseId": "Z13",
+      "category": "success",
+      "expected": "Authenticated inbound MIME yields bounded body/attachment candidates and verified sender identity mapping.",
+      "critical": false
+    },
+    {
+      "id": "Z13-email-identity-boundary",
+      "caseId": "Z13",
+      "category": "rejection",
+      "expected": "Invalid source, oversized/unsafe attachments and unauthorized sender/ticket mappings are rejected.",
+      "critical": false
+    },
+    {
+      "id": "Z13-email-message-replay",
+      "caseId": "Z13",
+      "category": "failure",
+      "expected": "Duplicate source message and interrupted ingest preserve one conversation effect with explicit unknown/recovery outcomes.",
+      "critical": false
+    },
+    {
+      "id": "Z14-conversation-threading",
+      "caseId": "Z14",
+      "category": "success",
+      "expected": "Authorized threading/merge/split preserves conversation history, visibility and provenance.",
+      "critical": false
+    },
+    {
+      "id": "Z14-ambiguous-thread",
+      "caseId": "Z14",
+      "category": "rejection",
+      "expected": "Ambiguous message references, inaccessible ticket sets and stale versions require rejection/explicit decision.",
+      "critical": false
+    },
+    {
+      "id": "Z14-conversation-recovery",
+      "caseId": "Z14",
+      "category": "failure",
+      "expected": "Interrupted/repeated conversation operations recover without duplicate articles, lost provenance or widened visibility.",
+      "critical": false
+    },
+    {
+      "id": "Z15-additional-clock-policy",
+      "caseId": "Z15",
+      "category": "success",
+      "expected": "Selected response/resolution policies explicitly define create/pause/resume/reopen/recalculate over immutable timeline facts.",
+      "critical": false
+    },
+    {
+      "id": "Z15-clock-policy-authority",
+      "caseId": "Z15",
+      "category": "rejection",
+      "expected": "Unauthorized recalculation or invalid policy/version cannot rewrite elapsed facts/deadlines.",
+      "critical": false
+    },
+    {
+      "id": "Z15-clock-recalculation-retry",
+      "caseId": "Z15",
+      "category": "failure",
+      "expected": "Repeated/interrupted recalculation preserves one explicit versioned decision without silently changing historical clocks.",
+      "critical": false
+    },
+    {
+      "id": "Z16-customer-source-mapping",
+      "caseId": "Z16",
+      "category": "success",
+      "expected": "Verified external source and typed mapping produce the declared local customer command/provenance.",
+      "critical": false
+    },
+    {
+      "id": "Z16-customer-connector-authority",
+      "caseId": "Z16",
+      "category": "rejection",
+      "expected": "Forged source, cross-organization identity and conflicting field authority are rejected or explicitly reconciled.",
+      "critical": false
+    },
+    {
+      "id": "Z16-customer-sync-recovery",
+      "caseId": "Z16",
+      "category": "failure",
+      "expected": "Duplicate/out-of-order revisions and interrupted synchronization preserve one effect and an inspectable reconciliation item.",
+      "critical": false
+    },
+    {
+      "id": "Z17-knowledge-publication",
+      "caseId": "Z17",
+      "category": "success",
+      "expected": "Authorized publication exposes the declared content revision to its selected audience and search projection.",
+      "critical": false
+    },
+    {
+      "id": "Z17-knowledge-draft-boundary",
+      "caseId": "Z17",
+      "category": "rejection",
+      "expected": "Draft/private content is absent from public detail/search/snippets and cannot be published without authority.",
+      "critical": false
+    },
+    {
+      "id": "Z17-knowledge-rebuild",
+      "caseId": "Z17",
+      "category": "failure",
+      "expected": "Retried publication and search rebuild preserve revision identity/current audience without resurrecting withdrawn content.",
+      "critical": false
+    },
+    {
+      "id": "Z18-custom-fields-workflow",
+      "caseId": "Z18",
+      "category": "success",
+      "expected": "Versioned typed custom fields and finite conditional actions implement the selected domain workflow.",
+      "critical": false
+    },
+    {
+      "id": "Z18-custom-schema-bounds",
+      "caseId": "Z18",
+      "category": "rejection",
+      "expected": "Unknown/invalid values and executable strings or unauthorized actions are rejected.",
+      "critical": false
+    },
+    {
+      "id": "Z18-custom-workflow-retry",
+      "caseId": "Z18",
+      "category": "failure",
+      "expected": "Repeated/interrupted workflow execution is bounded, version checked and deduplicated without an unbounded rule cascade.",
+      "critical": false
+    },
+    {
+      "id": "Z19-customer-privacy-plan",
+      "caseId": "Z19",
+      "category": "success",
+      "expected": "Authorized export/erase yields a bounded plan with retention/hold reasons and progress identity.",
+      "critical": false
+    },
+    {
+      "id": "Z19-privacy-internal-exclusion",
+      "caseId": "Z19",
+      "category": "rejection",
+      "expected": "Customer export excludes internal notes and unauthorized organization data; erase cannot bypass holds/audit authority.",
+      "critical": false
+    },
+    {
+      "id": "Z19-customer-privacy-resume",
+      "caseId": "Z19",
+      "category": "failure",
+      "expected": "Interrupted/repeated execution resumes safely and cancels disallowed delivery without disclosing erased/internal content.",
+      "critical": false
+    },
+    {
+      "id": "Z20-reporting-definitions",
+      "caseId": "Z20",
+      "category": "success",
+      "expected": "Authorized bounded metrics use explicit business-time and reopened-ticket counting definitions.",
+      "critical": false
+    },
+    {
+      "id": "Z20-reporting-scope",
+      "caseId": "Z20",
+      "category": "rejection",
+      "expected": "Reports cannot disclose unauthorized groups/internal notes or accept free-form SQL/unbounded windows.",
+      "critical": false
+    },
+    {
+      "id": "Z20-reporting-recompute",
+      "caseId": "Z20",
+      "category": "failure",
+      "expected": "Repeated/rebuilt reporting over the same versioned timeline preserves declared counts and exact business-time meaning.",
+      "critical": false
+    }
+  ],
+  "notApplicable": []
+}

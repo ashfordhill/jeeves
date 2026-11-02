@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "profile": "discourse-core",
+  "version": "v1",
+  "observations": [
+    {
+      "id": "D01-session-cycle",
+      "caseId": "D01",
+      "category": "success",
+      "expected": "Register, log in, mutate with the protected session, and log out; credentials never appear in responses or logs.",
+      "critical": false
+    },
+    {
+      "id": "D01-session-boundary",
+      "caseId": "D01",
+      "category": "rejection",
+      "expected": "Unauthenticated, forged or cross-application sessions and missing mutation protections are rejected.",
+      "critical": false
+    },
+    {
+      "id": "D01-restart-session",
+      "caseId": "D01",
+      "category": "failure",
+      "expected": "A valid durable session survives API restart; a logged-out session remains invalid after restart.",
+      "critical": false
+    },
+    {
+      "id": "D02-category-grants",
+      "caseId": "D02",
+      "category": "success",
+      "expected": "Public categories are readable and current group grants permit the intended private-category actions.",
+      "critical": false
+    },
+    {
+      "id": "D02-privilege-escalation",
+      "caseId": "D02",
+      "category": "rejection",
+      "expected": "An ordinary member cannot self-grant moderator access or use cross-scope group/category references.",
+      "critical": false
+    },
+    {
+      "id": "D02-grant-replay",
+      "caseId": "D02",
+      "category": "failure",
+      "expected": "Repeated membership/grant commands preserve one effective relationship and recheck current authority.",
+      "critical": false
+    },
+    {
+      "id": "D03-topic-first-post",
+      "caseId": "D03",
+      "category": "success",
+      "expected": "An authorized create persists one topic and its initial post together.",
+      "critical": false
+    },
+    {
+      "id": "D03-denied-create",
+      "caseId": "D03",
+      "category": "rejection",
+      "expected": "An unauthorized category reference is rejected without a topic, post or event intent.",
+      "critical": false
+    },
+    {
+      "id": "D03-atomicity",
+      "caseId": "D03",
+      "category": "failure",
+      "expected": "Failure before the initial post insert leaves neither topic nor post nor committed event intent.",
+      "critical": true
+    },
+    {
+      "id": "D03-lost-response-retry",
+      "caseId": "D03",
+      "category": "failure",
+      "expected": "After a committed response is lost, same-key/body retry returns the original topic and post; changed body conflicts.",
+      "critical": true
+    },
+    {
+      "id": "D04-reply-edit-history",
+      "caseId": "D04",
+      "category": "success",
+      "expected": "Authorized replies and edits preserve immutable previous text, author and timestamp in revision history.",
+      "critical": false
+    },
+    {
+      "id": "D04-foreign-author",
+      "caseId": "D04",
+      "category": "rejection",
+      "expected": "An unauthorized author cannot edit another principal's post or read a protected revision.",
+      "critical": false
+    },
+    {
+      "id": "D04-stale-write",
+      "caseId": "D04",
+      "category": "failure",
+      "expected": "Two edits at one expectedVersion produce exactly one next version and one new revision; the loser conflicts.",
+      "critical": true
+    },
+    {
+      "id": "D05-allowed-transitions",
+      "caseId": "D05",
+      "category": "success",
+      "expected": "Authorized close/reopen/archive and hide/restore/remove commands follow their declared transitions.",
+      "critical": false
+    },
+    {
+      "id": "D05-invalid-transition",
+      "caseId": "D05",
+      "category": "rejection",
+      "expected": "An invalid or unauthorized transition, including an ordinary reply to a closed topic, leaves state unchanged.",
+      "critical": false
+    },
+    {
+      "id": "D05-transition-race",
+      "caseId": "D05",
+      "category": "failure",
+      "expected": "Stale/repeated lifecycle commands cannot apply a transition or audit/effect twice.",
+      "critical": false
+    },
+    {
+      "id": "D06-granted-access",
+      "caseId": "D06",
+      "category": "success",
+      "expected": "Current category members can observe content through every authorized surface before revocation.",
+      "critical": false
+    },
+    {
+      "id": "D06-denied-detail",
+      "caseId": "D06",
+      "category": "rejection",
+      "expected": "Revoked members cannot read topic/post detail or protected revision text.",
+      "critical": true
+    },
+    {
+      "id": "D06-denied-list",
+      "caseId": "D06",
+      "category": "rejection",
+      "expected": "Revoked members cannot see private titles, counts or records in lists and pages.",
+      "critical": true
+    },
+    {
+      "id": "D06-denied-search",
+      "caseId": "D06",
+      "category": "rejection",
+      "expected": "Revoked members cannot see private titles, snippets or counts in search, including stale projections.",
+      "critical": true
+    },
+    {
+      "id": "D06-denied-bytes",
+      "caseId": "D06",
+      "category": "rejection",
+      "expected": "Revoked members cannot download private attachment bytes, including through a previously issued byte URL.",
+      "critical": true
+    },
+    {
+      "id": "D06-pending-notification",
+      "caseId": "D06",
+      "category": "failure",
+      "expected": "Revocation before queued notification materialization/delivery prevents private content from being disclosed.",
+      "critical": true
+    },
+    {
+      "id": "D07-watch-mute-preferences",
+      "caseId": "D07",
+      "category": "success",
+      "expected": "Watch/mute and channel preferences change the authorized principal's effective subscription.",
+      "critical": false
+    },
+    {
+      "id": "D07-foreign-preferences",
+      "caseId": "D07",
+      "category": "rejection",
+      "expected": "Another principal cannot change or enumerate a private subscription by direct identity.",
+      "critical": false
+    },
+    {
+      "id": "D07-duplicate-subscription",
+      "caseId": "D07",
+      "category": "failure",
+      "expected": "Duplicate/retried commands preserve one subscription under its scoped principal/topic key.",
+      "critical": false
+    },
+    {
+      "id": "D08-eligible-inbox",
+      "caseId": "D08",
+      "category": "success",
+      "expected": "A currently eligible recipient receives the declared durable inbox item and delivery intent.",
+      "critical": false
+    },
+    {
+      "id": "D08-ineligible-recipient",
+      "caseId": "D08",
+      "category": "rejection",
+      "expected": "Muted, unauthorized or revoked recipients receive no private notification projection.",
+      "critical": false
+    },
+    {
+      "id": "D08-crash-deduplication",
+      "caseId": "D08",
+      "category": "failure",
+      "expected": "Crash after inbox commit before acknowledgement, then restart/retry, leaves one logical inbox item per recipient/event.",
+      "critical": true
+    },
+    {
+      "id": "D09-file-lifecycle",
+      "caseId": "D09",
+      "category": "success",
+      "expected": "Allowed bounded bytes can be staged, inspected, attached and downloaded by an authorized principal.",
+      "critical": false
+    },
+    {
+      "id": "D09-foreign-byte-access",
+      "caseId": "D09",
+      "category": "rejection",
+      "expected": "Foreign/private files cannot be associated or fetched; incomplete/quarantined bytes are never downloadable.",
+      "critical": true
+    },
+    {
+      "id": "D09-invalid-upload",
+      "caseId": "D09",
+      "category": "rejection",
+      "expected": "Oversized or disallowed MIME uploads are rejected without an available attachment.",
+      "critical": false
+    },
+    {
+      "id": "D09-association-orphan",
+      "caseId": "D09",
+      "category": "failure",
+      "expected": "Failed SQL association or interrupted object persistence leaves no available partial file and a recoverable orphan for bounded cleanup.",
+      "critical": false
+    },
+    {
+      "id": "D10-flag-review-audit",
+      "caseId": "D10",
+      "category": "success",
+      "expected": "A member submits a flag; an authorized moderator reviews it and applies the declared action with immutable actor audit.",
+      "critical": false
+    },
+    {
+      "id": "D10-unauthorized-review",
+      "caseId": "D10",
+      "category": "rejection",
+      "expected": "Ordinary members cannot invoke moderator review or claim another scope's flag.",
+      "critical": false
+    },
+    {
+      "id": "D10-duplicate-stale-review",
+      "caseId": "D10",
+      "category": "failure",
+      "expected": "Duplicate flags preserve one active review; competing/stale review claims cause one action and one logical effect.",
+      "critical": false
+    },
+    {
+      "id": "D11-bounded-search-pages",
+      "caseId": "D11",
+      "category": "success",
+      "expected": "Topic/post lists and search use bounded stable cursor pages with authoritative access filtering before counts and snippets.",
+      "critical": false
+    },
+    {
+      "id": "D11-invalid-cursor-scope",
+      "caseId": "D11",
+      "category": "rejection",
+      "expected": "Invalid, foreign or oversized paging input is rejected; interleaved inaccessible hits are absent.",
+      "critical": false
+    },
+    {
+      "id": "D11-projection-rebuild",
+      "caseId": "D11",
+      "category": "failure",
+      "expected": "Rebuild and retry restore the projection without resurrecting removed content or bypassing current category access.",
+      "critical": false
+    },
+    {
+      "id": "D12-tombstone-audit",
+      "caseId": "D12",
+      "category": "success",
+      "expected": "Authorized removal produces the declared tombstone and preserved safe audit history.",
+      "critical": false
+    },
+    {
+      "id": "D12-removed-history-visibility",
+      "caseId": "D12",
+      "category": "rejection",
+      "expected": "Removed text is absent from ordinary detail and revision-history outputs.",
+      "critical": true
+    },
+    {
+      "id": "D12-removed-search-visibility",
+      "caseId": "D12",
+      "category": "rejection",
+      "expected": "Removed text, snippets and disclosing counts remain absent from ordinary search, including stale projections.",
+      "critical": true
+    },
+    {
+      "id": "D12-repeated-removal",
+      "caseId": "D12",
+      "category": "failure",
+      "expected": "Repeated removal/recovery is safe and cannot restore removed text or duplicate logical audit/effects.",
+      "critical": false
+    },
+    {
+      "id": "D13-trust-progression",
+      "caseId": "D13",
+      "category": "success",
+      "expected": "Recorded activity and the frozen threshold policy propose promote/demote levels with reasons and privileged overrides.",
+      "critical": false
+    },
+    {
+      "id": "D13-untrusted-counters",
+      "caseId": "D13",
+      "category": "rejection",
+      "expected": "Client activity counters or unauthorized override requests cannot grant trust or privileges.",
+      "critical": false
+    },
+    {
+      "id": "D13-activity-replay",
+      "caseId": "D13",
+      "category": "failure",
+      "expected": "Repeated/reordered activity evaluation does not count activity twice or bypass the authorized level-change command.",
+      "critical": false
+    },
+    {
+      "id": "D14-adjudication-appeal",
+      "caseId": "D14",
+      "category": "success",
+      "expected": "The selected abuse policy returns allow/review/reject and supports explicit appeal and moderator override.",
+      "critical": false
+    },
+    {
+      "id": "D14-policy-authority",
+      "caseId": "D14",
+      "category": "rejection",
+      "expected": "Untrusted content cannot execute policy, disclose private history or grant itself a moderator override.",
+      "critical": false
+    },
+    {
+      "id": "D14-adjudication-unavailable",
+      "caseId": "D14",
+      "category": "failure",
+      "expected": "Timeout/unavailable policy remains explicit and fail-closed before a required mutation; replay does not apply an action twice.",
+      "critical": false
+    },
+    {
+      "id": "D15-digest-window",
+      "caseId": "D15",
+      "category": "success",
+      "expected": "Digest selection uses the declared timezone/window and bounded eligible references.",
+      "critical": false
+    },
+    {
+      "id": "D15-digest-exclusions",
+      "caseId": "D15",
+      "category": "rejection",
+      "expected": "Muted or inaccessible content and private recipient information are absent from digest output.",
+      "critical": false
+    },
+    {
+      "id": "D15-digest-delivery-retry",
+      "caseId": "D15",
+      "category": "failure",
+      "expected": "Duplicate schedules/retries follow the declared delivery identity and recheck access before materialization.",
+      "critical": false
+    },
+    {
+      "id": "D16-safe-render-mentions",
+      "caseId": "D16",
+      "category": "success",
+      "expected": "The selected bounded renderer produces sanitized text/markup and typed mention identities.",
+      "critical": false
+    },
+    {
+      "id": "D16-unsafe-render-recipient",
+      "caseId": "D16",
+      "category": "rejection",
+      "expected": "Executable markup and excessive parse input are rejected/sanitized; inaccessible recipients receive no mention notification.",
+      "critical": false
+    },
+    {
+      "id": "D16-renderer-unavailable",
+      "caseId": "D16",
+      "category": "failure",
+      "expected": "Cancelled, timed-out or unavailable required rendering never becomes a successful mutation or unvalidated output.",
+      "critical": false
+    },
+    {
+      "id": "D17-split-merge-history",
+      "caseId": "D17",
+      "category": "success",
+      "expected": "Authorized split/merge preserves post identities/history and applies explicit access/subscription decisions.",
+      "critical": false
+    },
+    {
+      "id": "D17-merge-authority",
+      "caseId": "D17",
+      "category": "rejection",
+      "expected": "Foreign topics, unauthorized post selections and stale expected versions are rejected.",
+      "critical": false
+    },
+    {
+      "id": "D17-split-merge-recovery",
+      "caseId": "D17",
+      "category": "failure",
+      "expected": "Interrupted split/merge is atomic or follows the declared recovery plan without lost/duplicated posts or widened visibility.",
+      "critical": false
+    },
+    {
+      "id": "D18-privacy-plan",
+      "caseId": "D18",
+      "category": "success",
+      "expected": "Authorized export/erasure produces the declared bounded plan, retained audit reasons and legal-hold decisions.",
+      "critical": false
+    },
+    {
+      "id": "D18-privacy-boundary",
+      "caseId": "D18",
+      "category": "rejection",
+      "expected": "Another subject cannot export/erase private data or bypass retention/hold authority.",
+      "critical": false
+    },
+    {
+      "id": "D18-privacy-resume",
+      "caseId": "D18",
+      "category": "failure",
+      "expected": "Interrupted/repeated execution resumes safely and cancels affected queued deliveries without disclosing erased content.",
+      "critical": false
+    },
+    {
+      "id": "D19-email-reply",
+      "caseId": "D19",
+      "category": "success",
+      "expected": "Authenticated inbound source and sender mapping produce an authorized topic reply with message provenance.",
+      "critical": false
+    },
+    {
+      "id": "D19-email-source-authority",
+      "caseId": "D19",
+      "category": "rejection",
+      "expected": "Unauthenticated sources, ambiguous topic/sender mappings and unauthorized posting are rejected.",
+      "critical": false
+    },
+    {
+      "id": "D19-email-deduplication",
+      "caseId": "D19",
+      "category": "failure",
+      "expected": "Repeated message IDs and delivery retries create one logical reply; unavailable mapping remains explicit.",
+      "critical": false
+    },
+    {
+      "id": "D20-deterministic-ranking",
+      "caseId": "D20",
+      "category": "success",
+      "expected": "Ranking orders authorized candidates with deterministic tie-breaks and declared freshness.",
+      "critical": false
+    },
+    {
+      "id": "D20-ranking-visibility",
+      "caseId": "D20",
+      "category": "rejection",
+      "expected": "A strategy cannot add inaccessible candidates or disclose hidden features through ranking/counts.",
+      "critical": false
+    },
+    {
+      "id": "D20-ranking-rebuild",
+      "caseId": "D20",
+      "category": "failure",
+      "expected": "Rebuild/repeated evaluation preserves the defined ordering/freshness and current visibility; unavailable strategy is explicit.",
+      "critical": false
+    }
+  ],
+  "notApplicable": []
+}

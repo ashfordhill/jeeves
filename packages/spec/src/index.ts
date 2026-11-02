@@ -19,6 +19,7 @@ export * from "./architecture-review.ts";
 export * from "./architecture-review-model.ts";
 export * from "./architecture-targets.ts";
 export * from "./architecture-view.ts";
+export * from "./benchmark.ts";
 export * from "./config.ts";
 export * from "./container-display.ts";
 export * from "./delivery.ts";

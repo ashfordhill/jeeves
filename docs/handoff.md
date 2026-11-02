@@ -5120,3 +5120,121 @@ Known issues and next assignment:
   user's deferral, repairing assertions or weakening the root gate.
 - P58 is complete; **P59 is the next unstarted work unit**. No new model/compiler/runtime,
   generated output, persistent database record, live application adoption, push or publication.
+
+## 2026-11-02 — P59: frozen behavior ledgers and truthful coverage evaluation
+
+Executed P59 only in the primary checkout on `main`, after P58 commit
+`3ec91e6a6976354542fc7efae841924c2cf39a3d`. Read AGENTS, PLAN §15 and the relevant earlier
+sections, latest handoffs, benchmark roadmap/shared contract/scopes/assignment queue/P59,
+`evidence.ts` and generator acceptance handling. Resumed the same partial work after the host
+shutdown; preserved the new benchmark files and existing index edit. No delegation, branches or
+worktrees.
+
+**Batch authorization for subsequent agents:** the user authorized P59 through P61d sequentially,
+with a fresh task per work unit, required checks, append-only handoff and one scoped local commit
+before the next unit. For this batch, **lint, repository-wide types and focused offline backend
+semantic/compatibility tests replace full `pnpm check`**. UI unit/E2E execution and maintenance
+remain deferred. This resolves P58's entry-policy constraint for this batch; it does not change
+root scripts or authorize deferred UI maintenance, runtime work, pushes or publication. This task
+owns P59 only and stops after its commit. The coordinator may assign P60a in a fresh task.
+
+Built:
+
+- Added `benchmarks/{discourse-core,vendure-core,zammad-core}/v1/{manifest,requirements,integrity}.json`.
+  All 60 row descriptions/IDs/weights/G-H labels match the planning tables verbatim. Each profile
+  totals 100 points; rows 01–12 target 66 and rows 13–20 target 34. There are 66/63/66 mandatory
+  observations (195 total), covering success, rejection/access and material failure behavior.
+  Expanded all named critical boundaries into immutable veto observation IDs. V03 explicitly
+  explains why pure arithmetic has no separate retry/recovery observation; no N/A creates points.
+- Froze scope/exclusions, prerequisite dependencies, fixture version and unmeasured workload
+  targets (cardinality, offered rates/mix/duration, latency, reference-host, contention and recovery
+  conditions). Source-map locators reserve sibling `source-map.json` files for P60a/b/c; none
+  exists or claims inspected upstream evidence yet. Protocol/fixture contents remain P61 work.
+- Added/exported `packages/spec/src/benchmark.ts`: strict schemas, cross-reference/category/total
+  validation, acyclic dependencies, canonical SHA-256 integrity checking, exact-input evidence
+  matching, weighted evaluation, deterministic JSON/text summaries and path/value version diffs.
+  Changing frozen behavior requires a newer version and visible diff; existing v1 pins remain.
+- Evidence separates design declarations, supported/generated/custom-required/unsupported state,
+  implementation origin, fresh-generation/project-code/provider mode and independent raw report
+  references. Inputs bind profile/ledger/design/lock/contracts/fixtures/version/seed/test-pack,
+  template/runtime/archive/source hashes, DB version/image and environment profile/fingerprint.
+  A template result also requires its exact reference in `templateHashes`; local reference-provider
+  results cannot satisfy concrete-adapter V14/V19 observations.
+- All mandatory observations and dependencies must pass before a row earns its weight. Partial,
+  skipped, unrun, unavailable, interrupted, stale, wrong-origin and unreported passes earn none.
+  Matching failures survive later passes and origin relabeling. Critical missing/failing evidence
+  and any incomplete/failing advertised supplied path prevent a foundation pass even above 60
+  template points. Shared/domain-template, recipe, upstream integration, custom completion,
+  designed, missing and failed points stay separate. No recorded benchmark pass was created.
+- Added focused adversarial evaluator tests and [the data/API guide](../benchmarks/README.md).
+  Updated roadmap/improvements status to P59 complete/P60a next. No CATALOG change: offerings,
+  reusable C2/C3 boundaries and template/runtime availability have not changed.
+
+Final checks (Node **24.21.0**, pnpm **12.16.1**; Node selected through
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`):
+
+- `pnpm lint`: exit 0; `Checked 813 files in 349ms. No fixes applied.` Zero errors,
+  existing 2025 warnings / 75 infos; no new diagnostics. Raw output:
+  `.jeeves-work/p59/lint.log`. Scoped Biome also reports zero diagnostics.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces and scripts,
+  8.4s. Evidence: `.jeeves-work/runs/2026-11-02T23-40-37-947Z-typecheck-be1c24e3.{json,log}`.
+- Exact offline selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0: **6 files, 140 tests passed**, 4.2s including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-02T23-40-37-954Z-unit-8aa970e8.{json,log}`. This proves the new
+  accounting and selected legacy executable planning/writer/fixture/acceptance compatibility,
+  not real backend application behavior. Both final runner records have `sourceChanged: false`.
+  The earlier same selection passed before the final diff-validator guard was added; it was rerun
+  after that final source change. Synthetic adversarial observations exist only inside unit tests.
+- Temporary scoped documentation/data audit: **99 local links/anchors**, balanced fences, all six
+  canonical data hashes, 60 rows/195 unique observation IDs, three 100/66 totals, deliberately absent
+  P60 source-map sidecars and exact preservation of the entire earlier handoff prefix. Script/result:
+  `.jeeves-work/p59/audit.{py,json}`. `git diff --check` passed.
+
+Canonical pins (`canonical-json-sha256-v1`; sorted object keys, array order retained):
+
+| Profile | Manifest SHA-256 | Requirements SHA-256 |
+| --- | --- | --- |
+| discourse-core/v1 | `4eeaa5032e48783091e2b3300c6df9feae574117bec432c5c1fe3a50ba1925a7` | `67ea5037e54172e1a73f2ee05b729152e0067f882192e44a2cd8aed09e844691` |
+| vendure-core/v1 | `126b31b7f5639dfa6084cdcb7bb21f40f49643bb7c0f8a2f42890d136aee6bdd` | `46cec50d621ee2f1cb22a0ec73d56d8d9da1ead7fa7133b5bcc337f168e80b98` |
+| zammad-core/v1 | `f21c75ab05b05b2fc7091231e32c2bfdaf435bcb8c0a0cd0dfd73c27e1c7f1f3` | `63342b9eb79e7b78c84a9551ef521239b6b161a5f1a48a85b13ce1b14217e631` |
+
+Observed failures and scope limits, retained separately from the passing gate:
+
+- The first post-restart `pnpm work run unit ...` did not start tests: the login shell defaulted
+  to Node 18.19.1 and rejected `scripts/work.ts` with `ERR_UNKNOWN_FILE_EXTENSION`. Selected the
+  already installed Node 24 toolchain; no dependency or system installation/change was needed.
+- An initial broader compatibility selection included unchanged
+  `packages/generator/src/architecture.test.ts` and returned **3 failed / 92 passed** across four
+  files. Raw record: `.jeeves-work/runs/2026-11-02T23-29-52-484Z-unit-b60f0338.{json,log}`.
+  Exact failing expectations:
+  - line 269, `hides technical adapters without losing or duplicating QR operations or declared edges`:
+    expects `componentPresentation(api, true)` object identity; values serialize identically.
+  - line 392, `offers projected authored C3 storage uses as scenario references`:
+    a projected storage-edge reference is absent from the expected scenario-choice list.
+  - line 455, `keeps interface contracts in the lossless design snapshot without changing executable generation`:
+    current review also reports `CONTRACT_COVERAGE` beyond the old two-code expectation.
+- Confirmed these are **P58 baseline failures**, not P59 regressions: temporarily replaced only
+  `packages/spec/src/index.ts` with exact `git show HEAD:...` bytes (all other pre-existing
+  source remained at HEAD), ran `pnpm work run unit packages/generator/src/architecture.test.ts`,
+  then restored the exact edited bytes in `finally`. The baseline run returned **3 failed / 16
+  passed**, with the same names/expectations; `sourceChanged: false`. Raw record:
+  `.jeeves-work/runs/2026-11-02T23-33-26-477Z-unit-f33d135b.{json,log}`. Baseline index SHA-256:
+  `a34e9544a6083842742fb321c57f4d004462040749fc9d90e80484a9b2a36662`; restored edited index:
+  `b65936af49a33315319727c8ef23cfd77862e9a2c0a7364b13ae9b97f752578f`. No old expectations or
+  production behavior were changed. The final focused gate uses the passing legacy executable
+  plan/generate/registry fixtures instead of maintaining these deferred presentation/review assertions.
+- Full `pnpm check`, UI suites, production UI build/browser, conformance, upstream fetches,
+  provider calls, application generation, load/recovery/upgrade campaigns were not run. P59 has
+  no production UI/runtime change. No full-green repository or actual template-coverage claim.
+  Evaluation accounts for supplied records; it does not attest report truth or template support.
+
+P59 is complete with no P59 blocker. The three confirmed historical assertions remain separately
+reported debt. **P60a is the next unstarted work unit**, to pin Discourse excerpts and add its source
+map without altering the frozen v1 ledger. Keep later source facts, design intent, actual template
+availability and independently observed passes distinct. No next task was started, no persistent
+project/database/output changed, and no push or publication occurred.
