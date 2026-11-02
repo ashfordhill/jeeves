@@ -59,7 +59,21 @@ To update a reference, deliberately inspect a new revision and its licenses, upd
 
 ## Verification during product expansion
 
-The user has deferred a comprehensive certification-style test campaign. Run focused checks while changing behavior and one required `pnpm work run check` before each package handoff. Select relevant boundary checks when schemas, authentication, migrations, rendering or browser behavior change. Re-run only after new changes, failures or unresolved concerns justify it. Record exact results and remaining gaps; do not spend implementation time expanding a combinatorial suite or claim a template is bug-free.
+The user has deferred a comprehensive certification-style test campaign. The current C2/C3 UI
+instruction also defers UI unit/E2E execution and maintenance: use lint, types, a production build
+and direct browser inspection for that work. The general full `pnpm work run check` requirement
+remains for non-UI implementation; it includes deferred web assertions, so it cannot be silently
+replaced with a subset. [P58's baseline and entry constraint](evidence/p58/README.md#deferred-assertions-and-the-full-check-entry-constraint)
+records the unresolved execution-policy decision before backend implementation. Its
+[profiles and selectors](evidence/p58/README.md#verification-profiles-and-exact-existing-selectors)
+distinguish authoring, offline semantics, real runtime conformance and composition proofs.
+
+Select relevant boundary checks when schemas, authentication, migrations, rendering or browser
+behavior change. Re-run only after new changes, failures or unresolved concerns justify it.
+Record exact results and remaining gaps; do not expand a combinatorial suite or claim a template
+is bug-free. The future `backend-foundation`, `benchmark`, `benchmark-recovery`, `benchmark-load`
+and `benchmark-upgrade` names are [documentation reservations](evidence/p58/README.md#reserved-future-commands-and-remaining-gaps),
+not registered commands. Register each only when its nonempty checks exist.
 
 ## Reviewed qrwty snapshot adoption
 

@@ -3,8 +3,9 @@
 **Latest planning (2026-11-01):** the [backend benchmark roadmap](build-plan-backend-benchmarks.md)
 specifies future Discourse, Vendure and Zammad core foundations. Its P58–P110 delivery packages
 are divided into [79 sequential agent assignments](plans/backend-benchmarks/execution-units.md).
-None is implemented by the planning task. When execution is requested, start with the assigned
-unit (P58 if no more specific unit is given), not the historical sequence below. Existing
+The planning task implemented none. [P58's baseline](evidence/p58/README.md) is now complete;
+P59 is the next unstarted unit, with the full-check policy constraint recorded before implementation.
+When execution is requested, start with the assigned unit, not the historical sequence below. Existing
 ownership, C4 semantics and UI-test deferral remain in force; validation profiles are explicit
 in the new shared contract.
 

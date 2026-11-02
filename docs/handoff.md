@@ -5058,3 +5058,65 @@ All P58–P110 implementation packages remain **unstarted**. The next execution 
 is **P58**: record the concrete baseline and verification policy before new backend development.
 The plan makes the existing full-check versus deferred-UI-test boundary explicit for that future
 baseline; it does not silently authorize deferred UI suite maintenance or claim those suites pass.
+
+## 2026-11-01 — P58: repository baseline and verification profiles
+
+Executed the requested unsplit P58 against PLAN58 commit
+`0c96aae3b3e5b226cad7ac8284ef5ecb36b310f4`, initially clean on the primary `main` checkout.
+Read AGENTS, PLAN §1–§15, UX5/PLAN58 handoffs, the benchmark roadmap/shared contract/scopes/queue,
+P58, developer workflow, runner/configs and the named generator/evidence code. No delegation,
+branch/worktree creation or new backend implementation.
+
+- Added [P58 evidence](evidence/p58/README.md): exact checkout/toolchain/lock identity, observed
+  passes versus unrun checks, 14 template pins and legacy-to-current REST runtime mapping,
+  frozen artifact hashes, protected generation/architecture fixtures and current gaps.
+- Documented A/S/R/P requirements and 43 concrete existing unit/conformance file selections,
+  with offline logic versus real dependency/consumer evidence distinguished. Inventoried all
+  15 web unit files, shared rendering tests and 41 deferred editor E2E specs. Static selector
+  drift includes App/shell Draw versus Design and historical Generate/project controls; these
+  remain explicitly **unverified**, not observed repository test failures.
+- Reserved `backend-foundation`, `benchmark`, `benchmark-recovery`, `benchmark-load` and
+  `benchmark-upgrade` in documentation only. No registered command or success-returning stub.
+- Updated the developer workflow and roadmap/entry-point links to the P58 evidence and P59-next
+  status. CATALOG and all actual offerings/availability remain unchanged.
+- Inspected existing Mattermost backend-review project `9928f0b6-c54c-4081-b8d4-5bdff0b5875c`
+  (revision 1) and Fieldwork Inventory project `477e4122-f898-4678-a6b6-1787a105d655` (revision 2).
+  Used production Vite assets and actual API handlers over a PostgreSQL read-only connection,
+  rejecting writes, without startup migrations/recovery or the persistent job runner. Temporary
+  Settings were empty; no private provider configuration was read. Stopped inspection processes.
+
+Commands and actual results:
+
+- Existing `runWork` with an explicit temporary `p58-authoring-baseline` plan: `pnpm lint`,
+  `pnpm typecheck`, `pnpm --filter @jeeves/web build` all exit 0, total 9.4s. Lint:
+  `Checked 802 files in 377ms. No fixes applied.` Existing 2025 warnings / 75 infos, zero errors.
+  Build: 7446 modules, existing chunk-size advisory. Runner evidence:
+  `.jeeves-work/runs/2026-11-02T02-59-25-201Z-p58-authoring-baseline-ba368ebd.{json,log}`;
+  identical initial/final fingerprints, `sourceChanged: false`.
+- Direct Chromium inspection, light 1440×1000 and dark 390×844: expand Post service CreatePost,
+  inspect Partial/protected contract behavior/outcomes, Cancel/reload, and select/reset the
+  legacy fixed acceptance pack without invoking generation. Four observations complete; zero
+  page errors, zero write requests, unchanged hashes for project list/design/layout/generation
+  responses, document widths 1440/390px. Final runner exit 0 in 4.1s:
+  `.jeeves-work/runs/2026-11-02T03-10-18-337Z-p58-browser-inspection-839ac0d8.{json,log}`.
+  Raw observations/screenshots under `.jeeves-work/p58/`. Two preliminary driver runs failed
+  on selector/loading assumptions and remain recorded; one also detected in-flight doc edits.
+  The completed run has `sourceChanged: false`; no production code/test expectations changed.
+- Read-only SHA-256 audit: six frozen archives and ten immutable QR Studio recipe artifacts
+  match manifests. Temporary scoped documentation audit validates links/anchors, all 43 selector
+  files, balanced fences and absence of the five reserved names from registered profiles.
+  `git diff --check` passes. Local audit script: `.jeeves-work/p58/audit.py`.
+- Full `pnpm check`, unit/E2E suites, template/consumer conformance, application generation,
+  workload/recovery/upgrade campaigns and provider calls **not run**. P58's D/A baseline scope
+  does not authorize the deferred UI suites. No current full-green or benchmark-coverage claim.
+
+Known issues and next assignment:
+
+- At 390px the existing legacy Generate drawer log overlaps form content. Selection works, but
+  this is not a clean narrow-layout pass; preserve the visual observation for a separate UI fix.
+- Full `pnpm check` includes deferred UI tests. Before a non-UI implementation gate (starting
+  P59, certainly before runtime entry P74a), resolve execution of the unchanged full check versus
+  an explicitly approved scoped backend gate. P58 records this constraint without changing the
+  user's deferral, repairing assertions or weakening the root gate.
+- P58 is complete; **P59 is the next unstarted work unit**. No new model/compiler/runtime,
+  generated output, persistent database record, live application adoption, push or publication.

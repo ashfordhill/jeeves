@@ -1,9 +1,10 @@
 # Backend benchmark roadmap: Discourse, Vendure and Zammad
 
 Planning package **PLAN58**, 1 November 2026. Inspected Jeeves at `3ae6aff` on `main`, including
-the UX5 Mattermost work. **Planning complete; P58–P110 are not implemented.** This document
-specifies future execution. The current request authorizes writing this plan, not starting its
-runtime packages, generating applications, publishing, or deploying them.
+the UX5 Mattermost work. **Planning and [P58's baseline](evidence/p58/README.md) are complete;
+P59–P110 remain unstarted.** P58 adds no backend capability. This document specifies future
+execution; execute only the requested work unit. It does not authorize starting runtime packages,
+generating applications, publishing, or deploying them merely because they are planned.
 
 The objective is a Jeeves design that captures the backend decisions needed to generate a useful,
 tested TypeScript foundation, with narrow remaining tasks another agent can finish. The three
@@ -33,7 +34,8 @@ Read [AGENTS](../AGENTS.md), [PLAN §15](../PLAN.md#15-build-sections), the late
 Continue sequentially in the primary checkout on `main`, one requested work unit per session and
 local commit. The 53 delivery packages are partitioned into **79 small agent assignments**;
 split parents are milestones, not single-session tasks. Start with **P58** when execution is
-requested without a more specific package.
+requested without a more specific package and no baseline has been recorded. P58 is now complete;
+the next unstarted unit is **P59**, subject to its recorded full-check entry constraint.
 Dependencies are completion requirements, not permission to run multiple agents or packages.
 Do not restart P46–P57, UX5, QRWTY adoption, or historical S14 work.
 
@@ -45,7 +47,8 @@ expansion during a design-only package.
 
 ## Delivery map
 
-All entries are **planned**. Every package has a bounded outcome, ordered work, negative cases,
+P58 is **complete** with [baseline evidence](evidence/p58/README.md); remaining entries are
+**planned**. Every package has a bounded outcome, ordered work, negative cases,
 checks, and explicit exclusions in its phase file. Follow the exact child order in the
 [assignment queue](plans/backend-benchmarks/execution-units.md), not the whole parent at once.
 
