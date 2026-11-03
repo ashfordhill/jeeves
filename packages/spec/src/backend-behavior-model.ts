@@ -81,6 +81,12 @@ const writeAction = <K extends string>(kind: K) =>
     values: z.array(mapping).min(1).max(100),
   });
 export const backendActionSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    id: idSchema,
+    kind: z.literal("hook"),
+    hook: exact,
+    input: z.array(mapping).max(40),
+  }),
   writeAction("create"),
   writeAction("create-child"),
   writeAction("patch"),

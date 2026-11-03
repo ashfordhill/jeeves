@@ -24,7 +24,7 @@ const fieldKey = (v: { entity: BackendReference; field: string }) =>
   `${contractKey(v.entity)}/${v.field}`;
 type Value = ContractValue & { required?: boolean };
 /** Conservative assignability: bounded sources must fit every target bound; no runtime coercion. */
-function fits(source: Value, target: Value): boolean {
+export function backendValueFits(source: Value, target: Value): boolean {
   if (
     source.type !== target.type ||
     (source.nullable && !target.nullable) ||
@@ -57,27 +57,27 @@ function fits(source: Value, target: Value): boolean {
       !!source.fields &&
       target.fields.every((t) => {
         const s = source.fields?.find((s) => s.id === t.id);
-        return s ? fits(s, t) : !t.required;
+        return s ? backendValueFits(s, t) : !t.required;
       }) &&
       source.fields.every((s) => target.fields?.some((t) => t.id === s.id))
     );
   if (target.type === "array")
-    return !!source.items && !!target.items && fits(source.items, target.items);
+    return !!source.items && !!target.items && backendValueFits(source.items, target.items);
   if (target.type === "map")
     return (
       !!source.keys &&
       !!target.keys &&
       !!source.values &&
       !!target.values &&
-      fits({ type: "text", ...source.keys }, { type: "text", ...target.keys }) &&
-      fits(source.values, target.values)
+      backendValueFits({ type: "text", ...source.keys }, { type: "text", ...target.keys }) &&
+      backendValueFits(source.values, target.values)
     );
   if (target.type === "tagged-union")
     return (
       source.discriminator === target.discriminator &&
       !!source.variants?.length &&
       !!target.variants?.length &&
-      source.variants.every((s) => target.variants?.some((t) => fits(s, t)))
+      source.variants.every((s) => target.variants?.some((t) => backendValueFits(s, t)))
     );
   if (["ref", "unresolved"].includes(target.type)) return false;
   return true;
@@ -106,25 +106,21 @@ function literalFits(value: string | number | boolean | null, target: Value): bo
     (target.maxLength === undefined || value.length <= target.maxLength)
   );
 }
-export function validateBackendBehavior(design: DesignDocument): Finding[] {
+/** Shared typed mapping checks for command actions, hooks and durable intent. */
+export function backendValueChecks(
+  design: DesignDocument,
+  add: (
+    code: "CONFIG_INVALID" | "UNKNOWN_REFERENCE",
+    path: (string | number)[],
+    message: string,
+  ) => void,
+) {
   const model = design.architecture?.backend;
-  if (!model) return [];
-  const result: Finding[] = [];
   const contract = (r: BackendReference) => design.architecture?.contracts?.find((c) => same(c, r));
-  const aggregate = (r: BackendReference) => model.aggregates.find((a) => same(a, r));
-  const lifecycle = (r: BackendReference) => model.lifecycles?.find((l) => same(l, r));
+  const aggregate = (r: BackendReference) => model?.aggregates.find((a) => same(a, r));
   const entityField = (r: { entity: BackendReference; field: string }) => {
     const e = backendEntity(design, r.entity);
     return e && backendEntityFields(design, e).find((f) => f.id === r.field);
-  };
-  const add = (
-    code: "CONFIG_INVALID" | "CONFIG_REQUIRED" | "UNKNOWN_REFERENCE" | "NEEDS_TEMPLATE",
-    path: (string | number)[],
-    message: string,
-  ) => result.push(finding(code, message, { path }));
-  const unique = (values: string[], path: (string | number)[], what: string) => {
-    if (new Set(values).size !== values.length)
-      add("CONFIG_INVALID", path, `${what} must be distinct.`);
   };
   const sourceType = (
     source: BackendValueSource,
@@ -154,7 +150,7 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
     let value: Value | undefined;
     if (source.kind === "query-result") {
       const queryRef = op?.query;
-      const q = queryRef && model.queries?.find((q) => same(q, queryRef));
+      const q = queryRef && model?.queries?.find((q) => same(q, queryRef));
       if (q && op?.kind === "query") {
         const sources = backendQuerySources(design, q);
         const fields = q.projection.flatMap((p) => {
@@ -231,7 +227,14 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
             : { type: "boolean", required: true };
     else {
       const action = op?.actions.slice(0, before).find((a) => a.id === source.action);
-      if (action?.kind === "capability")
+      if (action?.kind === "hook") {
+        const hook = model?.hooks?.find((h) => same(h, action.hook));
+        if (hook)
+          value = fieldAt(
+            expanded(contract(hook.contracts.output)?.shape?.payload ?? [], hook.contracts.output),
+            source.path,
+          );
+      } else if (action?.kind === "capability")
         value = fieldAt(
           expanded(contract(action.strategy.result)?.shape?.payload ?? [], action.strategy.result),
           source.path,
@@ -261,13 +264,39 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
     before = 0,
   ) => {
     const v = sourceType(source, path, op, before);
-    if (v && !(source.kind === "literal" ? literalFits(source.value, target) : fits(v, target)))
+    if (
+      v &&
+      !(source.kind === "literal" ? literalFits(source.value, target) : backendValueFits(v, target))
+    )
       add(
         "CONFIG_INVALID",
         path,
         "Value source type, nullability, requiredness or bounds do not fit the target field.",
       );
   };
+  return { sourceType, checkValue };
+}
+export function validateBackendBehavior(design: DesignDocument): Finding[] {
+  const model = design.architecture?.backend;
+  if (!model) return [];
+  const result: Finding[] = [];
+  const contract = (r: BackendReference) => design.architecture?.contracts?.find((c) => same(c, r));
+  const aggregate = (r: BackendReference) => model.aggregates.find((a) => same(a, r));
+  const lifecycle = (r: BackendReference) => model.lifecycles?.find((l) => same(l, r));
+  const entityField = (r: { entity: BackendReference; field: string }) => {
+    const e = backendEntity(design, r.entity);
+    return e && backendEntityFields(design, e).find((f) => f.id === r.field);
+  };
+  const add = (
+    code: "CONFIG_INVALID" | "CONFIG_REQUIRED" | "UNKNOWN_REFERENCE" | "NEEDS_TEMPLATE",
+    path: (string | number)[],
+    message: string,
+  ) => result.push(finding(code, message, { path }));
+  const unique = (values: string[], path: (string | number)[], what: string) => {
+    if (new Set(values).size !== values.length)
+      add("CONFIG_INVALID", path, `${what} must be distinct.`);
+  };
+  const { sourceType, checkValue } = backendValueChecks(design, add);
   const checkGuards = (
     guards: BackendGuard[],
     path: (string | number)[],
@@ -752,6 +781,40 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
     };
     for (const [index, action] of op.actions.entries()) {
       const at = [...path, "actions", action.id];
+      if (action.kind === "hook") {
+        const hook = model.hooks?.find((h) => same(h, action.hook));
+        if (!hook) add("UNKNOWN_REFERENCE", at, "Action must select an exact hook.");
+        else {
+          if (
+            hook.kind !== "pure" ||
+            hook.boundary !== "before-commit" ||
+            !same(hook.operation, op)
+          )
+            add(
+              "CONFIG_INVALID",
+              at,
+              "Only this operation’s pure before-commit hook can run as a local action; external I/O stays outside the transaction.",
+            );
+          const c = contract(hook.contracts.input);
+          const fields = c?.shape?.payload ?? [];
+          unique(
+            action.input.map((v) => v.field),
+            at,
+            "Hook input bindings",
+          );
+          for (const v of action.input) {
+            const f = fields.find((f) => f.id === v.field);
+            if (!f) add("UNKNOWN_REFERENCE", at, "Hook input field does not exist.");
+            else {
+              const resolved = resolveContractValue(f, c?.shape?.types ?? []).value;
+              if (resolved) checkValue(v.value, { ...f, ...resolved }, at, op, index);
+            }
+          }
+          if (fields.some((f) => f.required && !action.input.some((v) => v.field === f.id)))
+            add("CONFIG_INVALID", at, "Bind every required hook input exactly once.");
+        }
+        continue;
+      }
       if (action.kind === "capability") {
         const rc = contract(action.strategy.result);
         if (rc?.kind !== "data" || !rc.shape)
@@ -884,6 +947,17 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
         add("CONFIG_INVALID", at, "Relation actions write exactly the non-scope relation keys.");
       for (const v of action.values) {
         record({ entity: e, field: v.field }, at);
+        if (v.value.kind === "result") {
+          const source = v.value;
+          const producer = op.actions.slice(0, index).find((a) => a.id === source.action);
+          const h = producer?.kind === "hook" && model.hooks?.find((h) => same(h, producer.hook));
+          if (h && !h.allowedWrites.some((w) => same(w.entity, e) && w.field === v.field))
+            add(
+              "CONFIG_INVALID",
+              at,
+              "Hook output may propose only explicitly allowed write fields.",
+            );
+        }
         const f = entityField({ entity: e, field: v.field }),
           storage = e.fields.find((f) => f.field === v.field);
         if (!f) continue;

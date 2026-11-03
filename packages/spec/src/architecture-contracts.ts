@@ -1,5 +1,6 @@
 /** Project-local design contracts. Declarations never supply executable runtime bindings. */
 import { z } from "zod";
+import { backendEffectContracts } from "./backend-effects.ts";
 import {
   contractTypeDefinitionSchema,
   contractFieldsSchema as fields,
@@ -539,6 +540,7 @@ export function validateContractTransition(
   const result: Finding[] = [];
   for (const prior of before.architecture?.contracts ?? []) {
     const referenced = [
+      ...backendEffectContracts(before.architecture?.backend).map((contract) => ({ contract })),
       ...(before.architecture?.interfaces ?? []),
       ...(before.architecture?.bindings ?? []),
       ...(before.architecture?.datasets ?? []),
@@ -554,13 +556,17 @@ export function validateContractTransition(
       ),
     ].some((use) => contractKey(use.contract) === contractKey(prior));
     if (
-      (before.architecture?.backend?.operations?.some(
-        (o) =>
-          contractKey(o.target.contract) === contractKey(prior) ||
-          o.actions.some(
-            (a) => a.kind === "capability" && contractKey(a.strategy.result) === contractKey(prior),
-          ),
+      (backendEffectContracts(before.architecture?.backend).some(
+        (r) => contractKey(r) === contractKey(prior),
       ) ||
+        before.architecture?.backend?.operations?.some(
+          (o) =>
+            contractKey(o.target.contract) === contractKey(prior) ||
+            o.actions.some(
+              (a) =>
+                a.kind === "capability" && contractKey(a.strategy.result) === contractKey(prior),
+            ),
+        ) ||
         before.architecture?.backend?.accessBindings?.some(
           (b) =>
             b.target.kind === "operation" && contractKey(b.target.contract) === contractKey(prior),
@@ -588,6 +594,9 @@ export function validateContractTransition(
       (item) => contractKey(item) === contractKey(next),
     );
     const referenced =
+      backendEffectContracts(before.architecture?.backend).some(
+        (r) => contractKey(r) === contractKey(next),
+      ) ||
       before.architecture?.backend?.operations?.some(
         (o) =>
           contractKey(o.target.contract) === contractKey(next) ||

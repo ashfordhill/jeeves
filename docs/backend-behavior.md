@@ -86,8 +86,9 @@ The intended command pipeline is fixed: validate strict transport/input and esta
 context; check required implementation readiness before mutation; begin one transaction; resolve
 command identity and lock/CAS addressed aggregate rows; recheck current access/state; run guards;
 perform the ordered finite actions/strategies; persist terminal receipt with state; commit;
-serialize the selected outcome. No external calls run inside that transaction. P66a will separately
-bind audit/event intent and hooks; those declarations must share the promised commit boundary.
+serialize the selected outcome. No external calls run inside that transaction. [P66a](backend-effects.md) separately
+binds audit/event intent and typed hooks to the promised commit boundary. Pure hook actions return
+validated proposed values for subsequent explicit writers; effectful hooks run after commit.
 
 A transaction lists exactly its aggregate participants and authoritative store, uses one connection,
 current-state access checks, aggregate concurrency, confirmed rollback on local failure and unknown
@@ -137,6 +138,7 @@ values, negative matrices and portable compositions. They are not the three comp
 designs or runtime/benchmark evidence. No CATALOG change is required: offerings, reusable C1/C2/C3
 boundaries and implementation availability are unchanged.
 
-P66a is next: exact effects, typed hooks and recovery dependencies. P67/P68 own mouse authoring,
+[P66a exact effects, typed hooks and recovery references](backend-effects.md) are complete.
+P66b is next: typed delivery/file/notification/search/calendar/routing settings. P67/P68 own mouse authoring,
 P69/P70 matching/pure compilation, and later separately assigned packages own runtime enforcement,
 SQL, money/inventory algorithms, receipt concurrency, cancellation and observed application checks.

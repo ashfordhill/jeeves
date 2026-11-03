@@ -209,3 +209,6 @@ These remain design semantics; runtime enforcement is deferred.
 [P65](backend-behavior.md) adds exact command/query bindings, lifecycle tables, typed values,
 local transactions/CAS, command receipts, cancellation and declared outcomes. These preserve
 the existing entity/aggregate authority and legacy compatibility; implementation is deferred.
+
+[P66a effects and hook seams](backend-effects.md) add exact commit/recovery references and portable
+extension declarations. They do not change persistence or runtime availability.

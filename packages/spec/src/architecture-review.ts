@@ -11,6 +11,7 @@ import {
 } from "./architecture-contracts.ts";
 import { architectureReviewReferences, type ReviewReference } from "./architecture-review-model.ts";
 import { validateBackendBehavior } from "./backend-behavior.ts";
+import { validateBackendEffects } from "./backend-effects.ts";
 import { backendPolicyIntentConflicts, validateBackendPolicies } from "./backend-policy.ts";
 import { backendQuerySources, validateBackendQueries } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
@@ -135,7 +136,10 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
             (source) => source.entity.dataset === d.id,
           ),
         ) ?? [];
-      if (entities.length || aggregates.length || queries.length) {
+      const hasEffect = m.backend?.effects?.some(
+        (e) => "dataset" in e.target && e.target.dataset === d.id,
+      );
+      if (entities.length || aggregates.length || queries.length || hasEffect) {
         // The exact selected policy graph participates in review acknowledgements.
         values.push({
           backend: {
@@ -146,6 +150,8 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
             accessBindings: m.backend?.accessBindings,
             lifecycles: m.backend?.lifecycles,
             operations: m.backend?.operations,
+            effects: m.backend?.effects,
+            hooks: m.backend?.hooks,
           },
         });
         for (const q of queries) {
@@ -276,6 +282,18 @@ export function reviewArchitecture(design: DesignDocument) {
       "unresolved",
       `${f.target.path?.join("/")}: ${f.message}`,
       "Complete the exact command/lifecycle declaration. Registered strategies are design vocabulary, not implementation evidence; unsupported choices remain blockers.",
+      (m?.datasets ?? [])
+        .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
+        .map((d) => ref("dataset", d.id)),
+      "contracts",
+    );
+  for (const f of validateBackendEffects(design).filter((f) => !isStructural(f)))
+    add(
+      "BACKEND_EFFECT_GAP",
+      "Delivery and failure",
+      "unresolved",
+      `${f.target.path?.join("/")}: ${f.message}`,
+      "Complete the exact effect/hook recovery declaration; design readiness and observed implementation evidence remain separate.",
       (m?.datasets ?? [])
         .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
         .map((d) => ref("dataset", d.id)),

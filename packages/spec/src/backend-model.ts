@@ -1,6 +1,8 @@
 /** Versioned persistence intent. Contracts own types; datasets own authority and stores. */
 import { z } from "zod";
 import { backendLifecycleSchema, backendOperationSchema } from "./backend-behavior-model.ts";
+import { collectBackendEffectDependencies, mapBackendEffects } from "./backend-effects.ts";
+import { backendEffectSchema, backendHookSchema } from "./backend-effects-model.ts";
 import {
   backendAccessBindingSchema,
   backendAccessPolicySchema,
@@ -230,6 +232,8 @@ export const backendModelSchema = z.strictObject({
   accessBindings: z.array(backendAccessBindingSchema).max(200).optional(),
   lifecycles: z.array(backendLifecycleSchema).max(100).optional(),
   operations: z.array(backendOperationSchema).max(200).optional(),
+  effects: z.array(backendEffectSchema).max(100).optional(),
+  hooks: z.array(backendHookSchema).max(100).optional(),
 });
 export type BackendModel = z.output<typeof backendModelSchema>;
 
@@ -241,6 +245,8 @@ export const backendCollections = [
   "accessBindings",
   "lifecycles",
   "operations",
+  "effects",
+  "hooks",
 ] as const;
 export const backendDeclarations = (
   model: BackendModel | undefined,
@@ -252,6 +258,8 @@ export const backendDeclarations = (
   ...(model?.accessBindings ?? []),
   ...(model?.lifecycles ?? []),
   ...(model?.operations ?? []),
+  ...(model?.effects ?? []),
+  ...(model?.hooks ?? []),
 ];
 
 /** Local field, relation, invariant and storage IDs are never outer graph identities. */
@@ -270,6 +278,7 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
       : { ...g, value: source(g.value) };
   return {
     ...model,
+    ...mapBackendEffects(model, ids),
     ...(model.lifecycles
       ? {
           lifecycles: model.lifecycles.map((l) => ({
@@ -335,23 +344,29 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
                     lifecycle: exact(a.lifecycle),
                     ...(a.key ? { key: a.key.map((v) => ({ ...v, value: source(v.value) })) } : {}),
                   }
-                : a.kind === "capability"
+                : a.kind === "hook"
                   ? {
                       ...a,
-                      strategy: {
-                        ...a.strategy,
-                        result: exact(a.strategy.result),
-                      },
+                      hook: exact(a.hook),
                       input: a.input.map((v) => ({ ...v, value: source(v.value) })),
                     }
-                  : {
-                      ...a,
-                      entity: exact(a.entity),
-                      ...(a.key
-                        ? { key: a.key.map((v) => ({ ...v, value: source(v.value) })) }
-                        : {}),
-                      values: a.values.map((v) => ({ ...v, value: source(v.value) })),
-                    },
+                  : a.kind === "capability"
+                    ? {
+                        ...a,
+                        strategy: {
+                          ...a.strategy,
+                          result: exact(a.strategy.result),
+                        },
+                        input: a.input.map((v) => ({ ...v, value: source(v.value) })),
+                      }
+                    : {
+                        ...a,
+                        entity: exact(a.entity),
+                        ...(a.key
+                          ? { key: a.key.map((v) => ({ ...v, value: source(v.value) })) }
+                          : {}),
+                        values: a.values.map((v) => ({ ...v, value: source(v.value) })),
+                      },
             ),
             outcomes: o.outcomes.map((v) => ({
               ...v,
@@ -472,6 +487,7 @@ export function collectBackendDependencies(
   keep: Set<string>,
 ): void {
   if (!model) return;
+  collectBackendEffectDependencies(model, keep);
   for (const l of model.lifecycles ?? []) {
     if (keep.has(l.aggregate.id) || keep.has(l.state.entity.id)) keep.add(l.id);
     if (keep.has(l.id)) {
@@ -509,6 +525,9 @@ export function collectBackendDependencies(
       if (a.kind === "transition") {
         keep.add(a.lifecycle.id);
         sources.push(...(a.key ?? []).map((v) => v.value));
+      } else if (a.kind === "hook") {
+        keep.add(a.hook.id);
+        sources.push(...a.input.map((v) => v.value));
       } else if (a.kind === "capability") {
         keep.add(a.strategy.result.id);
         sources.push(...a.input.map((v) => v.value));
