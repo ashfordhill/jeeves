@@ -6995,3 +6995,124 @@ Observed failures and limits, separate from passing evidence:
 **P66b is complete with no P66b blocker. P66c is the next unstarted work unit; parent P66 remains
 incomplete.** Stop after this scoped local P66b commit. Coordinator owns the batch checkpoint.
 `.jeeves-work/p66b/completion.json` records the resulting commit and passing check-record paths.
+
+## P66c — Typed commerce settings and combined P66 portability gate (2026-11-03)
+
+**Assignment and prerequisites.** Implemented P66c only on primary `main`, starting at
+`d4881362bfd76db257bcbc31d483b05c8401ee94` (P66b), after P66a `ffde01e` and P65 `d4ba5fa`.
+Read the local batch instructions/checkpoint, AGENTS, PLAN §15 and relevant §1–14, latest handoff,
+C4 guidance/studio guide, backend roadmap/shared settings matrix, benchmark cases/worked trace,
+phase-2 P66 and exact execution split. Coordinator owns `.jeeves-work/batches/p62-p73.json`;
+this worker did not change it. Ignored checklist/evidence live under `.jeeves-work/p66c/`.
+
+What now works:
+
+- Strict, versioned `money`, `cart`, `inventory`, `order`, `payment` and `fulfillment` settings
+  extend P66b's existing collection (100 maximum). Dedicated commerce model/validator modules
+  keep the finite schemas and cross-reference checks separate from the seven mechanism kinds.
+  All thirteen kinds use the same atomic save, exact-reference and portability paths.
+- Money selects exact compound storage, allowlisted currencies, safe integer minor-unit/unit/total
+  bounds and positive quantity/line limits. Bounds require checked overflow rejection; permitted
+  inputs do not imply every product/sum fits. Cart binds exact aggregate/line/relation, quantity,
+  variant, expected-version commands, quote expiry/snapshots/provenance, fixed-price v1 or required
+  pure pricing hook, flat/hook shipping, fixture/hook tax and promotion/currency hook references.
+  The typed fixture rate represents frozen Vendure's 750 basis points, half-up subtotal rounding
+  and 500-minor-unit shipping; its 1,999/150/2,649 expected values remain unchanged. Fixture tax
+  explicitly has no production availability.
+- Inventory records authoritative stock/location, on-hand-includes-reserved counts, distinct
+  reserved count, active/held availability, reservation quantities, owned relation, stable stock/
+  reservation locks, exact lifecycle/state roles and guarded persisted event-time expiration.
+  Only active pre-payment reservations expire. Held-payment stock never releases automatically;
+  reciprocal exact payment settings require confirmed terminal payment or explicit reconciliation.
+- Orders preserve required variant/quantity/unit-price/line-total/address/order-total/provenance
+  snapshot meanings and exact source/target shapes/bounds. Snapshot targets are distinct. Checkout
+  checks all local cart/order/stock participants, quote/version/expiry/currency/total, lifecycle
+  and guards. Cancellation retains reconciliation before release during uncertain payment.
+- Payments bind the durable attempt, exact money, scoped unique provider identity, provider's
+  actual provided interface/C2 operation binding and after-commit effect or typed effectful hook.
+  Destination keys retain the same persisted identity after uncertainty. Callback original-byte/
+  credential/timestamp/replay verification and durable receipt are explicit. Dispatch timeout
+  recovery, reconcile operation/delivery and Unknown/Reconcile first outcome agree. Settlement
+  cannot regress through an older failure. Unknown means order review and held stock.
+- Fulfillment binds exact order/payment/inventory authorities, distinct ordered/paid/fulfilled
+  counts, reserved/requested quantities, positive bound, unique shipment identity, lifecycle/guards,
+  partial-shipment sum under order-line lock and same-command/same-shipment replay semantics.
+- Shared traversal now includes aggregate and all commerce field/strategy/hook/provider/config
+  references. Removal diagnostics, immutable referenced versions, remapping, extraction/insertion,
+  whole-boundary reuse, target diffs, chat JSON Schema, fingerprints and deterministic JSON/Markdown
+  handoff retain settings together with exact operations/lifecycles/effects/hooks/recovery.
+  Outer IDs remap; local fields/relations/guards/states/strategy versions and external configuration
+  identities stay stable. No opaque configuration/code/SQL string can stand in for these options.
+- **Bounded dependency correction:** P65's transaction validator accepted exactly one aggregate,
+  preventing P66's required atomic commerce composition. `backendTransactionAggregates` derives
+  only the finite union referenced by exact checkout, cancellation, callback/reconciliation or
+  shipment settings. Each entity keeps its original aggregate owner; all groups share one
+  application/store, existing transaction participants must equal the union, and per-entity access,
+  selectors, declared writes, concurrency and external-I/O prohibition remain enforced. Settings
+  declare stable aggregate/entity/primary-key locking. Ordinary commands still reject arbitrary
+  cross-aggregate participants. There is no second editable transaction graph, generic transaction
+  language or cross-network atomicity claim. Future compilation must consume this derived union.
+- **12 additional focused tests** (30 in the setting file) cover finite choices/bounds, negative
+  ownership/reference/count/uncertainty cases, scoped transaction composition/access isolation,
+  and the combined thirteen-kind/15-definition extraction/reuse/remapping/export gate. A typed
+  settings coverage matrix proves representability for the three future designs; the P66a
+  selector retains its three command/effect traces and all 24 H-row signatures. These are pure
+  semantic checks, not complete P71/P72/P73 application designs or observed implementation points.
+  Capability/effect/behavior docs and roadmap/improvement status now record parent P66 complete.
+  CATALOG is unchanged: no offering, reusable C1/C2/C3 boundary or runtime availability changed.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1** with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **872 files / 409ms**, no fixes; existing **2025 warnings / 75 infos**,
+  no added diagnostics. `.jeeves-work/p66c/lint-initial.log` (rechecked after handoff append).
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0, workspaces/scripts, **14.4s**.
+  `.jeeves-work/runs/2026-11-03T16-30-09-758Z-typecheck-0a86abbe.{json,log}`.
+- Exact focused offline selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-capability-configs.test.ts packages/spec/src/backend-effects.test.ts packages/spec/src/backend-behavior.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/contract-transport.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **22 files / 339 tests passed**, **9.2s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T16-30-09-758Z-unit-86f7980a.{json,log}`. Both passing runner records
+  have `sourceChanged: false`; exact production bytes were restored after the historical comparison.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.38s**, existing large-chunk advisory only.
+  `.jeeves-work/p66c/build-final.log`. Build checks shared browser exports; no production UI/control
+  changed, so direct browser workflows and deferred UI unit/E2E suites were not run.
+- `python3 .jeeves-work/p66c/audit.py`: byte-preserved **1,475 other tracked files**, including
+  all **48 benchmark files / 46 legacy fixtures**, prior semantic fixtures/assertions, CATALOG and
+  all application/UI/server/runtime/template/generator/artifact/dependency paths. Earlier handoff
+  prefix is unchanged; scoped Markdown links/anchors/fences pass. `.jeeves-work/p66c/audit.json`;
+  rerun after this append. `git diff --check` passes. Ignored evidence is not product content.
+
+Observed failures and limits, separate from passing results:
+
+- Initial focused fixture runs found invalid hyphenated wire field names, a missing synthetic
+  provider hook, missing annotations on a second consumer of the expanded contract, incomplete
+  scheduled event payloads, and a hook/provider binding conflation. Corrected the new fixture and
+  represented local effectful hook ownership separately from its exact external provider binding.
+  Expanded checks exposed extracted fragment identity remapping and missing composed callback/
+  reconciliation participants; corrected the new fixture/assertion mapping. An initial typecheck
+  caught a redundant boolean comparison in the new validator. Interim records remain under
+  `.jeeves-work/p66c/` and `runs/`. No prior or frozen expectation was weakened or changed.
+- Separate historical selector (`architecture-patterns.test.ts`, `architecture-handoff.test.ts`,
+  `architecture-review.test.ts`, `architecture-bindings.test.ts`, generator `architecture.test.ts`):
+  **18 failed / 49 passed**, exit 1. Current:
+  `.jeeves-work/runs/2026-11-03T16-31-20-786Z-unit-b71cb3cd.{json,log}`.
+  Reproduced the **identical failure titles/counts** on exact base `d488136`, temporarily substituting
+  all four changed tracked production TypeScript modules and restoring every working byte in
+  `finally`. Base: `.jeeves-work/runs/2026-11-03T16-31-25-214Z-unit-61689489.{json,log}`.
+  Both records have `sourceChanged: false`; hashes/comparison:
+  `.jeeves-work/p66c/historical-comparison.json`. These remain failures; no full-green claim.
+- This is design semantics only. No money calculation, quote generation, stock locking/expiry,
+  payment/callback authentication, fulfillment, provider or runtime behavior executes. All three
+  applications remain **absent/not run with zero observed implementation points**. P67/P68 own
+  mouse authoring; P69/P70 own matching/pure compilation; runtime implementation remains separately
+  assigned. No Docker/database/network/provider campaign, application generation, local preview
+  or persistent-project mutation, branch/worktree/delegation, push or publication occurred.
+  Full `pnpm check` and deferred UI unit/E2E suites were not run under the authorized batch policy.
+
+**P66c and parent P66 are complete with no P66c blocker. P67a is next unstarted.** Stop after the
+scoped local P66c commit. `.jeeves-work/p66c/completion.json` records the resulting commit/check
+records; coordinator owns the batch checkpoint.

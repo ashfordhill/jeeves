@@ -23,6 +23,7 @@ export * from "./backend-behavior.ts";
 export * from "./backend-behavior-model.ts";
 export * from "./backend-capability-configs.ts";
 export * from "./backend-capability-configs-model.ts";
+export * from "./backend-commerce-transactions.ts";
 export * from "./backend-data.ts";
 export * from "./backend-effects.ts";
 export * from "./backend-effects-model.ts";

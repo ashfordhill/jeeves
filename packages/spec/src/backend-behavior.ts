@@ -13,6 +13,7 @@ import type {
   BackendValueSource,
 } from "./backend-behavior-model.ts";
 import { backendCapabilityExactReferences } from "./backend-capability-configs.ts";
+import { backendTransactionAggregates } from "./backend-commerce-transactions.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import type { BackendReference } from "./backend-model.ts";
 import { validateBackendPolicyUse } from "./backend-policy.ts";
@@ -193,7 +194,14 @@ export function backendValueChecks(
           "A newly created row has no current snapshot before insertion; use an earlier action result.",
         );
       const a = op && aggregate(op.aggregate);
-      if (!a || [a.root, ...a.children].some((r) => same(r, source.entity)))
+      if (
+        !a ||
+        (op &&
+          model &&
+          backendTransactionAggregates(model, op).some((g) =>
+            [g.root, ...g.children].some((r) => same(r, source.entity)),
+          ))
+      )
         value = entityField(source);
     } else if (source.kind === "context")
       value =
@@ -480,7 +488,18 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
       wire.behavior.kind.toLowerCase() !== op.kind
     )
       invalid("Structured behavior kind contradicts the operation's explanatory behavior kind.");
-    const participants = a ? [a.root, ...a.children] : [];
+    const transactionAggregates = backendTransactionAggregates(model, op);
+    const participants = transactionAggregates.flatMap((g) => [g.root, ...g.children]);
+    if (
+      transactionAggregates.some(
+        (g) =>
+          g.store !== op.transaction.store ||
+          contractOwnerElement(design, g.owner) !== contractOwnerElement(design, op.target.owner),
+      )
+    )
+      invalid(
+        "Composed commerce transactions require one authoritative store and application owner; cross-store atomicity is unsupported.",
+      );
     if (
       a &&
       (op.transaction.store !== a.store ||
@@ -555,9 +574,9 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
       "Participant policy selections",
     );
     for (const p of participantAccess)
-      if (!a?.children.some((r) => same(r, p.entity)))
+      if (!participants.some((r) => same(r, p.entity) && (!a || !same(r, a.root))))
         invalid("Participant policy must select an exact aggregate child.");
-    for (const entity of a ? [a.root, ...a.children] : []) {
+    for (const entity of participants) {
       const isRoot = !!a && same(entity, a.root);
       const policy = isRoot ? op.access : participantAccess.find((p) => same(p.entity, entity));
       const e = backendEntity(design, entity);
@@ -876,7 +895,7 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
             "Action must select an exact lifecycle and existing transition.",
           );
         else {
-          if (!same(l.aggregate, op.aggregate))
+          if (!transactionAggregates.some((g) => same(l.aggregate, g)))
             add("CONFIG_INVALID", at, "Transition must belong to the command aggregate.");
           if (a && !same(l.state.entity, a.root)) {
             if (!action.key?.length)

@@ -97,7 +97,9 @@ They also represent field shapes and exact acceptance references for all 24 froz
 wire regex constraints remain in their frozen acceptance contracts. These are descriptor checks,
 not complete benchmark application designs, provider certification or observed implementation points.
 
-[P66b delivery/file/notification/search/calendar/routing settings](backend-capability-configs.md) are complete; P66c owns commerce settings
-and the combined P66 gate. P67/P68 own mouse authoring, P69/P70 matching/pure compilation, and later
+[P66b mechanism and P66c commerce settings](backend-capability-configs.md), including the combined P66 gate, are complete. P67/P68 own mouse authoring, P69/P70 matching/pure compilation, and later
 separately assigned packages own execution, SQL, file cleanup, providers and application evidence.
 No CATALOG change: offerings, reusable C1/C2/C3 boundaries and runtime availability are unchanged.
+
+Commerce preserves the exact effect/hook/recovery definitions through the same shared traversal.
+P67a is next unstarted; authoring and implementation matching remain separate assignments.

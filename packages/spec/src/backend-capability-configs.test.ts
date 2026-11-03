@@ -16,6 +16,7 @@ import {
 import { fragmentIds, mappedArchitecture } from "./architecture-patterns.ts";
 import { reviewArchitecture } from "./architecture-review.ts";
 import { targetChanges } from "./architecture-targets.ts";
+import { validateBackendBehavior } from "./backend-behavior.ts";
 import {
   backendCapabilityExactReferences,
   backendCapabilityReferences,
@@ -32,6 +33,7 @@ import {
   type BackendEffect,
   type BackendRecovery,
   backendEffectSchema,
+  backendHookSchema,
 } from "./backend-effects-model.ts";
 import { backendModelSchema, mapBackendModel } from "./backend-model.ts";
 import { type DesignDocument, designSchema } from "./design.ts";
@@ -1701,4 +1703,1184 @@ it("prevents routing from invoking hooks or changing policy membership/role auth
     values: ["open"],
   });
   expect(messages(d)).toContain("cannot mutate persisted role or membership authority");
+});
+
+/** Combined P66 synthetic fixture, not the future P71/P72/P73 application designs. */
+function commerceFixture(): DesignDocument {
+  const d = settingsFixture(),
+    a = need(d.architecture),
+    m = model(d);
+  const baseEntity = need(m.entities[0]),
+    baseDataset = need(a.datasets?.find((v) => v.id === baseEntity.dataset));
+  const baseContract = need(a.contracts?.find((v) => v.id === baseEntity.contract.id));
+  const payload = need(baseContract.shape).payload;
+  const extra = [
+    { id: "quantity", type: "integer", minimum: 1, maximum: 1000 },
+    ...["on-hand", "reserved", "paid", "fulfilled"].map((id) => ({
+      id,
+      type: "integer",
+      minimum: 0,
+      maximum: 1_000_000,
+    })),
+    ...["location", "variant"].map((id) => ({ id, type: "uuid" })),
+    { id: "expires", type: "timestamp" },
+    ...["address", "provenance", "provider-key"].map((id) => ({
+      id,
+      type: "text",
+      minLength: 1,
+      maxLength: 2000,
+    })),
+    ...["price", "total"].map((id) => ({
+      id,
+      type: "object",
+      fields: [
+        {
+          id: "minor",
+          name: "minor",
+          type: "integer",
+          required: true,
+          minimum: 0,
+          maximum: 1_000_000_000,
+        },
+        { id: "currency", name: "currency", type: "text", required: true, enumValues: ["USD"] },
+      ],
+    })),
+  ];
+  // Parse through the existing wire schema rather than maintaining another field representation.
+  const expanded = designSchema.parse({
+    ...d,
+    architecture: {
+      ...a,
+      contracts: a.contracts?.map((c) =>
+        c.id === baseContract.id
+          ? {
+              ...c,
+              shape: {
+                ...c.shape,
+                payload: [
+                  ...payload,
+                  ...extra.map((f) => ({ ...f, name: f.id.replaceAll("-", "_"), required: true })),
+                ],
+              },
+            }
+          : c,
+      ),
+    },
+  });
+  need(baseContract.shape).payload = need(
+    expanded.architecture?.contracts?.find((c) => c.id === baseContract.id)?.shape,
+  ).payload;
+  baseEntity.fields.push(
+    ...extra.map((f) => ({
+      field: f.id,
+      storageId: `${f.id}-column`,
+      required: true,
+      nullable: false,
+      storage:
+        f.type === "object"
+          ? {
+              kind: "money" as const,
+              minorUnits: "minor",
+              currency: "currency",
+              currencyStorageId: `${f.id}-currency`,
+            }
+          : { kind: "scalar" as const },
+    })),
+  );
+  need(m.entities.find((e) => e.id === "parent-entity")).fields = structuredClone(
+    baseEntity.fields,
+  );
+  const cloneEntity = (id: string, states?: string[]) => {
+    const e = structuredClone(baseEntity),
+      ct = structuredClone(baseContract),
+      ds = structuredClone(baseDataset);
+    e.id = id;
+    e.name = id;
+    e.storageId = `${id}-table`;
+    e.contract = ref(`${id}-data`);
+    e.dataset = `${id}-dataset`;
+    e.relations = [];
+    ct.id = e.contract.id;
+    ct.name = id;
+    if (states) need(ct.shape?.payload.find((f) => f.id === "state")).enumValues = states;
+    ds.id = e.dataset;
+    ds.name = id;
+    ds.contract = e.contract;
+    m.entities.push(e);
+    a.contracts?.push(ct);
+    a.datasets?.push(ds);
+    return e;
+  };
+  const line = cloneEntity("cart-line"),
+    stock = cloneEntity("stock"),
+    reservation = cloneEntity("reservation", ["active", "held", "consumed", "released", "expired"]),
+    order = cloneEntity("order", [
+      "awaiting",
+      "paid",
+      "partial",
+      "fulfilled",
+      "cancelled",
+      "review",
+    ]),
+    orderLine = cloneEntity("order-line"),
+    payment = cloneEntity("payment-attempt", [
+      "created",
+      "submitted",
+      "settled",
+      "failed",
+      "unknown",
+    ]),
+    shipment = cloneEntity("shipment", ["pending", "shipped", "cancelled"]),
+    shipmentLine = cloneEntity("shipment-line");
+  for (const [child, parent] of [
+    [line, baseEntity],
+    [reservation, stock],
+    [orderLine, order],
+    [shipmentLine, shipment],
+  ] as const)
+    child.relations.push({
+      id: "parent-link",
+      target: ref(parent.id),
+      fields: [
+        { source: "scope", target: "scope" },
+        { source: "parent", target: "id" },
+      ],
+      cardinality: "many-to-one",
+      ownership: "owned",
+      scope: "same-scope",
+      onDelete: "cascade",
+    });
+  need(m.aggregates[0]).children = [ref(line.id)];
+  for (const o of m.operations ?? []) o.transaction.participants.push(ref(line.id));
+  const newAggregate = (id: string, root: string, children: string[], lock = false) => {
+    const g = structuredClone(need(m.aggregates[0]));
+    g.id = id;
+    g.name = id;
+    g.root = ref(root);
+    g.children = children.map((id) => ref(id));
+    g.invariants = [];
+    g.concurrency = lock
+      ? {
+          kind: "row-lock",
+          entities: [root, ...children].sort().map((id) => ref(id)),
+          order: "entity-id-primary-key",
+        }
+      : { kind: "optimistic", version: { entity: ref(root), field: "version" } };
+    m.aggregates.push(g);
+    return g;
+  };
+  newAggregate("inventory-aggregate", stock.id, [reservation.id], true);
+  newAggregate("order-aggregate", order.id, [orderLine.id]);
+  newAggregate("payment-aggregate", payment.id, []);
+  newAggregate("shipment-aggregate", shipment.id, [shipmentLine.id]);
+  const newLifecycle = (root: string, aggregate: string) => {
+    const e = need(m.entities.find((e) => e.id === root)),
+      ct = need(a.contracts?.find((ct) => ct.id === e.contract.id));
+    const states = need(ct.shape?.payload.find((f) => f.id === "state")?.enumValues);
+    const l = structuredClone(need(m.lifecycles?.[0]));
+    l.id = `${root}-lifecycle`;
+    l.name = l.id;
+    l.aggregate = ref(aggregate);
+    l.state = { entity: ref(root), field: "state" };
+    l.states = states;
+    l.initial = need(states[0]);
+    l.transitions = states
+      .slice(1)
+      .map((s) => ({ id: `to-${s}`, from: l.initial, to: s, guards: [] }));
+    m.lifecycles?.push(l);
+    return { reference: ref(l.id), guards: [] };
+  };
+  payment.uniqueKeys.push({
+    id: "provider-key-unique",
+    fields: ["scope", "provider-key"],
+    scope: "entity-scope",
+    nulls: "forbidden",
+  });
+  const inventoryLifecycle = newLifecycle(reservation.id, "inventory-aggregate"),
+    orderLifecycle = newLifecycle(order.id, "order-aggregate"),
+    paymentLifecycle = newLifecycle(payment.id, "payment-aggregate"),
+    shipmentLifecycle = newLifecycle(shipment.id, "shipment-aggregate");
+  const newOperation = (id: string, aggregate: string, root: string, participants: string[]) => {
+    const o = need(
+      mapBackendModel(
+        {
+          schemaVersion: 1,
+          entities: [],
+          aggregates: [],
+          operations: [structuredClone(operation(d))],
+        },
+        { record: root, aggregate, policy: `${root}-policy` },
+      ).operations?.[0],
+    );
+    o.id = id;
+    o.name = id;
+    o.target.operation = id;
+    if (m.aggregates.find((g) => g.id === aggregate)?.concurrency.kind === "row-lock")
+      o.expectedVersion = { kind: "none" };
+    o.transaction.participants = participants.map((id) => ref(id));
+    const state = need(
+      a.contracts
+        ?.find((c) => c.id === need(m.entities.find((e) => e.id === root)).contract.id)
+        ?.shape?.payload.find((f) => f.id === "state")?.enumValues?.[0],
+    );
+    const guard = need(o.guards[0]);
+    if (guard.kind === "compare") guard.right = literal(state);
+    const p = structuredClone(need(m.accessPolicies?.find((v) => v.id === "policy")));
+    p.id = `${root}-policy`;
+    p.resource = ref(root);
+    if (!m.accessPolicies?.some((v) => v.id === p.id)) m.accessPolicies?.push(p);
+    const w = structuredClone(wire(d));
+    w.id = id;
+    w.name = id.replaceAll("-", "_");
+    need(a.contracts?.find((c) => c.id === "commands")?.shape).operations.push(w);
+    m.operations?.push(o);
+    return ref(id);
+  };
+  const add = newOperation("cart-add", "aggregate", "record", ["record", "cart-line"]),
+    change = newOperation("cart-change", "aggregate", "record", ["record", "cart-line"]),
+    remove = newOperation("cart-remove", "aggregate", "record", ["record", "cart-line"]);
+  const checkout = newOperation("checkout", "order-aggregate", "order", [
+      "record",
+      "cart-line",
+      "stock",
+      "reservation",
+      "order",
+      "order-line",
+    ]),
+    cancel = newOperation("cancel-order", "order-aggregate", "order", [
+      "order",
+      "order-line",
+      "stock",
+      "reservation",
+    ]),
+    expire = newOperation("expire-stock", "inventory-aggregate", "stock", ["stock", "reservation"]),
+    callback = newOperation("payment-callback", "payment-aggregate", "payment-attempt", [
+      "payment-attempt",
+      "order",
+      "order-line",
+      "stock",
+      "reservation",
+    ]),
+    reconcile = newOperation("payment-reconcile", "payment-aggregate", "payment-attempt", [
+      "payment-attempt",
+      "order",
+      "order-line",
+      "stock",
+      "reservation",
+    ]),
+    ship = newOperation("ship", "shipment-aggregate", "shipment", [
+      "shipment",
+      "shipment-line",
+      "order",
+      "order-line",
+      "reservation",
+      "stock",
+    ]);
+  const guarded = (operation: { id: string; version: string }) => ({
+    operation,
+    guards: ["editable"],
+  });
+  const f = (entity: string, field: string) => ({ entity: ref(entity), field });
+  const jobs = (id: string, consumer: { id: string; version: string }) => {
+    const e = structuredClone(need(m.effects?.find((v) => v.id === "outbox")));
+    e.id = `${id}-effect`;
+    const consumerOp = need(m.operations?.find((o) => o.id === consumer.id));
+    const consumerWire = need(
+      a.contracts
+        ?.find((c) => c.id === consumerOp.target.contract.id)
+        ?.shape?.operations.find((o) => o.id === consumerOp.target.operation),
+    );
+    consumerWire.input.push({
+      id: "due",
+      name: "due",
+      type: "timestamp",
+      required: true,
+      description: "",
+    });
+    if (consumerOp.idempotency.kind === "command-key")
+      consumerOp.idempotency.hashInputs.push(["due"]);
+    const event = structuredClone(need(a.contracts?.find((c) => c.id === "domain-event")));
+    event.id = `${id}-event`;
+    need(event.shape).payload = structuredClone(consumerWire.input);
+    a.contracts?.push(event);
+    e.payload = ref(event.id);
+    e.values = consumerWire.input.map((f) => ({
+      field: f.id,
+      value: f.id === "due" ? current("updated") : input(f.id),
+    }));
+    e.target = { kind: "event", contract: ref(event.id), consumer };
+    m.effects?.push(e);
+    const c = structuredClone(config(d, "delivery"));
+    c.id = id;
+    c.effect = ref(e.id);
+    c.queue.event = e.payload;
+    c.due = { kind: "event-time", field: "due" };
+    c.unknown = { kind: "reconcile", operation: consumer, outcome: "uncertain" };
+    m.capabilityConfigs?.push(c);
+    return ref(id);
+  };
+  const expiryDelivery = jobs("stock-expiry-jobs", expire),
+    reconcileDelivery = jobs("reconcile-jobs", reconcile);
+  const dispatch = effect(d, "external");
+  dispatch.id = "payment-dispatch";
+  dispatch.after = [ref("outbox")];
+  dispatch.delivery.duplicates = "destination-key";
+  for (const r of dispatch.recovery)
+    if (r.trigger === "external-timeout") r.reconcileOperation = reconcile;
+  m.effects?.push(dispatch);
+  // Exact typed seam remains a required after-commit provider hook, not an opaque adapter string.
+  m.hooks = [
+    backendHookSchema.parse({
+      id: "provider-hook",
+      version: "v1",
+      name: "Typed provider seam",
+      operation: ref("post-command"),
+      owner,
+      kind: "effectful",
+      boundary: "after-commit",
+      contracts: { input: ref("hook-input"), output: ref("hook-output"), error: ref("hook-error") },
+      context: ["authorized-scope", "correlation", "service-purpose", "cancellation", "deadline"],
+      authority: "current-policy-at-observation",
+      dependencies: [],
+      repositories: [],
+      services: [reconcile],
+      allowedWrites: [],
+      writeMode: "validated-proposals-only",
+      allowedEffects: [],
+      result: "validate-exact-contract-before-use",
+      privateData: "authorized-input-only",
+      required: true,
+      readiness: "before-mutation",
+      timeoutSeconds: 20,
+      cancellation: "cooperative-no-forced-termination",
+      unavailable: { outcome: "unavailable", status: 503, writes: "none" },
+      failure: {
+        operation: ref("post-delivery"),
+        scope: "separate-delivery-attempt",
+        error: "failed",
+        invalidResult: "failed",
+        timeout: "failed",
+        cancelled: "cancelled",
+      },
+      acceptance: ["V19-provider", "V19-unavailable"],
+      seam: { file: "src/hooks/provider.ts", ownership: "scaffold-once-project-owned" },
+      recovery: [],
+    }),
+  ];
+  const moneyFields = ["record", "cart-line", "order", "order-line", "payment-attempt"].flatMap(
+    (id) => [f(id, "price"), f(id, "total")],
+  );
+  const commerce: BackendCapabilityConfig[] = [
+    {
+      ...named("money-settings"),
+      kind: "money",
+      fields: moneyFields,
+      currencies: ["USD"],
+      minimumMinorUnits: 0,
+      maximumMinorUnits: 1_000_000,
+      maximumTotalMinorUnits: 1_000_000_000,
+      maximumQuantity: 1000,
+      maximumLines: 100,
+      arithmetic: "checked-integer-minor-units",
+      overflow: "reject-before-write",
+      currency: "single-currency-per-quote",
+    },
+    {
+      ...named("cart-settings"),
+      kind: "cart",
+      aggregate: ref("aggregate"),
+      line: ref("cart-line"),
+      relation: "parent-link",
+      quantity: f("cart-line", "quantity"),
+      variant: f("cart-line", "variant"),
+      money: ref("money-settings"),
+      quote: {
+        strategy: { kind: "fixed-price", version: "v1", price: f("cart-line", "price") },
+        shipping: { kind: "flat", minorUnits: 500 },
+        tax: {
+          kind: "fixture-rate",
+          version: "v1",
+          basisPoints: 750,
+          rounding: "half-up-on-subtotal",
+          production: "unsupported",
+        },
+        pricingHooks: [],
+        expiresAfterSeconds: 900,
+        expiresAt: f("record", "expires"),
+        snapshot: [f("cart-line", "price"), f("cart-line", "quantity")],
+        provenance: [f("record", "provenance")],
+        inputAuthority: "server-catalog-and-validated-hooks",
+        stale: "reject-before-write",
+      },
+      mutations: { add, change, remove },
+      concurrency: "expected-version-and-command-receipt",
+    },
+    {
+      ...named("inventory-settings"),
+      kind: "inventory",
+      aggregate: ref("inventory-aggregate"),
+      stock: ref("stock"),
+      reservation: ref("reservation"),
+      relation: "parent-link",
+      location: f("stock", "location"),
+      variant: f("stock", "variant"),
+      onHand: f("stock", "on-hand"),
+      reserved: f("stock", "reserved"),
+      quantity: f("reservation", "quantity"),
+      countMeaning: "on-hand-includes-reserved",
+      available: "on-hand-minus-active-and-held-reservations",
+      concurrency: "stable-stock-and-reservation-row-locks",
+      lifecycle: inventoryLifecycle,
+      states: {
+        active: "active",
+        held: "held",
+        consumed: "consumed",
+        released: "released",
+        expired: "expired",
+      },
+      expiry: {
+        lifetimeSeconds: 1200,
+        expiresAt: f("reservation", "expires"),
+        delivery: expiryDelivery,
+        operation: guarded(expire),
+        eligible: "active-only-before-payment",
+        race: "same-lock-recheck-state-version-and-due",
+      },
+      heldPayment: {
+        payment: ref("payment-settings"),
+        expiry: "never-automatically-release",
+        resolution: "confirmed-terminal-payment-or-explicit-reconciliation",
+      },
+    },
+    {
+      ...named("order-settings"),
+      kind: "order",
+      concurrency: "stable-aggregate-entity-primary-key",
+      aggregate: ref("order-aggregate"),
+      cart: ref("cart-settings"),
+      inventory: ref("inventory-settings"),
+      money: ref("money-settings"),
+      checkout: guarded(checkout),
+      cancellation: guarded(cancel),
+      lifecycle: orderLifecycle,
+      snapshots: (
+        [
+          ["variant", "cart-line", "variant", "order-line"],
+          ["quantity", "cart-line", "quantity", "order-line"],
+          ["unit-price", "cart-line", "price", "order-line"],
+          ["line-total", "cart-line", "total", "order-line"],
+          ["address", "record", "address", "order"],
+          ["order-total", "record", "total", "order"],
+          ["quote-provenance", "record", "provenance", "order"],
+        ] as const
+      ).map(([purpose, source, field, target]) => ({
+        purpose,
+        source: f(source, field),
+        target: f(target, field),
+      })),
+      snapshotMutation: "immutable-after-checkout",
+      checkoutBoundary: "order-lines-reservations-and-receipt-one-store-transaction",
+      quote: "recheck-version-expiry-currency-and-total-before-write",
+      paymentReview: "review",
+      cancellationWhileUncertain: "reconcile-before-release",
+    },
+    {
+      ...named("payment-settings"),
+      kind: "payment",
+      concurrency: "stable-aggregate-entity-primary-key",
+      entity: ref("payment-attempt"),
+      order: ref("order-settings"),
+      inventory: ref("inventory-settings"),
+      money: ref("money-settings"),
+      amount: f("payment-attempt", "total"),
+      lifecycle: paymentLifecycle,
+      states: {
+        created: "created",
+        submitted: "submitted",
+        settled: "settled",
+        failed: "failed",
+        unknown: "unknown",
+      },
+      provider: { ...providerRef, deduplication: "destination-key" },
+      dispatch: ref(dispatch.id),
+      providerIdentity: f("payment-attempt", "provider-key"),
+      identity: "persisted-attempt-key-reused-after-uncertainty",
+      callback: {
+        operation: guarded(callback),
+        verification: "original-bytes-provider-credential-timestamp-replay",
+        replayWindowSeconds: 300,
+        receipt: "durable-provider-event-before-ack",
+      },
+      reconciliation: { operation: reconcile, delivery: reconcileDelivery, outcome: "uncertain" },
+      uncertainty: "unknown-order-review-stock-held",
+      terminal: "monotone-settlement-no-older-failure-regression",
+      paymentsPerOrder: 1,
+    },
+    {
+      ...named("fulfillment-settings"),
+      kind: "fulfillment",
+      concurrency: "stable-aggregate-entity-primary-key",
+      aggregate: ref("shipment-aggregate"),
+      order: ref("order-settings"),
+      payment: ref("payment-settings"),
+      inventory: ref("inventory-settings"),
+      lifecycle: shipmentLifecycle,
+      shipment: guarded(ship),
+      identity: f("shipment", "id"),
+      ordered: f("order-line", "quantity"),
+      paid: f("order-line", "paid"),
+      reserved: f("reservation", "quantity"),
+      fulfilled: f("order-line", "fulfilled"),
+      quantity: f("shipment-line", "quantity"),
+      maximumQuantity: 1000,
+      constraint: "positive-at-most-paid-reserved-and-unfulfilled",
+      partial: "sum-committed-shipments-under-order-line-lock",
+      retry: "same-command-returns-same-shipment",
+    },
+  ];
+  m.capabilityConfigs?.push(...commerce);
+  return designSchema.parse(d);
+}
+
+it("closes P66 with all thirteen typed setting kinds and preserved command/effect/hook/recovery declarations", () => {
+  const d = commerceFixture();
+  expect(validateBackendCapabilityConfigs(d)).toEqual([]);
+  expect(errors(d)).toEqual([]);
+  expect(new Set(model(d).capabilityConfigs?.map((c) => c.kind)).size).toBe(13);
+  expect(blocksGenerate(validateDesign(d, testLookup))).toBe(true);
+});
+
+it("rejects opaque commerce settings, executable strings, unsupported choices and out-of-bound numeric options", () => {
+  const d = commerceFixture();
+  for (const kind of ["money", "cart", "inventory", "order", "payment", "fulfillment"] as const) {
+    const c = config(d, kind);
+    expect(backendCapabilityConfigSchema.safeParse({ ...c, config: "{}" }).success).toBe(false);
+    expect(backendCapabilityConfigSchema.safeParse({ ...c, script: "charge()" }).success).toBe(
+      false,
+    );
+    expect(backendCapabilityConfigSchema.safeParse({ ...c, schemaVersion: 2 }).success).toBe(false);
+  }
+  const money = config(d, "money"),
+    cart = config(d, "cart"),
+    inventory = config(d, "inventory"),
+    payment = config(d, "payment"),
+    shipment = config(d, "fulfillment");
+  for (const value of [-1, 1.1, Number.MAX_SAFE_INTEGER + 1, Infinity])
+    expect(
+      backendCapabilityConfigSchema.safeParse({ ...money, maximumMinorUnits: value }).success,
+    ).toBe(false);
+  for (const [key, value] of [
+    ["maximumQuantity", 0],
+    ["maximumQuantity", 1_000_001],
+    ["maximumLines", 1001],
+    ["currencies", ["usd"]],
+  ] as const)
+    expect(backendCapabilityConfigSchema.safeParse({ ...money, [key]: value }).success).toBe(false);
+  expect(
+    backendCapabilityConfigSchema.safeParse({
+      ...cart,
+      quote: { ...cart.quote, expiresAfterSeconds: 0 },
+    }).success,
+  ).toBe(false);
+  expect(
+    backendCapabilityConfigSchema.safeParse({
+      ...cart,
+      quote: { ...cart.quote, strategy: { kind: "javascript", source: "1+1" } },
+    }).success,
+  ).toBe(false);
+  expect(
+    backendCapabilityConfigSchema.safeParse({
+      ...inventory,
+      heldPayment: { ...inventory.heldPayment, expiry: "release-at-deadline" },
+    }).success,
+  ).toBe(false);
+  expect(
+    backendCapabilityConfigSchema.safeParse({
+      ...inventory,
+      expiry: { ...inventory.expiry, lifetimeSeconds: 0 },
+    }).success,
+  ).toBe(false);
+  expect(
+    backendCapabilityConfigSchema.safeParse({
+      ...payment,
+      uncertainty: "assume-failed-and-retry-new-key",
+    }).success,
+  ).toBe(false);
+  expect(
+    backendCapabilityConfigSchema.safeParse({
+      ...payment,
+      provider: { ...payment.provider, secret: "forbidden" },
+    }).success,
+  ).toBe(false);
+  expect(backendCapabilityConfigSchema.safeParse({ ...shipment, maximumQuantity: 0 }).success).toBe(
+    false,
+  );
+});
+
+it("validates exact minor-unit storage, currencies and amount bounds without attempting floating point arithmetic", () => {
+  const base = commerceFixture();
+  for (const change of [
+    (d: DesignDocument) => {
+      config(d, "money").minimumMinorUnits = 2_000_000;
+    },
+    (d: DesignDocument) => {
+      config(d, "money").maximumTotalMinorUnits = 1;
+    },
+    (d: DesignDocument) => {
+      config(d, "money").maximumTotalMinorUnits = Number.MAX_SAFE_INTEGER;
+    },
+    (d: DesignDocument) => {
+      config(d, "money").currencies = ["EUR"];
+    },
+    (d: DesignDocument) => {
+      config(d, "money").currencies = ["USD", "USD"];
+    },
+    (d: DesignDocument) => {
+      config(d, "money").fields.push(structuredClone(need(config(d, "money").fields[0])));
+    },
+    (d: DesignDocument) => {
+      need(
+        model(d)
+          .entities.find((e) => e.id === "cart-line")
+          ?.fields.find((f) => f.field === "price"),
+      ).storage = { kind: "json", query: "opaque" };
+    },
+  ]) {
+    const d = structuredClone(base);
+    change(d);
+    expect(validateBackendCapabilityConfigs(d).some(isStructural)).toBe(true);
+  }
+  // A bound is a rejection limit, not a promise that multiplying all allowed inputs fits it.
+  config(base, "money").maximumMinorUnits = 1_000_000_000;
+  expect(validateBackendCapabilityConfigs(base)).toEqual([]);
+  expect(config(base, "money").overflow).toBe("reject-before-write");
+});
+
+it("requires authoritative cart fields, expected versions, finite quote strategies and typed required pricing hooks", () => {
+  const base = commerceFixture();
+  for (const change of [
+    (d: DesignDocument) => {
+      config(d, "cart").quantity.field = "body";
+    },
+    (d: DesignDocument) => {
+      config(d, "cart").quote.expiresAt.field = "quantity";
+    },
+    (d: DesignDocument) => {
+      config(d, "cart").quote.provenance[0] = { entity: ref("stock"), field: "provenance" };
+    },
+    (d: DesignDocument) => {
+      config(d, "cart").quote.shipping = { kind: "flat", minorUnits: 1_000_000_001 };
+    },
+    (d: DesignDocument) => {
+      config(d, "cart").quote.strategy = { kind: "hook", hook: ref("provider-hook") };
+    },
+    (d: DesignDocument) => {
+      need(model(d).operations?.find((o) => o.id === "cart-add")).expectedVersion = {
+        kind: "none",
+      };
+    },
+    (d: DesignDocument) => {
+      config(d, "cart").relation = "absent";
+    },
+  ]) {
+    const d = structuredClone(base);
+    change(d);
+    expect(validateBackendCapabilityConfigs(d).some(isStructural)).toBe(true);
+  }
+  // A production tax/shipping quote remains an explicit required hook obligation.
+  config(base, "cart").quote.tax = { kind: "hook", hook: ref("provider-hook") };
+  config(base, "cart").quote.shipping = { kind: "hook", hook: ref("provider-hook") };
+  expect(validateBackendCapabilityConfigs(base)).toEqual([]);
+  need(model(base).hooks?.[0]).required = false;
+  expect(messages(base)).toContain("Pricing hooks must be required");
+});
+
+it("rejects incompatible stock counts, row locks, state roles and expiry/payment-hold references", () => {
+  const base = commerceFixture();
+  for (const change of [
+    (d: DesignDocument) => {
+      config(d, "inventory").reserved = structuredClone(config(d, "inventory").onHand);
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").location.entity = ref("reservation");
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").quantity.field = "body";
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").states.held = "active";
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").states.expired = "missing";
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").expiry.expiresAt.entity = ref("stock");
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").heldPayment.payment = ref("money-settings");
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").expiry.operation.guards = ["absent"];
+    },
+    (d: DesignDocument) => {
+      config(d, "inventory").expiry.delivery = ref("delivery");
+    },
+    (d: DesignDocument) => {
+      need(model(d).aggregates.find((g) => g.id === "inventory-aggregate")).concurrency = {
+        kind: "optimistic",
+        version: { entity: ref("stock"), field: "version" },
+      };
+    },
+  ]) {
+    const d = structuredClone(base);
+    change(d);
+    expect(validateBackendCapabilityConfigs(d).some(isStructural)).toBe(true);
+  }
+  expect(config(base, "inventory").expiry.eligible).toBe("active-only-before-payment");
+  expect(config(base, "inventory").heldPayment.expiry).toBe("never-automatically-release");
+});
+
+it("retains all order snapshot meanings, exact value shapes and a one-store checkout transaction", () => {
+  const base = commerceFixture();
+  for (const change of [
+    (d: DesignDocument) => {
+      config(d, "order").snapshots = config(d, "order").snapshots.filter(
+        (s) => s.purpose !== "address",
+      );
+    },
+    (d: DesignDocument) => {
+      need(config(d, "order").snapshots.find((s) => s.purpose === "unit-price")).target.field =
+        "body";
+    },
+    (d: DesignDocument) => {
+      need(config(d, "order").snapshots.find((s) => s.purpose === "address")).source.entity =
+        ref("stock");
+    },
+    (d: DesignDocument) => {
+      config(d, "order").paymentReview = "absent";
+    },
+    (d: DesignDocument) => {
+      config(d, "order").cancellation.operation = ref("cart-add");
+    },
+    (d: DesignDocument) => {
+      need(model(d).operations?.find((o) => o.id === "checkout")).transaction.participants = [
+        ref("order"),
+        ref("order-line"),
+      ];
+    },
+    (d: DesignDocument) => {
+      need(model(d).aggregates.find((g) => g.id === "inventory-aggregate")).store = "other-store";
+    },
+  ]) {
+    const d = structuredClone(base);
+    change(d);
+    expect(validateBackendCapabilityConfigs(d).some(isStructural)).toBe(true);
+  }
+});
+
+it("allows only the finite exact commerce transaction union and preserves ordinary aggregate/access boundaries", () => {
+  const base = commerceFixture();
+  expect(validateBackendBehavior(base)).toEqual([]);
+  const without = structuredClone(base);
+  model(without).capabilityConfigs = model(without).capabilityConfigs?.filter(
+    (c) => c.kind !== "order",
+  );
+  expect(
+    validateBackendBehavior(without).some((f) =>
+      f.message.includes("exactly its aggregate participants"),
+    ),
+  ).toBe(true);
+  const arbitrary = structuredClone(base);
+  operation(arbitrary).transaction.participants.push(ref("stock"));
+  expect(validateBackendBehavior(arbitrary).some(isStructural)).toBe(true);
+  const scoped = structuredClone(base);
+  need(scoped.architecture?.components).push({
+    ...structuredClone(need(scoped.architecture?.components?.[0])),
+    id: "other-module",
+    element: "provider",
+  });
+  need(model(scoped).aggregates.find((g) => g.id === "inventory-aggregate")).owner = {
+    kind: "component",
+    id: "other-module",
+  };
+  expect(
+    validateBackendBehavior(scoped).some((f) =>
+      f.message.includes("Composed commerce transactions"),
+    ),
+  ).toBe(true);
+  const privateChild = structuredClone(base),
+    checkout = need(model(privateChild).operations?.find((o) => o.id === "checkout"));
+  checkout.actions.push({
+    id: "stock-write",
+    kind: "patch",
+    entity: ref("stock"),
+    values: [{ field: "body", value: input("body") }],
+  });
+  checkout.writes.push({ entity: ref("stock"), field: "body" });
+  expect(
+    validateBackendBehavior(privateChild).some(
+      (f) => f.code === "CONFIG_REQUIRED" && f.message.includes("stock@v1"),
+    ),
+  ).toBe(true);
+  const crossStore = structuredClone(base);
+  need(model(crossStore).aggregates.find((g) => g.id === "inventory-aggregate")).store =
+    "other-store";
+  expect(
+    validateBackendBehavior(crossStore).some((f) => f.message.includes("cross-store atomicity")),
+  ).toBe(true);
+});
+
+it("keeps provider uncertainty, monotone settlement, raw-byte callback and reconciliation identities exact", () => {
+  const base = commerceFixture();
+  for (const change of [
+    (d: DesignDocument) => {
+      config(d, "payment").provider.deduplication = "none";
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").provider.binding = "absent";
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").provider.interface = "provider-required";
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").amount.entity = ref("order");
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").providerIdentity.field = "quantity";
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").states.unknown = "failed";
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").reconciliation.outcome = "ok";
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").callback.operation.operation = ref("cart-add");
+    },
+    (d: DesignDocument) => {
+      need(model(d).lifecycles?.find((l) => l.id === "payment-attempt-lifecycle")).transitions.push(
+        { id: "older-failure", from: "settled", to: "failed", guards: [] },
+      );
+    },
+    (d: DesignDocument) => {
+      need(model(d).effects?.find((e) => e.id === "payment-dispatch")).boundary = "before-commit";
+    },
+    (d: DesignDocument) => {
+      need(model(d).effects?.find((e) => e.id === "payment-dispatch")).recovery = [];
+    },
+    (d: DesignDocument) => {
+      config(d, "payment").reconciliation.delivery = ref("stock-expiry-jobs");
+    },
+  ]) {
+    const d = structuredClone(base);
+    change(d);
+    expect(validateBackendCapabilityConfigs(d).some(isStructural)).toBe(true);
+  }
+  expect(config(base, "payment").identity).toBe("persisted-attempt-key-reused-after-uncertainty");
+});
+
+it("bounds partial fulfillment by exact paid/reserved/unfulfilled authorities with stable retry identity", () => {
+  const base = commerceFixture();
+  for (const change of [
+    (d: DesignDocument) => {
+      config(d, "fulfillment").maximumQuantity = 1001;
+    },
+    (d: DesignDocument) => {
+      config(d, "fulfillment").paid = structuredClone(config(d, "fulfillment").ordered);
+    },
+    (d: DesignDocument) => {
+      config(d, "fulfillment").reserved.entity = ref("order-line");
+    },
+    (d: DesignDocument) => {
+      config(d, "fulfillment").quantity.entity = ref("order-line");
+    },
+    (d: DesignDocument) => {
+      config(d, "fulfillment").identity.entity = ref("order");
+    },
+    (d: DesignDocument) => {
+      config(d, "fulfillment").shipment.guards = ["missing"];
+    },
+    (d: DesignDocument) => {
+      need(model(d).operations?.find((o) => o.id === "ship")).transaction.participants = [
+        ref("shipment"),
+        ref("shipment-line"),
+      ];
+    },
+  ]) {
+    const d = structuredClone(base);
+    change(d);
+    expect(validateBackendCapabilityConfigs(d).some(isStructural)).toBe(true);
+  }
+  expect(config(base, "fulfillment").partial).toContain("sum-committed-shipments");
+  expect(config(base, "fulfillment").retry).toBe("same-command-returns-same-shipment");
+});
+
+it("source-addresses every exact commerce reference on removal and protects referenced settings/hooks/lifecycles", () => {
+  const base = commerceFixture();
+  for (const c of model(base).capabilityConfigs?.filter((c) =>
+    ["money", "cart", "inventory", "order", "payment", "fulfillment"].includes(c.kind),
+  ) ?? []) {
+    for (const r of backendCapabilityExactReferences(c)) {
+      const d = structuredClone(base);
+      if (r.collection === "contracts")
+        need(d.architecture).contracts = d.architecture?.contracts?.filter(
+          (v) => contractKey(v) !== contractKey(r.reference),
+        );
+      else
+        Object.assign(model(d), {
+          [r.collection]: model(d)[r.collection]?.filter(
+            (v) => contractKey(v) !== contractKey(r.reference),
+          ),
+        });
+      expect(
+        validateBackendCapabilityConfigs(d).some(
+          (f) => f.code === "UNKNOWN_REFERENCE" && f.target.path?.includes(contractKey(c)),
+        ),
+        `${c.kind}/${r.collection}/${contractKey(r.reference)}`,
+      ).toBe(true);
+      expect(backendDataRemovalFindings(d).some(isStructural)).toBe(true);
+    }
+  }
+  const changed = structuredClone(base);
+  config(changed, "money").maximumLines++;
+  expect(save(base, changed).ok).toBe(false);
+  const removed = structuredClone(base);
+  model(removed).capabilityConfigs = [];
+  need(model(removed).hooks?.[0]).timeoutSeconds++;
+  expect(save(base, removed).ok).toBe(false);
+  const renamed = structuredClone(base);
+  config(renamed, "money").name = "Display rename";
+  expect(save(base, renamed).ok).toBe(true);
+});
+
+it("retains all commerce refs and local identities through combined extraction/insertion/reuse/copy/export", async () => {
+  const source = commerceFixture(),
+    before = structuredClone(model(source));
+  const { fragment, metadata } = extractArchitectureTemplate(
+    source,
+    { elements: ["api", "store", "provider"] },
+    {
+      id: "all-settings",
+      version: "1.0.0",
+      name: "All settings",
+      purpose: "Combined P66 portability",
+    },
+    testLookup,
+  );
+  expect(fragment.architecture.backend?.capabilityConfigs).toHaveLength(15);
+  const ids = Object.fromEntries(fragmentIds(fragment).map((id) => [id, `copy-${id}`]));
+  for (const local of [
+    "quantity",
+    "parent-link",
+    "minor",
+    "currency",
+    "review",
+    "editable",
+    "price",
+    "provenance",
+    "local-provider",
+    "send",
+  ])
+    ids[local] = `wrong-${local}`;
+  const mapped = mappedArchitecture(fragment, ids),
+    remapped = need(mapped.backend);
+  for (const original of fragment.architecture.backend?.capabilityConfigs ?? []) {
+    const copy = need(remapped.capabilityConfigs?.find((c) => c.id === `copy-${original.id}`));
+    expect(backendCapabilityExactReferences(copy)).toEqual(
+      backendCapabilityExactReferences(original).map((r) => ({
+        ...r,
+        reference: { ...r.reference, id: ids[r.reference.id] ?? r.reference.id },
+      })),
+    );
+  }
+  const entry: ArchitectureLibraryEntry = {
+    id: fragment.id,
+    version: fragment.version,
+    fragment,
+    metadata,
+    state: "published",
+    draftRevision: 1,
+    contentHash: "b".repeat(64),
+    availability: "architecture only",
+  };
+  const empty = designSchema.parse({ schemaVersion: 2, revision: 0 });
+  const selection = {
+    id: entry.id,
+    version: entry.version,
+    contentHash: entry.contentHash,
+    instanceId: "copy",
+    name: "Copy",
+    baseRevision: 0,
+  };
+  const preview = previewArchitectureTemplate(empty, entry, selection, testLookup);
+  expect(preview.errors).toEqual([]);
+  const saved = applyOperations(empty, preview.ops, testLookup);
+  expect(saved.ok).toBe(true);
+  if (!saved.ok) return;
+  expect(errors(saved.design)).toEqual([]);
+  expect(designSchema.parse(JSON.parse(JSON.stringify(saved.design)))).toEqual(saved.design);
+  const pin = need(saved.design.architecture?.patternInstances?.[0]);
+  const reuse = previewArchitectureTemplate(
+    saved.design,
+    entry,
+    {
+      ...selection,
+      instanceId: "reuse",
+      baseRevision: saved.design.revision,
+      roles: Object.fromEntries(
+        fragment.roles.map((r) => [
+          r.id,
+          { mode: "reuse" as const, id: need(pin.identities[r.id]) },
+        ]),
+      ),
+    },
+    testLookup,
+  );
+  expect(reuse.errors).toEqual([]);
+  const reused = applyOperations(saved.design, reuse.ops, testLookup);
+  expect(reused.ok).toBe(true);
+  if (reused.ok) expect(model(reused.design)).toEqual(model(saved.design));
+  const args = { design: source, project: { id: "p66", name: "P66 complete" }, lookup: testLookup };
+  const handoff = await buildArchitectureHandoff(args);
+  expect(JSON.parse(handoffJson(handoff)).intent.backend).toEqual(before);
+  expect(handoffJson(await buildArchitectureHandoff(args))).toBe(handoffJson(handoff));
+  expect(handoffMarkdown(handoff)).toContain("payment-settings");
+  expect(model(source)).toEqual(before);
+  const changed = structuredClone(source);
+  config(changed, "money").maximumLines++;
+  expect(
+    targetChanges(source, changed).some((c) =>
+      c.path.startsWith("architecture/backend/capabilityConfigs/"),
+    ),
+  ).toBe(true);
+  expect(await handoffFingerprint(changed, args.project)).not.toBe(
+    await handoffFingerprint(source, args.project),
+  );
+  const copied = {
+    ...source,
+    architecture: {
+      ...need(source.architecture),
+      backend: mapBackendModel(
+        before,
+        Object.fromEntries(
+          [
+            ...(before.capabilityConfigs ?? []).flatMap((c) => [
+              c.id,
+              ...backendCapabilityReferences(c),
+            ]),
+            ...(before.effects ?? []).map((e) => e.id),
+            ...(before.hooks ?? []).map((h) => h.id),
+          ].map((id) => [id, `copy-${id}`]),
+        ),
+      ),
+    },
+  };
+  expect(config(copied, "cart").quote).toMatchObject({
+    strategy: { kind: "fixed-price", version: "v1", price: { field: "price" } },
+    provenance: [{ field: "provenance" }],
+  });
+  expect(config(copied, "inventory").relation).toBe("parent-link");
+  expect(config(copied, "order").paymentReview).toBe("review");
+  expect(config(copied, "payment").provider.operation).toBe("send");
+  expect(config(copied, "payment").provider.environment).toEqual(providerRef.environment);
+  expect(config(copied, "fulfillment").quantity.field).toBe("quantity");
+  expect(
+    need(model(copied).effects?.find((e) => e.id === "copy-payment-dispatch")).recovery[2]
+      ?.reconcileOperation,
+  ).toEqual(ref("copy-payment-reconcile"));
+});
+
+it("represents the three examples' mechanism settings with typed fields and preserves all exact behavior declarations in export", async () => {
+  const d = commerceFixture(),
+    m = model(d);
+  const obligations = {
+    discourse: ["delivery", "files", "notifications", "search", "routing"],
+    vendure: [
+      "money",
+      "cart",
+      "inventory",
+      "order",
+      "payment",
+      "fulfillment",
+      "search",
+      "notifications",
+      "delivery",
+    ],
+    zammad: [
+      "calendar",
+      "business-time",
+      "delivery",
+      "files",
+      "notifications",
+      "search",
+      "routing",
+    ],
+  };
+  for (const kinds of Object.values(obligations))
+    for (const kind of kinds) expect(m.capabilityConfigs?.some((c) => c.kind === kind)).toBe(true);
+  const schema = JSON.stringify(operationBatchJsonSchema());
+  for (const token of [
+    "checked-integer-minor-units",
+    "single-currency-per-quote",
+    "immutable-after-checkout",
+    "never-automatically-release",
+    "unknown-order-review-stock-held",
+    "positive-at-most-paid-reserved-and-unfulfilled",
+    "pricingHooks",
+    "callback",
+    "reconciliation",
+  ])
+    expect(schema).toContain(token);
+  expect(schema).not.toContain('"sourceCode"');
+  const output = JSON.parse(
+    handoffJson(
+      await buildArchitectureHandoff({
+        design: d,
+        project: { id: "settings-gate", name: "Settings gate" },
+        lookup: testLookup,
+      }),
+    ),
+  ).intent.backend;
+  for (const collection of [
+    "capabilityConfigs",
+    "operations",
+    "lifecycles",
+    "effects",
+    "hooks",
+  ] as const)
+    expect(output[collection]).toEqual(m[collection]);
+  expect(config(d, "cart").quote.tax).toEqual({
+    kind: "fixture-rate",
+    version: "v1",
+    basisPoints: 750,
+    rounding: "half-up-on-subtotal",
+    production: "unsupported",
+  });
+  // Frozen fixture settings fit the typed choices without rewriting an expected amount.
+  const frozen = JSON.parse(
+    readFileSync(
+      new URL("../../../benchmarks/vendure-core/v1/fixtures.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const quotes = frozen.datasets.find((v: { id: string }) => v.id === "quotes").rows;
+  expect(quotes[0]).toMatchObject({
+    subtotal: { minor: 1999, currency: "USD" },
+    tax: { minor: 150, currency: "USD" },
+    shipping: { minor: 500, currency: "USD" },
+    total: { minor: 2649, currency: "USD" },
+    taxPolicy: "fixture-tax-750bps-v1",
+  });
+  expect(m.effects?.some((e) => e.recovery.some((r) => r.trigger === "external-timeout"))).toBe(
+    true,
+  );
+  expect(
+    m.hooks?.every(
+      (h) =>
+        h.contracts.input.version &&
+        h.contracts.output.version &&
+        h.contracts.error.version &&
+        h.acceptance.length,
+    ),
+  ).toBe(true);
 });

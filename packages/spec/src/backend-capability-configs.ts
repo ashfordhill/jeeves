@@ -10,6 +10,7 @@ import type {
   BackendCapabilityConfig,
   BackendProviderReference,
 } from "./backend-capability-configs-model.ts";
+import { validateBackendCommerceConfig } from "./backend-commerce-configs.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import type { BackendModel, BackendReference } from "./backend-model.ts";
 import { validateBackendPolicyUse } from "./backend-policy.ts";
@@ -20,6 +21,7 @@ import { type Finding, finding } from "./findings.ts";
 
 type Collection =
   | "contracts"
+  | "aggregates"
   | "entities"
   | "queries"
   | "accessPolicies"
@@ -47,7 +49,133 @@ function mapConfig(
     policy: visit(v.policy, "accessPolicies"),
   });
   const base = { id: id(c.id), owner: { ...c.owner, id: id(c.owner.id) } };
+  const field = <T extends { entity: BackendReference }>(f: T): T => ({
+    ...f,
+    entity: visit(f.entity, "entities"),
+  });
+  const guarded = <T extends { operation: BackendReference }>(g: T): T => ({
+    ...g,
+    operation: visit(g.operation, "operations"),
+  });
+  const lifecycle = <T extends { reference: BackendReference }>(l: T): T => ({
+    ...l,
+    reference: visit(l.reference, "lifecycles"),
+  });
   switch (c.kind) {
+    case "money":
+      return { ...c, ...base, fields: c.fields.map(field) };
+    case "cart":
+      return {
+        ...c,
+        ...base,
+        aggregate: visit(c.aggregate, "aggregates"),
+        line: visit(c.line, "entities"),
+        quantity: field(c.quantity),
+        variant: field(c.variant),
+        money: visit(c.money, "capabilityConfigs"),
+        quote: {
+          ...c.quote,
+          strategy:
+            c.quote.strategy.kind === "fixed-price"
+              ? { ...c.quote.strategy, price: field(c.quote.strategy.price) }
+              : { ...c.quote.strategy, hook: visit(c.quote.strategy.hook, "hooks") },
+          shipping:
+            c.quote.shipping.kind === "hook"
+              ? { ...c.quote.shipping, hook: visit(c.quote.shipping.hook, "hooks") }
+              : c.quote.shipping,
+          tax:
+            c.quote.tax.kind === "hook"
+              ? { ...c.quote.tax, hook: visit(c.quote.tax.hook, "hooks") }
+              : c.quote.tax,
+          pricingHooks: c.quote.pricingHooks.map((h) => ({ ...h, hook: visit(h.hook, "hooks") })),
+          expiresAt: field(c.quote.expiresAt),
+          snapshot: c.quote.snapshot.map(field),
+          provenance: c.quote.provenance.map(field),
+        },
+        mutations: {
+          add: visit(c.mutations.add, "operations"),
+          change: visit(c.mutations.change, "operations"),
+          remove: visit(c.mutations.remove, "operations"),
+        },
+      };
+    case "inventory":
+      return {
+        ...c,
+        ...base,
+        aggregate: visit(c.aggregate, "aggregates"),
+        stock: visit(c.stock, "entities"),
+        reservation: visit(c.reservation, "entities"),
+        location: field(c.location),
+        variant: field(c.variant),
+        onHand: field(c.onHand),
+        reserved: field(c.reserved),
+        quantity: field(c.quantity),
+        lifecycle: lifecycle(c.lifecycle),
+        expiry: {
+          ...c.expiry,
+          expiresAt: field(c.expiry.expiresAt),
+          delivery: visit(c.expiry.delivery, "capabilityConfigs"),
+          operation: guarded(c.expiry.operation),
+        },
+        heldPayment: {
+          ...c.heldPayment,
+          payment: visit(c.heldPayment.payment, "capabilityConfigs"),
+        },
+      };
+    case "order":
+      return {
+        ...c,
+        ...base,
+        aggregate: visit(c.aggregate, "aggregates"),
+        cart: visit(c.cart, "capabilityConfigs"),
+        inventory: visit(c.inventory, "capabilityConfigs"),
+        money: visit(c.money, "capabilityConfigs"),
+        checkout: guarded(c.checkout),
+        cancellation: guarded(c.cancellation),
+        lifecycle: lifecycle(c.lifecycle),
+        snapshots: c.snapshots.map((s) => ({
+          ...s,
+          source: field(s.source),
+          target: field(s.target),
+        })),
+      };
+    case "payment":
+      return {
+        ...c,
+        ...base,
+        entity: visit(c.entity, "entities"),
+        order: visit(c.order, "capabilityConfigs"),
+        inventory: visit(c.inventory, "capabilityConfigs"),
+        money: visit(c.money, "capabilityConfigs"),
+        amount: field(c.amount),
+        lifecycle: lifecycle(c.lifecycle),
+        provider: provider(c.provider),
+        dispatch: visit(c.dispatch, "effects"),
+        providerIdentity: field(c.providerIdentity),
+        callback: { ...c.callback, operation: guarded(c.callback.operation) },
+        reconciliation: {
+          ...c.reconciliation,
+          operation: visit(c.reconciliation.operation, "operations"),
+          delivery: visit(c.reconciliation.delivery, "capabilityConfigs"),
+        },
+      };
+    case "fulfillment":
+      return {
+        ...c,
+        ...base,
+        aggregate: visit(c.aggregate, "aggregates"),
+        order: visit(c.order, "capabilityConfigs"),
+        payment: visit(c.payment, "capabilityConfigs"),
+        inventory: visit(c.inventory, "capabilityConfigs"),
+        lifecycle: lifecycle(c.lifecycle),
+        shipment: guarded(c.shipment),
+        identity: field(c.identity),
+        ordered: field(c.ordered),
+        paid: field(c.paid),
+        reserved: field(c.reserved),
+        fulfilled: field(c.fulfilled),
+        quantity: field(c.quantity),
+      };
     case "delivery":
       return {
         ...c,
@@ -333,6 +461,14 @@ export function validateBackendCapabilityConfigs(design: DesignDocument): Findin
         );
     };
     switch (c.kind) {
+      case "money":
+      case "cart":
+      case "inventory":
+      case "order":
+      case "payment":
+      case "fulfillment":
+        validateBackendCommerceConfig(design, c, { add, provider });
+        break;
       case "delivery": {
         const e = effect(c.effect);
         event(c.queue.event, c.due.kind === "event-time" ? c.due.field : undefined);

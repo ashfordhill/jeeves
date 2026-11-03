@@ -1,5 +1,22 @@
 /** Strict design options only. No provider, scheduler, clock or expression is executed. */
 import { z } from "zod";
+import {
+  backendCartConfigSchema,
+  backendFulfillmentConfigSchema,
+  backendInventoryConfigSchema,
+  backendMoneyConfigSchema,
+  backendOrderConfigSchema,
+  createBackendPaymentConfigSchema,
+} from "./backend-commerce-configs-model.ts";
+
+export {
+  backendCartConfigSchema,
+  backendFulfillmentConfigSchema,
+  backendInventoryConfigSchema,
+  backendMoneyConfigSchema,
+  backendOrderConfigSchema,
+} from "./backend-commerce-configs-model.ts";
+
 import { contractTypeReferenceSchema as exact } from "./contract-shapes.ts";
 import { idSchema } from "./ids.ts";
 
@@ -236,6 +253,9 @@ export const backendRoutingConfigSchema = z.strictObject({
   audit: exact,
   repeat: z.literal("no-recursive-rule-execution"),
 });
+export const backendPaymentConfigSchema = createBackendPaymentConfigSchema(
+  backendProviderReferenceSchema,
+);
 export const backendCapabilityConfigSchema = z.discriminatedUnion("kind", [
   backendDeliveryConfigSchema,
   backendFileConfigSchema,
@@ -244,6 +264,12 @@ export const backendCapabilityConfigSchema = z.discriminatedUnion("kind", [
   backendCalendarConfigSchema,
   backendBusinessTimeConfigSchema,
   backendRoutingConfigSchema,
+  backendMoneyConfigSchema,
+  backendCartConfigSchema,
+  backendInventoryConfigSchema,
+  backendOrderConfigSchema,
+  backendPaymentConfigSchema,
+  backendFulfillmentConfigSchema,
 ]);
 export type BackendCapabilityConfig = z.output<typeof backendCapabilityConfigSchema>;
 export type BackendProviderReference = z.output<typeof backendProviderReferenceSchema>;

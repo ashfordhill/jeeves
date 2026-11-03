@@ -61,7 +61,7 @@ nonnullable integers or UTC timestamps. Guards contain no expression strings or 
 | `capability` | Invoke a finite named domain strategy with typed inputs and an exact result contract |
 
 Each field has exactly one writer. `writes` must equal all action writes, including transition
-state and version writes. Cross-aggregate/store writes, missing fields, duplicate writers and
+state and version writes. Unconfigured cross-aggregate writes, cross-store writes, missing fields, duplicate writers and
 undeclared writes reject atomically. Server identity/scope/principal fields use their matching
 factory/context on insertion. Clocks use the server clock. Revisions use initial version 1 on
 insertion and a checked increment on update; overflow fails before writing. Client values, literals
@@ -90,7 +90,7 @@ serialize the selected outcome. No external calls run inside that transaction. [
 binds audit/event intent and typed hooks to the promised commit boundary. Pure hook actions return
 validated proposed values for subsequent explicit writers; effectful hooks run after commit.
 
-A transaction lists exactly its aggregate participants and authoritative store, uses one connection,
+A transaction lists exactly its aggregate participants (or the finite exact [P66c commerce union](backend-capability-configs.md#commerce-meaning-and-finite-composition)) and authoritative store, uses one connection,
 current-state access checks, aggregate concurrency, confirmed rollback on local failure and unknown
 commit on ambiguous disconnect. Optimistic commands require a typed expected version and exactly
 one root-version writer; insertion bootstraps version 1 with expected initial version 0. Row-lock
