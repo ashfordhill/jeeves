@@ -841,6 +841,9 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
         (e) =>
           `- Effect ${mdEscape(contractKey(e))}: ${mdEscape(e.name)}; ${mdEscape(contractCanonical(e))}`,
       ),
+      ...(s.intent.backend.capabilityConfigs ?? []).map(
+        (v) => `Capability configuration ${v.id}@${v.version}: ${contractCanonical(v)}`,
+      ),
       ...(s.intent.backend.hooks ?? []).map(
         (h) =>
           `- Hook ${mdEscape(contractKey(h))}: ${mdEscape(h.name)}; ${mdEscape(contractCanonical(h))}`,

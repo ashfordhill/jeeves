@@ -11,6 +11,7 @@ import {
 } from "./architecture-contracts.ts";
 import { architectureReviewReferences, type ReviewReference } from "./architecture-review-model.ts";
 import { validateBackendBehavior } from "./backend-behavior.ts";
+import { validateBackendCapabilityConfigs } from "./backend-capability-configs.ts";
 import { validateBackendEffects } from "./backend-effects.ts";
 import { backendPolicyIntentConflicts, validateBackendPolicies } from "./backend-policy.ts";
 import { backendQuerySources, validateBackendQueries } from "./backend-queries.ts";
@@ -152,6 +153,7 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
             operations: m.backend?.operations,
             effects: m.backend?.effects,
             hooks: m.backend?.hooks,
+            capabilityConfigs: m.backend?.capabilityConfigs,
           },
         });
         for (const q of queries) {
@@ -287,7 +289,10 @@ export function reviewArchitecture(design: DesignDocument) {
         .map((d) => ref("dataset", d.id)),
       "contracts",
     );
-  for (const f of validateBackendEffects(design).filter((f) => !isStructural(f)))
+  for (const f of [
+    ...validateBackendEffects(design),
+    ...validateBackendCapabilityConfigs(design),
+  ].filter((f) => !isStructural(f)))
     add(
       "BACKEND_EFFECT_GAP",
       "Delivery and failure",

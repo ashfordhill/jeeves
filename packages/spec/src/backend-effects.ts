@@ -8,6 +8,7 @@ import {
   resolveContractValue,
 } from "./architecture-contracts.ts";
 import { backendValueChecks, backendValueFits } from "./backend-behavior.ts";
+import { backendCapabilityExactReferences } from "./backend-capability-configs.ts";
 import type { BackendEffect, BackendHook, BackendRecovery } from "./backend-effects-model.ts";
 import type { BackendModel, BackendReference } from "./backend-model.ts";
 import type { DesignDocument } from "./design.ts";
@@ -922,6 +923,9 @@ export function validateBackendEffectsTransition(
   const b = before.architecture?.backend;
   return (b?.hooks ?? []).flatMap((h) => {
     const used =
+      (b?.capabilityConfigs ?? [])
+        .flatMap(backendCapabilityExactReferences)
+        .some((r) => r.collection === "hooks" && same(r.reference, h)) ||
       b?.operations?.some((o) => o.actions.some((a) => a.kind === "hook" && same(a.hook, h))) ||
       b?.effects?.some((e) => e.target.kind === "hook" && same(e.target.hook, h)) ||
       b?.hooks?.some((v) => v.dependencies.some((r) => same(r, h)));

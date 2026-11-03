@@ -6874,3 +6874,124 @@ Observed failures and limits, separate from passing evidence:
 **P66a is complete with no P66a blocker. P66b is the next unstarted work unit; parent P66 remains
 incomplete.** Stop after the scoped local P66a commit. Coordinator owns the batch checkpoint.
 `.jeeves-work/p66a/completion.json` records the resulting commit and passing check-record paths.
+
+## P66b — Typed mechanism settings and immutable business calendars (2026-11-03)
+
+Completed **P66b only** in the primary checkout on `main`, starting at
+`ffde01e447d6cbb737dbc54be1a0acb600ffec46`. P66a dependency evidence is its preceding handoff and
+preserved effect/hook/behavior checks below. Read batch instructions/checkpoint, AGENTS, PLAN §15
+and applicable earlier contracts, C4/studio guidance and direction review, backend roadmap/shared
+contract/settings matrix, benchmark cases/worked trace, phase-2 P66 and the exact child queue.
+Coordinator owns the batch checkpoint; it was not edited. Commerce remains P66c's assignment.
+
+Built:
+
+- Optional strict `capabilityConfigs`, at most **100 exact versions**, with per-record schema version,
+  existing C2/C3 owner and a finite seven-kind union in `backend-capability-configs-model.ts`.
+  Pure reference/semantic checks live in `backend-capability-configs.ts`. Missing collections stay
+  absent in old documents. No opaque JSON, code/SQL expressions, provider URL or secret fields.
+- Delivery/jobs: exact effect and durable queue-event intent, immediate/event timestamp/business
+  deadline sources, bounded attempts/fixed or capped exponential backoff, fenced lease, deadline,
+  cooperative shutdown/cancellation, persisted terminal acknowledgement and operator-visible
+  exhaustion. External delivery references preceding atomic intent instead of conflating its
+  data payload with the queue event. Effect settings agree on attempts/initial backoff/timeout/
+  duplicates. Providers retain exact provided interface, C2 operation binding, actual consumer
+  owner and fixture/deployment registry selection. No destination deduplication means possible
+  duplicates and Unknown/Reconcile first before retry; no invented external exactly-once result.
+- Files: exact metadata/parent relation, positive byte bound and finite MIME list, required signature
+  inspection or typed required hook, current parent read/bytes policy, exact lifecycle/state choices,
+  durable bounded orphan cleanup and unattached/version recheck that preserves live attachments.
+  Notifications: exact effect and recipient/preference queries, typed event timestamp/cutoff filter,
+  per-principal preference equality/boolean outputs, bounded paging/per-job fan-out with durable
+  keyset continuation, current verified service policy at job/materialization/delivery, projected
+  and redacted content, exact inbox/external channels and per-recipient/channel identity.
+- Search: exact source/fields/query/policy, PostgreSQL full-text v1 with finite language choices,
+  owned projection dataset/version, positive query/result limits, synchronous or bounded-staleness
+  delivery, bounded rebuild, atomic projection-version swap and current-authority deletion filter.
+  Policies apply before pagination/counts/snippets. Async indexes cannot overwrite source authority.
+- Immutable calendar versions: IANA zone, ISO weekday/local half-open intervals, finite holiday
+  overrides, real dates, no overlaps/reversed/overnight ranges and explicit elapsed-real-minute DST
+  meaning. Business time pins calendar/entity/lifecycle, duration, typed distinct start/stop events,
+  never-restart/preserve/reset choice, server-owned due/revision and stale-job state/version/policy
+  checks. The core first-response clock can explicitly never restart; no calendar math runs here.
+- Routing/review: existing finite source guards and patch/transition action references, unique rule
+  IDs/priorities, first/all matching, bounded action count without silent truncation, command/rule/
+  action deduplication and required same-commit audit. Rules cannot call hooks, recursively execute
+  themselves, duplicate all-match actions or mutate persisted role/membership authority.
+- Shared exact-ref traversal/remapping, removal findings, contract/policy/lifecycle/hook/config
+  immutability, atomic saves, extraction/insertion, whole-boundary pinned reuse, supporting C2 graph
+  identities, target diffs, chat JSON Schema, Review fingerprints/gaps and deterministic JSON/Markdown
+  handoff retain settings. Outer references remap; local field/filter/output/projection/rule/action/
+  guard/state IDs, queue channels, timezone/date values and external configuration/credential
+  registry IDs remain stable. Calendar versions cannot be changed/deleted through consumer removal;
+  display renames and explicit successors remain supported.
+- **18 new focused tests** cover positive/negative bounds and choices, all seven kinds, exact
+  reference removal, provider uncertainty, calendar successors, first/all routing, service-policy
+  observations, extraction/save/reload/reuse/remapping/export and old-design compatibility.
+  [Capability settings contract](backend-capability-configs.md), effect docs and roadmap/improvement
+  status record **P66b complete; P66c next; parent P66 incomplete**. CATALOG is unchanged: no actual
+  offering, reusable C1/C2/C3 boundary, runtime availability or observed implementation evidence changed.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1** with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **869 files / 730ms**, no fixes. Existing **2025 warnings / 75 infos**,
+  no added diagnostics. `.jeeves-work/p66b/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across workspaces/scripts, **15.4s**.
+  `.jeeves-work/runs/2026-11-03T16-11-52-222Z-typecheck-c2cd5d48.{json,log}`.
+- Exact focused offline semantic/frozen-contract/legacy-generation selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-capability-configs.test.ts packages/spec/src/backend-effects.test.ts packages/spec/src/backend-behavior.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/contract-transport.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **22 files / 327 tests passed**, **9.1s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T16-11-52-235Z-unit-dc461518.{json,log}`. Both final passing runner
+  records have `sourceChanged: false`. This verifies design semantics/compatibility, not execution.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **2.09s**, existing large-chunk advisory only.
+  `.jeeves-work/p66b/build-final.log`. No production UI/control changed; build verifies shared browser
+  exports. Direct browser workflows and deferred UI unit/E2E suites were not run.
+- `python3 .jeeves-work/p66b/audit.py`: byte-preserved **1,466 other tracked files**, including all
+  **48 benchmark files / 46 legacy fixtures**, prior tests, CATALOG and all application/UI/server,
+  runtime/template/generator/artifact/dependency paths. Earlier handoff prefix is unchanged;
+  scoped Markdown links/anchors/fences pass. `.jeeves-work/p66b/audit.json`; rerun after this append.
+  `git diff --check` passes. Ignored checklist/verification files are not product changes.
+
+Observed failures and limits, separate from passing evidence:
+
+- Initial new selector: **1 failed / 9 passed**. The new fixture introduced unreachable lifecycle
+  states and used an event where P66a requires a notification data payload. Corrected the fixture
+  and the new setting validator's assumption that source event and delivery data were the same
+  contract. Final external-delivery checks prove the explicit intent/data distinction.
+- Expanded new selector: **3 failed / 12 passed**, then **1 failed / 14 passed**. Corrected new
+  assertions that tried saving architecture into a document lacking its elements, treated fragment
+  roles as document elements/used a nonexistent role discriminator, and named a nonexistent legacy
+  fixture. Initial local type checks also caught backend-outcome versus wire-outcome lookup and
+  optional wire outcome handling; unused planned test imports disappeared when the portability
+  checks were added. Removed all ten new lint warnings before final checks. Interim records remain
+  under `.jeeves-work/p66b/` and `runs/`. No frozen or earlier test expectation was changed.
+- Separate historical selector (`architecture-patterns.test.ts`, `architecture-handoff.test.ts`,
+  `architecture-review.test.ts`, `architecture-bindings.test.ts`, generator `architecture.test.ts`):
+  **18 failed / 49 passed**, exit 1. Final:
+  `.jeeves-work/runs/2026-11-03T16-11-52-219Z-unit-439091d0.{json,log}`.
+- Reproduced the **identical 18 failure titles / 49 passing tests** on exact base `ffde01e` tracked
+  production source, temporarily substituting all twelve changed existing TypeScript modules and
+  restoring every working byte in `finally`. Base:
+  `.jeeves-work/runs/2026-11-03T16-07-56-616Z-unit-4e005f9e.{json,log}`. Restoration hashes and final
+  comparison are in `.jeeves-work/p66b/baseline.json` and `historical-comparison.json`. Both final
+  and base historical records have `sourceChanged: false`. These remain failures; no full-green
+  claim or full `pnpm check` run.
+- Provider environment/credential IDs are external configuration registry references, not secrets,
+  live connectivity or architecture deployment-environment IDs. P69/runtime packages must resolve
+  actual adapter/configuration availability. No lease, MIME inspection, byte cleanup, notification,
+  policy enforcement, index, time calculation or rule action executes in this unit.
+- P66c owns commerce settings and combined P66 export/remapping/three-design representability;
+  P67/P68 own mouse authoring, P69/P70 matching/pure compilation and later assigned units own runtime
+  behavior. All three applications remain **absent/not run with zero observed implementation points**.
+  No Docker/database/network/provider/benchmark campaign, local preview or persistent project
+  mutation, runtime/generation work, branches/worktrees/delegation, push or publication occurred.
+  UI suites and full `pnpm check` remain deferred under the explicit batch verification policy.
+
+**P66b is complete with no P66b blocker. P66c is the next unstarted work unit; parent P66 remains
+incomplete.** Stop after this scoped local P66b commit. Coordinator owns the batch checkpoint.
+`.jeeves-work/p66b/completion.json` records the resulting commit and passing check-record paths.

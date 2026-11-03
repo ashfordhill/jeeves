@@ -17,6 +17,7 @@ import {
   inspectContractTransport,
 } from "./architecture-contracts.ts";
 import { type PatternInstance, patternConfigSchema } from "./architecture-pattern-provenance.ts";
+import { backendCapabilityContextReferences } from "./backend-capability-configs.ts";
 import { backendEffectContextReferences } from "./backend-effects.ts";
 import { backendCollections, backendDeclarations, mapBackendModel } from "./backend-model.ts";
 import {
@@ -1402,7 +1403,10 @@ export function previewArchitecturePattern(
           }
         }
       }
-      for (const local of backendEffectContextReferences(fragment.architecture)) {
+      for (const local of [
+        ...backendEffectContextReferences(fragment.architecture),
+        ...backendCapabilityContextReferences(fragment.architecture),
+      ]) {
         const target = source.identities[local];
         if (!target)
           result.errors.push(`Pinned effect/hook dependency ${local} has no identity mapping.`);

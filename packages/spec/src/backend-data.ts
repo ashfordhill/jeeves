@@ -9,6 +9,7 @@ import {
   contractOwnerElement,
 } from "./architecture-contracts.ts";
 import { validateBackendBehavior } from "./backend-behavior.ts";
+import { validateBackendCapabilityConfigs } from "./backend-capability-configs.ts";
 import { validateBackendEffects } from "./backend-effects.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import { type BackendEntity, type BackendReference, backendCollections } from "./backend-model.ts";
@@ -555,7 +556,11 @@ export function validateBackendData(design: DesignDocument): Finding[] {
   }
   result.push(...validateBackendQueries(design));
   result.push(...validateBackendPolicies(design));
-  result.push(...validateBackendBehavior(design), ...validateBackendEffects(design));
+  result.push(
+    ...validateBackendBehavior(design),
+    ...validateBackendEffects(design),
+    ...validateBackendCapabilityConfigs(design),
+  );
   if (backendDeclarationsPresent())
     result.push(
       finding(

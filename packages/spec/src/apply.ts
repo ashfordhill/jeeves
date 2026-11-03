@@ -3,6 +3,7 @@ import { unbindArchitecture, validateArchitecture } from "./architecture.ts";
 import { validateContractTransition } from "./architecture-contracts.ts";
 import { validatePatternTransition } from "./architecture-pattern-provenance.ts";
 import { validateBackendBehaviorTransition } from "./backend-behavior.ts";
+import { validateBackendCapabilityTransition } from "./backend-capability-configs.ts";
 import { validateBackendDataTransition } from "./backend-data.ts";
 import { validateBackendEffectsTransition } from "./backend-effects.ts";
 import { validateBackendPolicyTransition } from "./backend-policy.ts";
@@ -103,6 +104,7 @@ export function applyOperations(
     ...validateBackendPolicyTransition(design, draft),
     ...validateBackendBehaviorTransition(design, draft),
     ...validateBackendEffectsTransition(design, draft),
+    ...validateBackendCapabilityTransition(design, draft),
     ...validateContractTransition(design, draft),
     ...validatePatternTransition(design, draft),
   ];

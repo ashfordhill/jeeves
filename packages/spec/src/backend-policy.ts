@@ -1,5 +1,6 @@
 /** Pure policy/reference checks only. No credentials, policy execution, SQL or runtime grants. */
 import { contractCanonical, contractKey, contractOwnerElement } from "./architecture-contracts.ts";
+import { backendCapabilityExactReferences } from "./backend-capability-configs.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import type { BackendEntity, BackendReference } from "./backend-model.ts";
 import type { BackendAccessPolicy, BackendRecheckSite } from "./backend-policy-model.ts";
@@ -409,6 +410,10 @@ export function validateBackendPolicyTransition(
 ): Finding[] {
   const model = before.architecture?.backend;
   const references = [
+    ...(model?.capabilityConfigs ?? [])
+      .flatMap(backendCapabilityExactReferences)
+      .filter((r) => r.collection === "accessPolicies")
+      .map((r) => ({ kind: "policy" as const, reference: r.reference })),
     ...(model?.queries ?? []).flatMap((q) => [
       q.accessPolicy,
       ...(q.sourcePolicies ?? []).map((s) => s.policy),

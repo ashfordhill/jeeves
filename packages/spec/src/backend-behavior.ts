@@ -12,6 +12,7 @@ import type {
   BackendOperation,
   BackendValueSource,
 } from "./backend-behavior-model.ts";
+import { backendCapabilityExactReferences } from "./backend-capability-configs.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import type { BackendReference } from "./backend-model.ts";
 import { validateBackendPolicyUse } from "./backend-policy.ts";
@@ -1170,6 +1171,9 @@ export function validateBackendBehaviorTransition(
   const model = before.architecture?.backend;
   return (model?.lifecycles ?? []).flatMap((l) => {
     if (
+      !(model?.capabilityConfigs ?? [])
+        .flatMap(backendCapabilityExactReferences)
+        .some((r) => r.collection === "lifecycles" && same(r.reference, l)) &&
       !model?.operations?.some((o) =>
         o.actions.some((a) => a.kind === "transition" && same(a.lifecycle, l)),
       )

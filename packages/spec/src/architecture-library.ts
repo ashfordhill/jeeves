@@ -296,6 +296,13 @@ export function extractArchitectureTemplate(
             effects: a.backend.effects.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
           }
         : {}),
+      ...(a.backend.capabilityConfigs
+        ? {
+            capabilityConfigs: a.backend.capabilityConfigs
+              .filter((c) => keep.has(c.id))
+              .map((c) => structuredClone(c)),
+          }
+        : {}),
       ...(a.backend.hooks
         ? { hooks: a.backend.hooks.filter((h) => keep.has(h.id)).map((h) => structuredClone(h)) }
         : {}),
