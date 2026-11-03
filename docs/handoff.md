@@ -6084,3 +6084,109 @@ whitespace check. Added a [fixture-local Git attribute](../benchmarks/zammad-cor
 marking only `inbound.eml` binary, preserving its signed original bytes across checkout/diff instead
 of normalizing the protocol payload. Artifact hashes and all tested data/code stay unchanged.
 The final staged `git diff --check` and preservation/link audit pass with this attribute included.
+
+## 2026-11-02 — P62a: local reusable contract types and bounded resolution
+
+Executed **P62a only** in `/home/ash/github/jeeves` on `main`, starting clean at `63ea4c9`
+(P61d). Read the batch authorization/policy, AGENTS, PLAN §15/applicable §1–14, latest handoffs,
+C4 guidance/studio guide, backend roadmap/shared contract, relevant benchmark contract shapes,
+phase-2 P62 and its exact execution-unit split. P61 dependency evidence is the committed independent
+D/V/Z artifacts and combined P61 gate, exercised again by the focused selector below. One worker;
+no delegation, branch or worktree. Batch policy authorizes lint/types plus focused offline semantics
+and compatibility instead of full `pnpm check`; UI unit/E2E maintenance/execution remain deferred.
+The coordinator owns the ignored batch checkpoint; this worker did not edit it.
+
+Built:
+
+- Extended [contract shapes](../packages/spec/src/contract-shapes.ts) with exact local `ref`,
+  bounded string-keyed `map` and `tagged-union` values. Optional `shape.types` holds at most 100
+  `{id, version, name, description, value}` definitions **inside the exact contract shape**.
+  This keeps contracts authoritative without adding a competing global type schema. Local IDs do
+  not participate in outer architecture role remapping. See [model and limits](contract-types.md).
+- Added [pure resolution helpers](../packages/spec/src/contract-type-resolution.ts): exact-version
+  lookup, acyclic sharing, cycle detection, **2,000 expanded nodes / depth 20** (smaller caller
+  budgets allowed), and traversal of every definition/input/output/outcome, including unused types.
+  Stored references remain intact. Resolution returns no expanded value on failure; successful
+  expanded values conform to the existing value schema and contain no leftover `ref` properties.
+  Existing five-level inline nesting and forty-fields/object limits remain. Maps have finite key
+  length and at most 10,000 entries; unions have 2–20 nonnullable object variants with required,
+  nonnullable, unique single text-literal discriminator tags, including through local references.
+- Missing selections/bounds/variants and explicit unresolved values remain saveable draft findings;
+  stale selected versions, cycles, duplicate identities/tags, ambiguous variants and budget overflow
+  reject atomic batches. Optional field presence stays distinct from nullability; a reference may
+  add nullability but cannot remove nullability declared by its target.
+- Integrated structural/review checks and referenced-definition immutability into
+  [contract validation](../packages/spec/src/architecture-contracts.ts). A referenced local value
+  cannot change/disappear even in a contract with no interface consumers or while its uses migrate
+  in the same batch; removing its enclosing contract cannot bypass this guard. Definition display
+  renames preserve identity. Explicit successor type/contract versions preserve old consumers.
+  [Pattern matching](../packages/spec/src/architecture-patterns.ts) compares logical definitions,
+  ignores local definition display names/descriptions, and refuses unresolved definition matches.
+- Added [13 focused semantic tests](../packages/spec/src/contract-types.test.ts), including synthetic
+  history dictionary, tagged payment, reused exact money and optional nullable address. Proved
+  extraction/insertion/exact reuse, local-identity preservation under outer remapping, target diffs,
+  deterministic handoff graphs/fingerprints and chat operation JSON Schema preservation through
+  their existing complete-shape paths. No separate library/handoff/target source changes were
+  needed. Legacy nested/source-backed contracts and saved fixtures retain their existing data.
+- Updated roadmap/improvement entry points: **P62a complete; P62 remains partial; P62b next**.
+  No CATALOG change: no offering, reusable C1/C2/C3 boundary, template/runtime availability or
+  observed application evidence changed. No dependencies, lockfiles or frozen expectations changed.
+
+Final checks with **Node 24.21.0 / pnpm 12.16.1**, explicitly using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; `Checked 847 files in 542ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, no added diagnostics. `.jeeves-work/p62a/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across workspaces/scripts, **10.4s**.
+  `.jeeves-work/runs/2026-11-03T02-13-22-718Z-typecheck-d0be489b.{json,log}`.
+- Exact focused selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/contract-types.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **11 files / 148 tests passed**, **5.8s** including runner overhead (Vitest 4.48s).
+  `.jeeves-work/runs/2026-11-03T02-13-22-717Z-unit-3811c2dc.{json,log}`. Both final runner
+  records report `sourceChanged: false`. These are offline model/compatibility checks, not
+  benchmark application execution or evidence of a new runtime.
+- `pnpm --filter @jeeves/web build`: exit 0; Vite **508ms**, existing large-chunk advisory only.
+  `.jeeves-work/p62a/web-build.log`. This verifies shared browser export compatibility. No production
+  UI file changed; no browser workflow inspection or deferred UI unit/E2E suite was run.
+- `.jeeves-work/p62a/audit.py` → `audit.json`: **113 scoped links/anchors**, balanced fences,
+  append-only earlier handoff prefix, and byte preservation of **1,450 other tracked files**,
+  including **all 48 benchmark files / 46 legacy fixture files**, CATALOG, application/template/
+  generator/registry/artifact/dependency trees. Rerun after this append. `git diff --check` passes.
+
+Observed intermediate failures and limitations:
+
+- Initial new-test typecheck rejected optional architecture in the operation helper; used the
+  existing explicit-null operation contract. Initial test run also exposed an incorrect new
+  fixture filename; corrected it. Final review caught leftover `ref` metadata in expanded object
+  fields; fixed the merge and added a schema-validity/no-leftover-reference assertion. Final lint,
+  workspace types, 148-test selector and build above all ran after that correction.
+- A broader initial selector returned **5 failed / 38 passed** (including the new fixture-path
+  failure). Four unchanged historical assertions fail: `architecture-patterns.test.ts` → `keeps
+  visit and billing channels separate and requires an explicit store choice` (extra
+  CONTRACT_COVERAGE/OPERATION_BEHAVIOR findings); `architecture-handoff.test.ts` → `qrwty exports
+  exact portable definitions and bounded obligations`, `inventory exports exact portable
+  definitions and bounded obligations`, and `binds approval to semantic names/contracts/policies
+  and scope; revision/layout do not stale decisions` (Blocked versus expected review/ready status).
+  Initial record: `.jeeves-work/runs/2026-11-03T02-07-09-578Z-unit-429a5017.{json,log}`.
+- Confirmed those four failures against **exact base `63ea4c9` production source**, temporarily
+  replacing only the three edited existing source modules and restoring every working byte in
+  `finally`, with hashes in `.jeeves-work/p62a/baseline.json`. Baseline result: **4 failed /
+  10 passed**, identical titles/observations; `sourceChanged: false`.
+  `.jeeves-work/runs/2026-11-03T02-08-44-024Z-unit-1a8e337b.{json,log}`. No historical assertion or
+  fixed expectation was edited. They remain separate review debt, not a P62a regression or a pass.
+- **Parent P62 remains incomplete.** P62b owns transport method/path/status/content/header/input
+  mapping, bounded binary descriptors, additional source protection and the combined end-to-end
+  logical JSON Schema export gate. Current chat input-schema preservation is not that export gate.
+  New mouse controls belong to P67a. A resolved design type supplies no runtime/serializer/storage
+  implementation, and recursive runtime types remain unsupported.
+- All three benchmark applications remain **absent/not run, zero observed implementation points**.
+  No new runtime, application code generation, provider/hook execution, persistent project/output
+  mutation, push or publication. Full `pnpm check`, deferred UI suites, real dependency conformance,
+  load/recovery/upgrade campaigns and browser workflows were not run. No full-green claim.
+
+**P62a is complete with no P62a blocker. P62b is the next unstarted work unit.** Stop after this
+scoped local commit; do not start P62b or any runtime work in this worker.

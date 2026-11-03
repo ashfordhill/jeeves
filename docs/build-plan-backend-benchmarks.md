@@ -9,7 +9,8 @@ the UX5 Mattermost work. **Planning, [P58's baseline](evidence/p58/README.md) an
 and [P61a's shared protocol](../benchmarks/protocol/v1/README.md), [P61b's independent Discourse fixtures](../benchmarks/discourse-core/v1/README.md),
 [P61c's independent Vendure fixtures](../benchmarks/vendure-core/v1/README.md)
 and [P61d's independent Zammad fixtures and combined contract gate](../benchmarks/zammad-core/v1/README.md)
-are complete, including parent P61; P62a–P110 remain unstarted.**
+are complete, including parent P61. [P62a local contract types](contract-types.md) are complete;
+parent P62 remains partial and P62b–P110 remain unstarted.**
 These foundations add no application runtime capability. This document specifies future
 execution; execute only the requested work unit. It does not authorize starting runtime packages,
 generating applications, publishing, or deploying them merely because they are planned.
@@ -45,8 +46,9 @@ split parents are milestones, not single-session tasks. Start with **P58** when 
 requested without a more specific package and no baseline has been recorded. P58/P59/P60 are complete;
 P61a–P61d's shared protocol and independent D/V/Z contracts/fixtures are complete, including
 parent P61's combined 60-row / 195-observation / 24-hook / 15-scenario gate. All three applications
-remain absent/not run; the next unstarted unit is **P62a**. For the authorized
-P59–P61d batch, the user explicitly permits lint/types and focused offline backend semantic/compatibility tests instead of full `pnpm check`;
+remain absent/not run. [P62a](contract-types.md) adds local type semantics only;
+the next unstarted unit is **P62b**. For the authorized
+P59–P61d and P62a–P73b batches, the user explicitly permits lint/types and focused offline backend semantic/compatibility tests instead of full `pnpm check`;
 UI unit/E2E execution and maintenance remain deferred. See P59's append-only handoff entry.
 Dependencies are completion requirements, not permission to run multiple agents or packages.
 Do not restart P46–P57, UX5, QRWTY adoption, or historical S14 work.
@@ -66,7 +68,7 @@ P58 is **complete** with [baseline evidence](evidence/p58/README.md); P59 is **c
 [Zammad child P60c](reference/backend-benchmarks.md#zammad-core-p60c), including the
 [60-row combined reference review](reference/backend-benchmarks.md#combined-p60-reference-review),
 are complete. [P61 independent contracts/fixtures](../benchmarks/README.md) are also **complete**.
-P62–P110 remain **planned**.
+P62 is **partial**: [P62a](contract-types.md) is complete; P62b and P63–P110 remain **planned**.
 Every package has a bounded outcome, ordered work, negative cases,
 checks, and explicit exclusions in its phase file. Follow the exact child order in the
 [assignment queue](plans/backend-benchmarks/execution-units.md), not the whole parent at once.

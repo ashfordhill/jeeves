@@ -8,7 +8,12 @@ import {
 } from "./architecture.ts";
 import { architectureReview, type RelationshipPolicies } from "./architecture-bindings.ts";
 import { containerClassification } from "./architecture-choices.ts";
-import { type ArchitectureContract, contractCanonical } from "./architecture-contracts.ts";
+import {
+  type ArchitectureContract,
+  contractCanonical,
+  contractShapeSemantics,
+  inspectContractShape,
+} from "./architecture-contracts.ts";
 import { type PatternInstance, patternConfigSchema } from "./architecture-pattern-provenance.ts";
 import {
   type Connection,
@@ -908,7 +913,7 @@ const mappedConnection = (c: Connection, ids: Record<string, string>): Connectio
 const contractSemantics = (value: unknown) => {
   if (!value || typeof value !== "object") return value;
   const { name: _name, description: _description, ...rest } = value as ArchitectureContract;
-  return rest;
+  return { ...rest, ...(rest.shape ? { shape: contractShapeSemantics(rest.shape) } : {}) };
 };
 const semantic = (value: unknown): unknown => {
   if (Array.isArray(value)) return value.map(semantic);
@@ -1084,7 +1089,11 @@ function sameDefinition(a: ArchitectureContract, b: ArchitectureContract) {
     a.version === b.version &&
     a.kind === b.kind &&
     !!a.shape &&
-    contractCanonical(a.shape) === contractCanonical(b.shape)
+    !!b.shape &&
+    inspectContractShape(a.shape).ok &&
+    inspectContractShape(b.shape).ok &&
+    contractCanonical(contractShapeSemantics(a.shape)) ===
+      contractCanonical(contractShapeSemantics(b.shape))
   );
 }
 function matchRequiredInterfaces(

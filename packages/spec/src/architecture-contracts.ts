@@ -1,11 +1,16 @@
 /** Project-local design contracts. Declarations never supply executable runtime bindings. */
 import { z } from "zod";
 import {
+  contractTypeDefinitionSchema,
   contractFieldsSchema as fields,
   operationBehaviorSchema,
   operationOutcomeSchema,
-  unresolvedContractValue,
 } from "./contract-shapes.ts";
+import {
+  contractShapeSemantics,
+  contractTypeKey,
+  inspectContractShape,
+} from "./contract-type-resolution.ts";
 import { deliveryConfigSchema } from "./delivery.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
@@ -13,6 +18,7 @@ import { idSchema } from "./ids.ts";
 import { resourceConfigSchema } from "./resources.ts";
 
 export * from "./contract-shapes.ts";
+export * from "./contract-type-resolution.ts";
 
 const text = z.string().trim().max(1200);
 export const contractShapeSchema = z.strictObject({
@@ -44,6 +50,7 @@ export const contractShapeSchema = z.strictObject({
         ctx.addIssue({ code: "custom", message: "Operation identities must be unique." });
     }),
   payload: fields,
+  types: z.array(contractTypeDefinitionSchema).max(100).optional(),
 });
 export const contractOwnerSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("element"), id: idSchema }),
@@ -342,6 +349,18 @@ export function validateArchitectureContracts(design: DesignDocument): Finding[]
         }),
       );
     keys.add(contractKey(contract));
+    if (contract.shape)
+      for (const issue of inspectContractShape(contract.shape).issues)
+        if (issue.code !== "UNRESOLVED")
+          result.push(
+            finding(
+              issue.code === "MISSING_TYPE" ? "UNKNOWN_REFERENCE" : "CONFIG_INVALID",
+              issue.message,
+              {
+                path: [...path, "shape", ...issue.path],
+              },
+            ),
+          );
   }
   for (const use of model.interfaces ?? []) {
     const path = ["architecture", "interfaces", use.id];
@@ -471,14 +490,7 @@ export function architectureContractReview(design: DesignDocument): ContractRevi
       ((["api", "in-process"].includes(contract.kind)
         ? !contract.shape.operations.length
         : !contract.shape.payload.length) ||
-        [
-          ...contract.shape.payload,
-          ...contract.shape.operations.flatMap((op) => [
-            ...op.input,
-            ...op.output,
-            ...(op.outcomes ?? []).flatMap((o) => o.payload ?? []),
-          ]),
-        ].some(unresolvedContractValue))
+        !inspectContractShape(contract.shape).ok)
     )
       result.push({
         code: "UNRESOLVED_CONTRACT",
@@ -516,6 +528,22 @@ export function validateContractTransition(
   after: DesignDocument,
 ): Finding[] {
   const result: Finding[] = [];
+  for (const prior of before.architecture?.contracts ?? []) {
+    if (
+      prior.shape?.types?.length &&
+      inspectContractShape(prior.shape).references.length &&
+      !after.architecture?.contracts?.some((next) => contractKey(next) === contractKey(prior))
+    )
+      result.push(
+        finding(
+          "CONFIG_INVALID",
+          `Contract ${contractKey(prior)} contains referenced local types. Preserve its immutable versions.`,
+          {
+            path: ["architecture", "contracts", contractKey(prior)],
+          },
+        ),
+      );
+  }
   for (const next of after.architecture?.contracts ?? []) {
     const prior = before.architecture?.contracts?.find(
       (item) => contractKey(item) === contractKey(next),
@@ -533,7 +561,7 @@ export function validateContractTransition(
     const semantics = (item: ArchitectureContract) => ({
       kind: item.kind,
       coverage: item.coverage,
-      shape: item.shape,
+      shape: contractShapeSemantics(item.shape),
       source: item.source,
       sourceSnapshot: item.sourceSnapshot,
       sourceDesignRevision: item.sourceDesignRevision,
@@ -550,6 +578,34 @@ export function validateContractTransition(
           { path: ["architecture", "contracts", contractKey(next)] },
         ),
       );
+    // A referenced local version stays immutable even inside an otherwise editable draft,
+    // and even when this batch also removes or migrates every reference to it.
+    if (prior?.shape) {
+      const used = new Set(inspectContractShape(prior.shape).references.map(contractTypeKey));
+      for (const type of prior.shape.types ?? []) {
+        if (!used.has(contractTypeKey(type))) continue;
+        const replacement = next.shape?.types?.find(
+          (t) => contractTypeKey(t) === contractTypeKey(type),
+        );
+        if (!replacement || contractCanonical(type.value) !== contractCanonical(replacement.value))
+          result.push(
+            finding(
+              "CONFIG_INVALID",
+              `Referenced local type ${contractTypeKey(type)} is immutable. Preserve it and create an explicit new version.`,
+              {
+                path: [
+                  "architecture",
+                  "contracts",
+                  contractKey(next),
+                  "shape",
+                  "types",
+                  contractTypeKey(type),
+                ],
+              },
+            ),
+          );
+      }
+    }
     if (
       next.source &&
       (!prior || contractCanonical(semantics(prior)) !== contractCanonical(semantics(next)))

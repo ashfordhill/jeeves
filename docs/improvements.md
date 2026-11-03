@@ -11,9 +11,11 @@ The planning task implemented none. [P58's baseline](evidence/p58/README.md) and
 are now complete, including parent P60. [P61a shared protocol](../benchmarks/protocol/v1/README.md), [P61b Discourse contracts/fixtures](../benchmarks/discourse-core/v1/README.md),
 [P61c Vendure contracts/fixtures](../benchmarks/vendure-core/v1/README.md)
 and [P61d Zammad contracts/fixtures](../benchmarks/zammad-core/v1/README.md)
-are complete, including parent P61’s combined independent contract gate. **P62a is next unstarted**;
+are complete, including parent P61’s combined independent contract gate.
+[P62a local contract types](contract-types.md) are complete; parent P62 remains partial and
+**P62b is next unstarted**;
 all three applications remain absent/not run with zero observed implementation points.
-For the authorized P59–P61d batch, lint/types and focused offline backend semantic/compatibility
+For the authorized P59–P61d and P62a–P73b batches, lint/types and focused offline backend semantic/compatibility
 tests replace full `pnpm check`; UI unit/E2E execution and maintenance remain deferred.
 When execution is requested, start with the assigned unit, not the historical sequence below. Existing
 ownership, C4 semantics and UI-test deferral remain in force; validation profiles are explicit
