@@ -28,6 +28,10 @@ import type { ComposeFile, ComposeFragment } from "./compose.ts";
  * | `template.ts`    | Bundles the above into a `TemplateModule`                         |
  */
 export interface TemplateModule {
+  /** Optional versioned capabilities are declarations only. A future backend compiler must
+   * match each exact obligation before selecting this module; evidencePackIds name checks
+   * to run and never imply that testPack or application acceptance has passed.
+   */
   manifest: TemplateManifestInput;
   generate(ctx: GenerateContext): GenerateResult;
   /** Markdown, copied into `jeeves/elements/<id>.md` for the orchestrator. */

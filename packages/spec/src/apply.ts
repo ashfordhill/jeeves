@@ -6,6 +6,7 @@ import { validateBackendBehaviorTransition } from "./backend-behavior.ts";
 import { validateBackendCapabilityTransition } from "./backend-capability-configs.ts";
 import { validateBackendDataTransition } from "./backend-data.ts";
 import { validateBackendEffectsTransition } from "./backend-effects.ts";
+import { validateBackendImplementationTransition } from "./backend-implementations.ts";
 import { validateBackendPolicyTransition } from "./backend-policy.ts";
 import {
   type Annotation,
@@ -101,6 +102,7 @@ export function applyOperations(
 
   const contractErrors = [
     ...validateBackendDataTransition(design, draft),
+    ...validateBackendImplementationTransition(design, draft),
     ...validateBackendPolicyTransition(design, draft),
     ...validateBackendBehaviorTransition(design, draft),
     ...validateBackendEffectsTransition(design, draft),

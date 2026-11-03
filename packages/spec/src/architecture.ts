@@ -24,6 +24,7 @@ import {
   validateArchitectureReview,
 } from "./architecture-review-model.ts";
 import { validateBackendData } from "./backend-data.ts";
+import { validateBackendImplementations } from "./backend-implementations.ts";
 import { backendModelSchema } from "./backend-model.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
@@ -346,6 +347,7 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
     ...validateArchitectureReview(design),
     ...validateArchitectureDeployments(design),
     ...validateBackendData(design),
+    ...validateBackendImplementations(design),
   ];
 }
 

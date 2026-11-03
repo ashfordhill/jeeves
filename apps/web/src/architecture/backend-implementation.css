@@ -1,0 +1,13 @@
+.backend-implementation-editor,
+.backend-implementation-support {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.backend-implementation-support details {
+  margin-block: 0.5rem;
+}
+
+.backend-implementation-support summary {
+  cursor: pointer;
+}

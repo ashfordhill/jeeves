@@ -199,3 +199,17 @@ undo/redo, reload and conflict handling. P68c completes parent P68's synthetic t
 order-payment-review and ticket-first-response authoring gate. These are authoring examples and
 acceptance declarations, not complete benchmark application designs or observed runtime behavior.
 P69's exact support matcher is next; compilation and runtime work remain separately assigned.
+
+**Review → Implementation support** now inspects each original C2 host, C3 responsibility, exact
+operation and relationship separately. Choose an exact registered descriptor when one is available;
+select supplied model obligations, authoritative store, typed hook slots and explicit external
+configuration registry IDs. Imported unavailable selections remain visible and can be cleared.
+Per-option reasons, pending typed hooks, all original obligations and raw diagnostics remain
+inspectable. Component technical details and planned C2 inspectors show the same support report.
+
+Foundation support, Full declared support, design-review completeness and observed verification
+remain separate. Review Save accepts structurally valid unresolved decisions, with Save/Cancel,
+atomic undo/redo and conflict retention. The catalog currently advertises **zero backend capability
+descriptors**. Legacy `NEEDS_TEMPLATE` and Generate remain unchanged. See
+[exact implementation support](backend-implementations.md) for the model, matching rules and limits.
+P69 is complete; P70a's pure compiler plan is next. No backend application runtime is supplied.

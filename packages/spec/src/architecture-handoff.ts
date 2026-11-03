@@ -13,10 +13,17 @@ import type { ArchitectureLibraryEntry } from "./architecture-library.ts";
 import { describeArchitecturePattern } from "./architecture-patterns.ts";
 import { reviewArchitecture } from "./architecture-review.ts";
 import { type ArchitectureProvision, architectureViews } from "./architecture-view.ts";
+import { backendCapabilityDescriptorSchema } from "./backend-implementation-model.ts";
+import { implementationKey } from "./backend-implementations.ts";
+import {
+  backendImplementationReportSchema,
+  matchBackendImplementations,
+} from "./backend-support.ts";
 import { exportContractJsonSchema } from "./contract-json-schema.ts";
 import type { DesignDocument } from "./design.ts";
 import type { ArchitectureEvidence } from "./evidence.ts";
 import { isStructural } from "./findings.ts";
+import { templateRefSchema } from "./ids.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { plannedCapability } from "./planned-capabilities.ts";
 import { connectionPresentation } from "./relationship-display.ts";
@@ -145,6 +152,15 @@ export const architectureHandoffSchema = z
           .optional(),
       }),
     ),
+    implementationSupport: backendImplementationReportSchema.optional(),
+    implementationDescriptors: z
+      .array(
+        z.strictObject({
+          template: templateRefSchema,
+          descriptor: backendCapabilityDescriptorSchema,
+        }),
+      )
+      .optional(),
     manifests: z.array(
       z.strictObject({
         instance: z.string(),
@@ -618,6 +634,17 @@ export async function buildArchitectureHandoff(input: {
     intent: { ...intent, components: intent.components?.map(portableComponent) },
     contracts,
     manifests,
+    ...(a.backend
+      ? {
+          implementationSupport: matchBackendImplementations(design, lookup),
+          implementationDescriptors: (a.backend.implementations ?? []).flatMap((b) => {
+            const descriptor = lookup
+              .get(b.template)
+              ?.capabilities?.find((c) => contractKey(c) === contractKey(b.capability));
+            return descriptor ? [{ template: b.template, descriptor }] : [];
+          }),
+        }
+      : {}),
     coverage,
     openItems,
     obligations,
@@ -810,6 +837,15 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
       ...o.gaps.map((g) => `  - OPEN: ${mdEscape(g)}`),
     ]),
   );
+  if (s.implementationSupport)
+    section("implementation-support", "Declared implementation support", [
+      s.implementationSupport.limitation,
+      `Foundation: ${s.implementationSupport.foundationReady ? "ready" : "blocked"}; full support: ${s.implementationSupport.fullReady ? "declared" : "blocked"}. No observed evidence is inferred.`,
+      ...s.implementationSupport.obligations.map(
+        (o) =>
+          `${implementationKey(o.obligation)}: ${o.status}; ${o.template ?? "unselected"}/${o.capability ?? "unselected"}. ${o.reasons.map((r) => r.message).join(" ")} Expected evidence packs: ${o.evidencePackIds.join(", ") || "none"}.`,
+      ),
+    ]);
   if (s.intent.backend)
     section("backend", "Backend data and consistency intent", [
       "These are versioned design declarations; storage, locking and invariants have no supplied runtime or observed verification.",

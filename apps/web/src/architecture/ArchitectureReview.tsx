@@ -30,6 +30,7 @@ import {
   useArchitectureDraft,
 } from "./RelationshipBindings.tsx";
 import "./review.css";
+import { BackendImplementationEditor } from "./BackendImplementationDetails.tsx";
 
 export function ArchitectureReview({
   design,
@@ -42,7 +43,11 @@ export function ArchitectureReview({
   onEdit: (finding: Pick<ReviewFinding, "editor" | "inputs" | "sourcePath">) => void;
   onPattern: (pattern: string) => void;
 }) {
-  const { draft, setDraft, saving, error, issues, save } = useArchitectureDraft(design, onClose);
+  const { draft, setDraft, saving, error, issues, save } = useArchitectureDraft(
+    design,
+    onClose,
+    true,
+  );
   const [tab, setTab] = useState<string | null>("findings");
   const [requirementId, setRequirementId] = useState(draft.reviewRequirements?.[0]?.id ?? "");
   const [decisionId, setDecisionId] = useState(draft.decisions?.[0]?.id ?? "");
@@ -171,10 +176,14 @@ export function ArchitectureReview({
         ) : null}
         <Tabs value={tab} onChange={setTab}>
           <Tabs.List>
+            <Tabs.Tab value="implementations">Implementation support</Tabs.Tab>
             <Tabs.Tab value="findings">Review findings</Tabs.Tab>
             <Tabs.Tab value="requirements">Requirements</Tabs.Tab>
             <Tabs.Tab value="decisions">Decisions</Tabs.Tab>
           </Tabs.List>
+          <Tabs.Panel value="implementations" pt="md">
+            <BackendImplementationEditor design={design} draft={draft} onChange={setDraft} />
+          </Tabs.Panel>
           <Tabs.Panel value="findings" pt="md">
             <Stack>
               {report.structuralFindings.length ? (

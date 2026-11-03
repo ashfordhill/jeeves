@@ -7,6 +7,7 @@ import {
   type BindingRelationship,
   contractKey,
   type DesignDocument,
+  isStructural,
   type RelationshipBinding,
   type RelationshipPolicies,
   sameBindingRelationship,
@@ -76,7 +77,11 @@ export function Amount({
 }
 
 /** Shared atomic draft shell retains its opening revision even after a server conflict. */
-export function useArchitectureDraft(design: DesignDocument, onClose: () => void) {
+export function useArchitectureDraft(
+  design: DesignDocument,
+  onClose: () => void,
+  allowReadiness = false,
+) {
   const [base] = useState(() => structuredClone(design));
   const [draft, setDraft] = useState<Architecture>(() =>
     structuredClone(
@@ -92,7 +97,10 @@ export function useArchitectureDraft(design: DesignDocument, onClose: () => void
   const parsed = architectureSchema.safeParse(draft);
   const structural = parsed.success
     ? validateArchitecture({ ...base, architecture: parsed.data }, builtinRegistry()).filter(
-        (item) => item.severity === "error" && item.code !== "NEEDS_TEMPLATE",
+        (item) =>
+          allowReadiness
+            ? isStructural(item)
+            : item.severity === "error" && item.code !== "NEEDS_TEMPLATE",
       )
     : [];
   const issues = parsed.success

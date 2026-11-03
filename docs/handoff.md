@@ -7735,3 +7735,122 @@ Corrections and limits:
 **P68c and parent P68 are complete with no blocker. P69 is next unstarted.** Stop after the
 scoped local P68c commit. `.jeeves-work/p68c/completion.json` records commit/checks/browser/limits;
 the coordinator owns the batch checkpoint.
+
+## P69 — exact backend implementation support (2026-11-03)
+
+**Complete.** Implemented only P69 in the primary checkout on `main`, starting from
+`83a73ed9fc439fa62fdb762ed4cadbcc569f2059` (completed P68c/parent P68). Read the batch
+instructions/checkpoint, PLAN §15 and applicable §1–14, latest P68 handoffs, C4 guidance, studio
+guide, backend roadmap/shared planned-to-executable contract, phase-2 P69 and assignment queue.
+The P68c completion/runner/browser evidence supplies the dependency; no earlier package was
+reimplemented. `.jeeves-work/p69/checklist.md` records the scope and exclusions.
+
+Built:
+
+- Optional, strict, versioned manifest capability descriptors: exact target/obligation kinds,
+  typed shapes, finite path/value/range/bounded-scalar support, host/store/transport requirements,
+  trusted context and revocation sites, exact dependencies/conflicts, typed hooks, expected evidence
+  pack IDs and implementation origin. Duplicate exact descriptors/option paths/hook slots and
+  invalid ranges are rejected. Legacy manifests retain their omitted capability field. Registry
+  descriptions/export stay browser-safe and deterministic. **No production descriptor was added.**
+- Optional exact `backend.implementations` bindings for C2 hosts, C3 responsibilities, operations
+  and C2/C3 relationships, with explicit model obligations, stores, typed seams and fixture/production
+  adapter/configuration/credential registry identities. The schema exports only valid primary target
+  kinds. These selections preserve saved `planned`/`template` identities and never invoke subtype
+  changes or materialize runtime elements.
+- Pure requirement collection and matching in `backend-implementations.ts` / `backend-support.ts`.
+  Every original host/component/operation/relationship, interface binding, dataset, backend declaration
+  and contract is accounted for. Results are `supported`, `needs-explicit-hook`, `unsupported` or
+  `incompatible`, with exact reasons. Missing options/context/rechecks, wrong transaction stores,
+  ambiguous claims, unsupported shapes, conflicts, missing/cyclic dependencies and absent external
+  wiring stay blocking. One component cannot discharge its host. Relationships require participating
+  interfaces and transport; external adapters require their exact container and explicit environment.
+  Hook signature/owner checks cannot bypass unsupported security/store requirements.
+- Foundation versus Full declared support is separate from design review and observed verification.
+  Foundation can retain explicitly selected compatible typed seams with project implementation pending;
+  Full support requires supplied obligations. Both preserve non-availability error diagnostics.
+  Raw findings remain available. **All legacy `NEEDS_TEMPLATE` behavior and global `blocksGenerate`
+  remain unchanged**, including when isolated fake manifests claim support.
+- References, exact-definition protection, removal diagnostics, remapping, fragment extraction/insertion,
+  target diffs, fingerprints, chat operation JSON Schema and portable handoff retain the bindings.
+  Selected exact definitions, including contract kind, remain immutable across simultaneous consumer
+  removal. Registered template/capability and external registry identities remain pinned.
+- **Review → Implementation support** uses one focused target, exact registry selection, explicit
+  obligations/store/hooks, bounded external registry fields and disclosed supporting/raw diagnostics.
+  Imported unavailable selections stay visible and can be retained, renamed or cleared. Save/Cancel,
+  atomic history and stale-revision draft retention use the existing operations path. Review alone
+  opts into saving structurally valid readiness gaps; other shared draft callers retain their policy.
+  Component/C2/relationship technical details, catalog, Evidence and handoff keep availability and
+  observed evidence distinct. Updated CATALOG, studio/roadmap status and
+  [model documentation](backend-implementations.md). No code/JSON editor was added.
+
+Verification, explicitly under Node **24.21.0** using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: **passed**, **910 files**, the unchanged **2,024 warnings / 75 infos**; no new
+  diagnostics. Final log `.jeeves-work/p69/lint-complete.log`; rechecked after this handoff in
+  `lint-handoff.log`. Scoped Biome formatting and `git diff --check` pass.
+- `pnpm work run typecheck`: **passed**, all workspace/script typechecks, **13.5 s**.
+  `.jeeves-work/runs/2026-11-03T18-46-35-876Z-typecheck-e314257e.json` and
+  `.jeeves-work/p69/typecheck-verified.log`.
+- `pnpm work run unit` with these exact focused selectors: `packages/spec/src/` files
+  `backend-implementations.test.ts`, `backend-data.test.ts`, `backend-queries.test.ts`,
+  `backend-policy.test.ts`, `backend-behavior.test.ts`, `backend-effects.test.ts`,
+  `backend-capability-configs.test.ts`; `packages/registry/src/` files
+  `backend-capabilities.test.ts`, `registry.test.ts`, `fixtures.test.ts`;
+  `packages/generator/src/plan.test.ts`; `packages/template-kit/src/context.test.ts`.
+  **12 files / 196 tests passed**, **4.8 s** runner time. Record
+  `.jeeves-work/runs/2026-11-03T18-45-05-343Z-unit-1883c884.json`, log
+  `.jeeves-work/p69/unit-complete.log`. Fake descriptors/manifests exist only in the two new offline
+  test files. This includes real legacy registry/fixture/generation-plan/context compatibility,
+  schema export, handoff determinism and semantic/reference preservation; no test needs services.
+- `pnpm --filter @jeeves/web build`: **passed**, **1.35 s**, existing Vite large-chunk advisory.
+  `.jeeves-work/p69/build-complete.log`.
+- Direct Playwright library inspection of the existing loopback preview, separate from deferred
+  suites: real mouse Save/Cancel, exact obligation/store selectors, invalid-name/registry rejection,
+  reload, atomic Undo/Redo, clearing/restoring an unavailable selection and a **real 409** retaining
+  the draft. Fixture/production changes preserve registry identities; external settings save/undo/redo
+  together. C2 host, C3 responsibility, exact operation and both relationship kinds show separate
+  support. Raw legacy findings, technical details and revision-bound handoff remain truthful.
+  **Light 1440×1000**, **dark 390×844**, no horizontal overflow or JSON/code textarea in changed
+  controls, **8 zero-violation scoped axe checks**. Screenshots were visually inspected. The main
+  browser record has zero page errors/failed requests/unexpected console responses; its only error
+  response is the deliberate 409. Extra inspection has zero page errors. Successful records:
+  `.jeeves-work/p69/browser.json`, `browser-extra.json`, `browser-third.log`,
+  `browser-extra-verified.log`, `axe-*.json` and screenshots. Axe covers changed dialogs, not the
+  whole page. Saved final design/handoff are `final-design.json` and `handoff-final.json`.
+- Deleted only disposable project `b0b10fc2-3695-42ee-8aca-af6de4db50c6`, after checking its exact
+  name; confirmed 204 then 404. **All 13 original project IDs restored and every design/layout hash
+  identical**. API healthy; existing `4300` Jeeves and `5180` Fieldwork previews return 200.
+  `.jeeves-work/p69/cleanup.json`, `preserved-{before,after}.json`, `cleanup.log`. No persistent
+  project, output directory, preview process or settings were changed.
+- `.jeeves-work/p69/audit.py`: **1,500 other tracked files preserved**, including all **48 benchmark
+  files / 46 legacy fixtures**, frozen runtime/template/artifact/generator/version paths and global
+  generation gate. Earlier handoff prefix is byte-identical; scoped Markdown links/anchors/fences
+  and diff checks pass. Final audit rerun after this append: `.jeeves-work/p69/audit.json`.
+
+Corrections and limits:
+
+- Initial checks found an import cycle caused by mixing schema validation with report construction;
+  separated the pure support report module. Typechecks caught incorrect first-pass property names
+  and a new test's optional architecture input; corrected. A new negative check caught missing
+  contract-kind protection for a definition referenced solely by an implementation; corrected without
+  weakening the expectation. New code/test non-null warnings were removed; lint returned to the
+  recorded baseline warning count.
+- Browser inspection caught Review refusing saved readiness gaps; its explicit draft policy now
+  matches structural API acceptance while retaining the global generation gate. Environment mode
+  changes now preserve credential registry IDs. Probe corrections cover overlay dismissal, the exact
+  saved `post-command@v1` identity and rerunnable empty/dirty assumptions. Initial failed attempts
+  remain alongside successful logs; no failure is relabeled as a pass. Immediate probes during
+  existing `tsx watch` restarts saw connection refusal; the unchanged watcher recovered normally.
+- No production backend capability was advertised or implemented. Expected packs and pending typed
+  hooks are declarations, not runtime/application evidence. Three benchmark applications remain
+  **absent/not run, zero observed implementation points**. No compiler IR/projection, emitters,
+  runtime, application generation, frozen version or acceptance-expectation changes.
+- No deferred UI unit/E2E maintenance or suite execution, full `pnpm check`, broad historical failure
+  campaign, branch/worktree/delegation, push or publication. Unrelated historical results are not
+  claimed green. The standing batch verification substitution was used exactly for P69.
+
+**P69 is complete with no blocker. P70a is next unstarted.** Stop after this scoped local P69 commit.
+`.jeeves-work/p69/completion.json` records commit/checks/browser/limits; the coordinator owns the
+batch checkpoint.

@@ -11,6 +11,7 @@ import { Alert, Button, Group, NativeSelect, Stack, Textarea, TextInput } from "
 import { useState } from "react";
 import { useDraw } from "../draw/store.ts";
 import { ClassificationFields } from "./ArchitectureChoices.tsx";
+import { BackendImplementationSummary } from "./BackendImplementationDetails.tsx";
 import { CapabilityFields } from "./CapabilityFields.tsx";
 import { useEditorDraft } from "./editor-drafts.tsx";
 import { BindingSummary } from "./RelationshipBindings.tsx";
@@ -88,6 +89,10 @@ export function PlannedElementInspector({
       aria-label={`Configure ${element.name}`}
     >
       <h2>{element.name}</h2>
+      <details className="component-technical">
+        <summary>Implementation support</summary>
+        <BackendImplementationSummary design={loaded.design} target={element.id} />
+      </details>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -308,6 +313,10 @@ export function PlannedConnectionInspector({ connection }: { connection: Connect
       <p className="planned-footnote">
         Declares intended communication. It does not create runtime wiring.
       </p>
+      <details className="component-technical">
+        <summary>Implementation support</summary>
+        <BackendImplementationSummary design={loaded.design} target={connection.id} />
+      </details>
       <BindingSummary relationship={{ kind: "connection", id: connection.id }} />
       <Button
         variant="subtle"

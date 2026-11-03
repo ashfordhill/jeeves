@@ -394,6 +394,12 @@ traffic. Private responses and application authorization need explicit handling.
 
 ## C3 shared components
 
+[Exact backend implementation support](docs/backend-implementations.md) keeps responsibility families
+separate from exact registered modules. Technical details and Review report supported options,
+explicit typed-hook seams and unsupported obligations for hosts, components, operations and
+relationships. **No production backend capability descriptors or new runtime offerings are
+registered by P69.** Expected evidence packs and observed verification remain separate.
+
 The **Realtime client** family records WebSocket/SSE transport, the chosen client implementation,
 reconnection policy and authoritative recovery source. It is a reusable integration boundary;
 page layout and individual controls remain outside C3.

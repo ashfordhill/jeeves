@@ -106,6 +106,14 @@ export function CapabilityCatalog({
     );
   return (
     <ConfigurationDialog title="Architecture library" size="xl" onClose={onClose}>
+      <p>
+        Families describe architecture intent. Exact backend implementations and unsupported options
+        are inspected in Review → Implementation support.{" "}
+        {builtinRegistry()
+          .list()
+          .reduce((n, m) => n + (m.capabilities?.length ?? 0), 0)}{" "}
+        registered backend capability descriptors; observed evidence is separate.
+      </p>
       {error ? (
         <Alert color="red" role="alert">
           {error}

@@ -51,6 +51,7 @@ export interface TemplateDescription {
   ports: Port[];
   attachmentSlots: ElementManifest["attachmentSlots"];
   card: TemplateManifest["card"];
+  capabilities?: TemplateManifest["capabilities"];
 }
 
 export interface Suggestion {
@@ -231,6 +232,7 @@ export function createRegistry(inputs: readonly TemplateManifestInput[]): Regist
         ports: manifest.ports,
         attachmentSlots: manifest.kind === "element" ? manifest.attachmentSlots : [],
         card: manifest.card,
+        ...(manifest.capabilities ? { capabilities: structuredClone(manifest.capabilities) } : {}),
       };
     },
     palette() {
@@ -284,6 +286,9 @@ function keyOf(f: { code: string; target: object }): string {
 
 function checkManifest(manifest: TemplateManifest): void {
   const label = formatTemplateRef(manifest);
+  const capabilityKeys = (manifest.capabilities ?? []).map((c) => `${c.id}@${c.version}`);
+  if (new Set(capabilityKeys).size !== capabilityKeys.length)
+    throw new RegistryError(`${label} repeats an exact capability descriptor.`);
   const seen = new Set<string>();
   for (const port of manifest.ports) {
     const key = `${port.kind}/${port.direction}`;

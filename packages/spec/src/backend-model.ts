@@ -8,6 +8,7 @@ import {
 import { backendCapabilityConfigSchema } from "./backend-capability-configs-model.ts";
 import { collectBackendEffectDependencies, mapBackendEffects } from "./backend-effects.ts";
 import { backendEffectSchema, backendHookSchema } from "./backend-effects-model.ts";
+import { backendImplementationSchema } from "./backend-implementation-model.ts";
 import {
   backendAccessBindingSchema,
   backendAccessPolicySchema,
@@ -240,6 +241,7 @@ export const backendModelSchema = z.strictObject({
   effects: z.array(backendEffectSchema).max(100).optional(),
   hooks: z.array(backendHookSchema).max(100).optional(),
   capabilityConfigs: z.array(backendCapabilityConfigSchema).max(100).optional(),
+  implementations: z.array(backendImplementationSchema).max(500).optional(),
 });
 export type BackendModel = z.output<typeof backendModelSchema>;
 
@@ -254,6 +256,7 @@ export const backendCollections = [
   "effects",
   "hooks",
   "capabilityConfigs",
+  "implementations",
 ] as const;
 export const backendDeclarations = (
   model: BackendModel | undefined,
@@ -268,6 +271,7 @@ export const backendDeclarations = (
   ...(model?.effects ?? []),
   ...(model?.hooks ?? []),
   ...(model?.capabilityConfigs ?? []),
+  ...(model?.implementations ?? []),
 ];
 
 /** Local field, relation, invariant and storage IDs are never outer graph identities. */
@@ -288,6 +292,26 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
     ...model,
     ...mapBackendEffects(model, ids),
     ...mapBackendCapabilityConfigs(model, ids),
+    ...(model.implementations
+      ? {
+          implementations: model.implementations.map((v) => ({
+            ...v,
+            id: id(v.id),
+            target: { ...v.target, id: id(v.target.id) },
+            obligations: v.obligations.map((o) => ({ ...o, id: id(o.id) })),
+            hooks: v.hooks.map((h) => ({ ...h, hook: exact(h.hook) })),
+            ...(v.store ? { store: id(v.store) } : {}),
+            ...(v.environment
+              ? {
+                  environment: {
+                    ...v.environment,
+                    adapterBinding: id(v.environment.adapterBinding),
+                  },
+                }
+              : {}),
+          })),
+        }
+      : {}),
     ...(model.lifecycles
       ? {
           lifecycles: model.lifecycles.map((l) => ({
@@ -498,6 +522,18 @@ export function collectBackendDependencies(
   if (!model) return;
   collectBackendEffectDependencies(model, keep);
   collectBackendCapabilityDependencies(model, keep);
+  for (const v of model.implementations ?? []) {
+    const refs = [v.target.id, ...v.obligations.map((o) => o.id)];
+    if (refs.some((id) => keep.has(id))) keep.add(v.id);
+    if (keep.has(v.id))
+      for (const id of [
+        ...refs,
+        ...v.hooks.map((h) => h.hook.id),
+        ...(v.store ? [v.store] : []),
+        ...(v.environment ? [v.environment.adapterBinding] : []),
+      ])
+        keep.add(id);
+  }
   for (const l of model.lifecycles ?? []) {
     if (keep.has(l.aggregate.id) || keep.has(l.state.entity.id)) keep.add(l.id);
     if (keep.has(l.id)) {

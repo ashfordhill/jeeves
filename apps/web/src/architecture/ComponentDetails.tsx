@@ -10,6 +10,7 @@ import { AttachmentPanel } from "../draw/inspector/Inspector.tsx";
 import { ResourceConfiguration } from "../draw/inspector/ResourceEditor.tsx";
 import { useDraw } from "../draw/store.ts";
 import { supportLabel } from "./ArchitectureGraph.tsx";
+import { BackendImplementationSummary } from "./BackendImplementationDetails.tsx";
 import { nodeFamily } from "./type-style.tsx";
 
 function MemberDetails({
@@ -195,6 +196,7 @@ export function ComponentDetails({
       <details className="component-technical">
         <summary>Technical details</summary>
         <p>{supportLabel[node.support]}</p>
+        <BackendImplementationSummary design={loaded.design} component={node.binding?.component} />
         {node.provenance ? <p>{node.provenance}</p> : null}
         <Button variant="subtle" size="xs" onClick={onContainer}>
           Open in C2

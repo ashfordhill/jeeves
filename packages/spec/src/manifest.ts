@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { backendCapabilityDescriptorSchema } from "./backend-implementation-model.ts";
 import { configValuesSchema, connectionKindSchema } from "./design.ts";
 import { idSchema, type TemplateRef, versionSchema } from "./ids.ts";
 
@@ -58,6 +59,8 @@ const manifestBase = {
     .array(z.strictObject({ id: idSchema, name: z.string().min(1), config: configValuesSchema }))
     .default([]),
   ports: z.array(portSchema).default([]),
+  /** Optional to preserve legacy serialized manifests exactly. No inherited support. */
+  capabilities: z.array(backendCapabilityDescriptorSchema).max(100).optional(),
   /** Display hints for the card: a Tabler icon name and the config keys shown as chips. */
   card: z.strictObject({
     icon: z.string().min(1),

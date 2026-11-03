@@ -156,6 +156,11 @@ export function ArchitectureEvidenceDialog({
             {error}
           </Alert>
         ) : null}
+        <p>
+          Declared implementation support and expected evidence packs are inspected in Review →
+          Implementation support. A compatible descriptor or typed hook supplies no observed
+          verification.
+        </p>
         <div className="evidence-overview">
           <span className="evidence-kicker">DESIGN REVISION {evidence.revision}</span>
           <h2>{labels[summary.state]}</h2>

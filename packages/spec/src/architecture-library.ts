@@ -289,6 +289,13 @@ export function extractArchitectureTemplate(
   if (a.backend)
     fragment.architecture.backend = {
       schemaVersion: a.backend.schemaVersion,
+      ...(a.backend.implementations
+        ? {
+            implementations: a.backend.implementations
+              .filter((v) => keep.has(v.id))
+              .map((v) => structuredClone(v)),
+          }
+        : {}),
       entities: a.backend.entities.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
       aggregates: a.backend.aggregates.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
       ...(a.backend.effects
