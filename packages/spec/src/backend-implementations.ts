@@ -314,7 +314,17 @@ export function backendImplementationRequirements(design: DesignDocument): Requi
       );
     }
   }
-  for (const c of a?.contracts ?? [])
+  for (const c of a?.contracts ?? []) {
+    // Shared definitions have no arbitrary first-consumer host. Only a unique host can
+    // constrain their implementation; interface ordering must not retarget support.
+    const hosts = [
+      ...new Set(
+        (a?.interfaces ?? [])
+          .filter((i) => contractKey(i.contract) === contractKey(c))
+          .map((i) => ownerHost(i.owner))
+          .filter((h): h is string => !!h),
+      ),
+    ];
     add(
       { kind: "contract", id: c.id, version: c.version },
       c.name,
@@ -327,11 +337,10 @@ export function backendImplementationRequirements(design: DesignDocument): Requi
         sourceDesignRevision: c.sourceDesignRevision,
       },
       {
-        host: ownerHost(
-          a?.interfaces?.find((i) => contractKey(i.contract) === contractKey(c))?.owner,
-        ),
+        host: hosts.length === 1 ? hosts[0] : undefined,
       },
     );
+  }
   return result.sort((a, b) =>
     implementationKey(a.ref).localeCompare(implementationKey(b.ref), "en"),
   );

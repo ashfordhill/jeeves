@@ -122,6 +122,14 @@ export interface PlanOptions {
 
 export class GenerationError extends Error {}
 
+/** The pure backend preview is a separate opt-in path; no backend emitter exists yet. */
+export function assertLegacyGenerationDesign(design: DesignDocument): void {
+  if (design.architecture?.backend)
+    throw new GenerationError(
+      "Versioned backend designs require planGeneration with an explicit backend mode. Backend runtime output is not available.",
+    );
+}
+
 /**
  * Compiles a design into the files of a template project (PLAN §9). Pure: the same design and
  * templates give the same plan, byte for byte. The design must have no error-level findings.
@@ -131,6 +139,7 @@ export function planProject(
   templates: TemplateSet,
   options: PlanOptions,
 ): ProjectPlan {
+  assertLegacyGenerationDesign(design);
   const { lookup } = templates;
   const recipe = recipeForDesign(design, lookup);
   if (recipe) {

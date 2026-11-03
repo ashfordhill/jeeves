@@ -212,4 +212,5 @@ remain separate. Review Save accepts structurally valid unresolved decisions, wi
 atomic undo/redo and conflict retention. The catalog currently advertises **zero backend capability
 descriptors**. Legacy `NEEDS_TEMPLATE` and Generate remain unchanged. See
 [exact implementation support](backend-implementations.md) for the model, matching rules and limits.
-P69 is complete; P70a's pure compiler plan is next. No backend application runtime is supplied.
+P69 and [P70's pure compiler plan](backend-plan.md) are complete. The compiler preview is a package API;
+this authoring UI still reports implementation support. P71a is next. No backend application runtime is supplied.

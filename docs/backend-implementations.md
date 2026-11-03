@@ -1,10 +1,11 @@
 # Exact backend implementation support (P69)
 
 P69 adds a pure availability report and implementation selection. It supplies no backend runtime,
-compiler projection or application generation. Every production manifest still lacks these new
+application generation. Every production manifest still lacks these new
 backend descriptors. The three benchmark applications remain absent/not run with zero observed
-implementation points. [P70a](backend-plan.md) now supplies a separate pure data-lowering stage; P70b remains next.
-Generation routing and runtime availability remain unchanged.
+implementation points. [P70](backend-plan.md) now supplies a complete pure compiler plan, exact obligation accounting and
+explicit mode/snapshot routing. Runtime availability is unchanged; legacy emission rejects backend
+inputs before filesystem reads. P71a is next.
 
 ## Model and registered claims
 
@@ -59,8 +60,9 @@ Foundation readiness allows explicitly selected compatible typed hook seams whos
 and acceptance remain pending. Full declared support requires every obligation to be supplied.
 Both also require no non-availability error diagnostics. Neither verdict is design-review approval
 or observed evidence. Raw findings, including every legacy `NEEDS_TEMPLATE`, remain inspectable.
-The global `blocksGenerate` predicate and generator path are unchanged; even a supported synthetic
-manifest report does not authorize generation. Implementation-selected exact definitions preserve
+The global `blocksGenerate` predicate is unchanged; even a supported synthetic manifest report does
+not authorize generation. P70 accounts for each availability barrier only in its pure plan and guards
+the legacy writer. Shared contracts have a host constraint only when their consumer host is unique. Implementation-selected exact definitions preserve
 semantics across simultaneous consumer removal; create a successor to change them deliberately.
 
 ## Authoring and handoff

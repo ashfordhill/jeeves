@@ -7940,3 +7940,95 @@ Corrections, scope and next step:
 
 **P70a is complete with no blocker. P70b is next unstarted; parent P70 is incomplete.**
 `.jeeves-work/p70a/completion.json` records the scoped commit, real checks and remaining boundary.
+
+## P70b — Complete pure backend compiler plan and legacy guard (2026-11-03)
+
+Implemented **P70b only** in primary `main`, based on P70a commit
+`2f06c2e9a737f125debc48e8c3a25065ae708a5e`. Read the batch instructions/checkpoint,
+AGENTS, PLAN §15 and applicable architecture/generation contracts, latest handoff, C4/studio
+guidance, backend roadmap/shared bridge, phase-2 P70, exact child split, frozen benchmark scope
+and worked command trace. P69/P70a dependency evidence was verified from their committed APIs,
+isolated fixtures and recorded results. The coordinator owns the batch checkpoint; it was not edited.
+
+Built:
+
+- [Complete pure planning API](../packages/generator/src/backend-compile.ts): operation/transport
+  adapters, local/read-only transactions and exact participants, effects/order, runtime dependencies
+  with exact package origin/configuration claims, and typed project-owned hook obligations. Reuses
+  P70a data lowering without executing queries, policies, commands, hooks or external effects.
+- Original C2 hosts, C3 responsibilities, C2/C3 relationships, interfaces/bindings, datasets,
+  contracts, lifecycles, typed settings and legacy attachments retain mapped intent. Every required
+  exact obligation has output identities and supported/external/hooked/unsupported accounting.
+  Provided API operations need exact backend behavior or their exact external provider interface/
+  operation adapter. A mapped sibling never supplies its host, sibling or relationship.
+- Explicit analysis/foundation/complete modes, detached immutable mode/design/compiler snapshot,
+  strict `compileBackendPlan` rejection with its inspectable plan, and complete canonical JSON/text
+  previews with source maps, pending hooks, expected evidence and all raw diagnostics. Analysis is
+  never a ready verdict. Foundation permits exact safe typed hooks; complete blocks pending hooks.
+  `runtimeOutputAvailable` is always false; plan readiness does not establish observed completion.
+- Availability is discharged locally per exact obligation. The grouped backend-declaration finding
+  requires every constituent declaration; unsupported strategy findings and structural errors remain
+  blocking. Hook readiness/signature/owner/outcomes/recovery remain validated; no implicit hooks.
+  Added host/store/participant and unaccounted-operation diagnostics, cross-contract same-host route
+  collisions, hook path collisions and effect/hook/runtime dependency cycles. Ordinary bidirectional
+  C2 collaboration remains valid. Invalid/unsupported intent stays visible instead of being deleted.
+- [Pure planning dispatch](../packages/generator/src/backend-routing.ts) requires explicit backend
+  modes on opted-in designs. Legacy `planProject`/`generateProject` reject backend inputs; the writer
+  guard runs before lock/filesystem reads or vendor/emitter calls. Unopted designs retain their exact
+  existing output, lock, migration and ownership behavior. No new emitter or writer path was added.
+- A narrow P69 dependency correction: shared contracts use a host constraint only when their
+  consumer host is unique. The combined permutation test exposed the old first-interface choice;
+  interface ordering can no longer retarget support. All actual operation/adapter/transaction owner
+  boundaries still resolve exact hosts. No saved model/schema or global `blocksGenerate` change.
+- [Isolated complete compiler fixtures](../packages/generator/src/backend-compile-fixture.ts),
+  **18 compiler cases plus one writer-boundary case**, and combined P70a/P70b acceptance. No fake
+  production modules or descriptors were registered. CATALOG, compiler/support/studio guidance and
+  roadmap now describe completed P70 and the next unstarted design unit, P71a.
+
+Verification, all with `PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: **passed**, **919 files / 623ms**, no fixes; unchanged **2,024 warnings / 75 infos**.
+  Scoped Biome check: **7 files / 17ms**, zero diagnostics. Logs:
+  `.jeeves-work/p70b/lint.log`, `.jeeves-work/p70b/scoped-biome.log`.
+- `pnpm work run typecheck`: **passed**, all workspaces plus scripts, **15.1s**;
+  `sourceChanged: false`. Record:
+  `.jeeves-work/runs/2026-11-03T19-19-03-964Z-typecheck-85eadfa2.json`.
+- `pnpm work run unit` with exactly
+  `packages/generator/src/{backend-plan,backend-compile,backend-routing,plan,generate}.test.ts`,
+  `packages/spec/src/{backend-implementations,backend-data,backend-queries,backend-policy,backend-behavior,backend-effects,backend-capability-configs}.test.ts`,
+  `packages/registry/src/{backend-capabilities,registry,fixtures}.test.ts`, and
+  `packages/template-kit/src/context.test.ts`: **16 files / 246 tests passed**, **9.8s**;
+  `sourceChanged: false`. Brace notation abbreviates explicit argv in the record; no deferred
+  suites were selected. Record:
+  `.jeeves-work/runs/2026-11-03T19-19-03-965Z-unit-3ec5c45e.json`.
+- Combined coverage includes all IR collections, full planned C2+C3+connections, partial wiring,
+  external fixture/API adapters, supported/unsupported siblings, missing hosts, malformed/unselected
+  hooks, unsupported strategies/options, exact versions, store/owner boundaries, missing provided
+  behavior, valid dependencies, cycles/collisions, semantic permutations/renames, complete text/JSON
+  round-trip, deep immutability, source coverage, legacy plans/goldens/lock and offline writer behavior.
+- `.jeeves-work/p70b/audit.py`: **1,522 other tracked files preserved**, including **48 benchmark
+  files / 46 legacy fixtures**, production manifests/registry/modules, templates/runtimes/frozen
+  artifacts/versions, legacy locks/output formats and the global readiness predicate. Earlier
+  handoff prefix is byte-identical. Pure import/nondeterminism, scoped Markdown links/anchors/fences
+  and `git diff --check` pass. Final audit: `.jeeves-work/p70b/audit.json`.
+
+Corrections, limits and next step:
+
+- Initial focused attempts caught incomplete synthetic signatures, missing JSON content type,
+  duplicate synthetic response status, read-only fixture selector/error mappings, TypeScript fixture
+  assumptions and noncanonical transport response ordering. Corrected these without weakening
+  acceptance expectations. The permutation failure also drove the narrow shared-contract host fix.
+  Final recorded checks pass. Earlier failed attempts are not represented as passes.
+- This is a package API and pure plan preview. No UI changed; production build/direct browser
+  inspection was not required or run. Per standing batch authorization, deferred UI unit/E2E suites
+  and full `pnpm check` were not maintained or run; no full-green claim is made.
+- No new runtime rendering, application generation, hook files/stubs, SQL/migrations, production
+  descriptors, filesystem/network/provider work in lowering, deployment or secret values. External
+  environment IDs and evidence pack IDs are declarations, not registry reachability or observed
+  verification. Persisted writer/lock/mode integration remains P74b, separately assigned.
+- Existing persistent projects and the local preview were not accessed or changed. All application
+  benchmarks remain **absent/not run, zero observed implementation points**. No branches, worktrees,
+  delegation, push or publication. No neighboring unit was started.
+
+**P70b and parent P70 are complete with no blocker. P71a is next unstarted.**
+The scoped local commit and exact records/limits are in `.jeeves-work/p70b/completion.json`.

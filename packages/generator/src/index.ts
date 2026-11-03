@@ -3,8 +3,10 @@
 
 export * from "./acceptance.ts";
 export * from "./api-preview.ts";
+export * from "./backend-compile.ts";
 export * from "./backend-ir.ts";
 export * from "./backend-plan.ts";
+export * from "./backend-routing.ts";
 export * from "./documents.ts";
 export * from "./exec.ts";
 export * from "./generate.ts";

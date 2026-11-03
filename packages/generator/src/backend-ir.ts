@@ -3,6 +3,7 @@ import type {
   BackendAccessBinding,
   BackendAccessPolicy,
   BackendAggregate,
+  BackendCapabilityDescriptor,
   BackendEffect,
   BackendEntity,
   BackendHook,
@@ -11,6 +12,7 @@ import type {
   BackendOperation,
   BackendQuery,
   BackendReference,
+  ContractShape,
   ContractValue,
   DesignDocument,
   Finding,
@@ -29,7 +31,10 @@ export interface BackendSource {
     | "relation"
     | "constraint"
     | "query-part"
-    | "policy-part";
+    | "policy-part"
+    | "interface"
+    | "attachment"
+    | "implementation";
   id: string;
   version?: string;
   path: (string | number)[];
@@ -164,13 +169,14 @@ export interface BackendAccessBindingIR extends BackendResponsibility {
   intent: Omit<BackendAccessBinding, "id" | "version" | "name" | "resource" | "policy">;
 }
 
-/** P70b populates these behavior/dependency shapes and supplies modes/complete readiness. */
+/** Finite behavior intent; adapters describe responsibilities and never contain runtime code. */
 export interface BackendOperationAdapterIR extends BackendResponsibility {
   reference: BackendReference;
   host?: string;
   aggregate?: string;
   policy: BackendPolicyLink;
   transaction: string;
+  transport?: ContractShape["operations"][number]["transport"];
   intent: Omit<BackendOperation, "id" | "version" | "name">;
 }
 export interface BackendTransactionIR extends BackendResponsibility {
@@ -191,6 +197,8 @@ export interface BackendRuntimeDependencyIR extends BackendResponsibility {
   host?: string;
   template: BackendReference;
   capability: BackendReference;
+  selection: Omit<BackendImplementation, "id" | "version" | "name">;
+  origin?: BackendCapabilityDescriptor["origin"];
   dependencies: string[];
   environment?: BackendImplementation["environment"];
   /** Expected checks, never passed verification evidence. */
@@ -202,6 +210,11 @@ export interface BackendHookObligationIR extends BackendResponsibility {
   operation?: string;
   intent: Omit<BackendHook, "id" | "version" | "name">;
 }
+/** Original graph and supporting definitions, including declarations without runtime bindings. */
+export interface BackendIntentIR extends BackendResponsibility {
+  host?: string;
+  intent: unknown;
+}
 export interface BackendDataIR {
   schemaVersion: 1;
   hosts: BackendHostIR[];
@@ -212,12 +225,48 @@ export interface BackendDataIR {
   accessBindings: BackendAccessBindingIR[];
 }
 export interface BackendIR extends BackendDataIR {
+  intents: BackendIntentIR[];
   operationAdapters: BackendOperationAdapterIR[];
   transactions: BackendTransactionIR[];
   effects: BackendEffectIR[];
   runtimeDependencies: BackendRuntimeDependencyIR[];
   hookObligations: BackendHookObligationIR[];
 }
+export type BackendPlanMode = "analysis" | "foundation" | "complete";
+export type BackendPlan = BackendReadonly<{
+  schemaVersion: 1;
+  stage: "complete-plan";
+  enabled: boolean;
+  mode: BackendPlanMode;
+  /** Readiness for a pure compilation plan, never observed application completion. */
+  ready: boolean;
+  runtimeOutputAvailable: false;
+  snapshot: {
+    schemaVersion: 1;
+    compilerVersion: "1";
+    mode: BackendPlanMode;
+    design: DesignDocument;
+  };
+  ir?: BackendIR;
+  sourceMap: BackendSourceMapEntry[];
+  diagnostics: BackendDiagnostic[];
+  blockingDiagnostics: BackendDiagnostic[];
+  rawFindings: Finding[];
+  blockingFindings: Finding[];
+  availability: {
+    finding: Finding;
+    obligations: ImplementationObligation[];
+    discharged: boolean;
+  }[];
+  accounting: {
+    obligation: ImplementationObligation;
+    outputs: string[];
+    status: "supported" | "external" | "hooked" | "unsupported";
+    binding?: string;
+  }[];
+  pendingHooks: string[];
+  support: BackendImplementationReport;
+}>;
 export type BackendDataPlan = BackendReadonly<{
   schemaVersion: 1;
   stage: "data";

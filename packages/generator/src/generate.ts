@@ -34,7 +34,12 @@ import {
   readLock,
 } from "./lock.ts";
 import { type TemplateSet, templateSet } from "./modules.ts";
-import { type PlannedElement, type ProjectPlan, planProject } from "./plan.ts";
+import {
+  assertLegacyGenerationDesign,
+  type PlannedElement,
+  type ProjectPlan,
+  planProject,
+} from "./plan.ts";
 import { assertPoolSourcePreflight } from "./pool-source.ts";
 import { assertRecipeDependencies, loadRecipe, RecipeError, recipeEnvironment } from "./recipes.ts";
 import { starterEnvironment } from "./starter-environment.ts";
@@ -101,6 +106,7 @@ export async function generateProject(
   options: GenerateProjectOptions,
 ): Promise<GenerateProjectResult> {
   const { dir, design } = options;
+  assertLegacyGenerationDesign(design);
   const log = options.log ?? (() => {});
   const templates = options.templates ?? templateSet();
   const previous = readLock(dir);
