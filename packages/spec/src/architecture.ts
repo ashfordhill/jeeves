@@ -23,6 +23,8 @@ import {
   reviewRequirementSchema,
   validateArchitectureReview,
 } from "./architecture-review-model.ts";
+import { validateBackendData } from "./backend-data.ts";
+import { backendModelSchema } from "./backend-model.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
@@ -97,6 +99,7 @@ export const architectureComponentSchema = z.strictObject({
 export type ArchitectureComponent = z.output<typeof architectureComponentSchema>;
 export type ArchitectureMember = z.output<typeof architectureMemberSchema>;
 export const architectureSchema = z.strictObject({
+  backend: backendModelSchema.optional(),
   implementationHandoff: handoffScopeSchema.optional(),
   system: z.strictObject({
     name: z.string().trim().min(1).max(120),
@@ -342,6 +345,7 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
     ...validateRelationshipBindings(design),
     ...validateArchitectureReview(design),
     ...validateArchitectureDeployments(design),
+    ...validateBackendData(design),
   ];
 }
 

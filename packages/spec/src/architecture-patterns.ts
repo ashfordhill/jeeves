@@ -16,6 +16,7 @@ import {
   inspectContractTransport,
 } from "./architecture-contracts.ts";
 import { type PatternInstance, patternConfigSchema } from "./architecture-pattern-provenance.ts";
+import { backendCollections, backendDeclarations, mapBackendModel } from "./backend-model.ts";
 import {
   type Connection,
   connectionSchema,
@@ -790,6 +791,7 @@ export function mappedArchitecture(
   const a = fragment.architecture;
   return {
     ...a,
+    ...(a.backend ? { backend: mapBackendModel(a.backend, ids) } : {}),
     nodes: a.nodes.map((n) => ({
       ...n,
       id: ref(n.id),
@@ -963,6 +965,7 @@ function occupiedIds(design: DesignDocument): Set<string> {
     ...design.elements.flatMap((e) => [e.id, ...e.attachments.map((a) => a.id)]),
     ...design.connections.map((c) => c.id),
     ...design.annotations.map((a) => a.id),
+    ...backendDeclarations(design.architecture?.backend).map((v) => v.id),
     ...["nodes", "relationships", "patternInstances", ...fragmentCollections].flatMap((key) =>
       (
         (design.architecture as unknown as Record<string, { id: string }[]> | undefined)?.[key] ??
@@ -976,6 +979,7 @@ export function fragmentIds(fragment: ArchitectureFragment) {
     ...new Set([
       ...fragment.roles.map((r) => r.id),
       ...fragment.connections.map((c) => c.id),
+      ...backendDeclarations(fragment.architecture.backend).map((v) => v.id),
       ...fragmentCollections.flatMap(
         (key) => fragment.architecture[key]?.map((item) => item.id) ?? [],
       ),
@@ -994,6 +998,13 @@ function sourceMatches(
   const ids = instance.identities;
   if (fragmentIds(fragment).some((id) => !ids[id])) return false;
   const expected = mappedArchitecture(fragment, ids);
+  for (const key of backendCollections)
+    for (const item of expected.backend?.[key] ?? []) {
+      const actual = design.architecture?.backend?.[key].find(
+        (v) => v.id === item.id && v.version === item.version,
+      );
+      if (contractCanonical(semantic(actual)) !== contractCanonical(semantic(item))) return false;
+    }
   for (const role of fragment.roles.filter((r) => r.kind !== "component")) {
     if (role.kind === "context") {
       const node = design.architecture?.nodes.find((n) => n.id === ids[role.id]);
@@ -1349,6 +1360,26 @@ export function previewArchitecturePattern(
       }
     }
   }
+  // An already composed backend boundary can be reused as a whole. Partial role reuse must
+  // still validate authority/table conflicts; it never silently creates a second schema.
+  if (fragment.architecture.backend) {
+    const source = sources.find((s) =>
+      fragment.roles.every((r) => reused.has(r.id) && ids[r.id] === s.identities[r.id]),
+    );
+    if (source)
+      for (const value of [
+        ...backendDeclarations(fragment.architecture.backend),
+        ...(fragment.architecture.datasets ?? []),
+      ]) {
+        const target = source.identities[value.id];
+        if (!target)
+          result.errors.push(`Pinned backend dependency ${value.id} has no identity mapping.`);
+        else {
+          ids[value.id] = target;
+          reused.add(value.id);
+        }
+      }
+  }
   for (const [local, target] of Object.entries(req.definitions ?? {})) {
     const expected = fragment.architecture.contracts?.filter((c) => c.id === local) ?? [];
     if (
@@ -1406,6 +1437,24 @@ export function previewArchitecturePattern(
     },
   );
   const expanded = mappedArchitecture(fragment, ids);
+  if (expanded.backend) {
+    architecture.backend ??= { schemaVersion: 1, entities: [], aggregates: [] };
+    for (const key of backendCollections) {
+      for (const item of expanded.backend[key]) {
+        const current = architecture.backend[key] as { id: string; version: string }[];
+        const existing = current.find((v) => v.id === item.id && v.version === item.version);
+        if (existing && contractCanonical(semantic(existing)) !== contractCanonical(semantic(item)))
+          result.errors.push(
+            `Backend ${item.id}@${item.version} conflicts with an existing exact definition.`,
+          );
+        else if (!existing) {
+          current.push(item);
+          result.additions.push({ kind: key, id: item.id, name: item.name });
+        }
+      }
+    }
+    if (result.errors.length) return result;
+  }
   const ops: OperationInput[] = [];
   const title = (name: string) => `${req.config.name}: ${name}`.slice(0, 120);
   for (const role of fragment.roles) {

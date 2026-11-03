@@ -1,6 +1,7 @@
 /** Planning copies retain a frozen source, never runtime ownership or verification. */
 import { z } from "zod";
 import { type Architecture, type ArchitectureMember, architectureSchema } from "./architecture.ts";
+import { backendDeclarations } from "./backend-model.ts";
 import { type DesignDocument, designIds, designSchema, upgradeDesign } from "./design.ts";
 import { resourceConfigSchema } from "./resources.ts";
 
@@ -63,7 +64,7 @@ export function targetChanges(baseline: DesignDocument, target: DesignDocument):
     after: { id: string }[] = [],
   ) => {
     const identity = (v: { id: string }) =>
-      path === "architecture/contracts"
+      path === "architecture/contracts" || path.startsWith("architecture/backend/")
         ? `${v.id}@${(v as { id: string; version: string }).version}`
         : v.id;
     const left = new Map(before.map((v) => [identity(v), v])),
@@ -75,6 +76,17 @@ export function targetChanges(baseline: DesignDocument, target: DesignDocument):
   for (const key of ["elements", "connections", "annotations"] as const)
     identities(key, a[key], b[key]);
   compare("architecture/system", a.architecture?.system, b.architecture?.system);
+  compare(
+    "architecture/backend/schemaVersion",
+    a.architecture?.backend?.schemaVersion,
+    b.architecture?.backend?.schemaVersion,
+  );
+  for (const key of ["entities", "aggregates"] as const)
+    identities(
+      `architecture/backend/${key}`,
+      a.architecture?.backend?.[key],
+      b.architecture?.backend?.[key],
+    );
   for (const key of [
     "nodes",
     "relationships",
@@ -106,6 +118,7 @@ export function suggestArchitectureAnnotations(
   );
   model.components ??= [];
   const ids = new Set([
+    ...backendDeclarations(model.backend).map((v) => v.id),
     ...[...designIds(design)].map((v) => v.id),
     ...Object.values(model).flatMap((v) =>
       Array.isArray(v)

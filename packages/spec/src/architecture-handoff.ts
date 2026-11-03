@@ -810,6 +810,18 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
       ...o.gaps.map((g) => `  - OPEN: ${mdEscape(g)}`),
     ]),
   );
+  if (s.intent.backend)
+    section("backend", "Backend data and consistency intent", [
+      "These are versioned design declarations; storage, locking and invariants have no supplied runtime or observed verification.",
+      ...s.intent.backend.entities.map(
+        (e) =>
+          `- Entity ${mdEscape(contractKey(e))}: ${mdEscape(e.name)}; dataset ${mdEscape(e.dataset)}, exact contract ${mdEscape(contractKey(e.contract))}; ${mdEscape(contractCanonical(e))}`,
+      ),
+      ...s.intent.backend.aggregates.map(
+        (a) =>
+          `- Aggregate ${mdEscape(contractKey(a))}: ${mdEscape(a.name)}; owner ${mdEscape(a.owner.id)}, store ${mdEscape(a.store)}; ${mdEscape(contractCanonical(a))}`,
+      ),
+    ]);
   section("deployment", "Deployment intent and reusable provenance", [
     ...(s.intent.deployments ?? []).map(
       (d) =>

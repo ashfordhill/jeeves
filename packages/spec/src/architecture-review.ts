@@ -119,6 +119,21 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
       if (c.source) values.push({ source: resolveContractSource(design, c.source) });
     } else if (r.kind === "dataset") {
       const d = m.datasets!.find((d) => d.id === r.id)!;
+      const entities = m.backend?.entities.filter((e) => e.dataset === d.id) ?? [];
+      const aggregates =
+        m.backend?.aggregates.filter((a) =>
+          [a.root, ...a.children].some((r) =>
+            entities.some((e) => contractKey(e) === contractKey(r)),
+          ),
+        ) ?? [];
+      if (entities.length || aggregates.length) {
+        values.push({ backend: { entities, aggregates } });
+        for (const a of aggregates)
+          for (const participant of [a.root, ...a.children]) {
+            const e = m.backend?.entities.find((e) => contractKey(e) === contractKey(participant));
+            if (e) visit(ref("dataset", e.dataset));
+          }
+      }
       visit(ref("contract", contractKey(d.contract)));
       for (const b of m.bindings ?? [])
         if (contractKey(b.contract) === contractKey(d.contract)) visit(ref("binding", b.id));

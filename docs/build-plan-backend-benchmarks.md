@@ -10,7 +10,8 @@ and [P61a's shared protocol](../benchmarks/protocol/v1/README.md), [P61b's indep
 [P61c's independent Vendure fixtures](../benchmarks/vendure-core/v1/README.md)
 and [P61d's independent Zammad fixtures and combined contract gate](../benchmarks/zammad-core/v1/README.md)
 are complete, including parent P61. [P62a/P62b contract types, transport and portable schemas](contract-types.md)
-are complete, including parent P62; P63a–P110 remain unstarted.**
+are complete, including parent P62. [P63a entities and aggregates](backend-data.md) are complete;
+parent P63 remains partial and P63b–P110 remain unstarted.**
 These foundations add no application runtime capability. This document specifies future
 execution; execute only the requested work unit. It does not authorize starting runtime packages,
 generating applications, publishing, or deploying them merely because they are planned.
@@ -47,7 +48,8 @@ requested without a more specific package and no baseline has been recorded. P58
 P61a–P61d's shared protocol and independent D/V/Z contracts/fixtures are complete, including
 parent P61's combined 60-row / 195-observation / 24-hook / 15-scenario gate. All three applications
 remain absent/not run. [P62](contract-types.md) adds local type/transport semantics and portable
-logical schemas only; the next unstarted unit is **P63a**. For the authorized
+logical schemas only. [P63a](backend-data.md) adds entity/aggregate design semantics;
+the next unstarted unit is **P63b**. For the authorized
 P59–P61d and P62a–P73b batches, the user explicitly permits lint/types and focused offline backend semantic/compatibility tests instead of full `pnpm check`;
 UI unit/E2E execution and maintenance remain deferred. See P59's append-only handoff entry.
 Dependencies are completion requirements, not permission to run multiple agents or packages.
@@ -69,7 +71,7 @@ P58 is **complete** with [baseline evidence](evidence/p58/README.md); P59 is **c
 [60-row combined reference review](reference/backend-benchmarks.md#combined-p60-reference-review),
 are complete. [P61 independent contracts/fixtures](../benchmarks/README.md) are also **complete**.
 P62 is **complete**: [P62a/P62b](contract-types.md) pass the combined logical contract gate;
-P63–P110 remain **planned**. No runtime availability changes.
+P63a is **complete**, P63 is **partial**, and P63b–P110 remain **planned**. No runtime availability changes.
 Every package has a bounded outcome, ordered work, negative cases,
 checks, and explicit exclusions in its phase file. Follow the exact child order in the
 [assignment queue](plans/backend-benchmarks/execution-units.md), not the whole parent at once.

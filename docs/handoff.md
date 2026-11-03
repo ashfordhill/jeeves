@@ -6312,3 +6312,118 @@ Observed intermediate failures and preserved limitations:
 
 **P62b and parent P62 are complete with no P62b blocker. P63a is the next unstarted work unit.**
 Stop after this exact-ID scoped local commit; the coordinator owns the next assignment.
+
+## 2026-11-03 — P63a: authoritative backend entities and aggregates
+
+Executed **P63a only** in `/home/ash/github/jeeves` on `main`, starting clean at
+`fc9e99636016f4ab7357f8f45e66e646abbab54d` (P62b). Read the ignored batch authorization and
+checkpoint, AGENTS, PLAN §15/applicable §1–14, latest handoffs, C4 guidance/studio guide, backend
+roadmap/shared contract/benchmark scopes/worked trace, phase-2 P63 and the exact execution-unit
+split. P62a/P62b's committed logical types, exact references, transport and portability are the
+prerequisites, exercised again below. The authorized lint/types/focused offline policy replaces
+full `pnpm check`; UI suites remain deferred. One implementation worker, no delegation, branch
+or worktree. The coordinator owns the ignored checkpoint; this worker did not edit it.
+
+Built:
+
+- Added strict versioned optional `architecture.backend` with entity/aggregate collections in
+  [backend-model.ts](../packages/spec/src/backend-model.ts), integrated with existing document,
+  operation/chat JSON Schema and atomic validation. Limits: 100 entity versions, 50 aggregate
+  versions, 100 annotations/entity (existing contract payload limits still apply), 30 relations/
+  unique keys/indexes per entity, 30 children and 20 invariants per aggregate. There is no permissive
+  query placeholder: **P63b** owns queries and the read-only legacy-resource adapter.
+- Entities select an existing dataset and exactly its authoritative data-contract version, one
+  application authority and relational store. Stable top-level field IDs select storage annotations;
+  resolved P62 local types supply the actual types. Required/nullable mapping must match the
+  contract. Server-owned ID/clock/principal/scope/revision fields, scoped/composite primary keys,
+  unique keys with explicit scope/null semantics, ordered indexes and typed relations are checked.
+  Scalar storage is finite; bounded JSON needs explicit opaque intent; exact money selects integer
+  minor units plus an enum of uppercase three-letter currencies, never floating prices.
+- Added [pure data validation](../packages/spec/src/backend-data.ts) and source-addressed removal
+  findings. Missing references, duplicate table/column identities, conflicting datasets/contracts/
+  ownership/stores, incompatible relation types/keys/scope, nullable/delete contradictions and
+  unsupported storage reject atomically. A legacy source contract cannot gain a competing editable
+  entity schema. Unfinished logical storage/scope stays visibly saveable with blocking readiness
+  findings. Renames preserve storage IDs; transition checks reject physical/dataset retargeting
+  under stable entity/field identities. Referenced exact data contracts cannot mutate/disappear
+  during same-batch consumer removal/migration; successors preserve old versions.
+- Aggregates select exact root/children, one owner/store and either root revision concurrency or
+  an explicit complete row set locked in stable entity-ID/primary-key order. Children follow owned
+  relation paths to the root and share scope semantics; distinct aggregate boundaries cannot claim
+  the same entity. Finite named invariants cover required child counts, nonnegative integers,
+  compatible field comparisons and stock-versus-reservation balance. Review calls the selected
+  strategies unimplemented; a raw `NEEDS_TEMPLATE` prevents legacy generation from ignoring them.
+- Extended library dependency closure, graph identity collection, remapping/insertion and exact
+  pinned whole-boundary reuse, preserving local field/relation/invariant IDs and physical IDs.
+  Remapping re-sorts changed row-lock identities. Backend versions appear in target diffs;
+  participating data/consistency declarations affect dataset review fingerprints. Handoff JSON
+  retains the complete model and Markdown explains data/consistency intent and missing runtime.
+- Added **14 focused offline tests** in
+  [backend-data.test.ts](../packages/spec/src/backend-data.test.ts), with synthetic topic/first-post,
+  stock/reservation and ticket/article aggregates, negative mutation matrices, money/JSON/type
+  resolution, atomic removal/immutability, explicit successors, legacy fixture compatibility,
+  extraction/remapping/insertion/exact reuse, chat schemas, review/target fingerprints and
+  deterministic handoff. They do not execute benchmark applications or databases.
+- Added [serialized model/limits documentation](backend-data.md) and updated roadmap/improvement
+  entry points: **P63a complete; P63 partial; P63b next**. No CATALOG change: no offering,
+  reusable C1/C2/C3 boundary, template/runtime availability or observed application evidence changed.
+  No dependencies, lockfiles, frozen expectations, legacy resources or runtime/generator outputs changed.
+
+Final checks with **Node 24.21.0 / pnpm 12.16.1**, explicitly using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; **853 files / 570ms**, no fixes; existing **2025 warnings / 75 infos**,
+  no added diagnostics. `.jeeves-work/p63a/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **11.4s**.
+  `.jeeves-work/runs/2026-11-03T14-16-40-140Z-typecheck-e07257d3.{json,log}`.
+- Exact focused semantic, frozen contract and old-design compatibility selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-data.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/contract-transport.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **17 files / 254 tests passed**, **7.1s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T14-16-40-143Z-unit-02da9ba6.{json,log}`. Both final runner records
+  report `sourceChanged: false`. This proves offline semantics/compatibility, not runtime SQL,
+  locking, invariants, money arithmetic or benchmark behavior.
+- `pnpm --filter @jeeves/web build`: exit 0; Vite **1.50s**, existing large-chunk advisory only.
+  `.jeeves-work/p63a/web-build.log`. This checks shared browser export compatibility; no production
+  UI file/control changed, and no direct browser workflow or deferred UI unit/E2E suite ran.
+- `python3 .jeeves-work/p63a/audit.py` → `audit.json`: scoped links/anchors and balanced fences,
+  append-only prior handoff prefix, and byte preservation of **1,449 other tracked files**, including
+  **all 48 benchmark files / 46 legacy fixtures**, CATALOG and application/runtime/template/
+  generator/registry/artifact/dependency trees. Rerun after this append. `git diff --check` passes.
+
+Observed intermediate failures and preserved limitations:
+
+- Initial semantic/compatibility selector: **4 failed / 160 passed**. A real row-lock remapping
+  ordering defect was corrected by re-sorting mapped exact identities. New-test setup incorrectly
+  used an element-only mutation through `setArchitecture` and a nonexistent legacy fixture path;
+  corrected those fixtures. An unbounded draft map correctly produced blocking readiness rather
+  than a structural error; its negative assertion now checks that specified compilation gap.
+  Initial record: `.jeeves-work/runs/2026-11-03T14-09-11-005Z-unit-507e1620.{json,log}`.
+  A subsequent new fingerprint test called the review API as an array; corrected it to select
+  `findings`. Final 254-test run includes all repaired cases. No frozen or existing assertion changed.
+- The broader selector including `architecture-review.test.ts` returned **10 failed / 265 passed**;
+  all ten are historical coverage/behavior review assertions. The separate existing pattern/handoff/
+  review selector returned **14 failed / 21 passed**, including the four already recorded by P62.
+  Final historical record: `.jeeves-work/runs/2026-11-03T14-14-43-036Z-unit-368b7d8f.{json,log}`.
+- Reproduced the **same 14 failure titles / 21 passing tests** on **exact base `fc9e996` production
+  source**, temporarily substituting all ten changed existing TypeScript modules and restoring
+  every working byte in `finally`. Baseline record:
+  `.jeeves-work/runs/2026-11-03T14-15-36-138Z-unit-f661dbe9.{json,log}`. Both historical runner
+  records have `sourceChanged: false`. `.jeeves-work/p63a/baseline.json` contains source hashes and
+  restoration evidence; `historical-comparison.json` proves identical title/count sets. These
+  failures remain separate existing review debt, not passes or P63a regressions. No full-green claim.
+- **Parent P63 remains incomplete.** P63b owns bounded queries, projections, filters, joins,
+  stable cursor ordering, policy/freshness references, the read-only legacy adapter and the combined
+  parent gate. P64/P65/P66 own policies/commands/domain settings; P67a owns mouse authoring;
+  P69/P70 own matching and pure compilation. No application runtime, SQL/migrations, serializer,
+  generated backend or arbitrary ORM interpretation is supplied by P63a.
+- All three benchmark applications remain **absent/not run, zero observed implementation points**.
+  No Docker/database/network dependency campaign, provider/hook execution, load/recovery/upgrade
+  measurement, persistent project/output mutation, push or publication. Full `pnpm check` and
+  deferred UI suites were not run under the explicit batch verification policy.
+
+**P63a is complete with no P63a blocker. P63b is the next unstarted work unit.** Stop after this
+exact-ID scoped local commit; the coordinator owns the checkpoint and next assignment.

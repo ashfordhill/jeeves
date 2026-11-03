@@ -313,6 +313,16 @@ export function architectureReview(design: DesignDocument): ArchitectureReviewFi
   const model = design.architecture;
   const result: ArchitectureReviewFinding[] = architectureContractReview(design);
   if (!model) return result;
+  for (const aggregate of model.backend?.aggregates ?? []) {
+    const root = model.backend?.entities.find(
+      (e) => contractKey(e) === contractKey(aggregate.root),
+    );
+    result.push({
+      code: "BACKEND_STRATEGY_UNIMPLEMENTED",
+      message: `${aggregate.name}: ${aggregate.concurrency.kind} concurrency and ${aggregate.invariants.map((i) => i.strategy).join(", ") || "no declared"} invariant strategies are design intent only; runtime implementation and evidence are absent.`,
+      ...(root ? { dataset: root.dataset } : {}),
+    });
+  }
   for (const binding of model.bindings ?? []) {
     const add = (code: string, message: string) =>
       result.push({ code, message: `${binding.name}: ${message}`, binding: binding.id });

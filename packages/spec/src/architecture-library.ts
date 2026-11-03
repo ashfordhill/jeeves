@@ -13,6 +13,7 @@ import {
   type PatternRequestInput,
   previewArchitecturePattern,
 } from "./architecture-patterns.ts";
+import { collectBackendDependencies } from "./backend-model.ts";
 import { type DesignDocument, elementSchema } from "./design.ts";
 import { idSchema, versionSchema } from "./ids.ts";
 import type { TemplateLookup } from "./manifest.ts";
@@ -134,6 +135,7 @@ export function extractArchitectureTemplate(
   let previous = -1;
   while (previous !== keep.size) {
     previous = keep.size;
+    collectBackendDependencies(a.backend, keep);
     for (const b of a.bindings ?? [])
       if (
         keep.has(b.id) ||
@@ -284,6 +286,12 @@ export function extractArchitectureTemplate(
         .filter((item) => keep.has(item.id))
         .map((item) => structuredClone(item)),
     });
+  if (a.backend)
+    fragment.architecture.backend = {
+      schemaVersion: a.backend.schemaVersion,
+      entities: a.backend.entities.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
+      aggregates: a.backend.aggregates.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
+    };
   fragment.architecture.components = fragment.architecture.components?.map((c) => ({
     id: c.id,
     name: c.name,
