@@ -5,7 +5,7 @@ settings, each with `schemaVersion: 1`, a display name and an existing C2/C3 own
 schemas and pure validation live in `packages/spec/src/backend-capability-configs-model.ts` and
 `backend-capability-configs.ts`. These are design declarations, with no scheduler, provider,
 file inspection, search execution, calendar calculation, routing or commerce engine. Existing NEEDS_TEMPLATE
-findings remain. All three P66 children and the combined design-settings gate are complete; P68c owns mouse editing.
+findings remain. All three P66 children and the combined design-settings gate are complete; [P68c supplies focused mouse editing](architecture-studio.md) for all thirteen kinds.
 See the [settings matrix](plans/backend-benchmarks/contract.md#minimum-useful-component-configuration)
 and [exact child boundaries](plans/backend-benchmarks/execution-units.md#mandatory-splits).
 
@@ -183,4 +183,12 @@ state/guard IDs, strategy versions, rate/rounding options and external provider 
 survive outer remapping. The P66a selector also retains all 24 H-row typed signatures and the
 post -> intent -> notification, checkout -> attempt -> callback/reconcile, and deadline -> escalation
 traces. These establish representability and portability, not completed P71–P73 designs, matching,
-generation, runtime behavior or observed implementation points. **P67a is next unstarted.**
+generation, runtime behavior or observed implementation points. P67/P68 authoring is complete; **P69 is next unstarted.**
+
+
+P68c exposes these same strict schemas through the component's **Settings** section, including
+bounded nested rows, local stable-ID selectors, exact definition navigation and field diagnostics.
+Calendar/referenced-setting protection and explicit successors retain the shared operation validator;
+all setting edits share the component's atomic Save/Cancel and undo history. The combined browser
+gate saves/reloads all thirteen kinds and preserves old versions while retargeting an exact
+commerce successor graph. This supplies authoring, not P69 support matching or runtime evidence.

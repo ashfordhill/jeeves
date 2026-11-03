@@ -7621,3 +7621,117 @@ Corrections and limits:
 **P68b is complete with no P68b blocker. P68c is next unstarted; parent P68 remains incomplete.**
 Stop after the scoped local P68b commit. `.jeeves-work/p68b/completion.json` records the commit,
 check records, browser evidence, limits and next unit. Coordinator owns the batch checkpoint.
+
+## P68c — Bounded capability settings and completed P68 authoring gate (2026-11-03)
+
+Implemented only P68c on primary `main`, starting at `bf967220fbde487dc5eb5ca247b5fe34a144864e`.
+Read the batch instructions/checkpoint, AGENTS, PLAN §15 and relevant §1–14, latest P68a/P68b
+handoffs, C4/studio guidance, backend shared contract, phase-2 P68 and exact execution-unit split.
+P66b/P66c's schemas/reference protection and P68a/P68b's command/effect/hook browser and chat
+records supplied the dependencies. No neighboring unit was started.
+
+Built:
+
+- **Configure component → Settings**, sharing the existing architecture/component draft and
+  atomic Save component. All thirteen P66 kinds have focused sections: delivery, files,
+  notifications, search, calendar, business time, finite routing, money, cart, inventory, order,
+  payment and fulfillment. Definition creation/removal, bounded nested rows, finite union/strategy
+  choices and fixed requirements use the existing strict schemas. Numeric and collection bounds
+  come from their JSON Schema; there are no JSON, SQL, expression or code textareas.
+- `BackendSettingSchema`, `BackendSettingFields` and `BackendSettingReferences` supply reusable
+  controls. Exact references reuse the shared semantic traversal; local field/state/guard/action,
+  query output/filter, policy projection, dataset and provider IDs select declared definitions.
+  MIME types, currencies, IANA zones, holiday dates and private configuration registry identities
+  retain their bounded schema/semantic checks. Row edits preserve input identity while typing.
+- Exact **Open …** navigation reaches Data/Access/Behavior/Effects/Settings inside the same draft.
+  Provider inspection shows its exact interface, binding, contract, operation and relationship.
+  Supporting links remain available outside protected fields in Referenced definitions.
+- Saved calendars and referenced setting versions retain the existing semantic protections.
+  Names stay editable; explicit successors clone a version without rebasing old consumers.
+  Paired commerce versions can be retargeted together before the single atomic save. Invalid
+  drafts remain editable across tabs; schema/semantic errors block Save. Specific current-policy
+  gaps remain saveable findings. Review/Findings routes those exact settings to their relevant
+  section, including container-owned settings through their C3 configuration surface.
+- Exact finding routing selects the collection before resolving its owner. A direct collision
+  check with an operation and setting both named `command@v1` opened the setting's Audit component,
+  preserving the independent Domain operation. Updated studio/semantics/roadmap status; CATALOG
+  remains unchanged because offerings, C1/C2/C3 boundaries and implementation availability did
+  not change. Parent P68 is complete; P69 is next unstarted.
+
+Verification (Node **24.21.0**, explicit PATH on commands):
+
+- `pnpm lint`: **passes**, 903 files, unchanged **2,024 warnings / 75 infos**, no new diagnostics.
+  `.jeeves-work/p68c/lint-last.log`; repeated after this handoff append.
+- `pnpm work run typecheck`: **passes**, 13.2s. Final runner record
+  `.jeeves-work/runs/2026-11-03T18-17-18-718Z-typecheck-87810ce1.json`.
+- `pnpm --filter @jeeves/web build`: **passes**, 1.60s. Existing large-chunk advisory only;
+  `.jeeves-work/p68c/build-last.log`.
+- `pnpm work run unit packages/spec/src/backend-capability-configs.test.ts packages/spec/src/backend-effects.test.ts packages/spec/src/backend-behavior.test.ts apps/server/src/chat/effects-authoring.test.ts`:
+  **4 files / 64 tests pass**, runner 9.9s. Includes strict settings/references/protection,
+  all-thirteen-kind representability, portability/legacy preservation and combined atomic chat
+  effect/hook persistence/undo. Final record
+  `.jeeves-work/runs/2026-11-03T18-17-18-720Z-unit-77c0bb74.json`.
+  Both final runner records report no source changes during execution.
+- Direct Chromium mouse inspection through the preserved loopback preview:
+  - Authored calendar weekly intervals and closed-date holiday rows; saved/reloaded, rejected
+    invalid intervals/empty dates, protected the saved version and authored an explicit successor.
+  - Files: limits, finite MIME rows and cleanup; invalid hidden-draft retention across tabs,
+    Cancel, Save/reload and atomic undo/redo. Exact parent and policy navigation retained the draft.
+  - Cloned and explicitly retargeted a coherent successor graph containing all thirteen kinds
+    (15 settings → 30 versions, including auxiliary deliveries). Saved notification paging,
+    file limits, calendar and cart quote settings, then reloaded every focused section. Verified
+    all original versions unchanged and the whole graph undone/redone in one step.
+  - Verified exact provider interface/binding/contract navigation and a **real HTTP 409** from
+    an independently revised disposable project. The conflicted draft remained visible; Cancel
+    and reopen selected the current persisted version.
+  - Reused the earlier synthetic topic-close, order-payment-review and ticket-first-response
+    definitions. For each, inspected typed hook unavailable 503, conflict 409 and command-key retry
+    choices; rejected a dangling event target; authored a bounded delivery policy by mouse; saved
+    command/hook/effect/settings together; verified exact navigation, reload and atomic undo/redo.
+    These extend the earlier P68a/P68b mouse authoring and combined chat gate.
+  - Inspected light **1440×1000** and dark **390×844**. Every settings section fit without horizontal
+    overflow and with no visible code/JSON textareas. Mouse add/remove rows/settings worked.
+    **47 zero-violation scoped axe checks**, including **37** editable dark390 sections, provider,
+    calendar/files/quote, three combined flows and exact component/container Review navigation.
+    This audits the changed dialogs, not the whole page. Final successful records:
+    `.jeeves-work/p68c/browser-{mechanisms,commerce,extended,domains,review,collision}.json`;
+    `browser-mechanisms.log`, `browser-commerce.log`, `browser-extended-last.log`,
+    `browser-domains-second.log`, `browser-review-last.log` and `browser-collision.log`.
+    Screenshots and detailed axe JSON are alongside. Final records have no page errors; the only
+    expected console/error response is the deliberate 409.
+- Exact disposable cleanup: **all 13 pre-existing design/layout hashes identical**, original ID
+  set restored, preview/API healthy. Deleted only inspection IDs
+  `5c1e31f5-d7cd-4690-aefc-8443862a8fc5`, `4dcafb6b-5252-4e3e-8960-590d58807a5b`,
+  `7b1fbdf0-cb5a-456b-8168-390ede760cbb`, `f84eb5e4-9a2a-4f7b-8b2e-abec2813eeff`,
+  `d5bd66b2-364a-4386-8f06-15ac1037b167` and collision inspection
+  `5571c3cb-7ab5-4a21-b3da-a7524f54a6c1`; checked names and final 404s. Evidence:
+  `.jeeves-work/p68c/cleanup.json`, `cleanup-collision.json`, `preserved-{before,after}.json`,
+  `preservation-final.log` and saved final disposable designs. No preview process/settings changed.
+- `python3 .jeeves-work/p68c/audit.py`: **1,504 other tracked files preserved**, all **48 benchmark
+  files / 46 legacy fixtures**, previous handoff prefix, semantic schemas/fixtures, CATALOG,
+  runtime/template/generator/artifact paths unchanged. Scoped Markdown links/anchors/fences and
+  `git diff --check` pass. Repeated after this append; `.jeeves-work/p68c/audit.json`.
+
+Corrections and limits:
+
+- Initial typechecks caught policy selector property/union typing, an unsupported Object.groupBy
+  library target and a narrowed provider-kind comparison; corrected. Browser harness attempts
+  caught native date-entry rejection, collapsed/nested row selectors, the exact parent-policy
+  expectation, missing synthetic successor retargets and the theme toggle label. Corrected the
+  probes and explicit graph; no semantic assertions/fixtures were weakened. The malformed C2
+  provider fixture was rejected until its actual consumer interface/binding was supplied.
+- A transient existing-preview 502 recovered without restarting/changing the preview. Axe's
+  initial owned-page context error was corrected with an explicit browser context. Initial
+  failure logs remain beside successful records; no failed attempt is relabeled as a pass.
+- These are design settings, local authoring examples and acceptance declarations. No delivery,
+  file inspection, notification, search, business clock, routing, pricing, inventory/payment or
+  fulfillment engine executes. The three benchmark applications remain **absent/not run with
+  zero observed implementation points**; this is not complete P71–P73 application design or
+  runtime/benchmark acceptance.
+- No deferred UI unit/E2E maintenance or suite execution, full `pnpm check`, broad historical
+  failure campaign, runtime/generation/support matching, branch/worktree/delegation, push or
+  publication. Existing historical failures were not rerun or claimed green.
+
+**P68c and parent P68 are complete with no blocker. P69 is next unstarted.** Stop after the
+scoped local P68c commit. `.jeeves-work/p68c/completion.json` records commit/checks/browser/limits;
+the coordinator owns the batch checkpoint.

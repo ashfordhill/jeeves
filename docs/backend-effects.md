@@ -97,7 +97,7 @@ They also represent field shapes and exact acceptance references for all 24 froz
 wire regex constraints remain in their frozen acceptance contracts. These are descriptor checks,
 not complete benchmark application designs, provider certification or observed implementation points.
 
-[P66b mechanism and P66c commerce settings](backend-capability-configs.md), including the combined P66 gate, are complete. [P67a/P67b and P68a/P68b](architecture-studio.md) now supply Data/access/command/effect/hook mouse authoring; P68c owns capability-setting authoring, P69/P70 matching/pure compilation, and later
+[P66b mechanism and P66c commerce settings](backend-capability-configs.md), including the combined P66 gate, are complete. [P67a/P67b and P68a/P68b](architecture-studio.md) now supply Data/access/command/effect/hook mouse authoring; P68c completes capability-setting authoring and parent P68; P69/P70 own matching/pure compilation, and later
 separately assigned packages own execution, SQL, file cleanup, providers and application evidence.
 No CATALOG change: offerings, reusable C1/C2/C3 boundaries and runtime availability are unchanged.
 
@@ -105,5 +105,5 @@ Commerce preserves the exact effect/hook/recovery definitions through the same s
 P68b adds focused effect/hook, safe failure, dependency/acceptance and recovery-reference editors
 inside the shared component draft. Exact Review/Findings links open the owning definition/section;
 missing recovery remains a design gap and dangling targets block Save. Scripted chat shares the
-same atomic schema/validation and undo. P68c is next unstarted; implementation matching and
+same atomic schema/validation and undo. P68c completes the shared capability settings and combined authoring gate. P69 is next unstarted; implementation matching and
 execution remain separate assignments.

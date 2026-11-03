@@ -32,6 +32,7 @@ import { CapabilityFields } from "./CapabilityFields.tsx";
 import { ComponentBehaviorEditor } from "./ComponentBehaviorEditor.tsx";
 import { ComponentDataEditor } from "./ComponentDataEditor.tsx";
 import { ComponentEffectsEditor } from "./ComponentEffectsEditor.tsx";
+import { ComponentSettingsEditor } from "./ComponentSettingsEditor.tsx";
 
 export const memberKey = (member: ArchitectureMember) =>
   `${member.attachment}|${member.kind}|${member.ref ?? ""}`;
@@ -110,13 +111,15 @@ export function ComponentEditor({
         },
   );
   const areaTab = (kind: string) =>
-    ["operations", "lifecycles"].includes(kind)
-      ? "behavior"
-      : ["effects", "hooks", "scenarios"].includes(kind)
-        ? "effects"
-        : ["policies", "accessBindings"].includes(kind)
-          ? "access"
-          : "data";
+    ["capabilityConfigs", "interfaces", "bindings"].includes(kind)
+      ? "settings"
+      : ["operations", "lifecycles"].includes(kind)
+        ? "behavior"
+        : ["effects", "hooks", "scenarios"].includes(kind)
+          ? "effects"
+          : ["policies", "accessBindings"].includes(kind)
+            ? "access"
+            : "data";
   const [tab, setTab] = useState(initialNavigation ? areaTab(initialNavigation.kind) : "general");
   const [backendNavigation, setBackendNavigation] = useState(initialNavigation);
   const [dataNavigation, setDataNavigation] = useState<{
@@ -125,7 +128,18 @@ export function ComponentEditor({
   }>();
   const navigate: BackendNavigation = (kind, key, path) => {
     setBackendNavigation({ kind, key, path });
-    if (!["operations", "lifecycles", "effects", "hooks", "scenarios"].includes(kind))
+    if (
+      ![
+        "operations",
+        "lifecycles",
+        "effects",
+        "hooks",
+        "scenarios",
+        "capabilityConfigs",
+        "interfaces",
+        "bindings",
+      ].includes(kind)
+    )
       setDataNavigation({ kind: kind as Parameters<DataNavigation>[0], key });
     setTab(areaTab(kind));
   };
@@ -226,6 +240,7 @@ export function ComponentEditor({
             <Tabs.Tab value="access">Access</Tabs.Tab>
             <Tabs.Tab value="behavior">Behavior</Tabs.Tab>
             <Tabs.Tab value="effects">Effects & hooks</Tabs.Tab>
+            <Tabs.Tab value="settings">Settings</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="general" pt="md">
             <Stack gap="md">
@@ -362,6 +377,16 @@ export function ComponentEditor({
           </Tabs.Panel>
           <Tabs.Panel value="effects" pt="md">
             <ComponentEffectsEditor
+              design={design}
+              draft={architecture}
+              component={draft}
+              onChange={setArchitectureDraft}
+              navigate={navigate}
+              navigation={backendNavigation}
+            />
+          </Tabs.Panel>
+          <Tabs.Panel value="settings" pt="md">
+            <ComponentSettingsEditor
               design={design}
               draft={architecture}
               component={draft}

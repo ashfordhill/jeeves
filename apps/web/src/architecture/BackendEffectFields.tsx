@@ -21,7 +21,10 @@ export type BackendArea =
   | "lifecycles"
   | "effects"
   | "hooks"
-  | "scenarios";
+  | "scenarios"
+  | "capabilityConfigs"
+  | "interfaces"
+  | "bindings";
 export type BackendNavigation = (
   kind: BackendArea,
   key: string,

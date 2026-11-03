@@ -141,6 +141,6 @@ boundaries and implementation availability are unchanged.
 [P66a exact effects, typed hooks and recovery references](backend-effects.md) are complete.
 P66b/P66c typed capability settings and P67 Data/Access authoring are complete.
 [P68a command/lifecycle/guard/action mouse authoring](architecture-studio.md) is complete;
-[P68b effect/hook authoring](architecture-studio.md) is complete, including exact command-to-effect/hook navigation and atomic chat edits. P68c settings is next; parent P68 remains incomplete.
+[P68b effect/hook authoring](architecture-studio.md) is complete, including exact command-to-effect/hook navigation and atomic chat edits. [P68c capability settings](architecture-studio.md) completes parent P68, including the combined mouse authoring gate. P69 is next unstarted.
 P69/P70 matching/pure compilation, and later separately assigned packages own runtime enforcement,
 SQL, money/inventory algorithms, receipt concurrency, cancellation and observed application checks.

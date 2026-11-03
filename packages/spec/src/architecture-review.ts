@@ -303,11 +303,13 @@ export function reviewArchitecture(design: DesignDocument) {
       "Delivery and failure",
       "unresolved",
       `${f.target.path?.join("/")}: ${f.message}`,
-      "Complete the exact effect/hook recovery declaration; design readiness and observed implementation evidence remain separate.",
+      f.target.path?.[2] === "capabilityConfigs"
+        ? "Complete the exact typed settings decision; design readiness, template support and observed implementation evidence remain separate."
+        : "Complete the exact effect/hook recovery declaration; design readiness and observed implementation evidence remain separate.",
       (m?.datasets ?? [])
         .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
         .map((d) => ref("dataset", d.id)),
-      f.target.path?.[2] === "capabilityConfigs" ? "contracts" : "component",
+      "component",
       undefined,
       f.target.path,
     );

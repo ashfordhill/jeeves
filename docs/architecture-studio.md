@@ -104,7 +104,7 @@ byte/output access bindings, operations and capability settings. Follow a query 
 to its exact policy, resource entity, dataset and contract without leaving the shared draft.
 **Sensitive access uses** selects exact policies/projections for byte, materialization, delivery,
 export, job, replay and existing provided-operation paths; it does not implement those paths.
-Operation input/output inspection is read-only. Behavior and effect/hook authoring are available below; capability-setting editors follow in P68c.
+Operation input/output inspection is read-only. Behavior and effect/hook authoring are available below; capability settings are authored in Settings below.
 
 **Design preview** illustrates all/any composition and deny precedence against a local synthetic
 fixture of explicitly assumed clause/context/revocation facts. Unknown facts cannot demonstrate
@@ -139,7 +139,7 @@ expected version; aggregate row-lock intent remains visible. Command-key identit
 hash fields, published replay window, cooperative deadline and starts-work choice are explicit.
 The fixed transaction/receipt/replay/cancellation guarantees remain visible as requirements.
 Missing decisions, such as a conflict or uncertain outcome, remain saveable specific findings;
-contradictory types, references, outcomes and writers block Save. Effect/hook authoring is available below. Capability settings remain assigned to P68c.
+contradictory types, references, outcomes and writers block Save. Effect/hook authoring is available below. Capability settings are available in Settings below.
 No command, timer, transaction or hook executes.
 
 
@@ -171,4 +171,31 @@ contract references open exact read-only inspection; Interfaces retains their au
 General, Data, Access, Behavior and Effects & hooks share Save/Cancel, atomic undo/redo and revision
 conflict handling. Cancel discards the whole draft; conflicts retain it for review after reopening.
 These are design previews and acceptance declarations, separate from template support and observed
-verification. P68c's typed capability-setting editors remain the next authoring assignment.
+verification. P68c completes the typed capability-setting editors and parent P68 authoring gate below.
+
+
+Component **Settings** authors all thirteen exact typed mechanism and commerce settings: delivery,
+files, notifications, search, calendars, business clocks, finite routing, money, carts, inventory,
+orders, payments and fulfillment. Select one definition and a focused Settings section. Bounded
+rows, finite strategy choices and schema-owned numeric/collection limits replace opaque configuration.
+Calendar rows use ISO weekdays, local half-open minute intervals and dated holiday overrides;
+empty holiday intervals close the date. No JSON, SQL, expressions or implementation code are authored.
+
+Exact selectors follow settings, entity fields, contracts, datasets, policies/projections, queries,
+operations, lifecycle states, effects and hooks into their definitions without discarding the draft.
+Provider interface/binding inspection retains the exact contract, operation and relationship;
+environment and credential registry IDs describe external inputs without storing credentials.
+**Referenced definitions** keeps supporting links available for protected settings.
+
+Saved calendars and referenced settings preserve their semantic version. Names remain editable;
+**Create settings successor** clones an explicit version and leaves existing consumers pinned.
+Retarget each intended exact consumer deliberately. Paired commerce references, such as inventory
+and payment holds, are validated together in the atomic draft. Fixed requirements remain visible in
+an independent section. Invalid hidden sections block Save and remain editable across tab switches;
+specific missing current-policy decisions remain saveable Review findings linked to Settings.
+
+General, Data, Access, Behavior, Effects & hooks and Settings use the same Save component, Cancel,
+undo/redo, reload and conflict handling. P68c completes parent P68's synthetic topic-close,
+order-payment-review and ticket-first-response authoring gate. These are authoring examples and
+acceptance declarations, not complete benchmark application designs or observed runtime behavior.
+P69's exact support matcher is next; compilation and runtime work remain separately assigned.

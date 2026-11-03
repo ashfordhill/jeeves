@@ -315,6 +315,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     const operation = model?.operations?.find((o) => contractKey(o) === key);
     const effect = model?.effects?.find((e) => contractKey(e) === key);
     const hook = model?.hooks?.find((h) => contractKey(h) === key);
+    const config = model?.capabilityConfigs?.find((c) => contractKey(c) === key);
     const lifecycle = model?.lifecycles?.find((l) => contractKey(l) === key);
     const source =
       effect && model?.operations?.find((o) => contractKey(o) === contractKey(effect.source));
@@ -322,11 +323,19 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       lifecycle &&
       model?.aggregates.find((a) => contractKey(a) === contractKey(lifecycle.aggregate));
     const owner =
-      operation?.target.owner ?? source?.target.owner ?? hook?.owner ?? aggregate?.owner;
+      kind === "capabilityConfigs"
+        ? config?.owner
+        : (operation?.target.owner ?? source?.target.owner ?? hook?.owner ?? aggregate?.owner);
     const component =
-      owner?.kind === "component" &&
-      design.architecture?.components?.find((c) => c.id === owner.id);
-    if (!component || !["operations", "lifecycles", "effects", "hooks"].includes(kind))
+      owner?.kind === "component"
+        ? design.architecture?.components?.find((c) => c.id === owner.id)
+        : kind === "capabilityConfigs" && owner?.kind === "element"
+          ? design.architecture?.components?.find((c) => c.element === owner.id)
+          : undefined;
+    if (
+      !component ||
+      !["operations", "lifecycles", "effects", "hooks", "capabilityConfigs"].includes(kind)
+    )
       return false;
     openComponents(component.element, `responsibility:${component.id}`);
     setComponentEditor({
