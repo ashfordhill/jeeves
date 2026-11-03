@@ -11,6 +11,7 @@ import { containerClassification } from "./architecture-choices.ts";
 import {
   type ArchitectureContract,
   contractCanonical,
+  contractKey,
   contractShapeSemantics,
   inspectContractShape,
   inspectContractTransport,
@@ -1394,6 +1395,37 @@ export function previewArchitecturePattern(
             result.errors.push(
               `Pinned query freshness dependency ${local} has no identity mapping.`,
             );
+          else {
+            ids[local] = target;
+            reused.add(local);
+          }
+        }
+      }
+      for (const access of fragment.architecture.backend.accessBindings ?? []) {
+        const target = access.target;
+        const binding = fragment.architecture.bindings?.find(
+          (b) => b.id === access.relationshipBinding,
+        );
+        const interfaces =
+          target.kind === "operation"
+            ? (fragment.architecture.interfaces
+                ?.filter(
+                  (i) =>
+                    i.owner.id === target.owner.id &&
+                    i.owner.kind === target.owner.kind &&
+                    contractKey(i.contract) === contractKey(target.contract),
+                )
+                .map((i) => i.id) ?? [])
+            : [];
+        for (const local of [
+          ...interfaces,
+          ...(binding
+            ? [binding.id, binding.provided, binding.required, binding.relationship.id]
+            : []),
+        ]) {
+          const target = source.identities[local];
+          if (!target)
+            result.errors.push(`Pinned access dependency ${local} has no identity mapping.`);
           else {
             ids[local] = target;
             reused.add(local);

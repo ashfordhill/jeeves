@@ -1,5 +1,10 @@
 /** Versioned persistence intent. Contracts own types; datasets own authority and stores. */
 import { z } from "zod";
+import {
+  backendAccessBindingSchema,
+  backendAccessPolicySchema,
+  backendPolicySelectionSchema,
+} from "./backend-policy-model.ts";
 import { contractTypeReferenceSchema } from "./contract-shapes.ts";
 import { idSchema } from "./ids.ts";
 
@@ -190,11 +195,20 @@ export const backendQuerySchema = z.strictObject({
     kind: z.literal("keyset"),
     fields: z.array(backendQueryFieldSchema).min(1).max(10),
   }),
-  /** P64 supplies policy definitions. A draft may retain its intended exact identity. */
-  accessPolicy: z.discriminatedUnion("kind", [
-    z.strictObject({ kind: z.literal("unresolved"), reference: backendReferenceSchema.optional() }),
-    z.strictObject({ kind: z.literal("policy"), reference: backendReferenceSchema }),
-  ]),
+  accessPolicy: backendPolicySelectionSchema,
+  accessProjection: idSchema.optional(),
+  accessSite: z.enum(["read", "search", "export"]).optional(),
+  /** Joined sources need their own current policy, even when absent from the output. */
+  sourcePolicies: z
+    .array(
+      z.strictObject({
+        source: idSchema,
+        policy: backendPolicySelectionSchema,
+        projection: idSchema.optional(),
+      }),
+    )
+    .max(3)
+    .optional(),
   freshness: z.discriminatedUnion("kind", [
     z.strictObject({ kind: z.literal("authoritative") }),
     z.strictObject({
@@ -211,16 +225,26 @@ export const backendModelSchema = z.strictObject({
   aggregates: z.array(backendAggregateSchema).max(50).default([]),
   // Preserve P63a serialized models that predate queries without adding an empty collection.
   queries: z.array(backendQuerySchema).max(100).optional(),
+  accessPolicies: z.array(backendAccessPolicySchema).max(100).optional(),
+  accessBindings: z.array(backendAccessBindingSchema).max(200).optional(),
 });
 export type BackendModel = z.output<typeof backendModelSchema>;
 
-export const backendCollections = ["entities", "aggregates", "queries"] as const;
+export const backendCollections = [
+  "entities",
+  "aggregates",
+  "queries",
+  "accessPolicies",
+  "accessBindings",
+] as const;
 export const backendDeclarations = (
   model: BackendModel | undefined,
-): (BackendEntity | BackendAggregate | BackendQuery)[] => [
+): { id: string; version: string; name: string }[] => [
   ...(model?.entities ?? []),
   ...(model?.aggregates ?? []),
   ...(model?.queries ?? []),
+  ...(model?.accessPolicies ?? []),
+  ...(model?.accessBindings ?? []),
 ];
 
 /** Local field, relation, invariant and storage IDs are never outer graph identities. */
@@ -233,6 +257,37 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
   });
   return {
     ...model,
+    ...(model.accessPolicies
+      ? {
+          accessPolicies: model.accessPolicies.map((p) => ({
+            ...p,
+            id: id(p.id),
+            resource: exact(p.resource),
+            clauses: p.clauses.map((c) => ("entity" in c ? { ...c, entity: exact(c.entity) } : c)),
+          })),
+        }
+      : {}),
+    ...(model.accessBindings
+      ? {
+          accessBindings: model.accessBindings.map((b) => ({
+            ...b,
+            id: id(b.id),
+            resource: exact(b.resource),
+            policy: b.policy.reference
+              ? { ...b.policy, reference: exact(b.policy.reference) }
+              : b.policy,
+            ...(b.relationshipBinding ? { relationshipBinding: id(b.relationshipBinding) } : {}),
+            target:
+              b.target.kind === "operation"
+                ? {
+                    ...b.target,
+                    contract: exact(b.target.contract),
+                    owner: exactOwner(b.target.owner),
+                  }
+                : { ...b.target, entity: exact(b.target.entity) },
+          })),
+        }
+      : {}),
     ...(model.queries
       ? {
           queries: model.queries.map((q) => ({
@@ -242,6 +297,16 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
             accessPolicy: q.accessPolicy.reference
               ? { ...q.accessPolicy, reference: exact(q.accessPolicy.reference) }
               : q.accessPolicy,
+            ...(q.sourcePolicies
+              ? {
+                  sourcePolicies: q.sourcePolicies.map((s) => ({
+                    ...s,
+                    policy: s.policy.reference
+                      ? { ...s.policy, reference: exact(s.policy.reference) }
+                      : s.policy,
+                  })),
+                }
+              : {}),
             freshness:
               q.freshness.kind === "bounded-staleness"
                 ? { ...q.freshness, binding: id(q.freshness.binding) }
@@ -304,11 +369,30 @@ export function collectBackendDependencies(
   keep: Set<string>,
 ): void {
   if (!model) return;
+  for (const p of model.accessPolicies ?? []) {
+    if (keep.has(p.resource.id)) keep.add(p.id);
+    if (!keep.has(p.id)) continue;
+    keep.add(p.resource.id);
+    for (const c of p.clauses) if ("entity" in c) keep.add(c.entity.id);
+  }
+  for (const b of model.accessBindings ?? []) {
+    const targets = [
+      b.resource.id,
+      b.target.kind === "operation" ? b.target.owner.id : b.target.entity.id,
+    ];
+    if (targets.some((v) => keep.has(v))) keep.add(b.id);
+    if (!keep.has(b.id)) continue;
+    for (const target of targets) keep.add(target);
+    if (b.target.kind === "operation") keep.add(b.target.contract.id);
+    if (b.policy.reference) keep.add(b.policy.reference.id);
+    if (b.relationshipBinding) keep.add(b.relationshipBinding);
+  }
   for (const q of model.queries ?? []) {
     if (keep.has(q.root.id)) keep.add(q.id);
     if (!keep.has(q.id)) continue;
     keep.add(q.root.id);
     if (q.accessPolicy.reference) keep.add(q.accessPolicy.reference.id);
+    for (const s of q.sourcePolicies ?? []) if (s.policy.reference) keep.add(s.policy.reference.id);
     if (q.freshness.kind === "bounded-staleness") keep.add(q.freshness.binding);
   }
   for (const e of model.entities) {

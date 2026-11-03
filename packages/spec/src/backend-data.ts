@@ -10,6 +10,7 @@ import {
 } from "./architecture-contracts.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import { type BackendEntity, type BackendReference, backendCollections } from "./backend-model.ts";
+import { validateBackendPolicies } from "./backend-policy.ts";
 import { validateBackendQueries } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
@@ -551,7 +552,8 @@ export function validateBackendData(design: DesignDocument): Finding[] {
     }
   }
   result.push(...validateBackendQueries(design));
-  if (backend.entities.length || backend.aggregates.length || backend.queries?.length)
+  result.push(...validateBackendPolicies(design));
+  if (backendDeclarationsPresent())
     result.push(
       finding(
         "NEEDS_TEMPLATE",
@@ -560,6 +562,9 @@ export function validateBackendData(design: DesignDocument): Finding[] {
       ),
     );
   return result;
+  function backendDeclarationsPresent() {
+    return backendCollections.some((key) => backend?.[key]?.length);
+  }
 }
 
 /** Removal preview uses the same source-addressed checks as atomic editing. */

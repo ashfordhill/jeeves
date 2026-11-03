@@ -543,13 +543,20 @@ export function validateContractTransition(
       ...(before.architecture?.bindings ?? []),
       ...(before.architecture?.datasets ?? []),
       ...(before.architecture?.backend?.entities ?? []),
+      ...(before.architecture?.backend?.accessBindings ?? []).flatMap((b) =>
+        b.target.kind === "operation" ? [{ contract: b.target.contract }] : [],
+      ),
     ].some((use) => contractKey(use.contract) === contractKey(prior));
     if (
-      ((referenced &&
-        (prior.shape?.operations.some((o) => o.transport) ||
-          before.architecture?.backend?.entities.some(
-            (e) => contractKey(e.contract) === contractKey(prior),
-          ))) ||
+      (before.architecture?.backend?.accessBindings?.some(
+        (b) =>
+          b.target.kind === "operation" && contractKey(b.target.contract) === contractKey(prior),
+      ) ||
+        (referenced &&
+          (prior.shape?.operations.some((o) => o.transport) ||
+            before.architecture?.backend?.entities.some(
+              (e) => contractKey(e.contract) === contractKey(prior),
+            ))) ||
         (prior.shape?.types?.length && inspectContractShape(prior.shape).references.length)) &&
       !after.architecture?.contracts?.some((next) => contractKey(next) === contractKey(prior))
     )
@@ -576,6 +583,10 @@ export function validateContractTransition(
       ) ||
       before.architecture?.datasets?.some(
         (item) => contractKey(item.contract) === contractKey(next),
+      ) ||
+      before.architecture?.backend?.accessBindings?.some(
+        (b) =>
+          b.target.kind === "operation" && contractKey(b.target.contract) === contractKey(next),
       ) ||
       before.architecture?.backend?.entities.some(
         (item) => contractKey(item.contract) === contractKey(next),

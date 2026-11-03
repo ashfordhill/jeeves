@@ -6532,3 +6532,110 @@ Observed failures and limitations, kept separate from passing evidence:
 
 **P63b and parent P63 are complete with no P63b blocker. P64 is the next unstarted work unit.**
 Stop after this scoped local P63b commit; coordinator owns checkpoint and next assignment.
+
+## P64 — Finite access policies and trusted execution context (2026-11-03)
+
+Completed **P64 only** in the primary checkout on `main`, starting at
+`27a9ec80034038af886253fb4e498f5115859eb5`. P63a/P63b dependency evidence is the preceding
+append-only handoff and the passing focused entity/query/legacy tests below. Read the batch
+instructions/checkpoint, AGENTS, PLAN §15 and applicable earlier sections, C4 modeling/studio
+rules, backend shared contract/benchmark cases/worked trace, phase-2 P64 and execution queue.
+The coordinator owns the batch checkpoint; it was not edited.
+
+Built:
+
+- New strict `backend-policy-model.ts` and pure `backend-policy.ts` declare exact policies,
+  trusted public/session/service context, persisted role/owner/organization/resource/group
+  membership/visibility/action/purpose clauses, bounded all/any conditions, finite actions,
+  fixed default deny and deny precedence. Authority cannot come from body roles, raw headers,
+  queue payloads or inferred names. Membership follows one declared direct resource relation
+  or one forward resource-to-group/organization relation; shared P63 checks retain exact
+  field/key/type/store/application/scope validation. Unsupported recursive paths reject.
+- Separate read/write field projections with clause conditions and fixed unknown-field rejection;
+  server-owned identity/scope/clock/version fields cannot enter write projections. P63 queries
+  resolve exact policies and explicit projections at root and every joined source, including
+  hidden filter/count paths. Output/filter/order/cursor fields must fit the projection. Missing
+  selections/allow actions/projections/current-state rechecks remain readiness gaps; concrete bad
+  references/types/scope contradictions reject atomically. Empty default-deny drafts remain editable.
+- Additive, versioned `accessBindings` attach the same exact policy to provided contract operations
+  and sensitive entity projections. This small justified model extension keeps access selection
+  independent of P65's future command/transaction semantics. Bindings validate provided ownership,
+  resource authority, exact operation and optional relationship intent. No command behavior was added.
+- Read/list, write, search, bytes, materialization, delivery, export, job and idempotent-replay
+  recheck declarations use current state and no authorization cache. Jobs require a verified,
+  bounded service purpose; initiating actors are explicitly provenance only. These are requirements
+  for later enforcement, not a policy evaluator, credential mechanism or runtime implementation.
+- Referenced exact policy versions and operation contracts remain protected through simultaneous
+  consumer removal/migration; policy display names remain editable and successor versions work.
+  Existing relationship intent stays broader context. Selected identity/tenant contradictions
+  produce actionable `BACKEND_ACCESS_CONFLICT` Review findings; unfinished access paths produce
+  source-addressed `BACKEND_ACCESS_GAP` findings. Dataset review fingerprints include the policy graph.
+- Shared backend collection/dependency/remapping helpers, removal findings, extraction/insertion,
+  whole-boundary pinned reuse, target diffs, chat/operation JSON Schema, deterministic handoff JSON/
+  Markdown and fingerprints preserve policies/bindings. Outer references remap; local clause,
+  field, relation, projection, action and physical storage IDs remain stable. Legacy models gain
+  no optional policy collections, and legacy resource/session/owner CRUD semantics are untouched.
+- New focused offline `backend-policy.test.ts` represents private category/group membership,
+  shop-admin/customer ownership/visibility and internal agent-only article access, service jobs,
+  all observation/replay sites, structural rejection, saveable gaps, immutability and portability.
+  [Policy contract](backend-access.md), data documentation and current roadmap/improvement status
+  now record **P64 complete; P65 next**. No CATALOG change: no offering, reusable C1/C2/C3 boundary,
+  runtime availability or observed application evidence changed.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1** via
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **860 files / 766ms**, no fixes. Existing **2025 warnings / 75 infos**,
+  no added diagnostics. `.jeeves-work/p64/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **13.5s**.
+  `.jeeves-work/runs/2026-11-03T14-56-12-734Z-typecheck-672bc482.{json,log}`.
+- Exact focused offline semantic/frozen-contract/old-generation compatibility command:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/contract-transport.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **19 files / 279 tests passed**, **8.8s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T14-56-12-747Z-unit-25dac24b.{json,log}`. Both final passing runner
+  records have `sourceChanged: false`. These prove design semantics/compatibility, not live access.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.87s**, existing large-chunk advisory only.
+  `.jeeves-work/p64/build-final.log`. No production UI/control changed; browser workflows and
+  deferred UI unit/E2E suites did not run. The build checks shared browser exports.
+- `python3 .jeeves-work/p64/audit.py`: byte-preserved **1,456 other tracked files**, including
+  **all 48 benchmark files / 46 legacy fixtures**, prior tests, CATALOG and all application/UI,
+  server, runtime/template/generator/artifact/dependency paths. Prior handoff prefix is unchanged;
+  scoped links/anchors/fences pass. `.jeeves-work/p64/audit.json`; rerun after this append.
+  `git diff --check` passes.
+
+Observed failures and limits, kept separate from passing evidence:
+
+- Initial boundary selector: **12 failed / 26 passed**, from one new fixture using invalid contract
+  kind `http` instead of `api`. After correction: **1 failed / 37 passed**, from an architecture-only
+  save onto an empty fixture lacking its referenced containers. Corrected the fixture setup;
+  production behavior and frozen expectations were not weakened. The next selector passed
+  **3 files / 38 tests**. Adding the explicit-public/organization/resource case brings the final
+  P64 tests to 13 and the full focused selector to 279. Initial local typechecking also caught a
+  missing `contractKey` import in pinned access reuse; corrected before final checks. Logs remain
+  under `.jeeves-work/p64/` and `.jeeves-work/runs/`.
+- Separate historical semantic selector (`architecture-patterns.test.ts`, `architecture-handoff.test.ts`,
+  `architecture-review.test.ts`, `architecture-bindings.test.ts`): **15 failed / 33 passed**,
+  unchanged from P63b's recorded baseline. Final failure record:
+  `.jeeves-work/runs/2026-11-03T14-56-12-753Z-unit-0afc90d4.{json,log}`.
+- Reproduced the **identical 15 failure titles / 33 passing tests on exact base `27a9ec8` tracked
+  production source**, temporarily substituting all ten changed existing TypeScript modules and
+  restoring every working byte in `finally`. Base record:
+  `.jeeves-work/runs/2026-11-03T14-55-21-460Z-unit-cbcbda12.{json,log}`.
+  `.jeeves-work/p64/baseline.json` records restoration hashes; `historical-comparison.json` confirms
+  identical titles/counts. Both historical records have `sourceChanged: false`. These failures
+  remain failures; no full-green claim or historical/frozen assertion edits.
+- P65 owns command/lifecycle/transaction bindings and concrete operation value mappings; P66 owns
+  effect/capability composition, P67b policy mouse authoring, P69/P70 matching/pure compilation and
+  P76 runtime enforcement. Current-policy SQL placement, concurrent revocation, real deny/allow
+  evaluation, unknown-write/replay/byte enforcement, service credentials and SSO are not implemented.
+  Existing raw NEEDS_TEMPLATE blockers remain. No runtime/generation/P65 work was started.
+- All three applications remain **absent/not run with zero observed implementation points**.
+  No Docker/database/network/provider/benchmark execution, local preview or persistent project
+  mutation occurred. Full `pnpm check` and deferred UI suites were not run under the batch policy.
+
+**P64 is complete with no P64 blocker. P65 is the next unstarted work unit.** Stop after the
+scoped local P64 commit; coordinator owns the checkpoint and next assignment.

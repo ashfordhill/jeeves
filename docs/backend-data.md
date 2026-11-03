@@ -3,8 +3,8 @@
 P63a/P63b add optional `architecture.backend` to the existing design document. It is **design
 semantics**, with no new runtime, SQL, migrations or application generation. Existing designs
 omit it and retain their existing resources/contracts. **P63 is complete**, including bounded queries
-and the read-only legacy adapter. Finite policy definitions follow in P64; authoring controls follow
-in P67a.
+and the read-only legacy adapter. [P64 finite policy definitions](backend-access.md) are complete;
+authoring controls follow in P67a/P67b.
 See the [shared contract](plans/backend-benchmarks/contract.md#3-one-authoritative-model) and
 [exact assignment split](plans/backend-benchmarks/execution-units.md#mandatory-splits).
 
@@ -149,10 +149,9 @@ Output/filter IDs, aliases and relation IDs never become outer composition ident
 
 `accessPolicy` is required. `{kind: "unresolved", reference?: {id, version}}` is a saveable
 `CONFIG_REQUIRED` compilation gap retaining an intended exact policy identity. A claimed
-`{kind: "policy", reference: {id, version}}` must resolve a real definition: until **P64** adds
-`accessPolicies`, it is an actionable `UNKNOWN_REFERENCE` structural error. P63b deliberately
-supplies no permissive policy stub or inferred authorization. P64 must replace that unavailable
-definition check with exact finite-policy resolution and scope/projection checks. Access must
+`{kind: "policy", reference: {id, version}}` must resolve a real definition in P64's optional
+`accessPolicies` collection. P64 adds exact finite-policy resolution, trusted-context scope checks
+and explicit projections without a permissive stub or inferred authorization. Access must
 apply before joins, filters, pagination, counts/snippets and projection, including joined data;
 stale data/cursors cannot establish current authorization. All new backend intent retains its raw
 `NEEDS_TEMPLATE` blocker independently of this saveable policy gap.
@@ -202,3 +201,7 @@ fingerprints, operation JSON Schema, portable JSON and Markdown preserve the dec
 
 No offering, reusable C1/C2/C3 boundary or template availability changed, so CATALOG is unchanged.
 The frozen benchmark contracts/expectations and legacy resource schemas remain authoritative.
+
+P64 adds the [finite access policy contract](backend-access.md) and resolves exact query policy
+selection, field projections, joined-source policies and current-state recheck declarations.
+These remain design semantics; runtime enforcement is deferred.

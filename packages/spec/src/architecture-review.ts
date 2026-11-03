@@ -10,7 +10,8 @@ import {
   sameContractOwner,
 } from "./architecture-contracts.ts";
 import { architectureReviewReferences, type ReviewReference } from "./architecture-review-model.ts";
-import { backendQuerySources } from "./backend-queries.ts";
+import { backendPolicyIntentConflicts, validateBackendPolicies } from "./backend-policy.ts";
+import { backendQuerySources, validateBackendQueries } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
 import { isStructural } from "./findings.ts";
 
@@ -134,7 +135,16 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
           ),
         ) ?? [];
       if (entities.length || aggregates.length || queries.length) {
-        values.push({ backend: { entities, aggregates, queries } });
+        // The exact selected policy graph participates in review acknowledgements.
+        values.push({
+          backend: {
+            entities,
+            aggregates,
+            queries,
+            accessPolicies: m.backend?.accessPolicies,
+            accessBindings: m.backend?.accessBindings,
+          },
+        });
         for (const q of queries) {
           if (q.freshness.kind === "bounded-staleness") visit(ref("binding", q.freshness.binding));
           for (const source of backendQuerySources(design, q).values())
@@ -235,6 +245,41 @@ export function reviewArchitecture(design: DesignDocument) {
       "This check applies to the authored contract, required interface or selected policy only. Undeclared topology preferences are not requirements; intent supplies no runtime verification.",
       inputs,
       f.binding ? "binding" : f.dataset || f.objective ? "data" : "contracts",
+    );
+  }
+  for (const f of [
+    ...validateBackendPolicies(design),
+    ...validateBackendQueries(design).filter((f) =>
+      f.target.path?.some((part) => ["accessPolicy", "sourcePolicies"].includes(String(part))),
+    ),
+  ].filter((f) => !isStructural(f))) {
+    const inputs = (m?.datasets ?? [])
+      .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
+      .map((d) => ref("dataset", d.id));
+    add(
+      "BACKEND_ACCESS_GAP",
+      "Access and authority",
+      "unresolved",
+      `${f.target.path?.join("/")}: ${f.message}`,
+      `Complete the exact finite policy at ${f.target.path?.join("/")}; a detached description is not authority or runtime evidence.`,
+      inputs,
+      "data",
+    );
+  }
+  for (const conflict of backendPolicyIntentConflicts(design)) {
+    add(
+      "BACKEND_ACCESS_CONFLICT",
+      "Access and authority",
+      "conflict",
+      conflict.message,
+      "Relationship access intent and exact policy selection must agree; deny precedence and current-state checks remain required.",
+      [
+        ref("binding", conflict.relationshipBinding),
+        ...(m?.backend?.entities ?? [])
+          .filter((e) => contractKey(e) === contractKey(conflict.policy.resource))
+          .map((e) => ref("dataset", e.dataset)),
+      ],
+      "binding",
     );
   }
   const binding = (id?: string) => m?.bindings?.find((b) => b.id === id);

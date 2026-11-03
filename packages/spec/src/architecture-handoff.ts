@@ -825,6 +825,14 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
         (q) =>
           `- Query ${mdEscape(contractKey(q))}: ${mdEscape(q.name)}; root ${mdEscape(contractKey(q.root))}; ${mdEscape(contractCanonical(q))}`,
       ),
+      ...(s.intent.backend.accessPolicies ?? []).map(
+        (p) =>
+          `- Access policy ${mdEscape(contractKey(p))}: ${mdEscape(p.name)}; ${mdEscape(contractCanonical(p))}`,
+      ),
+      ...(s.intent.backend.accessBindings ?? []).map(
+        (b) =>
+          `- Access binding ${mdEscape(contractKey(b))}: ${mdEscape(b.name)}; ${mdEscape(contractCanonical(b))}`,
+      ),
     ]);
   section("deployment", "Deployment intent and reusable provenance", [
     ...(s.intent.deployments ?? []).map(

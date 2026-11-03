@@ -296,6 +296,20 @@ export function extractArchitectureTemplate(
             queries: a.backend.queries.filter((q) => keep.has(q.id)).map((q) => structuredClone(q)),
           }
         : {}),
+      ...(a.backend.accessPolicies
+        ? {
+            accessPolicies: a.backend.accessPolicies
+              .filter((p) => keep.has(p.id))
+              .map((p) => structuredClone(p)),
+          }
+        : {}),
+      ...(a.backend.accessBindings
+        ? {
+            accessBindings: a.backend.accessBindings
+              .filter((b) => keep.has(b.id))
+              .map((b) => structuredClone(b)),
+          }
+        : {}),
     };
   fragment.architecture.components = fragment.architecture.components?.map((c) => ({
     id: c.id,

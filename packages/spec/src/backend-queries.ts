@@ -2,6 +2,7 @@
 import { contractCanonical, contractKey } from "./architecture-contracts.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import type { BackendEntity, BackendQuery } from "./backend-model.ts";
+import { validateBackendPolicyUse } from "./backend-policy.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 
@@ -194,17 +195,54 @@ export function validateBackendQueries(design: DesignDocument): Finding[] {
           "stable ordering must end in a complete required nonnullable primary/unique key; a scoped key includes its scope field.",
         );
     }
-    if (q.accessPolicy.kind === "unresolved")
-      add(
-        "CONFIG_REQUIRED",
-        ["accessPolicy"],
-        "select/resolve an exact access policy before compilation. Cursors never establish authority; access applies before joins, filtering, pagination, counts and projection.",
-      );
-    else {
-      // P64 owns accessPolicies and replaces this explicit unavailable-definition check.
-      missing(
-        ["accessPolicy"],
-        `access policy ${contractKey(q.accessPolicy.reference)} has no definition; retain an unresolved selection until P64 supplies finite policies.`,
+    const observed = [
+      ...q.projection.map((p) => p.field),
+      ...q.filters.map((f) => f.field),
+      ...q.order.map((o) => o.field),
+      ...q.cursor.fields,
+    ];
+    const site = q.accessSite ?? "read";
+    const action = site === "read" ? "list" : site;
+    result.push(
+      ...validateBackendPolicyUse(design, {
+        resource: q.root,
+        selection: q.accessPolicy,
+        action,
+        site,
+        projection: q.accessProjection,
+        fields: observed.filter((f) => f.source === "root").map((f) => f.field),
+        path: [...path, "accessPolicy"],
+      }),
+    );
+    const selectedSources = new Set<string>();
+    for (const selection of q.sourcePolicies ?? []) {
+      if (selectedSources.has(selection.source))
+        invalid(
+          ["sourcePolicies", selection.source],
+          "joined source has more than one selected policy.",
+        );
+      selectedSources.add(selection.source);
+      if (selection.source === "root" || !sources.has(selection.source))
+        missing(
+          ["sourcePolicies", selection.source],
+          "select an existing joined source; root policy is selected through accessPolicy.",
+        );
+    }
+    for (const [alias, source] of sources) {
+      if (alias === "root") continue;
+      const selection = q.sourcePolicies?.find((s) => s.source === alias);
+      // Old unresolved query drafts retain their single existing unresolved-selection finding.
+      if (!selection && q.accessPolicy.kind === "unresolved") continue;
+      result.push(
+        ...validateBackendPolicyUse(design, {
+          resource: source.entity,
+          selection: selection?.policy ?? { kind: "unresolved" },
+          action,
+          site,
+          projection: selection?.projection,
+          fields: observed.filter((f) => f.source === alias).map((f) => f.field),
+          path: [...path, "sourcePolicies", alias],
+        }),
       );
     }
     if (q.freshness.kind === "bounded-staleness") {

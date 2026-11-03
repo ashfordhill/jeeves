@@ -22,6 +22,8 @@ export * from "./architecture-view.ts";
 export * from "./backend-data.ts";
 export * from "./backend-legacy.ts";
 export * from "./backend-model.ts";
+export * from "./backend-policy.ts";
+export * from "./backend-policy-model.ts";
 export * from "./backend-queries.ts";
 export * from "./benchmark.ts";
 export * from "./benchmark-fixtures.ts";
