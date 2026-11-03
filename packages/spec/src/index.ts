@@ -66,4 +66,5 @@ export * from "./scenarios.ts";
 export * from "./subtype.ts";
 export * from "./template-upgrade.ts";
 export * from "./validate.ts";
+export { VENDURE_CORE_EXAMPLE, vendureCoreExample } from "./vendure-core-example.ts";
 export * from "./workspace.ts";

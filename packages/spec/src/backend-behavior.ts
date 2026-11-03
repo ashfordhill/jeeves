@@ -55,6 +55,8 @@ export function backendValueFits(source: Value, target: Value): boolean {
     (!source.enumValues || source.enumValues.some((v) => !target.enumValues?.includes(v)))
   )
     return false;
+  if (target.booleanValue !== undefined && source.booleanValue !== target.booleanValue)
+    return false;
   for (const [lower, upper] of [
     ["minimum", "maximum"],
     ["minLength", "maxLength"],
@@ -103,7 +105,11 @@ export function backendValueFits(source: Value, target: Value): boolean {
 }
 function literalFits(value: string | number | boolean | null, target: Value): boolean {
   if (value === null) return !!target.nullable;
-  if (typeof value === "boolean") return target.type === "boolean";
+  if (typeof value === "boolean")
+    return (
+      target.type === "boolean" &&
+      (target.booleanValue === undefined || target.booleanValue === value)
+    );
   if (typeof value === "number")
     return (
       ["integer", "number"].includes(target.type) &&
@@ -253,7 +259,7 @@ export function backendValueChecks(
             }
           : typeof source.value === "number"
             ? { type: "integer", minimum: source.value, maximum: source.value, required: true }
-            : { type: "boolean", required: true };
+            : { type: "boolean", booleanValue: source.value, required: true };
     else {
       const action = op?.actions.slice(0, before).find((a) => a.id === source.action);
       if (action?.kind === "hook") {

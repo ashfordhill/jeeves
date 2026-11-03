@@ -217,12 +217,12 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
         if (
           relation &&
           (relation.scope !== "same-scope" ||
-            relation.fields.some(
-              (k) =>
-                !field(resource, k.source, at)?.required || field(resource, k.source, at)?.nullable,
-            ))
+            relation.fields.some((k) => !field(resource, k.source, at)?.required))
         )
-          invalid(at, "parent visibility requires a nonnullable same-scope relation.");
+          invalid(
+            at,
+            "parent visibility requires a required same-scope relation; an absent nullable parent never matches.",
+          );
         const f = field(target, c.field, at);
         if (f && target?.fields.find((a) => a.field === c.field)?.storage.kind !== "scalar")
           invalid(
@@ -231,11 +231,16 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
           );
         if (
           f &&
-          (typeof c.value === "boolean"
-            ? f.type !== "boolean"
-            : f.type !== "text" || !f.enumValues?.includes(c.value))
+          (c.value === null
+            ? !f.nullable
+            : typeof c.value === "boolean"
+              ? f.type !== "boolean"
+              : f.type !== "text" || !f.enumValues?.includes(c.value))
         )
-          invalid(at, "visibility matches a boolean or a declared enum value, not arbitrary text.");
+          invalid(
+            at,
+            "visibility matches a boolean, declared enum or explicitly nullable scalar null.",
+          );
       }
       if (c.kind === "service-purpose" && c.purpose !== p.context.service?.purpose)
         invalid(at, "purpose must match this policy's verified service identity.");

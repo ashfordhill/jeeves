@@ -240,35 +240,40 @@ export function PolicyClauseFields({
       {c.kind === "visibility" ? (
         <>
           <Pick
-            label="Visibility boolean or enum field"
+            label="Visibility boolean, enum or nullable field"
             value={c.field}
             options={fields
-              .filter((f) => f.type === "boolean" || f.enumValues?.length)
+              .filter((f) => f.type === "boolean" || f.enumValues?.length || f.nullable)
               .map((f) => ({ value: f.id, label: f.name }))}
             onChange={(field) => {
               const f = fields.find((f) => f.id === field);
               onChange({
                 ...c,
                 field,
-                value: f?.type === "boolean" ? false : (f?.enumValues?.[0] ?? "unselected"),
+                value:
+                  f?.type === "boolean"
+                    ? false
+                    : (f?.enumValues?.[0] ?? (f?.nullable ? null : "unselected")),
               });
             }}
           />
           <NativeSelect
             label="Visible value"
-            value={String(c.value)}
-            data={
-              fields.find((f) => f.id === c.field)?.type === "boolean"
-                ? ["false", "true"]
-                : (fields.find((f) => f.id === c.field)?.enumValues ?? [String(c.value)])
-            }
+            value={JSON.stringify(c.value)}
+            data={[
+              ...(fields.find((f) => f.id === c.field)?.type === "boolean"
+                ? [false, true]
+                : (fields.find((f) => f.id === c.field)?.enumValues ?? [])),
+              ...(fields.find((f) => f.id === c.field)?.nullable ? [null] : []),
+            ].map((value) => ({
+              value: JSON.stringify(value),
+              label:
+                typeof value === "string" && value === "null" ? '"null" (text)' : String(value),
+            }))}
             onChange={(e) =>
               onChange({
                 ...c,
-                value:
-                  fields.find((f) => f.id === c.field)?.type === "boolean"
-                    ? e.currentTarget.value === "true"
-                    : e.currentTarget.value,
+                value: JSON.parse(e.currentTarget.value) as string | boolean | null,
               })
             }
           />

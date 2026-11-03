@@ -122,6 +122,7 @@ export function exportContractJsonSchema(contract: ArchitectureContract): Contra
       case "unresolved":
         throw new Error("Unresolved contract passed strict inspection.");
     }
+    if (v.booleanValue !== undefined) schema.const = v.booleanValue;
     for (const key of [
       "minLength",
       "maxLength",

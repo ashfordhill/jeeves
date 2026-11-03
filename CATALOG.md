@@ -94,6 +94,16 @@ generated application or measured capacity. Mattermost remains the default; save
 adopt the example automatically. See the [complete study and 20-row/66-observation trace](docs/examples/discourse-core.md)
 and [example source](packages/spec/src/discourse-core-example.ts).
 
+### Vendure core partial backend design
+
+**Partial editable backend design (P72a).** One modular API, independent worker and PostgreSQL
+with explicit external client, bytes, delivery, payment and warehouse boundaries. Exact frozen
+REST contracts, checked USD minor-unit storage, immutable quote/order snapshots, current scoped
+access and bounded queries are available as architecture intent. Upstream GraphQL parity is
+excluded. P72b owns behavior/recovery, eight H seams, scenarios and final trace. No runtime,
+foundation readiness or observed acceptance is supplied. See the
+[partial study](docs/examples/vendure-core.md) and [source/adaptation map](docs/reference/backend-benchmarks.md#vendure-core-p60b).
+
 ### Streamly video platform
 
 **Earlier illustrative study, editable.** A YouTube-style product with public discovery,

@@ -8258,3 +8258,144 @@ run nor maintained. No branch/worktree/delegation/push. Keep historical entries 
 **P71b and parent P71 are complete with no blocker. P72a is the next unstarted assignment.**
 Exact commit, checks, browser/preservation evidence and limits are in
 `.jeeves-work/p71b/completion.json`; stop here for the coordinator's next assignment.
+
+## P72a — Partial Vendure boundaries, exact money/data and current access (2026-11-03)
+
+Implemented **P72a only** on primary `main`, based on
+`d588f97d1e0f7c1d5517705ed128da500cbdddfa`. Read the batch instructions/checkpoint, AGENTS,
+PLAN §15/applicable architecture contracts, latest P71 handoff, C4/studio guidance, backend
+shared contract, P72/exact child split, V ledger/frozen P61c contracts/fixtures and P60b
+source/adaptation map, and the committed Discourse patterns/dependency evidence. The
+coordinator checkpoint was not edited. No delegation, branch or worktree was used.
+
+Built:
+
+- [Registered partial Vendure study](../packages/spec/src/vendure-core-example.ts), with one
+  modular API, independent worker and authoritative PostgreSQL. Twenty cohesive C3 responsibilities
+  retain catalog/cart/inventory/order/payment/fulfillment/access ownership and named H/worker
+  responsibilities. Tax/shipping share a rate-quote responsibility with distinct contracts and
+  future H14/H15 seams. Thin client, bytes, notification provider, payment providers and warehouse
+  source remain explicit external boundaries. Mattermost/default and complete Discourse sources
+  are unchanged. No required generated frontend or fictional service-per-table topology.
+- [Static exact REST declarations](../packages/spec/src/vendure-core-contracts.ts) for all
+  **42 frozen operations**, including strict request/response/error schemas, method/path/parameter
+  locations, bounded/nullable values, status/header mappings, binary catalog/receipt responses,
+  original-byte callback envelope obligations and distinct provider-to-API interfaces. Source pin
+  **Vendure v3.3.0 / a4c56359ec831b0c54dd01eab14fb75455c43ab7** is exact. Upstream GraphQL is
+  explicitly adapted to independent REST/JSON/OpenAPI; GraphQL parity remains excluded as X1.
+  No shipping OpenAPI interpreter or benchmark/Node import is added to authoring factories.
+- [28 authoritative entities/datasets and 22 aggregates](../packages/spec/src/vendure-core-data.ts).
+  Core money is USD integer minor units 0..9007199254740991 with explicit minor/currency storage
+  columns; quantity 1..1000 and at most100 distinct lines. Cart lines have no client price field.
+  Five-minute quote and purchased order line/address/tax/shipping/total snapshots are immutable;
+  root-plus-source-line keys preserve identity across historical snapshots. Every variant retains
+  its exact price version; mixed versions cannot be replaced by a maximum version. Data addresses
+  match all frozen200-character bounds. Fixed fixture750bps half-up merchandise tax, untaxed
+  nonrefundable shipping500, checked products/sums/overflow-before-write, and H-only rational
+  conversion provenance remain explicit intent rather than implemented arithmetic.
+- Stock onHand, allocated unshipped units and active/held/consumed reservations remain separate;
+  availability never subtracts consumed units twice. Payment/refund/payout identities and
+  amounts are durable and distinct from authenticated provider/source receipts. Source mappings
+  retain absolute-on-hand/revision/commitment meaning. Shipment quantities, shipment state and
+  originating order version stay separate from immutable purchased quantities. Existing principal/
+  session ownership is reused; no competing account/session tables. SQL never includes network
+  providers or byte-store transactions. [Adapter interfaces](../packages/spec/src/vendure-core-adapters.ts)
+  describe boundaries without implementation availability.
+- [35 policies, 38 sensitive operation bindings and ten bounded queries](../packages/spec/src/vendure-core-access.ts):
+  current active shop membership plus persisted roles; owner/staff history/order/payment/receipt;
+  administrator reconciliation/audit; explicit public product/variant/asset publication and
+  current seller line subsets. Compound product/variant/shop and notification recipient/order-owner
+  relations prevent borrowed authority. Service delivery checks the persisted recipient's active
+  membership with a named purpose; an initiating actor is provenance only. Policies retain all
+  nine current-state recheck sites, default deny, deny-wins and no authority cache. Query source
+  policies precede matching/snippets/pages, with exact product-time/product/variant ordering,
+  complete root ties and default25/max100 keysets. No private cost/stock/address leaks into public
+  projections. Cursor authentication/execution remains P72b intent, not implemented capability.
+- Narrow prerequisites exposed by the frozen contracts: explicit **null on nullable scalar**
+  visibility plus one nullable forward same-scope parent (absence never satisfies its predicate);
+  exact **boolean literals** such as Stripe `livemode:false`, with conservative assignment and
+  schema export; matching required literal Content-Type headers remain body-owned and independent
+  Content-Length is rejected. A positive integer timestamp is represented by equivalent inclusive
+  minimum1. Existing exact-definition guards, collectors/remapping, handoff/fingerprints/chat and
+  canonical compiler lowering preserve these values. Mouse selectors distinguish enum text and
+  null without converting text `"null"` into null. No rule/expression language or runtime evaluator.
+- The partial fragment needs28 roles and23 optional extension points. Extension-point and library
+  metadata bounds now match the existing32-role bound;33 rejects. Existing role identities and
+  old fragments remain valid. CATALOG, [partial study](examples/vendure-core.md), contract/access/
+  studio documentation and roadmap distinguish P72a completion from incomplete parent P72.
+
+Validation, all commands with Node **24.21.0** explicitly in PATH:
+
+- `pnpm lint` passed, **948 files**, **2436 warnings /79 infos** (base2351/78); no zero-warning claim.
+  `.jeeves-work/p72a/lint-handoff.log` records the real result.
+- All workspace/script types passed via `pnpm work run typecheck`; final exact runner record and
+  duration are in `.jeeves-work/p72a/completion.json`. Production `pnpm --filter @jeeves/web build`
+  passed in **1.81s**; existing large-chunk advisory remains (`build-accepted.log`).
+- **22 focused offline files /298 tests** passed across the21-file run
+  `.jeeves-work/runs/2026-11-03T22-54-24-429Z-unit-6ab1e010.json` (**17.5s /296 tests**) and separate
+  complete Discourse compiler run
+  `.jeeves-work/runs/2026-11-03T22-53-10-071Z-unit-b76a5fcd.json` (**4.2s /2 tests**).
+  Final strengthening of the new immutable-policy case first verifies that its changed all/any
+  meaning is structurally valid, then verifies exact-version rejection; both new files/11 tests
+  pass in `.jeeves-work/runs/2026-11-03T22-56-12-446Z-unit-627cdeb1.json` (**5.0s**).
+  All three records report `sourceChanged:false`. Actual explicit file argv is in those records;
+  selections cover frozen wire equality/negatives, exact money/storage, scope/access/null/literals,
+  complete extraction/insertion/pinned reuse, immutable handoff/fingerprints/chat, canonical IR,
+  Discourse and old generation/registry/benchmark compatibility. No deferred UI unit/E2E selection.
+- Direct Chromium mouse creation from Examples matches the final factory, normalizing only
+  semantic revision; downloaded JSON retains the exact complete partial backend and null generation
+  evidence. Loaded C3 SVG is **40573 bytes**. General and boolean-literal Save/Cancel, atomic Undo/
+  Redo/reload, protected policy successors with consumers pinned, a real stale409 retaining draft,
+  and typed enum/null save were inspected. Independent library insertion/reuse keeps all original
+  entities and physical identities; all28 exact pinned roles preserve the entire interface graph.
+  History/reload works for each composition. Light desktop, dark390 and no horizontal overflow;
+  **ten distinct final scoped axe analyses, zero violations**, no final page errors.
+  Records: `.jeeves-work/p72a/{browser-edit,browser-final-inspection,browser-advanced,browser-reuse,browser-final-values,verify-final}.json`.
+- `.jeeves-work/p72a/audit.py` verifies **1543 other tracked files**, including all48 frozen benchmark
+  files,46 legacy fixtures, templates/runtimes/artifacts/versions, locks/modules/global readiness,
+  old example sources and the original handoff prefix. Scoped links/anchors, deterministic browser-
+  safe imports and `git diff --check` pass. Final count/link record is `audit.json`.
+
+Corrections, preservation and limits:
+
+- Initial exact-wire probes caught missing URI/Stripe boolean/positive-integer constraints,
+  source-line composite identity, money-IR shape expectations, address bounds, association/ownership
+  and extension-point limits; corrected without changing frozen expectations. A broad concurrent-load
+  attempt had two five-second serialization timeouts (including the unchanged Discourse compiler
+  test), not assertion regressions. Separate focused reruns pass. The new large composition/handoff
+  test has a bounded30-second serialization budget; no runtime timing target is changed. The work
+  runner rejects CLI flags as filenames, so its accepted explicit-path selections were run separately.
+  Browser retries corrected collapsed-summary selectors and axe context setup; initial absent dev
+  servers and a watcher-restart502 are preserved in earlier logs, never counted as passes.
+- Cleanup deletes only own disposable projects `0b938f18-2d18-49f1-b22e-3749a6147725` and
+  `d28a3e25-7c7c-47fa-9436-90b599dca32f` (exact names checked,404 afterwards). Own local
+  `p72a-disposable-vendure-d28a3e25@1.0.0` is retired and retained as architecture-only history.
+  No external publication. All **13 original project IDs and raw semantic design hashes** remain
+  equal; **12 original layout hashes** match. Both existing previews4300/5180 and API health return200.
+- **Presentation preservation qualification:** original `684f5790-df6b-4447-91d1-668cf7e1cc87`
+  (QRWTY target architecture) has a changed layout. Its semantic hash remains
+  `fe5b85d6d20d8507708a00717ebf1d0f0c8e8ad909dfb54e01737efdfd1e2a13`.
+  Initial layout hash `2d5a6784…501c`; a later capture was `7327f92c…6387`, then current
+  `730248c2…9e33`. Read-only DB inspection gives updated_at **22:54:45.926Z**. API logs contain23
+  layout PUTs22:51:01–22:54:45. Every owned browser context had closed by22:52:24. Between the first
+  available raw capture22:53:34 and current, C3 API camera x/y/zoom changed and positions for
+  `container:web` and `responsibility:tenant-access` were added. Those later writes came after
+  inspection contexts closed; client identity and earlier cause remain unattributed. Initial and
+  all prior checkpoints retained hashes only, so the exact pre-session field delta cannot be
+  recovered. **The current unrelated layout was not reset or overwritten.** Exact JSON, field values,
+  timestamps, scripts and event evidence are retained in `layout-investigation.json` and linked files;
+  `cleanup.json` separates semantic and layout preservation. No claim that all13 layouts are equal.
+- **P72a is partial by design.** P72b owns exact executable command/local atomic participant/locking,
+  lifecycle/payment/expiry/callback/recovery rules, eight JH seam briefs/settings for V13–V20, five scenarios, focused
+  views/deployment intent and final V01–V20 trace. Keep current exact definitions immutable; preserve
+  this partial snapshot when constructing the complete example and introduce explicit successors
+  where needed. No paid/shipped safety or unknown-payment recovery is claimed implemented here.
+- No application runtime, capability/template registration, hook scaffold, migration, generation/
+  writer change, upstream port, provider execution, secret, benchmark run or measured capacity.
+  All three applications remain **absent/not run, zero observed implementation points**. The approved
+  focused substitution applies; full `pnpm check` and deferred UI unit/E2E suites were not run or
+  maintained. No branch/worktree/delegation/push. Coordinator owns the batch checkpoint.
+
+**P72a is complete; parent P72 is incomplete. P72b is the next unstarted assignment.**
+Exact local commit/checkRecords/browser/preservation limits are recorded in
+`.jeeves-work/p72a/completion.json`. Stop here for the coordinator's next assignment.

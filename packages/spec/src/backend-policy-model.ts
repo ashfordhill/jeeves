@@ -87,7 +87,7 @@ export const backendPolicyClauseSchema = z.discriminatedUnion("kind", [
     kind: z.literal("visibility"),
     via: idSchema.optional(),
     field: idSchema,
-    value: z.union([z.boolean(), z.string().min(1).max(120)]),
+    value: z.union([z.boolean(), z.string().min(1).max(120), z.null()]),
   }),
   z.strictObject({
     id: idSchema,

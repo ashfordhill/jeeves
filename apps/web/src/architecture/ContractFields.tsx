@@ -60,6 +60,24 @@ export function ValueFields({
         checked={value.nullable ?? false}
         onChange={(e) => onChange({ ...value, nullable: e.currentTarget.checked })}
       />
+      {value.type === "boolean" ? (
+        <NativeSelect
+          label={`${label} boolean value`}
+          value={value.booleanValue === undefined ? "any" : String(value.booleanValue)}
+          data={[
+            { value: "any", label: "Either boolean" },
+            { value: "false", label: "false only" },
+            { value: "true", label: "true only" },
+          ]}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              booleanValue:
+                e.currentTarget.value === "any" ? undefined : e.currentTarget.value === "true",
+            })
+          }
+        />
+      ) : null}
       {value.type === "text" ? (
         <TextInput
           label={`${label} allowed values`}

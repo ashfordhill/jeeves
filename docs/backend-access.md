@@ -156,3 +156,15 @@ Mouse controls expose exact joins, subjects, current memberships, conditional fi
 clause groups. The local synthetic preview lists redactions separately from disclosed fields.
 Schemas, extraction closure/remapping, immutable exact versions, handoff, fingerprints, chat and
 pure compiler plans carry these declarations. They are not production authorization evaluation.
+
+P72a permits a visibility clause to select **null on an explicitly nullable scalar**. A single
+forward same-scope parent relation may have nullable key fields; an absent parent never satisfies
+its field predicate. This is a bounded association check, not recursive traversal. The Vendure
+asset policy permits a published product's unassociated asset through explicit `variant-id=null`,
+or its associated asset through that exact published variant. A compound product/variant/shop
+relation prevents borrowing another product's publication. Existing owner clauses still require
+nonnullable parent ownership. Null on a required nonnullable field or an undeclared arbitrary
+value is invalid. These are design declarations; the synthetic preview uses assumed facts.
+
+Mouse value selectors retain typed boolean, enum text and null values separately; the text enum
+`"null"` does not become a null association when saved.

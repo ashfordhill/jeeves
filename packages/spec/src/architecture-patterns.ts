@@ -57,7 +57,7 @@ export const architectureFragmentSchema = z.strictObject({
   invariants: z.array(z.string().min(1).max(1200)).max(20),
   extensionPoints: z
     .array(z.strictObject({ role: idSchema, description: z.string().max(500) }))
-    .max(20),
+    .max(32),
 });
 export type ArchitectureFragment = z.output<typeof architectureFragmentSchema>;
 export const patternChoiceSchema = z.discriminatedUnion("mode", [

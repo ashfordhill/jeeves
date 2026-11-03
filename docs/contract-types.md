@@ -193,3 +193,14 @@ current v2 successors add the clarified logical semantics.
 Typed session delegation identifies register/login/logout/readSession at the existing session owner,
 with no public grants, Origin/CSRF, durable opaque hashing and application isolation. It does not add
 a domain account/session table or select an unavailable implementation implicitly.
+
+P72a adds an optional **boolean literal** (`booleanValue`) for exact protocol fields such as
+Stripe's frozen `livemode: false`. It applies only to boolean values, remains editable by mouse,
+and survives logical JSON Schema export, immutable versions, handoff and pure compiler lowering.
+Conservative assignment rejects an unconstrained or opposite boolean source for a fixed target.
+The frozen positive integer event timestamp uses the equivalent inclusive minimum 1; its accepted
+integer set is unchanged. No callback parser or production verification is supplied.
+
+A frozen wire may also declare an explicit **Content-Type literal** matching the body-owned
+content type exactly. It must be required, nonnullable text with one matching allowed value;
+a mismatched/unconstrained value or independent Content-Length remains invalid.

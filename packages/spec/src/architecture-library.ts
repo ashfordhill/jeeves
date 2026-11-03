@@ -35,7 +35,7 @@ export const libraryMetadataSchema = z.strictObject({
   invariants: z.array(z.string().trim().min(1).max(1200)).max(20),
   extensionPoints: z
     .array(z.strictObject({ role: idSchema, description: z.string().trim().min(1).max(500) }))
-    .max(20),
+    .max(32),
   /** Finite existing component options only; no arbitrary config/code upload. */
   exposedOptions: z
     .array(z.strictObject({ role: idSchema, field: z.string().min(1).max(80) }))

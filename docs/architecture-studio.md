@@ -237,3 +237,11 @@ removal audit or digest intent; privacy continuation uses its declared internal 
 inspection shows typed provider operations, durable progress, named snapshot derivations and exact
 query aliases. Reusable complete fragments retain the scenario actor as their 21st role; the bounded
 role limit is 32, with no change to existing entry identities.
+
+
+**Vendure core · partial backend design** is now available in Examples. Its
+[P72a guide](examples/vendure-core.md) describes exact REST/data/money/current access. P72b
+behavior/hooks/scenarios remain incomplete. Access visibility controls now include explicit null
+for nullable scalar associations and one optional forward parent; an absent parent never matches
+its publication predicate. This permits product-only and variant-associated assets to retain
+current publication without treating an object key as public authority. No runtime is supplied.

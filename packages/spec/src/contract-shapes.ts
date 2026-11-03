@@ -34,6 +34,7 @@ export type ContractTypeReference = z.output<typeof contractTypeReferenceSchema>
 export type ContractValue = {
   type: (typeof contractValueTypes)[number];
   nullable?: boolean;
+  booleanValue?: boolean;
   items?: ContractValue;
   fields?: ContractField[];
   enumValues?: string[];
@@ -65,6 +66,8 @@ const fieldsByDepth = new Map<number, z.ZodType<ContractField[]>>();
 
 function checkValue(value: ContractValue, ctx: z.RefinementCtx) {
   const issue = (message: string) => ctx.addIssue({ code: "custom", message });
+  if (value.booleanValue !== undefined && value.type !== "boolean")
+    issue("A boolean literal applies only to boolean fields.");
   if (value.textConstraint && value.type !== "text")
     issue("Named text constraints apply only to text.");
   if (value.items && value.type !== "array") issue("Only arrays have an item type.");
@@ -107,6 +110,7 @@ function valueShape(depth: number) {
   return {
     type: z.enum(contractValueTypes),
     nullable: z.boolean().optional(),
+    booleanValue: z.boolean().optional(),
     items: z
       .lazy(() => (depth < CONTRACT_NESTING_LIMIT ? valueSchema(depth + 1) : z.never()))
       .optional(),

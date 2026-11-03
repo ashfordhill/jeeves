@@ -134,8 +134,20 @@ export function inspectContractTransport(shape: ContractShape): {
         const key = `${location}:${name}`;
         if (names.has(key)) issue(`Conflicting ${location} name ${mapping.name}.`, at);
         names.add(key);
-        if (location === "header" && ["content-type", "content-length"].includes(name ?? ""))
-          issue("Content-Type and Content-Length are controlled by the body descriptor.", at);
+        if (location === "header" && ["content-type", "content-length"].includes(name ?? "")) {
+          // A frozen wire may repeat the exact body-owned Content-Type as a literal header.
+          // It cannot select a different type or control length independently of the body.
+          const literalBodyType =
+            name === "content-type" &&
+            body &&
+            field?.required &&
+            !field.nullable &&
+            field.type === "text" &&
+            field.enumValues?.length === 1 &&
+            field.enumValues[0] === body.contentType;
+          if (!literalBodyType)
+            issue("Content-Type and Content-Length are controlled by the body descriptor.", at);
+        }
         if (location === "path" && (!field?.required || !placeholders.includes(mapping.name)))
           issue(`Path parameter ${mapping.name} must be required and occur in the route.`, at);
       }
