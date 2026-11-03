@@ -7116,3 +7116,120 @@ Observed failures and limits, separate from passing results:
 **P66c and parent P66 are complete with no P66c blocker. P67a is next unstarted.** Stop after the
 scoped local P66c commit. `.jeeves-work/p66c/completion.json` records the resulting commit/check
 records; coordinator owns the batch checkpoint.
+
+## P67a — Component Data subeditors, local types and exact-reference navigation (2026-11-03)
+
+**Assignment and prerequisites.** Implemented P67a only on primary `main`, starting at
+`3d168057fecf1ce7a820ede765fdf4a71978f27e` (P66c), after the completed P62–P66 semantics.
+Read the batch instructions/checkpoint, AGENTS, PLAN §15 and relevant §1–14, latest handoff,
+C4 modeling/studio guidance, backend roadmap/shared contract/benchmark context, phase-2 P67
+and the exact execution-unit split. Coordinator owns the batch checkpoint; this worker did not
+change it. Checklist and inspection artifacts are ignored under `.jeeves-work/p67a/`.
+
+What now works:
+
+- The existing component dialog has **General / Data** tabs. Data presents one focused section
+  and definition at a time: contracts/local types, datasets/authority, entities/relations,
+  aggregates/concurrency, bounded queries and existing policy references. No second save surface,
+  opaque JSON/code textarea, canvas clutter, application admin screen or new semantic model.
+- Shared contract fields now author P62 exact local references, map key/entry/value bounds and
+  tagged-union discriminator/variants. `ContractTypeScope` supplies local definitions and navigation
+  to both Data and the existing Interfaces editor. Nullable value and optional presence remain
+  separate. Unknown values remain visible. Existing depth/count/schema budgets still apply.
+- Data contracts select existing exact definitions or explicit successors. The shared UI guard
+  probes `validateContractTransition`, covering backend consumers as well as interfaces/datasets;
+  referenced contract/type values and versions stay protected. Display renames retain identity.
+  Local type successors retain the old definition and require explicit reference retargeting.
+  Source-backed legacy shapes remain authoritative/read-only and cannot acquire editable entity copies.
+- Dataset controls choose exact contract, authority, readers/writers, store, scope, deletion and
+  export intent. Entity controls derive annotations from the same logical fields: scalar/opaque
+  JSON/exact money storage, server sources, PK/scope, bounded relations/mappings, unique keys/null
+  semantics and ordered indexes. Saved table/column/dataset identities remain protected. Contract
+  successor selection preserves storage IDs while following required/nullability from that contract.
+- Aggregate controls select exact root/children, owner/store, expected-version or sorted stable
+  row locks and all four finite invariant strategies. Query controls select root/declared joins,
+  allowed comparisons/list bounds, output fields, sort keys, page limits, existing policy/projection
+  references for each observed source, observation site and freshness. Cursor fields follow the
+  full sort order. Unresolved policies remain saveable readiness gaps, never authorization proof.
+- **Open …** actions navigate query → entity → dataset → exact contract, aggregate participants,
+  exact local type and query → policy → resource entity inside the same component draft. All
+  sections share one schema-parsed architecture draft and the existing `applyOperations` preflight,
+  followed by one atomic `setArchitecture` Save. Invalid drafts survive section switches; Cancel
+  discards the whole draft. Undo/redo, reload and local/server revision conflicts retain protection.
+- Dedicated bounded subeditor modules keep this out of the main component form. The studio,
+  backend-data/type guides and roadmap/improvement status now record P67a complete and P67b next.
+  CATALOG is unchanged: no offering, reusable C1/C2/C3 boundary or implementation availability changed.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1**, with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **881 files / 971ms**, no fixes; **2024 existing warnings / 75 infos**,
+  no added diagnostics (one fewer warning than base). `.jeeves-work/p67a/lint-final-a11y.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across workspaces/scripts, **12.5s**.
+  `.jeeves-work/runs/2026-11-03T16-51-54-201Z-typecheck-97180f36.{json,log}`.
+- Focused existing offline shared-schema/atomic-operation verification, without UI suites:
+
+  ```bash
+  pnpm work run unit packages/spec/src/contract-types.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/apply.test.ts
+  ```
+
+  Exit 0, **5 files / 84 tests passed**, **3.5s** with runner overhead.
+  `.jeeves-work/runs/2026-11-03T16-51-54-215Z-unit-1c57ae87.{json,log}`. Both final runner records
+  have `sourceChanged: false`. No shared schema/semantic/compiler implementation or prior test changed.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.51s**, existing large-chunk advisory only.
+  `.jeeves-work/p67a/build-final-a11y.log`.
+- Direct Chromium inspection on the existing loopback web/API, using an isolated browser context
+  and only disposable project **36199671-15de-4a8b-bbbd-0bcb02e051d3**:
+  - Actual mouse Save/Cancel, reload and Undo/Redo of a private category/group/agent query using
+    the existing exact synthetic policy. Invalid page bounds remain editable through navigation.
+  - Actual server 409 from a concurrent API revision, followed by local stale-revision rejection:
+    open input remains 30, persisted input stays 25, and Cancel/reload uses the current revision.
+  - Protected consumed v1 contract, explicit v2 successor; referenced local integer type locked,
+    explicit local v2 and reference retargeting preserve v1. Mouse-authored bounded map and tagged
+    union survive Save/reload. Final consumed type navigation also permits display-name editing.
+  - Mouse dataset/entity creation, stable storage/PK annotations, unique key/index, aggregate Save,
+    composite relation mapping Save, invalid cascading relation Cancel, declared query join Save,
+    exact policy/resource cross-navigation and existing Interfaces inspection.
+  - Light **1440×1000** and dark **390×844** inspection. Narrow query Save/Cancel/reopen work by
+    mouse. Query and nested union dialogs have **351px client/scroll width**, document width 390px.
+    Final scoped axe inspections of entity/query/Interfaces/type dialogs report **zero violations**
+    in desktop and narrow dark views; this is dialog inspection, not a full-page accessibility audit.
+  - Successful browser records: `.jeeves-work/p67a/browser-core.json`, `browser-types.json`,
+    `browser-references.json`, `browser-final.json`; screenshots and detailed axe JSONs alongside.
+    Successful ordinary workflows have **zero page errors, console errors or failed requests**.
+    Core intentionally records exactly one 409 response/console message from the conflict probe.
+- `node .jeeves-work/p67a/cleanup.mjs` under Node 24: all **13 pre-existing project designs and
+  layouts hash-identical** before/after; removed only the exact disposable ID above, confirmed 404
+  and original remaining-ID set. `.jeeves-work/p67a/{preserved-before,preserved-after,cleanup}.json`.
+  `final-design.json` retains disposable authoring evidence. Existing preview/API processes stayed
+  running; no persistent project/settings/output directory was altered.
+- `python3 .jeeves-work/p67a/audit.py`: byte-preserved **1,479 other tracked files**, including all
+  **48 benchmark files / 46 legacy fixtures**, shared semantic/test/runtime/template/generator paths,
+  CATALOG; prior handoff prefix unchanged, scoped links/anchors/fences valid.
+  `.jeeves-work/p67a/audit.json`; rerun after this append. `git diff --check` passes.
+
+Observed corrections and limits:
+
+- Initial typecheck found generic row-control inference and one unavailable type alias; fixed with
+  exact schema-derived row types. Direct browser inspection caught reference metadata leaking into
+  native option props; selectors now pass only value/label, preserving clean model references.
+  Initial axe found a heading-order issue and, later, a navigation-link target issue; both corrected
+  and re-inspected to zero violations. Earlier raw failure artifacts remain in the ignored evidence.
+  Ad hoc scripts also needed an explicit browser context and scoped native/Mantine selectors;
+  these inspection-script errors were corrected without changing acceptance or production semantics.
+- This is authoring/design evidence only. No query, storage, authorization policy, invariant, hook,
+  provider, runtime or compiler executes. All three benchmark applications remain **absent/not run
+  with zero observed implementation points**. The synthetic inspection is not a complete benchmark
+  design, generated consumer or production authorization evaluation.
+- **P67b** owns the finite access-policy builder, affected-path/design-preview evaluation and chat
+  discoverability. Current `DataNavigation` includes a read-only exact-policy reference section;
+  P67b should integrate its editor with this same draft/save and verify cross-navigation. P68 owns
+  command/effect/hook/settings authoring. No neighboring package was started.
+- No UI unit/E2E suite was maintained or run, no full `pnpm check`, and no repeat of the known
+  historical architectural selector failures from earlier packages. The authorized verification
+  deferral remains in force; this is not a full-suite-green claim. No branch/worktree/delegation,
+  new runtime/generation, Docker/provider campaign, push or publication.
+
+**P67a is complete with no P67a blocker. P67b is next unstarted; parent P67 remains incomplete.**
+Stop after the scoped local P67a commit. `.jeeves-work/p67a/completion.json` records the resulting
+commit, checks, browser evidence and limits. Coordinator owns the batch checkpoint.

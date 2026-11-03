@@ -2,14 +2,14 @@ import { builtinRegistry } from "@jeeves/registry";
 import {
   type ArchitectureComponent,
   type ArchitectureMember,
-  architectureComponentSchema,
+  applyOperations,
+  architectureSchema,
   componentCompatible,
   componentHostRole,
   connectionPresentation,
   type DesignDocument,
   plannedCapabilities,
   resourceConfigSchema,
-  validateArchitecture,
 } from "@jeeves/spec";
 import {
   Alert,
@@ -18,6 +18,7 @@ import {
   MultiSelect,
   NativeSelect,
   Stack,
+  Tabs,
   Text,
   Textarea,
   TextInput,
@@ -26,6 +27,7 @@ import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
 import { CapabilityFields } from "./CapabilityFields.tsx";
+import { ComponentDataEditor } from "./ComponentDataEditor.tsx";
 
 export const memberKey = (member: ArchitectureMember) =>
   `${member.attachment}|${member.kind}|${member.ref ?? ""}`;
@@ -54,7 +56,7 @@ export function memberOptions(design: DesignDocument, element: string) {
 }
 
 export function ComponentEditor({
-  design,
+  design: incomingDesign,
   element,
   initial,
   capability,
@@ -70,11 +72,20 @@ export function ComponentEditor({
   onClose: () => void;
   onSaved: (id: string) => void;
 }) {
+  const [design] = useState(() => structuredClone(incomingDesign));
+  const [architectureDraft, setArchitectureDraft] = useState(() =>
+    structuredClone(
+      design.architecture ?? {
+        system: { name: useDraw.getState().loaded?.project.name ?? "System", description: "" },
+        nodes: [],
+        relationships: [],
+      },
+    ),
+  );
   const owner = design.elements.find((item) => item.id === element)!;
   const compatible = plannedCapabilities.filter((item) =>
     componentCompatible(item, componentHostRole(owner, builtinRegistry())),
   );
-  const loaded = useDraw((state) => state.loaded)!;
   const [draft, setDraft] = useState<ArchitectureComponent>(() =>
     initial
       ? structuredClone(initial)
@@ -104,22 +115,25 @@ export function ComponentEditor({
   const hasInterfaces = design.architecture?.interfaces?.some(
     (item) => item.owner.kind === "component" && item.owner.id === initial?.id,
   );
-  const parsed = architectureComponentSchema.safeParse(draft);
+
   const architecture = {
-    ...(design.architecture ?? {
-      system: { name: loaded.project.name, description: "" },
-      nodes: [],
-      relationships: [],
-    }),
+    ...architectureDraft,
     components: [
-      ...(design.architecture?.components ?? []).filter((item) => item.id !== draft.id),
+      ...(architectureDraft.components ?? []).filter((item) => item.id !== draft.id),
       draft,
     ],
   };
-  const problems = parsed.success
-    ? validateArchitecture({ ...design, architecture }, builtinRegistry()).filter(
-        (finding) => finding.severity === "error" && finding.code !== "NEEDS_TEMPLATE",
+  const parsed = architectureSchema.safeParse(architecture);
+  const checked = parsed.success
+    ? applyOperations(
+        design,
+        [{ op: "setArchitecture", architecture: parsed.data }],
+        builtinRegistry(),
       )
+    : undefined;
+  const problems = checked && !checked.ok ? checked.errors.map((f) => f.message) : [];
+  const schemaProblems = !parsed.success
+    ? parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`)
     : [];
   const save = async () => {
     if (!parsed.success || problems.length || saving) return;
@@ -130,7 +144,9 @@ export function ComponentEditor({
       return;
     }
     setSaving(true);
-    const ok = await useDraw.getState().edit([{ op: "setArchitecture", architecture }]);
+    const ok = await useDraw
+      .getState()
+      .edit([{ op: "setArchitecture", architecture: parsed.data }]);
     setSaving(false);
     if (ok) {
       onSaved(draft.id);
@@ -171,107 +187,140 @@ export function ComponentEditor({
             . {draft.annotationOrigin.basis}
           </Text>
         ) : null}
-        <TextInput
-          label="Component name"
-          value={draft.name}
-          maxLength={120}
-          onChange={(event) => setDraft({ ...draft, name: event.currentTarget.value })}
-        />
-        <Textarea
-          label="Responsibility"
-          maxLength={240}
-          value={draft.responsibility}
-          onChange={(event) => setDraft({ ...draft, responsibility: event.currentTarget.value })}
-        />
-        <TextInput
-          label="Technology"
-          placeholder="Framework, library or source module"
-          maxLength={120}
-          value={draft.technology ?? ""}
-          onChange={(event) =>
-            setDraft({ ...draft, technology: event.currentTarget.value || undefined })
-          }
-        />
-        <NativeSelect
-          label="Component type"
-          data={[
-            { value: "", label: "Group existing capabilities" },
-            ...compatible.map((item) => ({ value: item.id, label: item.name })),
-          ]}
-          value={draft.capability ?? ""}
-          onChange={(event) =>
-            setDraft({ ...draft, capability: event.currentTarget.value || undefined, config: {} })
-          }
-        />
-        {draft.capability ? (
-          <CapabilityFields
-            capability={draft.capability}
-            config={draft.config}
-            onChange={(config) => setDraft({ ...draft, config })}
-          />
-        ) : null}
-        {options.length ? (
-          <MultiSelect
-            label="Existing capabilities"
-            description="Group actual operations without duplicating their implementation."
-            searchable
-            data={options.map((item) => ({
-              value: item.value,
-              label: item.label,
-              disabled: used.has(item.value),
-            }))}
-            value={draft.members.map(memberKey)}
-            onChange={(values) =>
-              setDraft({
-                ...draft,
-                members: values.flatMap(
-                  (value) => options.find((item) => item.value === value)?.member ?? [],
-                ),
-              })
-            }
-          />
-        ) : null}
-        <MultiSelect
-          label="Uses connected applications / stores"
-          description="Explicit design intent; it does not create runtime dependencies."
-          searchable
-          data={design.connections
-            .filter(
-              (connection) =>
-                connection.from.element === element || connection.to.element === element,
-            )
-            .map((connection) => ({
-              value: connection.id,
-              label: `${connectionPresentation(connection, design).description} · ${design.elements.find((item) => item.id === (connection.from.element === element ? connection.to.element : connection.from.element))?.name}`,
-            }))}
-          value={draft.usesConnections}
-          onChange={(usesConnections) => setDraft({ ...draft, usesConnections })}
-        />
-        {options.some((item) => item.member.kind === "resource") ? (
-          <MultiSelect
-            label="Uses resources"
-            data={options
-              .filter((item) => item.member.kind === "resource")
-              .map((item) => ({ value: item.value, label: item.label }))}
-            value={draft.usesResources.map((item) =>
-              memberKey({ attachment: item.attachment, kind: "resource", ref: item.resource }),
-            )}
-            onChange={(values) =>
-              setDraft({
-                ...draft,
-                usesResources: values.flatMap((value) => {
-                  const member = options.find((item) => item.value === value)?.member;
-                  return member?.ref
-                    ? [{ attachment: member.attachment, resource: member.ref }]
-                    : [];
-                }),
-              })
-            }
-          />
+        <Tabs defaultValue="general" keepMounted>
+          <Tabs.List aria-label="Component configuration sections">
+            <Tabs.Tab value="general">General</Tabs.Tab>
+            <Tabs.Tab value="data">Data</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="general" pt="md">
+            <Stack gap="md">
+              <TextInput
+                label="Component name"
+                value={draft.name}
+                maxLength={120}
+                onChange={(event) => setDraft({ ...draft, name: event.currentTarget.value })}
+              />
+              <Textarea
+                label="Responsibility"
+                maxLength={240}
+                value={draft.responsibility}
+                onChange={(event) =>
+                  setDraft({ ...draft, responsibility: event.currentTarget.value })
+                }
+              />
+              <TextInput
+                label="Technology"
+                placeholder="Framework, library or source module"
+                maxLength={120}
+                value={draft.technology ?? ""}
+                onChange={(event) =>
+                  setDraft({ ...draft, technology: event.currentTarget.value || undefined })
+                }
+              />
+              <NativeSelect
+                label="Component type"
+                data={[
+                  { value: "", label: "Group existing capabilities" },
+                  ...compatible.map((item) => ({ value: item.id, label: item.name })),
+                ]}
+                value={draft.capability ?? ""}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    capability: event.currentTarget.value || undefined,
+                    config: {},
+                  })
+                }
+              />
+              {draft.capability ? (
+                <CapabilityFields
+                  capability={draft.capability}
+                  config={draft.config}
+                  onChange={(config) => setDraft({ ...draft, config })}
+                />
+              ) : null}
+              {options.length ? (
+                <MultiSelect
+                  label="Existing capabilities"
+                  description="Group actual operations without duplicating their implementation."
+                  searchable
+                  data={options.map((item) => ({
+                    value: item.value,
+                    label: item.label,
+                    disabled: used.has(item.value),
+                  }))}
+                  value={draft.members.map(memberKey)}
+                  onChange={(values) =>
+                    setDraft({
+                      ...draft,
+                      members: values.flatMap(
+                        (value) => options.find((item) => item.value === value)?.member ?? [],
+                      ),
+                    })
+                  }
+                />
+              ) : null}
+              <MultiSelect
+                label="Uses connected applications / stores"
+                description="Explicit design intent; it does not create runtime dependencies."
+                searchable
+                data={design.connections
+                  .filter(
+                    (connection) =>
+                      connection.from.element === element || connection.to.element === element,
+                  )
+                  .map((connection) => ({
+                    value: connection.id,
+                    label: `${connectionPresentation(connection, design).description} · ${design.elements.find((item) => item.id === (connection.from.element === element ? connection.to.element : connection.from.element))?.name}`,
+                  }))}
+                value={draft.usesConnections}
+                onChange={(usesConnections) => setDraft({ ...draft, usesConnections })}
+              />
+              {options.some((item) => item.member.kind === "resource") ? (
+                <MultiSelect
+                  label="Uses resources"
+                  data={options
+                    .filter((item) => item.member.kind === "resource")
+                    .map((item) => ({ value: item.value, label: item.label }))}
+                  value={draft.usesResources.map((item) =>
+                    memberKey({
+                      attachment: item.attachment,
+                      kind: "resource",
+                      ref: item.resource,
+                    }),
+                  )}
+                  onChange={(values) =>
+                    setDraft({
+                      ...draft,
+                      usesResources: values.flatMap((value) => {
+                        const member = options.find((item) => item.value === value)?.member;
+                        return member?.ref
+                          ? [{ attachment: member.attachment, resource: member.ref }]
+                          : [];
+                      }),
+                    })
+                  }
+                />
+              ) : null}
+            </Stack>
+          </Tabs.Panel>
+          <Tabs.Panel value="data" pt="md">
+            <ComponentDataEditor
+              design={design}
+              draft={architecture}
+              component={draft}
+              onChange={setArchitectureDraft}
+            />
+          </Tabs.Panel>
+        </Tabs>
+        {schemaProblems.length ? (
+          <Alert color="red" role="alert">
+            {schemaProblems[0]}
+          </Alert>
         ) : null}
         {error || problems[0] ? (
           <Alert color="red" role="alert">
-            {error ?? problems[0]?.message}
+            {error ?? problems[0]}
           </Alert>
         ) : null}
         {hasInterfaces ? (

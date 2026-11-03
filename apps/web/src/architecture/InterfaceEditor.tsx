@@ -31,8 +31,9 @@ import { useState } from "react";
 import { useApiPreview } from "../api-reference/preview.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
-
 import { PayloadFields } from "./ContractFields.tsx";
+import { ContractTypeScope } from "./ContractTypeScope.tsx";
+import { contractShapeProtected } from "./contract-editing.ts";
 import { OperationBehaviorFields } from "./OperationBehaviorFields.tsx";
 
 const newId = (prefix: string) => `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
@@ -180,13 +181,7 @@ export function InterfaceEditor({
   const original = design.architecture?.contracts?.find(
     (item) => contract && contractKey(item) === contractKey(contract),
   );
-  const locked =
-    !!original &&
-    [
-      design.architecture?.interfaces,
-      design.architecture?.bindings,
-      design.architecture?.datasets,
-    ].some((items) => items?.some((item) => contractKey(item.contract) === contractKey(original)));
+  const locked = !!contract && contractShapeProtected(design, contract);
   const sources = contractSources(design);
   const uses = interfaces.filter((item) => sameContractOwner(item.owner, owner));
   const updateContract = (patch: Partial<ArchitectureContract>) =>
@@ -472,112 +467,120 @@ export function InterfaceEditor({
               ) : contract.shape ? (
                 <>
                   <Text size="sm">Planned shape · unresolved drafts are saveable.</Text>
-                  {["api", "in-process"].includes(contract.kind) ? (
-                    <>
-                      {contract.shape.operations.map((operation, index) => {
-                        const changeOperation = (patch: Partial<typeof operation>) =>
-                          updateContract({
-                            shape: {
-                              ...contract.shape!,
-                              operations: contract.shape!.operations.map((item, i) =>
-                                i === index ? { ...item, ...patch } : item,
-                              ),
-                            },
-                          });
-                        return (
-                          <fieldset
-                            className="contract-operation"
-                            key={operation.id}
-                            disabled={locked}
-                          >
-                            <legend>Operation {index + 1}</legend>
-                            <TextInput
-                              label={`Operation ${index + 1} name`}
-                              required
-                              value={operation.name}
-                              maxLength={120}
-                              onChange={(e) => changeOperation({ name: e.currentTarget.value })}
-                            />
-                            <Textarea
-                              label={`Operation ${index + 1} description`}
-                              value={operation.description}
-                              maxLength={1200}
-                              onChange={(e) =>
-                                changeOperation({ description: e.currentTarget.value })
-                              }
-                            />
-                            <OperationBehaviorFields
-                              operation={operation}
+                  <ContractTypeScope
+                    key={contractKey(contract)}
+                    shape={contract.shape}
+                    original={original?.shape}
+                    disabled={locked}
+                    onChange={(shape) => updateContract({ shape })}
+                  >
+                    {["api", "in-process"].includes(contract.kind) ? (
+                      <>
+                        {contract.shape.operations.map((operation, index) => {
+                          const changeOperation = (patch: Partial<typeof operation>) =>
+                            updateContract({
+                              shape: {
+                                ...contract.shape!,
+                                operations: contract.shape!.operations.map((item, i) =>
+                                  i === index ? { ...item, ...patch } : item,
+                                ),
+                              },
+                            });
+                          return (
+                            <fieldset
+                              className="contract-operation"
+                              key={operation.id}
                               disabled={locked}
-                              onChange={changeOperation}
-                            />
-                            <PayloadFields
-                              label={`Operation ${index + 1} input`}
-                              fields={operation.input}
-                              disabled={locked}
-                              onChange={(input) => changeOperation({ input })}
-                            />
-                            <PayloadFields
-                              label={`Operation ${index + 1} output`}
-                              fields={operation.output}
-                              disabled={locked}
-                              onChange={(output) => changeOperation({ output })}
-                            />
-                            <Button
-                              size="xs"
-                              color="red"
-                              variant="subtle"
-                              onClick={() =>
-                                updateContract({
-                                  shape: {
-                                    ...contract.shape!,
-                                    operations: contract.shape!.operations.filter(
-                                      (_, i) => i !== index,
-                                    ),
-                                  },
-                                })
-                              }
                             >
-                              Remove operation {index + 1}
-                            </Button>
-                          </fieldset>
-                        );
-                      })}
-                      <Button
-                        variant="default"
-                        size="xs"
-                        disabled={locked || contract.shape.operations.length >= 30}
-                        onClick={() =>
-                          updateContract({
-                            shape: {
-                              ...contract.shape!,
-                              operations: [
-                                ...contract.shape!.operations,
-                                {
-                                  id: newId("operation"),
-                                  name: "NewOperation",
-                                  description: "",
-                                  input: [],
-                                  output: [],
-                                },
-                              ],
-                            },
-                          })
+                              <legend>Operation {index + 1}</legend>
+                              <TextInput
+                                label={`Operation ${index + 1} name`}
+                                required
+                                value={operation.name}
+                                maxLength={120}
+                                onChange={(e) => changeOperation({ name: e.currentTarget.value })}
+                              />
+                              <Textarea
+                                label={`Operation ${index + 1} description`}
+                                value={operation.description}
+                                maxLength={1200}
+                                onChange={(e) =>
+                                  changeOperation({ description: e.currentTarget.value })
+                                }
+                              />
+                              <OperationBehaviorFields
+                                operation={operation}
+                                disabled={locked}
+                                onChange={changeOperation}
+                              />
+                              <PayloadFields
+                                label={`Operation ${index + 1} input`}
+                                fields={operation.input}
+                                disabled={locked}
+                                onChange={(input) => changeOperation({ input })}
+                              />
+                              <PayloadFields
+                                label={`Operation ${index + 1} output`}
+                                fields={operation.output}
+                                disabled={locked}
+                                onChange={(output) => changeOperation({ output })}
+                              />
+                              <Button
+                                size="xs"
+                                color="red"
+                                variant="subtle"
+                                onClick={() =>
+                                  updateContract({
+                                    shape: {
+                                      ...contract.shape!,
+                                      operations: contract.shape!.operations.filter(
+                                        (_, i) => i !== index,
+                                      ),
+                                    },
+                                  })
+                                }
+                              >
+                                Remove operation {index + 1}
+                              </Button>
+                            </fieldset>
+                          );
+                        })}
+                        <Button
+                          variant="default"
+                          size="xs"
+                          disabled={locked || contract.shape.operations.length >= 30}
+                          onClick={() =>
+                            updateContract({
+                              shape: {
+                                ...contract.shape!,
+                                operations: [
+                                  ...contract.shape!.operations,
+                                  {
+                                    id: newId("operation"),
+                                    name: "NewOperation",
+                                    description: "",
+                                    input: [],
+                                    output: [],
+                                  },
+                                ],
+                              },
+                            })
+                          }
+                        >
+                          Add operation
+                        </Button>
+                      </>
+                    ) : (
+                      <PayloadFields
+                        label="Payload"
+                        fields={contract.shape.payload}
+                        disabled={locked}
+                        onChange={(payload) =>
+                          updateContract({ shape: { ...contract.shape!, payload } })
                         }
-                      >
-                        Add operation
-                      </Button>
-                    </>
-                  ) : (
-                    <PayloadFields
-                      label="Payload"
-                      fields={contract.shape.payload}
-                      disabled={locked}
-                      onChange={(payload) =>
-                        updateContract({ shape: { ...contract.shape!, payload } })
-                      }
-                    />
-                  )}
+                      />
+                    )}
+                  </ContractTypeScope>
                 </>
               ) : null}
               <Group>

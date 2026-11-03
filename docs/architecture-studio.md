@@ -78,3 +78,23 @@ and missing behavioral decisions appear in Review; “Complete” is an authored
 verification or template availability. New versions preserve the existing reference guards.
 See the [Mattermost backend review](reviews/mattermost-backend-review-2026-11-01.md) for a worked
 example and remaining gaps before deterministic implementation.
+
+
+Component **Configure component → Data** now opens focused contract, dataset, entity, aggregate
+and query subeditors. Choose a Data section and an exact definition; follow **Open …** links
+without leaving the component draft. Data contracts supply logical fields and reusable local types;
+datasets supply authority and stores. Entity fields annotate those same stable field IDs rather
+than copying a second type schema. Relations, keys, indexes, concurrency and finite invariants have
+bounded row controls. Queries select declared joins, allowed comparisons, output, stable keyset
+order, page limits, existing policy/projection references and freshness.
+
+Contract fields support exact local references, bounded maps and tagged unions in both Data and
+Interfaces. Referenced contract/type shapes are protected; explicit successors retain older consumers.
+Names can change while storage and field identities stay stable. Source-backed legacy shapes remain
+read-only. Unresolved policy/type choices remain visible design gaps. Existing access policies can
+be reused and inspected; finite policy authoring follows in the separate P67b package.
+
+All Data changes share **Save component** with General. Cancel discards the whole open draft;
+invalid drafts remain editable across section switches. One save is one undo step. Revision conflicts
+retain the draft and require Cancel/reopen against the latest revision. These controls describe design
+intent; they do not supply storage, query execution, authorization or runtime evidence.

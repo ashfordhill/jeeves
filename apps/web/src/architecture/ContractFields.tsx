@@ -11,10 +11,13 @@ import {
   NativeSelect,
   NumberInput,
   Stack,
+  Text,
   TextInput,
 } from "@mantine/core";
 
-function ValueFields({
+import { useContractTypes } from "./ContractTypeScope.tsx";
+
+export function ValueFields({
   label,
   value,
   onChange,
@@ -27,6 +30,8 @@ function ValueFields({
   disabled: boolean;
   depth: number;
 }) {
+  const { types, navigate, target } = useContractTypes();
+  const reference = value.ref ? `${value.ref.id}@${value.ref.version}` : "";
   const bounds =
     value.type === "text"
       ? (["minLength", "maxLength"] as const)
@@ -44,6 +49,7 @@ function ValueFields({
         onChange={(e) =>
           onChange({
             type: e.currentTarget.value as ContractValue["type"],
+            ...(e.currentTarget.value === "tagged-union" ? { discriminator: "kind" } : {}),
             ...(value.nullable !== undefined && { nullable: value.nullable }),
           })
         }
@@ -82,6 +88,183 @@ function ValueFields({
           ))}
         </Group>
       ) : null}
+      {value.type === "unresolved" ? (
+        <Text size="sm">Unresolved design value. Choose a type before compilation.</Text>
+      ) : null}
+      {value.type === "ref" ? (
+        <>
+          <NativeSelect
+            label={`${label} exact type reference`}
+            value={reference}
+            data={[
+              { value: "", label: "Unresolved · select a local type version" },
+              ...types.map((t) => ({
+                value: `${t.id}@${t.version}`,
+                label: `${t.name} · ${t.version}`,
+              })),
+              ...(reference && !types.some((t) => `${t.id}@${t.version}` === reference)
+                ? [{ value: reference, label: `${reference} · missing` }]
+                : []),
+            ]}
+            onChange={(e) => {
+              const t = types.find((t) => `${t.id}@${t.version}` === e.currentTarget.value);
+              onChange({ ...value, ref: t ? { id: t.id, version: t.version } : undefined });
+            }}
+          />
+          {reference ? (
+            <Button
+              component="a"
+              href={`#${target}`}
+              size="compact-xs"
+              variant="subtle"
+              onClick={(event) => {
+                event.preventDefault();
+                navigate(reference);
+              }}
+            >
+              Open exact type definition
+            </Button>
+          ) : null}
+        </>
+      ) : null}
+      {value.type === "map" ? (
+        <>
+          <Group grow>
+            <NumberInput
+              label={`${label} key minimum length`}
+              value={value.keys?.minLength ?? ""}
+              min={0}
+              max={1e9}
+              allowDecimal={false}
+              onChange={(v) =>
+                onChange({
+                  ...value,
+                  keys: {
+                    maxLength: value.keys?.maxLength ?? 64,
+                    minLength: typeof v === "number" ? v : undefined,
+                  },
+                })
+              }
+            />
+            <NumberInput
+              label={`${label} key maximum length`}
+              value={value.keys?.maxLength ?? ""}
+              min={1}
+              max={1e9}
+              allowDecimal={false}
+              onChange={(v) =>
+                onChange({
+                  ...value,
+                  keys: typeof v === "number" ? { ...value.keys, maxLength: v } : undefined,
+                })
+              }
+            />
+          </Group>
+          <Group grow>
+            {(["minEntries", "maxEntries"] as const).map((key) => (
+              <NumberInput
+                key={key}
+                label={`${label} ${key}`}
+                value={value[key] ?? ""}
+                min={0}
+                max={10000}
+                allowDecimal={false}
+                onChange={(v) =>
+                  onChange({ ...value, [key]: typeof v === "number" ? v : undefined })
+                }
+              />
+            ))}
+          </Group>
+          {depth < CONTRACT_NESTING_LIMIT ? (
+            <fieldset className="contract-payload" disabled={disabled}>
+              <legend>{label} map values</legend>
+              <ValueFields
+                label={`${label} map value`}
+                value={value.values ?? { type: "unresolved" }}
+                depth={depth + 1}
+                disabled={disabled}
+                onChange={(values) => onChange({ ...value, values })}
+              />
+            </fieldset>
+          ) : null}
+        </>
+      ) : null}
+      {value.type === "tagged-union" ? (
+        <>
+          <TextInput
+            label={`${label} discriminator`}
+            value={value.discriminator ?? ""}
+            maxLength={64}
+            onChange={(e) => onChange({ ...value, discriminator: e.currentTarget.value })}
+          />
+          <Text size="sm">
+            Each variant needs a required discriminator field with one distinct allowed text value.
+            At least two variants are required.
+          </Text>
+          {depth < CONTRACT_NESTING_LIMIT ? (
+            <>
+              {(value.variants ?? []).map((variant, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: schema variants are positional and controls are fully controlled
+                <fieldset className="contract-payload" key={i} disabled={disabled}>
+                  <legend>
+                    {label} variant {i + 1}
+                  </legend>
+                  <ValueFields
+                    label={`${label} variant ${i + 1}`}
+                    value={variant}
+                    depth={depth + 1}
+                    disabled={disabled}
+                    onChange={(next) =>
+                      onChange({
+                        ...value,
+                        variants: value.variants?.map((v, n) => (n === i ? next : v)),
+                      })
+                    }
+                  />
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    color="red"
+                    onClick={() =>
+                      onChange({ ...value, variants: value.variants?.filter((_, n) => n !== i) })
+                    }
+                  >
+                    Remove variant {i + 1}
+                  </Button>
+                </fieldset>
+              ))}
+              <Button
+                size="xs"
+                variant="default"
+                disabled={disabled || (value.variants?.length ?? 0) >= 20}
+                onClick={() =>
+                  onChange({
+                    ...value,
+                    variants: [
+                      ...(value.variants ?? []),
+                      {
+                        type: "object",
+                        fields: [
+                          {
+                            id: `field-${crypto.randomUUID().slice(0, 8)}`,
+                            name: value.discriminator ?? "kind",
+                            type: "text",
+                            enumValues: [`variant${(value.variants?.length ?? 0) + 1}`],
+                            required: true,
+                            description: "",
+                          },
+                        ],
+                      },
+                    ],
+                  })
+                }
+              >
+                Add union variant
+              </Button>
+            </>
+          ) : null}
+        </>
+      ) : null}
       {value.type === "object" && depth < CONTRACT_NESTING_LIMIT ? (
         <PayloadFields
           label={`${label} object`}
@@ -103,7 +286,8 @@ function ValueFields({
           />
         </fieldset>
       ) : null}
-      {["object", "array"].includes(value.type) && depth === CONTRACT_NESTING_LIMIT ? (
+      {["object", "array", "map", "tagged-union"].includes(value.type) &&
+      depth === CONTRACT_NESTING_LIMIT ? (
         <p>Nesting limit reached. This shape remains unresolved.</p>
       ) : null}
     </Stack>

@@ -4,7 +4,7 @@ P63a/P63b add optional `architecture.backend` to the existing design document. I
 semantics**, with no new runtime, SQL, migrations or application generation. Existing designs
 omit it and retain their existing resources/contracts. **P63 is complete**, including bounded queries
 and the read-only legacy adapter. [P64 finite policy definitions](backend-access.md) are complete;
-authoring controls follow in P67a/P67b.
+[P67a component Data authoring](architecture-studio.md) is complete; the separate P67b access-policy editor remains next.
 See the [shared contract](plans/backend-benchmarks/contract.md#3-one-authoritative-model) and
 [exact assignment split](plans/backend-benchmarks/execution-units.md#mandatory-splits).
 
@@ -183,6 +183,23 @@ rejects attempted editable entities backed by source resource contracts. Explici
 query authoring against legacy sources and runtime execution remain separately assigned work.
 
 ## Editing and portability
+
+P67a adds bounded mouse subeditors under **Configure component → Data**. Existing data contracts
+and datasets are selectable by exact identity, with navigation to their definitions in the same
+architecture draft. Required/nullability annotations follow the contract; table/column/dataset
+identities are protected after saving. Entity controls cover scalar/opaque JSON/exact money storage,
+server authority, primary/scope fields, relations, unique keys and ordered indexes. Aggregate controls
+cover root/children, application/component ownership, store, locks/expected-version fields and all
+four finite invariant kinds. Query controls cover declared joins, per-source policy/projection
+references, allowlisted filters, output, keyset sort/cursor, limits and freshness. Unresolved access
+remains saveable and blocks compilation. Existing policy definitions can be inspected; P67b owns
+the finite policy builder and affected-path preview.
+
+Every subeditor updates the component's single draft. Save uses the existing shared operation
+validator and one atomic `setArchitecture` edit; Cancel, undo/redo, reload and revision conflicts
+retain their original meanings. Invalid choices stay visible with source-specific validation.
+This authoring adds no new semantics or runtime availability. Source-backed legacy contracts
+remain outside editable entity creation.
 
 Existing `setArchitecture` batches carry the complete model and reject new structural findings
 atomically. `validateBackendData` and `backendDataRemovalFindings` report source paths under

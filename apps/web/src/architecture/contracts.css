@@ -73,3 +73,42 @@
 .contract-save:hover {
   background: var(--mantine-color-cyan-9);
 }
+
+.component-data-editor,
+.component-data-editor .mantine-Stack-root,
+.contract-types {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.component-data-editor .mantine-Button-root,
+.contract-types .mantine-Button-root {
+  max-width: 100%;
+  height: auto;
+  min-height: 30px;
+}
+.component-data-editor .mantine-Button-label,
+.contract-types .mantine-Button-label {
+  white-space: normal;
+}
+.contract-types {
+  border: 1px solid var(--line);
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+.contract-types > summary,
+.backend-rows summary {
+  cursor: pointer;
+}
+@media (max-width: 450px) {
+  .contract-payload,
+  .contract-operation,
+  .contract-types {
+    padding: 0.5rem;
+  }
+  .component-data-editor .architecture-form-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.backend-rows h3 {
+  font-size: 0.95rem;
+}

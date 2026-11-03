@@ -158,3 +158,15 @@ The offline [transport/export tests](../packages/spec/src/contract-transport.tes
 exported instances with Ajv, including dictionary bounds, money reuse, tagged payment results,
 optional nullable addresses, source protection and binary downloads. Ajv and its formats package
 are test-only dependencies pinned to the versions already used by the legacy REST runtime.
+
+
+## Mouse authoring
+
+P67a exposes local type definitions, exact version references, bounded dictionary keys/entries/values
+and tagged-union discriminators/variants through the existing Interfaces and component Data dialogs.
+The controls share one local type scope with payloads and operation inputs/outputs. **Open exact type
+definition** selects the referenced version. Referenced shapes stay protected by the same transition
+guards used by atomic saves; successors preserve old versions and require explicit reference selection.
+Unresolved values are displayed as design decisions. Optional presence and nullable value remain
+separate controls. Maps/unions retain their existing depth/count/validation budgets; no JSON/code
+textarea or new serializer/runtime was added. See the [studio workflow](architecture-studio.md).
