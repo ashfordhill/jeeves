@@ -29,8 +29,11 @@ the application fixtures assigned to P61b–d, not application contracts supplie
 [P61a protocol v1](protocol/v1/README.md) now supplies shared error/auth/paging/idempotency contracts,
 strict fixture validation and namespaced acceptance identities, proved by an isolated synthetic
 pack. [P61b Discourse contracts/fixtures](discourse-core/v1/README.md) now resolve all 20 D rows /
-66 observations through five fixed scenarios and eight hook contracts. Vendure/Zammad fixtures and
-the combined P61 gate remain incomplete; all three applications are absent/not run. No runner alias
+66 observations through five fixed scenarios and eight hook contracts.
+[P61c Vendure contracts/fixtures](vendure-core/v1/README.md) resolve all 20 V rows / 63 observations
+through five fixed scenarios and eight hook contracts, with exact money/stock/payment recovery
+expectations and distinct reference/Stripe protocol fixtures. Zammad fixtures and the combined
+P61 gate remain incomplete; all three applications are absent/not run. No runner alias
 is registered until its actual tests exist.
 
 ## Loading and evaluating

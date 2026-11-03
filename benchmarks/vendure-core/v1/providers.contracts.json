@@ -1,0 +1,175 @@
+{
+  "referenceDispatch": {
+    "type": "object",
+    "properties": {
+      "requestKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "scopeId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "paymentId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "orderId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "amount": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "currency": {
+        "type": "string",
+        "const": "USD"
+      }
+    },
+    "required": ["requestKey", "scopeId", "paymentId", "orderId", "amount", "currency"],
+    "additionalProperties": false
+  },
+  "referenceResult": {
+    "type": "object",
+    "properties": {
+      "requestKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "providerId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "amount": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "currency": {
+        "type": "string",
+        "const": "USD"
+      },
+      "state": {
+        "type": "string",
+        "enum": ["submitted", "settled", "failed"]
+      }
+    },
+    "required": ["requestKey", "providerId", "amount", "currency", "state"],
+    "additionalProperties": false
+  },
+  "stripeCreate": {
+    "type": "object",
+    "properties": {
+      "amount": {
+        "type": "integer",
+        "minimum": 50,
+        "maximum": 99999999
+      },
+      "currency": {
+        "type": "string",
+        "const": "usd"
+      },
+      "confirm": {
+        "type": "boolean",
+        "const": true
+      },
+      "payment_method": {
+        "type": "string",
+        "const": "pm_card_visa"
+      },
+      "payment_method_types": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "const": "card"
+          }
+        ],
+        "items": false,
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "metadata": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "scopeId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": ["paymentId", "scopeId", "orderId"],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "amount",
+      "currency",
+      "confirm",
+      "payment_method",
+      "payment_method_types",
+      "metadata"
+    ],
+    "additionalProperties": false
+  },
+  "stripeResult": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "object": {
+        "type": "string",
+        "const": "payment_intent"
+      },
+      "amount": {
+        "type": "integer",
+        "minimum": 50,
+        "maximum": 99999999
+      },
+      "amount_received": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 99999999
+      },
+      "currency": {
+        "type": "string",
+        "const": "usd"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "succeeded",
+          "processing",
+          "requires_payment_method",
+          "canceled",
+          "requires_action",
+          "requires_confirmation",
+          "requires_capture"
+        ]
+      }
+    },
+    "required": ["id", "object", "amount", "amount_received", "currency", "status"],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "reference": {
+    "dispatch": {
+      "requestKey": "pay:801",
+      "scopeId": "e2000000-0000-4000-8000-000000000001",
+      "paymentId": "e2000000-0000-4000-8000-000000000801",
+      "orderId": "e2000000-0000-4000-8000-000000000601",
+      "amount": 2649,
+      "currency": "USD"
+    },
+    "result": {
+      "requestKey": "pay:801",
+      "providerId": "ref-801",
+      "amount": 2649,
+      "currency": "USD",
+      "state": "settled"
+    }
+  },
+  "stripe": {
+    "apiVersion": "2025-03-31.basil",
+    "account": "acct_fixture_shop_a",
+    "requestKey": "stripe:809",
+    "createPath": "/v1/payment_intents",
+    "retrievePath": "/v1/payment_intents/pi_fixture_809",
+    "dispatch": {
+      "amount": 2649,
+      "currency": "usd",
+      "confirm": true,
+      "payment_method": "pm_card_visa",
+      "payment_method_types": ["card"],
+      "metadata": {
+        "paymentId": "e2000000-0000-4000-8000-000000000809",
+        "scopeId": "e2000000-0000-4000-8000-000000000001",
+        "orderId": "e2000000-0000-4000-8000-000000000609"
+      }
+    },
+    "result": {
+      "id": "pi_fixture_809",
+      "object": "payment_intent",
+      "amount": 2649,
+      "amount_received": 2649,
+      "currency": "usd",
+      "status": "succeeded"
+    }
+  }
+}

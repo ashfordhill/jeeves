@@ -1,0 +1,212 @@
+[
+  {
+    "requestId": "unsigned-callback",
+    "provider": "reference",
+    "rawSha256": "86cee1c23ff35b2ccecfd1315a8384adcbe09649bd27d10d7b32336b8cfae857",
+    "authentication": "reject",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "invalid-callback",
+    "provider": "reference",
+    "rawSha256": "86cee1c23ff35b2ccecfd1315a8384adcbe09649bd27d10d7b32336b8cfae857",
+    "authentication": "reject",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "modified-callback",
+    "provider": "reference",
+    "rawSha256": "1b8a680cef07fbb0075f669c208e8c6857f9f82a31f40ebcee3cbbaedf570c8a",
+    "authentication": "reject",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "expired-callback",
+    "provider": "reference",
+    "rawSha256": "86cee1c23ff35b2ccecfd1315a8384adcbe09649bd27d10d7b32336b8cfae857",
+    "authentication": "reject",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "foreign-scope-callback",
+    "provider": "reference",
+    "rawSha256": "3c5b8110a096d84be464bae49234f73801432a7767463a814a31a6f2bb6c74f2",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "wrong-order-callback",
+    "provider": "reference",
+    "rawSha256": "38438bbbf1b2715e447b9665e9eaa9f6638b2da0fc5ed3092fe96ac626fd27d2",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "wrong-amount-callback",
+    "provider": "reference",
+    "rawSha256": "25fe6a6c93b0e32823c02b1129f87b501a14b018a559447ebd63f920f5b4af8b",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "wrong-provider-callback",
+    "provider": "reference",
+    "rawSha256": "87ff6412fa9763b1d2c3e6eaab2f9ec9526dfd0bdc008851c871a7985c48bb4d",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "signed-settlement",
+    "provider": "reference",
+    "rawSha256": "86cee1c23ff35b2ccecfd1315a8384adcbe09649bd27d10d7b32336b8cfae857",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "duplicate-settlement",
+    "provider": "reference",
+    "rawSha256": "86cee1c23ff35b2ccecfd1315a8384adcbe09649bd27d10d7b32336b8cfae857",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "older-failure",
+    "provider": "reference",
+    "rawSha256": "fa212027d422058f348d3702a85c32a1bcfc64217fc08dd1c245bd3dfda6f17f",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "callback-after-reconciliation",
+    "provider": "reference",
+    "rawSha256": "258102f7c3a66927dde5af5a6a2eead0587eca5b53a36d1afbac43f38da61ac1",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-rev11",
+    "provider": "warehouse",
+    "rawSha256": "cc738d6a0d94045938adc807a6bd647d5e242c3ce290d9f8d424ba08d8998c5a",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-duplicate",
+    "provider": "warehouse",
+    "rawSha256": "cc738d6a0d94045938adc807a6bd647d5e242c3ce290d9f8d424ba08d8998c5a",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-old",
+    "provider": "warehouse",
+    "rawSha256": "bab98dddc91a1e7ec8c8908aee2642c77eeeb3d076a4432cdea6df24fc92e536",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-unsigned",
+    "provider": "warehouse",
+    "rawSha256": "fd11cf4789ac30f0431956c3724fa3e5ead65d797689a50098cc10e760c19186",
+    "authentication": "reject",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-foreign",
+    "provider": "warehouse",
+    "rawSha256": "757afbdd700ce772702e6895472a02db39e6ad527652cd35a324ce4b7ee5c2c3",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-held-conflict",
+    "provider": "warehouse",
+    "rawSha256": "21262f0395953c0a16d2ea7c1afc959bf92ac2efa1f6b080629dcbcc4104dd33",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-interrupted",
+    "provider": "warehouse",
+    "rawSha256": "926091335e078263598968da4a57a2693436f06880e16ca696b53bde2134c62e",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-resume",
+    "provider": "warehouse",
+    "rawSha256": "926091335e078263598968da4a57a2693436f06880e16ca696b53bde2134c62e",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-unavailable",
+    "provider": "warehouse",
+    "rawSha256": "0684e78340224011304ec5bb55ccbb101ac548ba2e08af7293e77caa47f9363a",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-bad-signature",
+    "provider": "stripe",
+    "rawSha256": "8c090e4a059059658520de08d7136313bc45526c1ca6796cdca773c04de16727",
+    "authentication": "reject",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-foreign",
+    "provider": "stripe",
+    "rawSha256": "c29a3d99fe708d2e2630a96c40c47d31376c905be55954a062e6bfd61d586f21",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-amount-mismatch",
+    "provider": "stripe",
+    "rawSha256": "b58338b5fc10cacabcc8aa752a1a67923b3a1f560d6efc2451dc2b2c02b99ab7",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-settled",
+    "provider": "stripe",
+    "rawSha256": "dd2478f395d58f5760297b0dc622d7c368690598875fa045aff30fe41ffcab54",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-duplicate",
+    "provider": "stripe",
+    "rawSha256": "dd2478f395d58f5760297b0dc622d7c368690598875fa045aff30fe41ffcab54",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-old-failure",
+    "provider": "stripe",
+    "rawSha256": "bf589a0a29db0df03493031ffe418a94a43fe93316beda3589b1ce855e7052f2",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "stripe-status-mismatch",
+    "provider": "stripe",
+    "rawSha256": "7d5accec58dd7335e47168a754c98303a1cd89fd44343df9d61b0a6bf122d203",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-timeout",
+    "provider": "warehouse",
+    "rawSha256": "691e775eb86daa842006fa452bb36d281053a6f033f2a823fdc0f2f84e420ab0",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  },
+  {
+    "requestId": "erp-invalid-result",
+    "provider": "warehouse",
+    "rawSha256": "bc1c30166999d9fffcaf3e6560fd12f52740f20810018f32cc8ae283c6273965",
+    "authentication": "valid",
+    "decodedEnvelopeValid": true
+  }
+]

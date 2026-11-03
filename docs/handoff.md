@@ -5792,3 +5792,146 @@ Observed intermediate failures and limits:
 
 **P61b is complete. P61c is next unstarted; parent P61 remains partial.** Stop after this scoped
 local commit; launch no following task.
+
+## 2026-11-02 — P61c: independent Vendure contracts, money/stock/payment fixtures and five scenarios
+
+Executed **P61c only** in `/home/ash/github/jeeves` on `main`, starting clean at P61b commit
+`a2fb2a7fee2cfc342e805bab1602998f78b8e103`. Read AGENTS, PLAN §15/relevant earlier sections,
+latest handoffs, backend shared contract/benchmark scopes/79-unit queue/phase-1 P61, shared protocol,
+P61a fixture/identity interfaces, P61b contract/fixture pattern, fixed generator acceptance and
+Vendure's P60 map/review. One worker; no delegation, branch or worktree. Applied the authorized
+P59–P61d policy: lint/types and focused offline backend semantic/compatibility checks replace
+full `pnpm check`; UI unit/E2E execution and maintenance remain deferred. No next unit was started.
+
+Built:
+
+- Added [Vendure v1 acceptance pack](../benchmarks/vendure-core/v1/README.md): **42 unique
+  operations, all 20 V rows / 63 unchanged observations, two isolated shops, ten actors, 16 typed
+  datasets, 195 fixed request samples, 19 negative payloads and 327 request/control/parallel steps**
+  in exactly V-last-item, V-repeat, V-unknown, V-expire and V-ship. Each operation has exact
+  observation ownership. The typed entry validates through P61a's pinned-ledger interface;
+  namespaced backend acceptance uses the existing catalog without runner/identity changes.
+- Added strict acceptance-only schemas in `packages/spec/src/vendure-benchmark.ts` for requests,
+  responses, seeds, privileged controls, eight hook seams, selected original-byte callback
+  envelopes and outbound reference/Stripe protocols. OpenAPI 3.1 is JSON syntax in the requested
+  `.yaml` file, with exact snapshot comparisons. Provider HTTP bodies describe decoded JSON
+  envelopes and separately preserve the raw UTF-8 fixture string: the future adapter sends that
+  string verbatim, never JSON-encodes it again. Session/admin/customer/fulfillment/seller/provider
+  policies are explicit; fixture controls never appear as production routes.
+- Fixed USD safe-integer bounds 0..9007199254740991, quantities 1..1000, 100-line carts,
+  immutable quote/address/price snapshots, checked overflow and literal totals. Three ×1999 plus
+  two ×2500 yields subtotal **10997**, tax **825**, shipping **500**, total **12322**. One ×1999
+  totals **2649**; a later 2299 price yields **2971** for new quotes and leaves the old order
+  unchanged. The overflow cart references a genuinely server-priced maximum variant; it does not
+  obtain an extreme price from client input. Hidden variant/asset checks are independent of
+  parent publication. The full cart has 100 distinct server-owned variants.
+- Fixed atomic checkout zero-row rollback, one order/line/reservation/receipt/event after lost
+  response, same-key changed-quantity conflict, one in-flight command owner and follower retry,
+  cart CAS winner count, and last-item stock ownership. Stock separates active/held/allocated
+  quantities; unknown payment's one-unit SKU stays unavailable to another checkout. Both valid
+  expiry/payment lock orders have explicit schedules, including worker death before expiry
+  commit, fenced restart, one expiry effect and zero charge against expired stock.
+- Fixed accepted-but-timeout payment → **unknown/payment-review/held**, with **providerId null**
+  until verified callback/authoritative lookup binds it. No ID is invented from an unreceived
+  response. Signed original-byte callbacks bind account/shop/payment/order/request/amount to the
+  persisted attempt and authoritative provider record. Unsigned, modified-byte, stale, foreign,
+  wrong-order/provider/amount events cannot settle. One valid settlement plus duplicate/older
+  failure leaves **one charge, one paid transition**, terminal settlement and separate event
+  receipts; a second timeout resolves by same-identity lookup. Pending lookup remains explicit
+  503/unknown, and neither cancellation, expiry nor a new key can dispose of held uncertainty.
+- Added [eight hook decisions](../benchmarks/vendure-core/v1/hooks.md) and typed input/results:
+  capped proportional promotion allocation **2/1/0** with UUID remainder tie; trusted tax quote
+  provenance/hash/expiry; bounded package/rate selection; return/refund **2149 + 4298 = 6447**
+  excluding shipping; seller **5997 gross / 600 fee / 5397 net** distinct from the **6947** customer
+  charge; immutable rational USD→EUR **1999 ×92/100 →1839**, half-even ties; named Stripe
+  signature/status/idempotency/reconciliation boundary; authenticated absolute ERP stock with
+  revision 11/9/12/13 apply/stale/commitment-conflict/rollback/resume. Every H seam has reference,
+  rejection, recovery and zero-write unavailable/timeout/invalid-result cases. P72b still owns
+  implementation binding/briefs; no supplied hook or production certification is inferred.
+- Added [provider protocol decisions](../benchmarks/vendure-core/v1/providers.md), outbound samples,
+  callback hashes and fixture-only HMACs. Checked primary Stripe PaymentIntent/idempotency/webhook
+  documentation for the selected **2025-03-31.basil** subset. V08 remains the local reference
+  protocol; V19 requires a named concrete adapter, with account/mode/amount/status checks and
+  the provider's shorter retention boundary. After 23 hours, automatic uncertain-create POST
+  recovery stops and requires reconciliation; a new key cannot become a second charge. These
+  independent provider fixtures are not executed adapter evidence. No P60 pin/catalog was edited.
+- Covered owner/staff detail/history/receipt/list paths, interleaved private/foreign rows,
+  query/scope/tamper cursor rejection, current-authorized command replay, published-only search
+  and rebuild, safe audit, one inbox/effect receipt after crash/restart and redaction of a pending
+  delivery after revocation. Paid quantity three ships **2 + 1**, CAS rejects a competing two,
+  current-version quantity ceiling rejects two more, replay preserves one shipment, and order
+  ends fulfilled v6 with onHand **7**, allocated **0**. The 16-byte `receipt.txt` is intentional
+  asset/receipt test data, not customer data or a generation artifact.
+- Preserved the browser boundary: the Node-only contract modules are imported directly, matching
+  Discourse's pattern, and **are not exported from `@jeeves/spec`'s browser-facing barrel**.
+  That barrel is byte-identical to P61b; production web build passes. Updated the benchmark,
+  roadmap and improvement entry points: **P61c complete, P61d next; parent P61 remains partial**.
+  No CATALOG change: no offering, reusable boundary or runtime/template availability changed.
+
+Final checks using **Node 24.21.0 / pnpm 12.16.1** with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; `Checked 837 files in 474ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, no added diagnostics. Log: `.jeeves-work/p61c/lint.log`. Scoped Biome passes without
+  diagnostics. No package/dependency/lock changes.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across workspaces/scripts, **9.9s**.
+  Evidence: `.jeeves-work/runs/2026-11-03T01-17-51-523Z-typecheck-7139793d.{json,log}`.
+- Exact focused selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/vendure-benchmark.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/delivery.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **10 files / 210 tests passed**, **5.5s** including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-03T01-17-51-534Z-unit-0a1cb3f8.{json,log}`. Both final work-runner
+  records report `sourceChanged: false`. These validate payload/schema/snapshot/identity invariants,
+  independently checked BigInt totals, callback bytes/HMAC/time, visibility and explicit absence,
+  plus existing acceptance/delivery/generator/registry compatibility; they are not running V behavior.
+- `pnpm --filter @jeeves/web build`: exit 0, **2.44s** Vite build; existing large-chunk warning.
+  `.jeeves-work/p61c/web-build.log`. No Node-crypto browser externalization warning, UI change,
+  browser inspection or deferred UI suite execution. The build specifically verifies the shared
+  barrel compatibility boundary after keeping Node-only acceptance modules direct-imported.
+- Temporary `.jeeves-work/p61c/audit.py` → `audit.json`: passes scoped Markdown links/anchors,
+  balanced fences, JSON parsing, exact operation/observation coverage and seed quantity/price/scope
+  relationships; checks all canonical ledger pins and byte preservation of **nine frozen P59 files
+  plus all three P60 maps**, **647 other files** including protocol/Discourse/reference/catalog/
+  browser barrel/generator/registry/application/template/artifact/legacy fixture/dependency trees,
+  and append-only earlier handoff prefix. Rerun after this append. `git diff --check` passes.
+
+Artifact file-byte SHA-256 pins:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Vendure OpenAPI | `cc397ba4b11f60a7d7b94605e25c5cf7c65dd3b70956f1a4f0641e6888ded13f` |
+| Fixed seeds/requests/scenario expectations | `26150761e0db8b270a4d5a3730a475588e07d2dec703444497788209787dbfe1` |
+| Hook schema snapshot | `a44992f2aa352c8109f2c8c38c746182f6362cd2246b4e3537377d53a509758f` |
+| Fixed hook inputs/results | `22bfac4b819457ba8077634dfcd01cf69fba26cf1461e0b2dda9c8332687cd00` |
+| Callback schemas | `e749deda893a8942397f97d2aedd5252541315382ac7ee273387a9ca70b28b2d` |
+| Original-byte callback metadata | `7f065c2136937f7bccc261040a84acc770ca39b4ae5cff59af412e9dd1707f79` |
+| Outbound provider schemas | `13da5a541803e5576f96fcc52d0b7e0cedfe3fd43370d28aa5cda0c19817612f` |
+| Outbound provider examples | `6b8a15aee4dd9833cf365ed7c22cfca89a784972204e85d18341ba620404d1cf` |
+| Intentional receipt/asset bytes | `144602371f31096e0d8e8e556b0fc97c46686753c8fd70fb8e6a980254c1b978` |
+
+Observed intermediate failures and limits:
+
+- An initial scoped spec typecheck found TS2339 in the new test helper's union response access;
+  returned the explicitly narrowed response and simplified its shipment replay assertion. Final
+  typecheck and all focused tests pass. An intermediate lint run found formatting errors in two
+  newly regenerated JSON snapshots; applied Biome to those scoped files and reran final checks.
+  Failed lint remains `.jeeves-work/p61c/lint-before-json-format.log`. No frozen expectation or
+  existing implementation was weakened, and no failed runtime result was converted into a pass.
+- No P61c blocker or ledger scope revision. Static schema parsing, test-only cryptographic
+  calculations and independent arithmetic do not prove live authorization, production signature
+  verification, concurrency/transaction correctness, actual external adapter behavior, worker
+  fencing/recovery, tax law, seller onboarding, physical restock, provider certification or scale.
+  Stripe snapshots cover selected fields of the pinned protocol, not complete API compatibility.
+  P72a/b and later runtimes/adapters must execute the committed expectations with real evidence.
+- **All three applications remain absent/not run, with zero observed implementation points.**
+  No application logic, provider/hook implementation, backend application generation, runner/profile
+  command, benchmark pass/result record, live credential/provider call, upstream execution, live
+  database/output mutation, load/recovery/upgrade campaign, push or publication. Full `pnpm check`
+  and deferred UI unit/E2E execution/maintenance were not run. Historical P59 architecture assertion
+  debt is preserved and was not rerun/repaired.
+
+**P61c is complete. P61d is the next unstarted work unit; parent P61 remains partial.** Stop after
+this scoped local commit; launch no following task.

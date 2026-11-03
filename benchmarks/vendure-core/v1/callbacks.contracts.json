@@ -1,0 +1,235 @@
+{
+  "reference": {
+    "type": "object",
+    "properties": {
+      "eventId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "requestKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "scopeId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "paymentId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "orderId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "providerId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "amount": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "currency": {
+        "type": "string",
+        "const": "USD"
+      },
+      "state": {
+        "type": "string",
+        "enum": ["settled", "failed", "submitted"]
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "occurredAt": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      }
+    },
+    "required": [
+      "eventId",
+      "requestKey",
+      "scopeId",
+      "paymentId",
+      "orderId",
+      "providerId",
+      "amount",
+      "currency",
+      "state",
+      "sequence",
+      "occurredAt"
+    ],
+    "additionalProperties": false
+  },
+  "stripe": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "object": {
+        "type": "string",
+        "const": "event"
+      },
+      "api_version": {
+        "type": "string",
+        "const": "2025-03-31.basil"
+      },
+      "created": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 9007199254740991
+      },
+      "livemode": {
+        "type": "boolean",
+        "const": false
+      },
+      "account": {
+        "type": "string",
+        "const": "acct_fixture_shop_a"
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "payment_intent.succeeded",
+          "payment_intent.payment_failed",
+          "payment_intent.processing"
+        ]
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "object": {
+                "type": "string",
+                "const": "payment_intent"
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99999999
+              },
+              "amount_received": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99999999
+              },
+              "currency": {
+                "type": "string",
+                "const": "usd"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["succeeded", "requires_payment_method", "processing"]
+              },
+              "metadata": {
+                "type": "object",
+                "properties": {
+                  "paymentId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "orderId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": ["paymentId", "scopeId", "orderId"],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "amount",
+              "amount_received",
+              "currency",
+              "status",
+              "metadata"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["object"],
+        "additionalProperties": false
+      }
+    },
+    "required": ["id", "object", "api_version", "created", "livemode", "account", "type", "data"],
+    "additionalProperties": false
+  },
+  "warehouse": {
+    "type": "object",
+    "properties": {
+      "source": {
+        "type": "string",
+        "const": "warehouse-v1"
+      },
+      "scopeId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "eventId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "externalSku": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "revision": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "absoluteOnHand": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1000000
+      },
+      "mappingVersion": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      }
+    },
+    "required": [
+      "source",
+      "scopeId",
+      "eventId",
+      "externalSku",
+      "revision",
+      "absoluteOnHand",
+      "mappingVersion"
+    ],
+    "additionalProperties": false
+  }
+}
