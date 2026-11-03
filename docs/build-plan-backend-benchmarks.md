@@ -6,9 +6,10 @@ the UX5 Mattermost work. **Planning, [P58's baseline](evidence/p58/README.md) an
 [P60a's Discourse reference pack](reference/backend-benchmarks.md#discourse-core-p60a) and
 [P60b's Vendure reference pack](reference/backend-benchmarks.md#vendure-core-p60b) and
 [P60c's Zammad pack and combined review](reference/backend-benchmarks.md#combined-p60-reference-review)
-and [P61a's shared protocol](../benchmarks/protocol/v1/README.md), [P61b's independent Discourse fixtures](../benchmarks/discourse-core/v1/README.md)
-and [P61c's independent Vendure fixtures](../benchmarks/vendure-core/v1/README.md)
-are complete; P61d–P110 remain unstarted. Parent P61 is partial.**
+and [P61a's shared protocol](../benchmarks/protocol/v1/README.md), [P61b's independent Discourse fixtures](../benchmarks/discourse-core/v1/README.md),
+[P61c's independent Vendure fixtures](../benchmarks/vendure-core/v1/README.md)
+and [P61d's independent Zammad fixtures and combined contract gate](../benchmarks/zammad-core/v1/README.md)
+are complete, including parent P61; P62a–P110 remain unstarted.**
 These foundations add no application runtime capability. This document specifies future
 execution; execute only the requested work unit. It does not authorize starting runtime packages,
 generating applications, publishing, or deploying them merely because they are planned.
@@ -42,8 +43,9 @@ Continue sequentially in the primary checkout on `main`, one requested work unit
 local commit. The 53 delivery packages are partitioned into **79 small agent assignments**;
 split parents are milestones, not single-session tasks. Start with **P58** when execution is
 requested without a more specific package and no baseline has been recorded. P58/P59/P60 are complete;
-P61a's shared protocol, P61b's Discourse contracts/fixtures and P61c's Vendure contracts/fixtures
-are complete; the next unstarted unit is **P61d**. For the authorized
+P61a–P61d's shared protocol and independent D/V/Z contracts/fixtures are complete, including
+parent P61's combined 60-row / 195-observation / 24-hook / 15-scenario gate. All three applications
+remain absent/not run; the next unstarted unit is **P62a**. For the authorized
 P59–P61d batch, the user explicitly permits lint/types and focused offline backend semantic/compatibility tests instead of full `pnpm check`;
 UI unit/E2E execution and maintenance remain deferred. See P59's append-only handoff entry.
 Dependencies are completion requirements, not permission to run multiple agents or packages.
@@ -63,7 +65,8 @@ P58 is **complete** with [baseline evidence](evidence/p58/README.md); P59 is **c
 [Vendure child P60b](reference/backend-benchmarks.md#vendure-core-p60b), and
 [Zammad child P60c](reference/backend-benchmarks.md#zammad-core-p60c), including the
 [60-row combined reference review](reference/backend-benchmarks.md#combined-p60-reference-review),
-are complete. Remaining entries are **planned**.
+are complete. [P61 independent contracts/fixtures](../benchmarks/README.md) are also **complete**.
+P62–P110 remain **planned**.
 Every package has a bounded outcome, ordered work, negative cases,
 checks, and explicit exclusions in its phase file. Follow the exact child order in the
 [assignment queue](plans/backend-benchmarks/execution-units.md), not the whole parent at once.

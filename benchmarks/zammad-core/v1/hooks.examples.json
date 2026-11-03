@@ -1,0 +1,360 @@
+{
+  "JH-inbound-email": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "authenticatedSource": "mail-v1",
+      "verifiedBodySha256": "65236a2990832d79ebea0cf44441b28bb02891608d7ca2befe6d0783b999c530",
+      "messageId": "<mail-001@fixture.invalid>",
+      "rawBytes": {
+        "fixtureFile": "inbound.eml",
+        "mime": "text/plain",
+        "size": 224,
+        "sha256": "65236a2990832d79ebea0cf44441b28bb02891608d7ca2befe6d0783b999c530"
+      },
+      "senderCandidates": ["a3000000-0000-4000-8000-000000000011"],
+      "ticketCandidates": ["a3000000-0000-4000-8000-000000000101"],
+      "eligibleAttachmentIds": []
+    },
+    "result": {
+      "senderId": "a3000000-0000-4000-8000-000000000011",
+      "ticketId": "a3000000-0000-4000-8000-000000000101",
+      "text": "Email reply",
+      "attachmentIds": [],
+      "visibility": "public",
+      "sourceMessageId": "<mail-001@fixture.invalid>"
+    }
+  },
+  "JH-conversation": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000019",
+      "policyVersion": 1,
+      "now": "2026-10-30T21:00:00Z",
+      "action": "merge",
+      "sourceTicketId": "a3000000-0000-4000-8000-000000000101",
+      "targetTicketId": "a3000000-0000-4000-8000-000000000106",
+      "sourceVersion": 1,
+      "targetVersion": 1,
+      "articleIds": ["a3000000-0000-4000-8000-000000000202"],
+      "internalArticleIds": ["a3000000-0000-4000-8000-000000000202"],
+      "messageReferences": ["<ticket-101@fixture.invalid>"],
+      "authorizedTicketIds": [
+        "a3000000-0000-4000-8000-000000000101",
+        "a3000000-0000-4000-8000-000000000106"
+      ],
+      "subscriberIds": ["a3000000-0000-4000-8000-000000000011"]
+    },
+    "result": {
+      "decisionId": "a3000000-0000-4000-8000-000000000970",
+      "action": "merge",
+      "sourceTicketId": "a3000000-0000-4000-8000-000000000101",
+      "targetTicketId": "a3000000-0000-4000-8000-000000000106",
+      "articleIds": ["a3000000-0000-4000-8000-000000000202"],
+      "sourceVersion": 2,
+      "targetVersion": 2,
+      "provenanceIds": ["a3000000-0000-4000-8000-000000000101"],
+      "subscriberIds": ["a3000000-0000-4000-8000-000000000011"]
+    }
+  },
+  "JH-sla-extension": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000019",
+      "policyVersion": 2,
+      "now": "2026-11-03T16:15:00Z",
+      "ticketId": "a3000000-0000-4000-8000-000000000106",
+      "ticketVersion": 5,
+      "clockKind": "resolution",
+      "action": "recalculate",
+      "calendar": {
+        "id": "a3000000-0000-4000-8000-000000000701",
+        "version": 2,
+        "zone": "America/Chicago",
+        "name": "Chicago business time",
+        "weekly": [
+          {
+            "weekday": 1,
+            "start": "10:00",
+            "end": "18:00"
+          },
+          {
+            "weekday": 2,
+            "start": "10:00",
+            "end": "18:00"
+          },
+          {
+            "weekday": 3,
+            "start": "10:00",
+            "end": "18:00"
+          },
+          {
+            "weekday": 4,
+            "start": "10:00",
+            "end": "18:00"
+          },
+          {
+            "weekday": 5,
+            "start": "10:00",
+            "end": "18:00"
+          }
+        ],
+        "holidays": [],
+        "durationMeaning": "elapsed-in-local-working-interval"
+      },
+      "timeline": [
+        {
+          "kind": "created",
+          "at": "2026-10-30T21:00:00Z"
+        },
+        {
+          "kind": "pending",
+          "at": "2026-11-02T15:45:00Z"
+        },
+        {
+          "kind": "resume",
+          "at": "2026-11-03T15:45:00Z"
+        }
+      ],
+      "elapsedBusinessMinutes": 135,
+      "durationBusinessMinutes": 300,
+      "oldGeneration": 2
+    },
+    "result": {
+      "decisionId": "a3000000-0000-4000-8000-000000000960",
+      "clockKind": "resolution",
+      "action": "recalculate",
+      "calendarId": "a3000000-0000-4000-8000-000000000701",
+      "calendarVersion": 2,
+      "policyVersion": 2,
+      "dueAt": "2026-11-03T19:00:00Z",
+      "elapsedBusinessMinutes": 135,
+      "deadlineGeneration": 3
+    }
+  },
+  "JH-customer-connector": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000019",
+      "policyVersion": 1,
+      "now": "2026-10-30T21:00:00Z",
+      "authenticatedSource": "crm-v1",
+      "externalId": "customer-A",
+      "sourceRevision": 11,
+      "currentSourceRevision": 10,
+      "organizationId": "a3000000-0000-4000-8000-000000000031",
+      "customerId": "a3000000-0000-4000-8000-000000000011",
+      "displayName": "Alice CRM",
+      "localVersion": 3,
+      "locallyOwnedFields": ["role", "email", "organizationId"]
+    },
+    "result": {
+      "command": "set-display-name",
+      "externalId": "customer-A",
+      "sourceRevision": 11,
+      "customerId": "a3000000-0000-4000-8000-000000000011",
+      "displayName": "Alice CRM",
+      "expectedLocalVersion": 3,
+      "reconciliationReason": "none"
+    }
+  },
+  "JH-knowledge": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000015",
+      "policyVersion": 1,
+      "now": "2026-10-30T21:00:00Z",
+      "knowledgeId": "a3000000-0000-4000-8000-000000000901",
+      "revision": 1,
+      "audience": "public",
+      "title": "Printer guide",
+      "text": "Public safe guide",
+      "currentVersion": 1,
+      "authorizedAudience": ["draft", "public", "agents"]
+    },
+    "result": {
+      "id": "a3000000-0000-4000-8000-000000000901",
+      "revision": 1,
+      "audience": "public",
+      "title": "Printer guide",
+      "text": "Public safe guide",
+      "projectionVersion": 1
+    }
+  },
+  "JH-custom-workflow": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000014",
+      "policyVersion": 1,
+      "now": "2026-10-30T21:00:00Z",
+      "ticketId": "a3000000-0000-4000-8000-000000000106",
+      "ticketVersion": 2,
+      "schemaVersion": 1,
+      "values": {
+        "severity": "critical",
+        "assetId": "ASSET-42"
+      },
+      "state": "open",
+      "eligibleAgentIds": ["a3000000-0000-4000-8000-000000000014"],
+      "groupId": "a3000000-0000-4000-8000-000000000021",
+      "alreadyAppliedRuleIds": []
+    },
+    "result": {
+      "ticketId": "a3000000-0000-4000-8000-000000000106",
+      "schemaVersion": 1,
+      "values": {
+        "severity": "critical",
+        "assetId": "ASSET-42"
+      },
+      "actions": [
+        {
+          "kind": "set-priority",
+          "value": "high"
+        }
+      ],
+      "ticketVersion": 3
+    }
+  },
+  "JH-customer-privacy": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000011",
+      "policyVersion": 1,
+      "now": "2026-10-30T21:00:00Z",
+      "subjectId": "a3000000-0000-4000-8000-000000000011",
+      "kind": "export",
+      "progressId": null,
+      "publicOwnedArticleIds": [
+        "a3000000-0000-4000-8000-000000000201",
+        "a3000000-0000-4000-8000-000000000207",
+        "a3000000-0000-4000-8000-000000000304"
+      ],
+      "internalArticleIds": [
+        "a3000000-0000-4000-8000-000000000202",
+        "a3000000-0000-4000-8000-000000000303"
+      ],
+      "heldArticleIds": ["a3000000-0000-4000-8000-000000000207"],
+      "pendingDeliveryIds": ["a3000000-0000-4000-8000-000000001003"],
+      "auditRetentionDays": 365
+    },
+    "result": {
+      "id": "a3000000-0000-4000-8000-000000000951",
+      "subjectId": "a3000000-0000-4000-8000-000000000011",
+      "kind": "export",
+      "status": "ready",
+      "exportArticleIds": [
+        "a3000000-0000-4000-8000-000000000201",
+        "a3000000-0000-4000-8000-000000000207",
+        "a3000000-0000-4000-8000-000000000304"
+      ],
+      "eraseArticleIds": [],
+      "retainedArticleIds": ["a3000000-0000-4000-8000-000000000207"],
+      "retainedReason": "legal-hold",
+      "cancelledDeliveryIds": [],
+      "version": 1
+    }
+  },
+  "JH-reporting": {
+    "input": {
+      "scopeId": "a3000000-0000-4000-8000-000000000001",
+      "actorId": "a3000000-0000-4000-8000-000000000019",
+      "policyVersion": 1,
+      "now": "2026-11-02T16:00:00Z",
+      "groupIds": ["a3000000-0000-4000-8000-000000000021"],
+      "windowStart": "2026-10-23T00:00:00Z",
+      "windowEnd": "2026-10-24T00:00:00Z",
+      "timelineVersion": 1,
+      "asOf": "2026-10-26T15:00:00Z",
+      "cohort": [
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001501",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": 90,
+          "reopenEvents": 2
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001502",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": 30,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001503",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": 30,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001504",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001505",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001506",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001507",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001508",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001509",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001510",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001511",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001512",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        },
+        {
+          "ticketId": "a3000000-0000-4000-8000-000000001513",
+          "createdAt": "2026-10-23T21:00:00Z",
+          "firstResponseBusinessMinutes": null,
+          "reopenEvents": 0
+        }
+      ]
+    },
+    "result": {
+      "definition": "created-cohort-v1",
+      "windowStart": "2026-10-23T00:00:00Z",
+      "windowEnd": "2026-10-24T00:00:00Z",
+      "ticketCount": 13,
+      "reopenedCount": 1,
+      "respondedCount": 3,
+      "totalFirstResponseBusinessMinutes": 150,
+      "asOf": "2026-10-26T15:00:00Z",
+      "timelineVersion": 1
+    }
+  }
+}

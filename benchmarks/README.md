@@ -32,8 +32,13 @@ pack. [P61b Discourse contracts/fixtures](discourse-core/v1/README.md) now resol
 66 observations through five fixed scenarios and eight hook contracts.
 [P61c Vendure contracts/fixtures](vendure-core/v1/README.md) resolve all 20 V rows / 63 observations
 through five fixed scenarios and eight hook contracts, with exact money/stock/payment recovery
-expectations and distinct reference/Stripe protocol fixtures. Zammad fixtures and the combined
-P61 gate remain incomplete; all three applications are absent/not run. No runner alias
+expectations and distinct reference/Stripe protocol fixtures.
+[P61d Zammad contracts/fixtures](zammad-core/v1/README.md) resolve all 20 Z rows / 66 observations
+through five fixed scenarios and eight hook contracts, including private articles and exact
+calendar/deadline outcomes. **Parent P61 is complete as independent contract work:** 60 rows,
+195 observations, 24 hook contracts and 15 scenarios, with source/contract references validated
+by [the combined gate](../packages/spec/src/benchmark-foundation.test.ts). All three applications
+are absent/not run, with zero observed implementation points. The next unstarted unit is P62a. No runner alias
 is registered until its actual tests exist.
 
 ## Loading and evaluating

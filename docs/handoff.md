@@ -5935,3 +5935,152 @@ Observed intermediate failures and limits:
 
 **P61c is complete. P61d is the next unstarted work unit; parent P61 remains partial.** Stop after
 this scoped local commit; launch no following task.
+
+## 2026-11-02 — P61d: independent Zammad fixtures and combined P61 contract gate
+
+Executed **P61d only** in `/home/ash/github/jeeves` on `main`, starting clean at P61c commit
+`4303756`. Read AGENTS, PLAN §15 and relevant earlier sections, latest handoffs, backend shared
+contract/benchmark specification/79-unit queue/phase-1 P61, shared protocol guide, fixed acceptance
+interfaces, Zammad P60c source map/review and the committed D/V contract/fixture patterns. One
+worker, no delegation, branch or worktree. The authorized P59–P61d policy applies: lint/types and
+focused offline backend semantic/compatibility checks replace full `pnpm check`; UI unit/E2E
+maintenance/execution remain deferred.
+
+Built:
+
+- Added [independent acceptance types](../packages/spec/src/zammad-benchmark.ts),
+  [42-operation OpenAPI](../benchmarks/zammad-core/v1/contracts.openapi.yaml) and
+  [typed fixture entry](../benchmarks/zammad-core/v1/fixtures.ts). All writable objects are strict;
+  shared errors/headers, durable origin-derived sessions, admin/customer/agent capabilities,
+  current scope/membership, canonical command replay and CAS are explicit. OpenAPI uses JSON
+  syntax, valid YAML 1.2, exported solely from acceptance-side schemas. No runtime evaluator,
+  generated SQL/descriptor or application response was used to construct expected values.
+- Added [fixed fixtures](../benchmarks/zammad-core/v1/fixtures.json): **21 datasets, 240 requests,
+  423 ordered steps, 7 standalone negative payloads, all 20 Z rows / 66 observations, five scenarios**
+  (`Z-create`, `Z-private`, `Z-clock`, `Z-race`, `Z-recover`). Requests also include intentional
+  malformed/unauthorized/domain/conflict/dependency cases. Initial article failure fixes zero
+  ticket/article/deadline/audit/receipt/intent; lost committed response/replay fixes one of each.
+  Two ticket-v8 assignments fix one v9 winner, one conflict and one actor audit. Receipt replay
+  rechecks current access, including after membership revocation or a move to a restricted group.
+- Fixed internal-note detail/history/export, attachment metadata/proxied bytes, search/snippet/count,
+  audit, inbox and mail absence for customers. Same-organization Bob still cannot read Alice's
+  tickets under default own-ticket policy. Needle pages interleave Bob/foreign records between
+  allowed results. Group move revokes the former agent's detail/export/audit/search/cursor/replay,
+  old byte reference and pending sensitive effects before rebuild. Included incomplete/quarantined,
+  invalid-size/MIME/hash and interrupted bytes/SQL association outcomes; bounded cleanup reclaims
+  an abandoned orphan and preserves the retried live association.
+- Fixed seven independently inspectable UTC calendar vectors: Friday 16:00 Chicago on Oct 30 ends
+  **Nov 2 16:00Z**, Monday holiday ends **Nov 3 16:00Z**; spring weekday/weekend ends **Mar 9 15:00Z**.
+  Separate Sunday working intervals prove fall repeated time **05:30Z→07:30Z** and spring missing
+  time **06:30Z→08:30Z**. A test-only UTC-minute enumerator checks committed values against local
+  interval membership, independent of any future P87 calculator. Overlap/reversed intervals and
+  calendar/SLA mismatch reject. Calendar/SLA append never changes existing v1 dueAt across restart.
+  Internal/customer replies and pending do not stop first response; authorized public agent reply
+  does; close cancels without satisfying; resolved→open creates no new first-response clock.
+- Fixed both deadline commit schedules: response first suppresses escalation; escalation first
+  retains one late outcome after the public reply. Satisfied/cancelled jobs and fenced old workers
+  cannot add effects. Worker-down backlog is **9**; postcommit crash leaves one receipt; bounded
+  restart progresses **9→8→6→4→2→0**, ending with **nine logical escalations/receipts**. Finite routing
+  uses explicit priorities/match mode, a five-action bound and event/rule deduplication without a
+  recursive cascade. One internal inbox receipt survives crash/restart; unknown external mail
+  acknowledgement stays unknown until reconciliation, without claiming SMTP exactly-once delivery.
+- Added [eight H decisions](../benchmarks/zammad-core/v1/hooks.md),
+  [strict schema snapshot](../benchmarks/zammad-core/v1/hooks.contracts.json) and
+  [host-trusted inputs/results](../benchmarks/zammad-core/v1/hooks.examples.json): bounded authenticated
+  inbound MIME; visibility/provenance-preserving conversation plans; explicit resolution-clock
+  pause/resume/recalculation; CRM source/field/revision authority; knowledge audience/publication;
+  finite typed custom workflow; hold-aware privacy/export/erase; bounded scoped reporting.
+  Each seam has reference/rejection/recovery and missing/timeout/invalid-result zero-write 503 cases.
+  The separate seeded resolution clock preserves **105→135 elapsed** minutes, then explicitly
+  recalculates **165 remaining** to **2026-11-03T19:00:00Z**, generation 3. Archived report identities
+  1501–1513 are disjoint from active tickets 101–114: 13 tickets, one reopened ticket (two events),
+  three responses and **90+30+30=150** business minutes. No future report facts contradict active
+  ticket/deadline seeds. P73a/b still own design/transaction/brief binding and implementation work.
+- Added [original-byte source signatures](../benchmarks/zammad-core/v1/sources.examples.json),
+  [inbound MIME bytes](../benchmarks/zammad-core/v1/inbound.eml) and intentional
+  [16-byte file](../benchmarks/zammad-core/v1/private.txt). Fixture-only HMAC secrets are invented;
+  no live credentials/provider calls. Email precommit rollback, lost-response receipt replay,
+  changed-message conflict, forged/wrong-source/unsafe sender/thread/MIME/size cases are explicit.
+  CRM revision 11 applies once; revision 9 is stale; a controlled local edit produces a revision-12
+  reconciliation item, preserving field authority and local v5.
+- Added [Z contract tests](../packages/spec/src/zammad-benchmark.test.ts) and
+  [combined P61 gate](../packages/spec/src/benchmark-foundation.test.ts). The latter validates
+  **60 rows / 195 mandatory observations / 24 hooks / 15 scenarios**, exact source-map observation
+  ownership, primary/supporting decision/source references, OpenAPI operation membership and local/
+  relative schema pointers, distinct application cookies/namespaced acceptance identities and
+  explicit not-run absence. No new acceptance runner or generator dispatch was introduced.
+- Kept Node-only acceptance modules direct-imported and out of `@jeeves/spec`'s browser barrel.
+  Updated benchmark/roadmap/improvement entry points: **parent P61 complete as independent contract
+  work; P62a next unstarted**. Earlier P61a/b/c prose remains historical and untouched. No CATALOG
+  change: no offering, reusable boundary, template/runtime availability or observed evidence changed.
+
+Final checks with **Node 24.21.0 / pnpm 12.16.1** using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; `Checked 845 files in 462ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, no new diagnostics. `.jeeves-work/p61d/lint-final.log`. Scoped Biome: exit 0, eight
+  files, no diagnostics (`.jeeves-work/p61d/scoped-lint.log`). No dependency/lock/package edits.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across workspaces/scripts, **10.3s**.
+  Evidence: `.jeeves-work/runs/2026-11-03T01-44-08-478Z-typecheck-c15023a4.{json,log}`.
+- Exact focused selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/zammad-benchmark.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/delivery.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **12 files / 227 tests passed**, **5.7s** including runner overhead (Vitest 4.68s).
+  Evidence: `.jeeves-work/runs/2026-11-03T01-44-08-476Z-unit-99eefc53.{json,log}`. Both final
+  runner records have `sourceChanged: false`. Checks validate fixed data/schemas/identities/UTC/
+  bytes/signatures plus old acceptance/delivery/generator/registry compatibility, not a running app.
+- `pnpm --filter @jeeves/web build`: exit 0; **1.31s**, existing large-chunk warning only.
+  `.jeeves-work/p61d/web-build.log`. No Node-crypto browser externalization warning. Build verifies
+  the unchanged browser-barrel boundary; no UI change, browser inspection or deferred suite work.
+- `.jeeves-work/p61d/audit.py` → `audit.json`: scoped links/anchors/fences/JSON parsing, seed
+  scope/parent/calendar/SLA/file relationships, disjoint report/archive identities and counts pass.
+  **12 frozen files** (nine P59 ledgers/integrities plus three P60 maps) and **664 other files**
+  including protocol/D/V/reference/catalog/browser barrel/generator/registry/apps/templates/artifacts/
+  legacy fixtures/dependencies are byte-identical to P61c. All **79 cached P60 source hashes** verify
+  offline. Earlier handoff prefix is unchanged; rerun after append. `git diff --check` passes.
+
+Artifact file-byte SHA-256 pins:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Zammad OpenAPI | `fddefe0ed16145ac992b83e5cea83615ca68e899fea09d1f585ea6741b3f33f2` |
+| Fixed seed/requests/scenario expectations | `b3e0035f078a02d5bbbc158aa4686d040179c0719a45feea7af72569ffccb736` |
+| Hook schema snapshot | `664b82dd0ad47a1ba6795a6d4d77e5c5cd78cfddb1df3c0354609f947c45dc71` |
+| Fixed hook inputs/results | `d657f1b373d6d9de60f7801592214477237943047aecfef161b5fa743f0d6ccc` |
+| Original-byte source metadata | `efe6e01f13bb5ba517ff82cf244781c729ea83f73fd976e3cd7451db2f2cdc97` |
+| Inbound MIME | `65236a2990832d79ebea0cf44441b28bb02891608d7ca2befe6d0783b999c530` |
+| Intentional private file bytes | `eff97f751200f549f5fee3db29f269e548d80b38dcc9353333e21da8dcb48a89` |
+
+Intermediate failures, scope and limits:
+
+- The first new combined test used `manifest.rows` rather than the existing `capabilities` field;
+  corrected the new test. An initial combined focused run passed 226 tests but timed out its new
+  combined schema-reference traversal at five seconds. Cached repeated document/pointer validation
+  without increasing timeouts or weakening checks; two subsequent combined selectors passed all
+  227. Failed evidence remains `.jeeves-work/runs/2026-11-03T01-41-20-061Z-unit-588818f8.{json,log}`.
+  The independent seed audit caught an omitted additional-clock dataset during authoring; added it
+  and required every declared Z dataset in the contract tests. Temporary authoring script syntax/
+  indentation errors were corrected before final serialization/checks. No runtime failure was
+  converted into a pass, no frozen expectation/ledger or prior D/V implementation was weakened.
+- No P61d blocker or ledger scope revision. Contract parsing, static fixture assertions and
+  test-only independent arithmetic/signing do not prove running authorization, transaction/CAS,
+  timezone-library correctness, actual provider authentication, fencing/cleanup, hook behavior,
+  recovery, scale or complete upstream compatibility. Those require later generated-app evidence.
+- **All three applications remain absent/not run with zero observed implementation points.** No
+  application/runtime/provider/hook implementation, application generation, runner/profile alias,
+  benchmark pass/result record, live credentials/provider call, upstream execution, live database/
+  output mutation, load/recovery/upgrade campaign, push or publication. Full `pnpm check` and
+  deferred UI unit/E2E maintenance/execution were not run; historical architecture assertion debt
+  remains preserved. Backend foundation completion here means independent contracts only.
+
+**P61d and parent P61 are complete. P62a is the next unstarted unit.** Stop after this scoped local
+commit; do not start P62a or any runtime work without a fresh assignment.
+
+Precommit byte check: the staged raw MIME fixture's required CRLF endings triggered Git's text
+whitespace check. Added a [fixture-local Git attribute](../benchmarks/zammad-core/v1/.gitattributes)
+marking only `inbound.eml` binary, preserving its signed original bytes across checkout/diff instead
+of normalizing the protocol payload. Artifact hashes and all tested data/code stay unchanged.
+The final staged `git diff --check` and preservation/link audit pass with this attribute included.
