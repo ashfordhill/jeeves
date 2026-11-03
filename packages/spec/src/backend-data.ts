@@ -1,4 +1,4 @@
-/** Pure entity/aggregate checks; no SQL, migrations, queries or legacy schema copies. */
+/** Pure persistence/read checks; no SQL, migrations or editable legacy schema copies. */
 
 import { containerClassification } from "./architecture-choices.ts";
 import {
@@ -7,39 +7,15 @@ import {
   contractCanonical,
   contractKey,
   contractOwnerElement,
-  resolveContractValue,
 } from "./architecture-contracts.ts";
+import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import { type BackendEntity, type BackendReference, backendCollections } from "./backend-model.ts";
+import { validateBackendQueries } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 
-export function backendEntity(design: DesignDocument, ref: BackendReference) {
-  return design.architecture?.backend?.entities.find((e) => contractKey(e) === contractKey(ref));
-}
-/** Resolve only the existing exact contract. Field IDs stay local even through type expansion. */
-export function backendEntityFields(
-  design: DesignDocument,
-  entity: BackendEntity,
-): ContractField[] {
-  const contract = design.architecture?.contracts?.find(
-    (c) => contractKey(c) === contractKey(entity.contract),
-  );
-  if (!contract?.shape) return [];
-  return contract.shape.payload.flatMap((f) => {
-    const result = resolveContractValue(f, contract.shape?.types ?? []);
-    return result.value
-      ? [
-          {
-            ...result.value,
-            id: f.id,
-            name: f.name,
-            required: f.required,
-            description: f.description,
-          },
-        ]
-      : [];
-  });
-}
+export { backendEntity, backendEntityFields } from "./backend-entity.ts";
+
 const sameFields = (a: string[], b: string[]) =>
   a.length === b.length && a.every((v, i) => v === b[i]);
 const requiredScalar = (f: ContractField | undefined) =>
@@ -100,9 +76,9 @@ export function validateBackendData(design: DesignDocument): Finding[] {
     const other = new Set(
       backendCollections
         .filter((key) => key !== collection)
-        .flatMap((key) => backend[key].map((v) => v.id)),
+        .flatMap((key) => (backend[key] ?? []).map((v) => v.id)),
     );
-    for (const value of backend[collection]) {
+    for (const value of backend[collection] ?? []) {
       const key = contractKey(value);
       if (seen.has(key) || outerIds.has(value.id) || other.has(value.id))
         add("DUPLICATE_ID", [collection, key], `Backend identity ${key} is already used.`);
@@ -574,11 +550,12 @@ export function validateBackendData(design: DesignDocument): Finding[] {
       }
     }
   }
-  if (backend.entities.length || backend.aggregates.length)
+  result.push(...validateBackendQueries(design));
+  if (backend.entities.length || backend.aggregates.length || backend.queries?.length)
     result.push(
       finding(
         "NEEDS_TEMPLATE",
-        "Backend persistence, concurrency and invariant strategies are design declarations; no compiler/runtime implementation is selected.",
+        "Backend persistence, queries, concurrency and invariant strategies are design declarations; no compiler/runtime implementation is selected.",
         { path: ["architecture", "backend"] },
       ),
     );

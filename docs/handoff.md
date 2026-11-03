@@ -6427,3 +6427,108 @@ Observed intermediate failures and preserved limitations:
 
 **P63a is complete with no P63a blocker. P63b is the next unstarted work unit.** Stop after this
 exact-ID scoped local commit; the coordinator owns the checkpoint and next assignment.
+
+## 2026-11-03 — P63b: bounded backend queries and read-only legacy resource views
+
+**Completed unit:** P63b only, on primary `main`, starting at
+`8ffeaacbd5866bc201893174c95529b5039ab531`. Read the batch instructions/checkpoint, AGENTS,
+PLAN §1–§15, latest P62/P63a handoff, C4/studio guidance, shared benchmark contract/ledgers,
+phase-2 P63 and exact execution-unit split. P62/P63a dependency evidence remains intact; the final
+focused run below re-exercises their contract/entity/aggregate boundaries. No branches, worktrees,
+delegation, checkpoint edits, push or publication.
+
+Built and preserved:
+
+- Strict optional `backend.queries` (up to 100 exact versions) with an exact root, at most three
+  ordered declared forward to-one relation joins, allowlisted typed comparisons/list bounds,
+  explicit output projection, fixed scalar order, full keyset cursor identity and positive limits
+  (default 25, maximum 100). No SQL, expressions, JSON traversal, offset/fan-out or unbounded reads.
+  Stable unique tie-breakers require the complete nonnullable root key, including persisted scope.
+- Required policy/freshness selections. An unresolved policy, optionally retaining an exact intended
+  identity, saves as `CONFIG_REQUIRED` and blocks compilation. A claimed resolved policy without
+  a definition is structural. **P64 owns finite policy definitions and replaces the explicit
+  unavailable-definition check**; no policy stub or authorization runtime was added. Declared stale
+  reads reference an existing named read binding for the root's exact data-contract version and
+  a compatible maximum-age policy; missing and contradictory references are reported at the query.
+- Query references now participate in identity collisions, atomic validation/removal, dependency
+  closure, extraction, remapping, insertion, exact pinned reuse, target diffs, dataset review
+  fingerprints, chat operation JSON Schema and deterministic JSON/Markdown handoff. Local aliases,
+  fields/relations and physical IDs remain unchanged during outer mapping. Reuse retains the exact
+  freshness binding/interface/relationship dependency graph, with conflicting relationship choices
+  refused. P63a entities, all three aggregate examples, invariants and stable storage guards remain.
+- `backend-entity.ts` shares the existing exact field resolver without circular validation imports;
+  `backend-data.ts` re-exports its existing public helpers. Query validation caches resolved entity
+  fields per pass. `backend-queries.ts` contains the finite read checks.
+- `readLegacyBackendResources` in `backend-legacy.ts` returns deterministic detached deeply frozen
+  views of the existing `Resource` descriptor, selected exact template, source identity, store,
+  source data-contract refs, implicit system columns and existing owner/internal semantics.
+  It reports invalid models/missing stores; it never writes `architecture.backend`, duplicates a
+  saved type schema, changes legacy generation or creates another session authority. A focused
+  negative proves source-backed resource contracts cannot acquire editable backend entity copies.
+- Added 12 focused query/legacy tests with negative matrices and integrated persistence/portability
+  checks. P63a's 14 tests remain byte-identical. Updated [backend data documentation](backend-data.md)
+  and roadmap/improvement status: **P63a/P63b and parent P63 complete; P64 next**. No CATALOG update:
+  no offering, reusable C1/C2/C3 boundary, runtime availability or observed evidence changed.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1** via
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **857 files / 685ms**, no fixes. Existing **2025 warnings / 75 infos**;
+  no added diagnostics. `.jeeves-work/p63b/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 for every workspace/scripts, **12.3s**.
+  `.jeeves-work/runs/2026-11-03T14-34-10-800Z-typecheck-5f563a0a.{json,log}`.
+- Exact focused offline semantic/frozen-contract/old-generation compatibility selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-queries.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/contract-transport.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **18 files / 266 tests passed**, **7.8s** with runner overhead.
+  `.jeeves-work/runs/2026-11-03T14-34-10-811Z-unit-e8736473.{json,log}`. Final typecheck/unit records
+  both have `sourceChanged: false`. Together these close P63's entity/aggregate/query/legacy gate;
+  they do not prove runtime SQL, authorization, cursor encoding, locking or benchmark applications.
+- `pnpm --filter @jeeves/web build`: exit 0; Vite **1.55s**, existing large-chunk advisory only.
+  `.jeeves-work/p63b/web-build.log`. No production UI/control changed; no direct browser workflow
+  or deferred UI unit/E2E suite ran. This build verifies the shared browser exports.
+- `python3 .jeeves-work/p63b/audit.py`: byte-preserved **1,454 other tracked files**, including
+  **all 48 benchmark files / 46 legacy fixtures**, all prior tests, CATALOG, application/server/UI,
+  runtime/template/generator/artifact/dependency paths, and the prior handoff prefix. Scoped links
+  and anchors/fences pass; rerun after this append. `.jeeves-work/p63b/audit.json`.
+  `git diff --check` passes. Coordinator checkpoint is untouched.
+
+Observed failures and limitations, kept separate from passing evidence:
+
+- Initial new-boundary selector returned **2 failed / 22 passed**: new test assumptions omitted
+  extraction's stable-ID renumbering and the fixture's second legacy resource; corrected those
+  assertions. The expanded selector then returned **2 failed / 24 passed** from new fixture-only
+  mistakes (strict interface key and in-memory undefined field-bound overrides). Corrected fixture
+  construction. Initial typechecking caught an unused import/narrowing and subsequent helper/test
+  typing mistakes; all are corrected in the final workspace typecheck. Intermediate logs remain
+  under `.jeeves-work/p63b-*.log` and the runner records.
+- A later freshness-enabled reuse probe exposed a **real P63b dependency-remapping defect**:
+  whole-boundary reuse allocated a new freshness binding, conflicting with the reused exact query.
+  Fixed the pinned dependency closure, retained the stronger test, and reverified. That mixed
+  selector returned **2 failed / 37 passed**, one new reuse failure and one historical binding
+  review assertion: `.jeeves-work/runs/2026-11-03T14-31-41-894Z-unit-302a8ac6.{json,log}`.
+- The separate historical semantic selector (`architecture-patterns.test.ts`,
+  `architecture-handoff.test.ts`, `architecture-review.test.ts`, `architecture-bindings.test.ts`)
+  remains **15 failed / 33 passed**. Fourteen were already recorded by P63a; the additional existing
+  binding-review assertion also expects older coverage/behavior review results.
+  Final: `.jeeves-work/runs/2026-11-03T14-34-10-825Z-unit-4f008a47.{json,log}`.
+- Reproduced the **identical 15 failure titles / 33 passing tests on exact base `8ffeaac` tracked
+  production source**, temporarily substituting all eight changed existing TypeScript modules,
+  then restoring every working byte in `finally`. Base record:
+  `.jeeves-work/runs/2026-11-03T14-33-37-338Z-unit-7447f298.{json,log}`. Both historical records have
+  `sourceChanged: false`; `.jeeves-work/p63b/baseline.json` records source hashes/restoration and
+  `historical-comparison.json` confirms identical titles/counts. No historical/frozen assertion was
+  changed, excluded from its failure report or relabeled passing. No full-green claim.
+- P64 must supply policy definitions, trusted-context/scope/projection semantics and real exact
+  selection resolution. P67a owns mouse authoring; P69/P70 matching/pure compilation; later runtime
+  packages own SQL, cursor values/tokens, authorization enforcement and execution. P63b includes
+  no raw SQL, database migrations, ORM, runtime, application generation or new editable legacy model.
+- All three applications remain **absent/not run with zero observed implementation points**.
+  No Docker/database/network/provider/hook campaign or load/recovery/upgrade proof was run.
+  Full `pnpm check` and deferred UI suites were not run under the explicit batch verification policy.
+
+**P63b and parent P63 are complete with no P63b blocker. P64 is the next unstarted work unit.**
+Stop after this scoped local P63b commit; coordinator owns checkpoint and next assignment.

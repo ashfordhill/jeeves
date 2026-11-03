@@ -10,6 +10,7 @@ import {
   sameContractOwner,
 } from "./architecture-contracts.ts";
 import { architectureReviewReferences, type ReviewReference } from "./architecture-review-model.ts";
+import { backendQuerySources } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
 import { isStructural } from "./findings.ts";
 
@@ -126,8 +127,19 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
             entities.some((e) => contractKey(e) === contractKey(r)),
           ),
         ) ?? [];
-      if (entities.length || aggregates.length) {
-        values.push({ backend: { entities, aggregates } });
+      const queries =
+        m.backend?.queries?.filter((q) =>
+          [...backendQuerySources(design, q).values()].some(
+            (source) => source.entity.dataset === d.id,
+          ),
+        ) ?? [];
+      if (entities.length || aggregates.length || queries.length) {
+        values.push({ backend: { entities, aggregates, queries } });
+        for (const q of queries) {
+          if (q.freshness.kind === "bounded-staleness") visit(ref("binding", q.freshness.binding));
+          for (const source of backendQuerySources(design, q).values())
+            visit(ref("dataset", source.entity.dataset));
+        }
         for (const a of aggregates)
           for (const participant of [a.root, ...a.children]) {
             const e = m.backend?.entities.find((e) => contractKey(e) === contractKey(participant));

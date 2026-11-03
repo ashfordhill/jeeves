@@ -821,6 +821,10 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
         (a) =>
           `- Aggregate ${mdEscape(contractKey(a))}: ${mdEscape(a.name)}; owner ${mdEscape(a.owner.id)}, store ${mdEscape(a.store)}; ${mdEscape(contractCanonical(a))}`,
       ),
+      ...(s.intent.backend.queries ?? []).map(
+        (q) =>
+          `- Query ${mdEscape(contractKey(q))}: ${mdEscape(q.name)}; root ${mdEscape(contractKey(q.root))}; ${mdEscape(contractCanonical(q))}`,
+      ),
     ]);
   section("deployment", "Deployment intent and reusable provenance", [
     ...(s.intent.deployments ?? []).map(

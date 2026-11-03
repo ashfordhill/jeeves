@@ -13,8 +13,8 @@ are now complete, including parent P60. [P61a shared protocol](../benchmarks/pro
 and [P61d Zammad contracts/fixtures](../benchmarks/zammad-core/v1/README.md)
 are complete, including parent P61’s combined independent contract gate.
 [P62a/P62b contract types, transport and portable schemas](contract-types.md) are complete,
-including parent P62. [P63a entities and aggregates](backend-data.md) are complete;
-parent P63 remains partial and **P63b is next unstarted**;
+including parent P62. [P63a/P63b entities, aggregates, bounded queries and legacy adapter](backend-data.md) are complete,
+including parent P63; **P64 is next unstarted**;
 all three applications remain absent/not run with zero observed implementation points.
 For the authorized P59–P61d and P62a–P73b batches, lint/types and focused offline backend semantic/compatibility
 tests replace full `pnpm check`; UI unit/E2E execution and maintenance remain deferred.

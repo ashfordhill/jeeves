@@ -1,7 +1,7 @@
 /** Planning copies retain a frozen source, never runtime ownership or verification. */
 import { z } from "zod";
 import { type Architecture, type ArchitectureMember, architectureSchema } from "./architecture.ts";
-import { backendDeclarations } from "./backend-model.ts";
+import { backendCollections, backendDeclarations } from "./backend-model.ts";
 import { type DesignDocument, designIds, designSchema, upgradeDesign } from "./design.ts";
 import { resourceConfigSchema } from "./resources.ts";
 
@@ -81,7 +81,7 @@ export function targetChanges(baseline: DesignDocument, target: DesignDocument):
     a.architecture?.backend?.schemaVersion,
     b.architecture?.backend?.schemaVersion,
   );
-  for (const key of ["entities", "aggregates"] as const)
+  for (const key of backendCollections)
     identities(
       `architecture/backend/${key}`,
       a.architecture?.backend?.[key],

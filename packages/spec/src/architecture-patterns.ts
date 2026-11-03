@@ -1000,7 +1000,7 @@ function sourceMatches(
   const expected = mappedArchitecture(fragment, ids);
   for (const key of backendCollections)
     for (const item of expected.backend?.[key] ?? []) {
-      const actual = design.architecture?.backend?.[key].find(
+      const actual = design.architecture?.backend?.[key]?.find(
         (v) => v.id === item.id && v.version === item.version,
       );
       if (contractCanonical(semantic(actual)) !== contractCanonical(semantic(item))) return false;
@@ -1366,7 +1366,7 @@ export function previewArchitecturePattern(
     const source = sources.find((s) =>
       fragment.roles.every((r) => reused.has(r.id) && ids[r.id] === s.identities[r.id]),
     );
-    if (source)
+    if (source) {
       for (const value of [
         ...backendDeclarations(fragment.architecture.backend),
         ...(fragment.architecture.datasets ?? []),
@@ -1379,6 +1379,28 @@ export function previewArchitecturePattern(
           reused.add(value.id);
         }
       }
+      // Queries retain the exact pinned freshness policy graph during whole-boundary reuse.
+      // A fresh binding identity would otherwise conflict with the reused query definition.
+      for (const query of fragment.architecture.backend.queries ?? []) {
+        if (query.freshness.kind !== "bounded-staleness") continue;
+        const freshness = query.freshness;
+        const binding = fragment.architecture.bindings?.find((b) => b.id === freshness.binding);
+        for (const local of [
+          freshness.binding,
+          ...(binding ? [binding.provided, binding.required, binding.relationship.id] : []),
+        ]) {
+          const target = source.identities[local];
+          if (!target)
+            result.errors.push(
+              `Pinned query freshness dependency ${local} has no identity mapping.`,
+            );
+          else {
+            ids[local] = target;
+            reused.add(local);
+          }
+        }
+      }
+    }
   }
   for (const [local, target] of Object.entries(req.definitions ?? {})) {
     const expected = fragment.architecture.contracts?.filter((c) => c.id === local) ?? [];
@@ -1413,7 +1435,11 @@ export function previewArchitecturePattern(
     result.relationships.push({ id: c.id, name: c.planned?.label ?? c.label ?? c.id, candidates });
     const selected = req.relationships[c.id];
     if (selected) {
-      if (!candidates.some((item) => item.id === selected))
+      if (reused.has(c.id) && selected !== ids[c.id])
+        result.errors.push(
+          "A reused exact query freshness binding must retain its pinned relationship; create a separate boundary to select another one.",
+        );
+      else if (!candidates.some((item) => item.id === selected))
         result.errors.push(
           `${c.planned?.label ?? c.label ?? c.id}: existing relationship endpoints, protocol and interaction must match.`,
         );
@@ -1440,7 +1466,8 @@ export function previewArchitecturePattern(
   if (expanded.backend) {
     architecture.backend ??= { schemaVersion: 1, entities: [], aggregates: [] };
     for (const key of backendCollections) {
-      for (const item of expanded.backend[key]) {
+      for (const item of expanded.backend[key] ?? []) {
+        architecture.backend[key] ??= [];
         const current = architecture.backend[key] as { id: string; version: string }[];
         const existing = current.find((v) => v.id === item.id && v.version === item.version);
         if (existing && contractCanonical(semantic(existing)) !== contractCanonical(semantic(item)))

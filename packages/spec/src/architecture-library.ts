@@ -291,6 +291,11 @@ export function extractArchitectureTemplate(
       schemaVersion: a.backend.schemaVersion,
       entities: a.backend.entities.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
       aggregates: a.backend.aggregates.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
+      ...(a.backend.queries
+        ? {
+            queries: a.backend.queries.filter((q) => keep.has(q.id)).map((q) => structuredClone(q)),
+          }
+        : {}),
     };
   fragment.architecture.components = fragment.architecture.components?.map((c) => ({
     id: c.id,

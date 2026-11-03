@@ -1,16 +1,18 @@
 # Backend data and consistency declarations
 
-P63a adds optional `architecture.backend` to the existing design document. It is **design
+P63a/P63b add optional `architecture.backend` to the existing design document. It is **design
 semantics**, with no new runtime, SQL, migrations or application generation. Existing designs
-omit it and retain their existing resources/contracts. P63 remains partial: **P63b** owns queries,
-cursor/projection/join checks and the read-only legacy adapter. Authoring controls follow in P67a.
+omit it and retain their existing resources/contracts. **P63 is complete**, including bounded queries
+and the read-only legacy adapter. Finite policy definitions follow in P64; authoring controls follow
+in P67a.
 See the [shared contract](plans/backend-benchmarks/contract.md#3-one-authoritative-model) and
 [exact assignment split](plans/backend-benchmarks/execution-units.md#mandatory-splits).
 
 The schema is strict and versioned: `{schemaVersion: 1, entities: [], aggregates: []}`. At most
-100 entity versions and 50 aggregate versions are allowed. Definitions use `{id, version}`;
+100 entity versions, 50 aggregate versions and 100 query versions are allowed. Optional `queries`
+preserves older P63a backend objects without adding an empty array. Definitions use `{id, version}`;
 local fields, relations, constraints and invariant IDs stay scoped to their enclosing definition.
-No catch-all configuration, SQL string, expression language or future-query placeholder is accepted.
+No catch-all configuration, SQL string or expression language is accepted.
 
 ## Entity authority and identity
 
@@ -19,7 +21,8 @@ An entity has `id`, `version`, `name`, a stable `dataset`, an exact `contract`, 
 dataset and exactly that dataset's data-contract version. The dataset remains the authority for
 its one owning application and relational store; components resolve to their application's identity.
 There is no second editable type schema in the entity. Source-backed legacy resource contracts
-cannot acquire editable entity copies. P63b supplies their read-only projection.
+cannot acquire editable entity copies. The read-only adapter described below supplies their derived
+projection.
 
 Each top-level payload field has one annotation:
 
@@ -112,6 +115,74 @@ matching and pure compilation follow in P69/P70; no current invariant/lock imple
 benchmark acceptance is claimed. Synthetic offline tests model topic/first-post, stock/reservation
 and ticket/article boundaries; they are separate from the later full benchmark designs.
 
+## Bounded query declarations
+
+A query has an exact `root` entity, `joins`, `filters`, `projection`, `order`, `limit`, `cursor`,
+required `accessPolicy` selection and required `freshness`. It declares permitted reads; it does
+not execute a database request. The reserved local source alias is `root`. Joined sources have
+local alias IDs; `{source, field}` always selects a stable field ID from that source's exact contract.
+Output/filter IDs, aliases and relation IDs never become outer composition identities.
+
+- At most three joins follow already declared forward many-to-one/one-to-one relations. Each
+  names an earlier `from` alias, relation ID and `inner`/`left` kind. Inverse/fan-out, repeated
+  paths, arbitrary join conditions and forward/cyclic alias dependencies are rejected. Chained
+  left joins preserve nullable result semantics. Relation authority, scope and target-key checks
+  are shared with entity validation, so a query cannot introduce a cross-store join.
+- Up to 20 distinct filter fields allow explicit comparison choices: `eq`, `ne`, `lt`, `lte`,
+  `gt`, `gte`, `in`, `is-null`, `prefix`. Inputs inherit logical types/bounds from the exact
+  contract; no second parameter schema is edited. Selected filters combine by conjunction.
+  Ordered comparisons require integer/timestamp, prefix requires bounded non-enum text, and
+  null checks require nullable/optional or left-joined data. `in` requires `maxValues` 1–100;
+  other comparisons cannot carry that bound. Query values are data, never SQL patterns or code.
+- Projection explicitly names 1–100 output IDs and fields, including bounded opaque JSON or exact
+  money as a whole value. Filters, ordering and cursors require scalar storage. Nested JSON
+  traversal, aggregates/count expressions and raw SQL are outside this vocabulary.
+- Ordering has 1–10 distinct required nonnullable root scalar fields and fixed directions.
+  Its suffix is a complete primary/unique key; scoped keys include their persisted scope field.
+  A nullable unique key cannot establish a tie-breaker. `cursor: {kind: "keyset", fields: [...]}`
+  must repeat the full order exactly. Join columns, offset cursors and client-selected order are
+  unsupported. Cursor values will be validated by the later compiler/runtime; they never grant
+  authority or replace current access checks.
+- `limit: {default: 25, maximum: 100}` sets positive bounds through 100. Omitting `default` selects
+  25; a smaller maximum requires a correspondingly smaller default. No unbounded bulk-read escape
+  exists. Request parsing, SQL pagination and token encoding follow in their runtime packages.
+
+`accessPolicy` is required. `{kind: "unresolved", reference?: {id, version}}` is a saveable
+`CONFIG_REQUIRED` compilation gap retaining an intended exact policy identity. A claimed
+`{kind: "policy", reference: {id, version}}` must resolve a real definition: until **P64** adds
+`accessPolicies`, it is an actionable `UNKNOWN_REFERENCE` structural error. P63b deliberately
+supplies no permissive policy stub or inferred authorization. P64 must replace that unavailable
+definition check with exact finite-policy resolution and scope/projection checks. Access must
+apply before joins, filters, pagination, counts/snippets and projection, including joined data;
+stale data/cursors cannot establish current authorization. All new backend intent retains its raw
+`NEEDS_TEMPLATE` blocker independently of this saveable policy gap.
+
+`freshness: {kind: "authoritative"}` reads the root authority. A declared stale read uses
+`{kind: "bounded-staleness", binding, maxAgeSeconds}` (1–31,536,000 seconds), referencing the
+existing named **read** binding and its root's **exact data-contract version**. Its existing
+freshness policy must state a TTL/on-write/event-driven bound no greater than the query maximum.
+Missing bindings or contradictory concrete choices are structural errors; unfinished policy
+choices remain blocking readiness. The binding reference survives extraction and remapping;
+there is no duplicated editable freshness policy. These are declared bounds, not measured cache
+behavior or permission to cache authorization.
+
+## Read-only legacy resource adapter
+
+`readLegacyBackendResources(design)` derives deterministic, detached, deeply frozen resource views
+and source-addressed findings. Each view retains its `{element, attachment, resource}` source,
+exact selected template, store connection/store, existing resource descriptor, source data-contract
+references, implicit system-field selectors and `legacy-owner`/`legacy-internal` access semantics.
+The descriptor is the parsed authoritative `Resource`, retaining its field types, optionality,
+relations and operation allowlist. It is not converted to an editable `BackendEntity`. Implicit
+`id`/`ownerId`/`createdAt` selectors stay separate from authored local field IDs. Physical legacy
+names remain the existing emitter's responsibility; this helper does not copy its hashing or SQL.
+
+Invalid resource models report `CONFIG_INVALID` and produce no fabricated views; unresolved stores
+report `CONFIG_REQUIRED`. Reading the adapter never adds `architecture.backend`, rewrites saved
+contracts, changes resource generation or creates competing session tables. The backend schema
+rejects attempted editable entities backed by source resource contracts. Explicit migration, new
+query authoring against legacy sources and runtime execution remain separately assigned work.
+
 ## Editing and portability
 
 Existing `setArchitecture` batches carry the complete model and reject new structural findings
@@ -125,7 +196,8 @@ Library extraction follows dataset/contract/owner/store/relation/aggregate depen
 maps outer graph identities and exact references while retaining local field/relation/invariant,
 table and column IDs. Exact pinned whole-boundary reuse retains the existing dataset/entity graph;
 partial reuse still checks conflicts. Target diffs include exact backend versions. Dataset review
-fingerprints include participating entities/aggregates and related data contracts. Full handoff
+fingerprints include participating entities/aggregates/queries, joined datasets, freshness bindings
+and related data contracts. Full handoff
 fingerprints, operation JSON Schema, portable JSON and Markdown preserve the declarations.
 
 No offering, reusable C1/C2/C3 boundary or template availability changed, so CATALOG is unchanged.

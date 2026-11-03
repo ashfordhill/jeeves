@@ -139,20 +139,88 @@ export const backendAggregateSchema = z.strictObject({
   invariants: z.array(backendInvariantSchema).max(20),
 });
 export type BackendAggregate = z.output<typeof backendAggregateSchema>;
-/** Queries are deliberately added by P63b; no permissive placeholder accepts future semantics. */
+/** Query aliases and output/filter IDs are local, never graph identities. */
+export const backendQueryFieldSchema = z.strictObject({ source: idSchema, field: idSchema });
+export const backendQuerySchema = z.strictObject({
+  ...named,
+  root: backendReferenceSchema,
+  joins: z
+    .array(
+      z.strictObject({
+        id: idSchema,
+        from: idSchema,
+        relation: idSchema,
+        kind: z.enum(["inner", "left"]),
+      }),
+    )
+    .max(3)
+    .default([]),
+  filters: z
+    .array(
+      z.strictObject({
+        id: idSchema,
+        field: backendQueryFieldSchema,
+        comparisons: z
+          .array(z.enum(["eq", "ne", "lt", "lte", "gt", "gte", "in", "is-null", "prefix"]))
+          .min(1)
+          .max(9),
+        maxValues: z.int().min(1).max(100).optional(),
+      }),
+    )
+    .max(20)
+    .default([]),
+  projection: z
+    .array(z.strictObject({ id: idSchema, field: backendQueryFieldSchema }))
+    .min(1)
+    .max(100),
+  order: z
+    .array(
+      z.strictObject({
+        field: backendQueryFieldSchema,
+        direction: z.enum(["asc", "desc"]),
+      }),
+    )
+    .min(1)
+    .max(10),
+  limit: z.strictObject({
+    default: z.int().min(1).max(100).default(25),
+    maximum: z.int().min(1).max(100),
+  }),
+  cursor: z.strictObject({
+    kind: z.literal("keyset"),
+    fields: z.array(backendQueryFieldSchema).min(1).max(10),
+  }),
+  /** P64 supplies policy definitions. A draft may retain its intended exact identity. */
+  accessPolicy: z.discriminatedUnion("kind", [
+    z.strictObject({ kind: z.literal("unresolved"), reference: backendReferenceSchema.optional() }),
+    z.strictObject({ kind: z.literal("policy"), reference: backendReferenceSchema }),
+  ]),
+  freshness: z.discriminatedUnion("kind", [
+    z.strictObject({ kind: z.literal("authoritative") }),
+    z.strictObject({
+      kind: z.literal("bounded-staleness"),
+      binding: idSchema,
+      maxAgeSeconds: z.int().min(1).max(31_536_000),
+    }),
+  ]),
+});
+export type BackendQuery = z.output<typeof backendQuerySchema>;
 export const backendModelSchema = z.strictObject({
   schemaVersion: z.literal(1),
   entities: z.array(backendEntitySchema).max(100).default([]),
   aggregates: z.array(backendAggregateSchema).max(50).default([]),
+  // Preserve P63a serialized models that predate queries without adding an empty collection.
+  queries: z.array(backendQuerySchema).max(100).optional(),
 });
 export type BackendModel = z.output<typeof backendModelSchema>;
 
-export const backendCollections = ["entities", "aggregates"] as const;
+export const backendCollections = ["entities", "aggregates", "queries"] as const;
 export const backendDeclarations = (
   model: BackendModel | undefined,
-): (BackendEntity | BackendAggregate)[] => [
+): (BackendEntity | BackendAggregate | BackendQuery)[] => [
   ...(model?.entities ?? []),
   ...(model?.aggregates ?? []),
+  ...(model?.queries ?? []),
 ];
 
 /** Local field, relation, invariant and storage IDs are never outer graph identities. */
@@ -165,6 +233,22 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
   });
   return {
     ...model,
+    ...(model.queries
+      ? {
+          queries: model.queries.map((q) => ({
+            ...q,
+            id: id(q.id),
+            root: exact(q.root),
+            accessPolicy: q.accessPolicy.reference
+              ? { ...q.accessPolicy, reference: exact(q.accessPolicy.reference) }
+              : q.accessPolicy,
+            freshness:
+              q.freshness.kind === "bounded-staleness"
+                ? { ...q.freshness, binding: id(q.freshness.binding) }
+                : q.freshness,
+          })),
+        }
+      : {}),
     entities: model.entities.map((e) => ({
       ...e,
       id: id(e.id),
@@ -220,6 +304,13 @@ export function collectBackendDependencies(
   keep: Set<string>,
 ): void {
   if (!model) return;
+  for (const q of model.queries ?? []) {
+    if (keep.has(q.root.id)) keep.add(q.id);
+    if (!keep.has(q.id)) continue;
+    keep.add(q.root.id);
+    if (q.accessPolicy.reference) keep.add(q.accessPolicy.reference.id);
+    if (q.freshness.kind === "bounded-staleness") keep.add(q.freshness.binding);
+  }
   for (const e of model.entities) {
     if (keep.has(e.dataset)) keep.add(e.id);
     if (!keep.has(e.id)) continue;
