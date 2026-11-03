@@ -11,8 +11,9 @@ import {
   validateBackendBehavior,
 } from "@jeeves/spec";
 import { Alert, Button, Group, NativeSelect, Stack, Text } from "@mantine/core";
-import { useState } from "react";
-import { type DataNavigation, dataId, exact, namedOptions, Pick } from "./BackendFields.tsx";
+import { useEffect, useState } from "react";
+import type { BackendNavigation, BackendNavigationRequest } from "./BackendEffectFields.tsx";
+import { dataId, exact, namedOptions, Pick } from "./BackendFields.tsx";
 import { BackendLifecycleEditor, lifecycleProtected } from "./BackendLifecycleEditor.tsx";
 import {
   BackendOperationEditor,
@@ -29,19 +30,42 @@ export function ComponentBehaviorEditor({
   component,
   onChange,
   navigate,
+  navigation,
 }: {
   design: DesignDocument;
   draft: Architecture;
   component: ArchitectureComponent;
   onChange: (v: Architecture) => void;
-  navigate: DataNavigation;
+  navigate: BackendNavigation;
+  navigation?: BackendNavigationRequest;
 }) {
   const [section, setSection] = useState("operations");
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [commandRequest, setCommandRequest] = useState<{ section: string }>();
+  const [lifecycleRequest, setLifecycleRequest] = useState<{ section: string }>();
+  useEffect(() => {
+    if (!navigation || !["operations", "lifecycles"].includes(navigation.kind)) return;
+    setSection(navigation.kind);
+    setSelection((s) => ({ ...s, [navigation.kind]: navigation.key }));
+    const field = String(navigation.path?.[0] ?? "");
+    setLifecycleRequest({ section: field });
+    setCommandRequest({
+      section: ["outcomes", "actions", "guards", "access"].includes(field)
+        ? field
+        : field === "identity" || field === "transaction" || field === "expectedVersion"
+          ? "transaction"
+          : field === "idempotency" || field === "cancellation"
+            ? "retry"
+            : "target",
+    });
+  }, [navigation]);
   const selected = selection[section] ?? "";
   const select = (key: string) => setSelection((s) => ({ ...s, [section]: key }));
-  const onNavigate = (kind: "operations" | "lifecycles", key: string) => {
+  const onNavigate: BackendNavigation = (kind, key, path) => {
+    if (kind !== "operations" && kind !== "lifecycles") {
+      navigate(kind, key, path);
+      return;
+    }
     setSection(kind);
     setSelection((s) => ({ ...s, [kind]: key }));
   };
@@ -50,7 +74,9 @@ export function ComponentBehaviorEditor({
     onChange({ ...draft, backend: { ...backend, ...patch } });
   const owner = { kind: "component" as const, id: component.id };
   const operations = (backend.operations ?? []).filter(
-    (o) => o.target.owner.kind === owner.kind && o.target.owner.id === owner.id,
+    (o) =>
+      (o.target.owner.kind === owner.kind && o.target.owner.id === owner.id) ||
+      contractKey(o) === selection.operations,
   );
   const lifecycles = backend.lifecycles ?? [];
   const operation = operations.find((o) => contractKey(o) === selected);
@@ -202,6 +228,33 @@ export function ComponentBehaviorEditor({
                   select(contractKey(next));
                 }}
               />
+              <section aria-label="Command effects and hooks">
+                <Text size="sm">Exact effects and hooks for {contractKey(operation)}</Text>
+                {(backend.effects ?? [])
+                  .filter((e) => contractKey(e.source) === contractKey(operation))
+                  .map((e) => (
+                    <Button
+                      key={contractKey(e)}
+                      size="compact-xs"
+                      variant="subtle"
+                      onClick={() => navigate("effects", contractKey(e))}
+                    >
+                      Open command effect {e.name} · {contractKey(e)}
+                    </Button>
+                  ))}
+                {(backend.hooks ?? [])
+                  .filter((h) => contractKey(h.operation) === contractKey(operation))
+                  .map((h) => (
+                    <Button
+                      key={contractKey(h)}
+                      size="compact-xs"
+                      variant="subtle"
+                      onClick={() => navigate("hooks", contractKey(h))}
+                    >
+                      Open command hook {h.name} · {contractKey(h)}
+                    </Button>
+                  ))}
+              </section>
               <Button
                 variant="subtle"
                 color="red"
@@ -274,6 +327,7 @@ export function ComponentBehaviorEditor({
                 design={design}
                 draft={draft}
                 lifecycle={lifecycle}
+                sectionRequest={lifecycleRequest}
                 navigate={navigate}
                 onChange={(next) => {
                   update({ lifecycles: lifecycles.map((l) => (l === lifecycle ? next : l)) });

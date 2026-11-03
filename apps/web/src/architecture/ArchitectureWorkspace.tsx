@@ -60,6 +60,7 @@ import { InterfaceEditor, InterfaceSummary } from "./InterfaceEditor.tsx";
 import { PatternComposer } from "./PatternComposer.tsx";
 import { BindingSummary, RelationshipBindings } from "./RelationshipBindings.tsx";
 import "./contracts.css";
+import type { BackendNavigationRequest } from "./BackendEffectFields.tsx";
 import { ComponentEditor } from "./ComponentEditor.tsx";
 import { ComponentRelationshipEditor } from "./ComponentRelationshipEditor.tsx";
 import { ContextInspector } from "./ContextInspector.tsx";
@@ -145,6 +146,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
     initial?: ArchitectureComponent;
     capability?: string;
     members?: ArchitectureMember[];
+    initialNavigation?: BackendNavigationRequest;
   }>();
   const [relationshipEditor, setRelationshipEditor] = useState<{ id?: string }>();
   const [chatOpen, setChatOpen] = useState(false);
@@ -304,6 +306,38 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
       setInspectorViews((current) => ({ ...current, [`components:${id}`]: true }));
     }
     void changeLevel("components");
+  };
+  const openBackendFinding = (path?: (string | number)[]) => {
+    if (path?.[0] !== "architecture" || path[1] !== "backend") return false;
+    const kind = String(path[2]),
+      key = String(path[3]);
+    const model = design.architecture?.backend;
+    const operation = model?.operations?.find((o) => contractKey(o) === key);
+    const effect = model?.effects?.find((e) => contractKey(e) === key);
+    const hook = model?.hooks?.find((h) => contractKey(h) === key);
+    const lifecycle = model?.lifecycles?.find((l) => contractKey(l) === key);
+    const source =
+      effect && model?.operations?.find((o) => contractKey(o) === contractKey(effect.source));
+    const aggregate =
+      lifecycle &&
+      model?.aggregates.find((a) => contractKey(a) === contractKey(lifecycle.aggregate));
+    const owner =
+      operation?.target.owner ?? source?.target.owner ?? hook?.owner ?? aggregate?.owner;
+    const component =
+      owner?.kind === "component" &&
+      design.architecture?.components?.find((c) => c.id === owner.id);
+    if (!component || !["operations", "lifecycles", "effects", "hooks"].includes(kind))
+      return false;
+    openComponents(component.element, `responsibility:${component.id}`);
+    setComponentEditor({
+      initial: component,
+      initialNavigation: {
+        kind: kind as BackendNavigationRequest["kind"],
+        key,
+        path: path.slice(4),
+      },
+    });
+    return true;
   };
   const openContainer = (id?: string) => {
     if (window.innerWidth < 1100) setExplorerOpen(false);
@@ -1113,8 +1147,9 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
               setFindingsOpen(false);
               setReviewOpen(true);
             }}
-            onNavigate={() => {
+            onNavigate={(finding) => {
               setFindingsOpen(false);
+              if (openBackendFinding(finding.target.path)) return;
               setInspectorOpen(true);
               void changeLevel("containers");
             }}
@@ -1177,6 +1212,7 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
           onClose={() => setReviewOpen(false)}
           onEdit={(f) => {
             setReviewOpen(false);
+            if ("sourcePath" in f && openBackendFinding(f.sourcePath)) return;
             setReviewEditor(f);
             if (f.editor === "data") setDataOpen(true);
           }}

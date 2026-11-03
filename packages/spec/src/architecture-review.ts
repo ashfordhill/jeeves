@@ -35,7 +35,8 @@ export interface ReviewFinding {
   fingerprint: string;
   acceptedBy?: string;
   expiredDecisions: string[];
-  editor: "contracts" | "binding" | "data" | "requirements";
+  editor: "contracts" | "binding" | "data" | "requirements" | "component";
+  sourcePath?: (string | number)[];
   pattern?: "cached-public-lookup" | "asynchronous-work-delivery";
 }
 
@@ -194,6 +195,7 @@ export function reviewArchitecture(design: DesignDocument) {
     inputs: ReviewReference[],
     editor: ReviewFinding["editor"],
     pattern?: ReviewFinding["pattern"],
+    sourcePath?: ReviewFinding["sourcePath"],
   ) => {
     const id = `review-${digest({ code, inputs, message })}`;
     const fingerprint = `v1-${digest({ code, inputs: relevantInputs(design, inputs) })}`;
@@ -228,6 +230,7 @@ export function reviewArchitecture(design: DesignDocument) {
         .map((d) => d.id),
       editor,
       pattern,
+      ...(sourcePath ? { sourcePath } : {}),
     });
   };
   for (const f of architectureReview(design)) {
@@ -287,7 +290,9 @@ export function reviewArchitecture(design: DesignDocument) {
       (m?.datasets ?? [])
         .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
         .map((d) => ref("dataset", d.id)),
-      "contracts",
+      "component",
+      undefined,
+      f.target.path,
     );
   for (const f of [
     ...validateBackendEffects(design),
@@ -302,7 +307,9 @@ export function reviewArchitecture(design: DesignDocument) {
       (m?.datasets ?? [])
         .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
         .map((d) => ref("dataset", d.id)),
-      "contracts",
+      f.target.path?.[2] === "capabilityConfigs" ? "contracts" : "component",
+      undefined,
+      f.target.path,
     );
   for (const conflict of backendPolicyIntentConflicts(design)) {
     add(

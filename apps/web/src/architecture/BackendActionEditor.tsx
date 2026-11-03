@@ -2,7 +2,10 @@ import { type BackendAction, backendEntityFields, contractKey } from "@jeeves/sp
 import { Button, Group, NativeSelect, Stack, Text, TextInput } from "@mantine/core";
 import { Count, DataRows, dataId, exact, namedOptions, Pick } from "./BackendFields.tsx";
 import { type BehaviorContext, inputValue, ValueMappings } from "./BehaviorValueFields.tsx";
-export type BehaviorNavigation = (kind: "lifecycles" | "operations", key: string) => void;
+
+export type { BackendNavigation as BehaviorNavigation } from "./BackendEffectFields.tsx";
+
+import type { BackendNavigation as BehaviorNavigation } from "./BackendEffectFields.tsx";
 export function BackendActionEditor({
   context: ctx,
   actions,
@@ -244,6 +247,7 @@ export function BackendActionEditor({
                     const h = model?.hooks?.find((h) => contractKey(h) === key);
                     if (h) change({ ...a, hook: exact(h) });
                   }}
+                  onOpen={() => onNavigate("hooks", contractKey(a.hook))}
                 />
                 <Text size="sm">
                   Select an existing exact pure hook. Hook definitions and effectful delivery are

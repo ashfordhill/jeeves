@@ -23,6 +23,7 @@ export function DataContractEditor({
     (c) => contract && contractKey(c) === contractKey(contract),
   );
   const locked = !!contract && contractShapeProtected(base, contract);
+  const inspection = !!contract && contract.kind !== "data";
   const shape = contract?.shape;
   const update = (patch: Partial<NonNullable<typeof contract>>) => {
     if (!contract) return;
@@ -36,10 +37,10 @@ export function DataContractEditor({
         label="Data contract definition"
         value={selected}
         options={contracts
-          .filter((c) => c.kind === "data")
+          .filter((c) => c.kind === "data" || contractKey(c) === selected)
           .map((c) => ({
             value: contractKey(c),
-            label: `${c.name} · ${c.version}${c.source ? " · source (read-only)" : ""}`,
+            label: `${c.name} · ${c.version}${c.kind !== "data" ? ` · ${c.kind} inspection` : ""}${c.source ? " · source (read-only)" : ""}`,
           }))}
         onChange={onSelect}
       />
@@ -63,18 +64,25 @@ export function DataContractEditor({
       </Button>
       {contract ? (
         <>
+          {inspection ? (
+            <Text size="sm">
+              Inspect exact {contract.kind} contract · {selected}. This definition is read-only
+              here; Interfaces owns its authoring and successors.
+            </Text>
+          ) : null}
           <div className="architecture-form-pair">
             <TextInput
               label="Data contract name"
               value={contract.name}
               maxLength={120}
+              disabled={inspection}
               onChange={(e) => update({ name: e.currentTarget.value })}
             />
             <TextInput
               label="Data contract version"
               value={contract.version}
               maxLength={40}
-              disabled={locked || !!contract.source}
+              disabled={inspection || locked || !!contract.source}
               onChange={(e) => update({ version: e.currentTarget.value })}
             />
           </div>
@@ -94,13 +102,13 @@ export function DataContractEditor({
               key={contractKey(contract)}
               shape={shape}
               original={original?.shape}
-              disabled={locked}
+              disabled={inspection || locked}
               onChange={(shape) => update({ shape })}
             >
               <PayloadFields
                 label="Data payload"
                 fields={shape.payload}
-                disabled={locked}
+                disabled={inspection || locked}
                 onChange={(payload) => update({ shape: { ...shape, payload } })}
               />
             </ContractTypeScope>
@@ -108,7 +116,7 @@ export function DataContractEditor({
           <Group>
             <Button
               variant="default"
-              disabled={!!contract.source || contracts.length >= 200}
+              disabled={inspection || !!contract.source || contracts.length >= 200}
               onClick={() => {
                 let n = 2;
                 while (contracts.some((c) => c.id === contract.id && c.version === `v${n}`)) n++;
@@ -122,7 +130,7 @@ export function DataContractEditor({
             <Button
               color="red"
               variant="subtle"
-              disabled={locked || !!contract.source}
+              disabled={inspection || locked || !!contract.source}
               onClick={() => {
                 onChange({ ...draft, contracts: contracts.filter((c) => c !== contract) });
                 onSelect("");

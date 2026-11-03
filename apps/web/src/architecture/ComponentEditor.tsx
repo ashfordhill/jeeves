@@ -26,10 +26,12 @@ import {
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
+import type { BackendNavigation, BackendNavigationRequest } from "./BackendEffectFields.tsx";
 import type { DataNavigation } from "./BackendFields.tsx";
 import { CapabilityFields } from "./CapabilityFields.tsx";
 import { ComponentBehaviorEditor } from "./ComponentBehaviorEditor.tsx";
 import { ComponentDataEditor } from "./ComponentDataEditor.tsx";
+import { ComponentEffectsEditor } from "./ComponentEffectsEditor.tsx";
 
 export const memberKey = (member: ArchitectureMember) =>
   `${member.attachment}|${member.kind}|${member.ref ?? ""}`;
@@ -63,6 +65,7 @@ export function ComponentEditor({
   initial,
   capability,
   members,
+  initialNavigation,
   onClose,
   onSaved,
 }: {
@@ -71,6 +74,7 @@ export function ComponentEditor({
   initial?: ArchitectureComponent;
   capability?: string;
   members?: ArchitectureMember[];
+  initialNavigation?: BackendNavigationRequest;
   onClose: () => void;
   onSaved: (id: string) => void;
 }) {
@@ -105,11 +109,26 @@ export function ComponentEditor({
           usesConnections: [],
         },
   );
-  const [tab, setTab] = useState("general");
+  const areaTab = (kind: string) =>
+    ["operations", "lifecycles"].includes(kind)
+      ? "behavior"
+      : ["effects", "hooks", "scenarios"].includes(kind)
+        ? "effects"
+        : ["policies", "accessBindings"].includes(kind)
+          ? "access"
+          : "data";
+  const [tab, setTab] = useState(initialNavigation ? areaTab(initialNavigation.kind) : "general");
+  const [backendNavigation, setBackendNavigation] = useState(initialNavigation);
   const [dataNavigation, setDataNavigation] = useState<{
     kind: Parameters<DataNavigation>[0];
     key: string;
   }>();
+  const navigate: BackendNavigation = (kind, key, path) => {
+    setBackendNavigation({ kind, key, path });
+    if (!["operations", "lifecycles", "effects", "hooks", "scenarios"].includes(kind))
+      setDataNavigation({ kind: kind as Parameters<DataNavigation>[0], key });
+    setTab(areaTab(kind));
+  };
   const [baseRevision] = useState(design.revision);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -185,6 +204,12 @@ export function ComponentEditor({
         <p className="catalog-intro">
           Inside <strong>{owner.name}</strong>
         </p>
+        {backendNavigation ? (
+          <Text size="xs">
+            Selected definition: {backendNavigation.kind} / {backendNavigation.key}
+            {backendNavigation.path?.length ? ` / ${backendNavigation.path.join(" / ")}` : ""}
+          </Text>
+        ) : null}
         {draft.annotationOrigin ? (
           <Text size="sm">
             Suggested from explicit bindings at revision {draft.annotationOrigin.revision}:{" "}
@@ -200,6 +225,7 @@ export function ComponentEditor({
             <Tabs.Tab value="data">Data</Tabs.Tab>
             <Tabs.Tab value="access">Access</Tabs.Tab>
             <Tabs.Tab value="behavior">Behavior</Tabs.Tab>
+            <Tabs.Tab value="effects">Effects & hooks</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="general" pt="md">
             <Stack gap="md">
@@ -330,10 +356,18 @@ export function ComponentEditor({
               draft={architecture}
               component={draft}
               onChange={setArchitectureDraft}
-              navigate={(kind, key) => {
-                setDataNavigation({ kind, key });
-                setTab(kind === "policies" || kind === "accessBindings" ? "access" : "data");
-              }}
+              navigate={navigate}
+              navigation={backendNavigation}
+            />
+          </Tabs.Panel>
+          <Tabs.Panel value="effects" pt="md">
+            <ComponentEffectsEditor
+              design={design}
+              draft={architecture}
+              component={draft}
+              onChange={setArchitectureDraft}
+              navigate={navigate}
+              navigation={backendNavigation}
             />
           </Tabs.Panel>
         </Tabs>

@@ -76,6 +76,8 @@
 
 .component-behavior-editor,
 .component-behavior-editor .mantine-Stack-root,
+.component-effects-editor,
+.component-effects-editor .mantine-Stack-root,
 .component-data-editor,
 .component-data-editor .mantine-Stack-root,
 .contract-types {
@@ -83,6 +85,7 @@
   overflow-wrap: anywhere;
 }
 .component-behavior-editor .mantine-Button-root,
+.component-effects-editor .mantine-Button-root,
 .component-data-editor .mantine-Button-root,
 .contract-types .mantine-Button-root {
   max-width: 100%;
@@ -90,6 +93,7 @@
   min-height: 30px;
 }
 .component-behavior-editor .mantine-Button-label,
+.component-effects-editor .mantine-Button-label,
 .component-data-editor .mantine-Button-label,
 .contract-types .mantine-Button-label {
   white-space: normal;
@@ -110,9 +114,21 @@
     padding: 0.5rem;
   }
   .component-behavior-editor .architecture-form-pair,
+  .component-effects-editor .architecture-form-pair,
   .component-data-editor .architecture-form-pair {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+.backend-hook-fields {
+  min-width: 0;
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.backend-hook-fields:disabled :is(.mantine-Input-input, .mantine-Checkbox-label) {
+  color: var(--ink);
+  opacity: 1;
 }
 .backend-rows h3 {
   font-size: 0.95rem;

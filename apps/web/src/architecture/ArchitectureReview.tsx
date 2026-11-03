@@ -39,7 +39,7 @@ export function ArchitectureReview({
 }: {
   design: DesignDocument;
   onClose: () => void;
-  onEdit: (finding: Pick<ReviewFinding, "editor" | "inputs">) => void;
+  onEdit: (finding: Pick<ReviewFinding, "editor" | "inputs" | "sourcePath">) => void;
   onPattern: (pattern: string) => void;
 }) {
   const { draft, setDraft, saving, error, issues, save } = useArchitectureDraft(design, onClose);

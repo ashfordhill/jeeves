@@ -155,6 +155,7 @@ export function DataRows<T>({
   create,
   onChange,
   children,
+  focusIndex,
 }: {
   label: string;
   rows: T[];
@@ -162,6 +163,7 @@ export function DataRows<T>({
   create: () => T;
   onChange: (rows: T[]) => void;
   children: (row: T, index: number, change: (row: T) => void) => ReactNode;
+  focusIndex?: number;
 }) {
   return (
     <section className="backend-rows" aria-label={label}>
@@ -170,7 +172,7 @@ export function DataRows<T>({
         <details
           className="contract-field"
           key={rowKey(row, index)}
-          open={rows.length === 1 || undefined}
+          open={rows.length === 1 || focusIndex === index || undefined}
         >
           <summary>
             {label} {index + 1}

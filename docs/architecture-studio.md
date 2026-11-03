@@ -104,7 +104,7 @@ byte/output access bindings, operations and capability settings. Follow a query 
 to its exact policy, resource entity, dataset and contract without leaving the shared draft.
 **Sensitive access uses** selects exact policies/projections for byte, materialization, delivery,
 export, job, replay and existing provided-operation paths; it does not implement those paths.
-Operation input/output inspection is read-only. Behavior authoring is available below; effect/hook and capability-setting editors follow in P68b/P68c.
+Operation input/output inspection is read-only. Behavior and effect/hook authoring are available below; capability-setting editors follow in P68c.
 
 **Design preview** illustrates all/any composition and deny precedence against a local synthetic
 fixture of explicitly assumed clause/context/revocation facts. Unknown facts cannot demonstrate
@@ -139,5 +139,36 @@ expected version; aggregate row-lock intent remains visible. Command-key identit
 hash fields, published replay window, cooperative deadline and starts-work choice are explicit.
 The fixed transaction/receipt/replay/cancellation guarantees remain visible as requirements.
 Missing decisions, such as a conflict or uncertain outcome, remain saveable specific findings;
-contradictory types, references, outcomes and writers block Save. Effect/hook authoring and
-capability settings remain assigned to P68b/P68c. No command, timer, transaction or hook executes.
+contradictory types, references, outcomes and writers block Save. Effect/hook authoring is available below. Capability settings remain assigned to P68c.
+No command, timer, transaction or hook executes.
+
+
+Component **Effects & hooks** adds focused effect, typed-hook and failure-scenario inspectors to
+the same component draft. Effects select exact source commands and event/consumer, operation,
+dataset/audit, projection/query, notification/recipient or effectful-hook targets. Typed payload
+mappings reuse the finite Behavior value selectors. Commit boundaries, required/loss decisions,
+ordered predecessors and bounded delivery/retry/acknowledgement controls remain explicit. Unknown
+acknowledgements retain reconciliation; delivery identity does not promise exactly-once mail.
+
+Hooks select pure or effectful execution, exact input/output/error contracts, supplied context,
+private-data policy, dependencies, bounded query/service references and allowed proposals/effects.
+Dependencies and signatures have **Open …** links. Required readiness precedes mutation; a missing
+hook selects an unchanged 501/503 outcome with no writes. Error, invalid-result, timeout and
+cancellation select exact unchanged failure outcomes. Effectful failure belongs to a separate
+delivery operation and preserves the committed source. Acceptance IDs and a bounded project-owned
+TypeScript seam path declare obligations; this editor does not write or execute implementation code.
+Referenced hook semantics are protected. **Create hook successor** preserves old consumers until
+an explicit action/effect/dependency retarget is saved.
+
+Recovery rows select existing exact operation outcomes, scenario outcomes, aggregate invariants
+and, where required, reconciliation operations. **Open … scenario outcome** inspects that same
+scenario's main/alternative failure paths without leaving the draft. Review and global Findings
+open the exact command, lifecycle, effect or hook and its relevant section, including recovery
+triggers. Missing recovery/readiness decisions remain specific saveable findings. Dangling targets,
+false hook success, incompatible payloads, boundary contradictions and cycles block Save. Event
+contract references open exact read-only inspection; Interfaces retains their authoring.
+
+General, Data, Access, Behavior and Effects & hooks share Save/Cancel, atomic undo/redo and revision
+conflict handling. Cancel discards the whole draft; conflicts retain it for review after reopening.
+These are design previews and acceptance declarations, separate from template support and observed
+verification. P68c's typed capability-setting editors remain the next authoring assignment.

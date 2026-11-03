@@ -7488,3 +7488,136 @@ Corrections and limits:
 **P68a is complete with no P68a blocker. P68b is next unstarted; parent P68 remains incomplete.**
 Stop after the scoped local P68a commit. `.jeeves-work/p68a/completion.json` records its commit,
 check records, browser evidence, limits and next unit. Coordinator owns the batch checkpoint.
+
+## P68b — exact effect/hook authoring, recovery navigation and atomic chat edits (2026-11-03)
+
+Implemented **P68b only** in the primary checkout on `main`, from
+`0fbc3a2334a571da870ed0dd1de401166effe469`. Read the authorized batch instructions/checkpoint,
+AGENTS, PLAN §1–§15, latest handoff, C4 guidance, studio guide, backend shared contract/benchmark
+scope, P68 and its mandatory execution split. Dependency evidence: P68a's scoped commit,
+`.jeeves-work/p68a/completion.json`, recorded 114 focused checks and mouse workflows; P66a's
+existing effect/hook/recovery validators and P67's coherent shared component draft are reused.
+No sibling package, runtime, template or compiler implementation was started.
+
+Built:
+
+- Added **Effects & hooks** to the existing component dialog. `ComponentEffectsEditor.tsx`,
+  `BackendEffectEditor.tsx`, `BackendHookEditor.tsx` and shared `BackendEffectFields.tsx` supply
+  focused source/target, payload, delivery, signature/dependency, failure, acceptance and recovery
+  subeditors. General/Data/Access/Behavior and these edits share one architecture draft, Save,
+  Cancel, revision check and undo step. No JSON, SQL or code-expression textarea was added.
+- Effects select exact command/event/consumer/operation/dataset/audit/projection/query/notification/
+  recipient/hook refs and C2 bindings. Finite mappings reuse `BehaviorValueFields`; local,
+  durable-intent and external execution preserve their explicit commit/identity/acknowledgement
+  requirements. Retry limits, ordering, required/optional loss choices and recovery remain bounded.
+  Existing structural validators block dangling targets, contradictory boundaries, unsafe mappings
+  and cycles. Missing recovery remains a specific saveable design gap.
+- Pure/effectful hooks expose exact input/output/error contracts, context/private-data policy,
+  dependency/query/service/effect refs and allowed write proposals. Safe unavailable selects an
+  unchanged 501/503 Failure with no writes; exact failed/invalid-result/timeout/cancel outcomes
+  cannot report success. Effectful failure selects a separate delivery operation. Acceptance IDs
+  and project-owned TypeScript seam paths are bounded declarations, never implementation evidence.
+  Referenced hook semantics stay protected; successors get distinct version/file identities and
+  deliberately retargeted consumers. Navigation remains available around read-only fields.
+- Exact command→effect/hook and action→hook links, signature/dependency/data links, and recovery
+  operation/outcome/scenario/invariant/reconciliation links remain inside the shared draft.
+  Scenario inspection shows the existing named outcome and its main/alternative paths; it creates
+  no second recovery graph. Event contracts open exact read-only inspection through Data;
+  Interfaces still owns their authoring/successors.
+- Review retains structured `sourcePath` metadata for backend behavior/effect/hook findings.
+  Review and global Findings open the owning component, exact definition and relevant section,
+  including recovery triggers. Section requests are bounded to their exact editor/definition.
+  Chat discovery documents the same combined edits and fail-closed contract; strict shared
+  schemas still reject unknown options. A new focused offline test exercises a real scripted
+  ChatService turn, persistence and atomic undo/redo over commands/lifecycles/hooks/effects/scenarios.
+- Updated studio/behavior/effects guidance and roadmap/next-work pointers. **P68c is next;
+  parent P68 remains incomplete.** CATALOG is unchanged because offerings, reusable C1/C2/C3
+  boundaries and runtime availability did not change. All semantic schemas, frozen benchmarks,
+  legacy fixtures and runtime/template/generator paths remain unchanged.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1**, with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **899 files / 749ms**, no fixes, **2024 existing warnings / 75 infos**;
+  no added diagnostics. `.jeeves-work/p68b/lint-last.log`; repeated after this append.
+- `pnpm work run typecheck` → workspace/script typecheck: exit 0, **14.5s**.
+  `.jeeves-work/runs/2026-11-03T17-51-47-661Z-typecheck-c6547a00.{json,log}`.
+- Focused offline semantic/compatibility/chat selector:
+
+  ```bash
+  pnpm work run unit apps/server/src/chat/effects-authoring.test.ts apps/server/src/chat/backend-authoring.test.ts packages/spec/src/backend-effects.test.ts packages/spec/src/backend-behavior.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/apply.test.ts
+  ```
+
+  Exit 0, **9 files / 123 tests**, **11.6s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T17-51-47-660Z-unit-cc61d61b.{json,log}`. Both final runner
+  records have `sourceChanged: false`; no production/test source changed afterward.
+  New cases prove actual persisted atomic chat/undo, strict rejection without losing pending edits,
+  safe hook failures/protected semantics and exact Review source metadata. Existing effect checks
+  retain cross-container binding, typed mapping, recovery, recursion and legacy compatibility gates.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.82s**, existing large-chunk advisory only.
+  `.jeeves-work/p68b/build-last.log`.
+- Direct isolated Chromium inspection against the preserved loopback preview/API:
+  - Seeded disposable topic-close (`open → closed`), order-payment-review (`cart → payment-review
+    → paid`) and ticket-first-response (`awaiting-response → responded → resolved`) command/data
+    skeletons with **no hooks/effects**. By mouse, authored pure hooks for topic/ticket, an effectful
+    hook with a separate delivery failure operation for order, exact signatures/acceptance refs,
+    ordered source actions, atomic event intent and all required effect recovery refs. Order's
+    external effect explicitly follows durable intent and retains uncertain/reconcile outcomes.
+  - Actual Save/Cancel/reload/Undo/Redo for whole edits; safe unavailable/failed/cancel outcomes,
+    missing-target Save refusal, invalid mixed General/Data/Effects draft retention and full Cancel.
+    Added a hook successor plus exact command retarget in one Save; old v1 remained identical.
+    Added a dependent ticket hook with ordered predecessor actions; saved/reloaded/history and
+    exact dependency links passed. Referenced hook versions/fields/removal stay disabled.
+  - Exact operation/effect/action/hook/contract/aggregate/scenario/reconciliation navigation;
+    source-addressed Review and global Findings open the precise effect/recovery field. Removed
+    a recovery decision and saved its specific unresolved finding. Event contract inspection is
+    exact/read-only, with no false missing-reference label. Cross-editor section navigation passed.
+  - Actual server **409** and a subsequent local stale-revision rejection preserve the open effect
+    draft and current saved semantics. Ordinary/final flows have zero page/console errors, failed
+    requests or unexpected error responses. Extended evidence contains only the intentional 409.
+  - Light **1440×1000**, dark **390×844**, fixed Save/Cancel, mouse save/reload/history/reference
+    navigation; dialog client/scroll **351px**, document **390px**. **25 zero-violation scoped axe
+    inspections** in the successful domain/extended/dependency/final records cover hook signatures,
+    dependencies, failures, acceptance/recovery, effects/payload/delivery/recovery, event contracts,
+    scenarios and exact Review navigation. This is changed-dialog inspection, not a full-page audit.
+  - Successful records: `.jeeves-work/p68b/browser-{domains,extended,dependencies,final}.json`,
+    `browser-{domains,extended,dependencies}-final.log`, `browser-final-last.log`; final light/dark
+    screenshots and detailed axe JSON alongside. No deferred UI suite was run or maintained.
+- `node .jeeves-work/p68b/cleanup.mjs`: all **13 pre-existing designs/layouts hash-identical**;
+  deleted only final exact disposable IDs **95ca1b04-0a1a-4d7f-a64d-919911410e8f**,
+  **acab1abf-787b-47e9-82eb-bd48990b3024**, **792da65f-0793-4d64-ae57-478df14541c2**.
+  Verified each 404 and the original ID set; preview/API remain healthy. `cleanup.json`,
+  `preserved-{before,after}.json` and `final-design-{post,order,ticket}.json`. An initial post seed
+  **9282e433-7cfc-4df9-82db-9147c7eef0e3** was removed by exact ID/name before correcting the
+  synthetic three-state transition setup; `reset-seed.json` records it. No persistent settings,
+  output directories or existing preview processes were changed.
+- `python3 .jeeves-work/p68b/audit.py`: byte-preserved **1,492 other tracked files**, all **48
+  benchmark files / 46 legacy fixtures**, CATALOG and semantic schema/runtime/template/generator
+  paths; earlier handoff prefix unchanged; scoped links/anchors/fences valid. `audit.json`;
+  repeated after this append. `git diff --check` passes.
+
+Corrections and limits:
+
+- Initial typecheck caught unused import/scenario display property names; corrected. Focused chat
+  fixture checks caught malformed synthetic labels/metadata and the create-project readiness guard;
+  the final check seeds through the actual operation API and passes. Node's strip-only mode cannot
+  load existing parameter-property code; inspection seeding uses the existing server `tsx` command.
+- Direct inspection caught prohibited labels on dependency link containers and low contrast in a
+  hovered dependency link; corrected using named groups and default reference buttons. It also
+  exposed event inspection's misleading missing-option label and a shared section-request leak;
+  corrected and directly rechecked in light/dark. Ad hoc browser selectors were tightened to exact
+  contract labels, scoped listboxes and Explorer's pressed state. Initial failure logs/axe evidence
+  remain alongside the successful records; no expectations were weakened or failures relabeled.
+- This is design authoring and local synthetic preview. Hooks, commands, external delivery,
+  recovery and acceptance checks do not execute. The three benchmark applications remain
+  **absent/not run with zero observed implementation points**; these are not complete benchmark
+  examples, provider certification, or runtime/benchmark acceptance.
+- No UI unit/E2E suite maintenance/execution, full `pnpm check`, broad historical failure campaign,
+  provider/Docker campaign, runtime/generation, settings editor work, branch/worktree/delegation,
+  push or publication. Prior historical architecture/chat failures were not rerun or claimed green.
+- P68c owns capability-setting editors and the remaining parent authoring gate. P69/P70 own exact
+  support matching/pure compilation. None was started.
+
+**P68b is complete with no P68b blocker. P68c is next unstarted; parent P68 remains incomplete.**
+Stop after the scoped local P68b commit. `.jeeves-work/p68b/completion.json` records the commit,
+check records, browser evidence, limits and next unit. Coordinator owns the batch checkpoint.

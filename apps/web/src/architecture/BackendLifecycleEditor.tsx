@@ -7,7 +7,7 @@ import {
   validateBackendBehaviorTransition,
 } from "@jeeves/spec";
 import { Alert, Button, Group, NativeSelect, Stack, Table, Text } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type DataNavigation,
   DataRows,
@@ -44,14 +44,24 @@ export function BackendLifecycleEditor({
   lifecycle: l,
   onChange,
   navigate,
+  sectionRequest,
 }: {
   design: DesignDocument;
   draft: Architecture;
   lifecycle: BackendLifecycle;
   onChange: (v: BackendLifecycle) => void;
   navigate: DataNavigation;
+  sectionRequest?: { section: string };
 }) {
   const [section, setSection] = useState("states");
+  useEffect(() => {
+    if (sectionRequest)
+      setSection(
+        ["guards", "transitions"].includes(sectionRequest.section)
+          ? sectionRequest.section
+          : "states",
+      );
+  }, [sectionRequest]);
   const locked = lifecycleProtected(design, l);
   const update = (p: Partial<BackendLifecycle>) => onChange({ ...l, ...p });
   const aggregates = draft.backend?.aggregates ?? [];

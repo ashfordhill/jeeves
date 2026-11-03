@@ -3,6 +3,7 @@
  * view, and opens it in the inspector, where the offending field is marked.
  */
 
+import type { Finding } from "@jeeves/spec";
 import { Button } from "@mantine/core";
 import { IconCircleCheck } from "@tabler/icons-react";
 import { findingSubject, placeFinding } from "../findings.ts";
@@ -13,7 +14,7 @@ export function FindingsPanel({
   onNavigate,
   onReview,
 }: {
-  onNavigate?: () => void;
+  onNavigate?: (finding: Finding) => void;
   onReview?: () => void;
 } = {}) {
   const loaded = useDraw((s) => s.loaded);
@@ -54,7 +55,7 @@ export function FindingsPanel({
             { zoom: true },
           );
           setRailTab("inspector");
-          onNavigate?.();
+          onNavigate?.(f);
         }}
       />
     </section>
