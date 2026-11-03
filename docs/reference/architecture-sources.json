@@ -443,6 +443,163 @@
           "sha256": "bfb603aed5e04cd19d0f4ea4696ea39deb1cdada5cf68e55237df6f7cd535c69"
         }
       ]
+    },
+    {
+      "id": "zammad",
+      "repository": "zammad/zammad",
+      "commit": "568ebbedd173a449eea2bd8c6f456b30ce106242",
+      "observedAt": "2026-11-02",
+      "status": "inspected",
+      "license": {
+        "summary": "AGPLv3 program notice in README.md; GNU Affero General Public License version 3 text in LICENSE. Selected paths are open-source core for architectural inspection only; no upstream runtime code adopted. No broader license-version election or transitive licensing conclusion.",
+        "evidence": ["LICENSE", "README.md"],
+        "excluded": [
+          "Hosted/commercial service terms, separately distributed integrations, third-party dependencies/assets and trademarks are outside this pack. No conclusion about uninspected feature licensing or availability."
+        ]
+      },
+      "candidates": [
+        "ticket-access",
+        "internal-article-visibility",
+        "ticket-command-boundaries",
+        "business-time-calendars",
+        "first-response-sla",
+        "escalation-recovery",
+        "routing-notification-seams"
+      ],
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
+        },
+        {
+          "path": "README.md",
+          "sha256": "2c26c4fb0790b9d0a754bfeaa7abc3d5e4f8617dad52831e0d132ac522457d69"
+        },
+        {
+          "path": "VERSION",
+          "sha256": "3eb8e06ca1e02f0a30b0e3eebd289494b35d4fd1466ed907b9148e03b2459b00"
+        },
+        {
+          "path": "app/policies/ticket_policy.rb",
+          "sha256": "66eba2c2414026b8dd9f7d42bb8bfca98283d0f58d6462cc68ffee99666ebd58"
+        },
+        {
+          "path": "app/policies/ticket_policy/base_scope.rb",
+          "sha256": "59cc29e8c137c986dd28372b06ece21d4c4da7ba2a88ab456106a185753a5ce0"
+        },
+        {
+          "path": "app/policies/ticket/article_policy.rb",
+          "sha256": "ab44194febff944cd2ab325437156d8c430ea3c5b3aaa467b46c20a424c62ee4"
+        },
+        {
+          "path": "app/controllers/tickets_controller.rb",
+          "sha256": "483a28891a8a121600318a4f0a278edde9fadce5b2be3c15759d793f64567fd5"
+        },
+        {
+          "path": "app/controllers/ticket_articles_controller.rb",
+          "sha256": "1b4803c3d0612145c8ac779f099347eb5e71b75ecb590bf8afc63029da55f9eb"
+        },
+        {
+          "path": "app/services/service/ticket/create.rb",
+          "sha256": "65f13f91533cd80b9e97dbf707951d2827290259f038ad158ac01186fd662569"
+        },
+        {
+          "path": "app/services/service/ticket/update.rb",
+          "sha256": "7e8cc7230a9464c6ff30f013d2deb238cdbfca861f1ee88de13e375225f54f2f"
+        },
+        {
+          "path": "app/services/service/ticket/article/create.rb",
+          "sha256": "9a52e10ebcad40a7f869edeff3f970f327ce5f4ab7fec7692c9557cc7579ab6d"
+        },
+        {
+          "path": "app/models/sla.rb",
+          "sha256": "d37bd32ddbd166eebbaa64f0f890dc771aa8c1babb29d8e2b7ec02300bc9135f"
+        },
+        {
+          "path": "app/models/calendar.rb",
+          "sha256": "c687b9d3dfafd6801ffe2732e313e3f0470b09d812220b1f10981e8d36c290f1"
+        },
+        {
+          "path": "lib/escalation.rb",
+          "sha256": "eb479a78cb3c0ebfe4e7b8f7fe76c5448f18cdafd10ee91a4760363bf787927c"
+        },
+        {
+          "path": "lib/escalation/destination_time.rb",
+          "sha256": "15bc49b41d8d974e937d7c9d3199daf4b03e6a49da9fd5027500ddd60c71671c"
+        },
+        {
+          "path": "lib/escalation/ticket_biz_break.rb",
+          "sha256": "bd1e6b65beb46f3c172ab0c43069b86771036974330a6cfbecb875b1e348ab2b"
+        },
+        {
+          "path": "lib/escalation/period_working_minutes.rb",
+          "sha256": "02ec45690f1ead653f25a5d19f7c5b8509bbc1ef9e4c1619c286e1b787a97cf9"
+        },
+        {
+          "path": "app/models/ticket/article/has_ticket_contact_attributes_impact.rb",
+          "sha256": "229d9c2c1a43d41ca23ee1a953150b030df94f91206edecc8ba52b1e7fbf9cd2"
+        },
+        {
+          "path": "app/models/ticket/escalation.rb",
+          "sha256": "3b537f88f4b6419665d13c856267d546f1bc841038fc41e47846b4239db398b4"
+        },
+        {
+          "path": "app/models/concerns/has_escalation_calculation_impact.rb",
+          "sha256": "fe79ee46baf6800dfaf215d8e5a9f794c9520dfdc602abda39a249c623d38664"
+        },
+        {
+          "path": "app/jobs/ticket_escalation_rebuild_job.rb",
+          "sha256": "1594dc6846c7ce04dd94366792020835e069f7639f67e9f711c8e8f4ecf309ae"
+        },
+        {
+          "path": "app/models/ticket.rb",
+          "sha256": "71e6eb34940e64364eaf34fb24d12ef7d77bdad6ffd78161332413196bfd9151"
+        },
+        {
+          "path": "app/models/transaction/notification.rb",
+          "sha256": "813fa9400a995d8f043e366bb0ea490ee0a0786ce09a757ac62f4440e55afd06"
+        },
+        {
+          "path": "app/models/transaction/trigger.rb",
+          "sha256": "f6994cb45145d1febbfbe215d73ad1dda5d4f26c179bf61a8de2e7cfedb0e904"
+        },
+        {
+          "path": "app/jobs/application_job.rb",
+          "sha256": "6abe35f5fa1e20a6270b4932b01a6cb027215f22a4b18b8541964e5e7927692f"
+        },
+        {
+          "path": "app/jobs/concerns/has_active_job_lock.rb",
+          "sha256": "a46dac405d64252536c3b27206449d0582359c5248ecdb022da704a0dc33adf6"
+        },
+        {
+          "path": "app/models/ticket/article/enqueue_communicate_email_job.rb",
+          "sha256": "58c052962f48e3459aa2dfd966e1eda3a367c13461c893874e0cd13eb20e2732"
+        },
+        {
+          "path": "app/jobs/ticket_article_communicate_email_job.rb",
+          "sha256": "455634534e88362286b5d446c52056bf2137dd5d6c83b86f2e464b7c0775aacc"
+        },
+        {
+          "path": "app/models/transaction.rb",
+          "sha256": "92341685bef34c15b3c932d7d32059981fbd12bd0524b531fdb1f756248a625a"
+        },
+        {
+          "path": "lib/transaction_dispatcher.rb",
+          "sha256": "22104b3388d87066f118afda09e6ff60c7f793864ad7a5acee0bc2771f9d144d"
+        },
+        {
+          "path": "app/jobs/transaction_job.rb",
+          "sha256": "6f8a8ce15c73125a1fd83cea22d238a74cef3121ddad3b7b106d4f0e34a4b406"
+        },
+        {
+          "path": "app/models/ticket/search.rb",
+          "sha256": "ca3994b7643f80ef88433e71877bfe55725fe45997521727eabbba1a2a9c32d9"
+        },
+        {
+          "path": "app/models/ticket/search_index.rb",
+          "sha256": "38073d72cc7636b86cb3bcfeb24e069b711ac5b98c9ae48d78973a3915bb6935"
+        }
+      ]
     }
   ]
 }

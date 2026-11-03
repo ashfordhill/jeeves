@@ -6,8 +6,9 @@ are divided into [79 sequential agent assignments](plans/backend-benchmarks/exec
 The planning task implemented none. [P58's baseline](evidence/p58/README.md) and
 [P59's frozen ledgers/evaluator](../benchmarks/README.md) and
 [P60a's Discourse reference pack](reference/backend-benchmarks.md#discourse-core-p60a) and
-[P60b's Vendure reference pack](reference/backend-benchmarks.md#vendure-core-p60b) are now complete;
-P60c is next unstarted. Parent P60 remains incomplete until the Zammad pack and combined review.
+[P60b's Vendure reference pack](reference/backend-benchmarks.md#vendure-core-p60b) and
+[P60c's Zammad pack and combined review](reference/backend-benchmarks.md#combined-p60-reference-review)
+are now complete, including parent P60. P61a is next unstarted.
 For the authorized P59–P61d batch, lint/types and focused offline backend semantic/compatibility
 tests replace full `pnpm check`; UI unit/E2E execution and maintenance remain deferred.
 When execution is requested, start with the assigned unit, not the historical sequence below. Existing

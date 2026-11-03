@@ -5449,3 +5449,117 @@ Scope limits and next assignment:
 - **P60b is complete. P60c is next**, for Zammad and the combined reference review. Parent P60
   remains partial. Stop after this scoped local commit; no next task launched. No new runtime,
   application/database/output mutation, push or publication.
+
+## 2026-11-02 — P60c: Zammad reference pack and combined P60 review
+
+Executed **P60c only** in `/home/ash/github/jeeves` on `main`, starting clean at P60b commit
+`6e80911e417c3c99d909d752ac93b105b02cb5ac`. Read AGENTS, PLAN §15 and relevant §1–§14,
+latest handoffs, backend roadmap/shared contract/scopes/79-unit queue/phase-1 P60, C4 guidance,
+enterprise reference review, existing source maps and reference-cache machinery. One worker;
+no delegation, branch or worktree. The authorized P59–P61d verification policy applies:
+lint/types and focused offline backend checks replace full `pnpm check`; UI suites/maintenance
+remain deferred. No following work unit was started.
+
+Built:
+
+- Appended `zammad` to [the existing reference catalog](reference/architecture-sources.json),
+  preserving all seven earlier entries. Selected released **6.5.0**, announced **2 April 2025**
+  by [the official release announcement](https://zammad.com/en/product/releases/6-5).
+  The lightweight tag points directly to full SHA
+  **`568ebbedd173a449eea2bd8c6f456b30ce106242`**, committed **2025-04-02T06:12:02Z**;
+  pinned VERSION independently states 6.5.0. No annotated tagger timestamp or GitHub Release
+  API publication/draft/prerelease metadata is invented: that API returned no release object.
+  The official announcement/tag/version establish a released historical research snapshot,
+  not a current dependency/version/security recommendation.
+- Fetched **33 complete source/license files / 178,084 bytes**, SHA-256 pinned through the
+  existing tool, with **58 inspected ranges**. README's program notice states **GNU AGPLv3**
+  and Foundation ownership; complete LICENSE is cached, with only title/preamble listed as
+  inspected. Selected paths are open-source core. No separately licensed feature selected,
+  broader license-version election or transitive licensing conclusion. Hosted/commercial terms,
+  external integrations/assets/trademarks and uninspected feature availability remain excluded.
+- Added [the Zammad review](reference/backend-benchmarks.md#zammad-core-p60c): ticket/group/
+  customer/shared-organization policy, SQL read scope and report exception; REST create/update,
+  article/internal visibility, byte/raw paths, eligible assignment, current SLA selection,
+  calendar/Biz delegation/state breaks, forced rebuild, due scan/job locks, routing bounds,
+  search/index/history, recipient preferences and outgoing-mail retry/ambiguity.
+- Explicitly separated source facts from planned behavior. Upstream strips some privileged
+  customer fields, permits configured closed-ticket follow-up, resets ineligible owners and
+  uses mutable SLA/calendar rebuilds. Jeeves requires explicit rejection, expectedVersion and
+  current-access rechecks, smaller lifecycle, required initial article/receipt/intent atomicity
+  and immutable deadline versions. Byte/download helpers, search/mail serializers and queue
+  adapters were not exhaustively audited; the review claims neither an inherited all-path
+  internal-note guarantee nor an upstream exploit. Job locks/daily suppression do not prove
+  fenced per-deadline effects or one logical escalation after crash/restart.
+- Documented the **reduced first-response SLA**: creation start; authorized customer-visible
+  agent reply stops; internal note/pending do not pause; closing cancels unmet without satisfying;
+  resolved reopening creates no new clock; no closed reopening in core. Immutable America/Chicago
+  calendar/SLA snapshots, explicit holidays, no remote feed, repeated fall-back time twice and
+  missing spring time zero remain independent benchmark choices. Upstream communication-type
+  checks, additional clocks/state breaks and mutable rebuild behavior are distinguished. P61d
+  fixes dated exact UTC results independently; P87 selects the implementation library later.
+- Added [Zammad v1 source-map.json](../benchmarks/zammad-core/v1/source-map.json) in the existing
+  sidecar format: release/license/path/hash/range provenance, unchanged ledger integrity, all
+  **20 Z rows / 66 mandatory observations**, 12 shared decisions and **eight H hook seams** with
+  inputs/results/rejection/recovery/remaining decisions and HTTP 503 without domain changes.
+  No uninspected inbound/connector/knowledge/privacy/reporting implementation is implied.
+- Completed [the combined P60 review](reference/backend-benchmarks.md#combined-p60-reference-review):
+  **60 rows / 195 observations / 24 H seams**, 36 G candidate targets totaling 66 points/app,
+  **zero observed implementation points**. All three sidecars resolve to their frozen manifest
+  paths. Vendure GraphQL→REST and Zammad reduced SLA choices remain explicit. Preserved all nine
+  P59 files, both earlier maps, and all seven prior reference entries. Updated benchmark,
+  roadmap/improvement and enterprise-reference entry points to parent P60 complete, P61a next.
+  No CATALOG change: no offering, reusable boundary or runtime/template availability changed.
+
+Checks with **Node 24.21.0 / pnpm 12.16.1**, selected by
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm references fetch zammad`: exit 0; **33 files downloaded and hash-verified**. Raw output:
+  `.jeeves-work/p60c/references-fetch.log`. Cache:
+  `.jeeves-work/references/zammad/568ebbedd173a449eea2bd8c6f456b30ce106242/`.
+- `pnpm references verify all`: exit 0, strictly offline, **8 references / 112 files / 0 downloads**,
+  including all historical sources. Raw output: `.jeeves-work/p60c/references-verify.log`.
+- `pnpm lint`: exit 0; `Checked 816 files in 443ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, zero errors or new diagnostics. Raw output: `.jeeves-work/p60c/lint.log`.
+  `pnpm exec biome check docs/reference/architecture-sources.json benchmarks/zammad-core/v1/source-map.json`
+  also passed: `Checked 2 files in 3ms. No fixes applied.`
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **8.4s**.
+  Evidence: `.jeeves-work/runs/2026-11-03T00-11-07-407Z-typecheck-18de491a.{json,log}`.
+- Exact focused offline selection:
+
+  ```bash
+  pnpm work run unit packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **6 files / 140 tests passed**, **4.4s** including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-03T00-11-07-414Z-unit-ff2445b9.{json,log}`. Both runner records have
+  `sourceChanged: false`. These are accounting/selected legacy compatibility checks, not generated
+  Zammad behavior, deadline execution or benchmark points.
+- Temporary combined audit `.jeeves-work/p60c/audit.py` → `audit.json`: passed JSON parsing,
+  canonical integrity and byte preservation against **P59 commit `6ecd5b3`** for all nine frozen
+  files; exact preservation of P60a/P60b maps against their commits and HEAD; seven prior catalog
+  metadata objects unchanged; every catalog cache hash; all three maps' path/hash/revision/range
+  resolution; complete/unique **60 row / 195 observation** identities; all **24 H seams**;
+  local Markdown destinations/anchors and immutable source-link ranges; release/tag/version
+  metadata; and unchanged earlier handoff prefix. `git diff --check` passed.
+
+Artifact pins:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Zammad source-map file bytes | `fc25b373292cc7b5bb62b546e5be39ff47a6e048f9e4aa81555669327c93b153` |
+| Zammad canonical manifest (unchanged) | `f21c75ab05b05b2fc7091231e32c2bfdaf435bcb8c0a0cd0dfd73c27e1c7f1f3` |
+| Zammad canonical requirements (unchanged) | `63342b9eb79e7b78c84a9551ef521239b6b161a5f1a48a85b13ce1b14217e631` |
+
+Scope limits and next assignment:
+
+- No P60c blocker or behavior/scope revision. The official release announcement plus lightweight
+  tag/version replaces unavailable GitHub Release API metadata without guessing. Static excerpts
+  do not establish exhaustive upstream security/concurrency/recovery or timezone correctness.
+  The ignored cache must be fetched before offline inspection. P61a/d and P73a/b retain the exact
+  independent protocol/fixture/policy and typed-hook decisions listed in the review/sidecar.
+- Full `pnpm check`, deferred UI unit/E2E execution/maintenance, production UI build/browser,
+  dependency conformance, upstream applications, providers, generation and load/recovery/upgrade
+  campaigns were not run. No UI/runtime code changed. P59's historical architecture assertion
+  debt remains unchanged, separately recorded and not rerun/repaired here.
+- **P60c and parent P60 are complete. P61a is next unstarted.** Stop after this scoped local
+  commit; launch no following task. No application/database/output mutation, push or publication.

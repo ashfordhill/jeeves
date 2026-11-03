@@ -1,8 +1,9 @@
 # Backend benchmark reference packs
 
 These are inspected architectural references for the [backend roadmap](../build-plan-backend-benchmarks.md),
-not application implementations or coverage evidence. P60a supplies Discourse and P60b supplies
-Vendure; P60c owns the unstarted Zammad pack and combined reference review. The
+not application implementations or coverage evidence. P60a supplies Discourse, P60b supplies
+Vendure, and P60c supplies Zammad and the [combined reference review](#combined-p60-reference-review).
+All three packs are complete. The
 [frozen ledgers](../../benchmarks/README.md) remain authoritative.
 
 ## Discourse-core (P60a)
@@ -127,13 +128,13 @@ upstream GraphQL API to REST without API parity; [P60b below](#vendure-core-p60b
 source facts. Zammad's planned core uses a **reduced first-response SLA**: business-time clock
 from creation, stopped by an authorized customer-visible agent reply, not an internal note or
 pending state; closing cancels without
-satisfying it, and reopening adds no new first-response clock. **P60c** must distinguish that
-benchmark choice from inspected upstream SLA behavior. Neither adaptation is licensed as an
-upstream fact by this Discourse-only assignment.
+satisfying it, and reopening adds no new first-response clock. [P60c below](#reduced-first-response-sla-adaptation)
+distinguishes that benchmark choice from inspected upstream SLA behavior. Neither adaptation is
+an upstream fact established by the Discourse-only inspection.
 
 No template availability, observed benchmark pass, upstream execution, production capacity,
-generated application or runtime change follows from this reference pack. Parent P60 remains
-incomplete until all three children supply their own evidence and the combined review.
+generated application or runtime change follows from this reference pack. At P60a, parent P60 was
+incomplete; the remaining children and combined review are recorded below.
 
 ## Vendure-core (P60b)
 
@@ -268,4 +269,186 @@ These are explicit future specification decisions, not permission to change froz
 
 No runtime/template offering, observed benchmark pass, upstream execution, generated application
 or capacity result follows from P60b. Earlier pins, P60a's map and all nine frozen P59 files remain
-unchanged. **P60c is next**, for Zammad and the combined reference review; parent P60 remains partial.
+unchanged by P60b. At P60b, parent P60 remained partial; P60c's completion review follows.
+
+## Zammad-core (P60c)
+
+Inspected 2 November 2026. Selected released **6.5.0**, a stable historical research snapshot,
+without a latest-version, dependency or security recommendation. The
+[official announcement](https://zammad.com/en/product/releases/6-5) dates release to **2 April 2025**.
+The [tag reference](https://api.github.com/repos/zammad/zammad/git/ref/tags/6.5.0) points directly
+to full commit **`568ebbedd173a449eea2bd8c6f456b30ce106242`**, committed
+**2 April 2025 at 06:12:02 UTC**. This is a lightweight tag, with no separate tagger timestamp.
+The [tag page](https://github.com/zammad/zammad/releases/tag/6.5.0) and pinned
+[VERSION](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/VERSION#L1)
+corroborate the release identity. The GitHub Release API returned no release object for this tag;
+no draft/prerelease flags or precise publication timestamp are invented. No default branch is pinned.
+
+The [cache manifest](architecture-sources.json) appends `zammad` while preserving all **seven
+earlier reference entries**. Its **33 complete source/license files total 178,084 bytes**. The
+[Zammad sidecar](../../benchmarks/zammad-core/v1/source-map.json) follows the existing format:
+release/commit/date/license metadata, file hashes and immutable URLs, **58 inspected ranges**,
+all **20 Z rows / 66 unchanged mandatory observations**, shared adaptations and eight H hook seams.
+Ranges identify inspected excerpts inside complete cached files; unread callers/helpers are
+outside this review. Upstream implementations have not entered a Jeeves runtime.
+
+```bash
+pnpm references fetch zammad
+pnpm references verify zammad
+pnpm references verify all
+```
+
+`fetch` downloads only missing manifest files and rejects hash mismatches; `verify` is strictly
+offline. Files live under
+`.jeeves-work/references/zammad/568ebbedd173a449eea2bd8c6f456b30ce106242/<source-path>`.
+An offline reader needs that prior fetch; committed locators/hashes do not contain the cache bytes.
+No upstream application or dependency was installed or executed.
+
+### Zammad license boundary
+
+The pinned [program notice](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/README.md#L10-L15)
+states **GNU AGPLv3** and Foundation ownership. The complete
+[LICENSE](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/LICENSE#L1-L24)
+is cached and hashed; only its title/preamble is a listed inspected excerpt. The selected
+application paths are open-source core and carry Foundation copyright notices. This review does
+not infer a broader license-version election from the generic license text. No separately
+licensed feature was selected. Hosted/commercial terms, external integrations, dependencies,
+assets and trademarks are excluded, with no conclusion about their terms or availability.
+No uninspected H capability is declared absent or commercial. Direct code reuse, if separately
+requested later, needs its own provenance/license treatment.
+
+### Inspected ticket and recovery facts
+
+Source IDs resolve to exact paths/hashes/ranges in the sidecar. Facts below describe static source
+inspection; they do not establish an exhaustive security audit, executed concurrency guarantee or
+passing Jeeves observation. Each proposed adaptation remains unimplemented and unverified.
+
+| Source IDs / responsibility | Observed source fact | Limit and deliberate Jeeves adaptation |
+| --- | --- | --- |
+| `zm-ticket-access`, `zm-ticket-scope`: [ticket policy](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/policies/ticket_policy.rb#L83-L118), [SQL scope](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/policies/ticket_policy/base_scope.rb#L16-L46) | Agent access uses action-specific group permissions; customers can access own tickets or explicitly shared organizations. Scope builds group/customer/organization predicates; a report-permission exception can avoid the empty-scope denial. | Group and organization are not an application tenant. Jeeves establishes trusted scope, defaults customers to own tickets, makes organization sharing explicit and permits no implicit report bypass. Session internals were not audited; reuse existing Jeeves sessions. |
+| `zm-ticket-route`: [REST reads](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/controllers/tickets_controller.rb#L10-L75), [create](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/controllers/tickets_controller.rb#L79-L192) | Authentication is a before-action. List applies read scope and offset/limit (max 100); detail can auto-assign when requested. Customer create removes owner/customer/preferences fields and forces the current customer. Ticket and optional article are created in a transaction wrapper. | Jeeves uses side-effect-free reads, stable keyset pages, explicit errors for unknown/privileged writes and a required public initial article. The planned API uses REST/JSON/OpenAPI independently; no upstream endpoint/schema parity or copied Rails runtime. |
+| `zm-create`, `zm-transaction`, `zm-dispatch`: [service create](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/services/service/ticket/create.rb#L3-L40), [transaction wrapper](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/transaction.rb#L3-L53), [dispatcher](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/lib/transaction_dispatcher.rb#L20-L65) | Service also wraps ticket plus optional article. Transaction finalization invokes the dispatcher; buffered changes run synchronous backends and enqueue async work. Individual backend errors are caught/logged. | This is not the frozen canonical-input idempotency protocol or demonstrated transactional outbox. Jeeves commits ticket/article/audit/deadline/receipt/intent together, requires rollback before initial article insert, and authenticates committed replay after a lost response. No upstream queue-adapter atomicity is inferred. |
+| `zm-article-access`, `zm-article-route`, `zm-article-create`: [internal policy](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/policies/ticket/article_policy.rb#L56-L64), [article list/read](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/controllers/ticket_articles_controller.rb#L7-L117), [customer creation](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/services/service/ticket/article/create.rb#L29-L69) | Internal reads require agent ticket access; per-ticket list filters through article authorization. Customer service articles are forced public with customer sender; agents can update visibility. | These call sites do not audit every serializer/notification/export. Jeeves controls immutable author/time, rejects customer internal/role/assignment/SLA input and enforces current article visibility at every disclosure path. A ticket permission alone is insufficient for internal data. |
+| `zm-update`, `zm-ticket`, `zm-ticket-access`: [locked update](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/services/service/ticket/update.rb#L3-L63), [owner eligibility](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/ticket.rb#L715-L730), [follow-up](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/policies/ticket_policy.rb#L39-L62) | Update authorizes/validates before acquiring a ticket lock. For nonclosed tickets an invalid owner is reset to the unassigned sentinel. Agents may follow up on closed tickets; customer reopening depends on group configuration. | A lock is not expectedVersion conflict semantics or a membership recheck at commit. Jeeves rejects invalid assignments, requires one winner from a stale-version race, freezes new/open/pending/resolved/closed, allows explicit resolved→open and disallows closed→open. Rejected transitions preserve article/deadline/audit. |
+| `zm-article-route`, `zm-article-create`: [byte/raw routes](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/controllers/ticket_articles_controller.rb#L142-L205), [upload association](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/services/service/ticket/article/create.rb#L80-L107) | Byte route checks ticket access and ticket/article/file association, including merged-ticket handling; raw-message route authorizes the article. Creation selects files from upload cache and later cleans the cache. | The byte branch does not itself call the inspected article policy; download helpers/clone paths were not audited. This is neither a complete visibility proof nor an exploit claim. Jeeves explicitly authorizes article and bytes, proxies private downloads and models staged/inspection/association/orphan recovery with a 10 MiB core limit. |
+| `zm-ticket`, `zm-rebuild-job`, `zm-job-lock`: [due scan](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/ticket.rb#L225-L262), [rebuild](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/jobs/ticket_escalation_rebuild_job.rb#L3-L18), [job locking](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/jobs/concerns/has_active_job_lock.rb#L58-L137) | Due/warning scan uses batches of 500 and invokes transaction jobs. Rebuild forces recalculation for open-category tickets. The lock concern uses job identity, owner-qualified release and serializable retry/transfer. | These ranges do not establish a fenced per-deadline claim or crash-safe logical effect receipt. Jeeves persists immutable deadline/version/cancellation identity, fences stale workers, rechecks satisfaction in the escalation transaction and catches up bounded overdue batches visibly after restart. |
+| `zm-trigger`, `zm-ticket`: [trigger order](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/transaction/trigger.rb#L25-L63), [trigger execution](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/ticket.rb#L456-L543) | Action triggers order by name. Execution tracks loop count and already-used trigger IDs, with a configurable recursive maximum (fallback 10) and selector access mode `ignore`. | This is not authority for a rule to grant access. Jeeves fixes finite predicates/actions, explicit priority/ties/match mode, durable deduplication/audit and action budget. Custom schemas/workflows remain Z18 project work. |
+| `zm-search`, `zm-search-index`, `zm-ticket-route`: [search constraints](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/ticket/search.rb#L45-L108), [index payload](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/ticket/search_index.rb#L6-L60), [history route](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/controllers/tickets_controller.rb#L333-L341) | Search adds group/customer/shared-organization conditions; index building includes article fields and attachment data subject to size checks. History route authorizes the ticket before delegating. | Search consumers, internal snippets/counts, history serialization and rebuild are not exhaustively inspected. Jeeves uses PostgreSQL projections, current ticket/article policy before paging/snippets/counts/audit and revocation checks even when an index still has stale scope data. |
+| `zm-notification`, `zm-mail`, `zm-mail-enqueue`, `zm-job`: [recipient/preferences](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/transaction/notification.rb#L69-L141), [daily suppression/inbox](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/transaction/notification.rb#L151-L233), [send/status](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/jobs/ticket_article_communicate_email_job.rb#L3-L94), [failure](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/jobs/ticket_article_communicate_email_job.rb#L125-L175), [enqueue setting](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/jobs/application_job.rb#L3-L28) | Recipient collection uses groups/mentions/owner and notification preferences; escalation suppression checks daily history. Mail job declares four attempts, sends before saving success, and repeated failure can add an internal note and select a follow-up state. ActiveJob explicitly sets enqueue-after-transaction deferral to `never`. | In-call/daily checks are not per-event crash/concurrent deduplication. No complete mail redaction or queue durability audit. Jeeves persists transactional intent/receipts, rechecks current membership/visibility/preferences, keeps external unknown/reconciliation explicit and does not reopen closed tickets on mail failure. |
+
+### Reduced first-response SLA adaptation
+
+The upstream [SLA selector](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/sla.rb#L23-L38)
+chooses matching current SLA records with a fallback. The
+[escalation calculator](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/lib/escalation.rb#L117-L198)
+has first-response, response/update and solution deadlines. First-response deadline starts at
+ticket creation and is cleared when escalation is disabled or first response exists. The
+[article callback](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/ticket/article/has_ticket_contact_attributes_impact.rb#L64-L88)
+sets that first timestamp only for a noninternal agent article whose type is marked communication.
+That channel/type condition differs from the benchmark's authorized customer-visible reply.
+
+Upstream [calendar schedule](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/calendar.rb#L291-L348)
+passes working hours, holidays, timezone and state-derived breaks into Biz; the
+[destination helper](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/lib/escalation/destination_time.rb#L3-L15)
+delegates business-minute arithmetic. [Break extraction](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/lib/escalation/ticket_biz_break.rb#L3-L80)
+uses state history and `ignore_escalation` states. The
+[impact callback](https://github.com/zammad/zammad/blob/568ebbedd173a449eea2bd8c6f456b30ce106242/app/models/concerns/has_escalation_calculation_impact.rb#L3-L35)
+enqueues rebuilds after SLA/calendar changes; calendar feed synchronization and reassignment on
+deletion are mutable behavior. Neither Biz internals nor exact DST outcomes were audited/executed.
+
+Jeeves deliberately implements only the frozen **first-response** policy in Z07/Z08:
+
+- Creation starts the clock; an authorized customer-visible agent reply stops it. Internal notes
+  and pending status do not stop or pause it.
+- Closing cancels an unmet clock without satisfying it. Resolved→open creates no new first-response
+  clock; closed→open is unavailable in core. Additional clocks/pause/recalculation belong to Z15.
+- Each deadline snapshots immutable SLA/calendar versions: **America/Chicago**, Monday–Friday
+  **09:00–17:00**, explicit holidays, no remote calendar feed. Editing configuration never silently
+  changes an existing deadline.
+- Duration counts actual elapsed time whose local wall time is working time: repeated fall-back
+  time counts twice, missing spring time contributes nothing. These are independent benchmark
+  decisions, not a claim about Biz. P61d fixes exact UTC expectations; P87 selects a maintained
+  timezone implementation later.
+- The 120-business-minute Friday 16:00 case ends Monday 10:00, or Tuesday 10:00 if Monday is a
+  holiday. P61d freezes concrete dates/UTC instants. Escalation rechecks current ticket/deadline
+  versions inside its transaction so a previously satisfied/cancelled clock cannot escalate.
+
+### Every Z row has a provenance boundary
+
+The sidecar preserves ledger order, targets and observation IDs. Primary sources are inspected
+inspiration; none claims to establish every mandatory observation. H primaries are labeled
+Jeeves-specific decisions, including when no upstream implementation was inspected.
+
+| Row | Primary reference or decision | Required Jeeves boundary |
+| --- | --- | --- |
+| Z01 | `zm-ticket-route` | Existing durable sessions/capabilities; reject privileged customer fields and self-promotion. |
+| Z02 | `zm-ticket-access` | Current group/action membership, explicit organization sharing, cross-scope denial. |
+| Z03 | `zm-create` | Required public initial article and atomic ticket/article/receipt/intent; lost-response replay. |
+| Z04 | `zm-article-access` | Immutable author/time; no internal text, byte, search or notification leak to customers. |
+| Z05 | `zm-update` | Eligible current assignee and one expectedVersion winner; reject revoked membership. |
+| Z06 | `zm-ticket-access` | Frozen lifecycle; rejected transition preserves articles/deadlines/audit. |
+| Z07 | `zm-escalation` | Reduced first response, immutable calendar/SLA versions, independently fixed UTC/DST expectations. |
+| Z08 | `zm-ticket` | Fenced bounded overdue work, cancellation/version checks and one logical escalation across restart. |
+| Z09 | `zm-trigger` | Finite predicates/actions, explicit priority and budget; rules cannot grant access or loop forever. |
+| Z10 | `zm-article-route` | Current article/byte access, staged/validated association and partial-store recovery. |
+| Z11 | `zm-search` | Authoritative redaction before cursor pages/search/counts/audit; stale projections cannot bypass revocation. |
+| Z12 | `zm-notification` | Preferences/redaction, atomic inbox/delivery intent and per-recipient receipts with current access. |
+| Z13 | `JH-inbound-email` | Verified envelope/bytes/message ID → bounded normalized sender/thread/body/attachment candidates or rejection. |
+| Z14 | `JH-conversation` | Authorized tickets/versions/message references → explicit attach/create/merge/split plan preserving provenance/visibility. |
+| Z15 | `JH-sla-extension` | Timeline and immutable versions → controlled additional clocks/pause/recalculate plan with preserved elapsed facts. |
+| Z16 | `JH-customer-connector` | Verified source revision/mapping → authorized local command or reconciliation; explicit field authority. |
+| Z17 | `JH-knowledge` | Publication revision/audience → draft/internal/public publication or search plan with current access. |
+| Z18 | `JH-custom-workflow` | Bounded typed extension schema/values/lifecycle → finite actions or rejected configuration; no eval. |
+| Z19 | `JH-customer-privacy` | Subject/authority/holds → bounded export/erase plan, retained reasons and progress; customer export excludes internal notes. |
+| Z20 | `JH-reporting` | Authorized bounded window/metric/calendar → scoped aggregate and explicit reopened-ticket counting; no free SQL. |
+
+Every H seam records inputs, results, rejection/recovery and exact remaining decisions. Its
+unimplemented default is **HTTP 503 with no domain changes**, earning no functional points.
+Inbound parser/authentication, conversation merge/split, customer connector, knowledge publication,
+custom-field engine, privacy processor and reporting engine were not audited. Additional SLA
+calculation is inspected context, not an implemented hook or inherited guarantee.
+
+### Zammad decisions still owned by later assignments
+
+P60c has no unresolved pin/source-location blocker. Before **P61d**, freeze independent REST
+operations/schema/headers and concrete values for all 66 observations, especially customer/agent
+visibility at every output, version-8 assignment races, atomic initial article rollback/replay,
+dated holiday/DST UTC results and satisfaction-versus-escalation commit ordering. H choices include
+inbound authentication/MIME/thread ambiguity/receipt retention; merge/split identities and
+subscriptions; additional clock/pause/reopen/recalculation authority; named customer source and
+field/revision authority; knowledge publication/audience; custom field types/migration/action
+limits; privacy holds/retention/cancellation; reporting cohorts/reopened counts/freshness.
+**P73a/b** binds the authoritative data, access, transaction/lock order and typed hook briefs.
+Briefs still fix purity/effects, timeout/cancellation, errors, allowed dependencies, private-data
+handling, acceptance IDs and owned paths. These are future specification obligations, not source
+gaps that authorize changing frozen behavior.
+
+## Combined P60 reference review
+
+**P60a/P60b/P60c and parent P60 are complete as reference work.** Every reserved v1 source-map
+path resolves to a committed provenance sidecar. All **60 rows / 195 mandatory observations**
+resolve in ledger order to inspected source or labeled Jeeves decisions; all **24 H rows** have
+nonempty input/result/rejection/recovery/unavailable/remaining-decision seams. The **36 G targets**
+remain candidate plans totaling **66 points per application**, with no observed implementation
+points. Independent contracts/fixtures are the next milestone, starting with **P61a only**.
+
+| Pack | Released source pin | Files / bytes | Rows / observations / H seams | Preserved frozen ledger pins |
+| --- | --- | ---: | ---: | --- |
+| [Discourse](../../benchmarks/discourse-core/v1/source-map.json) | v3.5.0 / `05a304006600f36c3e45d19c9c5919f43f5541c9` | 21 / 304,410 | 20 / 66 / 8 | [v1 integrity](../../benchmarks/discourse-core/v1/integrity.json) |
+| [Vendure](../../benchmarks/vendure-core/v1/source-map.json) | v3.3.0 / `a4c56359ec831b0c54dd01eab14fb75455c43ab7` | 25 / 344,731 | 20 / 63 / 8 | [v1 integrity](../../benchmarks/vendure-core/v1/integrity.json) |
+| [Zammad](../../benchmarks/zammad-core/v1/source-map.json) | 6.5.0 / `568ebbedd173a449eea2bd8c6f456b30ce106242` | 33 / 178,084 | 20 / 66 / 8 | [v1 integrity](../../benchmarks/zammad-core/v1/integrity.json) |
+
+Combined preservation/coverage review checks JSON parsing, source-map-to-catalog path/hash/revision
+equality, cached SHA-256 and range bounds, unique row/observation/source/decision IDs, every H seam,
+all local Markdown destinations/anchors and pinned source links. P60c preserves byte-for-byte
+**all nine P59 manifest/requirements/integrity files and the P60a/P60b maps**, and preserves every
+field of the **seven earlier catalog entries**, including all five 2026-10-30 pins. Cache verification
+covers **8 references / 112 complete files / zero downloads offline**. Exact command output and
+audit/hash evidence are recorded in [P60c's handoff](../handoff.md#2026-11-02--p60c-zammad-reference-pack-and-combined-p60-review).
+
+Vendure's GraphQL→REST adaptation and Zammad's reduced first-response SLA are explicit, independent
+benchmark choices. Source facts, required behavior, template availability and verification remain
+separate. No upstream execution, copied runtime, application generation, new offering, production
+capacity claim, push or publication follows from P60. P61a/b/c/d must supply their own independent
+contracts/expectations; P71–P73 must supply their own model/hook briefs. No runtime or unavailable
+hook is reported as implemented by locating a source excerpt.
