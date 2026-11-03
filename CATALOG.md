@@ -80,6 +80,20 @@ See the [source mapping and limitations](docs/examples/mattermost.md) and
 [tracked example](packages/spec/src/mattermost-example.ts). This is architectural intent,
 not a supplied Mattermost runtime, capacity result or production deployment specification.
 
+### Discourse core backend design
+
+**Partial editable architecture example (P71a).** One planned modular API and independent worker,
+PostgreSQL authority, explicit private bytes/email and an external thin client. Fourteen cohesive
+C3 responsibilities, all 35 frozen REST operations, 23 domain entities, exact consistency boundaries,
+eight bounded queries and current category/group access use the shared model. It adapts the pinned
+Discourse reference to TypeScript and REST; it supplies no upstream API compatibility.
+
+Command/effect bindings, all H hook briefs, five scenarios, focused views and final D01–D20 trace
+remain **P71b**. All implementations are planned; no generated runtime, application acceptance or
+observed benchmark points. Mattermost remains the default and saved projects are unchanged.
+See the [partial study and boundaries](docs/examples/discourse-core.md) and
+[example source](packages/spec/src/discourse-core-example.ts).
+
 ### Streamly video platform
 
 **Earlier illustrative study, editable.** A YouTube-style product with public discovery,

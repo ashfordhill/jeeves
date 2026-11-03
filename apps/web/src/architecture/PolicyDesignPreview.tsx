@@ -125,6 +125,10 @@ export function PolicyDesignPreview({ policy: p }: { policy: BackendAccessPolicy
           Illustrative {result.mode ?? "unselected"} fields: {result.fields.join(", ") || "none"}.
           Projection condition: {result.projectionMatch}. Unknown writes must be rejected.
         </Text>
+        <Text size="sm">
+          Illustrative redactions:{" "}
+          {result.redacted.map((r) => `${r.field} → ${r.replacement}`).join(", ") || "none"}.
+        </Text>
       </section>
     </Stack>
   );

@@ -414,7 +414,21 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
             ...p,
             id: id(p.id),
             resource: exact(p.resource),
-            clauses: p.clauses.map((c) => ("entity" in c ? { ...c, entity: exact(c.entity) } : c)),
+            clauses: p.clauses.map((c) =>
+              c.kind === "group-grant"
+                ? {
+                    ...c,
+                    grant: { ...c.grant, entity: exact(c.grant.entity) },
+                    membership: { ...c.membership, entity: exact(c.membership.entity) },
+                    workspaceMembership: {
+                      ...c.workspaceMembership,
+                      entity: exact(c.workspaceMembership.entity),
+                    },
+                  }
+                : "entity" in c
+                  ? { ...c, entity: exact(c.entity) }
+                  : c,
+            ),
           })),
         }
       : {}),
@@ -589,7 +603,11 @@ export function collectBackendDependencies(
     if (keep.has(p.resource.id)) keep.add(p.id);
     if (!keep.has(p.id)) continue;
     keep.add(p.resource.id);
-    for (const c of p.clauses) if ("entity" in c) keep.add(c.entity.id);
+    for (const c of p.clauses) {
+      if ("entity" in c) keep.add(c.entity.id);
+      if (c.kind === "group-grant")
+        for (const r of [c.grant, c.membership, c.workspaceMembership]) keep.add(r.entity.id);
+    }
   }
   for (const b of model.accessBindings ?? []) {
     const targets = [

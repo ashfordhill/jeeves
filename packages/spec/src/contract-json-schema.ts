@@ -1,7 +1,8 @@
 /** Portable logical schema catalog. No OpenAPI interpreter or serializer/runtime is supplied. */
-import type { z } from "zod";
+import { z } from "zod";
 import { type ArchitectureContract, architectureContractSchema } from "./architecture-contracts.ts";
 import type { ContractField, ContractValue } from "./contract-shapes.ts";
+import { contractTextConstraints } from "./contract-text-constraints.ts";
 import { inspectContractTransport } from "./contract-transport.ts";
 import { contractTypeKey, inspectContractShape } from "./contract-type-resolution.ts";
 
@@ -96,16 +97,22 @@ export function exportContractJsonSchema(contract: ArchitectureContract): Contra
         };
         break;
       case "text":
-        schema = { type: "string", ...(v.enumValues ? { enum: v.enumValues } : {}) };
+        schema = {
+          type: "string",
+          ...(v.enumValues ? { enum: v.enumValues } : {}),
+          ...(v.textConstraint ? contractTextConstraints[v.textConstraint] : {}),
+        };
         break;
       case "uuid":
-        schema = { type: "string", format: "uuid" };
+        schema = z.toJSONSchema(z.uuid());
+        delete schema.$schema;
         break;
       case "http-url":
         schema = { type: "string", format: "uri", pattern: "^https?://" };
         break;
       case "timestamp":
-        schema = { type: "string", format: "date-time" };
+        schema = z.toJSONSchema(z.iso.datetime());
+        delete schema.$schema;
         break;
       case "integer":
       case "number":

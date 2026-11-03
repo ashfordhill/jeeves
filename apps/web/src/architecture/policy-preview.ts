@@ -38,14 +38,21 @@ export function policyDesignPreview(
         ? "undetermined"
         : "allow";
   const projection = policy.projections.find((p) => p.id === fixture.projection);
-  const fields =
+  const selectedFields =
     verdict === "allow" &&
     projection &&
     projection.mode === (fixture.site === "write" ? "write" : "read") &&
     condition(projection.when) === "true"
       ? projection.fields
       : [];
+  const redacted = (projection?.conditional ?? [])
+    .filter(
+      (c) => selectedFields.includes(c.field) && !c.allow.some((w) => condition(w) === "true"),
+    )
+    .map((c) => ({ field: c.field, replacement: c.otherwise }));
+  const fields = selectedFields.filter((f) => !redacted.some((c) => c.field === f));
   return {
+    redacted,
     verdict,
     rules,
     fields,

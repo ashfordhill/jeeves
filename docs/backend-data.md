@@ -137,11 +137,11 @@ Output/filter IDs, aliases and relation IDs never become outer composition ident
 - Projection explicitly names 1–100 output IDs and fields, including bounded opaque JSON or exact
   money as a whole value. Filters, ordering and cursors require scalar storage. Nested JSON
   traversal, aggregates/count expressions and raw SQL are outside this vocabulary.
-- Ordering has 1–10 distinct required nonnullable root scalar fields and fixed directions.
+- Ordering has 1–10 distinct required nonnullable scalar fields from the root or declared to-one joins and fixed directions.
   Its suffix is a complete primary/unique key; scoped keys include their persisted scope field.
   A nullable unique key cannot establish a tie-breaker. `cursor: {kind: "keyset", fields: [...]}`
-  must repeat the full order exactly. Join columns, offset cursors and client-selected order are
-  unsupported. Cursor values will be validated by the later compiler/runtime; they never grant
+  must repeat the full order exactly. Offset cursors and client-selected order are
+  unsupported; joined fields still require a complete root-key suffix. Cursor values will be validated by the later compiler/runtime; they never grant
   authority or replace current access checks.
 - `limit: {default: 25, maximum: 100}` sets positive bounds through 100. Omitting `default` selects
   25; a smaller maximum requires a correspondingly smaller default. No unbounded bulk-read escape
@@ -229,3 +229,11 @@ the existing entity/aggregate authority and legacy compatibility; implementation
 
 [P66a effects and hook seams](backend-effects.md) add exact commit/recovery references and portable
 extension declarations. They do not change persistence or runtime availability.
+
+
+P71a permits required nonnullable scalar ordering fields from the existing bounded forward to-one
+joins. Every order still ends in a complete **root** primary/unique key; a joined entity's ID cannot
+substitute for root identity. Left-joined nullable fields remain invalid cursor/order fields.
+Exact cursor/order equality, three-join bound and current policy/projection checks for every source
+remain mandatory. This represents the frozen Discourse topic-time/topic-ID/post-ID search order
+without copying parent timestamps into a second authority or implementing query execution.

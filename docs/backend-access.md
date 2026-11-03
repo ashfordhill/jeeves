@@ -27,9 +27,10 @@ the condition; a disjunction cannot bypass them.
 | --- | --- |
 | `authenticated` | The selected server-established session or service identity |
 | `role` | Named enum values from an exact persisted role entity, matched by session principal and current scope |
-| `owner` | A persisted UUID field compared with the current session principal ID |
+| `owner` | A persisted UUID field on the resource or one named direct parent compared with the current session principal ID |
 | `membership` | An active persisted organization/resource/group membership, matched by principal, scope and a declared direct relation |
-| `visibility` | A boolean or exact enum value on the protected entity; public access is explicit |
+| `visibility` | A boolean or exact enum value on the protected entity or one named direct parent; public access is explicit |
+| `group-grant` | Current workspace membership AND explicit public category or a grant joined to active membership in the same exact group |
 | `action` | Membership of the requested action in a bounded named allowlist |
 | `service-purpose` | The exact purpose from a verified server service identity |
 
@@ -75,8 +76,8 @@ initiating actor is fixed to `provenance-only`. Service work does not borrow tha
 Actual enforcement, SQL placement, concurrent revocation and receipt/byte handling remain later
 runtime responsibilities.
 
-Private category access is represented by active group membership through the article/topic's
-category relation. Internal article access adds the persisted agent role; a customer policy instead
+Private category access uses a current grant joined to active group membership through the
+article/topic category; P71a adds the exact finite predicate below. Internal article access adds the persisted agent role; a customer policy instead
 requires ownership and public article visibility. Shop-admin rules select a persisted role and a
 separate write projection. The synthetic offline tests represent these decisions without creating
 any of the three benchmark applications or awarding implementation points.
@@ -130,3 +131,28 @@ It denies missing declared recheck sites and withholds fields for incompatible r
 It does not evaluate persisted rows, authenticate a principal or prove enforcement. The shared
 Save/Cancel, schema validation, revision conflicts and single-step history apply to the whole
 Data/Access draft. Parent P67 is complete; P68a is the next authoring work unit.
+
+
+## P71a bounded access corrections
+
+The Discourse foundation exposed P64 vocabulary missing from its synthetic direct-membership case.
+`group-grant` explicitly selects exact workspace-membership, category-grant and group-membership
+entities. It selects their principal/active/access fields and grant/category/group relations.
+At most three named nonnullable forward to-one resource relations reach the protected category;
+there is no policy recursion, reverse-path inference, SQL or arbitrary expression. Every entity
+shares the resource application, relational store and authorized scope. The grant and membership
+must target the same group; active and access tests use exact declared boolean/enum values.
+Public-category access still requires current workspace membership. A service selects a persisted
+recipient UUID field and current recipient memberships; an initiating session cannot supply it.
+
+Owner and visibility clauses can select one explicit same-scope parent relation. Read projections
+can contain bounded conditional field rows: reveal the field when any listed existing all/any
+condition is true, otherwise return `null` or omit it. Unknown facts do not reveal it. Null requires
+an already nullable logical field; omission requires an optional field. Conditions cannot change
+write projections or bypass action/default-deny/deny-wins gates. This preserves post tombstones
+while redacting hidden/removed text, and keeps retained revision authority nonnullable.
+
+Mouse controls expose exact joins, subjects, current memberships, conditional fields and named
+clause groups. The local synthetic preview lists redactions separately from disclosed fields.
+Schemas, extraction closure/remapping, immutable exact versions, handoff, fingerprints, chat and
+pure compiler plans carry these declarations. They are not production authorization evaluation.

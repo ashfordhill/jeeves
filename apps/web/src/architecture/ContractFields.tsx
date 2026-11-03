@@ -2,6 +2,7 @@ import {
   CONTRACT_NESTING_LIMIT,
   type ContractField,
   type ContractValue,
+  contractTextConstraints,
   contractValueTypes,
 } from "@jeeves/spec";
 import {
@@ -70,6 +71,20 @@ export function ValueFields({
               enumValues: e.currentTarget.value
                 ? e.currentTarget.value.split(",").map((v) => v.trim())
                 : undefined,
+            })
+          }
+        />
+      ) : null}
+      {value.type === "text" ? (
+        <NativeSelect
+          label={`${label} protocol constraint`}
+          data={[{ value: "", label: "None" }, ...Object.keys(contractTextConstraints)]}
+          value={value.textConstraint ?? ""}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              textConstraint: (e.currentTarget.value ||
+                undefined) as ContractValue["textConstraint"],
             })
           }
         />

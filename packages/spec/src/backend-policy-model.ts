@@ -27,7 +27,12 @@ const condition = z.strictObject({
 });
 export const backendPolicyClauseSchema = z.discriminatedUnion("kind", [
   z.strictObject({ id: idSchema, kind: z.literal("authenticated") }),
-  z.strictObject({ id: idSchema, kind: z.literal("owner"), field: idSchema }),
+  z.strictObject({
+    id: idSchema,
+    kind: z.literal("owner"),
+    field: idSchema,
+    via: idSchema.optional(),
+  }),
   z.strictObject({
     id: idSchema,
     kind: z.literal("role"),
@@ -50,7 +55,37 @@ export const backendPolicyClauseSchema = z.discriminatedUnion("kind", [
   }),
   z.strictObject({
     id: idSchema,
+    kind: z.literal("group-grant"),
+    /** Bounded forward to-one path to the category; never policy recursion. */
+    resourcePath: z.array(idSchema).max(3),
+    subject: z.discriminatedUnion("kind", [
+      z.strictObject({ kind: z.literal("session-principal") }),
+      z.strictObject({ kind: z.literal("resource-field"), field: idSchema }),
+    ]),
+    workspaceMembership: z.strictObject({
+      entity: exact,
+      principal: idSchema,
+      active: z.strictObject({ field: idSchema, value: z.union([z.boolean(), idSchema]) }),
+    }),
+    grant: z.strictObject({
+      entity: exact,
+      resourceRelation: idSchema,
+      groupRelation: idSchema,
+      access: z.strictObject({ field: idSchema, values: z.array(idSchema).min(1).max(20) }),
+    }),
+    membership: z.strictObject({
+      entity: exact,
+      groupRelation: idSchema,
+      principal: idSchema,
+      active: z.strictObject({ field: idSchema, value: z.union([z.boolean(), idSchema]) }),
+    }),
+    /** Public categories still require current workspace membership. */
+    public: z.strictObject({ field: idSchema, value: z.union([z.boolean(), idSchema]) }).optional(),
+  }),
+  z.strictObject({
+    id: idSchema,
     kind: z.literal("visibility"),
+    via: idSchema.optional(),
     field: idSchema,
     value: z.union([z.boolean(), z.string().min(1).max(120)]),
   }),
@@ -99,6 +134,16 @@ export const backendAccessPolicySchema = z.strictObject({
         fields: z.array(idSchema).min(1).max(100),
         when: condition,
         unknownFields: z.literal("reject"),
+        conditional: z
+          .array(
+            z.strictObject({
+              field: idSchema,
+              allow: z.array(condition).min(1).max(20),
+              otherwise: z.enum(["null", "omit"]),
+            }),
+          )
+          .max(100)
+          .optional(),
       }),
     )
     .max(20),

@@ -152,11 +152,6 @@ export function validateBackendQueries(design: DesignDocument): Finding[] {
     );
     const stable = (ref: QueryField, at: (string | number)[]) => {
       const value = resolve(ref, at, true);
-      if (ref.source !== "root")
-        invalid(
-          at,
-          "v1 keyset order uses root fields only; joins cannot supply root row identity.",
-        );
       if (value?.nullable)
         invalid(at, "keyset order/cursor fields must be required and nonnullable.");
       return value?.field;
@@ -181,13 +176,14 @@ export function validateBackendQueries(design: DesignDocument): Finding[] {
         ),
       ];
       const fields = fieldsFor(root);
-      const order = q.order.map((o) => o.field.field);
+      const order = q.order.map((o) => o.field);
       const required = (id: string) => fields.some((f) => f.id === id && f.required && !f.nullable);
       if (
         !keys.some(
           (key) =>
             key.every(required) &&
-            contractCanonical(order.slice(-key.length)) === contractCanonical(key),
+            contractCanonical(order.slice(-key.length)) ===
+              contractCanonical(key.map((field) => ({ source: "root", field }))),
         )
       )
         invalid(

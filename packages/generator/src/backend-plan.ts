@@ -360,6 +360,17 @@ export function lowerBackendData(design: DesignDocument, lookup: TemplateLookup)
         ),
         clause: {
           ...clause,
+          ...(clause.kind === "group-grant"
+            ? {
+                grant: {
+                  ...clause.grant,
+                  access: {
+                    ...clause.grant.access,
+                    values: [...clause.grant.access.values].sort(compare),
+                  },
+                },
+              }
+            : {}),
           ...("values" in clause ? { values: [...clause.values].sort(compare) } : {}),
           ...("actions" in clause ? { actions: [...clause.actions].sort(compare) } : {}),
         },
@@ -391,6 +402,18 @@ export function lowerBackendData(design: DesignDocument, lookup: TemplateLookup)
         projection: {
           ...projection,
           fields: [...projection.fields].sort(compare),
+          ...(projection.conditional
+            ? {
+                conditional: [...projection.conditional]
+                  .sort((a, b) => compare(a.field, b.field))
+                  .map((c) => ({
+                    ...c,
+                    allow: c.allow
+                      .map((w) => ({ ...w, clauses: [...w.clauses].sort(compare) }))
+                      .sort((a, b) => compare(contractCanonical(a), contractCanonical(b))),
+                  })),
+              }
+            : {}),
           when: { ...projection.when, clauses: [...projection.when.clauses].sort(compare) },
         },
       })),

@@ -7,6 +7,7 @@ import {
 } from "@jeeves/spec";
 import { NativeSelect, Stack, TagsInput, Text, TextInput } from "@mantine/core";
 import { type DataNavigation, exact, Many, namedOptions, Pick } from "./BackendFields.tsx";
+import { GroupGrantFields } from "./GroupGrantFields.tsx";
 
 type Clause = BackendAccessPolicy["clauses"][number];
 export const clauseKinds = [
@@ -14,6 +15,7 @@ export const clauseKinds = [
   "owner",
   "role",
   "membership",
+  "group-grant",
   "visibility",
   "action",
   "service-purpose",
@@ -45,6 +47,30 @@ export function newPolicyClause(kind: Clause["kind"], id: string, p: BackendAcce
         relation: "unselected",
         active: { field: "unselected", value: true },
       };
+    case "group-grant":
+      return {
+        id,
+        kind,
+        resourcePath: [],
+        subject: { kind: "session-principal" },
+        workspaceMembership: {
+          entity: p.resource,
+          principal: "unselected",
+          active: { field: "unselected", value: true },
+        },
+        grant: {
+          entity: p.resource,
+          resourceRelation: "unselected",
+          groupRelation: "unselected",
+          access: { field: "unselected", values: [] },
+        },
+        membership: {
+          entity: p.resource,
+          principal: "unselected",
+          groupRelation: "unselected",
+          active: { field: "unselected", value: true },
+        },
+      };
     case "visibility":
       return { id, kind, field, value: false };
     case "action":
@@ -71,7 +97,20 @@ export function PolicyClauseFields({
   const entities = draft.backend?.entities ?? [];
   const resource = entities.find((e) => contractKey(e) === contractKey(policy.resource));
   const source =
-    "entity" in c ? entities.find((e) => contractKey(e) === contractKey(c.entity)) : resource;
+    "entity" in c
+      ? entities.find((e) => contractKey(e) === contractKey(c.entity))
+      : (c.kind === "visibility" || c.kind === "owner") && c.via
+        ? entities.find(
+            (e) =>
+              contractKey(e) ===
+              contractKey(
+                resource?.relations.find((r) => r.id === c.via)?.target ?? {
+                  id: "missing",
+                  version: "v1",
+                },
+              ),
+          )
+        : resource;
   const fields = source
     ? backendEntityFields({ ...design, architecture: draft }, source).filter((f) =>
         source.fields.some((a) => a.field === f.id && a.storage.kind === "scalar"),
@@ -92,6 +131,24 @@ export function PolicyClauseFields({
           onChange(newPolicyClause(e.currentTarget.value as Clause["kind"], c.id, policy))
         }
       />
+      {c.kind === "group-grant" ? (
+        <GroupGrantFields
+          design={design}
+          draft={draft}
+          policy={policy}
+          clause={c}
+          onChange={onChange}
+          navigate={navigate}
+        />
+      ) : null}
+      {c.kind === "visibility" || c.kind === "owner" ? (
+        <Pick
+          label="Protected parent relation (optional)"
+          value={c.via ?? ""}
+          options={(resource?.relations ?? []).map((r) => ({ value: r.id, label: r.id }))}
+          onChange={(via) => onChange({ ...c, via: via || undefined })}
+        />
+      ) : null}
       {"entity" in c ? (
         <Pick
           label="Persisted clause entity"

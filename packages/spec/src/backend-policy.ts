@@ -2,6 +2,7 @@
 import { contractCanonical, contractKey, contractOwnerElement } from "./architecture-contracts.ts";
 import { backendCapabilityExactReferences } from "./backend-capability-configs.ts";
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
+import { inspectGroupGrant } from "./backend-group-grant.ts";
 import type { BackendEntity, BackendReference } from "./backend-model.ts";
 import type { BackendAccessPolicy, BackendRecheckSite } from "./backend-policy-model.ts";
 import type { DesignDocument } from "./design.ts";
@@ -192,10 +193,16 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
     };
     for (const c of p.clauses) {
       const at = ["clauses", c.id];
+      if (c.kind === "group-grant")
+        for (const message of inspectGroupGrant(design, p, c)) invalid(at, message);
       if (c.kind === "authenticated" && p.context.identity === "public")
         invalid(at, "authenticated requires a server-established principal or service context.");
       if (c.kind === "owner") {
-        field(resource, c.field, at, "uuid");
+        const relation = c.via && resource?.relations.find((r) => r.id === c.via);
+        if (c.via && !relation) missing(at, "owner via must select one direct forward relation.");
+        if (relation && relation.scope !== "same-scope")
+          invalid(at, "parent owner requires a same-scope relation.");
+        field(relation ? backendEntity(design, relation.target) : resource, c.field, at, "uuid");
         if (p.context.identity !== "session-principal")
           invalid(
             at,
@@ -203,8 +210,21 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
           );
       }
       if (c.kind === "visibility") {
-        const f = field(resource, c.field, at);
-        if (f && resource?.fields.find((a) => a.field === c.field)?.storage.kind !== "scalar")
+        const relation = c.via && resource?.relations.find((r) => r.id === c.via);
+        if (c.via && !relation)
+          missing(at, "visibility via must select one direct forward relation.");
+        const target = relation ? backendEntity(design, relation.target) : resource;
+        if (
+          relation &&
+          (relation.scope !== "same-scope" ||
+            relation.fields.some(
+              (k) =>
+                !field(resource, k.source, at)?.required || field(resource, k.source, at)?.nullable,
+            ))
+        )
+          invalid(at, "parent visibility requires a nonnullable same-scope relation.");
+        const f = field(target, c.field, at);
+        if (f && target?.fields.find((a) => a.field === c.field)?.storage.kind !== "scalar")
           invalid(
             at,
             "visibility requires scalar storage; opaque JSON cannot supply a policy predicate.",
@@ -279,6 +299,28 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
         "add an explicit allow rule; empty/deny-only drafts remain default deny.",
       );
     for (const projection of p.projections) {
+      const conditional = projection.conditional ?? [];
+      distinct(
+        conditional.map((c) => c.field),
+        ["projections", projection.id, "conditional"],
+      );
+      if (conditional.length && projection.mode !== "read")
+        invalid(
+          ["projections", projection.id],
+          "conditional fields apply only to read projections.",
+        );
+      for (const item of conditional) {
+        const at = ["projections", projection.id, "conditional", item.field];
+        const f = field(resource, item.field, at);
+        if (!projection.fields.includes(item.field))
+          invalid(at, "conditional field must belong to its selected projection.");
+        if (f && (item.otherwise === "null" ? !f.nullable : f.required))
+          invalid(
+            at,
+            "redaction must fit the logical nullable/optional output; persisted authority is not relaxed.",
+          );
+        for (const allow of item.allow) condition(allow, at);
+      }
       const at = ["projections", projection.id];
       condition(projection.when, at);
       distinct(projection.fields, at);

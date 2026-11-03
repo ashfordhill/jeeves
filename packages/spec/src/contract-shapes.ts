@@ -1,5 +1,9 @@
 /** Bounded, editable design contracts; these declarations do not generate runtime code. */
 import { z } from "zod";
+import {
+  type ContractTextConstraint,
+  contractTextConstraints,
+} from "./contract-text-constraints.ts";
 import { idSchema } from "./ids.ts";
 
 export const contractValueTypes = [
@@ -33,6 +37,7 @@ export type ContractValue = {
   items?: ContractValue;
   fields?: ContractField[];
   enumValues?: string[];
+  textConstraint?: ContractTextConstraint;
   minLength?: number;
   maxLength?: number;
   minimum?: number;
@@ -60,6 +65,8 @@ const fieldsByDepth = new Map<number, z.ZodType<ContractField[]>>();
 
 function checkValue(value: ContractValue, ctx: z.RefinementCtx) {
   const issue = (message: string) => ctx.addIssue({ code: "custom", message });
+  if (value.textConstraint && value.type !== "text")
+    issue("Named text constraints apply only to text.");
   if (value.items && value.type !== "array") issue("Only arrays have an item type.");
   if (value.fields && value.type !== "object") issue("Only objects have nested fields.");
   if (value.ref && value.type !== "ref") issue("Only references have an exact type reference.");
@@ -107,6 +114,14 @@ function valueShape(depth: number) {
       .lazy(() => (depth < CONTRACT_NESTING_LIMIT ? fieldsSchema(depth + 1) : z.never()))
       .optional(),
     enumValues: z.array(z.string().max(120)).min(1).max(40).optional(),
+    textConstraint: z
+      .enum(
+        Object.keys(contractTextConstraints) as [
+          ContractTextConstraint,
+          ...ContractTextConstraint[],
+        ],
+      )
+      .optional(),
     minLength: count.optional(),
     maxLength: count.optional(),
     minimum: z.number().finite().optional(),

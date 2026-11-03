@@ -318,6 +318,62 @@ export function BackendPolicyEditor({
                       onChange={(fields) => change({ ...r, fields })}
                     />
                     {condition(`Projection ${i + 1}`, r.when, (when) => change({ ...r, when }))}
+                    {r.mode === "read" ? (
+                      <DataRows
+                        label="Conditional field"
+                        rows={r.conditional ?? []}
+                        max={100}
+                        create={() => ({
+                          field: r.fields[0] ?? "unselected",
+                          allow: [
+                            {
+                              operator: "all" as const,
+                              clauses: p.clauses.slice(0, 1).map((c) => c.id),
+                            },
+                          ],
+                          otherwise: "null" as const,
+                        })}
+                        onChange={(conditional) => change({ ...r, conditional })}
+                      >
+                        {(item, j, updateItem) => (
+                          <>
+                            <Pick
+                              label={`Conditional field ${j + 1}`}
+                              value={item.field}
+                              options={fields
+                                .filter((f) => r.fields.includes(f.id))
+                                .map((f) => ({ value: f.id, label: f.name }))}
+                              onChange={(field) => updateItem({ ...item, field })}
+                            />
+                            <NativeSelect
+                              label={`Conditional field ${j + 1} otherwise`}
+                              data={["null", "omit"]}
+                              value={item.otherwise}
+                              onChange={(e) =>
+                                updateItem({
+                                  ...item,
+                                  otherwise: e.currentTarget.value as typeof item.otherwise,
+                                })
+                              }
+                            />
+                            <DataRows
+                              label={`Reveal condition ${j + 1}`}
+                              rows={item.allow}
+                              max={20}
+                              create={() => ({
+                                operator: "all" as const,
+                                clauses: p.clauses.slice(0, 1).map((c) => c.id),
+                              })}
+                              onChange={(allow) => updateItem({ ...item, allow })}
+                            >
+                              {(when, k, updateWhen) =>
+                                condition(`Reveal ${j + 1}.${k + 1}`, when, updateWhen)
+                              }
+                            </DataRows>
+                          </>
+                        )}
+                      </DataRows>
+                    ) : null}
                     <Text size="xs">
                       Unknown fields: reject. An action allow and a matching projection condition
                       are both required.

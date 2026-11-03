@@ -2,6 +2,7 @@
 import type { Architecture, ArchitectureComponent } from "./architecture.ts";
 import { architectureProof } from "./architecture-proofs.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
+import { DISCOURSE_CORE_EXAMPLE, discourseCoreExample } from "./discourse-core-example.ts";
 import { ENTERPRISE_WEB_EXAMPLE, enterpriseWebExample } from "./enterprise-web-example.ts";
 import type { LayoutDocument } from "./layout.ts";
 import { MATTERMOST_EXAMPLE, mattermostExample } from "./mattermost-example.ts";
@@ -10,6 +11,7 @@ import { VIDEO_PLATFORM_EXAMPLE, videoPlatformExample } from "./video-platform-e
 /** The first entry is the default starting design for a new Jeeves installation. */
 export const architectureExamples = [
   MATTERMOST_EXAMPLE,
+  DISCOURSE_CORE_EXAMPLE,
   VIDEO_PLATFORM_EXAMPLE,
   ENTERPRISE_WEB_EXAMPLE,
   {
@@ -51,6 +53,7 @@ export function architectureExample(id: string): {
   design: DesignDocument;
   layout: LayoutDocument;
 } {
+  if (id === DISCOURSE_CORE_EXAMPLE.id) return discourseCoreExample();
   if (id === MATTERMOST_EXAMPLE.id) return mattermostExample();
   if (id === VIDEO_PLATFORM_EXAMPLE.id) return videoPlatformExample();
   if (id === ENTERPRISE_WEB_EXAMPLE.id) return enterpriseWebExample();

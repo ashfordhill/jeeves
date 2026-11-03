@@ -214,3 +214,13 @@ descriptors**. Legacy `NEEDS_TEMPLATE` and Generate remain unchanged. See
 [exact implementation support](backend-implementations.md) for the model, matching rules and limits.
 P69 and [P70's pure compiler plan](backend-plan.md) are complete. The compiler preview is a package API;
 this authoring UI still reports implementation support. P71a is next. No backend application runtime is supplied.
+
+
+The Examples library now includes **Discourse core · partial backend design** alongside the
+unchanged default Mattermost study. [P71a's guide](examples/discourse-core.md) describes its exact
+REST/data/access foundation and the P71b command/effect/hook/scenario boundary. No runtime or
+application acceptance is supplied. Access clause controls include explicit bounded group grants,
+current workspace and group membership, persisted service recipients and one-parent owner/visibility
+checks. Read projections expose conditional field reveal/redaction through existing finite clause
+groups. The local synthetic preview lists redactions without evaluating real membership rows.
+Contract text fields offer named protocol constraints rather than an arbitrary regular expression.

@@ -8032,3 +8032,118 @@ Corrections, limits and next step:
 
 **P70b and parent P70 are complete with no blocker. P71a is next unstarted.**
 The scoped local commit and exact records/limits are in `.jeeves-work/p70b/completion.json`.
+
+## P71a — Partial Discourse context, contracts, data and current access (2026-11-03)
+
+Implemented **P71a only** in primary `main`, based on
+`b9690286294454f832faf53d7a141d4135010242`. Read the authorized batch instructions/checkpoint,
+AGENTS, PLAN §15/applicable architecture/editing contracts, latest handoff, C4/studio guidance,
+backend shared contract, P71/exact child split, D scope, frozen P61b protocol/contracts/fixtures
+and P60a source/adaptation map. Verified P70's dependency APIs, real recorded checks and local
+commit. The coordinator checkpoint was not edited.
+
+Built:
+
+- [Registered partial Discourse study](../packages/spec/src/discourse-core-example.ts), keeping
+  Mattermost first/default and its source unchanged. Four people, explicit external thin client,
+  private bytes and email; one modular API, independent worker and authoritative PostgreSQL.
+  Ten API and four worker responsibilities explain ownership without endpoint/table components
+  or a catchall module. Every implementation remains planned. No generated frontend is required.
+- [Exact authored REST wire declarations](../packages/spec/src/discourse-core-contracts.ts) for all
+  **35 frozen operations**: methods/paths, parameter locations, strict JSON bodies, response/error
+  fields, status/header mappings, enum/nullable/bounded types and a distinct bounded binary download.
+  Shared local field-error types preserve exact payloads. Static browser-safe declarations import
+  neither benchmark fixtures nor Node crypto; there is no shipping OpenAPI interpreter.
+- [23 authoritative entities/datasets](../packages/spec/src/discourse-core-data.ts), **21 consistency
+  boundaries**, **eight bounded queries**, exact access uses and store/provider interfaces. Core
+  records include explicit workspace/group membership and grants, immutable revisions, subscription
+  channel booleans, recipient/event inbox identity, flags, private association, safe audit and H-state
+  foundations including recorded activity and retention holds. No competing user/session schema.
+  Topic/posts/revisions share one named row-lock boundary; per-operation version guards/receipt and
+  event intent remain P71b. Provider bytes and SQL are not claimed to share a transaction.
+- [Current access declarations](../packages/spec/src/discourse-core-access.ts): live workspace
+  membership plus actual category-grant/group-membership joins, named parent paths, owner/moderator
+  checks, current history visibility, row-preserving hidden/removed text redaction, and all nine
+  sensitive recheck sites. Service work selects a persisted recipient with bounded purpose/scope,
+  never an initiating actor's borrowed authority. Notification reads also check their exact current
+  subscription's watch/inbox preference with a recipient-preserving compound relation.
+- Narrow prerequisite corrections, explicitly permitted by P71 and confirmed by the coordinator:
+  **finite group-grant** over exact current workspace/grant/group records with at most three named
+  nonrecursive forward to-one parent relations; one-parent owner/visibility selection; bounded
+  conditional read-field reveal over existing all/any clause groups with nullable/optional-safe
+  null/omission; seven named protocol string constraints instead of arbitrary regex input; and
+  nonnullable joined ordering with a complete **root** unique-key suffix. No new rule language,
+  recursive policy evaluation, denormalized grant authority, SQL or authorization runtime.
+- Shared validation, exact-version protection, extraction closure/remapping, handoff/fingerprints,
+  chat JSON Schema, logical schema export and canonical pure compiler lowering retain these additions.
+  Mouse controls expose exact subjects/parents/authorities, conditional fields and named constraints.
+  The existing local synthetic design preview lists redactions; it does not evaluate persisted rows.
+- CATALOG, [partial study](examples/discourse-core.md), access/data/contracts/studio documentation
+  and roadmap now distinguish completed P71a from incomplete parent P71 and the next P71b boundary.
+
+Verification, all commands with `PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: **passed**, **929 files / 1,031ms**, no errors or fixes; **2,077 warnings / 76 infos**
+  versus the prior 2,024/75. Declaration/test assertion/style warnings remain; no full-green claim.
+  `.jeeves-work/p71a/lint.log` and final post-handoff lint log record actual output.
+- `pnpm work run typecheck`: **passed**, all workspaces/scripts, **15.8s**, `sourceChanged: false`.
+  `.jeeves-work/runs/2026-11-03T19-54-54-876Z-typecheck-811d7734.json`.
+- `pnpm --filter @jeeves/web build`: **passed**, **1.90s**, existing large-chunk advisory.
+  `.jeeves-work/p71a/build-final.log`.
+- `pnpm work run unit` with exactly
+  `packages/spec/src/{discourse-core-example,backend-data,backend-queries,backend-policy,contract-types,contract-transport,discourse-benchmark,benchmark-fixtures,backend-implementations}.test.ts`,
+  `packages/generator/src/{discourse-core-plan,backend-plan,backend-compile,backend-routing,plan,generate}.test.ts`
+  and `packages/registry/src/fixtures.test.ts`: **16 files / 238 tests passed**, **10.4s**,
+  `sourceChanged: false`. Brace notation abbreviates explicit argv in
+  `.jeeves-work/runs/2026-11-03T19-54-53-797Z-unit-1f3b5c54.json`.
+  New cases cover every frozen REST body/parameter/error schema, live grant references and service
+  recipient constraints, visible/hidden/removed/moderator redaction, malformed field/parent uses,
+  joined cursor/root ties, immutable definitions, complete extraction/insertion/exact reuse,
+  storage/reference preservation, portable handoff/fingerprints/chat, compiler preservation and
+  semantic permutations. Existing compiler/legacy golden/writer/fixture compatibility remains green
+  within this focused selection. No UI unit/E2E suite was selected or maintained.
+- Direct Chromium **mouse** checks: create from Examples; component and named-constraint Save/Cancel;
+  reload and atomic Undo/Redo; real stale-revision **409** retaining the draft; protected policies and
+  explicit successor edits without retargeting consumers; current grant/parent/redaction inspectors;
+  revision-bound JSON and loaded-diagram SVG export; library extraction, explicit external-role
+  selection, insertion and exact pinned reuse with atomic history/reload. The compatibility snapshot
+  exercised a 20-role fragment; focused offline extraction/reuse also covers the final 23 entities.
+  A fresh final mouse-created model equals the final authored model after ordinary Undo, normalizing
+  only revision. Light desktop, dark **390px**, no horizontal overflow, **11 scoped axe analyses
+  with zero violations**. Final scripts record no page errors. Records:
+  `.jeeves-work/p71a/{browser-edit,browser-advanced,browser-reuse,browser-protocol,browser-export-final,current-model-verified}.json`.
+- `.jeeves-work/p71a/cleanup.json`: deleted only exact disposable projects
+  `46e587a1-ac57-43f0-824c-54ed8ae087b1` and `66a218a8-720a-4e6b-aa95-077f4cb026f8`, confirmed names/404s;
+  all **13 original IDs, design hashes and layout hashes** preserved. API healthy and both existing
+  loopback previews at 4300/5180 return 200. The sole inspection-created local library artifact,
+  `p71a-disposable-discourse-46e587a1@1.0.0`, is **retired**, retained as architecture-only history;
+  no external publication occurred.
+- `.jeeves-work/p71a/audit.py`: **1,517 other tracked files preserved**, including all **48 benchmark
+  files / 46 legacy fixtures**, production registry/modules, templates/runtimes/artifacts/versions,
+  old example sources, locks/output formats and the global readiness predicate. Prior handoff prefix
+  remains byte-identical. Scoped links/anchors/fences, deterministic browser-safe authoring imports
+  and `git diff --check` pass; final counts are in `.jeeves-work/p71a/audit.json`.
+
+Corrections, limits and next step:
+
+- Early probes exposed real prerequisite gaps rather than treating membership as a substitute for a
+  category grant. The bounded corrections above address them. Initial focused attempts also caught
+  missing local type descriptions, fragment-role overflow/colliding file identities, duplicate
+  provider interfaces and test-fixture import/identity assumptions; corrected without changing any
+  frozen expectations. Browser harness retries corrected selectors, polling/context setup and an
+  initial development-reload 502. SVG export was repeated with loaded geometry. Earlier failures
+  remain in ignored logs and are not reported as passes.
+- **The example is explicitly partial.** P71b owns executable command/effect bindings, detailed
+  lifecycle/action/outcome and transport-to-state mappings, all eight typed H briefs, five scenarios,
+  focused views, deployment/workload intent and final D01–D20 traces. Refine protected exact
+  definitions through explicit successors where needed. Review still exposes those design gaps and
+  unsupported implementations. No foundation/complete-generation readiness is claimed.
+- No application runtime, new template/capability registration, generated hooks/stubs/migrations,
+  generation/writer change, source port, provider execution, secret input, benchmark run or measured
+  capacity. All three benchmark applications remain **absent/not run, zero observed implementation
+  points**. The approved focused policy replaces full `pnpm check`; deferred UI/generic historical
+  example assertions and E2E suites were not run or updated. No branch/worktree/delegation/push.
+
+**P71a is complete with no blocker; parent P71 is incomplete. P71b is next unstarted.**
+The scoped local commit, exact checks, prerequisite corrections and limits are recorded in
+`.jeeves-work/p71a/completion.json`.
