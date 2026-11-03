@@ -220,6 +220,16 @@ export function unresolvedContractValue(value: ContractValue): boolean {
 
 /** Named design choices and application hooks, not executable expressions or proof of correctness. */
 export const operationBehaviorSchema = z.strictObject({
+  session: z
+    .strictObject({
+      operation: z.enum(["registerAccount", "login", "logout", "readSession"]),
+      authority: z.literal("existing-session-owner"),
+      publicGrants: z.literal("none"),
+      mutationProtection: z.literal("origin-csrf"),
+      durability: z.literal("opaque-stored-hash"),
+      applicationIsolation: z.literal("cookie-origin-and-project"),
+    })
+    .optional(),
   kind: z.enum(["Unspecified", "Command", "Query"]).optional(),
   authorization: shortText.optional(),
   preconditions: shortText.optional(),
@@ -244,6 +254,8 @@ export const operationOutcomeSchema = z.strictObject({
   status: z.int().min(100).max(599).optional(),
   condition: shortText,
   state: z.enum(["Unspecified", "Unchanged", "Committed", "Partial", "Unknown"]),
+  noResponse: z.literal(true).optional(),
+  internal: z.literal(true).optional(),
   retry: z.enum(["Unspecified", "Safe", "Unsafe", "After correction", "Reconcile first"]),
   payload: contractFieldsSchema.optional(),
 });

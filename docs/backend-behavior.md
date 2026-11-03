@@ -144,3 +144,43 @@ P66b/P66c typed capability settings and P67 Data/Access authoring are complete.
 [P68b effect/hook authoring](architecture-studio.md) is complete, including exact command-to-effect/hook navigation and atomic chat edits. [P68c capability settings](architecture-studio.md) completes parent P68, including the combined mouse authoring gate. P69 is next unstarted.
 P69/P70 matching/pure compilation, and later separately assigned packages own runtime enforcement,
 SQL, money/inventory algorithms, receipt concurrency, cancellation and observed application checks.
+
+## Complete Discourse protocol plans (P71b)
+
+The [complete Discourse study](examples/discourse-core.md) adds an optional strict `operation.protocol`
+for finite domain algorithms that scalar row actions cannot express: conditional lifecycle dispatch,
+scoped upserts, array/channel transformations, pure read hooks, bounded split/merge and durable privacy
+progress. It is part of the same backend operation and its pure compiler intent, not another workflow
+model. Legacy scalar plans keep their existing semantics.
+
+Each plan binds normalized input paths, exact selected records/keys and policy projections, field
+writers, expected versions, allowed transitions, bounded query aliases, hook snapshots and outputs.
+All selected existing rows lock in stable entity/primary-key order, followed by current-state rechecks.
+Only named reviewed derivations are allowed; no expression, SQL or script editor is introduced.
+Declared writes and transaction participants must agree exactly with the record plan. Local audit
+appends are explicit transaction participants, authorized by the source command, without an independent
+read of protected audit rows.
+
+Create-only identity/scope/clock writers preserve upsert identities. `upsert-from-one-version` models
+the frozen first membership/grant/subscription PUT: absent rows compare against initial one and return
+two. `insert-or-next-version` creates an adjudication/privacy record at one, otherwise increments its
+checked version. These factories require their explicit missing-row branch and may write only protected
+version fields. `delivery-identity` is the bounded deterministic source/effect/recipient/channel identity,
+not a random resource ID. Canonical source-message hashing excludes refreshed authentication headers.
+
+Privacy's subject version is explicitly fenced through the existing identity owner; there is no
+competing account entity. Its fixed progress descriptor pins the exact validated hook input/result,
+SQL store, persisted progress key, continuation operation and internal committed checkpoint. Each
+batch rechecks current holds; no earlier batch is rolled back by a later failure. Source uncertainty
+retains durable progress. The frozen v1 hook and response ID collections are bounded to 100; the
+owner checks inventory size and rejects overflow before mutation rather than truncating it. This
+is a bounded benchmark policy, not an unlimited production privacy/compliance implementation.
+
+Current query projections explicitly alias revision `post-version` to wire `version`, inbox parent
+identity/title and search post/snippet fields. Record, query and hook outputs retain exact sources;
+restructure version outputs select their separate source/target rows. These declarations remain
+unsupported until an exact implementation supplies the whole algorithm and its observed acceptance.
+
+The backend aggregate bound is 100, allowing two independent complete Discourse compositions
+with their preserved exact versions (84 aggregate declarations); 101 is rejected. Storage and
+authority remain scoped to each copy. This does not raise runtime availability.

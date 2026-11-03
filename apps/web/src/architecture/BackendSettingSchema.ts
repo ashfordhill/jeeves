@@ -54,7 +54,7 @@ export const settingGroups: Record<string, string[][]> = {
     ["unknown", "duplicates", "provider"],
   ],
   files: [
-    ["entity", "parent", "store"],
+    ["entity", "parent", "associationEntity", "store"],
     ["maximumBytes", "acceptedTypes", "inspection"],
     ["parentAccess", "lifecycle", "states", "cleanup"],
   ],
@@ -64,7 +64,7 @@ export const settingGroups: Record<string, string[][]> = {
     ["pageSize", "maximumRecipients", "channels"],
   ],
   search: [
-    ["source", "fields", "query", "strategy"],
+    ["source", "fields", "query", "strategy", "nullableText"],
     ["projection", "access", "maximumQueryLength", "maximumResults"],
     ["freshness", "rebuild"],
   ],

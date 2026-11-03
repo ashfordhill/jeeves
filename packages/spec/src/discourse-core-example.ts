@@ -6,16 +6,17 @@ import type { DesignDocument } from "./design.ts";
 import { emptyDesign } from "./design.ts";
 import { discourseCoreAccess } from "./discourse-core-access.ts";
 import { discourseCoreAdapters } from "./discourse-core-adapters.ts";
+import { completeDiscourseCore } from "./discourse-core-complete.ts";
 import { discourseCoreContracts } from "./discourse-core-contracts.ts";
 import { dcRef, discourseCoreData } from "./discourse-core-data.ts";
 import type { LayoutDocument } from "./layout.ts";
 
 export const DISCOURSE_CORE_EXAMPLE = {
   id: "discourse-core",
-  name: "Discourse core · partial backend design",
+  name: "Discourse core · complete backend design",
   description:
-    "P71a: REST contracts, discussion authority and live category access. Commands, effects, typed H briefs and five journeys remain P71b. All runtime implementations are planned.",
-  useCases: "Partial design · D01–D20 foundation · no runtime or observed acceptance",
+    "Complete D01–D20 backend design: exact REST, current access, bounded commands/effects, eight typed hooks and five scenarios. Runtime implementations remain unsupported; zero observed points.",
+  useCases: "Complete design · D01–D20 · no runtime or observed acceptance",
   accent: "violet",
 } as const;
 const responsibilities: [string, string, string, string, string][] = [
@@ -118,7 +119,7 @@ const responsibilities: [string, string, string, string, string][] = [
     "Verify original bytes, provider identity/timestamp and message receipt before normal current posting policy. Parsing is a separate P71b pure H seam.",
   ],
 ];
-export function discourseCoreExample(): {
+export function discourseCorePartialExample(): {
   name: string;
   design: DesignDocument;
   layout: LayoutDocument;
@@ -438,5 +439,14 @@ export function discourseCoreExample(): {
       acknowledgements: [],
     },
   );
-  return { name: DISCOURSE_CORE_EXAMPLE.name, design, layout: { schemaVersion: 1, items: {} } };
+  return {
+    name: "Discourse core · partial backend design",
+    design,
+    layout: { schemaVersion: 1, items: {} },
+  };
+}
+
+/** Complete P71 design; old exact definitions are retained by the partial builder. */
+export function discourseCoreExample() {
+  return completeDiscourseCore(discourseCorePartialExample());
 }

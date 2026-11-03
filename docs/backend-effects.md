@@ -107,3 +107,23 @@ inside the shared component draft. Exact Review/Findings links open the owning d
 missing recovery remains a design gap and dangling targets block Save. Scripted chat shares the
 same atomic schema/validation and undo. P68c completes the shared capability settings and combined authoring gate. P69 is next unstarted; implementation matching and
 execution remain separate assignments.
+
+## Protocol outcomes and pure reads (P71b)
+
+Bounded protocol effects select exact committed outcomes through `when`. An unchanged removed post,
+existing active flag or existing digest window does not emit another audit/event. Privacy continuation
+intent selects its internal durable-progress checkpoint; that checkpoint has no HTTP response and
+cannot report premature client success. Terminal source results and separate delivery uncertainty
+remain distinct.
+
+Pure hooks may consume exact owner-assembled snapshots on a read-only operation. Render/rank do not
+write rows, receipts, jobs or notifications. Snapshot derivations and bounded query references are
+explicit; hook code still receives no repository, network, filesystem or credential authority.
+Required availability, exact result validation, timeout and cancellation apply before source mutation.
+
+Private cleanup, projection work, digest windows, privacy progress and per-recipient email each have
+their own typed causal payload. Attachment/digest/progress/recipient IDs come from actual selected
+records or validated inputs. Fresh event IDs never substitute for a resource selector. Per-recipient
+email can be eligible with inbox disabled. Provider steps retain exact operation/interface/binding
+references and run outside SQL after committed stage/intent. The declared email lookup distinguishes
+accepted/rejected/unknown; unsupported provider lookup leaves operator-visible uncertainty.

@@ -58,9 +58,13 @@ export function backendEffectReferences(v: Declaration): string[] {
 /** Supporting scenario/C2 graph identities must stay pinned with reused exact declarations. */
 export function backendEffectContextReferences(architecture: Architecture): string[] {
   const keep = new Set(
-    [...(architecture.backend?.effects ?? []), ...(architecture.backend?.hooks ?? [])].flatMap(
-      backendEffectReferences,
-    ),
+    [...(architecture.backend?.effects ?? []), ...(architecture.backend?.hooks ?? [])]
+      .flatMap(backendEffectReferences)
+      .concat(
+        (architecture.backend?.operations ?? []).flatMap((o) =>
+          o.protocol?.provider ? [o.protocol.provider.binding, o.protocol.provider.interface] : [],
+        ),
+      ),
   );
   let count = -1;
   while (count !== keep.size) {
@@ -327,7 +331,10 @@ export function validateBackendEffects(design: DesignDocument): Finding[] {
           at,
           "Recovery strategy contradicts the known failure/uncertainty boundary.",
         );
-      if (r.strategy === "same-command-key" && o?.idempotency.kind !== "command-key")
+      if (
+        r.strategy === "same-command-key" &&
+        !["command-key", "source-message"].includes(o?.idempotency.kind ?? "")
+      )
         add("CONFIG_INVALID", at, "Same-command recovery requires a declared command identity.");
     }
   };
@@ -337,10 +344,30 @@ export function validateBackendEffects(design: DesignDocument): Finding[] {
       o = operation(e.source),
       t = e.target;
     const invalid = (message: string) => add("CONFIG_INVALID", path, message);
+    if (o?.protocol && !e.when)
+      add(
+        "CONFIG_REQUIRED",
+        path,
+        "Bounded protocol effects require an explicit committed outcome gate.",
+      );
+    if (e.when) {
+      unique(e.when, path, "Effect outcome gates");
+      for (const id of e.when)
+        if (!o?.outcomes.some((v) => v.outcome === id && v.trigger === "success"))
+          invalid(
+            "Effect gates must select exact committed success outcomes; unchanged/rejected/replayed results cannot publish another effect.",
+          );
+    }
     if (!o) add("UNKNOWN_REFERENCE", path, "Effect source operation/version is missing.");
     else if (o.kind !== "command" || o.transaction.kind !== "local")
       invalid("Effects require a mutating local source command, never a read-only query.");
-    const pc = typed(e.payload, [...path, "payload"], t.kind === "event" ? "event" : "data");
+    const pc = typed(
+      e.payload,
+      [...path, "payload"],
+      t.kind === "event" || (e.execution !== "local" && contract(e.payload)?.kind === "event")
+        ? "event"
+        : "data",
+    );
     unique(
       e.values.map((v) => v.field),
       path,
@@ -831,7 +858,13 @@ export function validateBackendEffects(design: DesignDocument): Finding[] {
           invalid("Effectful hook dependencies require explicit after-commit effect ordering.");
       }
     }
-    if (h.kind === "pure" && !o?.actions.some((v) => v.kind === "hook" && same(v.hook, h)))
+    if (
+      h.kind === "pure" &&
+      !(
+        (o?.protocol?.hook && same(o.protocol.hook, h)) ||
+        o?.actions.some((v) => v.kind === "hook" && same(v.hook, h))
+      )
+    )
       add("CONFIG_REQUIRED", path, "Bind the pure hook as an ordered typed source action.");
     if (
       h.kind === "effectful" &&
@@ -926,7 +959,11 @@ export function validateBackendEffectsTransition(
       (b?.capabilityConfigs ?? [])
         .flatMap(backendCapabilityExactReferences)
         .some((r) => r.collection === "hooks" && same(r.reference, h)) ||
-      b?.operations?.some((o) => o.actions.some((a) => a.kind === "hook" && same(a.hook, h))) ||
+      b?.operations?.some(
+        (o) =>
+          (o.protocol?.hook && same(o.protocol.hook, h)) ||
+          o.actions.some((a) => a.kind === "hook" && same(a.hook, h)),
+      ) ||
       b?.effects?.some((e) => e.target.kind === "hook" && same(e.target.hook, h)) ||
       b?.hooks?.some((v) => v.dependencies.some((r) => same(r, h)));
     const next = after.architecture?.backend?.hooks?.find((v) => same(v, h));

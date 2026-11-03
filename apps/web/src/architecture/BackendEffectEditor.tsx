@@ -112,6 +112,15 @@ export function BackendEffectEditor({
             onChange={(source) => update({ source })}
             onOpen={() => navigate("operations", contractKey(e.source))}
           />
+          <Many
+            label="Effect committed outcomes"
+            value={e.when ?? []}
+            options={(source?.outcomes ?? [])
+              .filter((o) => o.trigger === "success")
+              .map((o) => ({ value: o.outcome, label: o.outcome }))}
+            max={20}
+            onChange={(when) => update({ when: when.length ? when : undefined })}
+          />
           <NativeSelect
             label="Effect target kind"
             data={["event", "operation", "dataset", "projection", "notification", "audit", "hook"]}

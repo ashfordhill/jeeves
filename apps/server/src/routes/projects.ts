@@ -36,6 +36,8 @@ const editBody = operationBatchSchema.extend({
   ops: z.array(z.unknown()).min(1).max(500),
   source,
 });
+/** Bounded architecture snapshots and one complete fragment insertion fit without changing other route limits. */
+export const DESIGN_OPERATION_BODY_LIMIT = 4 * 1024 * 1024;
 const restoreBody = z.strictObject({ baseRevision: z.int().nonnegative(), source });
 
 export const notFound = (reply: FastifyReply, what = "Project") =>
@@ -170,7 +172,7 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
 
   app.post(
     "/projects/:id/operations",
-    { schema: { params: projectParams, body: editBody } },
+    { bodyLimit: DESIGN_OPERATION_BODY_LIMIT, schema: { params: projectParams, body: editBody } },
     async (req, reply) => sendChange(reply, await service.edit(req.params.id, req.body)),
   );
 

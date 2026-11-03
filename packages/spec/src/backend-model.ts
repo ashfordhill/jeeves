@@ -14,6 +14,7 @@ import {
   backendAccessPolicySchema,
   backendPolicySelectionSchema,
 } from "./backend-policy-model.ts";
+import { mapProtocolPlan, protocolReferences } from "./backend-protocol-model.ts";
 import { contractTypeReferenceSchema } from "./contract-shapes.ts";
 import { idSchema } from "./ids.ts";
 
@@ -231,7 +232,7 @@ export type BackendQuery = z.output<typeof backendQuerySchema>;
 export const backendModelSchema = z.strictObject({
   schemaVersion: z.literal(1),
   entities: z.array(backendEntitySchema).max(100).default([]),
-  aggregates: z.array(backendAggregateSchema).max(50).default([]),
+  aggregates: z.array(backendAggregateSchema).max(100).default([]),
   // Preserve P63a serialized models that predate queries without adding an empty collection.
   queries: z.array(backendQuerySchema).max(100).optional(),
   accessPolicies: z.array(backendAccessPolicySchema).max(100).optional(),
@@ -328,6 +329,7 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
           operations: model.operations.map((o) => ({
             ...o,
             id: id(o.id),
+            ...(o.protocol ? { protocol: mapProtocolPlan(o.protocol, ids) } : {}),
             target: {
               ...o.target,
               contract: exact(o.target.contract),
@@ -561,6 +563,13 @@ export function collectBackendDependencies(
   for (const o of model.operations ?? []) {
     if (keep.has(o.target.owner.id) || keep.has(o.aggregate.id)) keep.add(o.id);
     if (!keep.has(o.id)) continue;
+    if (o.protocol) {
+      for (const r of protocolReferences(o.protocol)) keep.add(r.id);
+      if (o.protocol.provider) {
+        keep.add(o.protocol.provider.binding);
+        keep.add(o.protocol.provider.interface);
+      }
+    }
     for (const v of [
       o.target.owner.id,
       o.target.contract.id,

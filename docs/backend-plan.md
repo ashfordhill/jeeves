@@ -2,7 +2,7 @@
 
 P70a/P70b supply a versioned, deterministic backend IR and complete pure plan preview. They do not
 render runtime files, create hook stubs, register production implementations or generate applications.
-P70 is complete. The next design unit is **P71a**; runtime/writer integration remains separately
+P70 is complete. P71 is complete as design intent; the next design unit is **P72a**; runtime/writer integration remains separately
 assigned to P74a/P74b.
 
 ## Complete planning API
@@ -144,4 +144,4 @@ reading a lock or invoking a vendor.
 No benchmark application was generated or verified. Runtime availability, frozen artifacts and the
 three applications' zero observed implementation points remain unchanged. No SQL, runtime descriptors,
 hook files or migration files are emitted. Production manifests still advertise zero backend capability
-descriptors. Complete example authoring starts with P71a only when separately assigned.
+descriptors. The complete Discourse design is described in [its study](examples/discourse-core.md); P72a is next only when separately assigned.

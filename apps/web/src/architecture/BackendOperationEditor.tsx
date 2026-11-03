@@ -20,6 +20,7 @@ import {
   Pick,
   RecordHeader,
 } from "./BackendFields.tsx";
+import { BackendProtocolEditor } from "./BackendProtocolEditor.tsx";
 import {
   type BehaviorContext,
   GuardFields,
@@ -193,7 +194,9 @@ export function BackendOperationEditor({
           { value: "target", label: "Target & aggregate" },
           { value: "access", label: "Current access & participants" },
           { value: "guards", label: "Finite guards" },
-          { value: "actions", label: "Ordered actions & declared writes" },
+          ...(o.protocol
+            ? [{ value: "protocol", label: "Bounded protocol plan" }]
+            : [{ value: "actions", label: "Ordered actions & declared writes" }]),
           { value: "transaction", label: "Identity, concurrency & transaction" },
           { value: "retry", label: "Idempotency & cancellation" },
           { value: "outcomes", label: "Declared outcomes & mappings" },
@@ -201,6 +204,14 @@ export function BackendOperationEditor({
         ]}
         onChange={(e) => setSection(e.currentTarget.value)}
       />
+      {section === "protocol" && o.protocol ? (
+        <BackendProtocolEditor
+          operation={o}
+          ctx={ctx}
+          onLifecycle={(key) => onNavigate("lifecycles", key)}
+          onChange={(protocol) => update({ protocol })}
+        />
+      ) : null}
       {section === "target" ? (
         <>
           <Pick

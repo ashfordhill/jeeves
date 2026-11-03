@@ -53,12 +53,17 @@ export const backendDeliveryConfigSchema = z.strictObject({
   queue: z.strictObject({ channel: idSchema, event: exact }),
   due: z.discriminatedUnion("kind", [
     z.strictObject({ kind: z.literal("immediate") }),
-    z.strictObject({ kind: z.literal("event-time"), field: idSchema }),
+    z.strictObject({
+      kind: z.literal("event-time"),
+      field: idSchema,
+      delaySeconds: z.int().min(0).max(31536000).optional(),
+    }),
     z.strictObject({ kind: z.literal("business-deadline"), config: exact }),
   ]),
   attempts: z.int().min(1).max(100),
   backoff: z.discriminatedUnion("kind", [
     z.strictObject({ kind: z.literal("fixed"), seconds: z.int().min(0).max(86400) }),
+    z.strictObject({ kind: z.literal("sequence"), seconds: z.array(seconds).min(1).max(100) }),
     z.strictObject({
       kind: z.literal("exponential"),
       initialSeconds: seconds,
@@ -85,6 +90,7 @@ export const backendFileConfigSchema = z.strictObject({
   kind: z.literal("files"),
   entity: exact,
   parent: exact,
+  associationEntity: exact.optional(),
   store: backendProviderReferenceSchema,
   maximumBytes: z.int().min(1).max(1_073_741_824),
   acceptedTypes: z
@@ -174,6 +180,7 @@ export const backendSearchConfigSchema = z.strictObject({
   projection: z.strictObject({ dataset: idSchema, version: z.int().min(1).max(1000000) }),
   access: observation,
   authorization: z.literal("current-policy-before-pagination-counts-snippets"),
+  nullableText: z.literal("exclude-null-before-index-and-match").optional(),
   maximumQueryLength: z.int().min(1).max(2000),
   maximumResults: z.int().min(1).max(100),
   freshness: z.discriminatedUnion("kind", [

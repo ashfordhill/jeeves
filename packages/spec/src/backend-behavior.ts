@@ -17,6 +17,7 @@ import { backendTransactionAggregates } from "./backend-commerce-transactions.ts
 import { backendEntity, backendEntityFields } from "./backend-entity.ts";
 import type { BackendReference } from "./backend-model.ts";
 import { validateBackendPolicyUse } from "./backend-policy.ts";
+import { validateBackendProtocol } from "./backend-protocol.ts";
 import { backendQuerySources } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
@@ -27,6 +28,22 @@ const fieldKey = (v: { entity: BackendReference; field: string }) =>
 type Value = ContractValue & { required?: boolean };
 /** Conservative assignability: bounded sources must fit every target bound; no runtime coercion. */
 export function backendValueFits(source: Value, target: Value): boolean {
+  if (source.type === "text") {
+    const bounds =
+      source.textConstraint === "sha256"
+        ? { minLength: 64, maxLength: 64 }
+        : source.textConstraint === "correlation-id"
+          ? { minLength: 1, maxLength: 128 }
+          : source.textConstraint === "error-code"
+            ? { minLength: 1, maxLength: 64 }
+            : source.enumValues?.length
+              ? {
+                  minLength: Math.min(...source.enumValues.map((v) => v.length)),
+                  maxLength: Math.max(...source.enumValues.map((v) => v.length)),
+                }
+              : {};
+    source = { ...bounds, ...source };
+  }
   if (
     source.type !== target.type ||
     (source.nullable && !target.nullable) ||
@@ -195,6 +212,7 @@ export function backendValueChecks(
         );
       const a = op && aggregate(op.aggregate);
       if (
+        op?.protocol?.records.some((r) => same(r.entity, source.entity)) ||
         !a ||
         (op &&
           model &&
@@ -210,16 +228,18 @@ export function backendValueChecks(
           : { type: "uuid", required: true };
     else if (source.kind === "server")
       value =
-        source.factory === "uuid"
-          ? { type: "uuid", required: true }
-          : source.factory === "clock"
-            ? { type: "timestamp", required: true }
-            : {
-                type: "integer",
-                minimum: source.factory === "initial-version" ? 1 : 0,
-                maximum: source.factory === "initial-version" ? 1 : Number.MAX_SAFE_INTEGER,
-                required: true,
-              };
+        source.factory === "delivery-identity"
+          ? { type: "text", required: true, minLength: 1, maxLength: 128 }
+          : source.factory === "uuid"
+            ? { type: "uuid", required: true }
+            : source.factory === "clock"
+              ? { type: "timestamp", required: true }
+              : {
+                  type: "integer",
+                  minimum: source.factory === "initial-version" ? 1 : 0,
+                  maximum: source.factory === "initial-version" ? 1 : Number.MAX_SAFE_INTEGER,
+                  required: true,
+                };
     else if (source.kind === "literal")
       return source.value === null
         ? { type: "unresolved", nullable: true, required: true }
@@ -452,6 +472,10 @@ export function validateBackendBehavior(design: DesignDocument): Finding[] {
   }
   const targets = new Set<string>();
   for (const op of model.operations ?? []) {
+    if (op.protocol) {
+      result.push(...validateBackendProtocol(design, op));
+      continue;
+    }
     const path = ["architecture", "backend", "operations", contractKey(op)];
     const invalid = (message: string, suffix: (string | number)[] = []) =>
       add("CONFIG_INVALID", [...path, ...suffix], message);
@@ -1193,8 +1217,10 @@ export function validateBackendBehaviorTransition(
       !(model?.capabilityConfigs ?? [])
         .flatMap(backendCapabilityExactReferences)
         .some((r) => r.collection === "lifecycles" && same(r.reference, l)) &&
-      !model?.operations?.some((o) =>
-        o.actions.some((a) => a.kind === "transition" && same(a.lifecycle, l)),
+      !model?.operations?.some(
+        (o) =>
+          o.protocol?.transitions.some((t) => same(t.lifecycle, l)) ||
+          o.actions.some((a) => a.kind === "transition" && same(a.lifecycle, l)),
       )
     )
       return [];

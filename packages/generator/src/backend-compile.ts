@@ -52,6 +52,12 @@ function semanticIntent<T>(value: T, kind: BackendSource["kind"]): T {
     "outcomes",
     "participants",
     "queryInputs",
+    "records",
+    "queries",
+    "inputs",
+    "outputs",
+    "hookInputs",
+    "versionChecks",
     "hashInputs",
     "values",
     "dependencies",
@@ -92,7 +98,12 @@ function semanticIntent<T>(value: T, kind: BackendSource["kind"]): T {
     if (key === "config" || kind === "capabilityConfigs") return v;
     if (Array.isArray(v)) {
       const items = v.map((child) => visit(child));
-      return (kind === "contract" ? contractSets.has(key) : sets.has(key) || key === "input")
+      return (
+        kind === "contract"
+          ? contractSets.has(key)
+          : sets.has(key) ||
+            (key === "input" && items.every((v) => v !== null && typeof v === "object"))
+      )
         ? items.sort((x, y) => compare(contractCanonical(x), contractCanonical(y)))
         : items;
     }
@@ -295,7 +306,12 @@ export function planBackend(
         ?.shape?.operations.find((v) => v.id === o.target.operation);
       const aggregate = ir.aggregates.find((g) => equal(g.reference, o.aggregate));
       const store = host(o.transaction.store);
-      if (!h || !aggregate || aggregate.host !== h || aggregate.store !== store)
+      if (
+        !h ||
+        !aggregate ||
+        (o.protocol?.execution !== "authorized-worker" && aggregate.host !== h) ||
+        aggregate.store !== store
+      )
         add(
           "OPERATION_BOUNDARY",
           "Operation requires its exact aggregate host and authoritative store.",
@@ -303,7 +319,11 @@ export function planBackend(
         );
       for (const participant of o.transaction.participants) {
         const entity = ir.entities.find((e) => equal(e.reference, participant));
-        if (!entity || entity.host !== h || entity.store !== store)
+        if (
+          !entity ||
+          (o.protocol?.execution !== "authorized-worker" && entity.host !== h) ||
+          entity.store !== store
+        )
           add(
             "TRANSACTION_BOUNDARY",
             "Every transaction participant must resolve in the same host/store.",

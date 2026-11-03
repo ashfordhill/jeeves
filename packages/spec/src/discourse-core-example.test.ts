@@ -21,7 +21,7 @@ import { validateBackendQueries } from "./backend-queries.ts";
 import { exportContractJsonSchema } from "./contract-json-schema.ts";
 import { contractFieldSchema } from "./contract-shapes.ts";
 import { type DesignDocument, designSchema } from "./design.ts";
-import { discourseCoreExample } from "./discourse-core-example.ts";
+import { discourseCorePartialExample as discourseCoreExample } from "./discourse-core-example.ts";
 import { isStructural } from "./findings.ts";
 import { operationBatchJsonSchema } from "./operations.ts";
 import { testLookup } from "./test-support.ts";
@@ -73,7 +73,8 @@ function normalize(v: any): any {
 }
 it("registers an independent explicitly partial planned design and preserves default Mattermost", () => {
   expect(architectureExamples[0]?.id).toBe("mattermost-reference");
-  expect(architectureExample("discourse-core").name).toContain("partial");
+  expect(architectureExample("discourse-core").name).toContain("complete");
+  expect(discourseCoreExample().name).toContain("partial");
   const d = fixture();
   expect(structural(d)).toEqual([]);
   expect(model(d).entities).toHaveLength(23);

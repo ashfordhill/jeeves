@@ -1,4 +1,7 @@
-import { contractCanonical, discourseCoreExample } from "@jeeves/spec";
+import {
+  contractCanonical,
+  discourseCorePartialExample as discourseCoreExample,
+} from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { lowerBackendData } from "./backend-plan.ts";
 import { templateSet } from "./modules.ts";

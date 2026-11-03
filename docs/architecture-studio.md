@@ -213,14 +213,27 @@ atomic undo/redo and conflict retention. The catalog currently advertises **zero
 descriptors**. Legacy `NEEDS_TEMPLATE` and Generate remain unchanged. See
 [exact implementation support](backend-implementations.md) for the model, matching rules and limits.
 P69 and [P70's pure compiler plan](backend-plan.md) are complete. The compiler preview is a package API;
-this authoring UI still reports implementation support. P71a is next. No backend application runtime is supplied.
+this authoring UI still reports implementation support. P71a/P71b complete the Discourse design; P72a is next. No backend application runtime is supplied.
 
 
 The Examples library now includes **Discourse core · partial backend design** alongside the
-unchanged default Mattermost study. [P71a's guide](examples/discourse-core.md) describes its exact
-REST/data/access foundation and the P71b command/effect/hook/scenario boundary. No runtime or
+unchanged default Mattermost study. [The complete P71 guide](examples/discourse-core.md) describes its exact
+REST/data/access, bounded command/effect/settings plans, eight H seams, five scenarios and final trace. No runtime or
 application acceptance is supplied. Access clause controls include explicit bounded group grants,
 current workspace and group membership, persisted service recipients and one-parent owner/visibility
 checks. Read projections expose conditional field reveal/redaction through existing finite clause
 groups. The local synthetic preview lists redactions without evaluating real membership rows.
 Contract text fields offer named protocol constraints rather than an arbitrary regular expression.
+
+P71b adds **Behavior → Bounded protocol plan** with focused overview/input/record/snapshot/dispatch/
+output sections. The same operation retains target, access, guards, atomic participants, writes,
+outcomes and acceptance identities. Exact current field sources remain inspectable and editable;
+finite owner algorithms are not a code editor. Required pure hooks also work on read-only designs
+without creating receipts or effects. The complete example offers three saved focused C2 views,
+five expected journeys and companion declared deployments; unsupported runtime stays in Review.
+
+Effects expose an explicit **Effect committed outcomes** selector. Unchanged results never repeat a
+removal audit or digest intent; privacy continuation uses its declared internal checkpoint. Protocol
+inspection shows typed provider operations, durable progress, named snapshot derivations and exact
+query aliases. Reusable complete fragments retain the scenario actor as their 21st role; the bounded
+role limit is 32, with no change to existing entry identities.

@@ -82,17 +82,17 @@ not a supplied Mattermost runtime, capacity result or production deployment spec
 
 ### Discourse core backend design
 
-**Partial editable architecture example (P71a).** One planned modular API and independent worker,
-PostgreSQL authority, explicit private bytes/email and an external thin client. Fourteen cohesive
-C3 responsibilities, all 35 frozen REST operations, 23 domain entities, exact consistency boundaries,
-eight bounded queries and current category/group access use the shared model. It adapts the pinned
-Discourse reference to TypeScript and REST; it supplies no upstream API compatibility.
+**Complete editable backend design (P71a/P71b).** One planned modular API and independent worker,
+PostgreSQL authority, explicit private bytes/email and an external thin client. Cohesive C3
+responsibilities, all 35 frozen REST operations, current category/group access, exact bounded
+commands/lifecycles/effects/settings, eight typed H seams and five journeys cover D01–D20.
+Three focused views, declared local deployment and unverified workload intent share the model.
 
-Command/effect bindings, all H hook briefs, five scenarios, focused views and final D01–D20 trace
-remain **P71b**. All implementations are planned; no generated runtime, application acceptance or
-observed benchmark points. Mattermost remains the default and saved projects are unchanged.
-See the [partial study and boundaries](docs/examples/discourse-core.md) and
-[example source](packages/spec/src/discourse-core-example.ts).
+All runtime implementations remain unsupported; application observations are absent/not run and
+observed points remain zero. This TypeScript/REST adaptation supplies no upstream compatibility,
+generated application or measured capacity. Mattermost remains the default; saved projects do not
+adopt the example automatically. See the [complete study and 20-row/66-observation trace](docs/examples/discourse-core.md)
+and [example source](packages/spec/src/discourse-core-example.ts).
 
 ### Streamly video platform
 

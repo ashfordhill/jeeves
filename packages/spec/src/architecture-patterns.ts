@@ -11,14 +11,11 @@ import { containerClassification } from "./architecture-choices.ts";
 import {
   type ArchitectureContract,
   contractCanonical,
-  contractKey,
   contractShapeSemantics,
   inspectContractShape,
   inspectContractTransport,
 } from "./architecture-contracts.ts";
 import { type PatternInstance, patternConfigSchema } from "./architecture-pattern-provenance.ts";
-import { backendCapabilityContextReferences } from "./backend-capability-configs.ts";
-import { backendEffectContextReferences } from "./backend-effects.ts";
 import { backendCollections, backendDeclarations, mapBackendModel } from "./backend-model.ts";
 import {
   type Connection,
@@ -53,7 +50,7 @@ export const architectureFragmentSchema = z.strictObject({
   version: versionSchema,
   name: z.string(),
   description: z.string(),
-  roles: z.array(roleSchema).max(20),
+  roles: z.array(roleSchema).max(32),
   /** P47/P48 declarations use local IDs until expansion. */
   architecture: architectureSchema,
   connections: z.array(connectionSchema).max(40),
@@ -1370,96 +1367,16 @@ export function previewArchitecturePattern(
       fragment.roles.every((r) => reused.has(r.id) && ids[r.id] === s.identities[r.id]),
     );
     if (source) {
-      for (const value of [
-        ...backendDeclarations(fragment.architecture.backend),
-        ...(fragment.architecture.datasets ?? []),
-      ]) {
-        const target = source.identities[value.id];
-        if (!target)
-          result.errors.push(`Pinned backend dependency ${value.id} has no identity mapping.`);
-        else {
-          ids[value.id] = target;
-          reused.add(value.id);
-        }
-      }
-      // Queries retain the exact pinned freshness policy graph during whole-boundary reuse.
-      // A fresh binding identity would otherwise conflict with the reused query definition.
-      for (const query of fragment.architecture.backend.queries ?? []) {
-        if (query.freshness.kind !== "bounded-staleness") continue;
-        const freshness = query.freshness;
-        const binding = fragment.architecture.bindings?.find((b) => b.id === freshness.binding);
-        for (const local of [
-          freshness.binding,
-          ...(binding ? [binding.provided, binding.required, binding.relationship.id] : []),
-        ]) {
-          const target = source.identities[local];
-          if (!target)
-            result.errors.push(
-              `Pinned query freshness dependency ${local} has no identity mapping.`,
-            );
-          else {
-            ids[local] = target;
-            reused.add(local);
-          }
-        }
-      }
-      for (const local of [
-        ...backendEffectContextReferences(fragment.architecture),
-        ...backendCapabilityContextReferences(fragment.architecture),
-      ]) {
+      // Every role and current semantic declaration matched this exact pinned expansion.
+      // Preserve the whole graph, including historical/session/provider interfaces, rather
+      // than duplicating interfaces that have no backend operation or access binding.
+      for (const local of fragmentIds(fragment)) {
         const target = source.identities[local];
         if (!target)
-          result.errors.push(`Pinned effect/hook dependency ${local} has no identity mapping.`);
+          result.errors.push(`Pinned backend graph dependency ${local} has no identity mapping.`);
         else {
           ids[local] = target;
           reused.add(local);
-        }
-      }
-      for (const o of fragment.architecture.backend.operations ?? [])
-        for (const i of fragment.architecture.interfaces ?? []) {
-          if (
-            i.owner.id !== o.target.owner.id ||
-            i.owner.kind !== o.target.owner.kind ||
-            contractKey(i.contract) !== contractKey(o.target.contract)
-          )
-            continue;
-          const target = source.identities[i.id];
-          if (!target)
-            result.errors.push(`Pinned operation interface ${i.id} has no identity mapping.`);
-          else {
-            ids[i.id] = target;
-            reused.add(i.id);
-          }
-        }
-      for (const access of fragment.architecture.backend.accessBindings ?? []) {
-        const target = access.target;
-        const binding = fragment.architecture.bindings?.find(
-          (b) => b.id === access.relationshipBinding,
-        );
-        const interfaces =
-          target.kind === "operation"
-            ? (fragment.architecture.interfaces
-                ?.filter(
-                  (i) =>
-                    i.owner.id === target.owner.id &&
-                    i.owner.kind === target.owner.kind &&
-                    contractKey(i.contract) === contractKey(target.contract),
-                )
-                .map((i) => i.id) ?? [])
-            : [];
-        for (const local of [
-          ...interfaces,
-          ...(binding
-            ? [binding.id, binding.provided, binding.required, binding.relationship.id]
-            : []),
-        ]) {
-          const target = source.identities[local];
-          if (!target)
-            result.errors.push(`Pinned access dependency ${local} has no identity mapping.`);
-          else {
-            ids[local] = target;
-            reused.add(local);
-          }
         }
       }
     }
@@ -1499,7 +1416,7 @@ export function previewArchitecturePattern(
     if (selected) {
       if (reused.has(c.id) && selected !== ids[c.id])
         result.errors.push(
-          "A reused exact query freshness binding must retain its pinned relationship; create a separate boundary to select another one.",
+          "A reused exact backend boundary must retain its pinned relationship; create a separate boundary to select another one.",
         );
       else if (!candidates.some((item) => item.id === selected))
         result.errors.push(

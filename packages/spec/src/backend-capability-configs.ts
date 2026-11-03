@@ -200,6 +200,9 @@ function mapConfig(
         owner: base.owner,
         entity: visit(c.entity, "entities"),
         parent: visit(c.parent, "entities"),
+        ...(c.associationEntity
+          ? { associationEntity: visit(c.associationEntity, "entities") }
+          : {}),
         store: provider(c.store),
         parentAccess: access(c.parentAccess),
         lifecycle: visit(c.lifecycle, "lifecycles"),
@@ -501,8 +504,11 @@ export function validateBackendCapabilityConfigs(design: DesignDocument): Findin
               "Delivery settings must agree with the referenced effect's attempts, timeout and duplicate policy.",
             );
           if (
-            (c.backoff.kind === "fixed" ? c.backoff.seconds : c.backoff.initialSeconds) !==
-            e.delivery.backoffSeconds
+            (c.backoff.kind === "fixed"
+              ? c.backoff.seconds
+              : c.backoff.kind === "sequence"
+                ? c.backoff.seconds[0]
+                : c.backoff.initialSeconds) !== e.delivery.backoffSeconds
           )
             add("Initial backoff must agree with the referenced effect.");
           if (e.execution === "external" && !c.provider && e.target.kind !== "hook")
@@ -520,6 +526,12 @@ export function validateBackendCapabilityConfigs(design: DesignDocument): Findin
             c.backoff.maximumSeconds >= c.deadlineSeconds)
         )
           add("Exponential backoff bounds must be ordered and fit the deadline.");
+        if (
+          c.backoff.kind === "sequence" &&
+          (c.backoff.seconds.length !== c.attempts ||
+            c.backoff.seconds.some((v) => v >= c.deadlineSeconds))
+        )
+          add("Explicit retry delays require one bounded delay per attempt within deadline.");
         if (c.backoff.kind === "fixed" && c.backoff.seconds >= c.deadlineSeconds)
           add("Backoff must fit the deadline.");
         if (c.provider) {
@@ -568,7 +580,30 @@ export function validateBackendCapabilityConfigs(design: DesignDocument): Findin
           e &&
           parent &&
           (same(c.entity, c.parent) ||
-            !e.relations.some((r) => same(r.target, c.parent) && r.scope === "same-scope"))
+            (!e.relations.some((r) => same(r.target, c.parent) && r.scope === "same-scope") &&
+              !(
+                c.associationEntity &&
+                (() => {
+                  const link = entity(c.associationEntity);
+                  return (
+                    link?.relations.some(
+                      (r) => same(r.target, c.entity) && r.scope === "same-scope",
+                    ) &&
+                    link.relations.some(
+                      (r) => same(r.target, c.parent) && r.scope === "same-scope",
+                    ) &&
+                    link.uniqueKeys.some((k) =>
+                      k.fields.some((f) =>
+                        link.relations.some(
+                          (r) =>
+                            same(r.target, c.entity) &&
+                            r.fields.some((p) => p.source === f && p.target === "id"),
+                        ),
+                      ),
+                    )
+                  );
+                })()
+              )))
         )
           add("File metadata must reference its parent through an explicit same-scope relation.");
         unique(c.acceptedTypes, "Accepted MIME types");
@@ -746,7 +781,15 @@ export function validateBackendCapabilityConfigs(design: DesignDocument): Findin
         if (d && !d.owners.some((o) => contractOwnerElement(design, o) === owner))
           add("Search projection must be owned by the configured application.");
         unique(c.fields, "Search source fields");
-        for (const f of c.fields) field({ entity: c.source, field: f }, "text");
+        for (const f of c.fields) {
+          const sourceEntity = entity(c.source),
+            v = sourceEntity && backendEntityFields(design, sourceEntity).find((v) => v.id === f);
+          if (!v) add("Search source field does not exist.", [], "UNKNOWN_REFERENCE");
+          if (v && (v.type !== "text" || !v.required || (v.nullable && !c.nullableText)))
+            add(
+              "Search text needs a required text field and explicit exclusion of nullable tombstones.",
+            );
+        }
         policy(c.source, c.access, ["search"], c.fields);
         if (
           q &&
@@ -763,7 +806,20 @@ export function validateBackendCapabilityConfigs(design: DesignDocument): Findin
         if (e && d?.id === e.dataset && c.freshness.kind !== "synchronous")
           add("An asynchronous search projection cannot overwrite its authoritative dataset.");
         if (c.freshness.kind === "bounded-staleness") config(c.freshness.delivery, "delivery");
-        ownedOperation(c.rebuild.operation);
+        const rebuild = operation(c.rebuild.operation);
+        if (
+          rebuild &&
+          contractOwnerElement(design, rebuild.target.owner) !== owner &&
+          !(
+            rebuild.protocol?.execution === "authorized-worker" &&
+            d?.writers.some(
+              (w) =>
+                contractOwnerElement(design, w) ===
+                contractOwnerElement(design, rebuild.target.owner),
+            )
+          )
+        )
+          add("Search rebuild requires its authority owner or explicitly granted worker writer.");
         break;
       }
       case "calendar": {

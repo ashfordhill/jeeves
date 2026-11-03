@@ -462,6 +462,7 @@ export function validateBackendPolicyTransition(
     ]),
     ...(model?.accessBindings ?? []).map((b) => b.policy),
     ...(model?.operations ?? []).flatMap((o) => [
+      ...(o.protocol?.records.map((r) => ({ kind: "policy" as const, reference: r.policy })) ?? []),
       o.access.policy,
       ...(o.access.participants ?? []).map((p) => p.policy),
     ]),

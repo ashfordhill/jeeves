@@ -33,6 +33,7 @@ export type BackendRecovery = z.output<typeof backendRecoverySchema>;
 export const backendEffectSchema = z.strictObject({
   ...named,
   source: exact,
+  when: z.array(idSchema).min(1).max(20).optional(),
   target: z.discriminatedUnion("kind", [
     z.strictObject({ kind: z.literal("event"), contract: exact, consumer: exact.optional() }),
     z.strictObject({ kind: z.literal("operation"), operation: exact }),

@@ -46,6 +46,7 @@ export const contractTransportSchema = z.strictObject({
       z.strictObject({
         /** Absent means operation.output; an outcome uses its payload or the shared output. */
         outcome: idSchema.optional(),
+        outcomeAliases: z.array(idSchema).max(10).optional(),
         status: z.int().min(200).max(599),
         headers: z.array(z.strictObject({ field: idSchema, name: wireName })).max(40),
         body: contractTransportBodySchema.optional(),
@@ -156,6 +157,20 @@ export function inspectContractTransport(shape: ContractShape): {
       if (outcomes.has(response.outcome))
         issue("Each output/outcome has one declared response mapping.", at);
       outcomes.add(response.outcome);
+      for (const alias of response.outcomeAliases ?? []) {
+        if (outcomes.has(alias)) issue("Outcome alias has more than one response mapping.", at);
+        outcomes.add(alias);
+        const alternate = operation.outcomes?.find((o) => o.id === alias);
+        const primary = operation.outcomes?.find((o) => o.id === response.outcome);
+        if (
+          !alternate ||
+          alternate.status !== response.status ||
+          alternate.noResponse ||
+          alternate.kind !== primary?.kind ||
+          JSON.stringify(alternate.payload) !== JSON.stringify(primary?.payload)
+        )
+          issue("Outcome aliases require the same exact kind, payload and status.", at);
+      }
       const outcome = operation.outcomes?.find((o) => o.id === response.outcome);
       if (response.outcome && !outcome) issue(`Outcome ${response.outcome} does not exist.`, at);
       if (outcome?.status !== undefined && outcome.status !== response.status)
@@ -170,7 +185,30 @@ export function inspectContractTransport(shape: ContractShape): {
       projection(outcome?.payload ?? operation.output, response.headers, response.body, at);
     }
     for (const outcome of operation.outcomes ?? [])
-      if (!outcomes.has(outcome.id))
+      if (outcome.internal) {
+        if (
+          outcome.status !== undefined ||
+          outcome.noResponse ||
+          outcome.payload?.length ||
+          outcome.kind !== "Success" ||
+          outcome.state !== "Committed"
+        )
+          issue(
+            "Internal checkpoints describe payload-free committed boundaries without HTTP status.",
+            ["responses"],
+          );
+      } else if (
+        outcome.noResponse &&
+        (outcome.kind !== "Failure" ||
+          outcome.state !== "Unknown" ||
+          outcome.status !== undefined ||
+          outcome.payload?.length ||
+          outcome.retry !== "Reconcile first")
+      )
+        issue("No-response outcomes require a payload-free Unknown failure with reconciliation.", [
+          "responses",
+        ]);
+      else if (!outcome.noResponse && !outcomes.has(outcome.id))
         issue(`Outcome ${outcome.id} needs a response mapping.`, ["responses"]);
   }
   return { ok: issues.length === 0, issues };

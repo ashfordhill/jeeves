@@ -192,3 +192,16 @@ Calendar/referenced-setting protection and explicit successors retain the shared
 all setting edits share the component's atomic Save/Cancel and undo history. The combined browser
 gate saves/reloads all thirteen kinds and preserves old versions while retargeting an exact
 commerce successor graph. This supplies authoring, not P69 support matching or runtime evidence.
+
+## P71b composition refinements
+
+The complete Discourse design uses explicit retry sequences (three delays, 1/5/30 seconds), optional
+event-time delay for 24-hour cleanup, 30-second fenced leases and separate provider reconciliation.
+An exact file association entity can bridge private metadata to its parent; both same-scope relations
+and the unique file association are checked. This avoids inventing a mutable parent ID on unattached
+metadata. Nullable source text requires explicit exclusion before search indexing/matching.
+
+Dataset authority remains the API. Exact worker writers/readers can execute a bounded protocol on
+that same store; this is not a second owner or a cross-store transaction. The pure compiler preserves
+the executing host, original authority, policies, SQL/provider interfaces, queue payloads and source
+map. These options add no worker, provider, search or file runtime availability.

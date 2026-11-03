@@ -1,6 +1,7 @@
 /** Finite command intent. These schemas neither evaluate expressions nor execute commands. */
 import { z } from "zod";
 import { backendPolicySelectionSchema } from "./backend-policy-model.ts";
+import { backendProtocolPlanSchema } from "./backend-protocol-model.ts";
 import { contractTypeReferenceSchema } from "./contract-shapes.ts";
 import { idSchema } from "./ids.ts";
 
@@ -18,7 +19,15 @@ export const backendValueSourceSchema = z.discriminatedUnion("kind", [
   }),
   z.strictObject({
     kind: z.literal("server"),
-    factory: z.enum(["uuid", "clock", "initial-version", "next-version"]),
+    factory: z.enum([
+      "uuid",
+      "clock",
+      "initial-version",
+      "next-version",
+      "insert-or-next-version",
+      "upsert-from-one-version",
+      "delivery-identity",
+    ]),
   }),
   z.strictObject({
     kind: z.literal("literal"),
@@ -121,6 +130,7 @@ const transaction = z.strictObject({
 });
 export const backendOperationSchema = z.strictObject({
   ...named,
+  protocol: backendProtocolPlanSchema.optional(),
   target: z.strictObject({
     contract: exact,
     operation: idSchema,
@@ -171,6 +181,13 @@ export const backendOperationSchema = z.strictObject({
   transaction,
   idempotency: z.discriminatedUnion("kind", [
     z.strictObject({ kind: z.literal("read-only") }),
+    z.strictObject({
+      kind: z.literal("source-message"),
+      message: path,
+      identity: z.literal("source-scope-message"),
+      hash: z.literal("canonical-normalized-source-content-sha256"),
+      replay: z.literal("current-policy-before-result"),
+    }),
     z.strictObject({
       kind: z.literal("command-key"),
       key: path,

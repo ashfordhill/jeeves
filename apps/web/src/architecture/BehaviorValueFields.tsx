@@ -204,7 +204,15 @@ export function ValueSourceFields({
         <NativeSelect
           label={`${label} server factory`}
           value={v.factory}
-          data={["uuid", "clock", "initial-version", "next-version"]}
+          data={[
+            "uuid",
+            "clock",
+            "initial-version",
+            "next-version",
+            "insert-or-next-version",
+            "upsert-from-one-version",
+            "delivery-identity",
+          ]}
           onChange={(e) => onChange({ ...v, factory: e.currentTarget.value as typeof v.factory })}
         />
       ) : null}

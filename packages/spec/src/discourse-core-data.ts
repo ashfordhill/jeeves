@@ -2,7 +2,7 @@
 import type { Architecture } from "./architecture.ts";
 import type { ContractField, ContractValue } from "./architecture-contracts.ts";
 import { type BackendEntity, type BackendModel, backendModelSchema } from "./backend-model.ts";
-export const dcRef = (id: string) => ({ id, version: "v1" });
+export const dcRef = (id: string, version = "v1") => ({ id, version });
 const uuid: ContractValue = { type: "uuid" };
 const text = (maxLength: number): ContractValue => ({ type: "text", minLength: 1, maxLength });
 const enumeration = (...enumValues: string[]): ContractValue => ({ type: "text", enumValues });

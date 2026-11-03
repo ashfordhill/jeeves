@@ -8147,3 +8147,114 @@ Corrections, limits and next step:
 **P71a is complete with no blocker; parent P71 is incomplete. P71b is next unstarted.**
 The scoped local commit, exact checks, prerequisite corrections and limits are recorded in
 `.jeeves-work/p71a/completion.json`.
+
+## P71b — Complete Discourse behavior, H seams and design trace (2026-11-03)
+
+Implemented **P71b only** on primary `main`, based on
+`d5e06c1878398a07b27899b5eeca0cd99f9c184d`. Read AGENTS, PLAN §15/applicable architecture
+contracts, latest P71a handoff, C4/studio guidance, backend shared contract, P71 and its exact
+child split, frozen D protocol/contracts/fixtures/hooks and P60a source/adaptation map. Verified
+P71a's committed interfaces and evidence. The coordinator's batch checkpoint was not edited.
+
+Built:
+
+- [Complete registered Discourse design](../packages/spec/src/discourse-core-example.ts), preserving
+  the P71a factory as an explicit partial snapshot, every original v1 contract/policy/data identity,
+  Mattermost/default behavior and saved projects. Current v2 API declarations keep all 35 frozen
+  HTTP wires while distinguishing unchanged, internal checkpoint, no-response unknown/reconcile,
+  equivalent HTTP503 hook failures and the existing-session owner's four delegated operations.
+  The current source pin is Discourse v3.5.0, correcting P71a's historical label through a new decision.
+- [Exact finite protocol plans](../packages/spec/src/discourse-core-complete.ts) for 31 non-session
+  public operations and ten internal worker/operator operations. Same backend model; no second
+  workflow graph or executable expression/configuration language. Typed inputs, selected records,
+  policies, trusted/current writers, query aliases, stable locking/rechecks, expected versions,
+  lifecycle dispatch, outputs, provider boundary and bounded durable progress are inspectable.
+  Topic/initial-post atomicity, reply topic CAS, post-only edits/previous-version history, immutable
+  adjudication history, safe administrative audit, same-version terminal no-op and duplicate active
+  flag/digest suppression retain explicit transaction/effect boundaries.
+- [Eight exact pure H seams](../packages/spec/src/discourse-core-hooks-contracts.ts) preserve all
+  16 frozen input/result schemas, safe failure shape, two-second budget, cancellation, no repository/
+  service authority, readiness before mutation, owner-assembled snapshots and acceptance identities.
+  H18 uses the existing session subject fence and typed durable plan/checkpoint/continuation.
+  Frozen H17/H18 inventory/result bounds remain 100; oversized inventory rejects before mutation,
+  never truncates or silently asserts unlimited-account privacy support. Holds remain current per batch.
+- [Causal effects and mechanism settings](../packages/spec/src/discourse-core-mechanisms.ts):
+  distinct content/projection/cleanup/digest/privacy/per-recipient delivery events use actual source
+  identities, success/checkpoint-only gates, persisted recipients and separate inbox/email flags.
+  One SQL authority with explicit worker grants, 30-second leases, bounded batches, 1/5/30 retry
+  delays, uncertain email identity/reconciliation, current-policy search/redaction/rebuild and exact
+  24-hour orphan selection. Bytes/email remain outside SQL; no broker, duplicate identity store,
+  SMTP exactly-once assertion or real provider execution. File parent association and nullable search
+  text have finite typed settings and validators. Existing exact definitions remain immutable.
+- [Five fixture journeys, focused views and deployment intent](../packages/spec/src/discourse-core-journeys.ts),
+  plus [20-row / 66-observation trace](../packages/spec/src/discourse-core-trace.ts) with exact source/
+  adaptation, operation, data, policy, hook, effect, fixture-step and expected-outcome references.
+  One/two-API companions and frozen workload numbers are unmeasured objectives.
+- [Focused protocol editor](../apps/web/src/architecture/BackendProtocolEditor.tsx) and committed
+  effect-outcome control use existing Save/Cancel, immutable successor, history and conflict flows.
+  Extraction/remapping, dependency closure, chat schema, handoff and immutable compiler intent/source
+  maps retain every exact reference. The current model has **25 entities, 42 aggregates, 15 queries,
+  44 policies, 30 access bindings, seven lifecycles, 41 operations, 23 effects, 23 settings and eight hooks**.
+- Scoped prerequisite corrections: existing protocol value bounds infer their named constraints;
+  worker execution can use the API authority only with exact store/dataset grants; the reusable
+  fragment role bound is finite at 32 (complete fragment needs 21; previous 20-role entries remain
+  valid); exact whole-boundary reuse now pins its entire already-validated interface/relationship graph
+  (including historical/session interfaces), rather than duplicating unbound interfaces. The
+  aggregate cap is 100 for two preserved-version copies (84; 101 rejects). Only design-operation
+  POST bodies increase to 4MiB for the full preserved-version model
+  and one insertion. Other routes keep their limits. Offline tests reject a 33-role/101-aggregate model and
+  oversized HTTP413 before mutation. No dependencies or template/capability support registry changed.
+
+Validation (Node **24.21.0**):
+
+- `pnpm lint` passed with **2351 warnings / 78 infos**, versus P71a's 2077 / 76; no zero-warning
+  claim. All workspace/script types passed via `pnpm work run typecheck`, record
+  `.jeeves-work/runs/2026-11-03T22-08-22-990Z-typecheck-8e6a3eb9.json`.
+- **19 focused offline files / 269 tests** passed via `pnpm work run unit`, record
+  `.jeeves-work/runs/2026-11-03T22-12-00-763Z-unit-3a3123ea.json`. Semantic negatives, exact frozen
+  H/wire/trace equality, immutability, remap/export/chat, canonical compiler/source maps, unsupported
+  runtime gates, preserved old generation/registry/benchmark fixtures and real offline API body
+  bounds. Both work records report `sourceChanged: false`.
+- A broadened `architecture-patterns.test.ts` run had four passing cases and one historical
+  review-completion assertion failure. The base and current pattern factories produce exactly
+  equal designs and the same seven unreviewed-contract/behavior findings; evidence is in
+  `.jeeves-work/p71b/historical-review-baseline.json`. That deferred assertion is unchanged; no
+  full-suite-green claim. Parallel-load serialization/PGlite timeouts are retained in earlier logs.
+- Production `pnpm --filter @jeeves/web build` passed; the existing large-chunk warning remains.
+  Direct factory validation has only **36 NEEDS_TEMPLATE** findings, no structural/configuration
+  errors; foundation/full runtime readiness remains false.
+- Actual mouse creation matched the final factory after serialization. General Cancel, protocol
+  Save/Cancel, Undo/Redo/reload, trusted writers, query aliases, subject fencing, protected hook
+  successor (current consumer stays v1), a real stale409 retaining the draft, dark390 dialogs,
+  all three focused views and both deployment alternatives were inspected. All **16 scoped axe
+  analyses had zero violations**. Mouse JSON preserves the entire exact final backend with null
+  generation evidence; SVG contains the loaded 14-node C3 view. Full library extraction/publish,
+  independent insertion and exact pinned reuse retain backend/storage and interface/relationship
+  identities, with atomic history and reload; only the own local version is retired afterwards.
+- Direct mouse checks, library composition, cleanup and
+  frozen-path/link audits are recorded in `.jeeves-work/p71b/completion.json` and linked ignored
+  evidence. Browser harness retries and transient dev-watcher 502/503 responses remain in their
+  original logs. One real library Redo hit a DB connection timeout during large-model review;
+  its stable-view mouse retry and result are recorded without hiding the failure. The export harness waits for actual graph layout before capturing geometry;
+  the large handoff test has a bounded 30-second serialization budget (hook budgets remain two seconds).
+  Existing review fingerprinting of the double composition takes about 15 seconds in the isolated
+  Node probe, so mouse waits allow that reopen path; no editor responsiveness target is claimed.
+
+Preservation: deleted exactly the four recorded own disposable inspection projects; the exact
+13 original project IDs and raw design/layout response hashes are preserved. Existing previews
+on 4300 and 5180 and API health return200. The own local
+`p71b-disposable-discourse-bb544c7d@1.0.0` library version is retired and retained as architecture-only
+history. The scoped blob/link audit preserves 1517 other tracked files, including all48 frozen
+benchmark files and46 legacy fixtures, templates/runtime/artifacts, dependency locks and the
+original handoff prefix. `git diff --check` passes.
+
+Availability and scope: **parent P71 is complete as design intent only**. No application runtime,
+new template/capability implementation, hook scaffold, migration, generated output/writer change,
+source port, external publication, provider call, secret, benchmark execution or measured capacity.
+All three applications remain **absent/not run, zero observed implementation points**. The standing
+focused-check substitution applies; full `pnpm check` and deferred UI unit/E2E suites were neither
+run nor maintained. No branch/worktree/delegation/push. Keep historical entries unchanged.
+
+**P71b and parent P71 are complete with no blocker. P72a is the next unstarted assignment.**
+Exact commit, checks, browser/preservation evidence and limits are in
+`.jeeves-work/p71b/completion.json`; stop here for the coordinator's next assignment.
