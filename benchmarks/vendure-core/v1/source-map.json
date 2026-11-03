@@ -1,0 +1,971 @@
+{
+  "schemaVersion": 1,
+  "profile": "vendure-core",
+  "version": "v1",
+  "assignment": "P60b",
+  "status": "inspected-reference-only",
+  "ledgerIntegrity": {
+    "algorithm": "canonical-json-sha256-v1",
+    "manifest": "126b31b7f5639dfa6084cdcb7bb21f40f49643bb7c0f8a2f42890d136aee6bdd",
+    "requirements": "46cec50d621ee2f1cb22a0ec73d56d8d9da1ead7fa7133b5bcc337f168e80b98"
+  },
+  "reference": {
+    "catalogId": "vendure",
+    "catalogPath": "docs/reference/architecture-sources.json",
+    "repository": "vendurehq/vendure",
+    "releaseTag": "v3.3.0",
+    "tagObject": "2f32df1378f62cc856b8a3474b5a98df516b0c54",
+    "taggedAt": "2025-05-12T10:58:13Z",
+    "releaseUrl": "https://github.com/vendurehq/vendure/releases/tag/v3.3.0",
+    "tagObjectUrl": "https://api.github.com/repos/vendurehq/vendure/git/tags/2f32df1378f62cc856b8a3474b5a98df516b0c54",
+    "commit": "a4c56359ec831b0c54dd01eab14fb75455c43ab7",
+    "committedAt": "2025-05-12T10:57:57Z",
+    "observedAt": "2026-11-02",
+    "selectionReason": "Released stable 3.3.0 source snapshot, not a latest-release recommendation, dependency selection or current security assessment.",
+    "cacheDirectory": ".jeeves-work/references/vendure/a4c56359ec831b0c54dd01eab14fb75455c43ab7",
+    "licenseEvidence": ["vd-license", "vd-gpl", "vd-plugin-exception"],
+    "licenseSummary": "GPL-3.0-or-later Community Edition notice in LICENSE.md and core package metadata; GPL v3 text and additional plugin permission cached. Commercial licensing is an alternative, not adopted. Selected paths are open-source core for architectural inspection only; no upstream runtime code adopted.",
+    "excluded": [
+      "Commercial agreement terms, separately licensed/hosted features, external plugins, bundled third-party code/assets and trademarks are outside this pack. No conclusion about their licensing or availability."
+    ],
+    "releasedOn": "2025-05-12",
+    "publishedAt": "2025-05-12T11:53:38Z"
+  },
+  "reviewPath": "docs/reference/backend-benchmarks.md#vendure-core-p60b",
+  "reuseMode": "architecture-patterns-only-no-upstream-code-adopted",
+  "sources": [
+    {
+      "id": "vd-license",
+      "path": "LICENSE.md",
+      "sha256": "b78a9d11922dff7b00efee72d40381bc3765e220fd31c575e2d39ffd42883013",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/LICENSE.md",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 1,
+          "end": 42
+        }
+      ],
+      "responsibility": "Community GPL-3.0-or-later notice, commercial alternative and plugin exception locator."
+    },
+    {
+      "id": "vd-gpl",
+      "path": "license/gpl-3.0.txt",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/license/gpl-3.0.txt",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 1,
+          "end": 24
+        }
+      ],
+      "responsibility": "GPL version 3 text; inspected title/preamble only, complete license cached."
+    },
+    {
+      "id": "vd-plugin-exception",
+      "path": "license/plugin-exception.txt",
+      "sha256": "8f45d1b72e087c70beca276a88dc462884debbdbca22497c60eadb9db2de2bad",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/license/plugin-exception.txt",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 1,
+          "end": 20
+        }
+      ],
+      "responsibility": "Additional permission for separately distributed plugins; modifications to core remain covered."
+    },
+    {
+      "id": "vd-version",
+      "path": "packages/core/package.json",
+      "sha256": "d46784ad9b2d5f543c87c9c91c05957aa61f7528c976b913388a2e66862b4575",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/package.json",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 1,
+          "end": 20
+        }
+      ],
+      "responsibility": "Core package version 3.3.0, repository and GPL-3.0-or-later metadata."
+    },
+    {
+      "id": "vd-auth",
+      "path": "packages/core/src/api/middleware/auth-guard.ts",
+      "sha256": "bc1fee3267ab3f99e1deae40a1864862ad8ecc52075c7bc230acfdc61871bcf6",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/api/middleware/auth-guard.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 48,
+          "end": 169
+        }
+      ],
+      "responsibility": "Permission metadata, session/context establishment, channel association and anonymous owner sessions."
+    },
+    {
+      "id": "vd-shop-order",
+      "path": "packages/core/src/api/resolvers/shop/shop-order.resolver.ts",
+      "sha256": "540f4423313b9e236f862586e925522c72443f8ae94202f1bbe6f4348dfce548",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/api/resolvers/shop/shop-order.resolver.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 74,
+          "end": 145
+        },
+        {
+          "start": 315,
+          "end": 381
+        },
+        {
+          "start": 443,
+          "end": 470
+        }
+      ],
+      "responsibility": "GraphQL owner reads and transactional active-order/cart/payment mutations."
+    },
+    {
+      "id": "vd-catalog",
+      "path": "packages/core/src/api/resolvers/shop/shop-products.resolver.ts",
+      "sha256": "0be0494287be2f0a005388f9a155825835f751df8cdd84ab115cb181e8003aae",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/api/resolvers/shop/shop-products.resolver.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 38,
+          "end": 76
+        }
+      ],
+      "responsibility": "GraphQL published product list/detail and private facet filtering."
+    },
+    {
+      "id": "vd-order",
+      "path": "packages/core/src/service/services/order.service.ts",
+      "sha256": "5b1d46a2565510ede01adc0aa40783acd12cc2fdce72782fdde0bc7acd945b9e",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/service/services/order.service.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 425,
+          "end": 473
+        },
+        {
+          "start": 574,
+          "end": 684
+        },
+        {
+          "start": 1183,
+          "end": 1204
+        },
+        {
+          "start": 1319,
+          "end": 1376
+        },
+        {
+          "start": 1465,
+          "end": 1549
+        },
+        {
+          "start": 1925,
+          "end": 2054
+        }
+      ],
+      "responsibility": "Order creation, cart changes, lifecycle, payment coordination, fulfillment quantity checks and price recalculation."
+    },
+    {
+      "id": "vd-order-process",
+      "path": "packages/core/src/config/order/default-order-process.ts",
+      "sha256": "2de47767c358523a6620f9cfaea96c3e2f946a04dad62e8d92ea9862fd50d41f",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/config/order/default-order-process.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 173,
+          "end": 235
+        },
+        {
+          "start": 298,
+          "end": 453
+        }
+      ],
+      "responsibility": "Default order transitions, configurable guards, order placement, allocation and transition history."
+    },
+    {
+      "id": "vd-allocation",
+      "path": "packages/core/src/config/order/default-stock-allocation-strategy.ts",
+      "sha256": "f905be97d657c93d57905d6245657465aba6615ea868ac4b0a0dc16d01f97493",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/config/order/default-stock-allocation-strategy.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 1,
+          "end": 26
+        }
+      ],
+      "responsibility": "Default stock allocation occurs on payment authorization/settlement transition."
+    },
+    {
+      "id": "vd-stock-movement",
+      "path": "packages/core/src/service/services/stock-movement.service.ts",
+      "sha256": "9bfb6b5981da85b33fea480746c76043079532cd938cc00de13ec1892230f438",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/service/services/stock-movement.service.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 84,
+          "end": 192
+        },
+        {
+          "start": 317,
+          "end": 357
+        }
+      ],
+      "responsibility": "Stock adjustments, allocation records and release of allocated quantities."
+    },
+    {
+      "id": "vd-stock-level",
+      "path": "packages/core/src/service/services/stock-level.service.ts",
+      "sha256": "b591369f4527efdfa4824c663a171c28466a5c76cb4bf9c9c5c54c707d488a99",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/service/services/stock-level.service.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 56,
+          "end": 135
+        }
+      ],
+      "responsibility": "Channel stock queries, strategy-based availability and stock read/update operations."
+    },
+    {
+      "id": "vd-payment",
+      "path": "packages/core/src/service/services/payment.service.ts",
+      "sha256": "7a8cb82ee2541bb6db4649e4bf986118b377a14e62a4d8c74c7076e186c70504",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/service/services/payment.service.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 104,
+          "end": 209
+        },
+        {
+          "start": 275,
+          "end": 358
+        }
+      ],
+      "responsibility": "Provider handler invocation before payment persistence, settlement/cancellation and refund amount constraints."
+    },
+    {
+      "id": "vd-payment-process",
+      "path": "packages/core/src/config/payment/default-payment-process.ts",
+      "sha256": "45631e691d11a7dddb5ae26bbbd78ca48792fc2817643f791747fe7c2860a188",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/config/payment/default-payment-process.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 26,
+          "end": 91
+        }
+      ],
+      "responsibility": "Default payment state graph, transition history and payment-total-driven order transitions."
+    },
+    {
+      "id": "vd-payment-handler",
+      "path": "packages/core/src/config/payment/payment-method-handler.ts",
+      "sha256": "59db980b41005dccbeec01a53e75934964ce84455cadb244a92fc6f446611d12",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/config/payment/payment-method-handler.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 30,
+          "end": 89
+        },
+        {
+          "start": 208,
+          "end": 245
+        },
+        {
+          "start": 354,
+          "end": 395
+        }
+      ],
+      "responsibility": "Integer amount/result/metadata interface and configurable provider callback delegation."
+    },
+    {
+      "id": "vd-fulfillment",
+      "path": "packages/core/src/service/services/fulfillment.service.ts",
+      "sha256": "753a4e26bb93c3eecb77fccffb920661d676fb71250b7dda2464f17788b094d9",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/service/services/fulfillment.service.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 50,
+          "end": 146
+        }
+      ],
+      "responsibility": "Fulfillment handler invocation, line persistence and event publication."
+    },
+    {
+      "id": "vd-calculator",
+      "path": "packages/core/src/service/helpers/order-calculator/order-calculator.ts",
+      "sha256": "27e4896af756e8a5c44288f1253da043755288c30ddd345b37600d58f89778b6",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/service/helpers/order-calculator/order-calculator.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 53,
+          "end": 140
+        }
+      ],
+      "responsibility": "Tax-zone selection, promotion reset, tax recalculation, shipping and total calculation sequence."
+    },
+    {
+      "id": "vd-round",
+      "path": "packages/core/src/common/round-money.ts",
+      "sha256": "09e702b7db243c613be51cb456e4a94679f228e81203fe2d654a59215cca71d5",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/common/round-money.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 1,
+          "end": 18
+        }
+      ],
+      "responsibility": "Delegates monetary rounding to the configured MoneyStrategy."
+    },
+    {
+      "id": "vd-sql-job",
+      "path": "packages/core/src/plugin/default-job-queue-plugin/sql-job-queue-strategy.ts",
+      "sha256": "d42f12f29ca12ff84ffd546785521d7d835bd668f7a2a47d8a418fe79a827f84",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/plugin/default-job-queue-plugin/sql-job-queue-strategy.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 39,
+          "end": 49
+        },
+        {
+          "start": 82,
+          "end": 174
+        }
+      ],
+      "responsibility": "Optional transactional job insertion; pending/retrying row lock, running transition, retry backoff and ID-based updates."
+    },
+    {
+      "id": "vd-polling",
+      "path": "packages/core/src/job-queue/polling-job-queue-strategy.ts",
+      "sha256": "fab1c820e8cda5392d1452980183e7b4e182ec49c95f0878da186312b525c8f7",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/job-queue/polling-job-queue-strategy.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 92,
+          "end": 175
+        },
+        {
+          "start": 178,
+          "end": 229
+        }
+      ],
+      "responsibility": "Polling execution, failure/completion persistence and cooperative graceful-stop deferral."
+    },
+    {
+      "id": "vd-event",
+      "path": "packages/core/src/event-bus/event-bus.ts",
+      "sha256": "28def03fab957264962591a81e24f659f61184b9b11acc2d35f78a08dc0a36cf",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/event-bus/event-bus.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 100,
+          "end": 154
+        },
+        {
+          "start": 311,
+          "end": 348
+        }
+      ],
+      "responsibility": "In-memory event stream and transaction-aware subscriber delivery after commit."
+    },
+    {
+      "id": "vd-search-index",
+      "path": "packages/core/src/plugin/default-search-plugin/indexer/search-index.service.ts",
+      "sha256": "63880663799ebbc7d0a49e6798cfe859aa0c87cc2c5fa37b3c69c7e776232a9e",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/plugin/default-search-plugin/indexer/search-index.service.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 30,
+          "end": 102
+        },
+        {
+          "start": 153,
+          "end": 184
+        }
+      ],
+      "responsibility": "Queued projection update/reindex with transaction context, progress and error propagation."
+    },
+    {
+      "id": "vd-search",
+      "path": "packages/core/src/plugin/default-search-plugin/search-strategy/postgres-search-strategy.ts",
+      "sha256": "81992813cdd374990cfe43a9a34c64b84dae4342358688c7957967fcb448c1df",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/plugin/default-search-plugin/search-strategy/postgres-search-strategy.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 82,
+          "end": 146
+        },
+        {
+          "start": 254,
+          "end": 261
+        }
+      ],
+      "responsibility": "Offset search with stable variant-ID tie-break, optional enabled filter and channel predicate."
+    },
+    {
+      "id": "vd-mail",
+      "path": "packages/email-plugin/src/plugin.ts",
+      "sha256": "b4763b456c9f85159ec0f6fd4950f18faa0bcfa23bacb741c6412a04db0379e9",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/email-plugin/src/plugin.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 344,
+          "end": 362
+        },
+        {
+          "start": 397,
+          "end": 434
+        }
+      ],
+      "responsibility": "Event-driven email materialization, send-email queue and explicit five-retry publication."
+    },
+    {
+      "id": "vd-admin-order",
+      "path": "packages/core/src/api/resolvers/admin/order.resolver.ts",
+      "sha256": "bfb603aed5e04cd19d0f4ea4696ea39deb1cdada5cf68e55237df6f7cd535c69",
+      "url": "https://github.com/vendurehq/vendure/blob/a4c56359ec831b0c54dd01eab14fb75455c43ab7/packages/core/src/api/resolvers/admin/order.resolver.ts",
+      "licenseBoundary": "open-source-core",
+      "inspectedRanges": [
+        {
+          "start": 54,
+          "end": 123
+        }
+      ],
+      "responsibility": "GraphQL staff ReadOrder/UpdateOrder permissions and transactional payment/fulfillment/cancellation/refund calls."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "JV-protocol",
+      "kind": "jeeves-specific-decision",
+      "statement": "Use REST/JSON and OpenAPI with the frozen errors, session/mutation protection, bounded keyset paging and command headers. Upstream Shop/Admin GraphQL queries/mutations and union error results inform responsibilities only; no schema, endpoint or API parity. X1 is separate."
+    },
+    {
+      "id": "JV-scope",
+      "kind": "jeeves-specific-decision",
+      "statement": "Use existing Jeeves durable authenticated sessions; no anonymous checkout in the core. Trusted application/shop scope is established server-side. A Vendure channel token or order code is not tenant/owner authority. Recheck scope, current membership and field policy for all detail/list/history/byte/callback/worker paths."
+    },
+    {
+      "id": "JV-money",
+      "kind": "jeeves-specific-decision",
+      "statement": "Core uses USD safe-integer minor units, positive integer quantities <=1000, <=100 lines, checked overflow before arithmetic, immutable quote inputs and explicit flat shipping/fixture tax. Configurable upstream rounding does not establish these bounds or production tax behavior."
+    },
+    {
+      "id": "JV-command",
+      "kind": "jeeves-specific-decision",
+      "statement": "Domain writes, canonical-input command receipt, expected aggregate version, audit and durable event intent share a PostgreSQL transaction. Same scoped principal/operation/key/input replays the authorized result; changed input conflicts. No lost-response or stale-version guarantee is inferred from @Transaction or ordinary saves."
+    },
+    {
+      "id": "JV-checkout",
+      "kind": "jeeves-specific-decision",
+      "statement": "Jeeves separates active cart from converted immutable order. Checkout checks current quote/version and atomically snapshots line/address/price plus reservations and receipt. Upstream uses an Order across AddingItems/payment and can recalculate prices/currency; it does not define this conversion protocol."
+    },
+    {
+      "id": "JV-inventory",
+      "kind": "jeeves-specific-decision",
+      "statement": "Reserve at checkout in a single-location authority transaction with ordered locking/CAS and nonnegative availability. Active/held-for-payment/consumed/released/expired states are explicit. Expire active reservations once with fenced worker claims; start-payment races choose one state. Hold stock for unknown payment until a deliberate reconciliation/cancellation decision, unlike assuming allocation at payment implies earlier reservation."
+    },
+    {
+      "id": "JV-payment",
+      "kind": "jeeves-specific-decision",
+      "statement": "External I/O runs outside local SQL transactions using a durable attempt identity. accepted-but-timeout is unknown/payment-review with stock held, never automatic failure/success. Verify raw callback bytes/provider identity/amount/scope; deduplicate events and prevent older failure from undoing settlement. V08 proves the local reference protocol only; V19 requires an independently verified concrete adapter."
+    },
+    {
+      "id": "JV-fulfillment",
+      "kind": "jeeves-specific-decision",
+      "statement": "Serialize aggregate updates and sum all noncancelled shipment quantities per line; require paid, reserved and remaining quantities before shipment. One command identity returns one shipment. Handler calls/read-before-write checks alone do not prove this concurrent ceiling or provider deduplication."
+    },
+    {
+      "id": "JV-query",
+      "kind": "jeeves-specific-decision",
+      "statement": "Published catalog/public assets and customer/staff order projections use authoritative scope/visibility before details, snippets, counts and bytes. Stable bounded keyset reads replace upstream offset search; rebuilds cannot resurrect hidden records. No complete upstream asset/download or callback audit was performed."
+    },
+    {
+      "id": "JV-effects",
+      "kind": "jeeves-specific-decision",
+      "statement": "Persist atomic outbox intent and per-recipient internal-effect receipts, then recheck access/preferences before sensitive materialization/delivery. Use finite retries, scheduled due time, leased/fenced claims, visible exhaustion/reconciliation and restart recovery. In-memory commit-aware subscribers and graceful job deferral do not establish crash-safe publication, hard-kill recovery or exactly-once external effects. SQL job insertion can use the supplied transaction context; the inspected email publication does not pass it."
+    },
+    {
+      "id": "JH-promotion",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V13",
+      "input": "immutable cart/quote, eligible promotion set, currency, limits and policy version",
+      "result": "pure bounded allocated adjustments and reasons or rejection; deterministic exact rounding and invariant totals",
+      "rejectionAndRecovery": "Reject ineligible codes/excessive allocations; same inputs recalculate without accumulating adjustments. No direct writes.",
+      "remainingDecision": "eligibility/exclusion ordering, stacking/caps, minor-unit remainder tie-break and exact repeated-allocation fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-tax",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V14",
+      "input": "authorized address/jurisdiction, immutable items/currency, request identity and adapter/policy version",
+      "result": "typed amount quote, provider/provenance/version and expiry or explicit unavailable",
+      "rejectionAndRecovery": "Reject forged override, stale quote and currency mismatch; timeout/unavailable never invents tax or commits checkout. Stable request identity for retries.",
+      "remainingDecision": "named production tax adapter contract, authority/expiry, timeout budget, quote values and independent provider failure fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-shipping",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V15",
+      "input": "authorized package/address/cart snapshot, currency, request identity and strategy version",
+      "result": "bounded eligible carrier/service quotes with amounts, expiry and provenance",
+      "rejectionAndRecovery": "Reject untrusted price/service override and expired quote; unavailable carrier cannot complete checkout. Repeated selection uses stable quote identity.",
+      "remainingDecision": "package bounds, supported carrier/service strategy, rate expiry, unavailable/cancellation behavior and independent quote fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-returns",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V16",
+      "input": "authorized paid/fulfilled/already-refunded snapshot, quantities/amounts, reason, expected version and refund request identity",
+      "result": "allowed quantities/amounts and next command or rejection; effectful provider step explicitly separate",
+      "rejectionAndRecovery": "Enforce cumulative quantity/amount ceilings and foreign-order denial. Duplicate refund reuses a durable identity; uncertain provider result stays in reconciliation without a second refund.",
+      "remainingDecision": "return eligibility/window and restock policy, refund allocation/shipping/tax, provider unknown/reconcile statuses and exact partial/duplicate fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-marketplace",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V17",
+      "input": "authorized seller attribution, settlement window, immutable order/payment references, fee policy version and settlement identity",
+      "result": "bounded seller entitlement/settlement plan distinct from customer charge; no direct cross-seller ledger writes",
+      "rejectionAndRecovery": "Reject foreign seller scope; repeated/interrupted execution preserves entitlements and queues inspectable reconciliation, never duplicate payout.",
+      "remainingDecision": "seller membership/attribution, fee rounding, settlement timing/payout adapter, refund/chargeback treatment and recovery fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-currency",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V18",
+      "input": "original exact amounts/currency, requested currency, immutable rate/source/time/version snapshot and rounding policy",
+      "result": "pure rounded converted quote and provenance, never a rewrite of a completed order",
+      "rejectionAndRecovery": "Reject unsupported currency or invalid/stale rates; unavailable rates explicit. Same snapshot repeats deterministically without converting a completed amount twice.",
+      "remainingDecision": "currency allowlist, rate authority/expiry, rational conversion/remainder rounding, bounds and immutable completed-order fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-provider",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V19",
+      "input": "durable provider request identity and typed amount/currency; original callback bytes, signature metadata and configured credential reference separately",
+      "result": "settled/failed/pending/unknown with provider references or an authenticated typed event",
+      "rejectionAndRecovery": "Verify signature, amount/status, provider and scope before effects; stable provider idempotency and event receipts survive duplicates/reordering/timeouts. Unknown requires reconciliation.",
+      "remainingDecision": "named real provider and pinned protocol fixture, signature/replay window, status and idempotency mappings, timeout/reconciliation mechanism; local V08 fixture cannot satisfy this row",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    },
+    {
+      "id": "JH-inventory-sync",
+      "kind": "jeeves-specific-decision",
+      "caseId": "V20",
+      "input": "verified source event/revision, external stock identity, mapping/authority version and local reservation snapshot",
+      "result": "validated local stock command or explicit reconciliation item with stable external identity",
+      "rejectionAndRecovery": "Reject unauthenticated/foreign source; deduplicate/out-of-order revisions, preserve held stock and never overwrite authority silently. Interruption resumes receipt/reconciliation without double adjustment.",
+      "remainingDecision": "named ERP/source contract, absolute-versus-delta semantics, revision ordering/tombstones, reservation conflict authority and recovery fixtures",
+      "defaultUnavailable": "HTTP 503, no domain changes and no success until the hook is implemented.",
+      "specificationOwners": [
+        "P61c: independent protocol/fixture values",
+        "P72b: typed implementation hook brief"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "caseId": "V01",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V01-customer-admin-sessions",
+        "V01-role-shop-forgery",
+        "V01-session-restart"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-auth"
+      },
+      "supportingSources": ["vd-shop-order", "vd-admin-order"],
+      "decisions": ["JV-protocol", "JV-scope"],
+      "adaptation": "Existing Jeeves authenticated sessions/role separation and restart-safe revocation replace upstream anonymous-owner sessions and configurable auth shortcuts. The guard is context, not a complete credential/session protocol audit."
+    },
+    {
+      "caseId": "V02",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V02-published-catalog",
+        "V02-unpublished-assets",
+        "V02-publication-retry"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-catalog"
+      },
+      "supportingSources": ["vd-auth", "vd-search"],
+      "decisions": ["JV-scope", "JV-query", "JV-command"],
+      "adaptation": "Keep enabled product inspiration while specifying bounded queries and authoritative product/variant/asset publication on all reads and delayed projections. Asset-byte/publication-command internals were not audited."
+    },
+    {
+      "caseId": "V03",
+      "targetOrigin": "G",
+      "requiredObservationIds": ["V03-exact-arithmetic", "V03-money-bounds"],
+      "primary": {
+        "kind": "source",
+        "id": "vd-calculator"
+      },
+      "supportingSources": ["vd-round", "vd-payment-handler"],
+      "decisions": ["JV-money"],
+      "adaptation": "Upstream sequences taxes/promotions/shipping and delegates rounding; it does not establish checked safe-integer arithmetic, immutable inputs, fixed USD fixture bounds or overflow rejection. Implement and verify those independently."
+    },
+    {
+      "caseId": "V04",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V04-cart-mutations",
+        "V04-cart-authority",
+        "V04-cart-retry-version"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-order"
+      },
+      "supportingSources": ["vd-shop-order"],
+      "decisions": ["JV-money", "JV-scope", "JV-command"],
+      "adaptation": "Cart add/change/remove use server-authoritative prices and finite line/quantity limits. Add atomic expectedVersion and scoped canonical replay receipts; upstream partial quantity correction/error results are not the frozen all-or-conflict protocol."
+    },
+    {
+      "caseId": "V05",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V05-checkout-snapshot",
+        "V05-changed-quote-version",
+        "V05-checkout-atomicity"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-order"
+      },
+      "supportingSources": ["vd-order-process", "vd-allocation"],
+      "decisions": ["JV-checkout", "JV-command", "JV-money", "JV-inventory"],
+      "adaptation": "Convert cart to one immutable line/address/price snapshot plus reservations in one transaction. Upstream creates an Order before payment and recalculates prices; no same-key checkout or failure-injection atomicity is inferred."
+    },
+    {
+      "caseId": "V06",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V06-reservation-release-expire",
+        "V06-held-payment-expiry",
+        "V06-last-item-race",
+        "V06-expiration-payment-race"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-allocation"
+      },
+      "supportingSources": [
+        "vd-order-process",
+        "vd-stock-movement",
+        "vd-stock-level",
+        "vd-sql-job",
+        "vd-polling"
+      ],
+      "decisions": ["JV-inventory", "JV-command", "JV-payment", "JV-effects"],
+      "adaptation": "Default upstream allocation occurs after payment authorization/settlement, not a benchmark checkout reservation with expiry. Prove last-item locking, held-payment protection and expiration/start-payment restart race independently; read/update stock excerpts do not establish no-oversell."
+    },
+    {
+      "caseId": "V07",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V07-order-lifecycle",
+        "V07-transition-guards",
+        "V07-order-transition-retry"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-order-process"
+      },
+      "supportingSources": ["vd-order", "vd-payment-process"],
+      "decisions": ["JV-command", "JV-payment", "JV-fulfillment"],
+      "adaptation": "Adopt explicit transition/guard responsibility but freeze the smaller benchmark state graph with expected versions. Payment state/fulfillment cannot be forged; repeated/stale commands and cancellation recheck guards and change no contradictory terminal state."
+    },
+    {
+      "caseId": "V08",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V08-reference-payment",
+        "V08-callback-authentication",
+        "V08-unknown-outcome",
+        "V08-callback-order-deduplication"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-payment"
+      },
+      "supportingSources": [
+        "vd-shop-order",
+        "vd-payment-process",
+        "vd-payment-handler",
+        "vd-event"
+      ],
+      "decisions": ["JV-payment", "JV-command", "JV-inventory", "JV-effects"],
+      "adaptation": "Use a durable reference-provider protocol and authenticated raw-byte callbacks with event receipts. The handler is awaited before payment persistence; this does not supply unknown outcome/reconciliation or cross-network atomicity. Hold stock and prevent stale failure from reversing settlement."
+    },
+    {
+      "caseId": "V09",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V09-partial-shipment",
+        "V09-quantity-ceiling",
+        "V09-shipment-retry"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-order"
+      },
+      "supportingSources": ["vd-fulfillment", "vd-admin-order", "vd-stock-movement"],
+      "decisions": ["JV-fulfillment", "JV-command", "JV-scope"],
+      "adaptation": "Jeeves must sum every active shipment and serialize competing changes under paid/reserved ceilings. The inspected upstream helper finds a matching fulfillment line; this is not a cumulative concurrent-ceiling proof or a shipment retry receipt."
+    },
+    {
+      "caseId": "V10",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V10-catalog-search-pages",
+        "V10-search-private-fields",
+        "V10-search-rebuild"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-search"
+      },
+      "supportingSources": ["vd-search-index", "vd-catalog"],
+      "decisions": ["JV-query", "JV-effects"],
+      "adaptation": "Use published-only scoped public projections and stable bounded keyset pages. Upstream has offset/limit, a deterministic variant-ID tie-break and queued rebuilds; optional enabled filtering and projections alone do not establish immediate hiding or private-field exclusion."
+    },
+    {
+      "caseId": "V11",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V11-order-owner-staff",
+        "V11-direct-isolation",
+        "V11-list-isolation",
+        "V11-download-isolation",
+        "V11-callback-isolation"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-shop-order"
+      },
+      "supportingSources": ["vd-auth", "vd-admin-order"],
+      "decisions": ["JV-scope", "JV-query", "JV-payment"],
+      "adaptation": "Unify customer ownership/scoped staff policy across direct IDs, list/count/history, downloads and callbacks. Owner comparisons and staff permissions are inspected; order-code strategy, download bytes, full history and provider routes are not audited or inherited."
+    },
+    {
+      "caseId": "V12",
+      "targetOrigin": "G",
+      "requiredObservationIds": [
+        "V12-transition-audit-notification",
+        "V12-notification-redaction",
+        "V12-internal-effect-retry"
+      ],
+      "primary": {
+        "kind": "source",
+        "id": "vd-order-process"
+      },
+      "supportingSources": [
+        "vd-payment-process",
+        "vd-fulfillment",
+        "vd-event",
+        "vd-mail",
+        "vd-sql-job",
+        "vd-polling"
+      ],
+      "decisions": ["JV-effects", "JV-command", "JV-scope"],
+      "adaptation": "Keep attributed transition audit and eligible notifications atomic/durable in Jeeves. Upstream has history calls, commit-aware in-memory events and queued email with five requested retries; none establishes crash-safe materialization, current redaction or internal deduplication."
+    },
+    {
+      "caseId": "V13",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V13-promotion-allocation",
+        "V13-promotion-bounds",
+        "V13-promotion-recalculation"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-promotion"
+      },
+      "supportingSources": ["vd-calculator"],
+      "decisions": ["JV-money", "JV-command"],
+      "adaptation": "Calculator reset/reapplication informs the seam, not promotion eligibility/stacking/remainder policy. No upstream promotion algorithm was audited; H remains a pure explicit project hook."
+    },
+    {
+      "caseId": "V14",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V14-tax-quote-provenance",
+        "V14-tax-input-authority",
+        "V14-tax-unavailable"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-tax"
+      },
+      "supportingSources": ["vd-calculator"],
+      "decisions": ["JV-money", "JV-payment"],
+      "adaptation": "Tax-zone and configured tax-line calculation are context only. A production tax provider with immutable provenance/expiry/unavailable behavior is a separate hook; fixture tax does not earn V14."
+    },
+    {
+      "caseId": "V15",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V15-shipping-selection",
+        "V15-shipping-authority",
+        "V15-shipping-unavailable"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-shipping"
+      },
+      "supportingSources": ["vd-calculator"],
+      "decisions": ["JV-money", "JV-checkout"],
+      "adaptation": "Configured shipping calculation informs the responsibility. Carrier/rate/package strategy, trusted quote identity/expiry and unavailable-provider decisions remain explicit; flat fixture shipping does not supply them."
+    },
+    {
+      "caseId": "V16",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V16-partial-return-refund",
+        "V16-refund-ceilings",
+        "V16-refund-uncertainty"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-returns"
+      },
+      "supportingSources": ["vd-payment", "vd-admin-order"],
+      "decisions": ["JV-command", "JV-payment", "JV-fulfillment"],
+      "adaptation": "Upstream refund amount constraints are context; return eligibility, cumulative quantities, stable refund identities and ambiguous provider recovery remain project policy. No complete upstream returns/refund concurrency audit."
+    },
+    {
+      "caseId": "V17",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V17-seller-settlement",
+        "V17-seller-isolation",
+        "V17-settlement-recovery"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-marketplace"
+      },
+      "supportingSources": ["vd-order-process"],
+      "decisions": ["JV-scope", "JV-money", "JV-payment"],
+      "adaptation": "Seller-order splitting is visible as a call, not an inspected marketplace settlement engine. Attribution/access/fees/payout reconciliation remain project policy; do not infer missing or separately licensed upstream functionality."
+    },
+    {
+      "caseId": "V18",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V18-currency-snapshot",
+        "V18-currency-reinterpretation",
+        "V18-rate-unavailable-retry"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-currency"
+      },
+      "supportingSources": ["vd-order", "vd-round"],
+      "decisions": ["JV-money", "JV-checkout"],
+      "adaptation": "Upstream can recalculate order currency from context; this is not snapshotted conversion. Jeeves never reinterprets completed money; rate provenance, exact conversion/rounding and unavailability remain a separate hook."
+    },
+    {
+      "caseId": "V19",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V19-real-provider-adapter",
+        "V19-real-provider-authentication",
+        "V19-real-provider-reconciliation"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-provider"
+      },
+      "supportingSources": ["vd-payment-handler", "vd-payment", "vd-payment-process"],
+      "decisions": ["JV-payment", "JV-scope", "JV-effects"],
+      "adaptation": "Generic provider methods inform adapter separation only. No concrete provider signature/idempotency/reconciliation implementation was inspected; V08 reference-protocol evidence cannot satisfy V19."
+    },
+    {
+      "caseId": "V20",
+      "targetOrigin": "H",
+      "requiredObservationIds": [
+        "V20-inventory-source-mapping",
+        "V20-connector-authority",
+        "V20-connector-revision-recovery"
+      ],
+      "primary": {
+        "kind": "jeeves-specific-decision",
+        "id": "JH-inventory-sync"
+      },
+      "supportingSources": ["vd-stock-movement", "vd-stock-level"],
+      "decisions": ["JV-inventory", "JV-command", "JV-effects"],
+      "adaptation": "Stock adjustment context is not an inspected ERP connector. Source authentication/revision ordering/absolute-versus-delta authority, conflicts with reservations and recoverable receipts remain explicit project policy."
+    }
+  ],
+  "limitations": [
+    "Static inspection of listed ranges, not an exhaustive security/concurrency audit or executed upstream test. Unread callers, strategies and adapters may have additional behavior.",
+    "GraphQL upstream responsibility is deliberately adapted to REST/JSON/OpenAPI, not API parity. No upstream runtime or code copied into Jeeves.",
+    "No runtime/template availability, passing benchmark observations, implementation coverage or measured capacity is supplied.",
+    "Frozen P59 manifest/requirements/integrity and P60a source map are unchanged; this sidecar records provenance without changing acceptance.",
+    "Existing six source catalog entries and their pins are preserved. P60c owns Zammad and the combined P60 reference review."
+  ]
+}

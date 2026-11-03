@@ -5344,3 +5344,108 @@ Scope limits and next assignment:
   incomplete until P60b/P60c and the combined reference review. No other unit was started, no
   persistent application/database/output changed, and no push or publication occurred. Keep
   inspected source facts, intended adaptations, template availability and observed passes distinct.
+
+## 2026-11-02 — P60b: pinned Vendure reference pack and complete V-row adaptation map
+
+Executed **P60b only** in `/home/ash/github/jeeves` on `main`, starting clean at P60a commit
+`d76543f82ad73222f094c73dbc4c75ec070d862c`. Read AGENTS, PLAN §15 and relevant earlier sections,
+latest handoffs, backend roadmap/shared contract/scopes/assignment queue/P60, C4 guidance,
+enterprise reference review, P60a's map and existing cache machinery. One worker; no delegation,
+branch or worktree. Used the standing P59–P61d batch authorization: lint/types and focused offline
+backend compatibility/accounting checks replace full `pnpm check`; UI suites/maintenance deferred.
+
+Built:
+
+- Appended `vendure` to [the existing source catalog](reference/architecture-sources.json),
+  preserving the six earlier entries. Selected released **v3.3.0**: official GitHub release
+  published **2025-05-12T11:53:38Z**, neither draft nor prerelease; annotated tag
+  `2f32df1378f62cc856b8a3474b5a98df516b0c54`, tagged **2025-05-12T10:58:13Z**, resolves to full
+  commit **`a4c56359ec831b0c54dd01eab14fb75455c43ab7`**, committed **2025-05-12T10:57:57Z**.
+  Pinned core package metadata independently states 3.3.0. This is a stable released research
+  snapshot, not a dependency/latest-version/security recommendation.
+- Fetched **25 complete source/license files / 344,731 bytes**, SHA-256 pinned through the
+  existing reference tool. Cached `LICENSE.md`, GPL v3 text and plugin exception. The program
+  notice and core package metadata state **GPL-3.0-or-later**; a commercial agreement is an
+  alternative. Selected paths are open-source core, including default job/search and repository
+  email plugin source. Only the GPL text's title/preamble is listed as inspected; its complete
+  file is cached. The plugin permission concerns separately distributed plugins, not permissive
+  reuse of core modifications. No commercial feature/agreement or external plugin was selected;
+  no conclusions about uninspected feature availability or transitive licensing.
+- Added [the Vendure review](reference/backend-benchmarks.md#vendure-core-p60b) with exact source
+  links, responsibilities, facts, limitations and deliberate adaptations: permission/session/
+  channel/owner/staff context; published catalog; order creation/cart/recalculation; order and
+  payment guards/history; stock allocation/adjustment/release; payment handler invocation/refund
+  constraints; fulfillment quantities; event/job/mail publication/retry/stop; search/reindex.
+- Explicitly distinguished **upstream GraphQL Shop/Admin APIs** from planned **Jeeves REST/JSON,
+  OpenAPI and HTTP/command protocol**. No schema/API parity, GraphQL runtime or X1 work.
+  Important differences: default stock allocation happens on authorization/settlement, not a
+  checkout reservation; upstream reuses/recalculates an Order before payment; handler results
+  precede payment persistence; ordinary events are in-memory with commit-aware subscribers;
+  SQL job insertion can take transaction context but the inspected email enqueue does not.
+  Graceful deferral is not hard-kill recovery; row locks/ID updates do not establish lease fencing.
+  Fulfillment's matching-line check does not establish a cumulative concurrent shipment ceiling.
+  None is described as proving the frozen last-item/unknown-payment/replay/recovery guarantees.
+- Added [Vendure v1 source-map.json](../benchmarks/vendure-core/v1/source-map.json), following
+  P60a's format: unchanged detached ledger integrity, release/tag/commit/date/license metadata,
+  25 exact paths/hashes, **43 inspected ranges**, all **20 V rows / 63 mandatory observations**,
+  ten shared adaptation decisions and **eight explicit H hook seams**. Hooks state inputs,
+  results, rejection/recovery, HTTP 503 without domain changes and exact policy decisions owned
+  by P61c/P72b. V08 local payment-protocol evidence remains distinct from V19 real-provider
+  verification; core fixture tax/shipping do not earn production adapter/hook points.
+- Updated benchmark/roadmap/improvement/enterprise-reference entry points to P60b complete,
+  P60c next, parent P60 partial. No CATALOG change: offerings, reusable boundaries and runtime/
+  template availability did not change. All nine frozen P59 files and P60a's map are preserved.
+
+Checks with **Node 24.21.0 / pnpm 12.16.1**, selected via
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm references fetch vendure`: exit 0, **25 files downloaded and hash-verified**. Raw output:
+  `.jeeves-work/p60b/references-fetch.log`. Cache:
+  `.jeeves-work/references/vendure/a4c56359ec831b0c54dd01eab14fb75455c43ab7/`.
+- `pnpm references verify all`: exit 0, offline, **7 references / 79 files / 0 downloads**,
+  including all prior files and Vendure. Raw output: `.jeeves-work/p60b/references-verify.log`.
+- `pnpm lint`: exit 0, `Checked 815 files in 449ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, zero errors or new diagnostics. Raw output: `.jeeves-work/p60b/lint.log`.
+  `pnpm exec biome check docs/reference/architecture-sources.json benchmarks/vendure-core/v1/source-map.json`
+  also passed: `Checked 2 files in 3ms. No fixes applied.`
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **8.5s**.
+  Evidence: `.jeeves-work/runs/2026-11-03T00-02-34-020Z-typecheck-02584323.{json,log}`.
+- Exact focused offline selection:
+
+  ```bash
+  pnpm work run unit packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **6 files / 140 tests passed**, **4.2s** including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-03T00-02-34-019Z-unit-3e40691e.{json,log}`. Both runner records have
+  `sourceChanged: false`. These checks establish selected accounting/legacy compatibility,
+  not generated Vendure behavior or benchmark points.
+- Temporary scoped audit `.jeeves-work/p60b/audit.py` → `audit.json`: passed JSON parsing,
+  canonical integrity and byte-for-byte preservation of all nine P59 files and P60a's map,
+  unchanged earlier reference metadata, release/tag/commit metadata, all source/cache hashes,
+  range bounds, complete/unique V-row and observation identities, eight hook seams, Markdown
+  destinations/anchors, immutable source-link/range resolution and earlier handoff prefix.
+  An initial temporary audit had an erroneous G-target total assertion (63 instead of 66);
+  corrected the audit to the frozen total without editing any ledger. `git diff --check` passed.
+
+Artifact pins:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Vendure source-map file bytes | `4dabf20337b3286b55bb02f0bc58f39d153eff84981f24731a7b4b22b780068c` |
+| Vendure canonical manifest (unchanged) | `126b31b7f5639dfa6084cdcb7bb21f40f49643bb7c0f8a2f42890d136aee6bdd` |
+| Vendure canonical requirements (unchanged) | `46cec50d621ee2f1cb22a0ec73d56d8d9da1ead7fa7133b5bcc337f168e80b98` |
+
+Scope limits and next assignment:
+
+- No P60b blocker or plan deviation. These static excerpts are not an exhaustive upstream
+  audit, provider verification or an executed concurrency/recovery campaign. Exact independent
+  protocol/fixture decisions remain P61a/c; data/authority and typed hook briefs remain P72a/b,
+  as detailed in the review/map. The ignored cache must be fetched before offline inspection.
+- Full `pnpm check`, deferred UI unit/E2E suites/maintenance, production UI build/browser,
+  dependency conformance, upstream application execution, providers, generation and load/
+  recovery/upgrade campaigns were not run. No UI/runtime code changed. P59's separately recorded
+  historical architecture-test debt is unchanged and was not rerun or repaired here.
+- **P60b is complete. P60c is next**, for Zammad and the combined reference review. Parent P60
+  remains partial. Stop after this scoped local commit; no next task launched. No new runtime,
+  application/database/output mutation, push or publication.

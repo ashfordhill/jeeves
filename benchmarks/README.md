@@ -20,8 +20,9 @@ offered rates, latency limits, reference-host guidance and measurement/recovery 
 
 The manifest's `sourceMap.path` reserves a sibling `source-map.json` for its named P60a/P60b/P60c
 assignment. P60a supplies the [Discourse source map](discourse-core/v1/source-map.json) and
-[inspected reference review](../docs/reference/backend-benchmarks.md#discourse-core-p60a);
-Vendure and Zammad source maps remain unstarted. P60 adds provenance sidecars without editing
+P60b supplies the [Vendure source map](vendure-core/v1/source-map.json), with
+[inspected reference reviews](../docs/reference/backend-benchmarks.md). Zammad's map and the
+combined review remain P60c work. P60 adds provenance sidecars without editing
 frozen v1 requirements or conferring implementation evidence. Likewise `fixtureVersion: v1` identifies
 the future P61 fixtures, not fixtures or contracts already supplied by P59. No runner alias is
 registered until its actual tests exist.

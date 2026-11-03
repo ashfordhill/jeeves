@@ -319,6 +319,130 @@
           "sha256": "66e51e641b32d82ff105db87d3f78e198c133d709040f7962bb2fcff099eefd0"
         }
       ]
+    },
+    {
+      "id": "vendure",
+      "repository": "vendurehq/vendure",
+      "commit": "a4c56359ec831b0c54dd01eab14fb75455c43ab7",
+      "observedAt": "2026-11-02",
+      "status": "inspected",
+      "license": {
+        "summary": "GPL-3.0-or-later Community Edition notice in LICENSE.md and core package metadata; GPL v3 text and additional plugin permission cached. Commercial licensing is an alternative, not adopted. Selected paths are open-source core for architectural inspection only; no upstream runtime code adopted.",
+        "evidence": ["LICENSE.md", "license/gpl-3.0.txt", "license/plugin-exception.txt"],
+        "excluded": [
+          "Commercial agreement terms, separately licensed/hosted features, external plugins, bundled third-party code/assets and trademarks are outside this pack. No conclusion about their licensing or availability."
+        ]
+      },
+      "candidates": [
+        "commerce-access",
+        "cart-order-transitions",
+        "stock-allocation",
+        "payment-coordination",
+        "fulfillment-quantities",
+        "async-recovery-boundaries"
+      ],
+      "files": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "b78a9d11922dff7b00efee72d40381bc3765e220fd31c575e2d39ffd42883013"
+        },
+        {
+          "path": "license/gpl-3.0.txt",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+        },
+        {
+          "path": "license/plugin-exception.txt",
+          "sha256": "8f45d1b72e087c70beca276a88dc462884debbdbca22497c60eadb9db2de2bad"
+        },
+        {
+          "path": "packages/core/package.json",
+          "sha256": "d46784ad9b2d5f543c87c9c91c05957aa61f7528c976b913388a2e66862b4575"
+        },
+        {
+          "path": "packages/core/src/api/middleware/auth-guard.ts",
+          "sha256": "bc1fee3267ab3f99e1deae40a1864862ad8ecc52075c7bc230acfdc61871bcf6"
+        },
+        {
+          "path": "packages/core/src/api/resolvers/shop/shop-order.resolver.ts",
+          "sha256": "540f4423313b9e236f862586e925522c72443f8ae94202f1bbe6f4348dfce548"
+        },
+        {
+          "path": "packages/core/src/api/resolvers/shop/shop-products.resolver.ts",
+          "sha256": "0be0494287be2f0a005388f9a155825835f751df8cdd84ab115cb181e8003aae"
+        },
+        {
+          "path": "packages/core/src/service/services/order.service.ts",
+          "sha256": "5b1d46a2565510ede01adc0aa40783acd12cc2fdce72782fdde0bc7acd945b9e"
+        },
+        {
+          "path": "packages/core/src/config/order/default-order-process.ts",
+          "sha256": "2de47767c358523a6620f9cfaea96c3e2f946a04dad62e8d92ea9862fd50d41f"
+        },
+        {
+          "path": "packages/core/src/config/order/default-stock-allocation-strategy.ts",
+          "sha256": "f905be97d657c93d57905d6245657465aba6615ea868ac4b0a0dc16d01f97493"
+        },
+        {
+          "path": "packages/core/src/service/services/stock-movement.service.ts",
+          "sha256": "9bfb6b5981da85b33fea480746c76043079532cd938cc00de13ec1892230f438"
+        },
+        {
+          "path": "packages/core/src/service/services/stock-level.service.ts",
+          "sha256": "b591369f4527efdfa4824c663a171c28466a5c76cb4bf9c9c5c54c707d488a99"
+        },
+        {
+          "path": "packages/core/src/service/services/payment.service.ts",
+          "sha256": "7a8cb82ee2541bb6db4649e4bf986118b377a14e62a4d8c74c7076e186c70504"
+        },
+        {
+          "path": "packages/core/src/config/payment/default-payment-process.ts",
+          "sha256": "45631e691d11a7dddb5ae26bbbd78ca48792fc2817643f791747fe7c2860a188"
+        },
+        {
+          "path": "packages/core/src/config/payment/payment-method-handler.ts",
+          "sha256": "59db980b41005dccbeec01a53e75934964ce84455cadb244a92fc6f446611d12"
+        },
+        {
+          "path": "packages/core/src/service/services/fulfillment.service.ts",
+          "sha256": "753a4e26bb93c3eecb77fccffb920661d676fb71250b7dda2464f17788b094d9"
+        },
+        {
+          "path": "packages/core/src/service/helpers/order-calculator/order-calculator.ts",
+          "sha256": "27e4896af756e8a5c44288f1253da043755288c30ddd345b37600d58f89778b6"
+        },
+        {
+          "path": "packages/core/src/common/round-money.ts",
+          "sha256": "09e702b7db243c613be51cb456e4a94679f228e81203fe2d654a59215cca71d5"
+        },
+        {
+          "path": "packages/core/src/plugin/default-job-queue-plugin/sql-job-queue-strategy.ts",
+          "sha256": "d42f12f29ca12ff84ffd546785521d7d835bd668f7a2a47d8a418fe79a827f84"
+        },
+        {
+          "path": "packages/core/src/job-queue/polling-job-queue-strategy.ts",
+          "sha256": "fab1c820e8cda5392d1452980183e7b4e182ec49c95f0878da186312b525c8f7"
+        },
+        {
+          "path": "packages/core/src/event-bus/event-bus.ts",
+          "sha256": "28def03fab957264962591a81e24f659f61184b9b11acc2d35f78a08dc0a36cf"
+        },
+        {
+          "path": "packages/core/src/plugin/default-search-plugin/indexer/search-index.service.ts",
+          "sha256": "63880663799ebbc7d0a49e6798cfe859aa0c87cc2c5fa37b3c69c7e776232a9e"
+        },
+        {
+          "path": "packages/core/src/plugin/default-search-plugin/search-strategy/postgres-search-strategy.ts",
+          "sha256": "81992813cdd374990cfe43a9a34c64b84dae4342358688c7957967fcb448c1df"
+        },
+        {
+          "path": "packages/email-plugin/src/plugin.ts",
+          "sha256": "b4763b456c9f85159ec0f6fd4950f18faa0bcfa23bacb741c6412a04db0379e9"
+        },
+        {
+          "path": "packages/core/src/api/resolvers/admin/order.resolver.ts",
+          "sha256": "bfb603aed5e04cd19d0f4ea4696ea39deb1cdada5cf68e55237df6f7cd535c69"
+        }
+      ]
     }
   ]
 }
