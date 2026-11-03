@@ -10,6 +10,7 @@ import {
   sameContractOwner,
 } from "./architecture-contracts.ts";
 import { architectureReviewReferences, type ReviewReference } from "./architecture-review-model.ts";
+import { validateBackendBehavior } from "./backend-behavior.ts";
 import { backendPolicyIntentConflicts, validateBackendPolicies } from "./backend-policy.ts";
 import { backendQuerySources, validateBackendQueries } from "./backend-queries.ts";
 import type { DesignDocument } from "./design.ts";
@@ -143,6 +144,8 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
             queries,
             accessPolicies: m.backend?.accessPolicies,
             accessBindings: m.backend?.accessBindings,
+            lifecycles: m.backend?.lifecycles,
+            operations: m.backend?.operations,
           },
         });
         for (const q of queries) {
@@ -266,6 +269,18 @@ export function reviewArchitecture(design: DesignDocument) {
       "data",
     );
   }
+  for (const f of validateBackendBehavior(design).filter((f) => !isStructural(f)))
+    add(
+      "BACKEND_BEHAVIOR_GAP",
+      "Delivery and failure",
+      "unresolved",
+      `${f.target.path?.join("/")}: ${f.message}`,
+      "Complete the exact command/lifecycle declaration. Registered strategies are design vocabulary, not implementation evidence; unsupported choices remain blockers.",
+      (m?.datasets ?? [])
+        .filter((d) => m?.backend?.entities.some((e) => e.dataset === d.id))
+        .map((d) => ref("dataset", d.id)),
+      "contracts",
+    );
   for (const conflict of backendPolicyIntentConflicts(design)) {
     add(
       "BACKEND_ACCESS_CONFLICT",

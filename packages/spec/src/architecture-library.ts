@@ -291,6 +291,20 @@ export function extractArchitectureTemplate(
       schemaVersion: a.backend.schemaVersion,
       entities: a.backend.entities.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
       aggregates: a.backend.aggregates.filter((e) => keep.has(e.id)).map((e) => structuredClone(e)),
+      ...(a.backend.lifecycles
+        ? {
+            lifecycles: a.backend.lifecycles
+              .filter((l) => keep.has(l.id))
+              .map((l) => structuredClone(l)),
+          }
+        : {}),
+      ...(a.backend.operations
+        ? {
+            operations: a.backend.operations
+              .filter((o) => keep.has(o.id))
+              .map((o) => structuredClone(o)),
+          }
+        : {}),
       ...(a.backend.queries
         ? {
             queries: a.backend.queries.filter((q) => keep.has(q.id)).map((q) => structuredClone(q)),

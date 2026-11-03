@@ -1401,6 +1401,22 @@ export function previewArchitecturePattern(
           }
         }
       }
+      for (const o of fragment.architecture.backend.operations ?? [])
+        for (const i of fragment.architecture.interfaces ?? []) {
+          if (
+            i.owner.id !== o.target.owner.id ||
+            i.owner.kind !== o.target.owner.kind ||
+            contractKey(i.contract) !== contractKey(o.target.contract)
+          )
+            continue;
+          const target = source.identities[i.id];
+          if (!target)
+            result.errors.push(`Pinned operation interface ${i.id} has no identity mapping.`);
+          else {
+            ids[i.id] = target;
+            reused.add(i.id);
+          }
+        }
       for (const access of fragment.architecture.backend.accessBindings ?? []) {
         const target = access.target;
         const binding = fragment.architecture.bindings?.find(

@@ -6639,3 +6639,120 @@ Observed failures and limits, kept separate from passing evidence:
 
 **P64 is complete with no P64 blocker. P65 is the next unstarted work unit.** Stop after the
 scoped local P64 commit; coordinator owns the checkpoint and next assignment.
+
+## P65 — Exact commands, lifecycle tables and local behavior semantics (2026-11-03)
+
+Completed **P65 only** in the primary checkout on `main`, starting at
+`7daa02f6e71b6315178106e636b70ad283e100f1`. P64 dependency evidence is the preceding handoff and
+its preserved focused policy/query/data tests. Read the authorized batch/checkpoint, AGENTS,
+PLAN §15 and applicable earlier contracts, C4/studio guidance, shared backend contract/benchmark
+cases/worked trace, phase-2 P65 and assignment queue. Coordinator owns the checkpoint; it is untouched.
+
+Built:
+
+- Strict `backend-behavior-model.ts` and pure `backend-behavior.ts` add optional exact `lifecycles`
+  and `operations` to the existing backend model. Operations bind provided owner/API operation,
+  aggregate, policy/projections, transaction, guards/actions/writes and exact UX5 outcome IDs.
+  Root/child selectors use stable primary-key fields and trusted scope. Inputs/results resolve
+  stable nested field IDs with conservative type/bound/nullability checks, including bounded map/
+  tagged-union passthrough. No expression, SQL, executable config, recursive workflow or evaluator.
+- Lifecycle states exactly match their persisted enum, including literal values with spaces/case.
+  Initial states, reachability, duplicate transition IDs/pairs and guard references are checked.
+  Flat typed comparison/presence guards cannot read future action results. Existing state changes
+  require exact transitions; creation uses initial state. Referenced lifecycle semantics, policies
+  and wire/result contracts remain immutable through simultaneous consumer removal; names/successor
+  versions remain supported.
+- Finite root/child insertion, allowlisted patch, transition, add/remove relation, immutable revision
+  insertion and registered domain-result actions. Explicit `writes` equals every actual field writer;
+  duplicates, missing/undeclared writes, wrong source types, protected-field injection, wrong owners/
+  stores and read-only mutation declarations reject atomically. Current/create-result output fields
+  require read/replay projections; private child writes/results require independent participant
+  policies. Existing P64 exact operation access declarations cannot contradict command selections.
+- Single-connection/single-store transaction policy, explicit aggregate participants and inherited
+  CAS/stable row-lock policy. Optimistic mutations bind expected version and one checked root-version
+  writer. Server IDs/principal/scope/clocks/version factories remain protected. Command identity is
+  exact operation version + authenticated scope/principal + key; normalized hash covers all other
+  input fields. Seven-day default published retention, atomic terminal receipt, bounded concurrent
+  same-key handling, changed-input conflict, current-policy replay, expired-key/new-command and
+  separate cleanup semantics are explicit declarations, not a receipt implementation.
+- Exact success, unchanged conflict/rejection/confirmed failure/unavailable/cancelled and unknown
+  commit outcomes remain distinct. Missing outcomes/selectors are saveable readiness gaps;
+  contradictory states/types or stale IDs reject. Unknown commit requires reconciliation and cannot
+  return a mutation result. Cooperative cancellation declares rollback before commit and committed/
+  unknown after commit with a bounded deadline and explicit work-start choice.
+- Query bindings reuse exact bounded P63 queries/policies, typed allowlisted filter values and bounded
+  projected `query-result` arrays; detached current-entity outputs cannot bypass query authorization.
+  Registered `checkout-order@v1` has finite options/input/result schema only, no supplied algorithm.
+  Unknown strategy choices remain explicit source-addressed NEEDS_TEMPLATE/Review blockers and never
+  become hooks. Capability results propose values; subsequent finite actions declare every write.
+- Shared reference collectors/remappers, exact contract protection, removal findings, fragment
+  extraction/insertion, pinned whole-boundary reuse, target diffs, operation JSON Schema, deterministic
+  handoff JSON/Markdown, Review gaps and dataset fingerprints preserve these declarations. Outer graph
+  refs remap; local action/guard/transition/field/outcome IDs, state values, physical storage and
+  external strategy registry identities remain stable. Legacy saved models acquire no collections
+  or second resource/session authority.
+- Added **15 focused semantic tests**, including six separate synthetic edit/close, checkout/order
+  transition and assign/resolve bindings, the complete action vocabulary, child policy isolation,
+  typed maps/unions, query outputs, selectors, immutability, malformed/unsupported choices and portable
+  save/copy/reuse/handoff. [Behavior contract](backend-behavior.md), access/data docs and current roadmap/
+  improvement status record **P65 complete; P66a next**. CATALOG is unchanged: no offerings, reusable
+  C1/C2/C3 boundaries, runtime availability or observed application evidence changed.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1** via
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **863 files / 641ms**, no fixes. Existing **2025 warnings / 75 infos**, no
+  added diagnostics. `.jeeves-work/p65/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **13.4s**.
+  `.jeeves-work/runs/2026-11-03T15-21-55-239Z-typecheck-7862b7e5.{json,log}`.
+- Exact focused offline semantic/frozen-contract/old-generation compatibility command:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-behavior.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/contract-transport.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0, **20 files / 294 tests passed**, **8.5s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T15-21-55-239Z-unit-fad9ae85.{json,log}`. Final passing runner records
+  both have `sourceChanged: false`. These prove design semantics and compatibility, not execution.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.74s**, existing large-chunk advisory only.
+  `.jeeves-work/p65/build-final.log`. No production UI/control changed; no direct browser workflow
+  or deferred UI unit/E2E suite ran. The build checks the shared browser exports.
+- `python3 .jeeves-work/p65/audit.py`: byte-preserved **1,459 other tracked files**, including all
+  **48 benchmark files / 46 legacy fixtures**, prior tests, CATALOG and all application/UI/server,
+  runtime/template/generator/artifact/dependency paths. Prior handoff prefix is unchanged; scoped
+  links/anchors/fences pass. `.jeeves-work/p65/audit.json`; rerun after this append. `git diff --check`
+  passes. The ignored checklist and verification records are not product changes.
+
+Observed failures and limits, kept separate from passing evidence:
+
+- Initial new selector: **10 failed**, from new fixtures using camelCase graph field IDs; corrected
+  to stable kebab-case IDs. The next run had **1 failed / 9 passed**, from a fixture loop reusing the
+  preceding child action; corrected its source copy. Initial local typechecking caught the dynamic
+  Zod union tuple and callback narrowing; corrected before workspace checks.
+- Expanded selectors exposed fixture errors and one new validator defect: query root comparison was
+  in the missing-query branch and could throw. Moved the check under an explicit resolved-query
+  guard. Corrected the new query fixture's disallowed `maxValues` on an `eq` filter and missing
+  access-target discriminator. Selector work also revealed missing root selector/output-bypass checks;
+  implemented those checks and strengthened the tests. Interim records remain in `.jeeves-work/runs/`
+  and format logs under `.jeeves-work/p65*`. No frozen or historical expectation was changed.
+- Separate historical semantic selector (`architecture-patterns.test.ts`, `architecture-handoff.test.ts`,
+  `architecture-review.test.ts`, `architecture-bindings.test.ts`): **15 failed / 33 passed**, unchanged
+  from P64. Final `.jeeves-work/runs/2026-11-03T15-21-55-236Z-unit-f168138b.{json,log}`.
+- Reproduced the **identical 15 failure titles / 33 passing tests on exact base `7daa02f` tracked
+  production source**, temporarily substituting all ten changed existing TypeScript modules and
+  restoring every working byte in `finally`. Base:
+  `.jeeves-work/runs/2026-11-03T15-18-25-520Z-unit-e4a8f780.{json,log}`. Restoration hashes and title
+  comparison are in `.jeeves-work/p65/baseline.json` and `historical-comparison.json`. Both historical
+  records have `sourceChanged: false`. These remain failures; no full-green claim.
+- P66a owns exact effects, typed hooks and recovery dependencies. P66b/P66c own typed domain settings;
+  P67/P68 mouse authoring, P69/P70 matching/pure compilation, later packages transaction/CAS execution,
+  receipt concurrency, actual current-policy enforcement, hook result handling, SQL, cooperative
+  cancellation and money/inventory/payment algorithms. Existing raw NEEDS_TEMPLATE blockers remain.
+  No P66/runtime/generation work, branches/worktrees/delegation or push was started.
+- All three applications remain **absent/not run with zero observed implementation points**. No
+  Docker/database/network/provider/benchmark campaign, local preview or persistent project mutation
+  occurred. Full `pnpm check` and deferred UI suites were not run under the explicit batch policy.
+
+**P65 is complete with no P65 blocker. P66a is the next unstarted work unit.** Stop after this scoped
+local P65 commit; coordinator owns checkpoint and next assignment. The ignored
+`.jeeves-work/p65/completion.json` records the resulting commit and passing runner record paths.

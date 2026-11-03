@@ -414,6 +414,10 @@ export function validateBackendPolicyTransition(
       ...(q.sourcePolicies ?? []).map((s) => s.policy),
     ]),
     ...(model?.accessBindings ?? []).map((b) => b.policy),
+    ...(model?.operations ?? []).flatMap((o) => [
+      o.access.policy,
+      ...(o.access.participants ?? []).map((p) => p.policy),
+    ]),
   ];
   return (model?.accessPolicies ?? []).flatMap((p) => {
     if (!references.some((s) => s.kind === "policy" && contractKey(s.reference) === contractKey(p)))

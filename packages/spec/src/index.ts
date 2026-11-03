@@ -19,6 +19,8 @@ export * from "./architecture-review.ts";
 export * from "./architecture-review-model.ts";
 export * from "./architecture-targets.ts";
 export * from "./architecture-view.ts";
+export * from "./backend-behavior.ts";
+export * from "./backend-behavior-model.ts";
 export * from "./backend-data.ts";
 export * from "./backend-legacy.ts";
 export * from "./backend-model.ts";

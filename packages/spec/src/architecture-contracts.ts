@@ -543,15 +543,28 @@ export function validateContractTransition(
       ...(before.architecture?.bindings ?? []),
       ...(before.architecture?.datasets ?? []),
       ...(before.architecture?.backend?.entities ?? []),
+      ...(before.architecture?.backend?.operations ?? []).flatMap((o) => [
+        { contract: o.target.contract },
+        ...o.actions.flatMap((a) =>
+          a.kind === "capability" ? [{ contract: a.strategy.result }] : [],
+        ),
+      ]),
       ...(before.architecture?.backend?.accessBindings ?? []).flatMap((b) =>
         b.target.kind === "operation" ? [{ contract: b.target.contract }] : [],
       ),
     ].some((use) => contractKey(use.contract) === contractKey(prior));
     if (
-      (before.architecture?.backend?.accessBindings?.some(
-        (b) =>
-          b.target.kind === "operation" && contractKey(b.target.contract) === contractKey(prior),
+      (before.architecture?.backend?.operations?.some(
+        (o) =>
+          contractKey(o.target.contract) === contractKey(prior) ||
+          o.actions.some(
+            (a) => a.kind === "capability" && contractKey(a.strategy.result) === contractKey(prior),
+          ),
       ) ||
+        before.architecture?.backend?.accessBindings?.some(
+          (b) =>
+            b.target.kind === "operation" && contractKey(b.target.contract) === contractKey(prior),
+        ) ||
         (referenced &&
           (prior.shape?.operations.some((o) => o.transport) ||
             before.architecture?.backend?.entities.some(
@@ -575,6 +588,13 @@ export function validateContractTransition(
       (item) => contractKey(item) === contractKey(next),
     );
     const referenced =
+      before.architecture?.backend?.operations?.some(
+        (o) =>
+          contractKey(o.target.contract) === contractKey(next) ||
+          o.actions.some(
+            (a) => a.kind === "capability" && contractKey(a.strategy.result) === contractKey(next),
+          ),
+      ) ||
       before.architecture?.interfaces?.some(
         (item) => contractKey(item.contract) === contractKey(next),
       ) ||

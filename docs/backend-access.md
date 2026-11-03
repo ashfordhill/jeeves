@@ -104,3 +104,7 @@ remap; local clause/projection/action/field/relation IDs and physical storage id
 Legacy backend models gain no empty policy collections, and legacy owner CRUD/session/resource
 semantics remain unchanged. P67b supplies policy mouse authoring; P69/P70 supply implementation
 matching/pure compilation, and P76 supplies runtime enforcement under a separate assignment.
+
+[P65 command/lifecycle declarations](backend-behavior.md) reuse these policies for root/child
+writes, current output observations and authorized replay. Existing exact operation access bindings
+must agree; policy versions referenced by operations remain immutable through consumer removal.

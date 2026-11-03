@@ -2,6 +2,7 @@ import { z } from "zod";
 import { unbindArchitecture, validateArchitecture } from "./architecture.ts";
 import { validateContractTransition } from "./architecture-contracts.ts";
 import { validatePatternTransition } from "./architecture-pattern-provenance.ts";
+import { validateBackendBehaviorTransition } from "./backend-behavior.ts";
 import { validateBackendDataTransition } from "./backend-data.ts";
 import { validateBackendPolicyTransition } from "./backend-policy.ts";
 import {
@@ -99,6 +100,7 @@ export function applyOperations(
   const contractErrors = [
     ...validateBackendDataTransition(design, draft),
     ...validateBackendPolicyTransition(design, draft),
+    ...validateBackendBehaviorTransition(design, draft),
     ...validateContractTransition(design, draft),
     ...validatePatternTransition(design, draft),
   ];

@@ -1,5 +1,6 @@
 /** Versioned persistence intent. Contracts own types; datasets own authority and stores. */
 import { z } from "zod";
+import { backendLifecycleSchema, backendOperationSchema } from "./backend-behavior-model.ts";
 import {
   backendAccessBindingSchema,
   backendAccessPolicySchema,
@@ -227,6 +228,8 @@ export const backendModelSchema = z.strictObject({
   queries: z.array(backendQuerySchema).max(100).optional(),
   accessPolicies: z.array(backendAccessPolicySchema).max(100).optional(),
   accessBindings: z.array(backendAccessBindingSchema).max(200).optional(),
+  lifecycles: z.array(backendLifecycleSchema).max(100).optional(),
+  operations: z.array(backendOperationSchema).max(200).optional(),
 });
 export type BackendModel = z.output<typeof backendModelSchema>;
 
@@ -236,6 +239,8 @@ export const backendCollections = [
   "queries",
   "accessPolicies",
   "accessBindings",
+  "lifecycles",
+  "operations",
 ] as const;
 export const backendDeclarations = (
   model: BackendModel | undefined,
@@ -245,6 +250,8 @@ export const backendDeclarations = (
   ...(model?.queries ?? []),
   ...(model?.accessPolicies ?? []),
   ...(model?.accessBindings ?? []),
+  ...(model?.lifecycles ?? []),
+  ...(model?.operations ?? []),
 ];
 
 /** Local field, relation, invariant and storage IDs are never outer graph identities. */
@@ -255,8 +262,104 @@ export function mapBackendModel(model: BackendModel, ids: Record<string, string>
     ...value,
     entity: exact(value.entity),
   });
+  const source = (v: import("./backend-behavior-model.ts").BackendValueSource) =>
+    v.kind === "current" ? field(v) : v;
+  const guard = (g: import("./backend-behavior-model.ts").BackendGuard) =>
+    g.kind === "compare"
+      ? { ...g, left: source(g.left), right: source(g.right) }
+      : { ...g, value: source(g.value) };
   return {
     ...model,
+    ...(model.lifecycles
+      ? {
+          lifecycles: model.lifecycles.map((l) => ({
+            ...l,
+            id: id(l.id),
+            aggregate: exact(l.aggregate),
+            state: field(l.state),
+            guards: l.guards.map(guard),
+          })),
+        }
+      : {}),
+    ...(model.operations
+      ? {
+          operations: model.operations.map((o) => ({
+            ...o,
+            id: id(o.id),
+            target: {
+              ...o.target,
+              contract: exact(o.target.contract),
+              owner: exactOwner(o.target.owner),
+            },
+            aggregate: exact(o.aggregate),
+            ...(o.identity
+              ? { identity: o.identity.map((v) => ({ ...v, value: source(v.value) })) }
+              : {}),
+            access: {
+              ...o.access,
+              policy: o.access.policy.reference
+                ? { ...o.access.policy, reference: exact(o.access.policy.reference) }
+                : o.access.policy,
+              ...(o.access.participants
+                ? {
+                    participants: o.access.participants.map((p) => ({
+                      ...p,
+                      entity: exact(p.entity),
+                      policy: p.policy.reference
+                        ? { ...p.policy, reference: exact(p.policy.reference) }
+                        : p.policy,
+                    })),
+                  }
+                : {}),
+            },
+            ...(o.query ? { query: exact(o.query) } : {}),
+            ...(o.queryInputs
+              ? {
+                  queryInputs: o.queryInputs.map((v) => ({
+                    ...v,
+                    ...(v.value ? { value: source(v.value) } : {}),
+                  })),
+                }
+              : {}),
+            guards: o.guards.map(guard),
+            writes: o.writes.map(field),
+            transaction: {
+              ...o.transaction,
+              store: id(o.transaction.store),
+              participants: o.transaction.participants.map(exact),
+            },
+            actions: o.actions.map((a) =>
+              a.kind === "transition"
+                ? {
+                    ...a,
+                    lifecycle: exact(a.lifecycle),
+                    ...(a.key ? { key: a.key.map((v) => ({ ...v, value: source(v.value) })) } : {}),
+                  }
+                : a.kind === "capability"
+                  ? {
+                      ...a,
+                      strategy: {
+                        ...a.strategy,
+                        result: exact(a.strategy.result),
+                      },
+                      input: a.input.map((v) => ({ ...v, value: source(v.value) })),
+                    }
+                  : {
+                      ...a,
+                      entity: exact(a.entity),
+                      ...(a.key
+                        ? { key: a.key.map((v) => ({ ...v, value: source(v.value) })) }
+                        : {}),
+                      values: a.values.map((v) => ({ ...v, value: source(v.value) })),
+                    },
+            ),
+            outcomes: o.outcomes.map((v) => ({
+              ...v,
+              values: v.values.map((m) => ({ ...m, value: source(m.value) })),
+            })),
+          })),
+        }
+      : {}),
     ...(model.accessPolicies
       ? {
           accessPolicies: model.accessPolicies.map((p) => ({
@@ -369,6 +472,54 @@ export function collectBackendDependencies(
   keep: Set<string>,
 ): void {
   if (!model) return;
+  for (const l of model.lifecycles ?? []) {
+    if (keep.has(l.aggregate.id) || keep.has(l.state.entity.id)) keep.add(l.id);
+    if (keep.has(l.id)) {
+      keep.add(l.aggregate.id);
+      keep.add(l.state.entity.id);
+      for (const g of l.guards)
+        for (const v of g.kind === "compare" ? [g.left, g.right] : [g.value])
+          if (v.kind === "current") keep.add(v.entity.id);
+    }
+  }
+  for (const o of model.operations ?? []) {
+    if (keep.has(o.target.owner.id) || keep.has(o.aggregate.id)) keep.add(o.id);
+    if (!keep.has(o.id)) continue;
+    for (const v of [
+      o.target.owner.id,
+      o.target.contract.id,
+      o.aggregate.id,
+      o.transaction.store,
+      ...o.transaction.participants.map((p) => p.id),
+      ...(o.query ? [o.query.id] : []),
+      ...(o.access.policy.reference ? [o.access.policy.reference.id] : []),
+    ])
+      keep.add(v);
+    for (const p of o.access.participants ?? []) {
+      keep.add(p.entity.id);
+      if (p.policy.reference) keep.add(p.policy.reference.id);
+    }
+    const sources = [
+      ...(o.identity ?? []).map((v) => v.value),
+      ...(o.queryInputs ?? []).flatMap((v) => (v.value ? [v.value] : [])),
+      ...o.guards.flatMap((g) => (g.kind === "compare" ? [g.left, g.right] : [g.value])),
+      ...o.outcomes.flatMap((o) => o.values.map((v) => v.value)),
+    ];
+    for (const a of o.actions) {
+      if (a.kind === "transition") {
+        keep.add(a.lifecycle.id);
+        sources.push(...(a.key ?? []).map((v) => v.value));
+      } else if (a.kind === "capability") {
+        keep.add(a.strategy.result.id);
+        sources.push(...a.input.map((v) => v.value));
+      } else {
+        keep.add(a.entity.id);
+        sources.push(...a.values.map((v) => v.value), ...(a.key ?? []).map((v) => v.value));
+      }
+    }
+    for (const v of sources) if (v.kind === "current") keep.add(v.entity.id);
+    for (const w of o.writes) keep.add(w.entity.id);
+  }
   for (const p of model.accessPolicies ?? []) {
     if (keep.has(p.resource.id)) keep.add(p.id);
     if (!keep.has(p.id)) continue;

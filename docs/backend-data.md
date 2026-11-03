@@ -205,3 +205,7 @@ The frozen benchmark contracts/expectations and legacy resource schemas remain a
 P64 adds the [finite access policy contract](backend-access.md) and resolves exact query policy
 selection, field projections, joined-source policies and current-state recheck declarations.
 These remain design semantics; runtime enforcement is deferred.
+
+[P65](backend-behavior.md) adds exact command/query bindings, lifecycle tables, typed values,
+local transactions/CAS, command receipts, cancellation and declared outcomes. These preserve
+the existing entity/aggregate authority and legacy compatibility; implementation is deferred.
