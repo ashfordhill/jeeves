@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { backendAcceptanceCatalog, benchmarkFixtureSchema } from "@jeeves/spec";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   acceptanceCaseCoverageProblems,
@@ -44,6 +45,130 @@ const plan = planProject(design, templateSet(), {
 });
 
 describe("independent fixed acceptance", () => {
+  const backend = {
+    links: backendAcceptanceCatalog(
+      benchmarkFixtureSchema.parse(
+        JSON.parse(
+          readFileSync(
+            new URL("../../../benchmarks/protocol/v1/synthetic.json", import.meta.url),
+            "utf8",
+          ),
+        ),
+      ),
+    ),
+  };
+  const backendSuite: FixedAcceptance = {
+    ...suite,
+    id: "protocol",
+    operationIds: ["backend:protocol-synthetic:v1:createToken"],
+    acceptanceIds: ["T01-create", "T01-denied", "T01-replay"],
+  };
+  it("admits only explicitly registered backend behaviors and their own observations", () => {
+    const result = acceptanceFiles([backendSuite], {}, {}, backend);
+    expect(result.registrations[0]?.operationIds).toEqual(backendSuite.operationIds);
+    expect(result.files[0]?.ownership).toBe("generated");
+    expect(() => acceptanceFiles([backendSuite], {})).toThrow("no behavior service");
+    expect(() => acceptanceFiles([backendSuite], plan.resourceModels ?? {})).toThrow(
+      "unknown extension operation or event",
+    );
+    expect(() =>
+      acceptanceFiles(
+        [{ ...backendSuite, operationIds: ["backend:protocol-synthetic:v2:createToken"] }],
+        {},
+        {},
+        backend,
+      ),
+    ).toThrow("unknown extension operation or event");
+    expect(() =>
+      acceptanceFiles([{ ...backendSuite, acceptanceIds: ["T02-page"] }], {}, {}, backend),
+    ).toThrow("unknown acceptance reference");
+    expect(() =>
+      acceptanceFiles([{ ...backendSuite, service: "another" }], {}, {}, backend),
+    ).toThrow("no behavior service");
+    expect(() =>
+      acceptanceFiles(
+        [{ ...backendSuite, acceptanceIds: ["ACT-01"] }],
+        plan.resourceModels ?? {},
+        {},
+        backend,
+      ),
+    ).toThrow("unknown acceptance reference");
+    expect(() =>
+      acceptanceFiles(
+        [{ ...suite, acceptanceIds: ["T01-create"] }],
+        plan.resourceModels ?? {},
+        {},
+        backend,
+      ),
+    ).toThrow("unknown acceptance reference");
+  });
+  it("reports missing backend cases and preserves extension and event coverage obligations", () => {
+    const registrations = acceptanceFiles([backendSuite], {}, {}, backend).registrations;
+    expect(acceptanceCaseCoverageProblems({}, registrations, {}, backend)).toEqual([
+      "links/backend:protocol-synthetic:v1:listTokens/T02-page: no fixed backend acceptance suite is registered",
+    ]);
+    expect(
+      acceptanceCoverageProblems(
+        {},
+        registrations,
+        { links: backendSuite.operationIds },
+        {},
+        backend,
+      ),
+    ).toEqual([]);
+    expect(
+      acceptanceCoverageProblems({}, [], { links: backendSuite.operationIds }, {}, backend),
+    ).toHaveLength(3);
+    expect(
+      acceptanceCaseCoverageProblems(plan.resourceModels ?? {}, registrations, {}, backend),
+    ).toContain("links/ACT-01: no fixed acceptance suite is registered");
+    expect(
+      acceptanceCoverageProblems(
+        plan.resourceModels ?? {},
+        registrations,
+        { links: ["qrActivity"] },
+        {},
+        backend,
+      ),
+    ).toEqual(["links/qrActivity: uncovered required acceptance ACT-01"]);
+    expect(() =>
+      acceptanceFiles(
+        [{ ...backendSuite, operationIds: ["event:delivery:created"] }],
+        {},
+        {},
+        backend,
+      ),
+    ).toThrow("unknown extension operation or event");
+    expect(() => acceptanceFiles([suite], {}, {}, backend)).toThrow(
+      "unknown extension operation or event qrActivity",
+    );
+  });
+  it("rejects repeated suite identities, behaviors and cases", () => {
+    expect(() => acceptanceFiles([backendSuite, backendSuite], {}, {}, backend)).toThrow(
+      "Duplicate fixed acceptance suite",
+    );
+    expect(() =>
+      acceptanceFiles(
+        [
+          {
+            ...backendSuite,
+            operationIds: [...backendSuite.operationIds, ...backendSuite.operationIds],
+          },
+        ],
+        {},
+        {},
+        backend,
+      ),
+    ).toThrow("Duplicate behavior identity");
+    expect(() =>
+      acceptanceFiles(
+        [{ ...backendSuite, acceptanceIds: ["T01-create", "T01-create"] }],
+        {},
+        {},
+        backend,
+      ),
+    ).toThrow("Duplicate acceptance identity");
+  });
   it("does not inherit ambient credentials when executing an independent suite", async () => {
     const previous = process.env.JEEVES_VERIFY_TEST_SECRET;
     process.env.JEEVES_VERIFY_TEST_SECRET = "must-not-reach-fixture";

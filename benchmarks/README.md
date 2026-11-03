@@ -25,8 +25,11 @@ P60c supplies the [Zammad source map](zammad-core/v1/source-map.json), with
 [inspected reference reviews and the complete 60-row gate](../docs/reference/backend-benchmarks.md#combined-p60-reference-review).
 P60 is complete as reference work. It adds provenance sidecars without editing
 frozen v1 requirements or conferring implementation evidence. Likewise `fixtureVersion: v1` identifies
-the future P61 fixtures, not fixtures or contracts already supplied by P59. No runner alias is
-registered until its actual tests exist.
+the application fixtures assigned to P61b–d, not application contracts supplied by P59.
+[P61a protocol v1](protocol/v1/README.md) now supplies shared error/auth/paging/idempotency contracts,
+strict fixture validation and namespaced acceptance identities, proved by an isolated synthetic
+pack. Application fixtures and the combined P61 gate remain incomplete; all three applications
+are absent/not run. No runner alias is registered until its actual tests exist.
 
 ## Loading and evaluating
 

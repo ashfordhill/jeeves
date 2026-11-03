@@ -8,7 +8,8 @@ The planning task implemented none. [P58's baseline](evidence/p58/README.md) and
 [P60a's Discourse reference pack](reference/backend-benchmarks.md#discourse-core-p60a) and
 [P60b's Vendure reference pack](reference/backend-benchmarks.md#vendure-core-p60b) and
 [P60c's Zammad pack and combined review](reference/backend-benchmarks.md#combined-p60-reference-review)
-are now complete, including parent P60. P61a is next unstarted.
+are now complete, including parent P60. [P61a shared protocol](../benchmarks/protocol/v1/README.md)
+is complete; P61b is next unstarted and parent P61 remains partial.
 For the authorized P59–P61d batch, lint/types and focused offline backend semantic/compatibility
 tests replace full `pnpm check`; UI unit/E2E execution and maintenance remain deferred.
 When execution is requested, start with the assigned unit, not the historical sequence below. Existing

@@ -1,4 +1,11 @@
-import { type DeliveryModel, eventBehaviorId, idSchema, type ResourceConfig } from "@jeeves/spec";
+import {
+  type BackendAcceptanceCatalog,
+  backendBehaviorRequirements,
+  type DeliveryModel,
+  eventBehaviorId,
+  idSchema,
+  type ResourceConfig,
+} from "@jeeves/spec";
 import type { OutputFile } from "@jeeves/template-kit";
 import { z } from "zod";
 
@@ -16,9 +23,15 @@ const dependency = z.strictObject({
 export const fixedAcceptanceSchema = z.strictObject({
   id: slug,
   service: slug,
-  /** REST operation IDs or namespaced event:<attachment>:<event> behavior IDs. Events are not routes. */
-  operationIds: z.array(z.string().min(1)).min(1),
-  acceptanceIds: z.array(z.string().min(1)).min(1),
+  /** REST operation IDs, event:<attachment>:<event>, or explicitly registered backend behaviors. */
+  operationIds: z
+    .array(z.string().min(1))
+    .min(1)
+    .refine((ids) => new Set(ids).size === ids.length, "Duplicate behavior identity"),
+  acceptanceIds: z
+    .array(z.string().min(1))
+    .min(1)
+    .refine((ids) => new Set(ids).size === ids.length, "Duplicate acceptance identity"),
   /** `frontend` suites wait for the frontend task; extension suites run when their ops are due. */
   requires: z.enum(["extensions", "frontend"]).optional(),
   runner: z.enum(["node", "playwright"]).optional(),
@@ -45,8 +58,9 @@ export function acceptanceFiles(
   inputs: FixedAcceptance[],
   models: Record<string, ResourceConfig>,
   deliveries: Record<string, DeliveryModel> = {},
+  backend: Record<string, BackendAcceptanceCatalog> = {},
 ): { registrations: AcceptanceRegistration[]; files: OutputFile[] } {
-  const requirements = behaviorRequirements(models, deliveries);
+  const requirements = behaviorRequirements(models, deliveries, backend);
   const suites = inputs.map((input) => fixedAcceptanceSchema.parse(input));
   const paths = suites.map(acceptancePath);
   if (new Set(paths).size !== paths.length) throw new Error("Duplicate fixed acceptance suite");
@@ -61,8 +75,16 @@ export function acceptanceFiles(
     for (const id of suite.acceptanceIds)
       if (
         ![
-          ...(models[suite.service]?.acceptanceCases ?? []),
-          ...behaviors.flatMap((e) => e.acceptance),
+          ...(suite.operationIds.some((id) => !id.startsWith("backend:"))
+            ? (models[suite.service]?.acceptanceCases ?? [])
+            : []),
+          ...behaviors
+            .filter((e) =>
+              e.id.startsWith("backend:")
+                ? suite.operationIds.includes(e.id)
+                : suite.operationIds.some((id) => !id.startsWith("backend:")),
+            )
+            .flatMap((e) => e.acceptance),
         ].includes(id)
       )
         throw new Error(`Fixed acceptance ${suite.id}: unknown acceptance reference ${id}`);
@@ -110,6 +132,7 @@ export function acceptanceCaseCoverageProblems(
   models: Record<string, ResourceConfig>,
   suites: AcceptanceRegistration[],
   deliveries: Record<string, DeliveryModel> = {},
+  backend: Record<string, BackendAcceptanceCatalog> = {},
 ): string[] {
   const problems: string[] = [];
   for (const [service, model] of Object.entries(models))
@@ -130,6 +153,20 @@ export function acceptanceCaseCoverageProblems(
           problems.push(
             `${service}/${event.id}/${ref}: no fixed event acceptance suite is registered`,
           );
+  for (const [service, catalog] of Object.entries(backend))
+    for (const behavior of backendBehaviorRequirements(catalog))
+      for (const ref of behavior.acceptance)
+        if (
+          !suites.some(
+            (suite) =>
+              suite.service === service &&
+              suite.operationIds.includes(behavior.id) &&
+              suite.acceptanceIds.includes(ref),
+          )
+        )
+          problems.push(
+            `${service}/${behavior.id}/${ref}: no fixed backend acceptance suite is registered`,
+          );
   return problems;
 }
 
@@ -139,8 +176,9 @@ export function acceptanceCoverageProblems(
   suites: AcceptanceRegistration[],
   required: Record<string, string[]>,
   deliveries: Record<string, DeliveryModel> = {},
+  backend: Record<string, BackendAcceptanceCatalog> = {},
 ): string[] {
-  const requirements = behaviorRequirements(models, deliveries);
+  const requirements = behaviorRequirements(models, deliveries, backend);
   const problems: string[] = [];
   for (const [service, ids] of Object.entries(required)) {
     for (const id of ids) {
@@ -186,20 +224,28 @@ export function acceptanceDependencies(
 export function behaviorRequirements(
   models: Record<string, ResourceConfig>,
   deliveries: Record<string, DeliveryModel> = {},
+  backend: Record<string, BackendAcceptanceCatalog> = {},
 ): Record<string, { id: string; acceptance: string[] }[]> {
-  return Object.fromEntries(
-    [...new Set([...Object.keys(models), ...Object.keys(deliveries)])].map((service) => [
-      service,
-      [
-        ...(models[service]?.extensions ?? []).map((e) => ({
-          id: e.operationId,
-          acceptance: e.acceptance,
-        })),
-        ...(deliveries[service]?.config.events ?? []).map((e) => ({
-          id: eventBehaviorId(deliveries[service]!.attachment, e.id),
-          acceptance: e.acceptance,
-        })),
+  const requirements = Object.fromEntries(
+    [...new Set([...Object.keys(models), ...Object.keys(deliveries), ...Object.keys(backend)])].map(
+      (service) => [
+        service,
+        [
+          ...(models[service]?.extensions ?? []).map((e) => ({
+            id: e.operationId,
+            acceptance: e.acceptance,
+          })),
+          ...(deliveries[service]?.config.events ?? []).map((e) => ({
+            id: eventBehaviorId(deliveries[service]!.attachment, e.id),
+            acceptance: e.acceptance,
+          })),
+          ...(backend[service] ? backendBehaviorRequirements(backend[service]) : []),
+        ],
       ],
-    ]),
+    ),
   );
+  for (const behaviors of Object.values(requirements))
+    if (new Set(behaviors.map((b) => b.id)).size !== behaviors.length)
+      throw new Error("Duplicate acceptance behavior identity");
+  return requirements;
 }

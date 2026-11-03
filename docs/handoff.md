@@ -5563,3 +5563,115 @@ Scope limits and next assignment:
   debt remains unchanged, separately recorded and not rerun/repaired here.
 - **P60c and parent P60 are complete. P61a is next unstarted.** Stop after this scoped local
   commit; launch no following task. No application/database/output mutation, push or publication.
+
+## 2026-11-02 — P61a: shared benchmark protocol, fixture schema and acceptance identities
+
+Executed **P61a only** in `/home/ash/github/jeeves` on `main`, starting clean at P60c/parent-P60
+commit `1d50fc7077e7e98aaf8bb767b95ea5d01428dc8a`. Read AGENTS, PLAN §15 and relevant earlier
+sections, latest handoffs, backend roadmap/shared contract/all benchmark rows/79-unit queue/
+phase-1 P61, P60 adaptation review, worked command trace, generator acceptance and existing fixed
+fixtures/session schemas. One worker; no delegation, branch or worktree. The authorized P59–P61d
+policy applies: lint/types and focused offline backend semantic/compatibility tests replace full
+`pnpm check`; UI unit/E2E execution and maintenance remain deferred.
+
+Built:
+
+- Added/exported `packages/spec/src/benchmark-protocol.ts`: bounded strict errors, common
+  code/status meanings, safe header transport, correlation identity, cursor/page bounds,
+  expectedVersion, command identity and seven-day replay constant. Reuses existing credential/
+  session identity schemas and specifies the existing origin-derived cookie/session boundary;
+  no new password/session implementation. Added exact-Origin/CSRF lexical validation and
+  explicit application cookie-name security binding. Domain codes cannot override common ones.
+- Added [protocol v1 guide](../benchmarks/protocol/v1/README.md) and
+  [portable OpenAPI components](../benchmarks/protocol/v1/components.openapi.json). The guide
+  fixes error/auth/paging/idempotency semantics: private lookup redaction; per-operation outcomes;
+  no-store/correlation and operation-specific headers; default-25/max-100 keysets with policy
+  before paging/counts; validated principal/scope/operation command identity, normalized input
+  hash, atomic receipt/intent, current-access replay, conflict/in-progress outcomes and 604800-second
+  retention. Callback authentication and provider uncertainty remain explicit. The OpenAPI
+  snapshot comes from independent acceptance-side schemas and has **zero application routes**.
+  Tests check equality; nothing is exported from runtime descriptors or observed SQL.
+- Added/exported `packages/spec/src/benchmark-fixtures.ts`: strict versioned JSON fixture packs,
+  independent operation/dataset/control schema registration, pinned-ledger validation, exact
+  mandatory case/observation membership, isolated scopes/actor identities, unique routes/operations,
+  payload/negative-payload validation, ordered and parallel request steps, connection-loss outcomes,
+  fixture-only controls, literal equals/absent assertions and reference/coverage validation.
+  Expected state/response assertions must agree with fixed sample values. No arbitrary code,
+  runtime-derived expectations or production inspection/authentication endpoint is introduced.
+  Binary/no-content success contracts can declare status-specific headers/descriptors. Real packs
+  require two scopes, ordinary principals in distinct scopes, privileged/revoked/anonymous actors.
+- Added [the synthetic fixture](../benchmarks/protocol/v1/synthetic.json) and focused protocol tests:
+  **two illustrative operations / four T-prefixed observations / one inspection control**. The
+  fixed one-token/one-receipt count is an expectation, never an observed result. Synthetic fixtures
+  cannot bind a D/V/Z ledger. Real fixture parsing requires the frozen ledger and exact coverage;
+  missing, duplicate, foreign/stale or unregistered identities fail. The absence helper returns
+  only `not-run`/`blocked` with a reason, cannot return a pass and contains no scoring fields.
+- Extended existing generator acceptance helpers with an optional explicit service-scoped backend
+  catalog. Names are `backend:<profile>:<version>:<operationId>`; exact case-owned observation IDs
+  remain separate. Rejects duplicate suite/behavior/reference identities, unregistered service/
+  behavior/version and foreign observations; reports missing backend operation/observation pairs.
+  Backend-only suites cannot claim legacy resource cases, and legacy-only suites cannot borrow
+  backend observations. Existing extension/event coverage and generated ownership remain in force.
+  No new runner mode, planner/generator registration or orchestration dispatch is added; P74/P79
+  owns that integration and real execution. Catalog registration is a declaration, not evidence.
+- Updated benchmark/roadmap/improvement entry points: **P61a complete, P61b next; parent P61 partial**.
+  All D/V/Z application contracts/concrete fixtures remain P61b/c/d work. No CATALOG change:
+  offerings, reusable C2/C3 boundaries and runtime/template availability did not change.
+
+Final checks with **Node 24.21.0 / pnpm 12.16.1**, using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; `Checked 821 files in 385ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, no new diagnostics/errors. Raw output: `.jeeves-work/p61a/lint.log`. Scoped Biome
+  formatting/checks also passed; new files add no diagnostics.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **9.0s**.
+  Evidence: `.jeeves-work/runs/2026-11-03T00-23-45-754Z-typecheck-ef902a02.{json,log}`.
+- Exact focused offline selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/delivery.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **8 files / 176 tests passed**, **4.6s** including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-03T00-23-45-754Z-unit-3c8e6605.{json,log}`. Both final work-runner
+  records report `sourceChanged: false`. Tests cover synthetic contract validation, malformed/
+  unknown payloads, auth/header/page/version bounds, literal expectations, loss/parallel forms,
+  byte/no-content declarations, registered identities, absence reporting and selected existing
+  ledger/evidence/extension/event/plan/generate/registry compatibility. These are offline semantic
+  and temporary legacy-fixture checks, not running D/V/Z applications or benchmark points.
+- Temporary scoped audit `.jeeves-work/p61a/audit.py` → `audit.json`: **125 local links/anchors**,
+  balanced fences, JSON parsing, all canonical ledger hashes, byte-for-byte preservation of
+  **nine P59 files against `6ecd5b3` and three P60 source maps against their respective commits**,
+  unchanged reference catalog/review, package/dependency files and runtime/artifact trees, and
+  earlier handoff prefix preserved. `git diff --check` passed. This audit was rerun after the
+  append-only handoff.
+
+New artifact pins:
+
+| Artifact | File-byte SHA-256 | Canonical JSON SHA-256 |
+| --- | --- | --- |
+| Protocol OpenAPI components | `7792e34c52113dbc1e882fc2ddc11cf662f5b1574d499316eec075583a38dc26` | `b65cdaa6e99a78b798c5821d0c1018a57753cdb4e2e15319f1345d9f59afbeca` |
+| Synthetic input/expectation fixture | `8fbb150933b59a81178a94ebf6d96a478bf9fd203129f3129e9600b3470edfcd` | `838e8c7c7afa10dc05e1e51cda42170bb860d1079426f25e9fcef838d402a115` |
+
+Observed failure and scope limits:
+
+- An intermediate focused run returned **1 failed / 175 passed**, exposing that `new URL` inside
+  the Origin refinement threw for invalid text before returning a validation failure. Added
+  `URL.canParse` before construction and reran the complete focused selector/typecheck/lint.
+  Final results above pass. The failed report remains at
+  `.jeeves-work/runs/2026-11-03T00-22-56-954Z-unit-1e85254e.{json,log}`; no expected behavior was
+  weakened or failure report replaced.
+- No P61a blocker or scope revision. JSON is used for the shared OpenAPI component document;
+  application children still own the specified per-app `contracts.openapi.yaml`. Fixture schema
+  validation proves structure, references and fixed payload consistency, not live authorization,
+  idempotency, concurrency, durability, byte access or calendar behavior. A lexical cursor is not
+  an authenticated cursor. Later adapters must preserve raw independent evidence and ownership.
+- **All three applications remain absent/not run, with zero observed implementation points.**
+  No app fixtures, benchmark result/pass records, new runner/profile command, runtime implementation,
+  core application generation, database/output mutation, provider calls, upstream execution or
+  load/recovery/upgrade campaign. Full `pnpm check`, deferred UI suites/maintenance and production
+  UI build/browser were not run. Historical P59 architecture assertion debt remains unchanged.
+
+**P61a is complete; P61b is the next unstarted work unit.** Parent P61 remains incomplete until
+P61b/c/d provide the application contracts, all concrete observations and combined 60-row gate.
+Stop after this scoped local commit; launch no next task. No push or publication.
