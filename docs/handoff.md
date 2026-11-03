@@ -6190,3 +6190,125 @@ Observed intermediate failures and limitations:
 
 **P62a is complete with no P62a blocker. P62b is the next unstarted work unit.** Stop after this
 scoped local commit; do not start P62b or any runtime work in this worker.
+
+## 2026-11-02 — P62b: transport, bounded binary bodies and portable logical schemas
+
+Executed **P62b only** in `/home/ash/github/jeeves` on `main`, starting clean at `86d1101`
+(P62a). Read the ignored batch authorization/policy, AGENTS, PLAN §15/applicable §1–14, latest
+handoffs, C4 guidance/studio guide, backend roadmap/shared contract/benchmark scopes/worked trace,
+phase-2 P62 and its execution-unit split. P62a's committed types/resolution and P61's frozen
+independent contracts are the dependencies, exercised again below. One worker; no delegation,
+branch or worktree. The coordinator owns the ignored checkpoint; this worker did not edit it.
+The authorized lint/types/focused offline policy replaces full `pnpm check`; UI suites stay deferred.
+
+Built:
+
+- Added strict optional operation `transport` in
+  [contract-transport.ts](../packages/spec/src/contract-transport.ts): HTTP method/path, stable
+  logical input IDs mapped to path/query/header or JSON request fields, selected outcome/shared
+  output responses, declared status/content type and response headers. Scalars resolve through
+  exact local references; path values are required and nonnullable. Each logical field maps once;
+  headers compare without case. Route placeholders, duplicate routes/names/statuses/outcomes,
+  unmapped/missing fields, structured/nullable parameters, outcome-status/kind contradictions,
+  reserved content headers and GET/HEAD/bodyless-status conflicts reject atomic batches.
+- Added a distinct `{kind: "binary", contentType, maxBytes}` request/response descriptor, with
+  concrete bounded media type and **1–1,000,000,000 byte** bound. Bytes never become a JSON
+  string/field/type reference. JSON descriptors select logical fields and JSON or `+json` content
+  types. Limits: 40 parameters/headers/body fields, 31 responses, 500-character path and 120-character
+  media type. See [model and serialized contract](contract-types.md#http-mappings-and-binary-bodies-p62b).
+- Integrated structural/review validation and exact matching into existing contracts/patterns.
+  A captured source identity/snapshot/revision cannot be edited or converted into a planned shape
+  under its exact version, even without consumers. Legacy resources remain authoritative/editable
+  through their existing path; changed sources stay visibly stale, and successors capture a new
+  version. Consumed transport contracts cannot disappear during same-batch consumer migration.
+  P62a's referenced local-type protection remains. Historical nested/source contracts and legacy
+  composition semantics remain compatible.
+- Added the pure [logical schema exporter](../packages/spec/src/contract-json-schema.ts).
+  It validates the whole contract, all local types/budgets and mappings before returning any schema.
+  Self-contained draft 2020-12 `$defs` preserve exact local references, object presence/nullability,
+  bounded maps/arrays and disjoint `oneOf` variants. Data/events select their payload root. API/
+  in-process documents are catalogs of input/output/outcome/body schemas; consumers select the
+  appropriate reference, rather than validating a request against the unselected catalog root.
+  `x-jeeves` metadata carries method/path/status/content/header/input mappings, including scalar
+  presence/schema refs. Binary bodies stay byte descriptors. Unresolved/invalid shapes return
+  diagnostics without a partial schema. Source references retain their source definition without
+  an inferred competing logical schema.
+- Handoff JSON now includes intact typed `definition` plus `jsonSchema`, or `schemaIssues` for a
+  draft. Typed property names, literals and semantic route paths survive exactly, including
+  `config` and `/home/` prefixes; optional undefined properties normalize to JSON absence. Opaque
+  runtime config/source examples retain existing sanitization. Library extraction/insertion,
+  identity remapping, exact reuse, target diffs, fingerprints and chat operation schemas preserve
+  complete graphs/mappings. No new library/reference collector schema was necessary.
+- Added **12 focused semantic/export tests** in
+  [contract-transport.test.ts](../packages/spec/src/contract-transport.test.ts). An independent
+  Ajv 2020 reader checks real accepted/rejected instances, including map key/entry/item limits,
+  reused exact money, nullable optional addresses, tagged payment results, standalone data roots,
+  binary upload/download intent and every exported local pointer. Library→insert→handoff JSON
+  round-trips preserve the original shape and executable schema meaning. Test-only Ajv **8.20.0**
+  / ajv-formats **3.0.1** reuse the existing REST runtime's exact pins; offline installation reused
+  134 packages, downloaded/added **zero**, and changed only the spec importer in the lockfile.
+- Updated model/handoff docs and roadmap entry points: **P62a, P62b and parent P62 complete;
+  P63a next**. No CATALOG change: no offering, reusable C1/C2/C3 boundary, template availability
+  or observed application evidence changed. All frozen benchmarks/legacy fixtures and P62a
+  shape/resolution/test sources remain byte-identical to base.
+
+Final checks with **Node 24.21.0 / pnpm 12.16.1**, explicitly using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; **850 files / 655ms**, no fixes. Existing **2025 warnings / 75 infos**,
+  no added diagnostics. `.jeeves-work/p62b/lint-final.log`.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0, all workspaces/scripts, **12.0s**.
+  `.jeeves-work/runs/2026-11-03T02-31-02-509Z-typecheck-533ddbd9.{json,log}`.
+- Exact combined P62/new semantics, P61/frozen contract and legacy compatibility selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/contract-transport.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/architecture-contracts.test.ts packages/spec/src/architecture-library.test.ts packages/spec/src/architecture-targets.test.ts packages/spec/src/apply.test.ts packages/spec/src/schemas.test.ts packages/spec/src/resources.test.ts packages/spec/src/benchmark-foundation.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/discourse-benchmark.test.ts packages/spec/src/vendure-benchmark.test.ts packages/spec/src/zammad-benchmark.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **16 files / 240 tests passed**, **7.5s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T02-31-02-502Z-unit-6a867ca6.{json,log}`. Final type/unit records
+  both report `sourceChanged: false`. These are offline semantic/compatibility checks, not running
+  benchmark applications or a new serializer/runtime conformance result.
+- `pnpm --filter @jeeves/web build`: exit 0; Vite **1.61s**, existing large-chunk advisory only.
+  `.jeeves-work/p62b/web-build.log`. No production UI file/control changed; this checks the shared
+  browser bundle. No direct browser workflow or deferred UI unit/E2E suite ran.
+- `.jeeves-work/p62b/audit.py` → `audit.json`: scoped Markdown links/anchors and balanced fences,
+  unchanged earlier handoff prefix, and byte preservation of **1,448 other tracked files**,
+  including **all 48 benchmark files / 46 legacy fixtures**, CATALOG and application/runtime/
+  template/generator/registry/artifact sources. Rerun after this append. `git diff --check` passes.
+
+Observed intermediate failures and preserved limitations:
+
+- The initial new-test run was **236 passed / 2 failed**. The first reader (Zod's JSON Schema
+  importer) ignored `minProperties`; switched to existing pinned Ajv rather than dropping any
+  bound/negative assertion. A new extraction fixture lacked an interface to include its contract
+  in the existing closure; added that interface. Initial failed record:
+  `.jeeves-work/runs/2026-11-03T02-23-08-161Z-unit-8f193e37.{json,log}`. Subsequent selectors
+  passed 238, then 239, then the final 240 tests. Temporary cleanup-script/unused-import type
+  errors were corrected before the final successful workspace typecheck; no expectation changed.
+- A broader initial removal guard blocked historical legacy composition, producing **8 failed /
+  6 passed** in the two existing architecture files. Restricted that new removal guard to consumed
+  transport declarations, preserving P62a local-type protection and old composition semantics.
+  Initial regression record: `.jeeves-work/runs/2026-11-03T02-27-09-723Z-unit-c86c499a.{json,log}`.
+  No historical assertion/fixture was edited to accommodate it.
+- Final `pnpm work run unit packages/spec/src/architecture-patterns.test.ts packages/spec/src/architecture-handoff.test.ts`
+  remains **4 failed / 10 passed**, exactly the historical titles/observations recorded by P62a:
+  pattern visit/billing coverage/behavior review, QRWTY/Inventory ready/review status, and approval
+  status. Final record: `.jeeves-work/runs/2026-11-03T02-31-02-506Z-unit-39622ba7.{json,log}`.
+  Reproduced the same four titles on **exact base `86d1101` production source**, temporarily
+  substituting the four edited existing source modules and restoring every byte in `finally`.
+  Baseline: `.jeeves-work/runs/2026-11-03T02-27-39-277Z-unit-d76518de.{json,log}`;
+  `.jeeves-work/p62b/baseline.json` contains hashes/restoration evidence. Both baseline and final
+  historical records have `sourceChanged: false`. This is unchanged review debt, not a pass or a
+  P62b regression. Full `pnpm check` was not run; no full-green claim.
+- Parent P62's dictionary/payment/address/money/binary fixtures, old nested/source preservation,
+  cycles/budgets/stale references/type immutability, explicit successors, atomic rejection and
+  portable export gates are complete. New mouse controls stay with P67a. Runtime recursion,
+  remote/OpenAPI interpretation, serializer/storage/runtime/code generation and P63 implementation
+  remain outside this unit. Binary limits are declarations, not observed streaming/inspection.
+- All three benchmark applications remain **absent/not run, zero observed implementation points**.
+  No runtime/provider/hook implementation or execution, live database/project/output mutation,
+  benchmark result, recovery/load campaign, application generation, push or publication.
+
+**P62b and parent P62 are complete with no P62b blocker. P63a is the next unstarted work unit.**
+Stop after this exact-ID scoped local commit; the coordinator owns the next assignment.

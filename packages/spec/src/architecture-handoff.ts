@@ -13,6 +13,7 @@ import type { ArchitectureLibraryEntry } from "./architecture-library.ts";
 import { describeArchitecturePattern } from "./architecture-patterns.ts";
 import { reviewArchitecture } from "./architecture-review.ts";
 import { type ArchitectureProvision, architectureViews } from "./architecture-view.ts";
+import { exportContractJsonSchema } from "./contract-json-schema.ts";
 import type { DesignDocument } from "./design.ts";
 import type { ArchitectureEvidence } from "./evidence.ts";
 import { isStructural } from "./findings.ts";
@@ -132,6 +133,16 @@ export const architectureHandoffSchema = z
         sourceRevision: z.number().optional(),
         status: z.enum(["resolved", "unavailable", "stale"]),
         definition: json.optional(),
+        jsonSchema: json.optional(),
+        schemaIssues: z
+          .array(
+            z.strictObject({
+              code: z.string(),
+              path: z.array(z.union([z.string(), z.number()])),
+              message: z.string(),
+            }),
+          )
+          .optional(),
       }),
     ),
     manifests: z.array(
@@ -331,6 +342,7 @@ export async function buildArchitectureHandoff(input: {
     if (s.incomplete.length) open("scenario", s.id, s.incomplete.join(" "), true);
   const contracts = (a.contracts ?? []).map((c) => {
     const definition = c.source ? resolveContractSource(design, c.source) : c.shape;
+    const exported = c.shape ? exportContractJsonSchema(c) : undefined;
     return {
       id: c.id,
       version: c.version,
@@ -345,7 +357,18 @@ export async function buildArchitectureHandoff(input: {
           : c.source && contractCanonical(definition) !== c.sourceSnapshot
             ? ("stale" as const)
             : ("resolved" as const),
-      ...(definition !== undefined && { definition: sanitizeHandoff(definition) }),
+      // Typed planned shapes contain no opaque runtime config. Preserve semantic field names,
+      // route paths and literal values, including names that a generic config scrubber redacts.
+      ...(definition !== undefined && {
+        definition: c.shape
+          ? json.parse(JSON.parse(JSON.stringify(definition)))
+          : sanitizeHandoff(definition),
+      }),
+      ...(exported?.ok
+        ? { jsonSchema: json.parse(exported.schema) }
+        : exported
+          ? { schemaIssues: exported.issues }
+          : {}),
     };
   });
   const manifests = (a.patternInstances ?? []).map((p) => {
@@ -661,7 +684,7 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
     `**${s.status}**`,
     "",
     mdEscape(s.limitation),
-    "Portable definitions omit opaque runtime configuration, local paths and example/default values. Pinned source hashes identify the original manifests, before sanitization.",
+    "Portable definitions omit opaque runtime configuration, local output paths and source example/default values. Typed contract fields, literals and HTTP routes stay exact. Pinned source hashes identify the original manifests, before sanitization.",
     "",
     "[Portable definitions and exact identities](./architecture-handoff.json)",
     ...(s.diagram

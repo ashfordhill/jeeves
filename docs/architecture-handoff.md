@@ -11,7 +11,7 @@ The three files form a portable bundle; keep their names and save them together:
   exact contracts/interfaces, policy/data authority, scenarios, decisions, coverage,
   implementation obligations, deployment intent and reusable provenance.
 - `architecture-handoff.json`: strict `jeeves.architecture-handoff` schema version 1,
-  resolved sanitized contract definitions and architecture-template manifests, identity-linked
+  exact typed contract definitions, sanitized source definitions and architecture-template manifests, identity-linked
   completeness/open items, recorded evidence, selected projection geometry and fingerprints.
 - `architecture-diagram.svg`: standalone vector output of the selected view's actual node,
   relationship and label geometry, with a title, legend, planned status and selected scenario
@@ -25,6 +25,15 @@ returns `Cache-Control: no-store`. It reads saved definitions, validated recipe 
 recorded evidence; it does not inspect application files, fetch remote definitions, generate,
 write locks, create agent tasks or choose models. Unknown/pinned-but-unavailable local versions
 are labeled unavailable rather than replaced by a newer version.
+
+[P62 logical contract export](contract-types.md#portable-logical-json-schema) adds optional
+`contracts[].jsonSchema`: a self-contained draft 2020-12 schema catalog with exact local `$defs`
+and transport declarations. Incomplete planned contracts carry `schemaIssues` instead. Their
+intact typed `definition` remains available in both cases. API catalogs contain several message
+schemas; select an operation/body reference before validating an instance. Binary bodies remain
+bounded byte descriptors, and source-backed contracts retain their existing source definitions.
+Typed field names, literals and route paths are preserved exactly. None of these exports supplies
+a runtime, verifies a serializer or changes template availability.
 
 ## Scope, ownership and approval
 

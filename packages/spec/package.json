@@ -10,5 +10,9 @@
   "dependencies": {
     "zod": "4.5.4",
     "@jeeves/http-pool": "workspace:*"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1"
   }
 }

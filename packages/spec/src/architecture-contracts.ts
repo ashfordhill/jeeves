@@ -6,6 +6,7 @@ import {
   operationBehaviorSchema,
   operationOutcomeSchema,
 } from "./contract-shapes.ts";
+import { contractTransportSchema, inspectContractTransport } from "./contract-transport.ts";
 import {
   contractShapeSemantics,
   contractTypeKey,
@@ -18,6 +19,7 @@ import { idSchema } from "./ids.ts";
 import { resourceConfigSchema } from "./resources.ts";
 
 export * from "./contract-shapes.ts";
+export * from "./contract-transport.ts";
 export * from "./contract-type-resolution.ts";
 
 const text = z.string().trim().max(1200);
@@ -31,6 +33,7 @@ export const contractShapeSchema = z.strictObject({
         input: fields,
         output: fields,
         behavior: operationBehaviorSchema.optional(),
+        transport: contractTransportSchema.optional(),
         outcomes: z
           .array(operationOutcomeSchema)
           .max(30)
@@ -124,6 +127,8 @@ export const architectureContractSchema = z
     } else if (contract.sourceSnapshot !== undefined || contract.sourceDesignRevision !== undefined)
       issue("Only source references have a saved source revision.");
     if (contract.shape) {
+      if (contract.kind !== "api" && contract.shape.operations.some((o) => o.transport))
+        issue("Only API contracts declare HTTP transport mappings.");
       if (
         (contract.kind === "event" || contract.kind === "data") &&
         contract.shape.operations.length
@@ -350,7 +355,10 @@ export function validateArchitectureContracts(design: DesignDocument): Finding[]
       );
     keys.add(contractKey(contract));
     if (contract.shape)
-      for (const issue of inspectContractShape(contract.shape).issues)
+      for (const issue of [
+        ...inspectContractShape(contract.shape).issues,
+        ...inspectContractTransport(contract.shape).issues,
+      ])
         if (issue.code !== "UNRESOLVED")
           result.push(
             finding(
@@ -490,7 +498,8 @@ export function architectureContractReview(design: DesignDocument): ContractRevi
       ((["api", "in-process"].includes(contract.kind)
         ? !contract.shape.operations.length
         : !contract.shape.payload.length) ||
-        !inspectContractShape(contract.shape).ok)
+        !inspectContractShape(contract.shape).ok ||
+        !inspectContractTransport(contract.shape).ok)
     )
       result.push({
         code: "UNRESOLVED_CONTRACT",
@@ -529,15 +538,20 @@ export function validateContractTransition(
 ): Finding[] {
   const result: Finding[] = [];
   for (const prior of before.architecture?.contracts ?? []) {
+    const referenced = [
+      ...(before.architecture?.interfaces ?? []),
+      ...(before.architecture?.bindings ?? []),
+      ...(before.architecture?.datasets ?? []),
+    ].some((use) => contractKey(use.contract) === contractKey(prior));
     if (
-      prior.shape?.types?.length &&
-      inspectContractShape(prior.shape).references.length &&
+      ((referenced && prior.shape?.operations.some((o) => o.transport)) ||
+        (prior.shape?.types?.length && inspectContractShape(prior.shape).references.length)) &&
       !after.architecture?.contracts?.some((next) => contractKey(next) === contractKey(prior))
     )
       result.push(
         finding(
           "CONFIG_INVALID",
-          `Contract ${contractKey(prior)} contains referenced local types. Preserve its immutable versions.`,
+          `Contract ${contractKey(prior)} is referenced. Preserve its immutable contract and local type versions.`,
           {
             path: ["architecture", "contracts", contractKey(prior)],
           },
@@ -566,6 +580,20 @@ export function validateContractTransition(
       sourceSnapshot: item.sourceSnapshot,
       sourceDesignRevision: item.sourceDesignRevision,
     });
+    if (
+      prior?.source &&
+      (contractCanonical(prior.source) !== contractCanonical(next.source) ||
+        prior.sourceSnapshot !== next.sourceSnapshot ||
+        prior.sourceDesignRevision !== next.sourceDesignRevision ||
+        next.shape !== undefined)
+    )
+      result.push(
+        finding(
+          "CONFIG_INVALID",
+          `Source contract ${contractKey(prior)} is authoritative and immutable. Capture an explicit new version from its source.`,
+          { path: ["architecture", "contracts", contractKey(prior)] },
+        ),
+      );
     if (
       prior &&
       referenced &&

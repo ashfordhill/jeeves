@@ -13,6 +13,7 @@ import {
   contractCanonical,
   contractShapeSemantics,
   inspectContractShape,
+  inspectContractTransport,
 } from "./architecture-contracts.ts";
 import { type PatternInstance, patternConfigSchema } from "./architecture-pattern-provenance.ts";
 import {
@@ -1092,6 +1093,8 @@ function sameDefinition(a: ArchitectureContract, b: ArchitectureContract) {
     !!b.shape &&
     inspectContractShape(a.shape).ok &&
     inspectContractShape(b.shape).ok &&
+    inspectContractTransport(a.shape).ok &&
+    inspectContractTransport(b.shape).ok &&
     contractCanonical(contractShapeSemantics(a.shape)) ===
       contractCanonical(contractShapeSemantics(b.shape))
   );
