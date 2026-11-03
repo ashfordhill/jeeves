@@ -9,7 +9,7 @@ import {
   type DesignDocument,
 } from "@jeeves/spec";
 import { Button, Group, NativeSelect, Stack, Text } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BackendAccessUseEditor } from "./BackendAccessUseEditor.tsx";
 import { BackendAggregateEditor } from "./BackendAggregateEditor.tsx";
 import { BackendDatasetEditor } from "./BackendDatasetEditor.tsx";
@@ -34,9 +34,11 @@ export function ComponentDataEditor({
   onChange,
   mode,
   onArea,
+  navigation,
 }: {
   mode: "data" | "access";
   onArea: (area: "data" | "access") => void;
+  navigation?: { kind: Parameters<DataNavigation>[0]; key: string };
   design: DesignDocument;
   draft: Architecture;
   component: ArchitectureComponent;
@@ -52,6 +54,13 @@ export function ComponentDataEditor({
     onArea(access ? "access" : "data");
   };
   const [selection, setSelection] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!navigation) return;
+    if (navigation.kind === "policies" || navigation.kind === "accessBindings")
+      setAccessSection(navigation.kind);
+    else setDataSection(navigation.kind);
+    setSelection((s) => ({ ...s, [navigation.kind]: navigation.key }));
+  }, [navigation]);
   const selected = selection[section] ?? "";
   const select = (key: string) => setSelection((s) => ({ ...s, [section]: key }));
   const navigate: DataNavigation = (kind, key) => {

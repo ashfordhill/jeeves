@@ -7363,3 +7363,128 @@ Corrections and limits:
 **P67b and combined parent P67 are complete, with no P67b blocker. P68a is next unstarted.**
 Stop after the scoped local P67b commit. `.jeeves-work/p67b/completion.json` records its commit,
 checks, browser evidence and limits. Coordinator owns the batch checkpoint.
+
+## P68a — Command, lifecycle, guard and action authoring (2026-11-03)
+
+**Assignment and prerequisites.** Implemented P68a only in primary `main`, base
+`e097cd27d2857fb96ecb2e4d8632929cb5ebd8f2` (completed P67b). Read the batch instructions/checkpoint,
+AGENTS, PLAN relevant §1–14/§15, latest handoff, C4 modeling/studio, backend roadmap/shared
+contract, phase-2 P68 and mandatory execution-unit split. Coordinator owns the batch checkpoint;
+this worker did not edit it. Ignored inspection/check artifacts: `.jeeves-work/p68a/`.
+
+What now works:
+
+- **Configure component → Behavior** shares the existing General/Data/Access architecture draft
+  and atomic **Save component**. Focused sections expose exact provided commands/read-only
+  operations, lifecycles/state tables and read-only operation-contract inspection. No second save
+  surface, code/JSON/expression editor or runtime was added.
+- Commands select exact provided contract operation/owner and aggregate, root policy/action,
+  separate read/write projections and child participant policies. Stable input paths, persisted
+  entity fields, trusted context, server factories, scalar literals, preceding typed capability/
+  pure-hook/insertion results and bounded query results use finite controls. Root/child key
+  mappings, direct relations, create/create-child/patch/append-revision/transition/add-relation/
+  remove-relation, registered/explicit unsupported strategies and existing pure-hook action
+  bindings use bounded rows. Mouse actions reorder writers; declared writes must match actual
+  finite writers under the existing shared validator.
+- Command sections cover optimistic CAS input versus aggregate row-lock intent, exact store and
+  transaction participants, command-key/hash input fields, published replay window, cooperative
+  cancellation deadline and starts-work choice. Fixed single-connection/no-external-I/O/current-
+  state/rollback/unknown-commit/receipt/replay guarantees remain visible requirements. Outcome
+  triggers select exact UX5 declarations with typed field mappings and visible retry/state/status
+  meaning; contradictory mappings cannot save.
+- Lifecycles derive states from an exact required nonnullable persisted enum, show initial state
+  and a state table, and author finite present/compare guards plus reachable explicit transitions.
+  Protection probes the same `validateBackendBehaviorTransition` used by atomic Save. Referenced
+  lifecycle semantics/version/removal are protected while names and reference navigation remain
+  available. Explicit successors preserve old versions and never retarget consumers automatically.
+- Exact command contract inspection shows protected wire inputs/outputs, local types and declared
+  outcomes. **Open …** links reach policies, aggregates, action lifecycles and persisted entities,
+  then the existing dataset/contract chain, inside the same draft. Incomplete decisions show
+  specific paths and mouse links into the command's relevant section. Existing Review derives
+  `BACKEND_BEHAVIOR_GAP` from the same semantic findings; no validator/assertion was weakened.
+- Studio/behavior guides and roadmap/improvement status describe P68a complete and P68b next.
+  CATALOG is unchanged: no offering, reusable C1/C2/C3 boundary or implementation availability
+  changed. Semantic schemas, compiler/runtime/template/generator paths and frozen expectations
+  are unchanged.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1**, with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **893 files / 685ms**, no fixes, **2024 existing warnings / 75 infos**;
+  no added diagnostics. `.jeeves-work/p68a/lint-last.log`; repeated after this append.
+- `pnpm work run typecheck` → workspace/script typecheck: exit 0, **12.1s**.
+  `.jeeves-work/runs/2026-11-03T17-30-16-456Z-typecheck-ea6adbab.{json,log}`.
+- Focused offline compatibility/semantics selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/backend-behavior.test.ts packages/spec/src/backend-effects.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/apply.test.ts
+  ```
+
+  Exit 0, **7 files / 114 tests**, **2.1s** including runner overhead.
+  `.jeeves-work/runs/2026-11-03T17-23-53-805Z-unit-12f2769e.{json,log}`. Final typecheck
+  and focused-unit records have `sourceChanged: false`. No semantic production files or tests
+  changed after that focused run; subsequent fixes were UI-only and directly reinspected.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.53s**, existing large-chunk advisory only.
+  `.jeeves-work/p68a/build-last.log`.
+- Direct isolated Chromium inspection against the preserved loopback preview/API:
+  - Started three disposable synthetic projects with contracts/data/access but **no operations or
+    lifecycles**. Authored topic-close (`open → closed`), order-payment-review (`cart → payment-review
+    → paid`) and ticket-first-response (`awaiting-response → responded → resolved`) by mouse.
+    Each authors enum state table, guard/transition refs, identity, policy/projections, finite
+    writers, expected version, command key/hash, deadline/starts-work and typed success mapping.
+  - Saved missing outcome decisions with exact findings, then mouse-added all seven success/
+    conflict/rejected/failed/unavailable/cancelled/uncertain outcomes. Undo/Redo/reload restore
+    the same whole saves and protect referenced lifecycle versions.
+  - Exact command contract/policy/aggregate/action/lifecycle/entity/dataset/contract navigation;
+    protected source inspection; explicit lifecycle v2 plus deliberate consumer retarget and
+    action reordering in one Save; old v1 remains unchanged. General/Data/Behavior invalid drafts
+    survive navigation; Cancel discards all edits. Actual server **409** and subsequent local
+    stale-revision rejection retain the open draft and do not overwrite current saved data.
+  - Additional mouse flows create a row with UUID/clock/initial-version/trusted scope/principal
+    sources and map its exact inserted result, switch aggregate/command to row locking and Undo
+    to CAS, and author a bounded read-only operation/filter/comparison/query result. Saves and
+    Undo pass. Wrong CAS type, cross-store transaction, nontext key and falsely successful
+    uncertain outcome all disable Save and remain correctable.
+  - Light **1440×1000**, dark **390×844**, fixed Save/Cancel/reload and reference navigation.
+    Dialog client/scroll width **351px**, document **390px**. Sixteen final scoped axe inspections
+    across state, outcome, exact contract, ordered actions, transaction, inserted result,
+    bounded query, incomplete findings and dark state-table dialogs report **zero violations**.
+    This is changed-dialog inspection, not a full-page accessibility audit.
+  - Successful records: `.jeeves-work/p68a/browser-{domains,extended,values,final}.json`; screenshots
+    and detailed axe JSON alongside. Ordinary flows/final reinspection have zero page/console
+    errors, failed requests or unexpected error responses. `browser-extended.json` records only
+    the intentional 409 console message/response.
+- `node .jeeves-work/p68a/cleanup.mjs`: all **13 pre-existing designs/layouts hash-identical**;
+  deleted only final exact disposable IDs **009b52a9-c5a1-4b50-8254-b40e2ebbf67b**,
+  **300bde95-02ac-4a45-a93e-88820206e244**, **53d1b540-6303-4b0a-8908-ad45a330d278**.
+  Verified each 404 and the original remaining ID set. `cleanup.json`, `preserved-{before,after}.json`
+  and `final-design-{post,order,ticket}.json`. Initial empty-domain seed projects were also removed
+  by exact ID/name before correcting their synthetic enum labels; `reset-seed.json` records them.
+  The existing preview/API remain available; persistent settings/output directories were untouched.
+- `python3 .jeeves-work/p68a/audit.py`: byte-preserved **1,497 other tracked files**, all **48
+  benchmark files / 46 legacy fixtures**, CATALOG and semantic/runtime/template/generator paths;
+  previous handoff prefix unchanged, scoped links/anchors/fences valid. `audit.json`; repeated
+  after this append. `git diff --check` passes.
+
+Corrections and limits:
+
+- Initial typecheck caught redundant narrowed comparisons, the query comparison-property name and
+  using a Review code instead of the underlying nonstructural finding predicate; corrected.
+  Code review found the inserted-entity result path picker gap; added it and verified a complete
+  mouse create/result Save. Additional axe inspection caught low contrast in the new incomplete-
+  decisions alert title; corrected with the existing ink token and reverified in light/dark390.
+  Ad hoc inspection initially invoked unavailable root `tsx` and axe without an explicit browser
+  context; corrected those harness commands. Initial failure artifacts remain for traceability.
+- This is design authoring, not command/query/SQL/authorization/transaction/cancellation execution.
+  All three benchmark applications remain **absent/not run, zero observed implementation points**.
+  These synthetic flows are not the complete benchmark examples or runtime/benchmark acceptance.
+- P68b owns effect/hook definition editing, failure-scenario navigation and combined chat edits;
+  it can reuse `BehaviorValueFields` and the existing atomic draft. P68c owns capability settings;
+  P69/P70 matching/pure compilation. None was started. Parent P68 remains incomplete.
+- No UI unit/E2E suite maintenance/execution, full `pnpm check`, broad historical failure campaign,
+  provider/Docker campaign, new runtime/generation, branch/worktree/delegation, push or publication.
+  The previously recorded historical architecture/chat failures were not rerun or relabeled green.
+
+**P68a is complete with no P68a blocker. P68b is next unstarted; parent P68 remains incomplete.**
+Stop after the scoped local P68a commit. `.jeeves-work/p68a/completion.json` records its commit,
+check records, browser evidence, limits and next unit. Coordinator owns the batch checkpoint.

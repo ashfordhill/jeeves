@@ -104,7 +104,7 @@ byte/output access bindings, operations and capability settings. Follow a query 
 to its exact policy, resource entity, dataset and contract without leaving the shared draft.
 **Sensitive access uses** selects exact policies/projections for byte, materialization, delivery,
 export, job, replay and existing provided-operation paths; it does not implement those paths.
-Operation input/output inspection is read-only; behavior/settings editors follow in P68.
+Operation input/output inspection is read-only. Behavior authoring is available below; effect/hook and capability-setting editors follow in P68b/P68c.
 
 **Design preview** illustrates all/any composition and deny precedence against a local synthetic
 fixture of explicitly assumed clause/context/revocation facts. Unknown facts cannot demonstrate
@@ -117,3 +117,27 @@ All Data and Access changes share **Save component** with General. Cancel discar
 invalid drafts remain editable across section switches. One save is one undo step. Revision conflicts
 retain the draft and require Cancel/reopen against the latest revision. These controls describe design
 intent; they do not supply storage, query execution, authorization or runtime evidence.
+
+
+Component **Behavior** now authors exact provided commands and read-only operations alongside
+**Lifecycles & state tables**, inside the same component draft. Choose one focused command section:
+target/aggregate, current access/participants, finite guards, ordered actions/writes,
+identity/concurrency/transaction, idempotency/cancellation, or declared outcomes. Values select
+stable input paths, trusted context, persisted fields, server factories, bounded scalar literals,
+previous typed action results or a bounded query result. There is no expression or code editor.
+
+Lifecycles select a required persisted enum field, show its state table and initial state, and
+bind finite guards to explicit transitions. Referenced lifecycle semantics are protected; **Create
+lifecycle successor** preserves existing consumers. Retarget a command's exact lifecycle deliberately.
+Names remain editable. **Open …** follows command contracts, policies, aggregates, action lifecycles
+and persisted entities into their exact definitions without losing the draft. Operation contracts,
+inputs, outputs and outcome meanings are inspected read-only; Interfaces owns contract successors.
+
+Commands declare exact root/child keys, allowlisted writers, separate participant policies and
+outcome field mappings. Action order can be changed by mouse. Optimistic CAS selects a typed
+expected version; aggregate row-lock intent remains visible. Command-key identity, normalized input
+hash fields, published replay window, cooperative deadline and starts-work choice are explicit.
+The fixed transaction/receipt/replay/cancellation guarantees remain visible as requirements.
+Missing decisions, such as a conflict or uncertain outcome, remain saveable specific findings;
+contradictory types, references, outcomes and writers block Save. Effect/hook authoring and
+capability settings remain assigned to P68b/P68c. No command, timer, transaction or hook executes.

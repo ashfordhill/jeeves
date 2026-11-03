@@ -26,7 +26,9 @@ import {
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useDraw } from "../draw/store.ts";
+import type { DataNavigation } from "./BackendFields.tsx";
 import { CapabilityFields } from "./CapabilityFields.tsx";
+import { ComponentBehaviorEditor } from "./ComponentBehaviorEditor.tsx";
 import { ComponentDataEditor } from "./ComponentDataEditor.tsx";
 
 export const memberKey = (member: ArchitectureMember) =>
@@ -104,6 +106,10 @@ export function ComponentEditor({
         },
   );
   const [tab, setTab] = useState("general");
+  const [dataNavigation, setDataNavigation] = useState<{
+    kind: Parameters<DataNavigation>[0];
+    key: string;
+  }>();
   const [baseRevision] = useState(design.revision);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -193,6 +199,7 @@ export function ComponentEditor({
             <Tabs.Tab value="general">General</Tabs.Tab>
             <Tabs.Tab value="data">Data</Tabs.Tab>
             <Tabs.Tab value="access">Access</Tabs.Tab>
+            <Tabs.Tab value="behavior">Behavior</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="general" pt="md">
             <Stack gap="md">
@@ -314,6 +321,19 @@ export function ComponentEditor({
               draft={architecture}
               component={draft}
               onChange={setArchitectureDraft}
+              navigation={dataNavigation}
+            />
+          </Tabs.Panel>
+          <Tabs.Panel value="behavior" pt="md">
+            <ComponentBehaviorEditor
+              design={design}
+              draft={architecture}
+              component={draft}
+              onChange={setArchitectureDraft}
+              navigate={(kind, key) => {
+                setDataNavigation({ kind, key });
+                setTab(kind === "policies" || kind === "accessBindings" ? "access" : "data");
+              }}
             />
           </Tabs.Panel>
         </Tabs>
