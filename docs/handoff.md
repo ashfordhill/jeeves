@@ -7854,3 +7854,89 @@ Corrections and limits:
 **P69 is complete with no blocker. P70a is next unstarted.** Stop after this scoped local P69 commit.
 `.jeeves-work/p69/completion.json` records commit/checks/browser/limits; the coordinator owns the
 batch checkpoint.
+
+## P70a — pure backend data IR and deterministic source maps (2026-11-03)
+
+**Complete.** Implemented only P70a in the primary checkout on `main`, starting from
+`731b90d58229e17a5d482aa8a029de68114f9620`. Read the batch instructions/checkpoint, PLAN §1–§15,
+latest handoff, C4 guidance/studio guide, backend roadmap/shared contract, phase-2 P70 and the exact
+P70a/P70b execution split. The coordinator owns the batch checkpoint; this worker stops after the
+scoped local commit. No other work unit was started.
+
+Built:
+
+- [Versioned pure IR types](../packages/generator/src/backend-ir.ts) and the exported
+  [lowerBackendData](../packages/generator/src/backend-plan.ts) analysis seam. Hosts, entities,
+  resolved logical fields, relations/constraints/indexes, aggregates, bounded queries, policies and
+  access bindings lower into detached, deeply frozen data. The shared types also reserve operation
+  adapters, transaction participants, effects, runtime dependencies and hook obligations for P70b;
+  this child does not populate those collections or supply complete executable readiness.
+- Exact dataset ownership/store and contract/type resolution, scalar/nullable/optional/server-owned
+  annotations, bounded opaque JSON and integer minor-unit/currency storage. Queries preserve joins,
+  nullability, allowlisted filters/projection, semantic sort/cursor tuples, limits/freshness and
+  exact current policy/projection links. Policies retain trusted context, default deny, deny
+  precedence and revocation semantics. Nothing evaluates a policy, issues SQL or creates schemas.
+- Unambiguous version-aware compiler IDs, injectively escaped stable symbols, canonical semantic
+  ordering and a stable source path for every lowered responsibility. Display renames and irrelevant
+  ordering leave IR/source maps unchanged; key/sort/cursor order remains semantic. Missing/cyclic
+  joins stay in the analysis with diagnostics rather than disappearing.
+- Reused the complete P69 support report and preserved raw design findings verbatim, including every
+  `NEEDS_TEMPLATE` and structural error. Added explicit unresolved-authority/type/source, aggregate
+  host/store, query-store, physical-table and compiler identity/name collision diagnostics. Support
+  reasons point to original exact obligations. A supported sibling never supplies an unsupported
+  one. Registry arrays and source designs remain unfrozen and unmodified.
+- [Isolated fixtures](../packages/generator/src/backend-plan-fixture.ts) and
+  [21 focused compiler checks](../packages/generator/src/backend-plan.test.ts). Their synthetic
+  manifest claims never enter production registry/modules and have no emitter or runtime. Tests
+  cover all data-stage IR collections, bounded nested map/union/array and money types, joined policy
+  links, permutations/renames, exact versions, source coverage, immutable detached results, option
+  mismatches, ownership/stores, unresolved/cyclic references and collisions. Four existing
+  resource/contract project plans remain byte-identical before/after analysis; legacy golden output
+  and lock expectations remain unchanged.
+- [Compiler seam documentation](backend-plan.md), cross-linked CATALOG/support guidance and roadmap
+  status. P70a is complete; parent P70 remains incomplete until P70b. Offerings and runtime
+  availability are unchanged.
+
+Verification, all with `PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: **passed**, **914 files / 639ms**, no fixes; unchanged **2,024 warnings / 75 infos**.
+  Scoped new TypeScript files also pass Biome with zero diagnostics. Log:
+  `.jeeves-work/p70a/lint.log`.
+- `pnpm work run typecheck`: **passed**, all workspaces plus scripts, **12.0s**.
+  Record: `.jeeves-work/runs/2026-11-03T19-00-20-433Z-typecheck-f5d02dcd.json`.
+- `pnpm work run unit` with exactly:
+  `packages/generator/src/backend-plan.test.ts`,
+  `packages/spec/src/{backend-implementations,backend-data,backend-queries,backend-policy,backend-behavior,backend-effects,backend-capability-configs}.test.ts`,
+  `packages/registry/src/{backend-capabilities,registry,fixtures}.test.ts`,
+  `packages/generator/src/plan.test.ts`, and `packages/template-kit/src/context.test.ts`:
+  **13 files / 217 tests passed**, **5.0s**, `sourceChanged: false`. The brace notation here
+  abbreviates the explicit argv in the record; no shell wildcard selected deferred suites.
+  Record: `.jeeves-work/runs/2026-11-03T19-00-03-611Z-unit-31eed08b.json`.
+- `.jeeves-work/p70a/audit.py`: **1,523 other tracked files preserved**, including **48 benchmark
+  files / 46 legacy fixtures**, all production manifests/registry, templates, runtimes, frozen
+  artifacts/versions, and existing generator plan/writer/lock/modules/global gate. Earlier handoff
+  prefix is byte-identical; pure imports/nondeterminism scan, scoped Markdown links/anchors/fences
+  and `git diff --check` pass. Final audit after this append: `.jeeves-work/p70a/audit.json`.
+
+Corrections, scope and next step:
+
+- Initial local runs caught missing required synthetic dataset fields, fixture policy `list`
+  permissions, an overconstrained synthetic host-role claim and test-only TypeScript assumptions;
+  corrected the fixture/types without weakening acceptance expectations. Additional source review
+  caught unresolved joins disappearing from the derived sources, missing local filter/output IDs,
+  noncanonical configuration object keys and invalid symbol punctuation; corrected and added
+  focused assertions. Initial failed attempts remain in the ignored runner logs. Final recorded
+  checks pass; no historical test campaign or broad full-green claim is made.
+- No UI changed, so production build/browser inspection was not required or run. Per the standing
+  batch authorization, deferred UI unit/E2E suites and full `pnpm check` were not maintained or run.
+- This is a **data-stage analysis API**, not a complete compiler/preview or generation mode. P70b
+  owns operation/effect/hook lowering, complete text/JSON preview, runtime dependencies/intent
+  accounting, mode/snapshot/readiness routing, route/hook-path collisions and the combined legacy
+  guard. The full planned C2/C3/relationship and external-adapter gate remains P70b's acceptance.
+- No new runtime rendering, filesystem/provider/network work in lowering, production capability
+  registration, stub insertion, application generation, migrations or frozen expectation changes.
+  The three benchmark applications remain **absent/not run, zero observed implementation points**.
+  No branches, worktrees, delegation, pushes or publication.
+
+**P70a is complete with no blocker. P70b is next unstarted; parent P70 is incomplete.**
+`.jeeves-work/p70a/completion.json` records the scoped commit, real checks and remaining boundary.

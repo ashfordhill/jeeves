@@ -3,7 +3,8 @@
 P69 adds a pure availability report and implementation selection. It supplies no backend runtime,
 compiler projection or application generation. Every production manifest still lacks these new
 backend descriptors. The three benchmark applications remain absent/not run with zero observed
-implementation points. [P70a](plans/backend-benchmarks/execution-units.md) is next.
+implementation points. [P70a](backend-plan.md) now supplies a separate pure data-lowering stage; P70b remains next.
+Generation routing and runtime availability remain unchanged.
 
 ## Model and registered claims
 

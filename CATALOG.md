@@ -399,6 +399,9 @@ separate from exact registered modules. Technical details and Review report supp
 explicit typed-hook seams and unsupported obligations for hosts, components, operations and
 relationships. **No production backend capability descriptors or new runtime offerings are
 registered by P69.** Expected evidence packs and observed verification remain separate.
+The [P70a pure data plan](docs/backend-plan.md) resolves host/data/query/policy identities for
+inspection. It supplies no runtime, complete compilation verdict or generation expansion; P70b
+retains the remaining compiler boundary.
 
 The **Realtime client** family records WebSocket/SSE transport, the chosen client implementation,
 reconnection policy and authoritative recovery source. It is a reusable integration boundary;
