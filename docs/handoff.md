@@ -5675,3 +5675,120 @@ Observed failure and scope limits:
 **P61a is complete; P61b is the next unstarted work unit.** Parent P61 remains incomplete until
 P61b/c/d provide the application contracts, all concrete observations and combined 60-row gate.
 Stop after this scoped local commit; launch no next task. No push or publication.
+
+## 2026-11-02 — P61b: independent Discourse contracts, fixed fixtures and five scenarios
+
+Executed **P61b only** in `/home/ash/github/jeeves` on `main`, starting clean at P61a commit
+`bb6d54ebd3cf17b642daca3787ee70da5f9ced0d`. Read AGENTS, PLAN §15/relevant earlier sections,
+latest handoffs, backend shared contract/benchmark scopes/79-unit queue/phase-1 P61, protocol v1,
+P61a schema/identity interfaces, existing fixed acceptance and the Discourse P60 review/source map.
+One worker; no delegation, branch or worktree. The authorized P59–P61d policy applies: lint/types
+and focused offline backend semantic/compatibility checks replace full `pnpm check`; UI unit/E2E
+execution and maintenance remain deferred. No following work unit was started.
+
+Built:
+
+- Added [the Discourse acceptance pack](../benchmarks/discourse-core/v1/README.md): **35 unique
+  operations, 20 D rows / all 66 unchanged observations, 16 typed datasets, two isolated scopes,
+  eight actors, 159 fixed request samples, 20 negative payloads and 241 ordered/control/parallel
+  steps** in exactly D-create, D-revoke, D-edit, D-failure and D-moderate. The typed fixture entry
+  calls P61a's pinned-ledger parser; acceptance identity registration uses its existing interface.
+  Every operation has exact observation ownership. No runner integration/alias is added.
+- Added independent strict request/success/dataset/control and pure-hook schemas in
+  `packages/spec/src/discourse-benchmark.ts`. `contracts.openapi.yaml` is OpenAPI 3.1 in JSON
+  syntax (valid YAML 1.2), exported only from these acceptance-side schemas and shared P61a
+  components. Snapshot equality is checked offline. Per-operation access declarations distinguish
+  public/session/admin/moderator/owner/provider paths. Fixture inspection, clock, barriers, faults,
+  rebuild, restart/drain and reference-provider controls remain outside application routes.
+- Fixed seed identities, clocks, trusted membership, grants, versions, immutable revisions,
+  subscription states, trust activity, projection metadata and legal hold. Expected values are
+  authored literals, never runtime-generated: one created topic/post/receipt/intent after lost
+  response/replay; zero after precommit rollback; one simultaneous command owner and in-progress
+  follower; exactly one v3→v4 edit and one appended revision; one moderator review winner/audit;
+  one inbox/effect receipt after crash/restart; precise orphan association/recovery/cleanup.
+  Command, worker-effect, source-message and external-delivery identities/counts remain distinct.
+- Defined complete revocation/redaction on detail/posts/history/list/search/current proxy bytes,
+  old cursor, stored command replay and pending notifications; interleaved inaccessible keyset
+  rows, query/scope/tamper cursor rejection, projection rebuild, hidden/removed history/search,
+  tombstone/no-op removal and protected metadata-only audit. The fixed six-byte `hello.txt` is
+  **intentional attachment test data**, verified against its SHA-256 and download descriptor.
+- Added [all eight hook contracts and decisions](../benchmarks/discourse-core/v1/hooks.md),
+  their JSON Schema snapshot and typed fixed input/result examples: 30-day trust thresholds and
+  demotion/override; abuse false-positive appeal/moderator override; Chicago half-open digest
+  windows/public selection and uncertain-send reconciliation; bounded safe rendering/mentions;
+  same-category atomic split/merge preserving post/history and mute-wins subscriptions; privacy
+  export/erase/hold/pseudonymization/cancellation/resume; original-byte HMAC/timestamp/sender/thread/
+  MIME/message-receipt mail contract; authorized deterministic ranking/ties/600-second freshness.
+  All H cases include reference success, rejection and recovery/unavailable inputs/results.
+  Missing/timeout/invalid hooks return 503 without domain writes; no fallback success or observed
+  hook completion is inferred. P71b still owns binding these choices to implementation briefs.
+- Documented exact adapter scheduling and isolation: fixed actor cookie jars, unique sample tokens,
+  reauthentication after session expiry during trust demotion, 30-second worker lease and restart
+  at +31 seconds, explicit projection rebuild, bounded drains, finite retries and no live credentials.
+  Privacy's single cancellation comes from a separately queued public reply to Alice, not Bob's
+  already suppressed revoked delivery. Independent contract tests assert these fixture invariants.
+- Updated benchmark/roadmap/improvement entry points: **P61b complete, P61c next; parent P61 partial**.
+  V/Z packs, all frozen ledgers/maps, reference catalog/review and P61a files are preserved. No
+  CATALOG change: no offering, reusable boundary or runtime/template availability changed.
+
+Final checks with **Node 24.21.0 / pnpm 12.16.1**, using
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0; `Checked 827 files in 376ms. No fixes applied.` Existing **2025 warnings /
+  75 infos**, no new diagnostics/errors. Raw output: `.jeeves-work/p61b/lint.log`. Scoped Biome
+  checks also pass with no diagnostics. No dependency/package changes.
+- `pnpm work run typecheck` → `pnpm typecheck`: exit 0 across all workspaces/scripts, **9.2s**.
+  Evidence: `.jeeves-work/runs/2026-11-03T00-46-36-768Z-typecheck-bf3967c6.{json,log}`.
+- Exact focused offline selector:
+
+  ```bash
+  pnpm work run unit packages/spec/src/discourse-benchmark.test.ts packages/spec/src/benchmark-fixtures.test.ts packages/spec/src/benchmark.test.ts packages/spec/src/evidence.test.ts packages/generator/src/acceptance.test.ts packages/generator/src/delivery.test.ts packages/generator/src/plan.test.ts packages/generator/src/generate.test.ts packages/registry/src/fixtures.test.ts
+  ```
+
+  Exit 0; **9 files / 190 tests passed**, **4.7s** including runner overhead. Evidence:
+  `.jeeves-work/runs/2026-11-03T00-46-36-760Z-unit-3574a39a.{json,log}`. Both final runner records
+  report `sourceChanged: false`. Checks validate positive/negative requests, strict outputs/seeds,
+  hook examples, snapshots, complete identities, independent invariant constants, redaction,
+  session renewal and explicit absence; selected legacy acceptance/delivery/generation/registry
+  compatibility remains green. These are contract/accounting checks, **not running D behavior**.
+- Temporary audit `.jeeves-work/p61b/audit.py` → `audit.json`: passed **139 local Markdown links/
+  anchors**, balanced fences, JSON parsing, all canonical ledger pins, exact byte preservation of
+  **nine frozen ledger files and three P60 maps** against P61a `bb6d54e`, unchanged P61a protocol,
+  reference catalog/review, dependency/legacy fixture/runtime/artifact/application trees; exact
+  operation/observation identities, initial same-scope row relationships, intentional byte fixture
+  and append-only earlier handoff prefix. `git diff --check` passed. Rerun after this append.
+
+Artifact file-byte SHA-256 pins:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Discourse OpenAPI | `5eb9d8472291d4fc2f6456a8c68174b48af7f56e48da6f63ce8070105da37076` |
+| Fixed seed/request/scenario expectations | `9a56937b6bd800a7a05b2be4761a220351f5a463ea7e05c2a83036bd95475676` |
+| Pure hook schema snapshot | `d3bd2fd744becea29f03b9c07f4d8fc605dbc67ebe7550d481ba5afd447f31b7` |
+| Fixed pure hook input/result examples | `7baa5829a68b961c11c47e7d75989a3ff257c7062528b3f581f33711fc3af245` |
+| Attachment bytes (`hello.txt`) | `5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03` |
+
+Observed intermediate failures and limits:
+
+- First focused contract run returned **1 failed / 10 passed**, because the newly handwritten
+  cookie-hash test constant was wrong. Corrected it to the independent SHA-256 of the configured
+  origin, consistent with P61a and the fixture authoring calculation. Failed evidence remains
+  `.jeeves-work/runs/2026-11-03T00-34-38-013Z-unit-c9b9b518.{json,log}`. An intermediate scoped
+  Biome check rejected assignment in an expression; rewrote it and reran all final checks. No
+  frozen expectation or prior implementation was changed to conceal a failure.
+- No P61b blocker or benchmark scope revision. JSON syntax in the requested `.yaml` OpenAPI file
+  avoids adding a parser dependency and preserves precise snapshot comparison. Schema export and
+  fixed-fixture validation cannot prove live policy, cryptographic cursor/provider verification,
+  atomicity, worker fencing, byte access, sanitizer safety, privacy compliance or delivery behavior.
+  Future adapters must execute these descriptions against real generated applications, preserving
+  protected independent expectations and raw evidence. Hook reference samples are not supplied
+  application hooks; SMTP ambiguity is not exactly-once delivery.
+- **All three applications remain absent/not run, with zero observed implementation points.**
+  No application logic/hook implementation, generated application, new runner/profile command,
+  benchmark result/pass record, provider call, upstream execution, database/output mutation,
+  load/recovery/upgrade campaign, push or publication. Full `pnpm check`, deferred UI suites/
+  maintenance and production UI build/browser were not run. Historical P59 architecture assertion
+  debt is unchanged and was not rerun/repaired.
+
+**P61b is complete. P61c is next unstarted; parent P61 remains partial.** Stop after this scoped
+local commit; launch no following task.

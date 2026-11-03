@@ -28,8 +28,10 @@ frozen v1 requirements or conferring implementation evidence. Likewise `fixtureV
 the application fixtures assigned to P61b–d, not application contracts supplied by P59.
 [P61a protocol v1](protocol/v1/README.md) now supplies shared error/auth/paging/idempotency contracts,
 strict fixture validation and namespaced acceptance identities, proved by an isolated synthetic
-pack. Application fixtures and the combined P61 gate remain incomplete; all three applications
-are absent/not run. No runner alias is registered until its actual tests exist.
+pack. [P61b Discourse contracts/fixtures](discourse-core/v1/README.md) now resolve all 20 D rows /
+66 observations through five fixed scenarios and eight hook contracts. Vendure/Zammad fixtures and
+the combined P61 gate remain incomplete; all three applications are absent/not run. No runner alias
+is registered until its actual tests exist.
 
 ## Loading and evaluating
 
