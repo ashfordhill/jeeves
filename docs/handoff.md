@@ -7233,3 +7233,133 @@ Observed corrections and limits:
 **P67a is complete with no P67a blocker. P67b is next unstarted; parent P67 remains incomplete.**
 Stop after the scoped local P67a commit. `.jeeves-work/p67a/completion.json` records the resulting
 commit, checks, browser evidence and limits. Coordinator owns the batch checkpoint.
+
+## P67b — Finite Access authoring, affected paths and local design preview (2026-11-03)
+
+**Assignment and prerequisites.** Implemented P67b only in primary `main`, base
+`adfd930be4d9b64de8bed3bb744d02faeb2be350` (completed P67a). Read the batch instructions/checkpoint,
+AGENTS, PLAN relevant §1–14/§15, latest handoff, C4 modeling/studio, backend roadmap/shared
+contract/benchmark context, phase-2 P67 and execution-unit split. Coordinator owns the batch
+checkpoint; this worker did not edit it. Ignored checklist/evidence: `.jeeves-work/p67b/`.
+
+What now works:
+
+- **Configure component → Access** shares the existing General/Data architecture draft and atomic
+  Save. One focused section at a time covers resource/trusted context, seven finite clause kinds,
+  all/any allow/deny rules, separate read/write projections and all nine current-state recheck
+  sites. Persisted role/membership entities, UUID/enum/boolean fields and direct relations use exact
+  selectors. There is no JSON/code/expression editor or second save surface.
+- Context explains server-established identity, authorized scope and correlation; raw body/header/
+  queue roles, cursors and private networks grant no authority. Service context selects an explicit
+  purpose and bounded scope, with initiating actor fixed to provenance only. Default deny, deny wins,
+  rejecting unknown writes, current-state revocation and no authorization cache remain fixed.
+- Exact referenced policy versions use the existing transition validator for UI protection and
+  atomic Save validation. Display names remain editable; semantic edits require an explicit
+  successor, preserving old consumers until deliberate retargeting. Protected clause disclosures
+  and exact entity navigation remain available while input wrappers cannot edit protected values.
+- **Affected paths & reuse** uses a shared pure inventory for UI/chat: exact root/join query uses,
+  including hidden filter/order/cursor fields; byte/output access bindings; operation access and
+  participants; capability-setting references. Provided-operation outputs and declared outcome
+  mappings are identified separately from persisted fields/authorization. Unresolved intended
+  references remain labeled as such. Successor creation never retargets consumers automatically.
+- **Sensitive access uses** edits the existing access-binding schema for exact entity fields or
+  existing provided contract operations, policy/projection/action/recheck site and optional broader
+  relationship intent. Operation input/output inspection is read-only. Query ↔ policy ↔ access use
+  navigation and entity → dataset → contract navigation stay inside the same component draft.
+- **Design preview · local synthetic fixture** illustrates rule composition from explicitly assumed
+  clause/context/revocation facts. It demonstrates deny precedence, unknown facts, current-state
+  gates, missing declared rechecks and separate read/write projection modes. Assumptions remain
+  local/unsaved. It reads no credentials or persisted rows and never claims production authorization
+  or runtime evidence. Thirteen offline boundary assertions are retained in ignored evidence.
+- Chat `getArchitectureContracts` now returns the backend declarations and that same exact consumer
+  inventory. Description/instructions explain data/local types, policy semantics, immutability and
+  atomic edits using the existing shared operation JSON Schema. Five new focused server-side checks
+  cover discovery, joined/unresolved/versioned observations, output identity, schema discoverability
+  and protected successor + query/byte retargeting in one operation.
+- Existing bounded number controls now retain out-of-range input across blur/tab switches;
+  schema validation blocks Save until corrected. Invalid Data/Access drafts survive navigation;
+  Cancel discards the whole draft. Studio/access guides and roadmap/improvement status record
+  parent P67 complete and P68a next. CATALOG is unchanged: no offering, reusable boundary or runtime
+  availability changed. Existing semantic schemas, assertions and fixture expectations are unchanged.
+
+Final checks used explicit **Node 24.21.0 / pnpm 12.16.1**, with
+`PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH`:
+
+- `pnpm lint`: exit 0, **888 files / 573ms**, no fixes, **2024 existing warnings / 75 infos**;
+  no new diagnostics. `.jeeves-work/p67b/lint-final-fixture.log`; repeated after this append.
+- `pnpm work run typecheck` → workspace/script typecheck: exit 0, **11.6s**.
+  `.jeeves-work/runs/2026-11-03T17-12-45-547Z-typecheck-8fbfaa5c.{json,log}`.
+- Focused offline selector:
+
+  ```bash
+  pnpm work run unit apps/server/src/chat/backend-authoring.test.ts apps/server/src/chat/context.test.ts packages/spec/src/backend-policy.test.ts packages/spec/src/backend-queries.test.ts packages/spec/src/contract-types.test.ts packages/spec/src/backend-data.test.ts packages/spec/src/apply.test.ts
+  ```
+
+  Exit 0, **7 files / 92 tests**, **3.1s** with runner overhead.
+  `.jeeves-work/runs/2026-11-03T17-12-45-548Z-unit-1a83a085.{json,log}`. Final type/unit runner
+  records have `sourceChanged: false`. The local illustrative preview additionally passes **13**
+  assertions: `node .jeeves-work/p67b/preview-check.mjs`, `preview-check.json`.
+- `pnpm --filter @jeeves/web build`: exit 0, Vite **1.61s**, existing large-chunk advisory only.
+  `.jeeves-work/p67b/build-final-output.log`.
+- Extended existing chat integration/workspace selectors (`chat.test.ts`, `tools.test.ts`):
+  **3 failed / 37 passed**, exit 1. Current:
+  `.jeeves-work/runs/2026-11-03T17-09-22-971Z-unit-26cb904c.{json,log}`. Reproduced identical
+  failure titles/counts on exact base source by temporarily substituting the two changed chat
+  modules, restoring every byte in `finally`. Base:
+  `.jeeves-work/runs/2026-11-03T17-10-10-156Z-unit-a292715c.{json,log}`. Both have
+  `sourceChanged: false`; `.jeeves-work/p67b/historical-comparison.json`. These three old review
+  completion/coverage assertions remain failing; no expectation was changed and no full-green claim.
+- Direct isolated Chromium inspection on the existing loopback preview/API, using only disposable
+  project **7fad385b-7379-4117-9f28-37531b19cbc8**:
+  - Mouse-configured private category/internal-note query, policy successor with internal visibility
+    added to persisted agent/group rules and field projection, and exact sensitive-byte retargeting
+    in one Save. Undo removes the whole change; Redo/reload restore it and protect the new version.
+  - Protected policy/name semantics, exact persisted membership navigation, query/policy/use/resource/
+    dataset/contract cross-navigation, affected byte/materialization/output paths, and read-only
+    exact provided-operation output inspection. New service policy and job-output access use were
+    authored from scratch and saved/reloaded. Owner/action/role/membership selectors were exercised;
+    Cancel discarded the extra scratch draft.
+  - Invalid mixed Data/Access drafts survive tab switches and Cancel. Actual server 409 and subsequent
+    local stale-revision rejection preserve the open name and do not overwrite current saved data.
+  - Local fixture shows allow/deny/undetermined, deny wins, membership revocation, trusted-context
+    rejection and missing-recheck denial. Fixture assumptions do not persist with the design.
+  - Light **1440×1000**, dark **390×844**; mouse Save/Cancel/reload and navigation work. Dialog
+    client/scroll width **351px**, document width **390px**. Scoped axe inspections of changed
+    policy, clause, query, preview, access-use and output dialogs report **zero violations**.
+    This is scoped dialog inspection, not a full-page accessibility audit.
+  - Successful records: `.jeeves-work/p67b/browser-{core,finish,more,narrow,final}.json`, with
+    screenshots and detailed axe JSONs alongside. Ordinary successful workflows have zero page/
+    console errors, failed requests or error responses. `browser-finish.json` intentionally records
+    one 409 and its console message. Final reinspection has zero errors.
+- `node .jeeves-work/p67b/cleanup.mjs`: all **13 pre-existing project designs/layouts hash-identical**
+  before/after; deleted only the exact disposable ID above, verified its 404 and original remaining
+  ID set. `preserved-{before,after}.json`, `cleanup.json`, `final-design.json` retain evidence.
+  Existing preview/API are available; no persistent settings/output directory was edited.
+- `python3 .jeeves-work/p67b/audit.py`: byte-preserved **1,485 other tracked files**, all **48
+  benchmark files / 46 legacy fixtures**, CATALOG and runtime/template/generator paths; prior handoff
+  prefix unchanged, scoped links/anchors/fences valid. `.jeeves-work/p67b/audit.json`; rerun after
+  this append. `git diff --check` passes.
+
+Corrections and limits:
+
+- Initial compile checks caught an unused import, redundant cardinality comparison and missing
+  defaulted descriptions in the new output-inspection fixture; fixed using the shared contract
+  schema. The new fixture initially used an invalid export enum; corrected it. Browser inspection
+  caught numeric clamping and protected-disclosure pointer handling; corrected and reverified.
+  Ad hoc inspection selectors needed native/Mantine scoping and narrow Explorer entry after reload.
+  The exact-base chat substitution caused one transient layout 502 during an overlapping inspection;
+  the raw record remains `browser-final-transient.json`. Reinspection after restoration reports
+  zero errors. Earlier failure artifacts are retained, without changing acceptance or expectations.
+- This package is design authoring/inspection only. No query, authorization, storage, command,
+  provider, hook, compiler or application runtime executes. All three benchmark applications
+  remain **absent/not run, zero observed implementation points**. Synthetic inspection is not a
+  complete benchmark design or generated acceptance result.
+- P68a owns command/lifecycle/guard/action editing; P68b owns effect/hook authoring and combined
+  chat work; P68c owns settings. P69/P70 own matching/pure compilation. None was started.
+  No UI unit/E2E maintenance or suite execution, full `pnpm check`, broad historical architecture
+  campaign, new runtime/generation, Docker/provider campaign, branch/worktree/delegation, push or
+  publication occurred. Existing three chat review failures remain explicitly recorded.
+
+**P67b and combined parent P67 are complete, with no P67b blocker. P68a is next unstarted.**
+Stop after the scoped local P67b commit. `.jeeves-work/p67b/completion.json` records its commit,
+checks, browser evidence and limits. Coordinator owns the batch checkpoint.

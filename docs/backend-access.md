@@ -102,9 +102,31 @@ contract protection, fragment extraction, ID remapping, whole-boundary reuse, ta
 operation JSON Schema, deterministic JSON/Markdown handoff and fingerprints. Outer graph references
 remap; local clause/projection/action/field/relation IDs and physical storage identities do not.
 Legacy backend models gain no empty policy collections, and legacy owner CRUD/session/resource
-semantics remain unchanged. P67b supplies policy mouse authoring; P69/P70 supply implementation
+semantics remain unchanged. [P67b](architecture-studio.md) supplies policy mouse authoring, exact sensitive-path selections,
+affected-use navigation and a labeled local design preview; P69/P70 supply implementation
 matching/pure compilation, and P76 supplies runtime enforcement under a separate assignment.
 
 [P65 command/lifecycle declarations](backend-behavior.md) reuse these policies for root/child
 writes, current output observations and authorized replay. Existing exact operation access bindings
 must agree; policy versions referenced by operations remain immutable through consumer removal.
+
+## Authoring and discovery (P67b)
+
+Use **Configure component → Access** to choose or add an exact policy. Focused sections cover
+trusted context, seven finite clause kinds, all/any allow/deny rules, separate read/write projections
+and all nine current-state recheck sites. Policies reuse persisted entity fields and declared
+relations. A protected referenced version can be renamed; changing its semantics requires a
+successor, with deliberate consumer retargeting. No successor silently updates consumers.
+
+The affected-path inventory is shared by the UI and chat discovery. It shows root/joined query
+uses, including hidden filter/order/cursor fields; sensitive byte/output access uses; command
+access participants; and typed capability settings. An unresolved intended exact identity is
+labeled separately from a selected policy. Query/access-use navigation returns to the same
+component draft. Existing provided operations expose exact read-only input/output inspection.
+
+The local synthetic fixture illustrates named-clause composition, mandatory context/current-state
+gates and deny precedence. Its assumptions are explicit and unsaved, with unknown facts retained.
+It denies missing declared recheck sites and withholds fields for incompatible read/write modes.
+It does not evaluate persisted rows, authenticate a principal or prove enforcement. The shared
+Save/Cancel, schema validation, revision conflicts and single-step history apply to the whole
+Data/Access draft. Parent P67 is complete; P68a is the next authoring work unit.

@@ -103,6 +103,7 @@ export function ComponentEditor({
           usesConnections: [],
         },
   );
+  const [tab, setTab] = useState("general");
   const [baseRevision] = useState(design.revision);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -187,10 +188,11 @@ export function ComponentEditor({
             . {draft.annotationOrigin.basis}
           </Text>
         ) : null}
-        <Tabs defaultValue="general" keepMounted>
+        <Tabs value={tab} onChange={(value) => setTab(value ?? "general")} keepMounted>
           <Tabs.List aria-label="Component configuration sections">
             <Tabs.Tab value="general">General</Tabs.Tab>
             <Tabs.Tab value="data">Data</Tabs.Tab>
+            <Tabs.Tab value="access">Access</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="general" pt="md">
             <Stack gap="md">
@@ -304,8 +306,10 @@ export function ComponentEditor({
               ) : null}
             </Stack>
           </Tabs.Panel>
-          <Tabs.Panel value="data" pt="md">
+          <Tabs.Panel value={tab === "access" ? "access" : "data"} pt="md">
             <ComponentDataEditor
+              mode={tab === "access" ? "access" : "data"}
+              onArea={setTab}
               design={design}
               draft={architecture}
               component={draft}

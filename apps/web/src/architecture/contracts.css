@@ -112,3 +112,19 @@
 .backend-rows h3 {
   font-size: 0.95rem;
 }
+
+.policy-edit-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.policy-edit-fields :is(input, select):disabled {
+  color: var(--ink);
+  opacity: 1;
+  -webkit-text-fill-color: var(--ink);
+}
+
+.policy-edit-fields:disabled .mantine-Input-wrapper {
+  pointer-events: none;
+}

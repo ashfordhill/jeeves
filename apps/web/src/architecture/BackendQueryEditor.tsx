@@ -289,7 +289,7 @@ export function BackendQueryEditor({
       {q.accessPolicy.kind === "unresolved" ? (
         <Text size="sm">
           Access policy is unresolved. The design can be saved; compilation remains blocked. Reuse
-          an exact policy here; the Access editor follows in P67b.
+          an exact policy here, or open the component Access tab to author one.
         </Text>
       ) : null}
       <NativeSelect

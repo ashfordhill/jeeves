@@ -12,7 +12,14 @@ import type { ReactNode } from "react";
 export const dataId = (kind: string) => `${kind}-${crypto.randomUUID().slice(0, 8)}`;
 export const exact = ({ id, version }: BackendReference): BackendReference => ({ id, version });
 export type DataNavigation = (
-  kind: "contracts" | "datasets" | "entities" | "aggregates" | "queries" | "policies",
+  kind:
+    | "contracts"
+    | "datasets"
+    | "entities"
+    | "aggregates"
+    | "queries"
+    | "policies"
+    | "accessBindings",
   key: string,
 ) => void;
 export type Option = { value: string; label: string };
@@ -105,6 +112,7 @@ export function Count({
       min={min}
       max={max}
       allowDecimal={false}
+      clampBehavior="none"
       onChange={(v) => onChange(typeof v === "number" ? v : 0)}
     />
   );

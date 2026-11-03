@@ -10,6 +10,7 @@ import {
   architecturePatterns,
   architectureProofOperations,
   architectureReview,
+  backendPolicyConsumers,
   type CreateTarget,
   componentCompatible,
   contractCanonical,
@@ -123,7 +124,7 @@ const descriptions: Record<ToolName, string> = {
   reviewSubtype:
     "Request a revision-bound subtype change review. Lists all discarded configuration/components/connections with human Confirm/Cancel buttons. End your turn and wait; never supply confirmation yourself.",
   getArchitectureContracts:
-    "Inspect project-local contract definitions, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
+    "Inspect project-local contracts/local types, backend entities/aggregates/queries/accessPolicies/accessBindings and exact affected query/byte/output/operation/capability paths, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
   getArchitectureAnnotationDraft:
     "Suggest editable context and responsibility annotations from explicit saved auth/resource/extension bindings. Returns an architecture draft with revision and source references. Review and edit names/responsibilities, then apply using setArchitecture. Operation names do not prove behavior. Preserve provenance and existing architecture.",
   createTargetWorkspace:
@@ -489,6 +490,15 @@ export class Workspace {
         this.log(tool, true, "Read architecture contracts and sources");
         return {
           contracts: this.working.architecture?.contracts ?? [],
+          backend: this.working.architecture?.backend ?? null,
+          policyConsumers: (this.working.architecture?.backend?.accessPolicies ?? []).map(
+            (policy) => ({
+              policy: { id: policy.id, version: policy.version },
+              consumers: backendPolicyConsumers(this.working, policy),
+            }),
+          ),
+          backendAuthoring:
+            "Use the shared setArchitecture schema from applyOperations. Preserve all existing entries. Contracts supply logical/local types; datasets supply authority; entities annotate those exact fields. Policies are finite trusted-context declarations, default deny/deny wins, with separate read/write projections and current-state recheck sites. Missing selections remain unresolved readiness gaps. Referenced exact versions require explicit successors and consumer review. Local illustrative fixtures are design previews only, never runtime evidence.",
           interfaces: this.working.architecture?.interfaces ?? [],
           bindings: this.working.architecture?.bindings ?? [],
           datasets: this.working.architecture?.datasets ?? [],

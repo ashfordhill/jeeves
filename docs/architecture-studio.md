@@ -91,10 +91,29 @@ order, page limits, existing policy/projection references and freshness.
 Contract fields support exact local references, bounded maps and tagged unions in both Data and
 Interfaces. Referenced contract/type shapes are protected; explicit successors retain older consumers.
 Names can change while storage and field identities stay stable. Source-backed legacy shapes remain
-read-only. Unresolved policy/type choices remain visible design gaps. Existing access policies can
-be reused and inspected; finite policy authoring follows in the separate P67b package.
+read-only. Unresolved policy/type choices remain visible design gaps. Component **Access** authors exact finite policies with focused resource/context, clause, rule,
+read/write projection and revocation sections. Choose persisted role/membership sources and direct
+relations; allow/deny rules select named clauses with all/any composition. Trusted identity,
+authorized scope and correlation come from server checks. Payload roles, cursors, private networks
+and initiating actors grant no authority. Default deny, deny wins and rejecting unknown writes
+remain fixed. Referenced policy semantics are protected; create an explicit successor and select it
+only for the consumers being reviewed. Display names remain editable.
 
-All Data changes share **Save component** with General. Cancel discards the whole open draft;
+**Affected paths & reuse** lists exact query sources (including hidden filter/order/cursor fields),
+byte/output access bindings, operations and capability settings. Follow a query or access use back
+to its exact policy, resource entity, dataset and contract without leaving the shared draft.
+**Sensitive access uses** selects exact policies/projections for byte, materialization, delivery,
+export, job, replay and existing provided-operation paths; it does not implement those paths.
+Operation input/output inspection is read-only; behavior/settings editors follow in P68.
+
+**Design preview** illustrates all/any composition and deny precedence against a local synthetic
+fixture of explicitly assumed clause/context/revocation facts. Unknown facts cannot demonstrate
+permission. A missing declared recheck denies at that site, and read/write projection modes remain
+separate. Fixture changes are unsaved, never production authorization or runtime evidence. Chat
+**getArchitectureContracts** discovers the same backend declarations and affected policy paths;
+chat edits use the shared schemas and atomic operation validation.
+
+All Data and Access changes share **Save component** with General. Cancel discards the whole open draft;
 invalid drafts remain editable across section switches. One save is one undo step. Revision conflicts
 retain the draft and require Cancel/reopen against the latest revision. These controls describe design
 intent; they do not supply storage, query execution, authorization or runtime evidence.

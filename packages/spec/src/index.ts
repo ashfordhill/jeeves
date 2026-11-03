@@ -30,6 +30,7 @@ export * from "./backend-effects-model.ts";
 export * from "./backend-legacy.ts";
 export * from "./backend-model.ts";
 export * from "./backend-policy.ts";
+export * from "./backend-policy-inspection.ts";
 export * from "./backend-policy-model.ts";
 export * from "./backend-queries.ts";
 export * from "./benchmark.ts";
