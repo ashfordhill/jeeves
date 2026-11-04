@@ -49,7 +49,11 @@ need explicit replacement owners when their owner disappears. Connections and op
 clean up together. [UX09](docs/evidence/studio-ux/UX09/README.md) adds fixed role dimensions,
 capability colors/icons, optional bundled provider marks, solid outlines and selection without fading.
 Zoom changes bounded text density while preserving graph geometry and full inspector/source values.
-Shared routing, movement and runtime resolution remain later work. The historical catalog below describes the existing
+[UX10](docs/evidence/studio-ux/UX10/README.md) adds obstacle-aware orthogonal paths, compatible
+shared trunks and separately selectable protocol branches, with exact source membership and
+direction. Compact labels reserve measured text bounds and disappear only where they cannot fit;
+their directed lines remain selectable. Shared trunks open a real-member chooser with no bulk
+settings. Movement and runtime resolution remain later work. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

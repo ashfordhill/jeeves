@@ -70,8 +70,14 @@ accessible text. Below 0.55 zoom, only names/icons and relationship lines appear
 relationships add a short action. From 1.10, cards can show actual purpose/language/provider values
 and relationships add a concise protocol. Zoom and selection preserve world geometry and source
 values. Full values remain in the inspector.
-The remaining drag/Tidy gestures,
-shared routing, unified Generate and studio chat tools remain later units; the
+**UX10** routes orthogonal relationships around cards, sharing compatible protocol/interaction
+trunks while retaining each directed branch and all source members. Junction dots identify shared
+branches; small background gaps distinguish crossings. Cycle/reverse paths use outside lanes.
+Click a single relationship to inspect it; a multi-member branch or trunk opens a short chooser.
+Choosing one member highlights its paths and edits only that connection. Lines retain a 12px
+transparent hit region at every text density. Labels use one inline line with a small halo, reserve
+measured bounded text, and disappear where no collision-free space fits; the path remains selectable.
+The remaining drag/Tidy gestures, unified Generate and studio chat tools remain later units; the
 [UX05 action mapping](evidence/studio-ux/UX05/README.md),
 [UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
 [UX06b history evidence](evidence/studio-ux/UX06b/README.md) and
@@ -79,7 +85,8 @@ shared routing, unified Generate and studio chat tools remain later units; the
 [UX07b resource/connection evidence](evidence/studio-ux/UX07b/README.md) and
 [UX08a creation evidence](evidence/studio-ux/UX08a/README.md) and
 [UX08b connection/membership evidence](evidence/studio-ux/UX08b/README.md) and
-[UX09 appearance evidence](evidence/studio-ux/UX09/README.md) record those limits.
+[UX09 appearance evidence](evidence/studio-ux/UX09/README.md) and
+[UX10 routing evidence](evidence/studio-ux/UX10/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

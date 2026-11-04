@@ -1,0 +1,54 @@
+[
+  {
+    "id": "4957af31-8b3e-4167-b99b-05d9e8dace1f",
+    "name": "UX10 owned routing 1440",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T11:14:27.078Z",
+    "updatedAt": "2026-11-04T11:14:27.078Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "baebf59b-9bdf-487c-8bc5-8caa699987b2",
+    "name": "UX10 owned comparison 1440",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T11:14:35.794Z",
+    "updatedAt": "2026-11-04T11:14:35.794Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "cc7e4e96-e7b1-4fdb-a3cc-b49fe8b74653",
+    "name": "UX10 owned routing 1280",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T11:14:37.437Z",
+    "updatedAt": "2026-11-04T11:14:37.437Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "5eba4813-f807-4fce-96a0-4c5c9cadbfb2",
+    "name": "UX10 owned comparison 1280",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T11:14:44.043Z",
+    "updatedAt": "2026-11-04T11:14:44.043Z",
+    "deleted": true,
+    "verified404": true
+  }
+]

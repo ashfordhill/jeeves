@@ -9834,3 +9834,78 @@ Existing routes can cross cards and labels can overlap; UX10 owns those changes.
 clip remote objects after panel changes, and drag/Tidy remain UX11. No product blocker remains.
 UX09 is complete; UX10 is the next exact assignment boundary and is not started here. This worker
 stops after its scoped local commit. Studio stays opt-in until UX15; P73a/P73b/backend remain paused.
+
+## 2026-11-04 — UX10: compact routing and compatible shared trunks (complete)
+
+Executed UX10 only on primary main from `8655f7048d5280ff5350c26ae9f571a155833387`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan/shared protocol/exact assignment, interaction §5, model/provenance contracts, C4 guidance,
+owner decisions and actual UX04b/UX09 projection/edge/layout/label source. No delegation, branch/
+worktree, sibling edit, backend resumption, provider/external-agent execution or application
+generation. Unrelated `.jeeves-feedback/` remains preserved.
+
+The opt-in studio now derives obstacle-aware orthogonal paths from fixed role boxes and UX04b's
+actual protocol/interaction-specific memberships. Compatible fan-out shares stems/buses with
+explicit branch dots; ordinary crossings use small background gaps. Each branch retains its
+arrowhead, 12px transparent hit region, original aggregate ID and complete member provenance.
+Mixed protocols remain separately selectable paths, repeated DB dependencies remain an application/
+group aggregate, and reverse/cycle feedback uses stable outside lanes. No semantic connection is
+merged/deleted or added by routing; no saved trunk settings or bulk edit is introduced.
+
+A trunk/multi-member branch opens the existing short connection chooser. Choosing a member
+highlights its associated paths and edits only that real connection. Canonical member selection
+survives inspector close/reopen and protocol regrouping that changes presentation path IDs.
+Uneditable legacy paths highlight without opening an empty inspector. C2 queued summaries retain
+the queue and both leg IDs; C3 still selects the same shared resource and actual connections.
+
+Inline labels have a small halo and no rectangular panel. Loaded-font canvas measurement reserves
+the actual bounded high-detail and medium text variants with 6px padding in an 18-world-unit-high
+region. Labels avoid cards, labels and lines; only an unfit label is omitted, retaining its directed
+selectable path and full inspector text. Below 0.55 labels remain absent. Geometry/keys/provenance
+stay stable across zoom and selection without a layout worker. Node placement/movement is untouched.
+
+Evidence: `docs/evidence/studio-ux/UX10/`. Main guarded browser inspection passes 16 observations
+at 1440×900 and 1280×800, including dense fan-out/fan-in, shared DB, reverse arrows, a cycle and mixed
+HTTPS/SQL at 0.45/0.75/1.15 zoom. All 18 source connections remain in 15 aggregates and 19 paths,
+including three trunks. Exact 11-field provenance, reorder/rename determinism and unchanged input
+pass. Every dense path is orthogonal, reaches its correct target side and avoids cards. Browser
+label bounds avoid cards and one another. Actual low/high-zoom mouse clicks select the right trunk,
+chosen member, single branch, separate SQL member, repeated-DB chooser and reverse connection.
+A 14-observation supplement checks shared-channel C2/three service C3 scopes, package C3, C1 and
+source-only legacy at both sizes. Default-editor inspection passes at both sizes. Representative
+screenshots across those states were visually inspected. The same prior UX09 source/layout/camera
+shows before/after readability: overlapping labels are suppressed where narrow gaps cannot fit
+and directed orthogonal paths avoid cards without changing the node bounding rectangle.
+
+Final main/supplement/default browser passes attempt zero writes. A separate focused member-lifecycle
+pass checks inspector reopen, real single-member protocol regroup and one chronological Undo, with
+exactly two owned 200 mutation responses; other connections, architecture and layout stay exact.
+Guards precede page creation and permit only that disposable's exact operations/undo/redo routes.
+All final passes have zero page errors, console warnings/errors, external requests and blocked/
+unowned writes. Real API setup/deletion uses exact owned disposables, all deleted and verified 404.
+Original 13 projects keep exact semantic/layout hashes and revisions; the final project set matches
+baseline. Portable source/layout round trips, earlier handoff bytes, 21 original/copy feedback pairs,
+seven public fixtures, 48 frozen benchmark files, old factories and unrelated tracked source remain
+exact.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: final exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser, exact accounting, scoped formatting, preservation and staged whitespace including
+  new evidence/check logs: pass. Check logs normalize trailing whitespace only.
+
+Bounded attempt notes record the corrected feedback-corner simplification, strict initial source
+compile/format issues, edge-wrapper instrumentation across selection, new JSON formatting, absent
+optional legacy architecture setup and accessible inspector-toggle selector. Final review added
+controlled canonical member selection and repeated relevant browsers/typecheck/build. No dependency,
+fixture typing adaptation, snapshot or broader test maintenance was needed. Unit/E2E/template
+suites and `pnpm check` remain explicitly deferred.
+
+Previously overlapping user-placed cards can enclose an endpoint; the fallback retains the directed
+selectable line instead of promising an impossible obstacle-free escape. Camera/panel preferences
+can still clip remote objects. Fresh arrangement, drag/grid preview, asynchronous movement stability
+and Tidy/fit remain UX11a/UX11b. No product blocker remains. UX10 is complete; UX11a is the next exact
+assignment boundary and is not started here. This worker stops after its scoped local commit.
+Studio stays opt-in until UX15; P73a/P73b/backend remain paused.

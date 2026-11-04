@@ -43,6 +43,7 @@ import {
 import { DraftFeedback } from "./DraftFeedback.tsx";
 import { InspectorForm } from "./InspectorForm.tsx";
 import { useStudioPreferences } from "./preferences.ts";
+import { studioPaths } from "./routing.ts";
 import { StudioGraph } from "./StudioGraph.tsx";
 import { StudioLibrary } from "./StudioLibrary.tsx";
 import "./studio.css";
@@ -105,15 +106,18 @@ function SelectionSummary({
   onElement,
   onConnection,
   onCreate,
+  onMember,
+  chosenMember,
 }: {
   node?: StudioViewNode;
   edge?: StudioRelationship;
   onElement: (id: string) => void;
   onConnection: (id: string) => void;
   onCreate: (draft: ConnectionDraft) => void;
+  onMember: (target: RelationshipTarget) => void;
+  chosenMember?: RelationshipTarget;
 }) {
   const loaded = useDraw((state) => state.loaded);
-  const [memberId, setMemberId] = useState<string>();
   const targets: RelationshipTarget[] = edge
     ? [
         ...[...new Set(edge.connectionIds)].map((id) => ({ kind: "connection" as const, id })),
@@ -126,7 +130,7 @@ function SelectionSummary({
   const member =
     targets.length === 1
       ? targets[0]
-      : targets.find((item) => `${item.kind}:${item.id}` === memberId);
+      : targets.find((item) => item.kind === chosenMember?.kind && item.id === chosenMember.id);
   const single = targets.length === 1 ? targets[0] : undefined;
   const relation =
     single &&
@@ -188,7 +192,7 @@ function SelectionSummary({
                 aria-pressed={member?.id === item.id && member.kind === item.kind}
                 onClick={() => {
                   if (loaded) void formDrafts.flushProject(loaded.project.id, true);
-                  setMemberId(`${item.kind}:${item.id}`);
+                  onMember(item);
                 }}
               >
                 {connection
@@ -278,6 +282,11 @@ function ProjectStudio({
   );
   const scope = scopes.find((item) => item.key === scopeKey) ?? views.containers;
   const [selections, setSelections] = useState<Record<string, string | undefined>>({});
+  const [memberSelection, setMemberSelection] = useState<{
+    scope: string;
+    path: string;
+    target: RelationshipTarget;
+  }>();
   const [hand, setHand] = useState(false);
   const [tool, setTool] = useState<BaseCreation>();
   const [connector, setConnector] = useState<string>();
@@ -293,8 +302,25 @@ function ProjectStudio({
   const center = useRef<Point>({ x: 0, y: 168 });
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const selected = selections[scope.key];
+  const selectedMember =
+    memberSelection?.scope === scope.key && memberSelection.path === selected
+      ? memberSelection.target
+      : undefined;
   const selectedNode = scope.nodes.find((node) => node.id === selected);
-  const selectedEdge = scope.edges.find((edge) => edge.id === selected);
+  const pathRelationships = useMemo(() => studioPaths(scope), [scope]);
+  const selectedEdge =
+    pathRelationships.find((path) => path.id === selected)?.item ??
+    scope.edges.find((edge) => edge.id === selected) ??
+    (selectedMember
+      ? pathRelationships.find(
+          (path) =>
+            !path.branchIds &&
+            (selectedMember.kind === "connection"
+              ? path.item.connectionIds
+              : path.item.contextRelationshipIds
+            ).includes(selectedMember.id),
+        )?.item
+      : undefined);
   // Unknown and purely source-only legacy relationships select without opening an empty inspector.
   const inspectNode = selectedNode;
   const inspectEdge =
@@ -326,6 +352,7 @@ function ProjectStudio({
   useEffect(() => {
     // Keep the shared store's canonical selection useful to the existing chat; UX13 owns its tools.
     const ids =
+      (selectedMember ? [selectedMember.id] : undefined) ??
       selectedNode?.refs.flatMap((ref) => ("id" in ref ? [ref.id] : [])) ??
       selectedEdge?.connectionIds ??
       [];
@@ -333,7 +360,7 @@ function ProjectStudio({
     return () => {
       useDraw.setState({ architectureSelection: undefined });
     };
-  }, [selectedNode, selectedEdge]);
+  }, [selectedNode, selectedEdge, selectedMember]);
 
   const navigate = (key?: string) => {
     if (key && scopes.some((item) => item.key === key)) {
@@ -396,7 +423,20 @@ function ProjectStudio({
     if (id !== selected) void formDrafts.flushProject(loaded.project.id, true);
     setSelections((current) => ({ ...current, [scope.key]: id }));
     const node = scope.nodes.find((item) => item.id === id);
-    const edge = scope.edges.find((item) => item.id === id);
+    const edge =
+      pathRelationships.find((path) => path.id === id)?.item ??
+      scope.edges.find((item) => item.id === id);
+    const targets: RelationshipTarget[] = edge
+      ? [
+          ...edge.connectionIds.map((id) => ({ kind: "connection" as const, id })),
+          ...edge.contextRelationshipIds.map((id) => ({ kind: "context" as const, id })),
+        ]
+      : [];
+    setMemberSelection(
+      id && targets.length === 1 && targets[0]
+        ? { scope: scope.key, path: id, target: targets[0] }
+        : undefined,
+    );
     if (
       (node && node.kind !== "generic") ||
       edge?.contextRelationshipIds.some((id) =>
@@ -591,6 +631,7 @@ function ProjectStudio({
           key={scope.key}
           scope={scope}
           selection={selected}
+          member={selectedMember}
           selectedIds={groupSelection}
           placing={!!tool && !creating}
           connecting={
@@ -925,6 +966,10 @@ function ProjectStudio({
             </div>
             <SelectionSummary
               key={selected}
+              chosenMember={selectedMember}
+              onMember={(target) => {
+                if (selected) setMemberSelection({ scope: scope.key, path: selected, target });
+              }}
               node={inspectNode}
               edge={inspectEdge}
               onCreate={setConnectionDraft}

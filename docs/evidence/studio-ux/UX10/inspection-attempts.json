@@ -1,0 +1,35 @@
+{
+  "finalResult": "passed",
+  "attempts": [
+    {
+      "finding": "Initial strict compilation found a widened string union in derived interactions; scoped formatting also found three new-code diagnostics.",
+      "resolution": "Preserved the generic string union and corrected the callbacks/font dependency before browser inspection. Full typecheck and scoped formatting pass."
+    },
+    {
+      "finding": "The first dense geometry observation caught a diagonal caused by removing both copies of a joined feedback corner.",
+      "resolution": "Deduplicate points before simplifying collinear vertices. Final paths are orthogonal, directed correctly and avoid all dense-fixture cards."
+    },
+    {
+      "finding": "ReactFlow edge wrapper identity changed during inspector selection; the initial instrumentation expected its injected tag to survive all selections.",
+      "resolution": "Disabled automatic edge elevation and verified stable keys/coordinates/provenance across selection. DOM tags are refreshed after mouse selection; strict DOM identity checks cover zoom. Movement stability remains UX11."
+    },
+    {
+      "finding": "The first full lint found two formatting errors in newly recorded fixture JSON arrays.",
+      "resolution": "Formatted all scoped evidence JSON before the final full lint. Existing warnings and infos remain unchanged."
+    },
+    {
+      "finding": "A supplementary setup submitted setArchitecture for a legacy fixture that has no architecture; the real owned-project API rejected it with 422.",
+      "resolution": "Kept the legacy source unchanged and omitted that absent optional operation. Repeated C1/C3/shared-channel/legacy inspection passes. All attempted disposables are removed."
+    },
+    {
+      "finding": "Final review found that chosen-member state needed to survive inspector remount and protocol-driven presentation regrouping. The first focused script also used the wrong accessible inspector-toggle name and timed out before any mutation.",
+      "resolution": "Controlled the chosen canonical relationship in the workspace, followed it when branch IDs change, corrected the script selector, and repeated all main/supplementary browsers plus full typecheck/build. The focused real protocol edit and Undo pass with exactly two owned 200 writes."
+    }
+  ],
+  "productBlockers": [],
+  "maintainedSuitesRun": false,
+  "fixtureTypingChanges": false,
+  "externalRequests": 0,
+  "providerExecutions": 0,
+  "applicationGenerations": 0
+}

@@ -220,6 +220,21 @@
 }
 .studio-relation-text {
   pointer-events: none;
+  fill: var(--ink);
+  font-size: 12px;
+  stroke: var(--cream);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.studio-crossing-gap {
+  fill: none;
+  stroke: var(--cream);
+  stroke-width: 7px;
+  pointer-events: none;
+}
+.studio-junction {
+  pointer-events: none;
 }
 .studio-tools {
   position: absolute;

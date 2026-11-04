@@ -1,11 +1,9 @@
-import type { StudioRelationship, StudioScopeProjection, StudioViewNode } from "@jeeves/spec";
+import type { StudioScopeProjection, StudioViewNode } from "@jeeves/spec";
 import {
   Background,
   BaseEdge,
   type Edge,
   type EdgeProps,
-  EdgeText,
-  getBezierPath,
   Handle,
   MarkerType,
   type Node,
@@ -19,13 +17,13 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDraw } from "../draw/store.ts";
 import {
-  boundedStudioText,
   StudioProviderMark,
   StudioRoleIcon,
   studioCardDetails,
   studioCardSize,
 } from "./card-appearance.tsx";
 import { initialPosition, type Point } from "./creation.ts";
+import { type StudioPath, type StudioRoute, studioPaths, studioRouteGeometry } from "./routing.ts";
 
 type Card = Node<{ item: StudioViewNode }, "studio">;
 function StudioCard({ data, selected }: NodeProps<Card>) {
@@ -64,50 +62,56 @@ function StudioCard({ data, selected }: NodeProps<Card>) {
 }
 const nodeTypes = { studio: StudioCard };
 
-type Relation = Edge<{ item: StudioRelationship }, "studio">;
+type Relation = Edge<{ path: StudioPath; route: StudioRoute }, "studio">;
 function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
   const { zoom } = useViewport();
-  const [path, x, y] = getBezierPath(props);
-  const item = data?.item;
-  const action = item?.actions.join(" / ") ?? "";
-  const protocols = item?.protocols
-    .filter((protocol) => protocol !== "In process" && protocol !== "Unspecified")
-    .join(" / ");
-  const protocolText = boundedStudioText(protocols ?? "", 18);
-  const label =
-    zoom >= 1.1 && protocolText
-      ? `${boundedStudioText(action, 53 - Array.from(protocolText).length)} · ${protocolText}`
-      : boundedStudioText(action, zoom >= 1.1 ? 56 : 36);
+  if (!data) return null;
+  const { route, path } = data;
+  const label = zoom >= 1.1 ? route.label?.detail : route.label?.short;
   return (
-    <>
+    <g
+      data-path-kind={path.branchIds ? "trunk" : path.trunk ? "branch" : "relationship"}
+      data-members={path.item.members.map((m) => m.id).join("|")}
+      data-connections={path.item.connectionIds.join("|")}
+      data-original-edges={path.edgeIds.join("|")}
+    >
+      <path d={route.path} className="studio-crossing-gap" />
       <BaseEdge
         id={props.id}
-        path={path}
-        markerEnd={props.markerEnd}
+        path={route.path}
+        markerEnd={path.branchIds ? undefined : props.markerEnd}
         style={props.style}
         interactionWidth={12}
       />
-      {zoom >= 0.55 && label ? (
-        <EdgeText
-          x={x}
-          y={y}
-          label={label}
-          labelStyle={{ fill: "var(--ink)", fontSize: 12 }}
-          labelBgStyle={{ fill: "var(--cream)" }}
-          labelBgPadding={[3, 2]}
-          labelBgBorderRadius={2}
-          className="studio-relation-text"
+      {route.junction ? (
+        <circle
+          className="studio-junction"
+          cx={route.junction.x}
+          cy={route.junction.y}
+          r={3}
+          style={{ fill: props.style?.stroke }}
         />
       ) : null}
-    </>
+      {zoom >= 0.55 && label && route.label ? (
+        <text
+          x={route.label.x + route.label.width / 2}
+          y={route.label.y + 13}
+          textAnchor="middle"
+          className="studio-relation-text"
+        >
+          {label}
+        </text>
+      ) : null}
+    </g>
   );
 }
 const edgeTypes = { studio: StudioRelation };
 
-/** Fixed role geometry; the later units own placement, dragging and shared route geometry. */
+/** Fixed role/edge geometry; movement and fresh-scope arrangement belong to UX11. */
 export function StudioGraph({
   scope,
   selection,
+  member,
   selectedIds,
   placing,
   connecting,
@@ -121,6 +125,7 @@ export function StudioGraph({
 }: {
   scope: StudioScopeProjection;
   selection?: string;
+  member?: { kind: "connection" | "context"; id: string };
   selectedIds?: string[];
   placing: boolean;
   connecting?: string;
@@ -160,29 +165,64 @@ export function StudioGraph({
       ),
     [scope, selection, selectedIds, saved?.positions, connecting],
   );
+  const paths = useMemo(() => studioPaths(scope), [scope]);
+  const [fontReady, setFontReady] = useState(false);
+  useEffect(() => {
+    let active = true;
+    void document.fonts.ready.then(() => {
+      if (active) setFontReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+  const geometry = useMemo(() => {
+    const context = fontReady ? document.createElement("canvas").getContext("2d") : null;
+    if (context) context.font = '12px "Nunito Variable", Nunito, system-ui, sans-serif';
+    return studioRouteGeometry(
+      paths,
+      Object.fromEntries(
+        scope.nodes.map((item, index) => [
+          item.id,
+          {
+            ...(saved?.positions[item.id] ?? initialPosition(index)),
+            ...studioCardSize(item),
+          },
+        ]),
+      ),
+      (text) => context?.measureText(text).width ?? Array.from(text).length * 8,
+    );
+  }, [paths, scope.nodes, saved?.positions, fontReady]);
   const edges = useMemo(
     () =>
-      scope.edges.map(
-        (edge): Relation => ({
-          id: edge.id,
+      paths.map((path): Relation => {
+        const selected = member
+          ? (member.kind === "connection"
+              ? path.item.connectionIds
+              : path.item.contextRelationshipIds
+            ).includes(member.id)
+          : selection === path.id || path.edgeIds.includes(selection ?? "");
+        return {
+          id: path.id,
           type: "studio",
-          source: edge.from,
-          target: edge.to,
-          data: { item: edge },
-          selected: selection === edge.id,
+          source: path.item.from,
+          target: path.item.to,
+          data: { path, route: geometry[path.id] as StudioRoute },
+          selected,
+          zIndex: path.branchIds ? 0 : 1,
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color: selection === edge.id ? "var(--blue)" : "var(--ink-soft)",
+            color: selected ? "var(--blue)" : "var(--ink-soft)",
           },
           style: {
-            stroke: selection === edge.id ? "var(--blue)" : "var(--ink-soft)",
-            strokeWidth: selection === edge.id ? 3 : 2,
+            stroke: selected ? "var(--blue)" : "var(--ink-soft)",
+            strokeWidth: selected ? 3 : 2,
           },
           interactionWidth: 12,
-          ariaLabel: `Inspect relationship: ${edge.actions.join(" / ")}${edge.protocols.length ? `; ${edge.protocols.join(" / ")}` : ""}`,
-        }),
-      ),
-    [scope, selection],
+          ariaLabel: `Inspect ${path.branchIds ? "shared paths" : "relationship"}: ${path.item.actions.join(" / ")}${path.item.protocols.length ? `; ${path.item.protocols.join(" / ")}` : ""}`,
+        };
+      }),
+    [paths, geometry, selection, member],
   );
   return (
     <section
@@ -201,6 +241,7 @@ export function StudioGraph({
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={!hand}
+        elevateEdgesOnSelect={false}
         panOnDrag={hand ? true : [1, 2]}
         zoomOnDoubleClick={false}
         deleteKeyCode={null}

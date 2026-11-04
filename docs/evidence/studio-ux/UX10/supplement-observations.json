@@ -1,0 +1,283 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "viewport": 1440,
+      "fixture": "shared-channel",
+      "scope": "studio:containers",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-one:branch:queued:shared-queue:shared-channel-link-1:shared-channel-link-2",
+          "connections": ["shared-channel-link-1", "shared-channel-link-2"],
+          "queues": ["shared-queue"],
+          "members": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-2"]
+        },
+        {
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-two:branch:queued:shared-queue:shared-channel-link-1:shared-channel-link-3",
+          "connections": ["shared-channel-link-1", "shared-channel-link-3"],
+          "queues": ["shared-queue"],
+          "members": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-3"]
+        },
+        {
+          "id": "studio:trunk:studio:element:channel-producer:queued:shared-queue:shared-channel-link-1:shared-channel-link-2|queued:shared-queue:shared-channel-link-1:shared-channel-link-3",
+          "connections": [
+            "shared-channel-link-1",
+            "shared-channel-link-2",
+            "shared-channel-link-3"
+          ],
+          "queues": ["shared-queue"],
+          "members": [
+            "queued:shared-queue:shared-channel-link-1:shared-channel-link-2",
+            "queued:shared-queue:shared-channel-link-1:shared-channel-link-3"
+          ]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "fixture": "shared-channel",
+      "scope": "studio:service:channel-one",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:shared-queue>studio:element:channel-one",
+          "connections": ["shared-channel-link-2"],
+          "queues": ["shared-queue"],
+          "members": ["connection:shared-channel-link-2"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "fixture": "shared-channel",
+      "scope": "studio:service:channel-producer",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:shared-queue",
+          "connections": ["shared-channel-link-1"],
+          "queues": ["shared-queue"],
+          "members": ["connection:shared-channel-link-1"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "fixture": "shared-channel",
+      "scope": "studio:service:channel-two",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:shared-queue>studio:element:channel-two",
+          "connections": ["shared-channel-link-3"],
+          "queues": ["shared-queue"],
+          "members": ["connection:shared-channel-link-3"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "shared-channel",
+      "scope": "studio:containers",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-one:branch:queued:shared-queue:shared-channel-link-1:shared-channel-link-2",
+          "connections": ["shared-channel-link-1", "shared-channel-link-2"],
+          "queues": ["shared-queue"],
+          "members": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-2"]
+        },
+        {
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-two:branch:queued:shared-queue:shared-channel-link-1:shared-channel-link-3",
+          "connections": ["shared-channel-link-1", "shared-channel-link-3"],
+          "queues": ["shared-queue"],
+          "members": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-3"]
+        },
+        {
+          "id": "studio:trunk:studio:element:channel-producer:queued:shared-queue:shared-channel-link-1:shared-channel-link-2|queued:shared-queue:shared-channel-link-1:shared-channel-link-3",
+          "connections": [
+            "shared-channel-link-1",
+            "shared-channel-link-2",
+            "shared-channel-link-3"
+          ],
+          "queues": ["shared-queue"],
+          "members": [
+            "queued:shared-queue:shared-channel-link-1:shared-channel-link-2",
+            "queued:shared-queue:shared-channel-link-1:shared-channel-link-3"
+          ]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "shared-channel",
+      "scope": "studio:service:channel-one",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:shared-queue>studio:element:channel-one",
+          "connections": ["shared-channel-link-2"],
+          "queues": ["shared-queue"],
+          "members": ["connection:shared-channel-link-2"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "shared-channel",
+      "scope": "studio:service:channel-producer",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:shared-queue",
+          "connections": ["shared-channel-link-1"],
+          "queues": ["shared-queue"],
+          "members": ["connection:shared-channel-link-1"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "shared-channel",
+      "scope": "studio:service:channel-two",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:shared-queue>studio:element:channel-two",
+          "connections": ["shared-channel-link-3"],
+          "queues": ["shared-queue"],
+          "members": ["connection:shared-channel-link-3"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "fixture": "legacy-supported",
+      "scope": "studio:containers",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:links>studio:element:links-db",
+          "connections": ["links-uses-db"],
+          "queues": [],
+          "members": ["connection:links-uses-db"]
+        },
+        {
+          "id": "studio:relationship:studio:element:web>studio:element:links",
+          "connections": ["web-calls-links"],
+          "queues": [],
+          "members": ["connection:web-calls-links"]
+        }
+      ],
+      "scenario": "source-only legacy highlights without empty inspector",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "legacy-supported",
+      "scope": "studio:containers",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:links>studio:element:links-db",
+          "connections": ["links-uses-db"],
+          "queues": [],
+          "members": ["connection:links-uses-db"]
+        },
+        {
+          "id": "studio:relationship:studio:element:web>studio:element:links",
+          "connections": ["web-calls-links"],
+          "queues": [],
+          "members": ["connection:web-calls-links"]
+        }
+      ],
+      "scenario": "source-only legacy highlights without empty inspector",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "fixture": "context-package",
+      "scope": "studio:context",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:context:person>studio:context:system",
+          "connections": [],
+          "queues": [],
+          "members": ["context:person-system"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "fixture": "context-package",
+      "scope": "studio:package:package",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:billing>studio:element:queue",
+          "connections": ["publish"],
+          "queues": ["queue"],
+          "members": ["connection:publish"]
+        },
+        {
+          "id": "studio:relationship:studio:element:queue>studio:element:worker",
+          "connections": ["consume"],
+          "queues": ["queue"],
+          "members": ["connection:consume"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "context-package",
+      "scope": "studio:context",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:context:person>studio:context:system",
+          "connections": [],
+          "queues": [],
+          "members": ["context:person-system"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "fixture": "context-package",
+      "scope": "studio:package:package",
+      "paths": [
+        {
+          "id": "studio:relationship:studio:element:billing>studio:element:queue",
+          "connections": ["publish"],
+          "queues": ["queue"],
+          "members": ["connection:publish"]
+        },
+        {
+          "id": "studio:relationship:studio:element:queue>studio:element:worker",
+          "connections": ["consume"],
+          "queues": ["queue"],
+          "members": ["connection:consume"]
+        }
+      ],
+      "scenario": "real C1/C3/shared queue/trunk provenance and mouse selection",
+      "passed": true
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "errors": [],
+  "messages": [],
+  "writes": 0
+}

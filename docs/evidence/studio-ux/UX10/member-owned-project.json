@@ -1,0 +1,13 @@
+{
+  "id": "0d111235-a6c2-43fc-b3a1-a38e3e6fd5ff",
+  "name": "UX10 owned selected member lifecycle",
+  "target": null,
+  "revision": 0,
+  "outputDir": null,
+  "gitStrategy": "branch-per-task",
+  "maxRetries": 2,
+  "createdAt": "2026-11-04T11:14:26.832Z",
+  "updatedAt": "2026-11-04T11:14:26.832Z",
+  "deleted": true,
+  "verified404": true
+}

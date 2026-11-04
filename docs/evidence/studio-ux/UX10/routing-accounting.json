@@ -1,0 +1,1827 @@
+{
+  "result": "passed",
+  "provenanceFields": [
+    "sourceRefs",
+    "targetRefs",
+    "connectionIds",
+    "queueIds",
+    "contextRelationshipIds",
+    "componentRelationshipIds",
+    "componentIds",
+    "bindingIds",
+    "interfaceIds",
+    "contractRefs",
+    "capabilityRefs"
+  ],
+  "allMembersRetained": true,
+  "reorderDeterministic": true,
+  "renameKeepsPaths": true,
+  "inputUnchanged": true,
+  "noVisibleLabelOverlap": true,
+  "geometryMeasurement": "Conservative 7px glyph estimate for this pure observation; browser uses actual loaded-font canvas measurements.",
+  "topology": [
+    {
+      "id": "studio:relationship:studio:element:b>studio:element:db",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:b>studio:element:db"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["b-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:b-db",
+          "kind": "connection",
+          "action": "Reads billing data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["b-db-two"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:b-db-two",
+          "kind": "connection",
+          "action": "Writes billing data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "db"
+          }
+        ],
+        "connectionIds": ["b-db", "b-db-two"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 576,
+            "y": 36.66666666666667
+          },
+          {
+            "x": 708,
+            "y": 36.66666666666667
+          },
+          {
+            "x": 708,
+            "y": 27.6
+          },
+          {
+            "x": 720,
+            "y": 27.6
+          }
+        ],
+        "path": "M576,36.66666666666667 L708,36.66666666666667 L708,27.6 L720,27.6"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:b>studio:element:sink:branch:connection:b-sink",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:element:b>studio:element:sink"],
+      "trunk": "studio:trunk:studio:element:b:connection:b-a|connection:b-sink",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "sink"
+            }
+          ],
+          "connectionIds": ["b-sink"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:b-sink",
+          "kind": "connection",
+          "action": "Reports billing",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "sink"
+          }
+        ],
+        "connectionIds": ["b-sink"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 588,
+            "y": 59.333333333333336
+          },
+          {
+            "x": 588,
+            "y": 175
+          },
+          {
+            "x": 720,
+            "y": 175
+          }
+        ],
+        "path": "M588,59.333333333333336 L588,175 L720,175",
+        "junction": {
+          "x": 588,
+          "y": 59.333333333333336
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:b>studio:package:dispatch:branch:connection:b-a",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:element:b>studio:package:dispatch"],
+      "trunk": "studio:trunk:studio:element:b:connection:b-a|connection:b-sink",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "connectionIds": ["b-a"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:b-a",
+          "kind": "connection",
+          "action": "Reports billing status",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "connectionIds": ["b-a"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 588,
+            "y": 59.333333333333336
+          },
+          {
+            "x": 588,
+            "y": -36
+          },
+          {
+            "x": -12,
+            "y": -36
+          },
+          {
+            "x": -12,
+            "y": 175
+          },
+          {
+            "x": 0,
+            "y": 175
+          }
+        ],
+        "path": "M588,59.333333333333336 L588,-36 L-12,-36 L-12,175 L0,175",
+        "junction": {
+          "x": 588,
+          "y": 59.333333333333336
+        },
+        "label": {
+          "x": -6,
+          "y": -55,
+          "width": 216,
+          "height": 18,
+          "short": "Reports billing status",
+          "detail": "Reports billing status · HTTPS"
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:c>studio:element:db",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:c>studio:element:db"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "c"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["c-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:c-db",
+          "kind": "connection",
+          "action": "Reads catalog data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "c"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "db"
+          }
+        ],
+        "connectionIds": ["c-db"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 576,
+            "y": 180.66666666666666
+          },
+          {
+            "x": 708,
+            "y": 180.66666666666666
+          },
+          {
+            "x": 708,
+            "y": 41.2
+          },
+          {
+            "x": 720,
+            "y": 41.2
+          }
+        ],
+        "path": "M576,180.66666666666666 L708,180.66666666666666 L708,41.2 L720,41.2"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:c>studio:element:sink",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:c>studio:element:sink"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "c"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "sink"
+            }
+          ],
+          "connectionIds": ["c-sink"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:c-sink",
+          "kind": "connection",
+          "action": "Reports catalog",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "c"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "sink"
+          }
+        ],
+        "connectionIds": ["c-sink"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 576,
+            "y": 203.33333333333334
+          },
+          {
+            "x": 708,
+            "y": 203.33333333333334
+          },
+          {
+            "x": 708,
+            "y": 192
+          },
+          {
+            "x": 720,
+            "y": 192
+          }
+        ],
+        "path": "M576,203.33333333333334 L708,203.33333333333334 L708,192 L720,192"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:d>studio:element:db",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:d>studio:element:db"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "d"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["d-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:d-db",
+          "kind": "connection",
+          "action": "Reads delivery data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "d"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "db"
+          }
+        ],
+        "connectionIds": ["d-db"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 576,
+            "y": 324.6666666666667
+          },
+          {
+            "x": 708,
+            "y": 324.6666666666667
+          },
+          {
+            "x": 708,
+            "y": 54.8
+          },
+          {
+            "x": 720,
+            "y": 54.8
+          }
+        ],
+        "path": "M576,324.6666666666667 L708,324.6666666666667 L708,54.8 L720,54.8"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:d>studio:element:sink",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:d>studio:element:sink"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "d"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "sink"
+            }
+          ],
+          "connectionIds": ["d-sink"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:d-sink",
+          "kind": "connection",
+          "action": "Reports delivery",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "d"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "sink"
+          }
+        ],
+        "connectionIds": ["d-sink"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 576,
+            "y": 347.3333333333333
+          },
+          {
+            "x": 588,
+            "y": 347.3333333333333
+          },
+          {
+            "x": 588,
+            "y": 209
+          },
+          {
+            "x": 720,
+            "y": 209
+          }
+        ],
+        "path": "M576,347.3333333333333 L588,347.3333333333333 L588,209 L720,209"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:sink>studio:package:dispatch",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:sink>studio:package:dispatch"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "sink"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "connectionIds": ["sink-a"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:sink-a",
+          "kind": "connection",
+          "action": "Returns work",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "sink"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "connectionIds": ["sink-a"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 936,
+            "y": 192
+          },
+          {
+            "x": 948,
+            "y": 192
+          },
+          {
+            "x": 948,
+            "y": -48
+          },
+          {
+            "x": 228,
+            "y": -48
+          },
+          {
+            "x": 228,
+            "y": 252
+          },
+          {
+            "x": -12,
+            "y": 252
+          },
+          {
+            "x": -12,
+            "y": 192
+          },
+          {
+            "x": 0,
+            "y": 192
+          }
+        ],
+        "path": "M936,192 L948,192 L948,-48 L228,-48 L228,252 L-12,252 L-12,192 L0,192",
+        "label": {
+          "x": 515,
+          "y": -67,
+          "width": 146,
+          "height": 18,
+          "short": "Returns work",
+          "detail": "Returns work · HTTPS"
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:x>studio:package:dispatch",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:x>studio:package:dispatch"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "x"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "connectionIds": ["x-a"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:x-a",
+          "kind": "connection",
+          "action": "Submits work",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "x"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "connectionIds": ["x-a"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 216,
+            "y": 48
+          },
+          {
+            "x": 348,
+            "y": 48
+          },
+          {
+            "x": 348,
+            "y": -60
+          },
+          {
+            "x": -12,
+            "y": -60
+          },
+          {
+            "x": -12,
+            "y": 209
+          },
+          {
+            "x": 0,
+            "y": 209
+          }
+        ],
+        "path": "M216,48 L348,48 L348,-60 L-12,-60 L-12,209 L0,209",
+        "label": {
+          "x": 95,
+          "y": -79,
+          "width": 146,
+          "height": 18,
+          "short": "Submits work",
+          "detail": "Submits work · HTTPS"
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:element:z>studio:element:c",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:element:z>studio:element:c"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "z"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "c"
+            }
+          ],
+          "connectionIds": ["z-c"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:z-c",
+          "kind": "connection",
+          "action": "Updates catalog",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "z"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "c"
+          }
+        ],
+        "connectionIds": ["z-c"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 168,
+            "y": 336
+          },
+          {
+            "x": 348,
+            "y": 336
+          },
+          {
+            "x": 348,
+            "y": 180.66666666666666
+          },
+          {
+            "x": 360,
+            "y": 180.66666666666666
+          }
+        ],
+        "path": "M168,336 L348,336 L348,180.66666666666666 L360,180.66666666666666"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:package:dispatch>studio:element:b:branch:connection:a-b",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:package:dispatch>studio:element:b"],
+      "trunk": "studio:trunk:studio:package:dispatch:connection:a-b|connection:a-c|connection:a-d",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "connectionIds": ["a-b"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-b",
+          "kind": "connection",
+          "action": "Starts billing",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          }
+        ],
+        "connectionIds": ["a-b"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 264,
+            "y": 36.66666666666667
+          },
+          {
+            "x": 360,
+            "y": 36.66666666666667
+          }
+        ],
+        "path": "M264,36.66666666666667 L360,36.66666666666667",
+        "junction": {
+          "x": 264,
+          "y": 36.66666666666667
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:package:dispatch>studio:element:b:branch:connection:a-b-sql",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:package:dispatch>studio:element:b"],
+      "trunk": "studio:trunk:studio:package:dispatch:connection:a-b-sql|connection:a-db|connection:a2-db",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "connectionIds": ["a-b-sql"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-b-sql",
+          "kind": "connection",
+          "action": "Reads billing records",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          }
+        ],
+        "connectionIds": ["a-b-sql"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 252,
+            "y": 59.333333333333336
+          },
+          {
+            "x": 360,
+            "y": 59.333333333333336
+          }
+        ],
+        "path": "M252,59.333333333333336 L360,59.333333333333336",
+        "junction": {
+          "x": 252,
+          "y": 59.333333333333336
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:package:dispatch>studio:element:c:branch:connection:a-c",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:package:dispatch>studio:element:c"],
+      "trunk": "studio:trunk:studio:package:dispatch:connection:a-b|connection:a-c|connection:a-d",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "c"
+            }
+          ],
+          "connectionIds": ["a-c"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-c",
+          "kind": "connection",
+          "action": "Reads catalog",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "c"
+          }
+        ],
+        "connectionIds": ["a-c"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 264,
+            "y": 203.33333333333334
+          },
+          {
+            "x": 360,
+            "y": 203.33333333333334
+          }
+        ],
+        "path": "M264,203.33333333333334 L360,203.33333333333334",
+        "junction": {
+          "x": 264,
+          "y": 203.33333333333334
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:package:dispatch>studio:element:cache",
+      "kind": "relationship",
+      "originalEdges": ["studio:relationship:studio:package:dispatch>studio:element:cache"],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "cache"
+            }
+          ],
+          "connectionIds": ["a-cache"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-cache",
+          "kind": "connection",
+          "action": "Reads cached work",
+          "protocols": ["Redis"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "cache"
+          }
+        ],
+        "connectionIds": ["a-cache"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 216,
+            "y": 175
+          },
+          {
+            "x": 228,
+            "y": 175
+          },
+          {
+            "x": 228,
+            "y": 396
+          },
+          {
+            "x": 708,
+            "y": 396
+          },
+          {
+            "x": 708,
+            "y": 336
+          },
+          {
+            "x": 720,
+            "y": 336
+          }
+        ],
+        "path": "M216,175 L228,175 L228,396 L708,396 L708,336 L720,336"
+      }
+    },
+    {
+      "id": "studio:relationship:studio:package:dispatch>studio:element:d:branch:connection:a-d",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:package:dispatch>studio:element:d"],
+      "trunk": "studio:trunk:studio:package:dispatch:connection:a-b|connection:a-c|connection:a-d",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "d"
+            }
+          ],
+          "connectionIds": ["a-d"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-d",
+          "kind": "connection",
+          "action": "Starts delivery",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "d"
+          }
+        ],
+        "connectionIds": ["a-d"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 264,
+            "y": 336
+          },
+          {
+            "x": 360,
+            "y": 336
+          }
+        ],
+        "path": "M264,336 L360,336",
+        "junction": {
+          "x": 264,
+          "y": 336
+        }
+      }
+    },
+    {
+      "id": "studio:relationship:studio:package:dispatch>studio:element:db:branch:connection:a-db|connection:a2-db",
+      "kind": "branch",
+      "originalEdges": ["studio:relationship:studio:package:dispatch>studio:element:db"],
+      "trunk": "studio:trunk:studio:package:dispatch:connection:a-b-sql|connection:a-db|connection:a2-db",
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["a-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-db",
+          "kind": "connection",
+          "action": "Reads dispatch data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a2"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["a2-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a2-db",
+          "kind": "connection",
+          "action": "Writes dispatch data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          },
+          {
+            "kind": "element",
+            "id": "a2"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "db"
+          }
+        ],
+        "connectionIds": ["a-db", "a2-db"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 252,
+            "y": 68.4
+          },
+          {
+            "x": 348,
+            "y": 68.4
+          },
+          {
+            "x": 348,
+            "y": 108
+          },
+          {
+            "x": 708,
+            "y": 108
+          },
+          {
+            "x": 708,
+            "y": 68.4
+          },
+          {
+            "x": 720,
+            "y": 68.4
+          }
+        ],
+        "path": "M252,68.4 L348,68.4 L348,108 L708,108 L708,68.4 L720,68.4",
+        "junction": {
+          "x": 252,
+          "y": 68.4
+        }
+      }
+    },
+    {
+      "id": "studio:trunk:studio:element:b:connection:b-a|connection:b-sink",
+      "kind": "trunk",
+      "originalEdges": [
+        "studio:relationship:studio:element:b>studio:element:sink",
+        "studio:relationship:studio:element:b>studio:package:dispatch"
+      ],
+      "branchIds": [
+        "studio:relationship:studio:element:b>studio:element:sink:branch:connection:b-sink",
+        "studio:relationship:studio:element:b>studio:package:dispatch:branch:connection:b-a"
+      ],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "connectionIds": ["b-a"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:b-a",
+          "kind": "connection",
+          "action": "Reports billing status",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "sink"
+            }
+          ],
+          "connectionIds": ["b-sink"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:b-sink",
+          "kind": "connection",
+          "action": "Reports billing",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          },
+          {
+            "kind": "element",
+            "id": "sink"
+          }
+        ],
+        "connectionIds": ["b-a", "b-sink"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 576,
+            "y": 59.333333333333336
+          },
+          {
+            "x": 588,
+            "y": 59.333333333333336
+          }
+        ],
+        "path": "M576,59.333333333333336 L588,59.333333333333336"
+      }
+    },
+    {
+      "id": "studio:trunk:studio:package:dispatch:connection:a-b-sql|connection:a-db|connection:a2-db",
+      "kind": "trunk",
+      "originalEdges": [
+        "studio:relationship:studio:package:dispatch>studio:element:b",
+        "studio:relationship:studio:package:dispatch>studio:element:db"
+      ],
+      "branchIds": [
+        "studio:relationship:studio:package:dispatch>studio:element:b:branch:connection:a-b-sql",
+        "studio:relationship:studio:package:dispatch>studio:element:db:branch:connection:a-db|connection:a2-db"
+      ],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "connectionIds": ["a-b-sql"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-b-sql",
+          "kind": "connection",
+          "action": "Reads billing records",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["a-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-db",
+          "kind": "connection",
+          "action": "Reads dispatch data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a2"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "db"
+            }
+          ],
+          "connectionIds": ["a2-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a2-db",
+          "kind": "connection",
+          "action": "Writes dispatch data",
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          },
+          {
+            "kind": "element",
+            "id": "a2"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          },
+          {
+            "kind": "element",
+            "id": "db"
+          }
+        ],
+        "connectionIds": ["a-b-sql", "a-db", "a2-db"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 216,
+            "y": 192
+          },
+          {
+            "x": 252,
+            "y": 192
+          },
+          {
+            "x": 252,
+            "y": 59.333333333333336
+          },
+          {
+            "x": 252,
+            "y": 192
+          }
+        ],
+        "path": "M216,192 L252,192 L252,59.333333333333336 L252,192"
+      }
+    },
+    {
+      "id": "studio:trunk:studio:package:dispatch:connection:a-b|connection:a-c|connection:a-d",
+      "kind": "trunk",
+      "originalEdges": [
+        "studio:relationship:studio:package:dispatch>studio:element:b",
+        "studio:relationship:studio:package:dispatch>studio:element:c",
+        "studio:relationship:studio:package:dispatch>studio:element:d"
+      ],
+      "branchIds": [
+        "studio:relationship:studio:package:dispatch>studio:element:b:branch:connection:a-b",
+        "studio:relationship:studio:package:dispatch>studio:element:c:branch:connection:a-c",
+        "studio:relationship:studio:package:dispatch>studio:element:d:branch:connection:a-d"
+      ],
+      "members": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "b"
+            }
+          ],
+          "connectionIds": ["a-b"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-b",
+          "kind": "connection",
+          "action": "Starts billing",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "c"
+            }
+          ],
+          "connectionIds": ["a-c"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-c",
+          "kind": "connection",
+          "action": "Reads catalog",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "a1"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "d"
+            }
+          ],
+          "connectionIds": ["a-d"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "connection:a-d",
+          "kind": "connection",
+          "action": "Starts delivery",
+          "protocols": ["HTTPS"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "provenance": {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "a1"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "b"
+          },
+          {
+            "kind": "element",
+            "id": "c"
+          },
+          {
+            "kind": "element",
+            "id": "d"
+          }
+        ],
+        "connectionIds": ["a-b", "a-c", "a-d"],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": [],
+        "componentIds": [],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": []
+      },
+      "geometry": {
+        "points": [
+          {
+            "x": 216,
+            "y": 209
+          },
+          {
+            "x": 264,
+            "y": 209
+          },
+          {
+            "x": 264,
+            "y": 36.66666666666667
+          },
+          {
+            "x": 264,
+            "y": 336
+          }
+        ],
+        "path": "M216,209 L264,209 L264,36.66666666666667 L264,336"
+      }
+    }
+  ]
+}
