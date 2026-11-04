@@ -1,0 +1,21 @@
+{
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "width": 1440,
+      "height": 900,
+      "legacyDefault": true,
+      "studioAbsent": true
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "legacyDefault": true,
+      "studioAbsent": true
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "warnings": [],
+  "projectsUnchanged": true
+}

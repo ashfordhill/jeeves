@@ -1,0 +1,32 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "pathPrefix": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "warnings": 2797,
+      "infos": 88,
+      "newWarnings": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "scope": "all workspaces plus scripts and existing source/test types"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "advisory": "existing >500 kB chunks",
+      "routingWorkerBytes": 5785
+    }
+  ],
+  "deferred": [
+    "pnpm check",
+    "unit suites",
+    "E2E suites",
+    "template suites",
+    "snapshot and broad test maintenance"
+  ]
+}

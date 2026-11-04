@@ -23,7 +23,15 @@ import {
   studioCardSize,
 } from "./card-appearance.tsx";
 import { initialPosition, type Point } from "./creation.ts";
-import { type StudioPath, type StudioRoute, studioPaths, studioRouteGeometry } from "./routing.ts";
+import {
+  movedStudioGeometry,
+  type StudioGeometry,
+  type StudioPath,
+  type StudioRoute,
+  studioIncidentPaths,
+  studioPaths,
+} from "./routing.ts";
+import { useStudioRouting } from "./use-routing.ts";
 
 type Card = Node<{ item: StudioViewNode }, "studio">;
 function StudioCard({ data, selected }: NodeProps<Card>) {
@@ -107,7 +115,7 @@ function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
 }
 const edgeTypes = { studio: StudioRelation };
 
-/** Fixed role/edge geometry; movement and fresh-scope arrangement belong to UX11. */
+/** Stable transient movement. UX11b supplies grid landing and durable drop/history. */
 export function StudioGraph({
   scope,
   selection,
@@ -148,51 +156,82 @@ export function StudioGraph({
     appliedCamera.current = next;
     if (viewport) void flow.setViewport(viewport);
   }, [flow, viewport]);
+  const boxes = useMemo(
+    () =>
+      Object.fromEntries(
+        scope.nodes.map((item, index) => [
+          item.id,
+          { ...(saved?.positions[item.id] ?? initialPosition(index)), ...studioCardSize(item) },
+        ]),
+      ),
+    [scope.nodes, saved?.positions],
+  );
+  const paths = useMemo(() => studioPaths(scope), [scope]);
+  const pathMap = useMemo(() => new Map(paths.map((path) => [path.id, path])), [paths]);
+  const incident = useMemo(() => studioIncidentPaths(paths), [paths]);
+  const [dragging, setDragging] = useState<Record<string, Point>>();
+  const [measured, setMeasured] = useState<Record<string, { width: number; height: number }>>({});
+  const snapshot = useRef<
+    | { routes: StudioGeometry; nodes: typeof boxes; paths: StudioPath[]; generation: number }
+    | undefined
+  >(undefined);
+  const routing = useStudioRouting(scope.key, paths, boxes, !!dragging);
+  const geometry = useMemo(
+    () =>
+      dragging && snapshot.current
+        ? movedStudioGeometry(
+            snapshot.current.routes,
+            pathMap,
+            snapshot.current.nodes,
+            dragging,
+            incident,
+          )
+        : routing.geometry,
+    [dragging, routing.geometry, pathMap, incident],
+  );
+  useEffect(() => {
+    // An accepted delete/edit or external layout supersedes the gesture, never the other way around.
+    if (
+      snapshot.current &&
+      (snapshot.current.nodes !== boxes || snapshot.current.paths !== paths)
+    ) {
+      snapshot.current = undefined;
+      setDragging(undefined);
+    }
+  }, [boxes, paths]);
+  useEffect(() => {
+    const cancel = (event: Event) => {
+      if (event.type === "keydown" && (event as KeyboardEvent).key !== "Escape") return;
+      snapshot.current = undefined;
+      setDragging(undefined);
+    };
+    window.addEventListener("pointercancel", cancel);
+    window.addEventListener("blur", cancel);
+    window.addEventListener("keydown", cancel);
+    return () => {
+      window.removeEventListener("pointercancel", cancel);
+      window.removeEventListener("blur", cancel);
+      window.removeEventListener("keydown", cancel);
+    };
+  }, []);
   const nodes = useMemo(
     () =>
       scope.nodes.map(
         (item, index): Card => ({
           id: item.id,
           type: "studio",
-          position: saved?.positions[item.id] ?? initialPosition(index),
+          position: dragging?.[item.id] ?? boxes[item.id] ?? initialPosition(index),
           data: { item },
           selected:
             selection === item.id || selectedIds?.includes(item.id) || connecting === item.id,
           ariaLabel: `Inspect ${item.name}`,
           ...studioCardSize(item),
+          measured: measured[item.id],
           style: studioCardSize(item),
         }),
       ),
-    [scope, selection, selectedIds, saved?.positions, connecting],
+    [scope, selection, selectedIds, boxes, dragging, connecting, measured],
   );
-  const paths = useMemo(() => studioPaths(scope), [scope]);
-  const [fontReady, setFontReady] = useState(false);
-  useEffect(() => {
-    let active = true;
-    void document.fonts.ready.then(() => {
-      if (active) setFontReady(true);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-  const geometry = useMemo(() => {
-    const context = fontReady ? document.createElement("canvas").getContext("2d") : null;
-    if (context) context.font = '12px "Nunito Variable", Nunito, system-ui, sans-serif';
-    return studioRouteGeometry(
-      paths,
-      Object.fromEntries(
-        scope.nodes.map((item, index) => [
-          item.id,
-          {
-            ...(saved?.positions[item.id] ?? initialPosition(index)),
-            ...studioCardSize(item),
-          },
-        ]),
-      ),
-      (text) => context?.measureText(text).width ?? Array.from(text).length * 8,
-    );
-  }, [paths, scope.nodes, saved?.positions, fontReady]);
   const edges = useMemo(
     () =>
       paths.map((path): Relation => {
@@ -231,6 +270,22 @@ export function StudioGraph({
       data-placing={placing || undefined}
       aria-label={`${scope.level === "context" ? "C1" : scope.level === "containers" ? "C2" : "C3"} ${scope.name}`}
       data-scope={scope.key}
+      data-dragging={!!dragging}
+      onPointerDownCapture={(event) => {
+        if (hand || placing || connecting !== undefined || event.button !== 0) return;
+        const target = event.target as HTMLElement;
+        if (
+          !target.closest(".react-flow__node") ||
+          target.closest("button, input, select, textarea")
+        )
+          return;
+        snapshot.current = {
+          routes: routing.geometry,
+          nodes: boxes,
+          paths,
+          generation: routing.generation,
+        };
+      }}
     >
       <ReactFlow
         onInit={setFlow}
@@ -238,7 +293,7 @@ export function StudioGraph({
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        nodesDraggable={false}
+        nodesDraggable={!hand && !placing && connecting === undefined}
         nodesConnectable={false}
         elementsSelectable={!hand}
         elevateEdgesOnSelect={false}
@@ -250,6 +305,37 @@ export function StudioGraph({
         defaultViewport={camera ?? viewport}
         fitView={!camera && !viewport}
         fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
+        onNodesChange={(changes) => {
+          const dimensions = changes.filter(
+            (change) => change.type === "dimensions" && change.dimensions,
+          );
+          if (dimensions.length)
+            setMeasured((previous) => {
+              const next = { ...previous };
+              for (const change of dimensions)
+                if (change.type === "dimensions" && change.dimensions)
+                  next[change.id] = change.dimensions;
+              return next;
+            });
+        }}
+        onNodeDragStart={(_, _node, moving) => {
+          routing.invalidate();
+          snapshot.current ??= {
+            routes: routing.geometry,
+            nodes: boxes,
+            paths,
+            generation: routing.generation,
+          };
+          setDragging(Object.fromEntries(moving.map((node) => [node.id, node.position])));
+        }}
+        onNodeDrag={(_, _node, moving) => {
+          if (snapshot.current)
+            setDragging(Object.fromEntries(moving.map((node) => [node.id, node.position])));
+        }}
+        onNodeDragStop={() => {
+          snapshot.current = undefined;
+          setDragging(undefined);
+        }}
         onMoveEnd={(_, next) => {
           onCamera(next);
           const bounds = container.current?.getBoundingClientRect();
@@ -278,6 +364,14 @@ export function StudioGraph({
       >
         <Background gap={24} color="var(--grid-dot)" />
       </ReactFlow>
+      {routing.error ? (
+        <div className="studio-routing-error" role="alert">
+          {routing.error}{" "}
+          <button type="button" onClick={routing.retry}>
+            Retry routing
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

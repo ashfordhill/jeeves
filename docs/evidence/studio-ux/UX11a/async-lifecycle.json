@@ -1,0 +1,77 @@
+{
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "case": "selection",
+      "workerMessages": 0,
+      "geometryExact": true
+    },
+    {
+      "case": "trunk-source-drag",
+      "samples": 16,
+      "changedPaths": [
+        "studio:relationship:studio:element:b>studio:package:dispatch:branch:connection:b-a",
+        "studio:relationship:studio:element:sink>studio:package:dispatch",
+        "studio:relationship:studio:element:x>studio:package:dispatch",
+        "studio:relationship:studio:package:dispatch>studio:element:cache",
+        "studio:trunk:studio:package:dispatch:connection:a-b-sql|connection:a-db|connection:a2-db",
+        "studio:trunk:studio:package:dispatch:connection:a-b|connection:a-c|connection:a-d"
+      ],
+      "unrelatedPathsExact": 13,
+      "workerMessages": 0
+    },
+    {
+      "case": "stale-response-after-new-drag",
+      "released": 1,
+      "oldValidPathsRetained": 19,
+      "newGestureUnchanged": true,
+      "workerRequestsWhileMoving": 0
+    },
+    {
+      "case": "stale-response-after-delete",
+      "released": 1,
+      "nodes": 8,
+      "paths": 18,
+      "noResurrection": true
+    },
+    {
+      "case": "client-coalescing-and-failure",
+      "coalescedWorkerMessages": 1,
+      "oneSubscriberCancelled": true,
+      "otherSubscriberResolved": true,
+      "cacheMessages": 0,
+      "constructorRejected": true
+    },
+    {
+      "case": "explicit-delete-layout-cleanup",
+      "onlyDeletedPositionPruned": true,
+      "ownedLayoutWrites": 1
+    }
+  ],
+  "blocked": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/projects/a4e1f9dd-e6a1-4926-8d42-c671f685ab8e/operations",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/a4e1f9dd-e6a1-4926-8d42-c671f685ab8e/operations",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/a4e1f9dd-e6a1-4926-8d42-c671f685ab8e/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/a4e1f9dd-e6a1-4926-8d42-c671f685ab8e/layout",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "originalProjectsUnchanged": true
+}

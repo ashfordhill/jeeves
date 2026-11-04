@@ -1,0 +1,22 @@
+{
+  "owned": [
+    {
+      "id": "a4e1f9dd-e6a1-4926-8d42-c671f685ab8e",
+      "name": "UX11a owned async lifecycle",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T11:33:03.363Z",
+      "updatedAt": "2026-11-04T11:33:03.363Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "a4e1f9dd-e6a1-4926-8d42-c671f685ab8e",
+      "deleted": true,
+      "verified404": true
+    }
+  ]
+}

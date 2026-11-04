@@ -9909,3 +9909,79 @@ can still clip remote objects. Fresh arrangement, drag/grid preview, asynchronou
 and Tidy/fit remain UX11a/UX11b. No product blocker remains. UX10 is complete; UX11a is the next exact
 assignment boundary and is not started here. This worker stops after its scoped local commit.
 Studio stays opt-in until UX15; P73a/P73b/backend remain paused.
+
+## 2026-11-04 — UX11a: stable drag geometry and asynchronous routing (complete)
+
+Executed UX11a only on primary main from `f06c63f7c7eae298c97dda13aa5cfe0f268acd08`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan/shared protocol/exact assignment, interaction §6, UX01's measured drag baseline, C4
+modeling/final decisions and the actual legacy/new graph, routing and worker seams. Inspected
+read-only automation-pitch cache/coalescing, preview and animation references; no sibling changes
+or code copy. No delegation, branch/worktree, backend resumption, provider/external-agent execution
+or application generation. Unrelated `.jeeves-feedback/` remains preserved.
+
+The opt-in studio captures node boxes, routes, labels and generation at pointer down. During
+movement it uses an incident-path index and cheap moving-anchor stubs; shared buses/junctions,
+unrelated paths/nodes and all labels stay captured. It never re-reserves every label or routes
+through a worker on pointer movement. React Flow's measured dimensions feed back through
+onNodesChange, preserving initialized handles and mounted node/edge identities. An accepted edit,
+scope switch, Escape, pointer cancellation or blur cancels the transient gesture safely.
+
+Obstacle/label routing now runs in a small browser worker with main-thread loaded-font measurements,
+including combined sibling-protocol labels. Exact scope/topology/sizing/position requests coalesce;
+16 successful results are cached. Subscriber-aware abort and generation guards reject obsolete
+responses after a scope switch, another drag or delete. Pending work retains valid matching routes;
+new relationships get immediate directed fallback paths. Failure keeps the graph usable and exposes
+Retry routing without clearing the graph or remounting React Flow. Selection and zoom do not route.
+
+UX11b owns durable landing/drop/history, grid collision preview, final incident settlement/animation,
+fresh arrangement and Tidy and fit. This unit's temporary movement restores the captured snapshot
+on release/cancel and makes no layout write. The legacy graph implementation remains unchanged.
+This is an explicit sequential integration seam, not a claim that persistent drag is finished.
+
+Evidence: `docs/evidence/studio-ux/UX11a/`. Continuous direct Chromium recordings at 1440×900 and
+1280×800 each contain 36 active dense drag samples: nine cards and 19 path IDs remain present,
+nonempty/full opacity and retain concrete DOM references. Four incident paths change; 15 unrelated
+paths, eight unrelated node geometries and every label stay exact. Worker creation/message deltas
+while moving are zero. Release and explicit cancellation restore exact geometry with no write.
+A 16-sample trunk-source move changes six incident paths while 13 stay exact, also without workers.
+Selection and zoom retain geometry and make zero routing requests. No arbitrary FPS claim.
+
+At both sizes, an actual worker response is held, scope switched and returned, and the obsolete
+callback released after newer geometry; newer paths/nodes stay exact. Focused lifecycle observations
+also release obsolete callbacks after a new drag and after deleting a node: no replacement or
+resurrection. The retained 19 paths stay visible during pending work. Injected first-load routing
+failure keeps five fallback paths and fixed node positions; mouse Retry recovers without identity
+changes. Two identical concurrent requests share one worker; cancelling one subscriber preserves
+the other, and a cache hit starts none. Worker-constructor failure rejects safely. Default legacy
+editor remains the default at both sizes. Representative drag/failure/default screenshots inspected.
+
+Browser guards precede page creation. Main/default runs attempt no writes. A separate owned lifecycle
+project permits only its exact operations/layout routes: two connection-label edits, a node removal
+and the existing cleanup save return 200. Only the deleted position is pruned; drag itself never
+writes layout. No provider/generation writes or fabricated successes. All final runs
+have zero blocked/unowned writes, external requests, page errors or console warnings/errors.
+All 13 original projects retain UX10's exact semantic/layout hashes and revisions; main disposable
+semantics/layout are unchanged. Every owned disposable is deleted/verified 404; final project-set
+equality also covers earlier attempted disposables. Earlier handoff bytes, 21 feedback original/copy
+pairs, seven public fixture files, 48 frozen benchmark files, old factories and unrelated tracked
+source remain exact. No catalog/runtime availability or reusable conceptual boundary changes.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1, with the Node bin path prepended:
+
+- `pnpm lint`: final exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory; routing worker 5,785 bytes.
+- Direct browser, scoped formatting, preservation and staged whitespace including new evidence/logs:
+  pass. Logs normalize trailing whitespace only.
+
+Bounded attempt notes record corrected initial hook dependency diagnostics, a real React Flow
+handle-reset flicker fixed by retaining measured dimensions, the pickup-frame observation and
+readable outside-lane fallback improvement. Final relevant browser/check passes repeat after source
+changes. No fixture typing adaptation, dependency, snapshot or broad test maintenance was needed.
+Unit/E2E/template suites and `pnpm check` remain explicitly deferred by the owner.
+
+Temporary incident/fallback paths prioritize continuous visibility and can cross other geometry;
+UX11b owns final routing after durable landing. No product blocker remains. UX11a is complete;
+UX11b is the next exact assignment boundary and is not started here. This worker stops after its
+scoped local commit. Studio stays opt-in until UX15; P73a/P73b/backend remain paused.

@@ -17,6 +17,8 @@ import {
 } from "@tabler/icons-react";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 
+export { boundedStudioText } from "./text.ts";
+
 /** World dimensions belong to the role, never the camera, name or support status. */
 export function studioCardSize(node: StudioViewNode) {
   return {
@@ -95,11 +97,4 @@ export function StudioProviderMark({ provider, label }: { provider?: string; lab
       <Glyph size={14} stroke={2} aria-hidden />
     </span>
   ) : null;
-}
-
-export function boundedStudioText(text: string, limit: number) {
-  const characters = Array.from(text.replace(/\s+/g, " ").trim());
-  return characters.length <= limit
-    ? characters.join("")
-    : `${characters.slice(0, limit - 1).join("")}…`;
 }

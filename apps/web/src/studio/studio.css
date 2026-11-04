@@ -144,6 +144,18 @@
   gap: 10px;
   cursor: pointer;
 }
+.studio-routing-error {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  max-width: calc(100% - 24px);
+  z-index: 5;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: 0 1px 6px #0002;
+}
 .studio-card strong {
   font-size: 15px;
   line-height: 1.25;

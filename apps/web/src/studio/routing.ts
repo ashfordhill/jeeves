@@ -4,8 +4,8 @@ import type {
   StudioRelationshipMember,
   StudioScopeProjection,
 } from "@jeeves/spec";
-import { boundedStudioText } from "./card-appearance.tsx";
 import type { Point } from "./creation.ts";
+import { boundedStudioText } from "./text.ts";
 
 export interface StudioPath {
   id: string;
@@ -23,6 +23,99 @@ export interface StudioRoute {
   path: string;
   junction?: Point;
   label?: RouteBox & { short: string; detail: string };
+}
+export type StudioGeometry = Record<string, StudioRoute>;
+
+/** Capture once per gesture. Trunks own their source; branches own their target. */
+export function studioIncidentPaths(paths: StudioPath[]): Map<string, string[]> {
+  const result = new Map<string, string[]>();
+  for (const path of paths) {
+    for (const id of [
+      ...(!path.trunk ? [path.item.from] : []),
+      ...(!path.branchIds ? [path.item.to] : []),
+    ]) {
+      const ids = result.get(id) ?? [];
+      ids.push(path.id);
+      result.set(id, ids);
+    }
+  }
+  return result;
+}
+
+/** Immediate visible fallback, including first load and newly added relationships. */
+export function studioFallbackGeometry(
+  paths: StudioPath[],
+  nodes: Record<string, RouteBox>,
+): StudioGeometry {
+  const top = Math.min(0, ...Object.values(nodes).map((node) => node.y)) - 24;
+  return Object.fromEntries(
+    paths.map((path, index) => {
+      const from = nodes[path.item.from],
+        to = nodes[path.item.to];
+      if (!from || !to) throw new Error("Missing studio route endpoint.");
+      const start = { x: from.x + from.width, y: from.y + from.height / 2 };
+      const end = { x: to.x, y: to.y + to.height / 2 };
+      const joint = { x: start.x + 12, y: start.y };
+      const lane = top - index * 12;
+      const points = path.branchIds
+        ? [start, joint]
+        : [
+            ...(path.trunk ? [joint] : [start]),
+            joint,
+            { x: joint.x, y: lane },
+            { x: end.x - 12, y: lane },
+            { x: end.x - 12, y: end.y },
+            end,
+          ];
+      return [path.id, { points, path: routePath(points) }];
+    }),
+  );
+}
+
+const routePath = (points: Point[]) =>
+  points.map((p, i) => `${i ? "L" : "M"}${p.x},${p.y}`).join(" ");
+
+/** Rubber-band only incident anchors. No obstacle search or label reservation on pointer ticks. */
+export function movedStudioGeometry(
+  base: StudioGeometry,
+  paths: Map<string, StudioPath>,
+  nodes: Record<string, RouteBox>,
+  positions: Record<string, Point>,
+  incident: Map<string, string[]>,
+): StudioGeometry {
+  const affected = new Set(
+    Object.keys(positions)
+      .filter(
+        (id) =>
+          nodes[id] && (nodes[id]?.x !== positions[id]?.x || nodes[id]?.y !== positions[id]?.y),
+      )
+      .flatMap((id) => incident.get(id) ?? []),
+  );
+  const result = { ...base };
+  for (const id of affected) {
+    const path = paths.get(id),
+      route = base[id];
+    if (!path || !route) continue;
+    const points = [...route.points];
+    const moveAnchor = (nodeId: string, first: boolean) => {
+      const old = nodes[nodeId],
+        point = positions[nodeId];
+      if (!old || !point) return;
+      const index = first ? 0 : points.length - 1;
+      const anchor = points[index];
+      if (!anchor) return;
+      const next = { x: anchor.x + point.x - old.x, y: anchor.y + point.y - old.y };
+      // Retain the captured middle (including the shared bus/junction) exactly.
+      const elbow = { x: first ? next.x + 12 : next.x - 12, y: next.y };
+      const join = { x: elbow.x, y: anchor.y };
+      if (first) points.splice(0, 1, next, elbow, join, anchor);
+      else points.splice(index, 1, anchor, join, elbow, next);
+    };
+    if (!path.trunk) moveAnchor(path.item.from, true);
+    if (!path.branchIds) moveAnchor(path.item.to, false);
+    result[id] = { ...route, points, path: routePath(points) };
+  }
+  return result;
 }
 const compare = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id, "en");
 const unique = <T extends string>(values: T[]) => [...new Set(values)].sort();
@@ -126,6 +219,23 @@ export function studioRelationshipLabel(item: StudioRelationship, detailed: bool
   return detailed && protocol
     ? `${boundedStudioText(action, 53 - Array.from(protocol).length)} · ${protocol}`
     : boundedStudioText(action, detailed ? 56 : 36);
+}
+
+/** Include combined sibling labels as well as individual branches in font measurements. */
+export function studioLabelTexts(paths: StudioPath[]): string[] {
+  const ends = paths.filter((path) => !path.branchIds);
+  return unique(
+    ends.flatMap((path) => {
+      const edgeId = path.edgeIds[0];
+      const siblings = ends.filter((sibling) => sibling.edgeIds.includes(edgeId ?? ""));
+      const item = relationship(
+        path.id,
+        siblings.map((sibling) => sibling.item),
+        siblings.flatMap((sibling) => sibling.item.members.map((member) => member.id)),
+      );
+      return [studioRelationshipLabel(item, true), studioRelationshipLabel(item, false)];
+    }),
+  );
 }
 
 const overlaps = (a: RouteBox, b: RouteBox) =>
