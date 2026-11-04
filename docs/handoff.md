@@ -8607,3 +8607,39 @@ Next: discuss the questions and record explicit answers, then write the detailed
 plan for Sol6.1 xhigh. Do not interpret an unanswered question, candidate destination, recommendation
 or archived request as an approved implementation requirement. No new package IDs were allocated;
 the later plan must avoid collisions with the existing backend execution queue.
+
+
+## 2026-11-03 — UX discussion: first owner answers recorded
+
+Continued the review discussion from `1565f85` on primary `main`. Recorded the owner's successive
+responses in `.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-ROUND-1.md`, tracing every
+Q01–Q42 answer. Earlier explicit Docker/Billing/Redirect answers remain applicable even though the
+last message did not repeat their complete text. Q10's fragmentary scope and the compound “no”
+answers to Q31/Q32 remain explicit ambiguities, not inferred product decisions.
+
+Settled direction: UI plus meaningful design configuration, AI-led/manual-assisted authoring,
+Docker-oriented independent services and language flexibility; no Kubernetes/Helm or runtime
+generation in this scope. Billing is one C2 card; minimize unconfigurable internals and domain-policy
+editor exposure. Compact tabs, suitable autosave, consolidated Generate, shared connection trunks,
+concise zoom-dependent labels, no unrelated fading/dotted status borders, name/icon cards,
+chat initially open, click-inspect/double-click-children, no named focused views or annotations,
+automatic guided layout with Tidy and fit, laptop/desktop focus and capability-first/provider-second
+choices. New diagrams should later be reconstructed from goals, with old designs retained as
+references. Show available usage; broader chat work stays later.
+
+Seven concrete follow-ups narrow the remaining C2/C3 package boundary, technical versus business
+configuration and example coverage, queue presentation, optional navigation map, abandoned versus
+in-flight autosaves, drag/connect semantics and provider-specific form depth. Under Q39's explicit
+delegation, the chosen scope records provider/non-secret setup references and a Generate setup
+summary; live onboarding/provisioning is deferred. A separate generator remains possible, not decided.
+
+Re-read automation-pitch's actual drag preview, insertion, animation and controls, and consulted
+primary Docker/C4/microservice data guidance. No source or runtime changes. Updated the review
+index and historical questionnaire with links to current decisions; preserved the original feedback
+and earlier handoff bytes. Authored-document local links and Q/R identity completeness are checked;
+scoped whitespace and staging checks precede the local docs commit. No application suites were run.
+
+Next: resolve the seven follow-ups and then write the bounded build plan. Revise superseded modeling
+and UX guidance deliberately as part of that planning; do not let historical preferences restore
+rejected UI. No implementation assignments, package IDs, project conversions, provider calls,
+worktrees, delegation or pushes. P73a/P73b remain paused; do not resume the backend batch.

@@ -1,6 +1,8 @@
 # UX discussion questions — 3 November 2026
 
-**All answers are pending. This is not a build plan.** See the [review and source inventory](REVIEW.md)
+**Historical first questionnaire.** The [owner's first answers and remaining follow-ups](DECISIONS-ROUND-1.md)
+now record the current discussion state. At initial publication all answers were pending.
+This is not a build plan. See the [review and source inventory](REVIEW.md)
 for what was inspected and why these questions exist. Options below explain tradeoffs; their order
 does not select a default. A recommendation is identified as such. “Undecided” is a valid answer,
 and silence is not agreement.
@@ -399,7 +401,9 @@ than invent precise numbers.
 
 ## Decision record
 
-No answers have been received at the time of this review. Append agreed answers with their Q IDs,
+No answers had been received at the time of the initial review. The first response is now recorded
+in [DECISIONS-ROUND-1.md](DECISIONS-ROUND-1.md), with each Q ID mapped to its answer and any
+remaining ambiguity. Append subsequent agreed answers with their Q IDs,
 date and any relevant examples. If one answer changes an earlier one, record the supersession
 explicitly. Only after the material choices are resolved should the build plan select controls,
 defaults, migrations, scope and acceptance criteria.

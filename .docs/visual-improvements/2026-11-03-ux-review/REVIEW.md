@@ -5,7 +5,10 @@ of ambiguities, and a build plan **after** those ambiguities are resolved. No UI
 architecture migration or runtime work is performed or approved here. The execution plan will be
 written for a Sol 6.1 xhigh implementation agent, with bounded assignments and explicit decisions.
 
-Read [the questions](QUESTIONS.md) alongside this review. Every question starts unanswered;
+**Discussion update:** [The owner's first answers and remaining decisions](DECISIONS-ROUND-1.md)
+now supplement this initial review. The observations below remain evidence of the reviewed version.
+
+Read [the original questions](QUESTIONS.md) alongside this review. Every question started unanswered;
 recommendations are proposals, not inferred answers. The incomplete P73a checkpoint and paused
 backend batch remain untouched.
 
