@@ -1,0 +1,12 @@
+templates/web-app typecheck$ tsc -p .
+templates/web-app typecheck: Done
+packages/generator typecheck$ tsc -p .
+packages/registry typecheck$ tsc -p .
+packages/registry typecheck: Done
+apps/web typecheck$ tsc -p .
+packages/generator typecheck: Done
+packages/orchestrator typecheck$ tsc -p .
+packages/orchestrator typecheck: Done
+apps/server typecheck$ tsc -p .
+apps/web typecheck: Done
+apps/server typecheck: Done

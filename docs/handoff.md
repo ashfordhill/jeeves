@@ -10708,3 +10708,42 @@ no free placement, handle drag-to-create, merged lines, generic services with pe
 settings, TinyURL replacing all fourteen studies, and a read-only blueprint API as the
 code-generation boundary. Open decisions D1–D3 have stated defaults. No code changed; no unit
 is started. AGENTS.md points at the plan.
+
+## 2026-11-04 — SG01: baseline and reference capture (complete)
+
+Executed SG01 only on primary `main` from `95e70e8`, as a fresh sequential worker. Read AGENTS,
+the studio grid plan (O1–O9; D1–D3 defaults apply), the execution units and the latest handoff.
+No product code, spec, server, generation/runtime, P73a/P73b or backend batch work changed.
+
+Evidence: `docs/evidence/studio-grid/SG01/README.md`.
+
+- 52 screenshots of the current default studio at 1440×900 and 1280×800: Mattermost · backend
+  design review (C1, C2, C3 of Job server, Mattermost server, Web client) and Streamly · video
+  platform (C1, C2, C3 of six application services), each as opened and mouse-fitted.
+- `capture.mjs` and `capture-log.json` record the method. Every page had a guard that aborted all
+  non-GET requests before navigation; it blocked 26 `PUT …/layout` requests, which shows the current
+  studio writes layout merely on opening scopes/selecting. Project list, revisions, `updatedAt`
+  and project bodies were identical before/after. No projects created or deleted. I used the dev
+  servers that were already running on 4300/4310 (not started by me) and left them running.
+- Reference notes from `~/github/automation-pitch` (`0803c4a`, read-only): full ELK option set,
+  stability options/model-order hints, fixed WEST/EAST ports, label boxes, grid constants
+  (32/64/32), `dockPosition`/`clearDockPosition`/`vacantSpot`, `spawnBranch` and the `+` pull
+  (36px threshold), with adaptation notes for SG06 and SG08.
+
+Checks (Node 24.21.0, pnpm 12.16.1): `pnpm lint` exit 0 (2,797 warnings / 88 infos, unchanged);
+`pnpm typecheck` exit 0; `pnpm --filter @jeeves/web build` exit 0 (existing chunk advisory).
+Unit/E2E suites and `pnpm check` are owner-deferred and were not run.
+
+Notes for later units:
+
+- SG02: nothing from SG01 constrains the spec work.
+- SG06: the reference graph is flat, does not snap to the grid and keeps
+  `separateConnectedComponents` false; Jeeves needs compound nodes with root coordinates, explicit
+  island packing and 32-multiple card sizes or explicit snapping (current studio grid is 24px).
+  The reference row stability (sort by previous position + `forceNodeModelOrder`) fits the planned
+  row-order hints. Removing saved positions should also stop the open-time layout writes above.
+- SG07: edges already declare 2px/3px stroke; they look thin because fitted scopes render below
+  zoom 1. Use a zoom-independent stroke.
+- SG08: do not copy the reference's inbound "retarget all incoming edges" insert-parent rule.
+- The live Mattermost project contains a stray unconnected "Microservice" card and a disconnected
+  "Team member" (owner data; left untouched).
