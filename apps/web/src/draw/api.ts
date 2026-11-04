@@ -18,10 +18,12 @@ import type {
   LibraryMetadata,
   OperationInput,
   PatternPreview,
+  StudioCommand,
   SubtypeReview,
   TargetChange,
   TargetOrigin,
 } from "@jeeves/spec";
+import { buildStudioCommand } from "@jeeves/spec";
 
 export type Project = {
   id: string;
@@ -558,6 +560,12 @@ export const api = {
 
   edit: (id: string, baseRevision: number, ops: OperationInput[]) =>
     change(`/projects/${id}/operations`, { baseRevision, ops, source: "canvas" }),
+
+  studioCommand: (id: string, accepted: DesignDocument, command: StudioCommand) =>
+    change(`/projects/${id}/operations`, {
+      ...buildStudioCommand(accepted, command),
+      source: "canvas",
+    }),
 
   undo: (id: string, baseRevision: number) =>
     change(`/projects/${id}/undo`, { baseRevision, source: "canvas" }),

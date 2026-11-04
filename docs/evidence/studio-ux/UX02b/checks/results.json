@@ -1,0 +1,77 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "nodePathPrepended": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "log": "lint.log",
+      "warnings": 2797,
+      "infos": 88
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": "typecheck.log",
+      "result": "All workspaces and scripts passed; existing source/test types included"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web typecheck",
+      "exitCode": 0,
+      "log": "web-typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/server typecheck",
+      "exitCode": 0,
+      "log": "server-typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "log": "web-build.log",
+      "advisory": "Existing >500 kB chunk advisory"
+    },
+    {
+      "command": "One-off installed-tsx API inspection",
+      "exitCode": 0,
+      "log": "api-inspection.log",
+      "observationCount": 23,
+      "preExistingProjectsUnchanged": 13,
+      "generationLaunches": 0
+    },
+    {
+      "command": "One-off installed-Playwright direct browser inspection",
+      "exitCode": 0,
+      "log": "browser-inspection.log",
+      "viewports": ["1440x900", "1280x800"],
+      "legacyViews": 4,
+      "ownedSaves": 7,
+      "consoleErrors": 0,
+      "consoleWarnings": 1,
+      "pageErrors": 0,
+      "httpErrors": 0
+    },
+    {
+      "command": "One-off raw preservation inspection",
+      "exitCode": 0,
+      "log": "preservation.log",
+      "feedbackPairs": 21,
+      "publicFixtures": 7,
+      "frozenBenchmarkFiles": 48
+    }
+  ],
+  "deferred": [
+    "pnpm check",
+    "unit suites",
+    "E2E suites",
+    "template suites",
+    "broader test maintenance"
+  ],
+  "status": "Required checks and direct observations passed",
+  "initialTypecheckAttempt": {
+    "exitCode": 1,
+    "log": "typecheck-initial.log",
+    "reason": "New OperationType additions exposed missing entries in existing exhaustive opCases record; fixed with only two meaningful compatibility entries, without suppression or suite execution."
+  }
+}

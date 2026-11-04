@@ -21,6 +21,8 @@ import { type Finding, finding, isStructural } from "./findings.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
 import { plannedConnectionSchema } from "./planned-capabilities.ts";
+import { pruneStudioAfterDelete } from "./studio-operations.ts";
+import { validateStudio } from "./studio-validation.ts";
 import { sameSubtype, subtypeDiscards } from "./subtype.ts";
 import { reviewTemplateUpgrade } from "./template-upgrade.ts";
 import { validateDesign } from "./validate.ts";
@@ -129,6 +131,10 @@ export function applyOperations(
       };
   }
   const findings = validateDesign(draft, lookup);
+  // Studio has no historical invalid-data allowance: every resulting binding must be sound,
+  // including when replacing a bad value at the same finding path or through setArchitecture.
+  const studioErrors = validateStudio(draft).filter(isStructural);
+  if (studioErrors.length) return { ok: false, errors: studioErrors };
   const introduced = findings.filter((f) => isStructural(f) && !before.has(findingKey(f)));
   if (introduced.length > 0) return { ok: false, errors: introduced };
 
@@ -185,6 +191,21 @@ function applyOne(
     case "setArchitecture": {
       if (op.architecture === null) delete design.architecture;
       else design.architecture = op.architecture;
+      return;
+    }
+    case "setStudio": {
+      if (!design.architecture)
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Create an architecture system before setting studio intent.",
+            {
+              op: index,
+            },
+          ),
+        );
+      if (op.studio === null) delete design.architecture.studio;
+      else design.architecture.studio = op.studio;
       return;
     }
     case "setRecipe": {
@@ -285,19 +306,35 @@ function applyOne(
       delete element.planned;
       element.config = {};
       element.attachments = [];
+      const removedConnections = design.connections.filter(
+        (c) => c.from.element === element.id || c.to.element === element.id,
+      );
       design.connections = design.connections.filter(
         (c) => c.from.element !== element.id && c.to.element !== element.id,
+      );
+      pruneStudioAfterDelete(
+        design,
+        [],
+        removedConnections.map((item) => item.id),
       );
       return;
     }
     case "removeElement": {
       const element = findElement(op.id);
+      const removedConnections = design.connections.filter(
+        (c) => c.from.element === op.id || c.to.element === op.id,
+      );
       design.elements = design.elements.filter((e) => e !== element);
       design.connections = design.connections.filter(
         (c) => c.from.element !== op.id && c.to.element !== op.id,
       );
       unbindArchitecture(design, element.id);
       unbindArrows(design, [element.id, ...element.attachments.map((a) => a.id)]);
+      pruneStudioAfterDelete(
+        design,
+        [op.id],
+        removedConnections.map((item) => item.id),
+      );
       return;
     }
     case "addAttachment": {
@@ -314,6 +351,11 @@ function applyOne(
     }
     case "removeAttachment": {
       const { element } = findAttachment(op.id);
+      const removedConnections = design.connections.filter(
+        (c) =>
+          capabilityEndpoint(c, "from").attachment === op.id ||
+          capabilityEndpoint(c, "to").attachment === op.id,
+      );
       element.attachments = element.attachments.filter((a) => a.id !== op.id);
       design.connections = design.connections.filter(
         (c) =>
@@ -321,6 +363,11 @@ function applyOne(
           capabilityEndpoint(c, "to").attachment !== op.id,
       );
       unbindArrows(design, [op.id]);
+      pruneStudioAfterDelete(
+        design,
+        [],
+        removedConnections.map((item) => item.id),
+      );
       return;
     }
     case "connect": {
@@ -352,9 +399,24 @@ function applyOne(
       } else Object.assign(connection, patch);
       return;
     }
+    case "updatePlannedConnection": {
+      const connection = design.connections.find((item) => item.id === op.id);
+      if (!connection) throw missing("connection", op.id);
+      if (!connection.planned)
+        throw new OpError(
+          finding("INVALID_OPERATION", "This relationship has no planned fields to edit.", {
+            op: index,
+            connection: op.id,
+          }),
+        );
+      for (const field of ["label", "protocol", "interaction", "security"] as const)
+        if (op[field] !== undefined) Object.assign(connection.planned, { [field]: op[field] });
+      return;
+    }
     case "disconnect": {
       if (!design.connections.some((c) => c.id === op.id)) throw missing("connection", op.id);
       design.connections = design.connections.filter((c) => c.id !== op.id);
+      pruneStudioAfterDelete(design, [], [op.id]);
       return;
     }
     case "setNotes": {

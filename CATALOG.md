@@ -2,10 +2,13 @@
 
 **Studio cleanup in progress:** [UX02a's typed model](packages/spec/src/studio-model.ts) now validates
 finite service/resource settings, exact definition references, package membership and logical
-resource ownership over existing graph identities. These are design-only contracts; the studio
-catalog, new authoring UI and runtime resolution remain unimplemented. Runtime availability is
-unchanged. The catalog below describes the existing offering; its older UI entry points must not
-override the [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
+resource ownership over existing graph identities. [UX02b's atomic commands](packages/spec/src/studio-operations.ts)
+now preserve those settings through explicit edits, deletion cleanup and existing history. The
+server and application compiler reject studio bindings before generation can start; legacy
+template eligibility is unchanged. These are design-only contracts; the studio catalog, new
+authoring UI and runtime resolution remain unimplemented. The catalog below describes the existing
+offering; its older UI entry points must not override the
+[studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 
 Choose the boundaries and responsibilities your system needs. C1 describes a product, C2 its
 applications/stores, and C3 the cohesive responsibilities within an application. A design can

@@ -11,6 +11,8 @@ import {
   recipeBindingSchema,
 } from "./design.ts";
 import { idSchema, templateRefSchema } from "./ids.ts";
+import { plannedConnectionSchema } from "./planned-capabilities.ts";
+import { studioModelSchema } from "./studio-model.ts";
 
 /**
  * Every design edit, from the canvas or from chat, is one of these. IDs are chosen by the caller
@@ -18,6 +20,8 @@ import { idSchema, templateRefSchema } from "./ids.ts";
  */
 export const operationSchema = z.discriminatedUnion("op", [
   z.strictObject({ op: z.literal("setArchitecture"), architecture: architectureSchema.nullable() }),
+  /** Replaces only studio intent; all other architecture declarations are retained. */
+  z.strictObject({ op: z.literal("setStudio"), studio: studioModelSchema.nullable() }),
   z.strictObject({ op: z.literal("setRecipe"), recipe: recipeBindingSchema.nullable() }),
   z.strictObject({ op: z.literal("addElement"), element: elementSchema }),
   z.strictObject({
@@ -70,6 +74,14 @@ export const operationSchema = z.discriminatedUnion("op", [
     label: connectionSchema.shape.label,
     protocol: connectionSchema.shape.protocol,
     interaction: connectionSchema.shape.interaction,
+  }),
+  z.strictObject({
+    op: z.literal("updatePlannedConnection"),
+    id: idSchema,
+    label: plannedConnectionSchema.shape.label.optional(),
+    protocol: plannedConnectionSchema.shape.protocol.unwrap().optional(),
+    interaction: plannedConnectionSchema.shape.interaction.unwrap().optional(),
+    security: plannedConnectionSchema.shape.security.unwrap().optional(),
   }),
   z.strictObject({ op: z.literal("disconnect"), id: idSchema }),
   /** Implementation notes of an element or an attachment. */

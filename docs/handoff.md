@@ -8861,3 +8861,83 @@ Final staged hygiene correction: Git's parent-relative whitespace check caught t
 newly tracked CLI logs (the earlier unstaged check did not inspect those untracked files). Trimmed
 only log trailing whitespace, retaining command diagnostics/outcomes, and reran the staged check
 against the UX01 parent before amending the same UX02a commit. No application source/check change.
+
+## 2026-11-04 — UX02b: atomic studio edits, cleanup and generation guard (complete)
+
+Executed UX02b only on primary main from UX02a commit
+`3f8caab6046b87b5b6ae9e2985cc19f865ab3208` under the owner's sequential fresh-worker batch
+contract. No delegation, branch/worktree, provider/agent task, generated application output,
+runtime registration, historical factory/benchmark repair or sibling edit. P73a/P73b/backend
+work remains paused.
+
+Added strict `setStudio` and `updatePlannedConnection` operations. The former requires an existing
+architecture/system and touches only studio; the latter edits canonical planned action/protocol/
+interaction/security without adding competing top-level values. Complete final studio structural
+validation runs inside the existing all-or-nothing boundary; old backend/contract transition rules
+remain unchanged. Added exported `buildStudioCommand` and browser `api.studioCommand` for one
+accepted-revision batch per create/edit/connect/group/membership/ungroup/delete action, including
+atomic multi-object/package creation and dependency policy changes. Future toolbar/chat call this
+same layer rather than replacing entire cached architecture snapshots.
+
+Explicit element/connection/attachment/subtype deletion prunes only bindings/references belonging
+to removed targets. Optional selected lookup, frontend serving and CDN origin refs clear; owner refs
+remain enforced. Deleting a resource owner or dissolving an owned package must explicitly reassign
+or remove the resource in the same batch; nothing cascade-deletes another service's resource.
+Partial membership removal dissolves packages below two members. Explicit ungroup retains every
+child/resource/connection. Package delete defaults to ungroup; delete-members is a distinct explicit
+command, with destructive-action confirmation remaining its later UI responsibility.
+
+Added shared `studioGenerationSupport`. Server GenerationService rejects any studio binding/package
+with 422 STUDIO_DESIGN_ONLY before acceptance-pack work, busy/job/output mutation or runner calls.
+The pure planProject/generateProject entry boundary also rejects. Existing supported legacy designs
+and empty studio metadata keep prior eligibility. CATALOG records this boundary without claiming
+a catalog, authoring UI, exact runtime resolver or new verified implementation.
+
+Evidence is `docs/evidence/studio-ux/UX02b/`. Twenty-three direct API observations prove atomic
+creation/binding, 409 conflict and 422 rollback, owner/package rejection and explicit reassignment,
+raw target cleanup, preserved ungroup, valid membership dissolution, distinct delete behaviors,
+strict operation fields and canonical planned/policy edits with undo/redo/reload. Cleanup cannot hide
+unrelated invalid bindings or discard a target created later in the same batch. Supported legacy
+fixture passes the pure compiler plan and reaches INVALID_OUTPUT_DIR for a deliberately relative
+API output path, proving eligibility without launch. Adding one new studio service to that legacy
+document causes STUDIO_DESIGN_ONLY; semantic/history/project/generation overview stay identical and
+the absolute output path never exists. No actual application generation ran.
+
+Direct browser inspection covers existing QRWTY C2/API C3 at 1440×900 and 1280×800 and the owned
+studio service through the current shell. Browser command saves, API undo/redo, mouse Undo/Redo and
+reload retain settings. Four legacy views keep 16/22 cards and 21/39 labels. Saved legacy cameras
+still extend outside view; new scalar forms are later work. Guard installed before page creation
+blocks every non-read route except operations/undo/redo and layout PUT for the exact disposable ID.
+Seven owned saves return 200. Passing run has no blocked request, console error, page error or HTTP
+error; one React Flow attribution warning comes from existing hideAttribution usage, unchanged.
+All 13 pre-existing project semantic/layout hashes and revisions match. Final API/browser owned
+projects were deleted with 204 and verified 404; failed setup attempts also cleaned owned IDs.
+
+Required checks, Node 24.21.0 / pnpm 12.16.1 with Node path prepended:
+
+- pnpm lint: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- pnpm typecheck: exit 0 across all workspaces/scripts, including existing source/test types.
+- Independent web/server typechecks: exit 0.
+- pnpm --filter @jeeves/web build: exit 0; existing >500 kB chunk advisory.
+- One-off API, installed-Playwright browser, raw preservation and scoped formatting/whitespace:
+  passed with the bounded observations above. No maintained suite created or executed.
+- All seven UX01 fixture files, 21 feedback original/copy pairs and 48 frozen benchmark files are
+  exact. Earlier handoff bytes remain preserved. .jeeves-feedback/ stays unrelated/untracked.
+
+Narrow typing compatibility deviation: adding the two required OperationType values exposed the
+existing apply.test.ts exhaustive opCases record as incomplete. Added only the two meaningful
+operation entries to preserve its real typed fixtures under the owner’s routine bug-fix direction.
+No type suppression, snapshot update, additional suite or suite execution. Initial failing and final
+passing typecheck logs are retained. Broader unit/E2E/template maintenance and execution, and
+pnpm check, remain deferred.
+
+Routine verification setup corrections: remove the response-only operationId from reload comparisons;
+use bundled frontend fields without standalone provider; restart Vite to clear stale newly-created
+file resolution; allow only the owned layout initialization PUT; format new evidence JSON. No live
+project or frozen source was altered to pass a check. Required CLI logs record actual outcomes;
+trailing whitespace is trimmed only in new logs before the staged Git check.
+
+UX02b is complete within the atomic editing/generation guard boundary. UX02c owns ID remapping,
+portable preservation and legacy display adaptation; UX03 owns full definition descriptors. New
+studio forms/toolbar/chat integration and runtime availability remain later work. This worker stops
+after the scoped UX02b local commit and does not advance the queue.

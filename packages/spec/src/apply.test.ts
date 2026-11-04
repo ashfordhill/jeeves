@@ -17,6 +17,47 @@ function applied(ops: OperationInput[], doc?: DesignDocument): DesignDocument {
 
 /** One passing case per operation type. Typed as a full record so new op types need a test. */
 const opCases: Record<OperationType, () => void> = {
+  setStudio() {
+    const architecture = {
+      system: { name: "Studio", description: "" },
+      nodes: [],
+      relationships: [],
+    };
+    const studio = { version: 1 as const, elements: [], packages: [], connections: [] };
+    const doc = applied([
+      { op: "setArchitecture", architecture },
+      { op: "setStudio", studio },
+    ]);
+    expect(doc.architecture?.studio).toEqual(studio);
+    expect(applied([{ op: "setStudio", studio: null }], doc).architecture).toEqual(architecture);
+  },
+  updatePlannedConnection() {
+    const input = sampleDesign();
+    const connection = input.connections[0];
+    if (!connection) throw new Error("The sample needs a connection.");
+    connection.planned = {
+      label: "Reads",
+      protocol: "SQL",
+      interaction: "Request / response",
+      security: "Service identity",
+    };
+    const doc = applied(
+      [
+        {
+          op: "updatePlannedConnection",
+          id: connection.id,
+          label: "Writes",
+          security: "Private network",
+        },
+      ],
+      input,
+    );
+    expect(doc.connections[0]?.planned).toEqual({
+      ...connection.planned,
+      label: "Writes",
+      security: "Private network",
+    });
+  },
   updateConnection() {
     const input = sampleDesign();
     const doc = applied(

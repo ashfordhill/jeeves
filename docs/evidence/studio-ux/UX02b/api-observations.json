@@ -1,0 +1,398 @@
+{
+  "result": "passed",
+  "observations": [
+    {
+      "name": "setStudio requires architecture",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "INVALID_OPERATION",
+          "severity": "error",
+          "message": "Create an architecture system before setting studio intent.",
+          "target": {
+            "op": 0
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "create system + element + binding is one history step",
+      "createRevision": 1,
+      "undoRevision": 2,
+      "redoRevision": 3,
+      "undoRemovedWholeCommand": true,
+      "redoRestoredWholeCommand": true,
+      "reloadExact": true,
+      "inputUnchanged": true
+    },
+    {
+      "name": "stale create + binding rejected together",
+      "status": 409,
+      "code": "REVISION_CONFLICT",
+      "noPartialMutation": true,
+      "currentRevision": 4
+    },
+    {
+      "name": "invalid create binding persists neither element nor binding",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "UNKNOWN_REFERENCE",
+          "severity": "error",
+          "message": "Resource owner missing-owner must name an existing element.",
+          "target": {
+            "path": ["architecture", "studio", "elements", 1, "owner", "id"]
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "raw owner-member deletion rejects dissolving owned package",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "UNKNOWN_REFERENCE",
+          "severity": "error",
+          "message": "Resource owner services must name an existing package.",
+          "target": {
+            "path": ["architecture", "studio", "elements", 1, "owner", "id"]
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "explicit ungroup requires owner reassignment, preserves every child/resource/connection",
+      "invalidUngroupStatus": 422,
+      "invalidPartialMembershipStatus": 422,
+      "validStatus": 200,
+      "preservedElementIds": ["service-one", "service-two", "queue"],
+      "preservedConnectionIds": ["publish", "consume"],
+      "owner": {
+        "id": "service-one",
+        "kind": "element"
+      }
+    },
+    {
+      "name": "raw shared resource owner deletion rejects rather than cascade",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "UNKNOWN_REFERENCE",
+          "severity": "error",
+          "message": "Resource owner service-one must name an existing element.",
+          "target": {
+            "path": ["architecture", "studio", "elements", 1, "owner", "id"]
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "explicit owner deletion with reassignment retains shared resource and other consumer; prunes deleted target bindings",
+      "elements": ["service-two", "queue"],
+      "connections": ["consume"],
+      "unrelatedArchitectureExact": true
+    },
+    {
+      "name": "queue canonical edits cannot violate channel semantics",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "CONFIG_INVALID",
+          "severity": "error",
+          "message": "Channel connections require explicit Asynchronous interaction.",
+          "target": {
+            "path": ["architecture", "studio", "connections", 0, "settings", "channelUse"]
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "raw disconnect cleans connection settings",
+      "status": 200,
+      "bindings": 0
+    },
+    {
+      "name": "policy remains invalid if canonical protocol changes alone",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "CONFIG_INVALID",
+          "severity": "error",
+          "message": "Timeout/retry are permitted only for HTTP/HTTPS/gRPC request/response relationships.",
+          "target": {
+            "path": ["architecture", "studio", "connections", 0, "settings", "timeoutMs"]
+          }
+        },
+        {
+          "code": "CONFIG_INVALID",
+          "severity": "error",
+          "message": "Timeout/retry are permitted only for HTTP/HTTPS/gRPC request/response relationships.",
+          "target": {
+            "path": ["architecture", "studio", "connections", 0, "settings", "retry"]
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "planned fields + timeout/retry cleanup atomic with undo/redo/reload",
+      "canonical": {
+        "label": "Streams updates",
+        "protocol": "WebSocket",
+        "security": "User identity",
+        "interaction": "Asynchronous"
+      },
+      "noConflictingTopLevelValues": true,
+      "settings": {},
+      "undoRestored": true,
+      "redoRestored": true,
+      "reloadExact": true
+    },
+    {
+      "name": "explicit target deletion clears lookup, servedBy and CDN refs",
+      "lookupCleared": true,
+      "servingAndOriginCleared": true,
+      "readinessAfterServingRemoval": [
+        {
+          "code": "CONFIG_REQUIRED",
+          "severity": "error",
+          "message": "Bundled browser assets need an explicit serving application.",
+          "target": {
+            "path": ["architecture", "studio", "elements", 0, "settings", "servedBy"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "membership never persists one-member packages; package delete defaults to ungroup",
+      "partialMemberCount": 2,
+      "afterDissolveChildren": 3,
+      "rawDeletionRemaining": ["two", "three"],
+      "defaultDeletePreservedChildren": 2,
+      "explicitDeleteMembersRemaining": 0
+    },
+    {
+      "name": "setStudio strict unknown key",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "INVALID_OPERATION",
+          "severity": "error",
+          "message": "studio: Unrecognized key: \"unknown\"",
+          "target": {
+            "op": 0
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "planned update strict unsupported field",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "INVALID_OPERATION",
+          "severity": "error",
+          "message": "Unrecognized key: \"timeoutMs\"",
+          "target": {
+            "op": 0
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "dedicated planned edit rejects ordinary connection",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "INVALID_OPERATION",
+          "severity": "error",
+          "message": "This relationship has no planned fields to edit.",
+          "target": {
+            "op": 0,
+            "connection": "links-uses-db"
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "supported legacy generation eligibility preserved without launch",
+      "supported": true,
+      "purePlanFileCount": 39,
+      "directApiStatus": 422,
+      "code": "INVALID_OUTPUT_DIR",
+      "noGenerationLaunched": true
+    },
+    {
+      "name": "mixed legacy + studio direct generation rejected before side effects",
+      "status": 422,
+      "code": "STUDIO_DESIGN_ONLY",
+      "message": "Studio settings and packages are design-only. Application generation requires a separately implemented exact studio runtime resolver. Portable design export remains available.",
+      "projectOutputUnchanged": true,
+      "generationOverviewUnchanged": true,
+      "semanticStateUnchanged": true,
+      "outputPathNeverCreated": true,
+      "pureCompilerAlsoRejects": true
+    },
+    {
+      "name": "support guard checks every binding collection, metadata alone retains eligibility",
+      "supportCases": [
+        {
+          "collection": "elements",
+          "supported": false
+        },
+        {
+          "collection": "connections",
+          "supported": false
+        },
+        {
+          "collection": "packages",
+          "supported": false
+        }
+      ],
+      "emptyMetadataSupported": true
+    },
+    {
+      "name": "delete cleanup cannot hide unrelated invalid binding",
+      "status": 422,
+      "code": "INVALID_OPERATION",
+      "errors": [
+        {
+          "code": "UNKNOWN_REFERENCE",
+          "severity": "error",
+          "message": "Studio binding targets missing connection ghost.",
+          "target": {
+            "path": ["architecture", "studio", "connections", 0, "connection"]
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "explicit cleanup preserves targets created later in the same batch",
+      "futureConnectionPolicyPreserved": true,
+      "unrelatedInvalidBindingRejected": true
+    },
+    {
+      "name": "setStudio null changes only studio",
+      "unrelatedArchitectureExact": true
+    }
+  ],
+  "preExistingProjects": [
+    {
+      "id": "684f5790-df6b-4447-91d1-668cf7e1cc87",
+      "revision": 1,
+      "designSha256": "58a2a60e016683038bb574baac70d49ca237912e704542e32b5bb3c271199731",
+      "layoutSha256": "8e8653d2f7055cd5419b57fcbd65d9818fd7831d5f7787aba3ad0ed67663567e",
+      "unchanged": true
+    },
+    {
+      "id": "a6eeb601-6efd-46e0-9444-f0edddad8d2e",
+      "revision": 2,
+      "designSha256": "6e4c824629ea20af40d640d7f59c4fdc7f37b6159daf238738eeb42fea066623",
+      "layoutSha256": "fc313ccc1e41842e876dc0ab3e03bc4fb3f1843ccdbeb3f35ec5f7b5befc0497",
+      "unchanged": true
+    },
+    {
+      "id": "9928f0b6-c54c-4081-b8d4-5bdff0b5875c",
+      "revision": 1,
+      "designSha256": "0aa9f53fff7f1b316919bd5a9322125b445632a691d288dc612ca052a76a120c",
+      "layoutSha256": "a6f008185a84193bc417e04f0c74d0d7ddf60ff69950b5699872a45ba1bf9f20",
+      "unchanged": true
+    },
+    {
+      "id": "b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62",
+      "revision": 1,
+      "designSha256": "b98c1bbac1dc625d45e5d7e18b596549baaef00e4fce2afafdba79ffa329e309",
+      "layoutSha256": "0115071f77600eb7b9a2ad7b68998d594ce5303130ea0497b1cda9d0b8f12150",
+      "unchanged": true
+    },
+    {
+      "id": "7dd44cfd-7fbc-4d5a-be79-41c8f58a8993",
+      "revision": 17,
+      "designSha256": "d883fe5a1a0bfedca1e3548b23694745d0a28bdb6ec559ea94927fcbd7b896aa",
+      "layoutSha256": "9f8f8c819b7b5e4fcd3d908c18435475f932ec04e774f7fde0ae4db5ce2605b0",
+      "unchanged": true
+    },
+    {
+      "id": "477e4122-f898-4678-a6b6-1787a105d655",
+      "revision": 2,
+      "designSha256": "0ccd1e0df8c6eb1bc2148fbf5de9535bfd4c6b41ca5a366420c6d23b12cc4ebf",
+      "layoutSha256": "81266f84a50d5a320d4176aea485e516e268bccad630dbdda041140747c215a4",
+      "unchanged": true
+    },
+    {
+      "id": "a538e227-b662-48da-885e-e44f41c9c137",
+      "revision": 0,
+      "designSha256": "7942cd5ef030467975c22b778f9b2b59fa48a33252fb836625f26ef844f8389a",
+      "layoutSha256": "239031eca658d457441311a8326d69b329835f62bcd4c68687e71b732b902e7c",
+      "unchanged": true
+    },
+    {
+      "id": "e8453579-5736-4d8b-a34f-4feba3971d3d",
+      "revision": 6,
+      "designSha256": "1e3967c9119e3729169643bcd5bcea7ad772d4943b1966f9688a1e4a5ea6aa03",
+      "layoutSha256": "934028ccffe4ecd6e98c8bc73fe5763e54469c902bbec629e3fac97836cbd262",
+      "unchanged": true
+    },
+    {
+      "id": "840be03e-45f7-4f15-ab8a-3154afb57bb3",
+      "revision": 1,
+      "designSha256": "76ab6b3d27b8515ef9449721f7570494c0d59a010244900a5859c07f077ddf8a",
+      "layoutSha256": "a21decc216eabd37235e00ab967c5504a36a3529aede1169ac699b2bad8246fc",
+      "unchanged": true
+    },
+    {
+      "id": "65112195-e658-4d60-b0b7-59820a9d2ad0",
+      "revision": 0,
+      "designSha256": "8c9cc34f1e893f3a0df087cae060e555392aa57e0c21b29d0e20a84e99d969bd",
+      "layoutSha256": "b1b124ef90d8d09bba12410e089f1de1261037763bf2f30e058bddc280ad8017",
+      "unchanged": true
+    },
+    {
+      "id": "4f136b41-e28b-42b2-9b4c-a11577363f71",
+      "revision": 0,
+      "designSha256": "8c9cc34f1e893f3a0df087cae060e555392aa57e0c21b29d0e20a84e99d969bd",
+      "layoutSha256": "b1b124ef90d8d09bba12410e089f1de1261037763bf2f30e058bddc280ad8017",
+      "unchanged": true
+    },
+    {
+      "id": "841c190f-ba42-4a0b-a92f-82c0d46b8c7e",
+      "revision": 1,
+      "designSha256": "c7bf5ff7915511633b1b62402e9de0a42fb02cc317d5204ceb0cf2512ec07e24",
+      "layoutSha256": "b1b124ef90d8d09bba12410e089f1de1261037763bf2f30e058bddc280ad8017",
+      "unchanged": true
+    },
+    {
+      "id": "3c57ee46-26a3-47fa-bdb4-ec2d2b54cc31",
+      "revision": 3,
+      "designSha256": "dfe015cf72e48f458f2c219646a2a5f7ed4e5487d49be4cc9d959b7719932ca2",
+      "layoutSha256": "b2bf39950d5ba31b10ef2c6bd2d26bafc49ebce97ac3ef0332bde9b648e371d1",
+      "unchanged": true
+    }
+  ],
+  "ownedDisposableProjects": [
+    "c900c9b8-694a-44ff-9330-85cebc4a7f66",
+    "db62a323-6c52-4c53-8468-9f21fc494c13",
+    "c3d90a28-ae88-4d5e-92be-77a05634c087",
+    "b476c34c-124e-433b-ac0a-f0a32000d1f0"
+  ],
+  "externalProvidersOrAgentsLaunched": 0,
+  "applicationGenerationsLaunched": 0
+}

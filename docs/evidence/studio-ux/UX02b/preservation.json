@@ -1,0 +1,223 @@
+{
+  "sourceManifest": "docs/evidence/studio-ux/UX01/source-hashes.json",
+  "unchangedManifestFiles": 353,
+  "sourceManifestDeltas": [
+    {
+      "path": ".docs/visual-improvements/2026-11-03-ux-review/inspection/browser-observations.json",
+      "baselineSha256": "dd4db39312ad41fb4c3dff85279f507aa14749ae2c497180ed2408a30d42ca35",
+      "currentSha256": "776e2a8a7cf8786c79bfd8ce1f73756cd83d72050be8152c7b29f8267401b662",
+      "changedInUX02b": false,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "apps/web/src/draw/api.ts",
+      "baselineSha256": "d2d36842a7d79ccfd60b07ec8308be8e334abdc344ea17be367f4cfb3fb395a4",
+      "currentSha256": "2ad5badac10c6c83c1e0be0dde7eb00bbe4631edab00e5b11349d3f7a7fe1cf3",
+      "changedInUX02b": true,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "packages/spec/src/apply.ts",
+      "baselineSha256": "095245ea22b01d6bbdae36dc9751a80ea7540832986515e14244133c46d091e1",
+      "currentSha256": "cea28ce5ad1ef3648e46877a2bf53c132df1ee6c9a6e2e6562626910cbe7e2b8",
+      "changedInUX02b": true,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "packages/spec/src/architecture.ts",
+      "baselineSha256": "030b6c3f63fe508ebce2a4d055098f7beaf9c57680f82fab64f08dab6a4d5a2c",
+      "currentSha256": "6f8886460ef04cd32889a1a0eef49ecae185c41b1a7e2c1b34ef73298961da1b",
+      "changedInUX02b": false,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "packages/spec/src/design.ts",
+      "baselineSha256": "854f788b0e031ff413ea2458a9eee50a90632225f84c62e0b5c6c6c171f08614",
+      "currentSha256": "65c0d91603c2f10dd62ff0dcff60b482d8f22772e137c74ee15d49ee7a178eeb",
+      "changedInUX02b": false,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "packages/spec/src/index.ts",
+      "baselineSha256": "3cca4e058a446416855c81a3468d45fbff72db091a5d120966f48ad4a3d01cf7",
+      "currentSha256": "56333fed9e59acfa5883fb8658e0014f7bc439b474163ea565ac54e898c1081d",
+      "changedInUX02b": true,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "packages/spec/src/operations.ts",
+      "baselineSha256": "380ce5368d8cedeef39190a093ed7699e41f772355afa03ef533260bbac1e1cb",
+      "currentSha256": "7707abea9afb4da3710b8c6f912933c703208ab9c3d418d8e285701c0aa50d58",
+      "changedInUX02b": true,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    },
+    {
+      "path": "packages/spec/src/validate.ts",
+      "baselineSha256": "b2b96ba415681d48bd10b46b398fa34e37d5cb60b92e149a20d02b431b2093ac",
+      "currentSha256": "3dde112339b179d5468bcfdc46a24d8eb778fc304c1863132939b22803e3c74e",
+      "changedInUX02b": false,
+      "reason": "Inherited UX01/UX02a changes, or scoped UX02b operations/client integration"
+    }
+  ],
+  "feedbackPairs": [
+    {
+      "source": ".jeeves-feedback/PzufI5UjUN.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/PzufI5UjUN.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/UX-Feedback.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/UX-Feedback.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-1.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-1.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-2.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-2.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.excalidraw",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.excalidraw",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.svg",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.svg",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-2.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-2.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/chrome_FlmBak2gUQ.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_FlmBak2gUQ.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/chrome_PjQUjhqJA5.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_PjQUjhqJA5.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-2.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-2.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-3.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-3.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-4.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-4.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-5.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-5.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-6.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-6.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-7.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-7.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/uses-tenant-product-apis.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/uses-tenant-product-apis.png",
+      "unchanged": true
+    }
+  ],
+  "publicFixtureFilesUnchanged": 7,
+  "frozenBenchmarkFilesUnchanged": [
+    "benchmarks/README.md",
+    "benchmarks/discourse-core/v1/README.md",
+    "benchmarks/discourse-core/v1/contracts.openapi.yaml",
+    "benchmarks/discourse-core/v1/fixtures.json",
+    "benchmarks/discourse-core/v1/fixtures.ts",
+    "benchmarks/discourse-core/v1/hello.txt",
+    "benchmarks/discourse-core/v1/hooks.contracts.json",
+    "benchmarks/discourse-core/v1/hooks.examples.json",
+    "benchmarks/discourse-core/v1/hooks.md",
+    "benchmarks/discourse-core/v1/integrity.json",
+    "benchmarks/discourse-core/v1/manifest.json",
+    "benchmarks/discourse-core/v1/requirements.json",
+    "benchmarks/discourse-core/v1/source-map.json",
+    "benchmarks/protocol/v1/README.md",
+    "benchmarks/protocol/v1/components.openapi.json",
+    "benchmarks/protocol/v1/synthetic.json",
+    "benchmarks/vendure-core/v1/README.md",
+    "benchmarks/vendure-core/v1/callbacks.contracts.json",
+    "benchmarks/vendure-core/v1/callbacks.examples.json",
+    "benchmarks/vendure-core/v1/contracts.openapi.yaml",
+    "benchmarks/vendure-core/v1/fixtures.json",
+    "benchmarks/vendure-core/v1/fixtures.ts",
+    "benchmarks/vendure-core/v1/hooks.contracts.json",
+    "benchmarks/vendure-core/v1/hooks.examples.json",
+    "benchmarks/vendure-core/v1/hooks.md",
+    "benchmarks/vendure-core/v1/integrity.json",
+    "benchmarks/vendure-core/v1/manifest.json",
+    "benchmarks/vendure-core/v1/providers.contracts.json",
+    "benchmarks/vendure-core/v1/providers.examples.json",
+    "benchmarks/vendure-core/v1/providers.md",
+    "benchmarks/vendure-core/v1/receipt.txt",
+    "benchmarks/vendure-core/v1/requirements.json",
+    "benchmarks/vendure-core/v1/source-map.json",
+    "benchmarks/zammad-core/v1/.gitattributes",
+    "benchmarks/zammad-core/v1/README.md",
+    "benchmarks/zammad-core/v1/contracts.openapi.yaml",
+    "benchmarks/zammad-core/v1/fixtures.json",
+    "benchmarks/zammad-core/v1/fixtures.ts",
+    "benchmarks/zammad-core/v1/hooks.contracts.json",
+    "benchmarks/zammad-core/v1/hooks.examples.json",
+    "benchmarks/zammad-core/v1/hooks.md",
+    "benchmarks/zammad-core/v1/inbound.eml",
+    "benchmarks/zammad-core/v1/integrity.json",
+    "benchmarks/zammad-core/v1/manifest.json",
+    "benchmarks/zammad-core/v1/private.txt",
+    "benchmarks/zammad-core/v1/requirements.json",
+    "benchmarks/zammad-core/v1/source-map.json",
+    "benchmarks/zammad-core/v1/sources.examples.json"
+  ],
+  "earlierHandoffBytesPreserved": true,
+  "handoffPrefixSha256": "72caec5759c98b77d1b9f50867010c1afc9eab4beb85e9999baf044e515aeeec",
+  "siblingRepositoriesChanged": false
+}

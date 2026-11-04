@@ -1,0 +1,98 @@
+packages/spec/src/apply.test.ts:76:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    74 │     );
+    75 │     const expected = upgradeDesign(input);
+  > 76 │     Object.assign(expected.connections[0]!, {
+       │                   ^^^^^^^^^^^^^^^^^^^^^^^^
+    77 │       label: "Persists stock records",
+    78 │       protocol: "SQL",
+
+
+packages/spec/src/apply.test.ts:112:5 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    110 │   upgradeTemplate() {
+    111 │     const document = sampleDesign();
+  > 112 │     document.elements[0]!.template = { id: "http-service", version: "0.1.0" };
+        │     ^^^^^^^^^^^^^^^^^^^^^
+    113 │     const result = applyOperations(
+    114 │       document,
+
+
+packages/spec/src/apply.test.ts:127:20 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    125 │         get: (ref) =>
+    126 │           ref.id === "http-service" && ["0.1.0", "0.2.0"].includes(ref.version)
+  > 127 │             ? { ...testLookup.get(t("svc"))!, id: ref.id, version: ref.version }
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    128 │             : testLookup.get(ref),
+    129 │         versions: (id) => (id === "http-service" ? ["0.1.0", "0.2.0"] : testLookup.versions(id)),
+
+
+packages/spec/src/apply.test.ts:136:5 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    134 │     const expected = upgradeDesign(document);
+    135 │     expected.revision++;
+  > 136 │     expected.elements[0]!.template!.version = "0.2.0";
+        │     ^^^^^^^^^^^^^^^^^^^^^
+    137 │     expect(result.design).toEqual(expected);
+    138 │   },
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    134 134 │       const expected = upgradeDesign(document);
+    135 135 │       expected.revision++;
+    136     │ - ····expected.elements[0]!.template!.version·=·"0.2.0";
+        136 │ + ····expected.elements[0]?.template!.version·=·"0.2.0";
+    137 137 │       expect(result.design).toEqual(expected);
+    138 138 │     },
+
+
+packages/spec/src/apply.test.ts:136:5 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    134 │     const expected = upgradeDesign(document);
+    135 │     expected.revision++;
+  > 136 │     expected.elements[0]!.template!.version = "0.2.0";
+        │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    137 │     expect(result.design).toEqual(expected);
+    138 │   },
+
+
+packages/spec/src/apply.test.ts:141:44 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    139 │   changeSubtype() {
+    140 │     const doc = sampleDesign();
+  > 141 │     const discarded = subtypeDiscards(doc, doc.elements[0]!);
+        │                                            ^^^^^^^^^^^^^^^^
+    142 │     const changed = applied(
+    143 │       [
+
+
+packages/spec/src/apply.test.ts:420:89 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    418 │           id: "api-db",
+    419 │           template: t("db"),
+  > 420 │           confirmation: { revision: broken.revision, discarded: subtypeDiscards(broken, db!) },
+        │                                                                                         ^^^
+    421 │         },
+    422 │       ],
+
+
+Skipped 1 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 1 file in 12ms. Fixed 1 file.
+Found 7 warnings.

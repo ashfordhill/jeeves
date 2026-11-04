@@ -6,6 +6,7 @@ import {
   formatTemplateRef,
   type LocalHttpPoolBinding,
   type ResourceConfig,
+  studioGenerationSupport,
   validateDesign,
   type WorkspaceBinding,
   workspaceBindings,
@@ -122,8 +123,10 @@ export interface PlanOptions {
 
 export class GenerationError extends Error {}
 
-/** The pure backend preview is a separate opt-in path; no backend emitter exists yet. */
+/** Studio intent has no runtime resolver; backend preview is a separate opt-in path. */
 export function assertLegacyGenerationDesign(design: DesignDocument): void {
+  const support = studioGenerationSupport(design);
+  if (!support.supported) throw new GenerationError(support.message);
   if (design.architecture?.backend)
     throw new GenerationError(
       "Versioned backend designs require planGeneration with an explicit backend mode. Backend runtime output is not available.",

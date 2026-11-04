@@ -15,7 +15,7 @@ import {
   missingComposeEnvironment,
   runBaseline,
 } from "@jeeves/generator/baseline";
-import { blocksGenerate, type DesignDocument } from "@jeeves/spec";
+import { blocksGenerate, type DesignDocument, studioGenerationSupport } from "@jeeves/spec";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import {
@@ -123,6 +123,9 @@ export class GenerationService {
     if (!state || !project) {
       return { ok: false, status: 404, code: "NOT_FOUND", message: "Project not found." };
     }
+    const support = studioGenerationSupport(state.design);
+    if (!support.supported)
+      return { ok: false, status: 422, code: support.code, message: support.message };
     if (project.target)
       return {
         ok: false,

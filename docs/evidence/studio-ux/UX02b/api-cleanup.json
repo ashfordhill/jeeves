@@ -1,0 +1,24 @@
+{
+  "cleanup": [
+    {
+      "id": "c900c9b8-694a-44ff-9330-85cebc4a7f66",
+      "deleted": 204,
+      "verifiedMissing": 404
+    },
+    {
+      "id": "db62a323-6c52-4c53-8468-9f21fc494c13",
+      "deleted": 204,
+      "verifiedMissing": 404
+    },
+    {
+      "id": "c3d90a28-ae88-4d5e-92be-77a05634c087",
+      "deleted": 204,
+      "verifiedMissing": 404
+    },
+    {
+      "id": "b476c34c-124e-433b-ac0a-f0a32000d1f0",
+      "deleted": 204,
+      "verifiedMissing": 404
+    }
+  ]
+}
