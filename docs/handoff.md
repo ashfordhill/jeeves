@@ -10688,3 +10688,13 @@ and generator placement, define real extension/regeneration boundaries, pin/repr
 measure bespoke-code and repair-prompt effort, and verify integrations/failure/black-box behavior.
 Dropshipping vendor access and inventory/grocery unknowns remain unresolved. No runtime backlog,
 backend batch, external deployment, publication or live project migration is started by this unit.
+
+## 2026-11-04 — Studio fix: restore V/H tool shortcuts (complete)
+
+Owner request after UX15: restore the V (Select) and H (Hand) keyboard shortcuts in the default
+studio. The existing window key handler in `StudioWorkspace.tsx` now mirrors the Select and Hand
+buttons exactly. It is ignored with Ctrl/Meta/Alt and while focus is in an input, textarea, select
+or editable element. Mouse-only operation is unchanged; the studio guide lists the shortcuts.
+Checks: Biome on the changed file and web `tsc --noEmit` pass. Tests remain owner-deferred.
+A larger studio canvas redesign (C3 tab, grid layout, edge reduction) is under discussion and
+not started by this fix.

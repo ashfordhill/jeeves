@@ -528,7 +528,23 @@ function ProjectStudio({
         setTool(undefined);
         setConnector(undefined);
         setConnectorError(undefined);
+        return;
       }
+      // Optional V/H shortcuts mirror the Select and Hand buttons (mouse remains sufficient).
+      const key = event.key.toLowerCase();
+      if ((key !== "v" && key !== "h") || event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.isContentEditable ||
+        (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      )
+        return;
+      setHand(key === "h");
+      setTool(undefined);
+      setConnector(undefined);
+      setConnectorError(undefined);
+      setMultiple(false);
+      setGroupSelection([]);
     };
     window.addEventListener("keydown", cancel);
     return () => window.removeEventListener("keydown", cancel);

@@ -18,6 +18,7 @@ existing supported legacy template/recipe designs retain their generation eligib
   useful dependencies to open C3. Breadcrumb/back restores the parent scope and its camera.
   Zoom changes text density; it never changes structural depth or invents empty children.
 - Choose a finite tool, then click blank canvas to place it. **Select** cancels placement.
+  Optional shortcuts: V selects, H pans, Escape cancels; they are ignored while typing.
   **Library** groups compatible Services, Resources, Integrations, Presets and Examples.
   Previews require **Add**. Examples create separate projects; they never replace a live diagram.
 - Choose **Connection**, click source and target, review Action, Protocol, Interaction and Access,
