@@ -1,9 +1,11 @@
 # Jeeves architecture catalog
 
-**Planned cleanup:** the [studio UX specification](docs/build-plan-studio-ux.md) introduces a finite
-service/resource/provider vocabulary, configurable C3 detail and service packages. It is not yet
-implemented and changes no runtime availability. The catalog below describes the existing offering;
-its older UI entry points must not override the new plan during UX implementation.
+**Studio cleanup in progress:** [UX02a's typed model](packages/spec/src/studio-model.ts) now validates
+finite service/resource settings, exact definition references, package membership and logical
+resource ownership over existing graph identities. These are design-only contracts; the studio
+catalog, new authoring UI and runtime resolution remain unimplemented. Runtime availability is
+unchanged. The catalog below describes the existing offering; its older UI entry points must not
+override the [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 
 Choose the boundaries and responsibilities your system needs. C1 describes a product, C2 its
 applications/stores, and C3 the cohesive responsibilities within an application. A design can

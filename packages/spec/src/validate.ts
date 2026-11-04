@@ -154,7 +154,9 @@ export function validateDesign(design: DesignDocument, lookup: TemplateLookup): 
     if (previous) {
       findings.push(
         finding("DUPLICATE_ID", `ID "${id}" is used by a ${previous} and a ${type}.`, {
-          [type]: id,
+          ...(type === "package"
+            ? { path: ["architecture", "studio", "packages", id] }
+            : { [type]: id }),
         }),
       );
     } else {

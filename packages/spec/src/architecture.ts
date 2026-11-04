@@ -42,6 +42,8 @@ import {
 } from "./relationship-display.ts";
 import { resourceConfigSchema } from "./resources.ts";
 import { architectureScenarioSchema, validateScenarios } from "./scenarios.ts";
+import { studioModelSchema } from "./studio-model.ts";
+import { validateStudio } from "./studio-validation.ts";
 
 const description = z.string().trim().max(1200).default("");
 /** Historical suggestion inputs survive edits; they are provenance, not live ownership links. */
@@ -100,6 +102,7 @@ export const architectureComponentSchema = z.strictObject({
 export type ArchitectureComponent = z.output<typeof architectureComponentSchema>;
 export type ArchitectureMember = z.output<typeof architectureMemberSchema>;
 export const architectureSchema = z.strictObject({
+  studio: studioModelSchema.optional(),
   backend: backendModelSchema.optional(),
   implementationHandoff: handoffScopeSchema.optional(),
   system: z.strictObject({
@@ -341,6 +344,7 @@ export function validateArchitecture(design: DesignDocument, lookup?: TemplateLo
   }
   return [
     ...findings,
+    ...validateStudio(design),
     ...validateScenarios(design),
     ...validateArchitectureContracts(design),
     ...validateRelationshipBindings(design),

@@ -64,6 +64,8 @@ export * from "./planned-capabilities.ts";
 export * from "./relationship-display.ts";
 export * from "./resources.ts";
 export * from "./scenarios.ts";
+export * from "./studio-model.ts";
+export * from "./studio-validation.ts";
 export * from "./subtype.ts";
 export * from "./template-upgrade.ts";
 export * from "./validate.ts";

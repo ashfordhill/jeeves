@@ -152,13 +152,16 @@ export function emptyDesign(): DesignDocument {
 }
 
 /** Every ID in the design with what it names, in document order. */
-export function* designIds(
-  design: DesignDocument,
-): Generator<{ id: string; type: "element" | "attachment" | "connection" | "annotation" }> {
+export function* designIds(design: DesignDocument): Generator<{
+  id: string;
+  type: "element" | "attachment" | "connection" | "annotation" | "package";
+}> {
   for (const element of design.elements) {
     yield { id: element.id, type: "element" };
     for (const attachment of element.attachments) yield { id: attachment.id, type: "attachment" };
   }
   for (const connection of design.connections) yield { id: connection.id, type: "connection" };
   for (const annotation of design.annotations) yield { id: annotation.id, type: "annotation" };
+  for (const item of design.architecture?.studio?.packages ?? [])
+    yield { id: item.id, type: "package" };
 }

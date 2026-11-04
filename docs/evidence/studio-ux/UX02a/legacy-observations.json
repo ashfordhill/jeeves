@@ -1,0 +1,100 @@
+{
+  "fixtures": [
+    {
+      "id": "ux01-legacy-rich",
+      "parse": true,
+      "sourceSemanticHash": "ee238588f32a20dda4a6aed35ef39281478ef089b244e46eaafb0dbca2ac04a0",
+      "parsedSemanticHash": "fef96e7a5f10b75846d9b0f1a10f26724764e5d2a50f17af8498cd049de909dd",
+      "legacyParserMatchesBaseline": true,
+      "sourceMatchesParsedSerialization": false,
+      "studioStructuralFindings": [],
+      "studioReadinessFindings": [],
+      "layoutUnchanged": true
+    },
+    {
+      "id": "ux01-legacy-supported",
+      "parse": true,
+      "sourceSemanticHash": "4d96d628b752603a438f4dc24d88207fbdf849da94f2ee3de633eb9be6e03e7a",
+      "parsedSemanticHash": "d14157c31a80f3c1441bb01725d0c122397e0b3e0f4f9a911aa92e29d5a1eb88",
+      "legacyParserMatchesBaseline": true,
+      "sourceMatchesParsedSerialization": false,
+      "studioStructuralFindings": [],
+      "studioReadinessFindings": [],
+      "layoutUnchanged": true
+    }
+  ],
+  "shippedExamples": [
+    {
+      "id": "mattermost-reference",
+      "designHash": "91c4c076e6ce113c6d277abca0aa30591c675ee7d01d06adf40168a38a737020",
+      "layoutHash": "d9c027ad08efef9c807a315335a62770e3b421abfc50535417cd178e924852c1",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "discourse-core",
+      "designHash": "1d5079c6875f34113e69ff8b4a479fb3e6fa7ca82237ecb694050359411c6f95",
+      "layoutHash": "77bb7c260d37e6f70cea7241e21975ab93fa6f1bfd741810f9d569dfd22bcbe4",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "vendure-core",
+      "designHash": "fab232ebb959794e2db8086f17da43d9275e00d59588a6d37597c6d9ddbc9ae8",
+      "layoutHash": "3c66bdb606143592ccf1fc4e196cafd401876b3df6467ca375621ce05ddc065a",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "video-platform",
+      "designHash": "e03a12a3f27ce219988a79650faf886e6025aa106cd575b1f3b7ec51d67f4264",
+      "layoutHash": "0a2d2e8f9bd7ef4e2e137e0f474ba0fd2866d372d02a3f57f8187ac90fd12ee9",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "enterprise-web",
+      "designHash": "4536e5e108c92c7b358b3908ccf54f0680b76fee8b489f4ee28b983f06022ed0",
+      "layoutHash": "dac86ef898708748b715a9af650b174a38022277dd8ffd76396e88160f4c7642",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "qrwty-target",
+      "designHash": "55eee3b7e1fa3b462e2fff9f9d57c25adba6a16e714560f92587db715cbabf9b",
+      "layoutHash": "2a5e204f8546c93e1fe24b3fec9c83f369b25ad95a2bd4e5b6db60b6d747be6a",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "link-platform",
+      "designHash": "ffa9507410b5adea759b48fc1202e946f4e94a268be070e76f730a18714c254c",
+      "layoutHash": "ca38c5e4ee359ed428907be82e3e33148e760e8d77933a62f07db8f7091d9938",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "community",
+      "designHash": "9cf7f6d8df483b7e3b721fd9f6b5871ca1286d38e6eaf4d2de420f17ec9406c8",
+      "layoutHash": "f67ae2e6b963bd2ac48ad56dd13d3b6a578686877c319bc86ec4e9055caa2e4c",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    },
+    {
+      "id": "social",
+      "designHash": "cc8934ccd4662a88b22c72bfcb25303ed78932cf7e69285769e655cd04010dbd",
+      "layoutHash": "beec4253e904aa8a597eb3e74a3f6802bcadc43bcc4d3f87c9d4b2e9e7772958",
+      "unchangedFactoryOutput": true,
+      "legacyParserMatchesBaseline": true,
+      "noStudioDefaults": true
+    }
+  ]
+}

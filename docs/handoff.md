@@ -8786,3 +8786,78 @@ runtime or generation outcome is claimed. UX01 is complete as a baseline; future
 C4b example reconstruction maps and true flicker diagnosis remain their assigned later work.
 Next queue boundary is UX02a only, assigned by the coordinator to another fresh worker. This worker
 stops after the scoped local UX01 commit and does not start the next assignment.
+
+
+## 2026-11-03 — UX02a: strict studio schemas and definition references (complete)
+
+Executed UX02a only on primary main from UX01 commit `1c7fb2aa345d9dc41792d175e099dd0888518d63`
+under the owner's sequential fresh-worker batch authorization. No delegation, worktree/branch,
+provider task, generation, project mutation, runtime registration, sibling edit or later UX unit.
+P73a/P73b/backend work remains paused.
+
+Added exported `studio-model.ts` with the strict version-1 StudioModel, all 14 closed settings
+kinds, exact existing slug/semantic-version definition refs, logical resource owner and package
+schemas, connection settings, finite enums/ranges/provider tables and explicit creation defaults.
+Common application execution is a Docker/managed union; Docker has no hidden host and managed
+requires an explicit host. Language remains independently unspecified by default. Browser delivery
+has no Docker execution setting. Missing optional numbers/refs remain absent. Only optional
+`architecture.studio` is added; no studio defaults or read-time conversion occur.
+
+Added exported `validateStudio` to the existing architecture/semantic boundary. Structural findings
+reject invalid targets/classification, binding over template/planned/configured/attached elements,
+package/global ID collisions, non-application/nested package members, invalid owners and served-by/
+CDN/redirect lookup references. Strict schema validation rejects duplicate bindings/memberships,
+unsupported studio versions, bad types/ranges/kinds/fields and incompatible engine/provider values.
+New queue relations require explicit publish/consume direction and asynchronous interaction;
+timeout/retry fields only apply to HTTP/HTTPS/gRPC request/response. Existing unrelated legacy
+relationships are preserved. Package IDs join global `designIds`; packages have no runtime fields.
+Unknown exact definition IDs/versions stay preserved and explicitly unresolved, with no latest
+substitution. Existing `NEEDS_TEMPLATE` readiness findings make design-only support explicit;
+no new finding-code/test-maintenance expansion. CATALOG now describes this implemented model
+boundary without claiming the future catalog/UI or new runtime availability.
+
+Evidence: `docs/evidence/studio-ux/UX02a/`. Seven UX01 inputs parse and round-trip; all 14 kinds also
+parse together as one finite design. Seventy malformed cases reject with paths across invariant
+families. All 83 database/cache/search engine-provider combinations match their finite tables.
+Valid managed execution, HTTP policy bounds, package ownership, browser serving, CDN origin and
+redirect lookup refs validate. `studio-billing@9.9.9` stays unresolved. Both legacy inputs and all
+nine unchanged shipped factories have the same parser behavior as before; optional studio stays
+absent, and v1 remains readable. Keep raw hashes distinct from parsed hashes: existing parsing
+normalizes key order and trims a few old Discourse description tails. Reconstructing the prior
+parser by omitting only the new optional studio property proves those normalizations are inherited;
+no frozen source was edited to force byte equality.
+
+Read-only direct browser inspection covers existing QRWTY C2/API C3 at 1440×900 and 1280×800.
+All non-read requests were blocked before page creation; none were attempted. No console warning/
+error, page error or HTTP error was observed. Both desktop sizes retain 16 C2 cards/21 labels and
+22 C3 cards/39 labels; existing saved cameras still extend content outside the viewport. Browser
+imports parse the new public package and explicit Docker/managed settings. All 13 pre-existing
+projects retain their semantic/layout hashes and revisions. No disposable project was needed
+because this unit performed no API writes.
+
+Required checks, Node 24.21.0 / pnpm 12.16.1 with the Node path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- `pnpm typecheck`: exit 0 across all workspaces and scripts, including existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing >500 kB chunk advisory.
+- One-off schema/reference/rejection/round-trip and direct installed-Playwright browser inspection:
+  exit 0 with the bounded results above; no maintained suite was created or executed.
+- Scoped formatting, Git whitespace and raw preservation checks pass. All seven public fixture
+  files, 21 feedback original/copy pairs, 48 frozen benchmark files and old factory outputs match
+  UX01. Earlier handoff bytes preserved. Four baseline spec integration files change intentionally;
+  the prior UX01 derived observation newline correction is inherited unchanged.
+
+Routine verification corrections: early inspection setup retried with the correct working directory,
+previous-parser normalization comparison and complete lookup stub. Initial lint errors in new JSON
+formatting and one callback were fixed. No old source data or application data was changed during
+those attempts. Unit/E2E/template suites, snapshots and `pnpm check` remain explicitly deferred.
+
+UX02a is complete as a schema/reference unit. UX02 remains incomplete: UX02b owns atomic commands,
+cleanup/history and the direct generation guard; UX02c owns reference remapping/portable preservation
+and the read-only legacy display adapter. Full definition descriptors are UX03; none is newly
+registered or declared runnable here. This worker stops after the scoped UX02a local commit.
+
+Final staged hygiene correction: Git's parent-relative whitespace check caught trailing spaces in
+newly tracked CLI logs (the earlier unstaged check did not inspect those untracked files). Trimmed
+only log trailing whitespace, retaining command diagnostics/outcomes, and reran the staged check
+against the UX01 parent before amending the same UX02a commit. No application source/check change.

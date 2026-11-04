@@ -1,0 +1,65 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "pathPrefix": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "warnings": 2797,
+      "infos": 88,
+      "errors": 0,
+      "log": "lint.log"
+    },
+    { "command": "pnpm typecheck", "exitCode": 0, "log": "typecheck.log" },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "advisory": "Existing chunks over 500 kB",
+      "log": "web-build.log"
+    },
+    {
+      "command": "apps/server/node_modules/.bin/tsx .jeeves-work/ux02a-inspect.ts",
+      "exitCode": 0,
+      "fixtures": 7,
+      "rejectedMalformedCases": 70,
+      "settingsKinds": 14,
+      "oldFactories": 9,
+      "compatibilityCombinations": 83,
+      "log": "schema-inspection.log"
+    },
+    {
+      "command": "node .jeeves-work/ux02a-browser.mjs",
+      "exitCode": 0,
+      "desktopViews": 4,
+      "liveProjectsUnchanged": 13,
+      "consoleMessages": 0,
+      "pageErrors": 0,
+      "httpErrors": 0,
+      "log": "browser-inspection.log"
+    },
+    {
+      "command": "python3 .jeeves-work/ux02a-preserve.py",
+      "exitCode": 0,
+      "feedbackPairs": 21,
+      "publicFixtures": 7,
+      "baselineSourcesUnchanged": 356,
+      "expectedSourceDeltas": 5
+    }
+  ],
+  "deferred": [
+    "pnpm check",
+    "unit suites",
+    "E2E suites",
+    "template suites",
+    "test/snapshot maintenance"
+  ],
+  "initialLint": {
+    "exitCode": 1,
+    "errors": 3,
+    "warnings": 2797,
+    "infos": 88,
+    "reason": "New evidence JSON formatting and one new callback lint error, corrected",
+    "log": "lint-before-format.log"
+  }
+}
