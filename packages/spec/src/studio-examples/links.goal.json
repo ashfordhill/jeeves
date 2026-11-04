@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 1,
+  "example": {
+    "id": "studio-link-platform",
+    "version": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "factory",
+      "path": "packages/spec/src/architecture-examples.ts",
+      "commit": "9a52afe6fa50c7397f515ba3a2f4ef3af4794e8a",
+      "sha256": "4a0968361bd0c0b2933dab6ae86aebb2c84f01c9f6fbd4de9be250401d4765d0"
+    }
+  ],
+  "requirements": [
+    {
+      "requirementId": "foundation",
+      "source": {
+        "sourceId": "factory",
+        "location": "foundation"
+      },
+      "summary": "Finite settings are design intent with no selected executable template.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": [
+        "web",
+        "api",
+        "db",
+        "cache",
+        "queue",
+        "worker",
+        "assets",
+        "billing",
+        "email",
+        "edge",
+        "telemetry",
+        "identity",
+        "redirect"
+      ],
+      "connectionIds": [],
+      "remainingWork": "A separate C4a runtime/template task must implement and verify the foundations. Studio application generation remains unsupported."
+    },
+    {
+      "requirementId": "boundary-web",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container web"
+      },
+      "summary": "Web application: Creates and manages content through a signed-in browser experience.",
+      "disposition": "represented-design",
+      "nodeIds": ["web"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container api"
+      },
+      "summary": "Application API: Owns account access, domain operations and application contracts.",
+      "disposition": "represented-design",
+      "nodeIds": ["api"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container db"
+      },
+      "summary": "Primary data: Stores authoritative accounts, ownership and domain records.",
+      "disposition": "represented-design",
+      "nodeIds": ["db"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-cache",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container cache"
+      },
+      "summary": "Application cache: Caches derived lookups with bounded freshness and source fallback.",
+      "disposition": "represented-design",
+      "nodeIds": ["cache"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-queue",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container queue"
+      },
+      "summary": "Background jobs: Buffers visit events and background tasks for independent processing.",
+      "disposition": "represented-design",
+      "nodeIds": ["queue"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-worker",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container worker"
+      },
+      "summary": "Background worker: Processes queued work and scheduled tasks outside interactive requests.",
+      "disposition": "represented-design",
+      "nodeIds": ["worker"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-redirect",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container redirect"
+      },
+      "summary": "Redirect service: Resolves public short links independently of management requests.",
+      "disposition": "represented-design",
+      "nodeIds": ["redirect"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-assets",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container assets"
+      },
+      "summary": "Artwork storage: Versions QR artwork and generated export objects.",
+      "disposition": "represented-design",
+      "nodeIds": ["assets"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-billing",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container billing"
+      },
+      "summary": "Payment provider: Processes subscriptions and sends signed billing events.",
+      "disposition": "represented-design",
+      "nodeIds": ["billing"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-email",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container email"
+      },
+      "summary": "E-mail delivery provider: Delivers transactional messages without owning application accounts.",
+      "disposition": "represented-design",
+      "nodeIds": ["email"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-edge",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container edge"
+      },
+      "summary": "CDN & edge: Delivers static application assets and public artwork; redirects remain uncached.",
+      "disposition": "represented-design",
+      "nodeIds": ["edge"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-telemetry",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container telemetry"
+      },
+      "summary": "Observability: Collects redacted service logs, metrics and traces.",
+      "disposition": "represented-design",
+      "nodeIds": ["telemetry"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container identity"
+      },
+      "summary": "Identity provider: Authenticates members and supplies verified sign-in identities.",
+      "disposition": "represented-design",
+      "nodeIds": ["identity"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "relationship-web-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection web-api"
+      },
+      "summary": "Uses application API; source HTTPS/JSON; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "api"],
+      "connectionIds": ["web-api"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-db"
+      },
+      "summary": "Reads / writes records; source SQL; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "db"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-cache",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-cache"
+      },
+      "summary": "Caches derived reads; source RESP/TLS; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "cache"],
+      "connectionIds": ["api-cache"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-queue",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-queue"
+      },
+      "summary": "Enqueues work; source AMQP/TLS; Asynchronous",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "queue"],
+      "connectionIds": ["api-queue"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-queue-worker",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection queue-worker"
+      },
+      "summary": "Delivers jobs; source AMQP/TLS; Asynchronous",
+      "disposition": "represented-design",
+      "nodeIds": ["queue", "worker"],
+      "connectionIds": ["queue-worker"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-worker-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection worker-db"
+      },
+      "summary": "Reads / writes task data; source SQL; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["worker", "db"],
+      "connectionIds": ["worker-db"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-redirect-cache",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection redirect-cache"
+      },
+      "summary": "Looks up destinations; source RESP/TLS; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["redirect", "cache"],
+      "connectionIds": ["redirect-cache"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-redirect-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection redirect-db"
+      },
+      "summary": "Reads on cache miss; source SQL; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["redirect", "db"],
+      "connectionIds": ["redirect-db"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-redirect-queue",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection redirect-queue"
+      },
+      "summary": "Records visit events; source AMQP/TLS; Asynchronous",
+      "disposition": "represented-design",
+      "nodeIds": ["redirect", "queue"],
+      "connectionIds": ["redirect-queue"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-assets",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-assets"
+      },
+      "summary": "Stores artwork; source HTTPS/S3; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "assets"],
+      "connectionIds": ["api-assets"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-billing",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-billing"
+      },
+      "summary": "Synchronizes plans and subscriptions; source HTTPS/JSON; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "billing"],
+      "connectionIds": ["api-billing"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-billing-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection billing-api"
+      },
+      "summary": "Delivers signed billing events; source HTTPS/JSON; Asynchronous",
+      "disposition": "represented-design",
+      "nodeIds": ["billing", "api"],
+      "connectionIds": ["billing-api"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-worker-email",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection worker-email"
+      },
+      "summary": "Delivers transactional messages; source HTTPS/JSON; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["worker", "email"],
+      "connectionIds": ["worker-email"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-edge-web",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection edge-web"
+      },
+      "summary": "Loads application assets; source HTTPS; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["edge", "web"],
+      "connectionIds": ["edge-web"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-edge-assets",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection edge-assets"
+      },
+      "summary": "Loads public artwork and media; source HTTPS/S3; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["edge", "assets"],
+      "connectionIds": ["edge-assets"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-telemetry",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-telemetry"
+      },
+      "summary": "Exports redacted telemetry; source OTLP/HTTPS; Asynchronous",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "telemetry"],
+      "connectionIds": ["api-telemetry"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-worker-telemetry",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection worker-telemetry"
+      },
+      "summary": "Exports job metrics and traces; source OTLP/HTTPS; Asynchronous",
+      "disposition": "represented-design",
+      "nodeIds": ["worker", "telemetry"],
+      "connectionIds": ["worker-telemetry"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-web-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection web-identity"
+      },
+      "summary": "Authenticates members; source OIDC/HTTPS; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "identity"],
+      "connectionIds": ["web-identity"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "relationship-api-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-identity"
+      },
+      "summary": "Validates member identities; source OIDC/HTTPS; Request / response",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "identity"],
+      "connectionIds": ["api-identity"],
+      "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+    },
+    {
+      "requirementId": "behavior-accounts",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component accounts"
+      },
+      "summary": "Accounts & access: Owns account access and tenant permissions.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-links",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component links"
+      },
+      "summary": "Link management: Creates links, changes destinations and manages ownership.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-artwork",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component artwork"
+      },
+      "summary": "QR artwork: Previews and versions QR artwork without changing link identity.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-assets"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-analytics",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component analytics"
+      },
+      "summary": "Analytics queries: Reads aggregates with explicit freshness and retention.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-resolution",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component resolution"
+      },
+      "summary": "Destination lookup: Resolves a stable link identity to its current destination.",
+      "disposition": "c4b",
+      "nodeIds": ["redirect"],
+      "connectionIds": ["redirect-cache", "redirect-db"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-visits",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component visits"
+      },
+      "summary": "Visit capture: Records request events for later aggregation.",
+      "disposition": "c4b",
+      "nodeIds": ["redirect"],
+      "connectionIds": ["redirect-queue"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-aggregation",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component aggregation"
+      },
+      "summary": "Visit aggregation: Processes visit events into queryable aggregates.",
+      "disposition": "c4b",
+      "nodeIds": ["worker"],
+      "connectionIds": ["queue-worker", "worker-db"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-billing-plans",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component billing-plans"
+      },
+      "summary": "Billing & plans: Synchronizes subscriptions and evaluates feature entitlements.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-billing", "billing-api", "api-db"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-delivery",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component delivery"
+      },
+      "summary": "Notification delivery: Delivers preference-aware transactional messages.",
+      "disposition": "c4b",
+      "nodeIds": ["worker"],
+      "connectionIds": ["worker-email"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-client-features",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component client-features"
+      },
+      "summary": "Content workspace: Presents content management and discovery screens.",
+      "disposition": "c4b",
+      "nodeIds": ["web"],
+      "connectionIds": ["web-api"],
+      "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+    },
+    {
+      "requirementId": "source-scope",
+      "source": {
+        "sourceId": "factory",
+        "location": "architectureExamples entry and legacyArchitectureExample"
+      },
+      "summary": "The historical architectureExamples description and factory are the actual brief; there is no separate GOAL.md for this reference.",
+      "disposition": "unknown",
+      "nodeIds": [
+        "web",
+        "api",
+        "db",
+        "cache",
+        "queue",
+        "worker",
+        "assets",
+        "billing",
+        "email",
+        "edge",
+        "telemetry",
+        "identity",
+        "redirect"
+      ],
+      "connectionIds": [],
+      "remainingWork": "Do not infer new product requirements, capacity values or business policies. Future implementation must resolve detailed behavior with the owner."
+    },
+    {
+      "requirementId": "provider-scope",
+      "source": {
+        "sourceId": "factory",
+        "location": "Shared provider, edge and observability declarations"
+      },
+      "summary": "CDN, public artwork/media, external identity/payment/email and redacted telemetry remain source boundaries.",
+      "disposition": "c4b",
+      "nodeIds": ["assets", "edge", "telemetry", "identity", "billing", "email"],
+      "connectionIds": [],
+      "remainingWork": "The CDN origin selects artwork/media; the separate source CDN→browser asset relation is retained without inventing another origin field. Private source-media lifecycle, authentication, signing, telemetry redaction, provider protocols and delivery integration need later implementation."
+    }
+  ]
+}

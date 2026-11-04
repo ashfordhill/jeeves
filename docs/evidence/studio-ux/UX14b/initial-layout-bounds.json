@@ -1,0 +1,495 @@
+{
+  "owned": [
+    {
+      "id": "97bdc507-e85f-4cd4-9e84-3bc6cb22afc6",
+      "name": "UX14b owned fitted layout qrwty-target 1793800392645",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:53:12.711Z",
+      "updatedAt": "2026-11-04T13:53:12.711Z"
+    },
+    {
+      "id": "7d376fd9-5dfa-4d8e-ae8c-c33377be0662",
+      "name": "UX14b owned fitted layout links 1793800392645",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:53:20.893Z",
+      "updatedAt": "2026-11-04T13:53:20.893Z"
+    },
+    {
+      "id": "adf83d88-acb3-43a3-96f4-488ef8cea2c8",
+      "name": "UX14b owned fitted layout community 1793800392645",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:53:25.962Z",
+      "updatedAt": "2026-11-04T13:53:25.962Z"
+    },
+    {
+      "id": "eeda8ff2-789b-49a1-bb86-b5ae4ed485d3",
+      "name": "UX14b owned fitted layout social 1793800392645",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:53:31.026Z",
+      "updatedAt": "2026-11-04T13:53:31.026Z"
+    }
+  ],
+  "allDeletedVerified404": true,
+  "records": [
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -108,
+        "right": 900,
+        "bottom": 576
+      },
+      "viewport": {
+        "x": 91.43859649122808,
+        "y": 144.94736842105263,
+        "zoom": 0.8976608187134503
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 948,
+        "bottom": 576
+      },
+      "viewport": {
+        "x": 48,
+        "y": 111.62025316455694,
+        "zoom": 0.9324894514767933
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:service:admin",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 240,
+        "y": 0,
+        "right": 696,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 22,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -54,
+        "right": 948,
+        "bottom": 428
+      },
+      "viewport": {
+        "x": 59.05,
+        "y": 182.80416666666667,
+        "zoom": 0.9208333333333333
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:service:billing",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -54,
+        "right": 888,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 59.78666666666667,
+        "y": 255.79555555555555,
+        "zoom": 0.9822222222222222
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:service:redirect",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 268
+      },
+      "viewport": {
+        "x": 48,
+        "y": 221.6036036036036,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 240,
+        "y": 0,
+        "right": 696,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 22,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-qrwty-target",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 888,
+        "bottom": 268
+      },
+      "viewport": {
+        "x": 48,
+        "y": 248.48198198198196,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-link-platform",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -162,
+        "right": 900,
+        "bottom": 588
+      },
+      "viewport": {
+        "x": 126.51199999999999,
+        "y": 180.624,
+        "zoom": 0.8186666666666667
+      }
+    },
+    {
+      "example": "studio-link-platform",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 696,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 142,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-link-platform",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 900,
+        "bottom": 576
+      },
+      "viewport": {
+        "x": 51.428571428571445,
+        "y": 100.62857142857143,
+        "zoom": 0.9746031746031746
+      }
+    },
+    {
+      "example": "studio-link-platform",
+      "scope": "studio:service:redirect",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 240,
+        "y": 0,
+        "right": 888,
+        "bottom": 268
+      },
+      "viewport": {
+        "x": -74,
+        "y": 221,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-link-platform",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 48,
+        "y": 227.57657657657657,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-link-platform",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 268
+      },
+      "viewport": {
+        "x": 48,
+        "y": 221.6036036036036,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-community",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -210,
+        "right": 900,
+        "bottom": 576
+      },
+      "viewport": {
+        "x": 143.1603053435114,
+        "y": 212.04580152671755,
+        "zoom": 0.7811704834605598
+      }
+    },
+    {
+      "example": "studio-community",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 696,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 142,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-community",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 900,
+        "bottom": 576
+      },
+      "viewport": {
+        "x": 51.428571428571445,
+        "y": 100.62857142857143,
+        "zoom": 0.9746031746031746
+      }
+    },
+    {
+      "example": "studio-community",
+      "scope": "studio:service:notifications",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 648,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 166,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-community",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 48,
+        "y": 227.57657657657657,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-community",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 936,
+        "bottom": 416
+      },
+      "viewport": {
+        "x": 48,
+        "y": 158.55555555555557,
+        "zoom": 0.9444444444444444
+      }
+    },
+    {
+      "example": "studio-social",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -198,
+        "right": 900,
+        "bottom": 588
+      },
+      "viewport": {
+        "x": 143.1603053435114,
+        "y": 202.67175572519085,
+        "zoom": 0.7811704834605598
+      }
+    },
+    {
+      "example": "studio-social",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 708,
+        "bottom": 416
+      },
+      "viewport": {
+        "x": 136,
+        "y": 174,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-social",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 900,
+        "bottom": 576
+      },
+      "viewport": {
+        "x": 51.428571428571445,
+        "y": 100.62857142857143,
+        "zoom": 0.9746031746031746
+      }
+    },
+    {
+      "example": "studio-social",
+      "scope": "studio:service:realtime",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 456,
+        "bottom": 256
+      },
+      "viewport": {
+        "x": 262,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-social",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 268
+      },
+      "viewport": {
+        "x": 48,
+        "y": 221.6036036036036,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-social",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 268
+      },
+      "viewport": {
+        "x": 48,
+        "y": 221.6036036036036,
+        "zoom": 0.9954954954954955
+      }
+    }
+  ],
+  "blocked": [],
+  "pageErrors": []
+}

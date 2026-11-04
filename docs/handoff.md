@@ -10318,3 +10318,86 @@ integration, delivery/capacity guarantee or benchmark score is claimed. Later C4
 and verification need a separate task. No UX14a product blocker remains. UX14a is complete and this
 worker stops after its scoped local commit. UX14b and later examples/default rollout remain later;
 P73a/P73b and the backend batch stay paused.
+
+## UX14b — Fresh QRWTY target, Links, Community and Social studio studies (2026-11-04)
+
+Completed exact UX14b on primary `main` from `9a52afe6fa50c7397f515ba3a2f4ef3af4794e8a`, in the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+the studio plan/shared protocol, model/configuration/coverage contracts, final decisions, C4
+guidance and the E04–E07 briefs/factories. No later example unit, default rollout, sibling repo,
+live migration, application runtime/generation expansion or paused backend work was started.
+
+Added four separate `1.0.0` factories/manifests/layouts under `packages/spec/src/studio-examples/`,
+registered through the existing opt-in studio Library and immutable source registry. CATALOG and
+the studio-study guide now describe seven reviewed studies without changing runtime availability.
+The historical chooser/default, original factories/briefs and all three UX14a study outputs stay
+exact. The smaller Links/Community/Social descriptions and historical factory are their actual
+brief; no nonexistent GOAL.md or new business requirements were invented.
+
+QRWTY has one Billing C2 service with scalar provider settings. Adapter/policy/entitlements map
+to that boundary's C4b obligations, not extra cards or authoring forms. The public callback reaches Billing with matching Public exposure intent;
+three explicit dependencies account for entitlement lookup, authority and provider reconciliation.
+Management, Redirect, primary data/cache, owner/staff apps, artwork/exports and independent analytics
+remain recognizable. One visit queue appears only in C3; fresh consumption uses queue→worker
+message flow with the original dependency direction recorded. Browser Location navigation stays
+separate from the redirect service. Six scenario families, datasets, exact contract/interface/
+binding source, review requirements, decisions and illustrative objectives remain source-linked
+future work, including distinct analytics-loss and billing-deduplication guarantees.
+
+Links remains a small management/fast redirect/cache fallback/analytics/artwork reference, without
+QRWTY's six-scenario gate. Community retains content/search, queued processing and subscription
+Notifications. Social retains browser/API, one independent processing worker, media/search/cache,
+feed and realtime boundaries. Its documented React Native client is an external context boundary
+bound to the actual API; native/offline/shared-contract behavior stays C4b rather than acquiring
+false browser or Docker settings. Private media intent does not implement source/public variant
+lifecycle, signing or CDN access. No business rule, ranking, moderation, permission or UI designer
+was added, and no source responsibility was removed to simplify the diagram.
+
+Evidence: `docs/evidence/studio-ux/UX14b/`. Production-function observations validate all 237 goal
+rows and source hashes, every old connection/component/scenario/dataset/objective and QRWTY review
+mapping, resolved graph references, atomic insertion, visible relationship provenance, deeply
+frozen manifests, portable round-trips, rejected tampering and unresolved unknown versions/hash
+mismatch. There are 106 typed source-linked future implementation/review obligations, with existing
+Generate visibility and portable future-owner assignments. All three UX14a study outputs remain
+byte-equivalent as canonical data. No new fixture typing adaptation was needed.
+
+Final direct Chromium inspection has 112 records at 1440×900 and 1280×800: mouse Library creation,
+C1/C2 and all 18 useful C3 scopes, three configuration saves per example per size, acknowledged
+reload, real downloads, C4b links, exact handoff/source equality and unsupported runtime status.
+Actual queued branches expose every underlying member for mouse selection. Standalone API/DB/
+protocol labels are suppressed without losing editable actions. QRWTY/Community queue retention
+is re-inspected from their independent consumer scopes using one shared identity. Eight edited
+portable imports retain source hashes, all decisions/assignments and unchanged topology. All eight
+generation requests return 422 `STUDIO_DESIGN_ONLY` with no generation record; verification evidence
+remains `unrecorded`. Navigation/review/export causes no semantic mutation.
+
+The final browser run has 48 real HTTP writes and zero page/console errors, external requests or
+blocked/unowned writes. Guards precede page creation and permit only exact-owned disposable routes.
+A separate guarded read-only browser pass confirms the legacy editor stays default at both sizes.
+All 13 original projects preserve exact metadata, design/layout hashes and revisions; every owned
+disposable from main/measurement/interrupted attempts is deleted and verified 404. Unrelated
+tracked files, 42 feedback files/21 original-copy pairs, seven public fixtures, 48 frozen benchmark
+files, original factories/briefs and the entire previous handoff prefix remain exact.
+
+Fresh scope layouts use source actor/application/resource flow and service inputs/dependencies;
+read-only node/path measurements supply fitting cameras. Shared layout/routing code is unchanged.
+Dense overviews remain compact with existing long-name/zoom truncation; full settings/names and
+readable dependency scopes remain available. Representative final screenshots were visually
+inspected. Attempt notes record one covered sample point in the initial grid layout, scoped evidence
+JSON formatting and a normal transient API watcher restart before the complete clean rerun.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces, existing source/test types and scripts.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- One-off goal/schema/API/portable observations and both direct browser profiles: pass.
+- Scoped formatting, preservation and staged whitespace including new logs: pass.
+
+Unit/E2E/template suites, snapshots, their maintenance and `pnpm check` remain owner-deferred; none
+ran. No paid model/provider, external agent or generated-application execution occurred. This is
+finite design coverage, not runtime support, provider integration, application correctness,
+production capacity/recovery approval or a benchmark result. Later C4a/C4b implementation and
+independent verification require a separate task. No UX14b product blocker remains. UX14b is complete
+and this worker stops after its scoped local commit. UX14c/UX14d and default rollout remain separate
+assignments; P73a/P73b and the backend batch remain paused.

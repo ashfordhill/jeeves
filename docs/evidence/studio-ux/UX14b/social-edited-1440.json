@@ -1,0 +1,2272 @@
+{
+  "schema": "jeeves.studio-project",
+  "schemaVersion": 1,
+  "design": {
+    "schemaVersion": 2,
+    "revision": 4,
+    "architecture": {
+      "studio": {
+        "version": 1,
+        "origin": {
+          "example": {
+            "id": "studio-social",
+            "version": "1.0.0"
+          },
+          "goalManifestSha256": "800135dc524dc850e1c65d8708de5cbe5a17cb03fb99f5da86093a7d02ef8236"
+        },
+        "elements": [
+          {
+            "element": "web",
+            "definition": {
+              "id": "studio-browser",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "browser",
+              "delivery": "standalone",
+              "provider": "unspecified"
+            }
+          },
+          {
+            "element": "api",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "language": "typescript",
+              "exposure": "public",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "db",
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "database",
+              "engine": "postgresql",
+              "provider": "self-hosted"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "cache",
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "cache",
+              "engine": "redis-compatible",
+              "provider": "self-hosted",
+              "ttlSeconds": 120
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "queue",
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "self-hosted"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "worker",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "language": "typescript",
+              "concurrency": 4,
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "search",
+            "definition": {
+              "id": "studio-search",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "search",
+              "engine": "opensearch",
+              "provider": "self-hosted"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "assets",
+            "definition": {
+              "id": "studio-object-store",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "object-store",
+              "provider": "external",
+              "access": "private"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "realtime",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "language": "typescript",
+              "exposure": "public",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "billing",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "payments",
+              "provider": "external"
+            }
+          },
+          {
+            "element": "email",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "email",
+              "provider": "external"
+            }
+          },
+          {
+            "element": "edge",
+            "definition": {
+              "id": "studio-cdn",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "cdn",
+              "provider": "unspecified",
+              "origin": "assets"
+            }
+          },
+          {
+            "element": "telemetry",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "external"
+            }
+          },
+          {
+            "element": "identity",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "identity",
+              "provider": "external"
+            }
+          }
+        ],
+        "packages": [],
+        "connections": [
+          {
+            "connection": "web-api",
+            "settings": {}
+          },
+          {
+            "connection": "api-db",
+            "settings": {}
+          },
+          {
+            "connection": "api-cache",
+            "settings": {}
+          },
+          {
+            "connection": "api-queue",
+            "settings": {
+              "channelUse": "publish"
+            }
+          },
+          {
+            "connection": "queue-worker",
+            "settings": {
+              "channelUse": "consume"
+            }
+          },
+          {
+            "connection": "worker-db",
+            "settings": {}
+          },
+          {
+            "connection": "api-search",
+            "settings": {}
+          },
+          {
+            "connection": "worker-assets",
+            "settings": {}
+          },
+          {
+            "connection": "web-realtime",
+            "settings": {}
+          },
+          {
+            "connection": "api-billing",
+            "settings": {}
+          },
+          {
+            "connection": "billing-api",
+            "settings": {}
+          },
+          {
+            "connection": "worker-email",
+            "settings": {}
+          },
+          {
+            "connection": "edge-web",
+            "settings": {}
+          },
+          {
+            "connection": "edge-assets",
+            "settings": {}
+          },
+          {
+            "connection": "api-telemetry",
+            "settings": {}
+          },
+          {
+            "connection": "worker-telemetry",
+            "settings": {}
+          },
+          {
+            "connection": "web-identity",
+            "settings": {}
+          },
+          {
+            "connection": "api-identity",
+            "settings": {}
+          }
+        ]
+      },
+      "implementationHandoff": {
+        "description": "Social · studio study: design coverage and source-linked future implementation work only.",
+        "partial": true,
+        "excludedScope": "No application runtime, template binding, provisioning, generated build or behavior verification is supplied. Historical deployment and implementation detail remains pinned source.",
+        "assignments": [
+          {
+            "kind": "decision",
+            "id": "studio-c4b-foundation",
+            "owner": "Future application/runtime implementer",
+            "blocks": "A separate C4a runtime/template task must implement and verify the foundations. Studio application generation remains unsupported."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-boundary-mobile",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Retain the native client as external-system context mobile-client, with mobile-system binding to the existing API. React Native, cached/offline reading and its shared API facade remain source-linked C4b; do not relabel it a browser or Docker service."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-relationship-mobile-api",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Represented by context mobile-client → system bound to api. Implement the pinned native client/shared API integration later; no native client runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-accounts",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-content",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-feed",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-moderation",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-media",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-mobile-facade",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-mobile-state",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-presence",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-billing-plans",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-delivery",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-behavior-client-features",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-source-scope",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Do not infer new product requirements, capacity values or business policies. Future implementation must resolve detailed behavior with the owner."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-provider-scope",
+            "owner": "Future application/runtime implementer",
+            "blocks": "The CDN origin selects artwork/media; the separate source CDN→browser asset relation is retained without inventing another origin field. Private source-media lifecycle, authentication, signing, telemetry redaction, provider protocols and delivery integration need later implementation."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-social-custom",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement source ranking/graph/content rules, media variants, realtime authorization and client/UI behavior. Native mobile is an external client context boundary; it receives no false browser/Docker settings."
+          }
+        ]
+      },
+      "system": {
+        "name": "Social · studio study",
+        "description": "Browser/API, an external native client, independent background processing, feed/search/cache and realtime delivery boundaries."
+      },
+      "nodes": [
+        {
+          "id": "member",
+          "kind": "person",
+          "name": "Member",
+          "description": "Creates and manages owned content."
+        },
+        {
+          "id": "visitor",
+          "kind": "person",
+          "name": "Visitor",
+          "description": "Browses public content or follows a shared link."
+        },
+        {
+          "id": "payment-provider",
+          "kind": "external-system",
+          "name": "Payment provider",
+          "description": "Processes subscriptions and supplies billing events.",
+          "container": "billing"
+        },
+        {
+          "id": "email-provider",
+          "kind": "external-system",
+          "name": "E-mail delivery provider",
+          "description": "Delivers account, invitation and report-ready messages.",
+          "container": "email"
+        },
+        {
+          "id": "mobile-client",
+          "kind": "external-system",
+          "name": "Native mobile client",
+          "description": "Source React Native client uses the shared API and caches recent feeds. Native client implementation remains C4b, outside finite browser/service settings."
+        }
+      ],
+      "relationships": [
+        {
+          "id": "member-system",
+          "from": "member",
+          "to": "system",
+          "description": "Manages content and artwork",
+          "container": "web"
+        },
+        {
+          "id": "visitor-system",
+          "from": "visitor",
+          "to": "system",
+          "description": "Browses public content",
+          "container": "web"
+        },
+        {
+          "id": "system-payment",
+          "from": "system",
+          "to": "payment-provider",
+          "description": "Synchronizes subscriptions and entitlements",
+          "container": "api"
+        },
+        {
+          "id": "system-email",
+          "from": "system",
+          "to": "email-provider",
+          "description": "Delivers transactional messages",
+          "container": "worker"
+        },
+        {
+          "id": "mobile-system",
+          "from": "mobile-client",
+          "to": "system",
+          "description": "Publishes and reads feeds through shared API",
+          "container": "api"
+        }
+      ],
+      "decisions": [
+        {
+          "id": "studio-c4b-foundation",
+          "name": "Finite settings are design intent with no selected executable template.",
+          "context": "factory: foundation. Finite settings are design intent with no selected executable template.",
+          "decision": "A separate C4a runtime/template task must implement and verify the foundations. Studio application generation remains unsupported.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "web"
+            },
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "db"
+            },
+            {
+              "kind": "element",
+              "id": "cache"
+            },
+            {
+              "kind": "element",
+              "id": "queue"
+            },
+            {
+              "kind": "element",
+              "id": "worker"
+            },
+            {
+              "kind": "element",
+              "id": "assets"
+            },
+            {
+              "kind": "element",
+              "id": "billing"
+            },
+            {
+              "kind": "element",
+              "id": "email"
+            },
+            {
+              "kind": "element",
+              "id": "edge"
+            },
+            {
+              "kind": "element",
+              "id": "telemetry"
+            },
+            {
+              "kind": "element",
+              "id": "identity"
+            },
+            {
+              "kind": "element",
+              "id": "search"
+            },
+            {
+              "kind": "element",
+              "id": "realtime"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-boundary-mobile",
+          "name": "Mobile application",
+          "context": "factory: Container mobile and mobile-api dependency. Mobile application: Provides mobile publishing, feeds and cached reading.",
+          "decision": "Retain the native client as external-system context mobile-client, with mobile-system binding to the existing API. React Native, cached/offline reading and its shared API facade remain source-linked C4b; do not relabel it a browser or Docker service.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-relationship-mobile-api",
+          "name": "Uses shared API; native client to API dependency.",
+          "context": "factory: Connection mobile-api. Uses shared API; native client to API dependency.",
+          "decision": "Represented by context mobile-client → system bound to api. Implement the pinned native client/shared API integration later; no native client runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-accounts",
+          "name": "Accounts & access",
+          "context": "factory: Component accounts. Accounts & access: Owns account access and tenant permissions.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-content",
+          "name": "Posts & profiles",
+          "context": "factory: Component content. Posts & profiles: Owns content, revisions and visibility rules.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-feed",
+          "name": "Feed & social graph",
+          "context": "factory: Component feed. Feed & social graph: Builds bounded content listings for the current audience.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-cache"
+            },
+            {
+              "kind": "connection",
+              "id": "api-search"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-moderation",
+          "name": "Moderation",
+          "context": "factory: Component moderation. Moderation: Handles reports and records review decisions.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-media",
+          "name": "Media processing",
+          "context": "factory: Component media. Media processing: Validates media and produces delivery variants.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "worker"
+            },
+            {
+              "kind": "connection",
+              "id": "worker-assets"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-mobile-facade",
+          "name": "Mobile API facade",
+          "context": "factory: Component mobile-facade. Mobile API facade: Maps shared API contracts to mobile publishing and feed features.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-mobile-state",
+          "name": "Offline reading",
+          "context": "factory: Component mobile-state. Offline reading: Retains cached feed entries for mobile reading.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-presence",
+          "name": "Presence & activity",
+          "context": "factory: Component presence. Presence & activity: Distributes authorized live updates to connected clients.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "realtime"
+            },
+            {
+              "kind": "connection",
+              "id": "web-realtime"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-billing-plans",
+          "name": "Billing & plans",
+          "context": "factory: Component billing-plans. Billing & plans: Synchronizes subscriptions and evaluates feature entitlements.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-billing"
+            },
+            {
+              "kind": "connection",
+              "id": "billing-api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-delivery",
+          "name": "Notification delivery",
+          "context": "factory: Component delivery. Notification delivery: Delivers preference-aware transactional messages.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "worker"
+            },
+            {
+              "kind": "connection",
+              "id": "worker-email"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-behavior-client-features",
+          "name": "Content workspace",
+          "context": "factory: Component client-features. Content workspace: Presents content management and discovery screens.",
+          "decision": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "web"
+            },
+            {
+              "kind": "connection",
+              "id": "web-api"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-source-scope",
+          "name": "The historical architectureExamples description and factory are the actual brief; there is no separate GOAL.md for this",
+          "context": "factory: architectureExamples entry and legacyArchitectureExample. The historical architectureExamples description and factory are the actual brief; there is no separate GOAL.md for this reference.",
+          "decision": "Do not infer new product requirements, capacity values or business policies. Future implementation must resolve detailed behavior with the owner.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "web"
+            },
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "db"
+            },
+            {
+              "kind": "element",
+              "id": "cache"
+            },
+            {
+              "kind": "element",
+              "id": "queue"
+            },
+            {
+              "kind": "element",
+              "id": "worker"
+            },
+            {
+              "kind": "element",
+              "id": "assets"
+            },
+            {
+              "kind": "element",
+              "id": "billing"
+            },
+            {
+              "kind": "element",
+              "id": "email"
+            },
+            {
+              "kind": "element",
+              "id": "edge"
+            },
+            {
+              "kind": "element",
+              "id": "telemetry"
+            },
+            {
+              "kind": "element",
+              "id": "identity"
+            },
+            {
+              "kind": "element",
+              "id": "search"
+            },
+            {
+              "kind": "element",
+              "id": "realtime"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-provider-scope",
+          "name": "CDN, public artwork/media, external identity/payment/email and redacted telemetry remain source boundaries.",
+          "context": "factory: Shared provider, edge and observability declarations. CDN, public artwork/media, external identity/payment/email and redacted telemetry remain source boundaries.",
+          "decision": "The CDN origin selects artwork/media; the separate source CDN→browser asset relation is retained without inventing another origin field. Private source-media lifecycle, authentication, signing, telemetry redaction, provider protocols and delivery integration need later implementation.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "assets"
+            },
+            {
+              "kind": "element",
+              "id": "edge"
+            },
+            {
+              "kind": "element",
+              "id": "telemetry"
+            },
+            {
+              "kind": "element",
+              "id": "identity"
+            },
+            {
+              "kind": "element",
+              "id": "billing"
+            },
+            {
+              "kind": "element",
+              "id": "email"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-social-custom",
+          "name": "Profiles, social graph, feed listings, media processing, authorized realtime and native cached reading remain custom beh",
+          "context": "factory: Social components and source description. Profiles, social graph, feed listings, media processing, authorized realtime and native cached reading remain custom behavior.",
+          "decision": "Implement source ranking/graph/content rules, media variants, realtime authorization and client/UI behavior. Native mobile is an external client context boundary; it receives no false browser/Docker settings.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "worker"
+            },
+            {
+              "kind": "element",
+              "id": "realtime"
+            },
+            {
+              "kind": "element",
+              "id": "assets"
+            },
+            {
+              "kind": "element",
+              "id": "search"
+            },
+            {
+              "kind": "element",
+              "id": "cache"
+            }
+          ],
+          "acknowledgements": []
+        }
+      ]
+    },
+    "elements": [
+      {
+        "id": "web",
+        "name": "Web application",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Creates and manages content through a signed-in browser experience.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "api",
+        "name": "Application API",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Owns account access, domain operations and application contracts.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "db",
+        "name": "Primary data",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Stores authoritative accounts, ownership and domain records.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "cache",
+        "name": "Application cache",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Caches derived lookups with bounded freshness and source fallback.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "queue",
+        "name": "Background jobs",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Buffers visit events and background tasks for independent processing.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "worker",
+        "name": "Background worker",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Processes queued work and scheduled tasks outside interactive requests.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "search",
+        "name": "Discovery index",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Indexes public content for access-filtered discovery.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "assets",
+        "name": "Media storage",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Retains source media and derived delivery variants.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "realtime",
+        "name": "Realtime updates",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Distributes authorized presence and activity updates.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "billing",
+        "name": "Payment provider",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Processes subscriptions and sends signed billing events.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "email",
+        "name": "E-mail delivery provider",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Delivers transactional messages without owning application accounts.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "edge",
+        "name": "CDN & edge",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Delivers static application assets and public artwork; redirects remain uncached.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "telemetry",
+        "name": "Observability",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Collects redacted service logs, metrics and traces.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "identity",
+        "name": "Identity provider",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Authenticates members and supplies verified sign-in identities.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      }
+    ],
+    "connections": [
+      {
+        "id": "web-api",
+        "kind": "depends-on",
+        "from": {
+          "element": "web"
+        },
+        "to": {
+          "element": "api"
+        },
+        "planned": {
+          "label": "Uses application API",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-db",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "db"
+        },
+        "planned": {
+          "label": "Reads / writes records",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-cache",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "cache"
+        },
+        "planned": {
+          "label": "Caches derived reads",
+          "protocol": "Redis",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-queue",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "queue"
+        },
+        "planned": {
+          "label": "Enqueues work",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "queue-worker",
+        "kind": "depends-on",
+        "from": {
+          "element": "queue"
+        },
+        "to": {
+          "element": "worker"
+        },
+        "planned": {
+          "label": "Delivers jobs",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "worker-db",
+        "kind": "depends-on",
+        "from": {
+          "element": "worker"
+        },
+        "to": {
+          "element": "db"
+        },
+        "planned": {
+          "label": "Reads / writes task data",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-search",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "search"
+        },
+        "planned": {
+          "label": "Searches public content",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "worker-assets",
+        "kind": "depends-on",
+        "from": {
+          "element": "worker"
+        },
+        "to": {
+          "element": "assets"
+        },
+        "planned": {
+          "label": "Processes media",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "web-realtime",
+        "kind": "depends-on",
+        "from": {
+          "element": "web"
+        },
+        "to": {
+          "element": "realtime"
+        },
+        "planned": {
+          "label": "Receives updates",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-billing",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "billing"
+        },
+        "planned": {
+          "label": "Synchronizes plans and subscriptions",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "billing-api",
+        "kind": "depends-on",
+        "from": {
+          "element": "billing"
+        },
+        "to": {
+          "element": "api"
+        },
+        "planned": {
+          "label": "Delivers signed billing events",
+          "protocol": "HTTPS",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "worker-email",
+        "kind": "depends-on",
+        "from": {
+          "element": "worker"
+        },
+        "to": {
+          "element": "email"
+        },
+        "planned": {
+          "label": "Delivers transactional messages",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "edge-web",
+        "kind": "depends-on",
+        "from": {
+          "element": "edge"
+        },
+        "to": {
+          "element": "web"
+        },
+        "planned": {
+          "label": "Loads application assets",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "edge-assets",
+        "kind": "depends-on",
+        "from": {
+          "element": "edge"
+        },
+        "to": {
+          "element": "assets"
+        },
+        "planned": {
+          "label": "Loads public artwork and media",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-telemetry",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "telemetry"
+        },
+        "planned": {
+          "label": "Exports redacted telemetry",
+          "protocol": "HTTPS",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "worker-telemetry",
+        "kind": "depends-on",
+        "from": {
+          "element": "worker"
+        },
+        "to": {
+          "element": "telemetry"
+        },
+        "planned": {
+          "label": "Exports job metrics and traces",
+          "protocol": "HTTPS",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "web-identity",
+        "kind": "depends-on",
+        "from": {
+          "element": "web"
+        },
+        "to": {
+          "element": "identity"
+        },
+        "planned": {
+          "label": "Authenticates members",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-identity",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "identity"
+        },
+        "planned": {
+          "label": "Validates member identities",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "annotations": []
+  },
+  "layout": {
+    "schemaVersion": 1,
+    "items": {},
+    "architecture": {
+      "studio:context": {
+        "positions": {
+          "studio:context:member": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:context:system": {
+            "x": 240,
+            "y": 160
+          },
+          "studio:context:visitor": {
+            "x": 0,
+            "y": 160
+          },
+          "studio:context:mobile-client": {
+            "x": 480,
+            "y": 320
+          },
+          "studio:context:email-provider": {
+            "x": 480,
+            "y": 160
+          },
+          "studio:context:payment-provider": {
+            "x": 480,
+            "y": 0
+          }
+        },
+        "viewport": {
+          "x": 136,
+          "y": 174,
+          "zoom": 1
+        }
+      },
+      "studio:containers": {
+        "positions": {
+          "studio:element:db": {
+            "x": 720,
+            "y": 0
+          },
+          "studio:element:api": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:web": {
+            "x": 240,
+            "y": 0
+          },
+          "studio:element:edge": {
+            "x": 720,
+            "y": 480
+          },
+          "studio:element:cache": {
+            "x": 480,
+            "y": 160
+          },
+          "studio:element:email": {
+            "x": 240,
+            "y": 480
+          },
+          "studio:context:member": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:assets": {
+            "x": 720,
+            "y": 320
+          },
+          "studio:element:search": {
+            "x": 720,
+            "y": 160
+          },
+          "studio:element:worker": {
+            "x": 480,
+            "y": 320
+          },
+          "studio:context:visitor": {
+            "x": 0,
+            "y": 160
+          },
+          "studio:element:billing": {
+            "x": 0,
+            "y": 480
+          },
+          "studio:element:identity": {
+            "x": 240,
+            "y": 160
+          },
+          "studio:element:realtime": {
+            "x": 240,
+            "y": 320
+          },
+          "studio:element:telemetry": {
+            "x": 480,
+            "y": 480
+          },
+          "studio:context:mobile-client": {
+            "x": 0,
+            "y": 320
+          }
+        },
+        "viewport": {
+          "x": 143.1603053435114,
+          "y": 202.67175572519085,
+          "zoom": 0.7811704834605598
+        }
+      },
+      "studio:service:api": {
+        "positions": {
+          "studio:element:db": {
+            "x": 720,
+            "y": 160
+          },
+          "studio:element:api": {
+            "x": 240,
+            "y": 160
+          },
+          "studio:element:web": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:cache": {
+            "x": 480,
+            "y": 160
+          },
+          "studio:element:queue": {
+            "x": 720,
+            "y": 320
+          },
+          "studio:element:assets": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:search": {
+            "x": 480,
+            "y": 480
+          },
+          "studio:element:billing": {
+            "x": 720,
+            "y": 0
+          },
+          "studio:element:identity": {
+            "x": 480,
+            "y": 320
+          },
+          "studio:element:telemetry": {
+            "x": 720,
+            "y": 480
+          }
+        },
+        "viewport": {
+          "x": 51.428571428571445,
+          "y": 100.62857142857143,
+          "zoom": 0.9746031746031746
+        }
+      },
+      "studio:service:web": {
+        "positions": {
+          "studio:element:api": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:web": {
+            "x": 240,
+            "y": 160
+          },
+          "studio:element:edge": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:identity": {
+            "x": 720,
+            "y": 0
+          },
+          "studio:element:realtime": {
+            "x": 480,
+            "y": 160
+          }
+        },
+        "viewport": {
+          "x": 48,
+          "y": 221.6036036036036,
+          "zoom": 0.9954954954954955
+        }
+      },
+      "studio:service:worker": {
+        "positions": {
+          "studio:element:db": {
+            "x": 720,
+            "y": 0
+          },
+          "studio:element:email": {
+            "x": 480,
+            "y": 160
+          },
+          "studio:element:queue": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:assets": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:worker": {
+            "x": 240,
+            "y": 160
+          },
+          "studio:element:telemetry": {
+            "x": 720,
+            "y": 160
+          }
+        },
+        "viewport": {
+          "x": 48,
+          "y": 221.6036036036036,
+          "zoom": 0.9954954954954955
+        }
+      },
+      "studio:service:realtime": {
+        "positions": {
+          "studio:element:web": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:realtime": {
+            "x": 240,
+            "y": 160
+          }
+        },
+        "viewport": {
+          "x": 262,
+          "y": 227,
+          "zoom": 1
+        }
+      }
+    }
+  },
+  "studioSources": [
+    {
+      "example": {
+        "id": "studio-social",
+        "version": "1.0.0"
+      },
+      "goalManifestSha256": "800135dc524dc850e1c65d8708de5cbe5a17cb03fb99f5da86093a7d02ef8236",
+      "status": "resolved",
+      "manifest": {
+        "schemaVersion": 1,
+        "example": {
+          "id": "studio-social",
+          "version": "1.0.0"
+        },
+        "sources": [
+          {
+            "id": "factory",
+            "path": "packages/spec/src/architecture-examples.ts",
+            "commit": "9a52afe6fa50c7397f515ba3a2f4ef3af4794e8a",
+            "sha256": "4a0968361bd0c0b2933dab6ae86aebb2c84f01c9f6fbd4de9be250401d4765d0"
+          }
+        ],
+        "requirements": [
+          {
+            "requirementId": "foundation",
+            "source": {
+              "sourceId": "factory",
+              "location": "foundation"
+            },
+            "summary": "Finite settings are design intent with no selected executable template.",
+            "disposition": "fixed-template-candidate",
+            "nodeIds": [
+              "web",
+              "api",
+              "db",
+              "cache",
+              "queue",
+              "worker",
+              "assets",
+              "billing",
+              "email",
+              "edge",
+              "telemetry",
+              "identity",
+              "search",
+              "realtime"
+            ],
+            "connectionIds": [],
+            "remainingWork": "A separate C4a runtime/template task must implement and verify the foundations. Studio application generation remains unsupported."
+          },
+          {
+            "requirementId": "boundary-web",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container web"
+            },
+            "summary": "Web application: Creates and manages content through a signed-in browser experience.",
+            "disposition": "represented-design",
+            "nodeIds": ["web"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-api",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container api"
+            },
+            "summary": "Application API: Owns account access, domain operations and application contracts.",
+            "disposition": "represented-design",
+            "nodeIds": ["api"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-db",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container db"
+            },
+            "summary": "Primary data: Stores authoritative accounts, ownership and domain records.",
+            "disposition": "represented-design",
+            "nodeIds": ["db"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-cache",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container cache"
+            },
+            "summary": "Application cache: Caches derived lookups with bounded freshness and source fallback.",
+            "disposition": "represented-design",
+            "nodeIds": ["cache"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-queue",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container queue"
+            },
+            "summary": "Background jobs: Buffers visit events and background tasks for independent processing.",
+            "disposition": "represented-design",
+            "nodeIds": ["queue"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-worker",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container worker"
+            },
+            "summary": "Background worker: Processes queued work and scheduled tasks outside interactive requests.",
+            "disposition": "represented-design",
+            "nodeIds": ["worker"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-search",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container search"
+            },
+            "summary": "Discovery index: Indexes public content for access-filtered discovery.",
+            "disposition": "represented-design",
+            "nodeIds": ["search"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-assets",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container assets"
+            },
+            "summary": "Media storage: Retains source media and derived delivery variants.",
+            "disposition": "represented-design",
+            "nodeIds": ["assets"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-mobile",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container mobile and mobile-api dependency"
+            },
+            "summary": "Mobile application: Provides mobile publishing, feeds and cached reading.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": [],
+            "remainingWork": "Retain the native client as external-system context mobile-client, with mobile-system binding to the existing API. React Native, cached/offline reading and its shared API facade remain source-linked C4b; do not relabel it a browser or Docker service."
+          },
+          {
+            "requirementId": "boundary-realtime",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container realtime"
+            },
+            "summary": "Realtime updates: Distributes authorized presence and activity updates.",
+            "disposition": "represented-design",
+            "nodeIds": ["realtime"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-billing",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container billing"
+            },
+            "summary": "Payment provider: Processes subscriptions and sends signed billing events.",
+            "disposition": "represented-design",
+            "nodeIds": ["billing"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-email",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container email"
+            },
+            "summary": "E-mail delivery provider: Delivers transactional messages without owning application accounts.",
+            "disposition": "represented-design",
+            "nodeIds": ["email"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-edge",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container edge"
+            },
+            "summary": "CDN & edge: Delivers static application assets and public artwork; redirects remain uncached.",
+            "disposition": "represented-design",
+            "nodeIds": ["edge"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-telemetry",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container telemetry"
+            },
+            "summary": "Observability: Collects redacted service logs, metrics and traces.",
+            "disposition": "represented-design",
+            "nodeIds": ["telemetry"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "boundary-identity",
+            "source": {
+              "sourceId": "factory",
+              "location": "Container identity"
+            },
+            "summary": "Identity provider: Authenticates members and supplies verified sign-in identities.",
+            "disposition": "represented-design",
+            "nodeIds": ["identity"],
+            "connectionIds": [],
+            "remainingWork": "Design intent only; application implementation and verification remain later."
+          },
+          {
+            "requirementId": "relationship-web-api",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection web-api"
+            },
+            "summary": "Uses application API; source HTTPS/JSON; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["web", "api"],
+            "connectionIds": ["web-api"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-db",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-db"
+            },
+            "summary": "Reads / writes records; source SQL; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "db"],
+            "connectionIds": ["api-db"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-cache",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-cache"
+            },
+            "summary": "Caches derived reads; source RESP/TLS; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "cache"],
+            "connectionIds": ["api-cache"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-queue",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-queue"
+            },
+            "summary": "Enqueues work; source AMQP/TLS; Asynchronous",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "queue"],
+            "connectionIds": ["api-queue"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-queue-worker",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection queue-worker"
+            },
+            "summary": "Delivers jobs; source AMQP/TLS; Asynchronous",
+            "disposition": "represented-design",
+            "nodeIds": ["queue", "worker"],
+            "connectionIds": ["queue-worker"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-worker-db",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection worker-db"
+            },
+            "summary": "Reads / writes task data; source SQL; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["worker", "db"],
+            "connectionIds": ["worker-db"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-search",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-search"
+            },
+            "summary": "Searches public content; source HTTPS/JSON; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "search"],
+            "connectionIds": ["api-search"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-worker-assets",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection worker-assets"
+            },
+            "summary": "Processes media; source HTTPS/S3; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["worker", "assets"],
+            "connectionIds": ["worker-assets"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-mobile-api",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection mobile-api"
+            },
+            "summary": "Uses shared API; native client to API dependency.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": [],
+            "remainingWork": "Represented by context mobile-client → system bound to api. Implement the pinned native client/shared API integration later; no native client runtime is supplied."
+          },
+          {
+            "requirementId": "relationship-web-realtime",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection web-realtime"
+            },
+            "summary": "Receives updates; source WebSocket; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["web", "realtime"],
+            "connectionIds": ["web-realtime"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-billing",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-billing"
+            },
+            "summary": "Synchronizes plans and subscriptions; source HTTPS/JSON; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "billing"],
+            "connectionIds": ["api-billing"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-billing-api",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection billing-api"
+            },
+            "summary": "Delivers signed billing events; source HTTPS/JSON; Asynchronous",
+            "disposition": "represented-design",
+            "nodeIds": ["billing", "api"],
+            "connectionIds": ["billing-api"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-worker-email",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection worker-email"
+            },
+            "summary": "Delivers transactional messages; source HTTPS/JSON; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["worker", "email"],
+            "connectionIds": ["worker-email"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-edge-web",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection edge-web"
+            },
+            "summary": "Loads application assets; source HTTPS; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["edge", "web"],
+            "connectionIds": ["edge-web"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-edge-assets",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection edge-assets"
+            },
+            "summary": "Loads public artwork and media; source HTTPS/S3; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["edge", "assets"],
+            "connectionIds": ["edge-assets"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-telemetry",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-telemetry"
+            },
+            "summary": "Exports redacted telemetry; source OTLP/HTTPS; Asynchronous",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "telemetry"],
+            "connectionIds": ["api-telemetry"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-worker-telemetry",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection worker-telemetry"
+            },
+            "summary": "Exports job metrics and traces; source OTLP/HTTPS; Asynchronous",
+            "disposition": "represented-design",
+            "nodeIds": ["worker", "telemetry"],
+            "connectionIds": ["worker-telemetry"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-web-identity",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection web-identity"
+            },
+            "summary": "Authenticates members; source OIDC/HTTPS; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["web", "identity"],
+            "connectionIds": ["web-identity"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "relationship-api-identity",
+            "source": {
+              "sourceId": "factory",
+              "location": "Connection api-identity"
+            },
+            "summary": "Validates member identities; source OIDC/HTTPS; Request / response",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "identity"],
+            "connectionIds": ["api-identity"],
+            "remainingWork": "The protocol is finite design intent; exact source contract, access and failure behavior remain unimplemented."
+          },
+          {
+            "requirementId": "behavior-accounts",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component accounts"
+            },
+            "summary": "Accounts & access: Owns account access and tenant permissions.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": ["api-db"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-content",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component content"
+            },
+            "summary": "Posts & profiles: Owns content, revisions and visibility rules.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": ["api-db"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-feed",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component feed"
+            },
+            "summary": "Feed & social graph: Builds bounded content listings for the current audience.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": ["api-cache", "api-search"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-moderation",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component moderation"
+            },
+            "summary": "Moderation: Handles reports and records review decisions.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": ["api-db"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-media",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component media"
+            },
+            "summary": "Media processing: Validates media and produces delivery variants.",
+            "disposition": "c4b",
+            "nodeIds": ["worker"],
+            "connectionIds": ["worker-assets"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-mobile-facade",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component mobile-facade"
+            },
+            "summary": "Mobile API facade: Maps shared API contracts to mobile publishing and feed features.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": [],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-mobile-state",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component mobile-state"
+            },
+            "summary": "Offline reading: Retains cached feed entries for mobile reading.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": [],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-presence",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component presence"
+            },
+            "summary": "Presence & activity: Distributes authorized live updates to connected clients.",
+            "disposition": "c4b",
+            "nodeIds": ["realtime"],
+            "connectionIds": ["web-realtime"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-billing-plans",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component billing-plans"
+            },
+            "summary": "Billing & plans: Synchronizes subscriptions and evaluates feature entitlements.",
+            "disposition": "c4b",
+            "nodeIds": ["api"],
+            "connectionIds": ["api-billing", "billing-api", "api-db"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-delivery",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component delivery"
+            },
+            "summary": "Notification delivery: Delivers preference-aware transactional messages.",
+            "disposition": "c4b",
+            "nodeIds": ["worker"],
+            "connectionIds": ["worker-email"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "behavior-client-features",
+            "source": {
+              "sourceId": "factory",
+              "location": "Component client-features"
+            },
+            "summary": "Content workspace: Presents content management and discovery screens.",
+            "disposition": "c4b",
+            "nodeIds": ["web"],
+            "connectionIds": ["web-api"],
+            "remainingWork": "Implement the exact pinned responsibility, configuration and interface within its mapped boundary. No new library service, screen designer, business-policy editor or runtime is supplied."
+          },
+          {
+            "requirementId": "source-scope",
+            "source": {
+              "sourceId": "factory",
+              "location": "architectureExamples entry and legacyArchitectureExample"
+            },
+            "summary": "The historical architectureExamples description and factory are the actual brief; there is no separate GOAL.md for this reference.",
+            "disposition": "unknown",
+            "nodeIds": [
+              "web",
+              "api",
+              "db",
+              "cache",
+              "queue",
+              "worker",
+              "assets",
+              "billing",
+              "email",
+              "edge",
+              "telemetry",
+              "identity",
+              "search",
+              "realtime"
+            ],
+            "connectionIds": [],
+            "remainingWork": "Do not infer new product requirements, capacity values or business policies. Future implementation must resolve detailed behavior with the owner."
+          },
+          {
+            "requirementId": "provider-scope",
+            "source": {
+              "sourceId": "factory",
+              "location": "Shared provider, edge and observability declarations"
+            },
+            "summary": "CDN, public artwork/media, external identity/payment/email and redacted telemetry remain source boundaries.",
+            "disposition": "c4b",
+            "nodeIds": ["assets", "edge", "telemetry", "identity", "billing", "email"],
+            "connectionIds": [],
+            "remainingWork": "The CDN origin selects artwork/media; the separate source CDN→browser asset relation is retained without inventing another origin field. Private source-media lifecycle, authentication, signing, telemetry redaction, provider protocols and delivery integration need later implementation."
+          },
+          {
+            "requirementId": "social-custom",
+            "source": {
+              "sourceId": "factory",
+              "location": "Social components and source description"
+            },
+            "summary": "Profiles, social graph, feed listings, media processing, authorized realtime and native cached reading remain custom behavior.",
+            "disposition": "c4b",
+            "nodeIds": ["api", "worker", "realtime", "assets", "search", "cache"],
+            "connectionIds": [],
+            "remainingWork": "Implement source ranking/graph/content rules, media variants, realtime authorization and client/UI behavior. Native mobile is an external client context boundary; it receives no false browser/Docker settings."
+          }
+        ]
+      }
+    }
+  ]
+}

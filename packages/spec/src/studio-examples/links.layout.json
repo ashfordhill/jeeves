@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "items": {},
+  "architecture": {
+    "studio:context": {
+      "positions": {
+        "studio:context:system": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:context:member": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:visitor": {
+          "x": 0,
+          "y": 160
+        },
+        "studio:context:payment-provider": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:context:email-provider": {
+          "x": 480,
+          "y": 160
+        }
+      },
+      "viewport": {
+        "x": 142,
+        "y": 227,
+        "zoom": 1
+      }
+    },
+    "studio:containers": {
+      "positions": {
+        "studio:context:member": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:api": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:context:visitor": {
+          "x": 0,
+          "y": 160
+        },
+        "studio:element:redirect": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:cache": {
+          "x": 480,
+          "y": 160
+        },
+        "studio:element:assets": {
+          "x": 720,
+          "y": 160
+        },
+        "studio:element:identity": {
+          "x": 0,
+          "y": 320
+        },
+        "studio:element:billing": {
+          "x": 240,
+          "y": 320
+        },
+        "studio:element:worker": {
+          "x": 480,
+          "y": 320
+        },
+        "studio:element:email": {
+          "x": 720,
+          "y": 320
+        },
+        "studio:element:telemetry": {
+          "x": 480,
+          "y": 480
+        },
+        "studio:element:edge": {
+          "x": 720,
+          "y": 480
+        }
+      },
+      "viewport": {
+        "x": 126.51199999999999,
+        "y": 180.624,
+        "zoom": 0.8186666666666667
+      }
+    },
+    "studio:service:api": {
+      "positions": {
+        "studio:element:api": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:web": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:assets": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:billing": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:cache": {
+          "x": 480,
+          "y": 160
+        },
+        "studio:element:db": {
+          "x": 720,
+          "y": 160
+        },
+        "studio:element:identity": {
+          "x": 480,
+          "y": 320
+        },
+        "studio:element:queue": {
+          "x": 720,
+          "y": 320
+        },
+        "studio:element:telemetry": {
+          "x": 480,
+          "y": 480
+        }
+      },
+      "viewport": {
+        "x": 51.428571428571445,
+        "y": 100.62857142857143,
+        "zoom": 0.9746031746031746
+      }
+    },
+    "studio:service:redirect": {
+      "positions": {
+        "studio:element:redirect": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:cache": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:queue": {
+          "x": 480,
+          "y": 160
+        }
+      },
+      "viewport": {
+        "x": -74,
+        "y": 221,
+        "zoom": 1
+      }
+    },
+    "studio:service:web": {
+      "positions": {
+        "studio:element:web": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:edge": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:api": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:identity": {
+          "x": 720,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 48,
+        "y": 227.57657657657657,
+        "zoom": 0.9954954954954955
+      }
+    },
+    "studio:service:worker": {
+      "positions": {
+        "studio:element:worker": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:queue": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:email": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:telemetry": {
+          "x": 480,
+          "y": 160
+        }
+      },
+      "viewport": {
+        "x": 48,
+        "y": 221.6036036036036,
+        "zoom": 0.9954954954954955
+      }
+    }
+  }
+}

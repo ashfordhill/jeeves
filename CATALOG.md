@@ -90,19 +90,23 @@ External API under Integrations; and Billing, Redirect and Notifications/Identit
 Billing, Redirect, Notifications and Identity each represent one application, with scalar provider
 or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
 The reusable Service and worker preset is a grouping of actual deployments, with no package-level
-language, provider or runtime. The first three reviewed studio studies are available through the
+language, provider or runtime. The seven reviewed studio studies are available through the
 opt-in studio Library; the remaining reconstruction assignments and default rollout stay later.
 
 ### Reviewed studio studies
 
-[Mattermost, Enterprise and Streamly](docs/examples/studio-studies.md) have separate versioned
+[Mattermost, Enterprise, Streamly, QRWTY target, Links & QR, Community and Social](docs/examples/studio-studies.md) have separate versioned
 finite factories and pinned goal manifests. Mattermost retains one modular server and its separate
 job process; Enterprise retains its domain API and independent worker; Streamly separates playback
 and heavy processing with C3 queues, shared resources and optional CDN provider identity. Internal
-libraries and business responsibilities remain source-linked C4b work. These studies select no
+libraries and business responsibilities remain source-linked C4b work. QRWTY has one Billing
+service, a separate Redirect and a C3 visit queue/analytics worker; Links stays a smaller reference.
+Community covers search and queued notifications; Social retains background media processing,
+feed/search/cache, realtime and an external native client boundary. These studies select no
 executable runtime template, provision no provider and supply no passing application evidence.
 Original studies, deployment declarations and benchmark inputs remain unchanged. See the
-[studio registry](packages/spec/src/studio-examples/index.ts) and [UX14a evidence](docs/evidence/studio-ux/UX14a/README.md).
+[studio registry](packages/spec/src/studio-examples/index.ts), [UX14a evidence](docs/evidence/studio-ux/UX14a/README.md)
+and [UX14b evidence](docs/evidence/studio-ux/UX14b/README.md).
 
 Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
 has no runtime-support binding. Application entries can be created at C2 or as package members;

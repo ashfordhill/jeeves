@@ -1,0 +1,13 @@
+{
+  "attempt": "initial grid-layout inspection",
+  "completedRecords": 22,
+  "pageErrors": [],
+  "limitation": "The Links queue branch sample point was covered by another rendered edge, so the mouse driver did not open the expected aggregate. No product save failed. Fresh layouts now follow source responsibility flow; final inspection samples a visible path segment using browser hit testing.",
+  "suitesRun": false,
+  "transientWatcherRestart": {
+    "stage": "before final layout measurement",
+    "observation": "A request reached the existing tsx watcher during restart and received ECONNREFUSED. The watcher recovered normally; no manual process replacement or original-project mutation was needed. The complete final measurement pass then succeeded."
+  },
+  "initialLintObservation": "The first lint pass reported five formatting errors in newly captured evidence JSON. Existing warning/info counts were unchanged. Scoped evidence formatting is applied before the final required checks.",
+  "finalSeedReview": "Billing receives a public signed provider callback. Its exposure intent was corrected from Internal to Public before the final verification rerun; signature validation, tenant/provider event deduplication and authorization remain C4b."
+}

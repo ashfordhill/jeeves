@@ -2,8 +2,12 @@
 import { z } from "zod";
 import { contractCanonical } from "./architecture-contracts.ts";
 import { idSchema } from "./ids.ts";
+import communityGoal from "./studio-examples/community.goal.json" with { type: "json" };
 import enterpriseGoal from "./studio-examples/enterprise.goal.json" with { type: "json" };
+import linksGoal from "./studio-examples/links.goal.json" with { type: "json" };
 import mattermostGoal from "./studio-examples/mattermost.goal.json" with { type: "json" };
+import qrwtytargetGoal from "./studio-examples/qrwty-target.goal.json" with { type: "json" };
+import socialGoal from "./studio-examples/social.goal.json" with { type: "json" };
 import streamlyGoal from "./studio-examples/streamly.goal.json" with { type: "json" };
 import { definitionRefSchema, type StudioModel } from "./studio-model.ts";
 
@@ -99,9 +103,15 @@ function freezeSource<T>(value: T): T {
   return value;
 }
 export const studioGoalManifests: readonly StudioGoalManifest[] = freezeSource(
-  [mattermostGoal, enterpriseGoal, streamlyGoal].map((manifest) =>
-    studioGoalManifestSchema.parse(manifest),
-  ),
+  [
+    mattermostGoal,
+    enterpriseGoal,
+    streamlyGoal,
+    qrwtytargetGoal,
+    linksGoal,
+    communityGoal,
+    socialGoal,
+  ].map((manifest) => studioGoalManifestSchema.parse(manifest)),
 );
 
 export async function studioGoalManifestHash(manifest: StudioGoalManifest): Promise<string> {
