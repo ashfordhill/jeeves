@@ -74,6 +74,7 @@ export * from "./studio-references.ts";
 export * from "./studio-sources.ts";
 export * from "./studio-support.ts";
 export * from "./studio-validation.ts";
+export * from "./studio-view.ts";
 export * from "./subtype.ts";
 export * from "./template-upgrade.ts";
 export * from "./validate.ts";

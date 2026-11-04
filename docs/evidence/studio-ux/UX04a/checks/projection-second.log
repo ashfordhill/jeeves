@@ -1,0 +1,39 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ {
++   positions: {
++     'studio:element:package-api': {
++       x: 24,
++       y: 24
++     },
++     'studio:element:package-cache': {
++       x: 48,
++       y: 48
++     }
++   }
++ }
+- undefined
+
+    at <anonymous> (/home/ash/github/jeeves/.jeeves-work/ux04a/inspect.ts:60:58) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: {
+    positions: {
+      'studio:element:package-api': { x: 24, y: 24 },
+      'studio:element:package-cache': { x: 48, y: 48 }
+    }
+  },
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/apps/server

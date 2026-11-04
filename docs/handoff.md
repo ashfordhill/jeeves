@@ -9091,3 +9091,67 @@ or snapshot was changed; unit/E2E/template maintenance/execution and `pnpm check
 No new projection, runtime, provider integration or generated application is claimed. UX03 is
 complete within its finite definition/catalog boundary; UX04a owns C1/C2/C3 projection identities.
 This worker stops after the scoped UX03 local commit and does not advance the queue.
+
+## 2026-11-04 — UX04a: canonical studio nodes and useful detail scopes (complete)
+
+Executed UX04a only on primary main from UX03 commit
+`9aeccb2076708468bff7d94b2f5e5097a3f29d1f`, under the owner's sequential fresh-worker batch.
+Read AGENTS, PLAN §1–§15, latest handoff/batch authorization, studio plan and exact UX04a unit,
+model/interaction contracts, resolved owner decisions, C4 guidance and existing architecture,
+container display, focused view and layout-pruning seams. No delegation, worktree/branch, sibling
+edit, provider/external-agent execution, application generation, old factory/benchmark changes or
+resumed P73/backend work. Unrelated `.jeeves-feedback/` remains preserved.
+
+Added exported pure `studioViews(design, studioDefinitions, projectName)` in `studio-view.ts`.
+C1/C2/detail scopes carry deterministic canonical keys, original semantic references, explicit
+parent/breadcrumb identities and only valid drill targets. C2 collapses actual package members to
+one package summary with member execution intent and no package runtime. Package details show
+real applications and relevant resources; service detail has a selectable same-element owner anchor
+and one-hop dependencies. Ownership does not hide ordinary stores at C2. A package-owned resource
+collapses only while all its connections stay internal; an outside consumer exposes it. Shared
+resources/queues retain the same IDs across scopes, queues never appear as C2 boxes, disconnected
+owned queues remain editable through owner detail and membership alone cannot create an empty
+service view. Bundled browser delivery retains its exact serving reference without another Docker
+deployment or inferred wiring.
+
+Legacy projection uses the existing explicit family/template mapping and actual classification.
+Unknown families/versions stay neutral/unresolved; no technical defaults or migration is introduced.
+A legacy external identity provider does not become an independently authored Identity service.
+Unconfigurable components remain source summaries by original identity/owner, preserving backend
+and C4b source for Generate/export without fake child cards. Disconnected unowned legacy queues
+remain explicit source references. Existing identity-based layout pruning already handles the new
+keys and was retained. CATALOG describes this projection's design/UI/runtime boundary.
+
+Evidence: `docs/evidence/studio-ux/UX04a/`. One-off checks cover all seven UX01 fixtures, frozen input
+purity, exact reorder/portable output, stable rename identities, scope/node counts, package members,
+owner anchors, shared queue/resource identity, cross-package resource visibility, unknown fallback,
+linked C1 external identity and browser delivery. Nine historical factories retain exact UX01 hashes.
+One owned disposable API project verifies member deletion with explicit owner reassignment, dead
+scope/position pruning, living hidden positions, legacy focused survivors/cameras, separate layout
+persistence and reload without semantic revision changes. It was deleted with 204 and verified 404.
+
+Direct browser inspection at 1440×900 and 1280×800 covers existing QRWTY C2/API-C3 (16/22 cards,
+21/39 labels) and a labeled disposable preview importing the actual projection. Mouse package/member
+drill, breadcrumb return, owner selection, a non-expandable single service, shared-data references
+and bundled browser intent pass. The preview is verification only; later product shell/forms,
+visual density and edges are not implemented. The guard predates page creation; no write/blocked
+request or page/HTTP/console error occurred. Two existing React Flow attribution warnings and
+previously observed legacy camera clipping remain. All 13 pre-existing project semantic/layout
+hashes and revisions are exact throughout API/browser observations.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with Node PATH prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- One-off projection/API/browser observations, scoped formatting, preservation and staged Git
+  whitespace including new logs pass. Seven UX01 fixture files, 21 original/copied feedback pairs,
+  48 frozen benchmark files and earlier handoff bytes remain unchanged.
+
+Routine verification fixes covered workspace cwd, shared-command field names, generated JSON
+formatting and an API retry after a transient dev-server restart before project creation. An initial
+unsupported library-role comparison was corrected during compilation; legacy classification/mapping
+remain authoritative. Initial logs are retained. No test fixture/type adaptation, snapshot or suite
+maintenance was needed. Unit/E2E/template suites and `pnpm check` remain explicitly deferred. No new
+runtime/availability is claimed. UX04a is complete; UX04b owns relationship aggregation/provenance
+and the combined UX04 boundary remains incomplete. This worker stops after its scoped local commit.

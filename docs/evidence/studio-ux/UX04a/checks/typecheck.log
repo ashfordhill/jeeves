@@ -1,0 +1,57 @@
+$ pnpm -r --no-bail typecheck && tsc -p scripts/tsconfig.json
+packages/http-pool typecheck$ tsc -p .
+packages/analytics typecheck$ tsc -p .
+packages/product-ui typecheck$ tsc -p .
+packages/providers typecheck$ tsc -p .
+packages/analytics typecheck: Done
+packages/qr-artwork typecheck$ tsc -p .
+packages/http-pool typecheck: Done
+templates/http-service/runtime typecheck$ tsc -p .
+packages/product-ui typecheck: Done
+templates/postgres/runtime typecheck$ tsc -p .
+packages/providers typecheck: Done
+templates/web-app/runtime typecheck$ tsc -p .
+packages/qr-artwork typecheck: Done
+packages/spec typecheck$ tsc -p .
+templates/http-service/runtime typecheck: Done
+templates/rest-api-client/runtime typecheck$ tsc -p .
+templates/postgres/runtime typecheck: Done
+templates/rest-api-server/runtime typecheck$ tsc -p .
+templates/web-app/runtime typecheck: Done
+templates/rest-api-server/runtime typecheck: Done
+templates/rest-api-client/runtime typecheck: Done
+packages/spec typecheck: Done
+packages/template-kit typecheck$ tsc -p .
+packages/template-kit typecheck: Done
+packages/durable-events typecheck$ tsc -p .
+packages/resource-workspace typecheck$ tsc -p .
+templates/local-execution typecheck$ tsc -p .
+templates/http-service typecheck$ tsc -p .
+packages/resource-workspace typecheck: Done
+templates/local-http-pool typecheck$ tsc -p .
+packages/durable-events typecheck: Done
+templates/resource-workspace typecheck$ tsc -p .
+templates/http-service typecheck: Done
+templates/durable-events typecheck$ tsc -p .
+templates/local-execution typecheck: Done
+templates/postgres typecheck$ tsc -p .
+templates/local-http-pool typecheck: Done
+templates/rest-api-server typecheck$ tsc -p .
+templates/resource-workspace typecheck: Done
+templates/durable-events typecheck: Done
+templates/postgres typecheck: Done
+templates/rest-api-server typecheck: Done
+templates/rest-api-client typecheck$ tsc -p .
+templates/rest-api-client typecheck: Done
+templates/web-app typecheck$ tsc -p .
+templates/web-app typecheck: Done
+packages/generator typecheck$ tsc -p .
+packages/registry typecheck$ tsc -p .
+packages/registry typecheck: Done
+apps/web typecheck$ tsc -p .
+packages/generator typecheck: Done
+packages/orchestrator typecheck$ tsc -p .
+packages/orchestrator typecheck: Done
+apps/server typecheck$ tsc -p .
+apps/web typecheck: Done
+apps/server typecheck: Done

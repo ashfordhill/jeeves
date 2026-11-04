@@ -14,8 +14,12 @@ template eligibility is unchanged. [UX03's finite catalog](packages/spec/src/stu
 now supplies all 14 exact design definitions, typed field descriptors, capability symbols/theme
 colors, creation scopes, defaults and provider identity/compatibility metadata. The
 [service-and-worker preset](packages/spec/src/studio-presets.ts) expands into two independent
-applications and one shared, package-owned queue. These are design-only definitions; the new
-authoring UI and runtime resolution remain unimplemented. The historical catalog below describes the existing
+applications and one shared, package-owned queue. [UX04a's pure node/scope projection](packages/spec/src/studio-view.ts)
+now supplies stable C1/C2/detail identities, one package overview card, real member summaries,
+selectable service anchors and shared resource references. It filters legacy internals for
+presentation while retaining their source identities, and keeps queues at C3. Browser delivery
+does not invent a Docker deployment. Relationship aggregation, the new authoring UI and runtime
+resolution remain unimplemented. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 
