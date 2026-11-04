@@ -6,6 +6,7 @@ export interface StudioRoutingInput {
   paths: StudioPath[];
   nodes: Record<string, RouteBox>;
   widths: Record<string, number>;
+  fixed?: StudioGeometry;
 }
 const cache = new Map<string, StudioGeometry>();
 type Job = { promise: Promise<StudioGeometry>; cancel: () => void; users: number };

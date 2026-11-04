@@ -1,0 +1,28 @@
+{
+  "result": "passed",
+  "startingCommit": "8b393338a1a8c2875186f6e0b0f24179a8588689",
+  "startingTrackedFiles": 2211,
+  "unchangedTrackedFiles": 2201,
+  "scopedExistingChanges": [
+    "apps/web/src/draw/store.ts",
+    "apps/web/src/studio/StudioGraph.tsx",
+    "apps/web/src/studio/StudioWorkspace.tsx",
+    "apps/web/src/studio/creation.ts",
+    "apps/web/src/studio/routing-client.ts",
+    "apps/web/src/studio/routing.ts",
+    "apps/web/src/studio/routing.worker.ts",
+    "apps/web/src/studio/studio.css",
+    "apps/web/src/studio/use-routing.ts",
+    "docs/handoff.md"
+  ],
+  "sourceBaselineFilesUnchanged": 69,
+  "feedbackPairsUnchanged": 21,
+  "originalFixturesUnchanged": 7,
+  "frozenFilesCoveredByExactTrackedHashComparison": 48,
+  "oldFactoriesAndAllUnrelatedTrackedFilesUnchanged": true,
+  "handoffPrefixBytes": 978382,
+  "handoffPrefixSha256": "2fa3ad36667eceb7cb9b3b8eb4fa6de01745bc0230b5b8376a5e07737fe33dd6",
+  "handoffPrefixExact": true,
+  "all13OriginalProjectsMatchUX11aHashesAndRevisions": true,
+  "noDisposableLeaks": true
+}

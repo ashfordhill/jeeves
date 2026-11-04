@@ -1,0 +1,469 @@
+{
+  "records": [
+    {
+      "case": "obsolete first-drop route released after later drop",
+      "released": 1,
+      "newestNodes": "f738c2f3a3ad0a8bb35f0a1eab3e4d6041d535cad099422c15a13a548e890cb0",
+      "newestPaths": "2281d27d142bc94ddb24e0783adc4d3adad6fe3bb48228782160be62cb50022c",
+      "unchanged": true,
+      "allPathsVisibleWhilePending": true
+    },
+    {
+      "case": "failed drop routing retains saved node positions and full identity set; Tidy retries",
+      "pathCount": 19,
+      "passed": true
+    },
+    {
+      "case": "scope switch cancels pending Tidy without write",
+      "passed": true
+    },
+    {
+      "case": "deterministic SCC arrangement; nearest grid group landing and 16-unit clearance; input-order invariance",
+      "arranged": {
+        "a": {
+          "x": 0,
+          "y": 0,
+          "width": 216,
+          "height": 96
+        },
+        "b": {
+          "x": 0,
+          "y": 144,
+          "width": 216,
+          "height": 96
+        },
+        "d": {
+          "x": 0,
+          "y": 288,
+          "width": 168,
+          "height": 96
+        },
+        "c": {
+          "x": 360,
+          "y": 0,
+          "width": 168,
+          "height": 96
+        }
+      },
+      "reverse": {
+        "a": {
+          "x": 0,
+          "y": 0,
+          "width": 216,
+          "height": 96
+        },
+        "b": {
+          "x": 0,
+          "y": 144,
+          "width": 216,
+          "height": 96
+        },
+        "d": {
+          "x": 0,
+          "y": 288,
+          "width": 168,
+          "height": 96
+        },
+        "c": {
+          "x": 360,
+          "y": 0,
+          "width": 168,
+          "height": 96
+        }
+      },
+      "boxes": {
+        "z": {
+          "x": 0,
+          "y": 0,
+          "width": 216,
+          "height": 96
+        },
+        "a": {
+          "x": 360,
+          "y": 0,
+          "width": 216,
+          "height": 96
+        },
+        "b": {
+          "x": 360,
+          "y": 144,
+          "width": 168,
+          "height": 96
+        }
+      },
+      "moving": {
+        "b": {
+          "x": 2,
+          "y": 144
+        },
+        "a": {
+          "x": 2,
+          "y": 0
+        }
+      },
+      "landing": {
+        "a": {
+          "x": 0,
+          "y": 120
+        },
+        "b": {
+          "x": 0,
+          "y": 264
+        }
+      },
+      "reversed": {
+        "a": {
+          "x": 0,
+          "y": 120
+        },
+        "b": {
+          "x": 0,
+          "y": 264
+        }
+      },
+      "passed": true
+    },
+    {
+      "case": "Tidy actual DOM fit padding",
+      "width": 1440,
+      "height": 900,
+      "left": 159.39732360839844,
+      "right": 159.3974609375,
+      "top": 49.24665832519531,
+      "bottom": 48,
+      "viewport": "translate(169.779px, 178.634px) scale(0.865128)",
+      "passed": true
+    },
+    {
+      "case": "Tidy actual DOM fit padding",
+      "width": 1280,
+      "height": 800,
+      "left": 158.1336669921875,
+      "right": 158.1336669921875,
+      "top": 48.667083740234375,
+      "bottom": 48,
+      "viewport": "translate(167.057px, 160.287px) scale(0.743621)",
+      "passed": true
+    },
+    {
+      "case": "fresh automatic layout and reduce",
+      "motion": "reduce",
+      "variants": 1,
+      "frames": [
+        {
+          "ms": 0.29999999701976776,
+          "transform": "translate(24px, 13px)",
+          "dragging": "true"
+        },
+        {
+          "ms": 11.799999997019768,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 29.899999991059303,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 45,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 61.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 78.59999999403954,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 95,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 111.59999999403954,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 128.3999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 144.8999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 161.79999999701977,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 178.59999999403954,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 195,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 211.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 228.3999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 244.8999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 261.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 278.5,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 294.8999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 311.5,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 328.3999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 345,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 361.79999999701977,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 378.3999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 395,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 411.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        }
+      ],
+      "semanticUnchanged": true,
+      "oneLayoutWrite": true
+    },
+    {
+      "case": "fresh automatic layout and no-preference",
+      "motion": "no-preference",
+      "variants": 13,
+      "frames": [
+        {
+          "ms": 0.29999999701976776,
+          "transform": "translate(24px, 13px)",
+          "dragging": "true"
+        },
+        {
+          "ms": 11.700000002980232,
+          "transform": "translate(24px, 13px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 31,
+          "transform": "translate(24px, 13.9327px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 45.20000000298023,
+          "transform": "translate(24px, 15.7801px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 61.599999994039536,
+          "transform": "translate(24px, 17.4498px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 78.29999999701977,
+          "transform": "translate(24px, 18.9302px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 95,
+          "transform": "translate(24px, 20.2212px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 111.59999999403954,
+          "transform": "translate(24px, 21.3168px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 128.5,
+          "transform": "translate(24px, 22.2302px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 145.09999999403954,
+          "transform": "translate(24px, 22.9542px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 161.70000000298023,
+          "transform": "translate(24px, 23.4863px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 178.29999999701977,
+          "transform": "translate(24px, 23.8327px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 195.09999999403954,
+          "transform": "translate(24px, 23.9897px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 211.59999999403954,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 228.29999999701977,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 245,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 261.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 278.59999999403954,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 295,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 311.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 328.3999999910593,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 345,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 361.70000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 378.29999999701977,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 395.20000000298023,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        },
+        {
+          "ms": 411.59999999403954,
+          "transform": "translate(24px, 24px)",
+          "dragging": "false"
+        }
+      ],
+      "semanticUnchanged": true,
+      "oneLayoutWrite": true
+    }
+  ],
+  "writes": [
+    {
+      "project": "93989c44-2635-44df-a8c7-110aa1d43efe",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "project": "93989c44-2635-44df-a8c7-110aa1d43efe",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "project": "93989c44-2635-44df-a8c7-110aa1d43efe",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "project": "93989c44-2635-44df-a8c7-110aa1d43efe",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "project": "93989c44-2635-44df-a8c7-110aa1d43efe",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "project": "c498b7aa-37ec-422d-bd8e-8af1c4f4ef07",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "project": "133fde36-bec1-4f66-ac27-232183595b38",
+      "method": "PUT",
+      "status": 200
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "errors": [],
+  "warnings": [],
+  "originalProjectsUnchanged": true
+}

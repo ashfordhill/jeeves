@@ -126,6 +126,7 @@ type DrawState = {
     key: string,
     view: ArchitectureLayoutView | undefined,
     undoable?: boolean,
+    baselineCamera?: ArchitectureLayoutView["viewport"],
   ): Promise<boolean>;
   /** Compatibility aliases for old callers; both use the chronological history. */
   undoArchitectureLayout(): Promise<void>;
@@ -689,7 +690,7 @@ export const useDraw = create<DrawState>()((set, get) => {
       return historyStep("undo", operationId);
     },
 
-    setArchitectureView(key, view, undoable = false) {
+    setArchitectureView(key, view, undoable = false, baselineCamera) {
       const source = get().loaded;
       if (!source) return Promise.resolve(false);
       if (!undoable) {
@@ -737,7 +738,9 @@ export const useDraw = create<DrawState>()((set, get) => {
           record(source.project.id, {
             kind: "architecture",
             key,
-            before,
+            before: baselineCamera
+              ? { positions: {}, ...before, viewport: baselineCamera }
+              : before,
             after: next.architecture?.[key],
           });
           return true;

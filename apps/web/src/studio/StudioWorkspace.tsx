@@ -633,6 +633,7 @@ function ProjectStudio({
           selection={selected}
           member={selectedMember}
           selectedIds={groupSelection}
+          multiple={multiple}
           placing={!!tool && !creating}
           connecting={
             connector === undefined
@@ -740,11 +741,11 @@ function ProjectStudio({
           >
             <IconArrowUpRight size={19} />
           </button>
-          {scope.level === "containers" ? (
+          {
             <button
               type="button"
-              title="Select multiple applications"
-              aria-label="Select multiple applications"
+              title="Select multiple cards"
+              aria-label="Select multiple cards"
               aria-pressed={multiple}
               onClick={() => {
                 setMultiple((value) => !value);
@@ -756,7 +757,7 @@ function ProjectStudio({
             >
               <IconSelectAll size={19} />
             </button>
-          ) : null}
+          }
           {scope.level === "containers" &&
           groupMembers.length >= 2 &&
           groupMembers.length === groupSelection.length ? (
@@ -841,7 +842,7 @@ function ProjectStudio({
           </div>
         ) : multiple ? (
           <div className="studio-placement-hint" role="status">
-            Click two or more application cards, then Group as package.
+            Click cards to select a group. Drag any selected card to move them.
           </div>
         ) : null}
         {library ? (

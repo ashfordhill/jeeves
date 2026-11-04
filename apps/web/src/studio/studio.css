@@ -142,7 +142,31 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: move;
+}
+.studio-landing {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px solid var(--blue);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 0;
+}
+.studio-tidy {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 5;
+  border: 1px solid var(--ink-soft);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  padding: 7px 12px;
+  font: inherit;
   cursor: pointer;
+}
+.studio-tidy:disabled {
+  cursor: default;
 }
 .studio-routing-error {
   position: absolute;

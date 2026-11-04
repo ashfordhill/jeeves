@@ -9985,3 +9985,85 @@ Temporary incident/fallback paths prioritize continuous visibility and can cross
 UX11b owns final routing after durable landing. No product blocker remains. UX11a is complete;
 UX11b is the next exact assignment boundary and is not started here. This worker stops after its
 scoped local commit. Studio stays opt-in until UX15; P73a/P73b/backend remain paused.
+
+## 2026-11-04 — UX11b: grid landing, durable movement and Tidy and fit (complete)
+
+Executed UX11b only on primary main from `8b393338a1a8c2875186f6e0b0f24179a8588689`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan/shared protocol/exact assignment, interaction §6, UX06b chronological history and the
+actual graph/routing/layout/store seams. Read C4 guidance/final decisions and inspected
+read-only automation-pitch preview, animation and cached/coalesced layout references. No delegation,
+worktree/branch, sibling edit, backend resumption, provider/external-agent execution or application
+generation. Unrelated `.jeeves-feedback/` remains untouched.
+
+The opt-in studio picks up the whole card after five screen pixels and shows thin landing outlines
+at the nearest collision-free 24-world-unit grid position, with 16-unit obstacle clearance. A
+canonical selected-ID anchor and coordinate tie order make the unbounded search deterministic.
+Mouse multi-selection now works in every scope; a selected group translates rigidly, retaining
+existing relative offsets. Cancellation restores its snapshot without writing or entering history.
+Movement never changes semantic connections, resource ownership or package membership.
+
+A drop holds its preview coordinates through one acknowledged layout PUT and enters the shared
+chronological history once. Unaffected card positions remain exact. Incident paths settle once;
+shared buses/branches settle together, while unrelated paths/labels retain their captured routes.
+The frozen reservation is bound to exact topology and positions, so history cannot retain obsolete
+anchors. UX11a's mounted identities, no-worker-on-move behavior, cancellation/fallback and stale
+result guards remain. Modest final node/path changes interpolate for 180ms with full opacity;
+large/reduced-motion changes snap. Identical acknowledged geometry does not restart animation.
+
+Fresh scopes use deterministic ID-sorted strongly connected components and dependency layers,
+48-unit minimum gaps, bounded relationship-label space and 24-unit positions. Cycles retain their
+semantic edges and outside routing. Creation preserves existing automatically arranged coordinates.
+One Tidy and fit clears manual positions only for the current scope, arranges/routes and fits node,
+bend and label bounds with 48 screen pixels of padding and maximum zoom 1.0. Camera and positions
+form one undoable step; its baseline captures the actual camera even without a saved viewport.
+Mouse wheel/Hand pan persist the camera separately and consume no history. No extra Fit/Focus/
+Arrange menu or automatic semantic layout mutation was added.
+
+Evidence: `docs/evidence/studio-ux/UX11b/`. Continuous direct Chromium recordings at 1440×900 and
+1280×800 cover 24 combined records: single/group empty and occupied drops, single/group cancel,
+Undo/Redo/reload, C2/package-C3 Tidy and C3 mouse group movement. Each accepted drop makes one
+200 layout PUT and one settlement request; pointer samples make zero worker requests. All sampled
+path identities remain nonempty/full opacity and retain DOM identity; unrelated nodes/paths and
+all labels remain captured during movement. Actual settled groups preserve relative offsets and
+16-unit clearance. Every layout action keeps the exact semantic hash/revision.
+
+Eight supplementary observations release an obsolete real callback after a newer drop, retain all
+19 paths and saved coordinates during injected routing failure, recover through Tidy, and leave a
+scope during held Tidy without a late write. Fresh scopes are automatic/read-only; reduced motion
+snaps while ordinary motion records intermediate positions. One-off production-function inspection
+checks reversed input order, cycle/layer determinism and nearest landing against a brute-force
+candidate enumeration. Actual DOM Tidy padding is at least 48px (0.5px rounding tolerance) at both
+sizes. A separate real mouse wheel/Hand-pan observation makes two camera saves, keeps history
+length unchanged and restores its camera after reload without routing or semantic change.
+Default-editor inspections at both sizes remain read-only and show the legacy default. Relevant
+preview/Tidy/C3/failure/default screenshots were visually inspected.
+
+Guards precede every page and permit only exact owned disposable layout PUT routes. Final combined,
+supplementary, camera and default runs have zero blocked/unowned writes, external requests, page
+errors or console warnings/errors. All real saves return 200; successful API responses are never
+fabricated. Owned disposables are deleted/verified 404, and the final original 13-project set is
+exact. Those originals retain UX11a's exact semantic/layout hashes and revisions. Earlier handoff
+bytes, 21 original/copy feedback pairs, seven public fixtures, 48 frozen benchmark files, old
+factories and every unrelated tracked file remain exact. No catalog offering, reusable conceptual
+boundary or runtime/template availability changes.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1, with the Node bin path prepended:
+
+- `pnpm lint`: final exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser, source/project preservation, scoped formatting and staged whitespace including
+  new check logs: pass. Logs normalize trailing whitespace only.
+
+Bounded attempt notes record corrected initial mutable-point narrowing/value-returning callbacks,
+controlled multi-selection/frozen-routing integration, the absent optional C3 layout in a driver,
+and a default-inspection snapshot accidentally including a concurrently changing owned disposable;
+the final sequential rerun passes. No dependency, fixture typing adaptation, snapshot or broad test
+maintenance was needed. Unit/E2E/template suites and `pnpm check` remain explicitly deferred.
+
+Existing overlapping legacy positions stay preserved on load; selected groups retain internal
+relative offsets. Temporary incident paths prioritize visibility and can cross other geometry
+while moving. No product blocker remains. UX11b is complete; UX12 is the next exact assignment and
+is not started here. This worker stops after its scoped local commit. Studio remains opt-in until
+UX15; P73a/P73b and the backend batch remain paused.

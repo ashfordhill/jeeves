@@ -21,6 +21,7 @@ import {
   studioViews,
 } from "@jeeves/spec";
 import { useDraw } from "../draw/store.ts";
+import { arrangeStudio, studioLanding } from "./layout.ts";
 
 export type Point = { x: number; y: number };
 export type BaseCreation = StudioKind | "person" | "external-system";
@@ -59,30 +60,16 @@ export const initialPosition = (index: number): Point => ({
 
 /** Nearest free 24-unit grid cell, conservatively reserving the largest 216×96 role. */
 export function landing(point: Point, obstacles: Point[]): Point {
-  const origin = { x: Math.round(point.x / 24) * 24, y: Math.round(point.y / 24) * 24 };
-  const distance = (p: Point) => (p.x - point.x) ** 2 + (p.y - point.y) ** 2;
-  let best: Point | undefined;
-  for (let radius = 0; ; radius++) {
-    const candidates: Point[] = [];
-    for (let x = -radius; x <= radius; x++)
-      for (let y = -radius; y <= radius; y++)
-        if (Math.max(Math.abs(x), Math.abs(y)) === radius)
-          candidates.push({ x: origin.x + x * 24, y: origin.y + y * 24 });
-    candidates.sort(
-      (a, b) =>
-        (a.x - point.x) ** 2 +
-          (a.y - point.y) ** 2 -
-          ((b.x - point.x) ** 2 + (b.y - point.y) ** 2) ||
-        a.x - b.x ||
-        a.y - b.y,
-    );
-    const free = candidates.find((p) =>
-      obstacles.every((o) => Math.abs(o.x - p.x) >= 232 || Math.abs(o.y - p.y) >= 112),
-    );
-    if (free && (!best || distance(free) < distance(best))) best = free;
-    // Every cell beyond this ring is at least this far away on one axis.
-    if (best && distance(best) <= ((radius + 1) * 24 - 12) ** 2) return best;
-  }
+  const moving = "new";
+  return studioLanding(
+    {
+      ...Object.fromEntries(
+        obstacles.map((p, i) => [`obstacle:${i}`, { ...p, width: 216, height: 96 }]),
+      ),
+      [moving]: { ...point, width: 216, height: 96 },
+    },
+    { [moving]: point },
+  )[moving] as Point;
 }
 const uniqueName = (base: string, names: Set<string>) => {
   let name = base;
@@ -272,10 +259,11 @@ export async function createAt(
       );
       if (!fresh.length) continue;
       const saved = loaded?.layout.architecture?.[target.key]?.positions;
+      const automatic = previous ? arrangeStudio(previous) : {};
       const positions = Object.fromEntries(
         (previous?.nodes ?? []).map((node, index) => [
           node.id,
-          saved?.[node.id] ?? initialPosition(index),
+          saved?.[node.id] ?? automatic[node.id] ?? initialPosition(index),
         ]),
       );
       fresh.sort((a, b) =>

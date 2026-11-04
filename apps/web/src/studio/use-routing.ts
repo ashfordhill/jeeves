@@ -16,6 +16,7 @@ export function useStudioRouting(
   paths: StudioPath[],
   nodes: Record<string, RouteBox>,
   moving: boolean,
+  fixed?: StudioGeometry,
 ) {
   const [fontReady, setFontReady] = useState(false);
   useEffect(() => {
@@ -42,8 +43,9 @@ export function useStudioRouting(
           context?.measureText(text).width ?? Array.from(text).length * 8,
         ]),
       ),
+      ...(fixed && { fixed }),
     };
-  }, [scope, paths, nodes, fontReady]);
+  }, [scope, paths, nodes, fontReady, fixed]);
   const key = useMemo(() => JSON.stringify(input), [input]);
   const latest = useRef(input);
   latest.current = input;
@@ -114,5 +116,7 @@ export function useStudioRouting(
     invalidate,
     retry: () => setAttempt((value) => value + 1),
     generation: generation.current,
+    input,
+    ready: fontReady,
   };
 }

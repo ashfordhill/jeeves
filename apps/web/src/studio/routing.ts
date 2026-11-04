@@ -409,9 +409,10 @@ export function studioRouteGeometry(
   paths: StudioPath[],
   nodes: Record<string, RouteBox>,
   measure: (text: string) => number,
+  fixed: StudioGeometry = {},
 ): Record<string, StudioRoute> {
-  const result: Record<string, StudioRoute> = {},
-    occupied: Point[][] = [];
+  const result: Record<string, StudioRoute> = { ...fixed },
+    occupied: Point[][] = Object.values(fixed).map((route) => route.points);
   const boxes = Object.values(nodes).map((b) => inflate(b, 12));
   const top = Math.min(0, ...boxes.map((b) => b.y)) - 24;
   const starts = paths.filter((p) => !p.trunk),
@@ -435,6 +436,13 @@ export function studioRouteGeometry(
     occupied.push(points);
   };
   for (const path of paths.filter((p) => p.branchIds)) {
+    if (fixed[path.id]) {
+      for (const branch of paths.filter((p) => p.trunk === path.id)) {
+        const junction = fixed[branch.id]?.junction;
+        if (junction) junctions.set(branch.id, junction);
+      }
+      continue;
+    }
     const source = port(path.item.from, path, true);
     const branches = paths.filter((p) => p.trunk === path.id);
     const targets = branches.map((p) => port(p.item.to, p, false));
@@ -463,6 +471,7 @@ export function studioRouteGeometry(
   }
   let feedback = 0;
   for (const path of ends) {
+    if (fixed[path.id]) continue;
     const junction = junctions.get(path.id),
       source = junction ?? port(path.item.from, path, true),
       target = port(path.item.to, path, false);
@@ -482,9 +491,15 @@ export function studioRouteGeometry(
     save(path.id, simplify([source, ...points, target]), junction);
   }
   // Reserve the actual bounded high-detail text (and the medium variant) once, independent of zoom.
-  const reserved: RouteBox[] = Object.values(nodes).map((b) => inflate(b, 6));
-  const labeled = new Set<string>();
+  const reserved: RouteBox[] = [
+    ...Object.values(nodes).map((b) => inflate(b, 6)),
+    ...Object.values(fixed).flatMap((route) => (route.label ? [route.label] : [])),
+  ];
+  const labeled = new Set(
+    paths.filter((path) => fixed[path.id]?.label).flatMap((path) => path.edgeIds),
+  );
   for (const path of ends) {
+    if (fixed[path.id]) continue;
     const edgeId = path.edgeIds[0],
       route = result[path.id];
     if (!route || !edgeId || labeled.has(edgeId)) continue;

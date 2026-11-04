@@ -13,6 +13,7 @@ channel.onmessage = ({ data }) => {
         data.paths,
         data.nodes,
         (text) => data.widths[text] ?? Array.from(text).length * 8,
+        data.fixed,
       ),
     });
   } catch {

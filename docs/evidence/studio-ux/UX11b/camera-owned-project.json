@@ -1,0 +1,15 @@
+{
+  "project": {
+    "id": "c913ee35-6cc2-4fd9-b9e6-8ae5771fa110",
+    "name": "UX11b owned camera inspection",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T11:51:16.976Z",
+    "updatedAt": "2026-11-04T11:51:16.976Z"
+  },
+  "deleted": true,
+  "verified404": true
+}

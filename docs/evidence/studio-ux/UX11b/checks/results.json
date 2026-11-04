@@ -1,0 +1,41 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "nodeBinPrepended": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "lint": {
+    "command": "pnpm lint",
+    "exitCode": 0,
+    "warnings": 2797,
+    "infos": 88,
+    "errors": 0
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exitCode": 0,
+    "scope": "full workspaces and scripts, including existing source/test types"
+  },
+  "webBuild": {
+    "command": "pnpm --filter @jeeves/web build",
+    "exitCode": 0,
+    "advisory": "existing large-chunk advisory"
+  },
+  "directBrowser": {
+    "combinedRecords": 24,
+    "asyncMotionGeometryRecords": 8,
+    "cameraRecords": 1,
+    "defaultDesktopRecords": 2,
+    "pageErrors": 0,
+    "consoleWarningsOrErrors": 0,
+    "externalRequests": 0,
+    "blockedOrUnownedWrites": 0
+  },
+  "deferred": [
+    "pnpm check",
+    "unit suites",
+    "E2E suites",
+    "template suites",
+    "broad test maintenance"
+  ],
+  "fixtureTypingAdaptations": false,
+  "stagedWhitespace": "passed, including new evidence and normalized check logs"
+}
