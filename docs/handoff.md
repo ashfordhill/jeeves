@@ -8696,3 +8696,21 @@ resume the paused backend batch, complete P73a/P73b, start P74, generate applica
 live projects, call providers for integration, push, delegate or create a worktree. Later runtime
 language priorities, generator deployment and real generated-build field tests remain explicit
 future questions rather than inferred answers.
+
+
+## 2026-11-03 — UX sequential batch explicitly authorized
+
+The owner requests execution of all 25 studio UX units, one at a time, each by a fresh agent
+with no inherited conversation context, using GPT 6.1 Sol at xhigh. This explicit instruction
+overrides the earlier no-delegation and one-unit-per-root-session limits for this batch only.
+The coordinator assigns and reviews sequentially; each worker executes its exact unit, makes
+its scoped local commit and stops. Workers must not delegate or advance the queue themselves.
+Use primary main and existing unrestricted execution permissions; no branches/worktrees.
+The coordinator checks completion/failure events and thread health at least every 20 minutes,
+restarting interrupted work with a fresh agent after ensuring the previous worker cannot write.
+An ignored durable checkpoint is at .jeeves-work/ux-batch/state.json.
+
+Starting HEAD: feff820. Only unrelated .jeeves-feedback/ is untracked. Preserve it and all source
+feedback. Follow the plan's lint/typecheck/web-build/direct-browser profile; unit/E2E suites remain
+deferred. Backend P73a/P73b remain paused. The authorization does not expand into new application
+runtimes, provider execution, external deployment or changes to sibling repositories.
