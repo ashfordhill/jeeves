@@ -13,6 +13,9 @@ chooser/default and saved projects retain their existing behavior until the late
 | Links & QR | A smaller management/redirect foundation with cached lookup, authoritative fallback, artwork and asynchronous analytics. Its brief is the historical example description and factory, without QRWTY's six-scenario gate. | [Manifest](../../packages/spec/src/studio-examples/links.goal.json), [factory](../../packages/spec/src/studio-examples/links.ts) |
 | Community | Browser/API, authoritative content, search/cache, an independent worker with a C3 work queue and subscription Notifications service. | [Manifest](../../packages/spec/src/studio-examples/community.goal.json), [factory](../../packages/spec/src/studio-examples/community.ts) |
 | Social | Browser/API, feed/search/cache, media storage, an independent processing worker and realtime service. The documented native client remains an external context boundary; native/offline implementation is C4b. | [Manifest](../../packages/spec/src/studio-examples/social.goal.json), [factory](../../packages/spec/src/studio-examples/social.ts) |
+| Discourse foundation | One modular discussion API, independent worker, shared PostgreSQL, private files and external thin client/email. C3 exposes the same logical SQL-backed work identity from producer and consumer. D01–D20 and all 66 observations remain future work. | [Manifest](../../packages/spec/src/studio-examples/discourse-foundation.goal.json), [factory](../../packages/spec/src/studio-examples/discourse-foundation.ts) |
+| Vendure foundation | One modular commerce API, independent worker, PostgreSQL, private catalog/receipt bytes and external client, email, hosted payment and warehouse boundaries. V01–V20 and all 63 observations remain future work. | [Manifest](../../packages/spec/src/studio-examples/vendure-foundation.goal.json), [factory](../../packages/spec/src/studio-examples/vendure-foundation.ts) |
+| Zammad reference | Small support API/data/background-work/external-channel reference. Z01–Z20 and all 66 observations are mapped; detailed P73a/P73b design remains incomplete and paused. This is a separate reference, not the missing complete benchmark example. | [Manifest](../../packages/spec/src/studio-examples/zammad-foundation.goal.json), [factory](../../packages/spec/src/studio-examples/zammad-foundation.ts) |
 
 Each manifest pins repository-relative source references, a Git revision and file SHA-256 values.
 Its requirement rows distinguish represented design, possible future fixed templates, C4b work
@@ -38,7 +41,7 @@ These are design studies. The server rejects application generation with `STUDIO
 No runtime resolver, application build, capacity result, provider integration or business acceptance
 is supplied by these diagrams. Future C4a/C4b implementation needs a separately authorized task.
 The original factories/briefs, frozen benchmark declarations and live projects are unchanged.
-The seven remaining coverage rows, default rollout and paused backend work are separate assignments.
+The four remaining coverage rows, default rollout and paused backend work are separate assignments.
 
 QRWTY's cache fallback, disable propagation, billing callback deduplication, tenant authorization,
 analytics loss and recovery are pinned source/C4b obligations. Its illustrative timing values remain
@@ -47,4 +50,20 @@ membership/moderation and notifications, and Social ranking/graph/content rules,
 work. Public delivery variants do not make every source media object public; the finite studies
 retain private storage intent with delivery/access integration outstanding.
 
-Recorded inspection and limitations: [UX14a evidence](../evidence/studio-ux/UX14a/README.md), [UX14b evidence](../evidence/studio-ux/UX14b/README.md).
+The backend references map every frozen G case/observation to future fixed-contract C4a work and
+every H case/observation to C4b hook/integration work. All source weights, observations, fixture
+barriers, expected outcomes and scoring remain unchanged. No observed points or runtime support
+are gained. Vendure's external payment provider retains the separate Reference-v1 and Stripe
+obligations; it does not add a hosted checkout UI or another Billing deployment.
+
+Their C3 work resource summarizes source SQL intent; named subchannels, payloads, claims and receipts
+remain distinct implementation contracts. It implies no extra broker, SQL/network atomicity or
+delivery guarantee. Queue retention is unspecified and separate from command/business retention.
+The sources retain PostgreSQL projections and require no added cache or search cluster. The source
+external byte adapter maps to one private object-store resource and its API/worker dependencies;
+its exact C1 adapter contract remains pinned without adding a duplicate provider card. SMTP/TLS is
+preserved source; its finite transport is Unspecified. Zammad's SLA/calendar/routing and internal-note
+visibility are future fixed/custom work, with no new business editor. The P73 checkpoint provenance
+pins the historical handoff commit, since that log continues to grow by append-only entries.
+
+Recorded inspection and limitations: [UX14a evidence](../evidence/studio-ux/UX14a/README.md), [UX14b evidence](../evidence/studio-ux/UX14b/README.md), [UX14c evidence](../evidence/studio-ux/UX14c/README.md).

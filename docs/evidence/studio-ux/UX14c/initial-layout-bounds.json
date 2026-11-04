@@ -1,0 +1,246 @@
+{
+  "owned": [
+    {
+      "id": "9cc173ae-037b-4b85-941b-0781cb262004",
+      "name": "UX14c owned fitted layout discourse-foundation 1793801607434",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:13:27.494Z",
+      "updatedAt": "2026-11-04T14:13:27.494Z"
+    },
+    {
+      "id": "01d261ad-2aaa-47a6-93c7-30906d1e1243",
+      "name": "UX14c owned fitted layout vendure-foundation 1793801607434",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:13:31.276Z",
+      "updatedAt": "2026-11-04T14:13:31.276Z"
+    },
+    {
+      "id": "3fca767c-559d-43e7-ae5c-d31c42a94718",
+      "name": "UX14c owned fitted layout zammad-foundation 1793801607434",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:13:34.983Z",
+      "updatedAt": "2026-11-04T14:13:34.983Z"
+    }
+  ],
+  "allDeletedVerified404": true,
+  "records": [
+    {
+      "example": "studio-discourse-foundation",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 888,
+        "bottom": 528
+      },
+      "viewport": {
+        "x": 48,
+        "y": 119.06756756756754,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-discourse-foundation",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 868,
+        "bottom": 528
+      },
+      "viewport": {
+        "x": 56,
+        "y": 118,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-discourse-foundation",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 252
+      },
+      "viewport": {
+        "x": 48,
+        "y": 229.56756756756755,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-discourse-foundation",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 252
+      },
+      "viewport": {
+        "x": 48,
+        "y": 229.56756756756755,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-vendure-foundation",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -0.00047755867016167913,
+        "y": -78.31999969482422,
+        "right": 1140,
+        "bottom": 672.0001075200172
+      },
+      "viewport": {
+        "x": 48.00037031726986,
+        "y": 124.81886163707284,
+        "zoom": 0.7754382716515177
+      }
+    },
+    {
+      "example": "studio-vendure-foundation",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": -12,
+        "y": -48,
+        "right": 868,
+        "bottom": 672.0001075200172
+      },
+      "viewport": {
+        "x": 125.0111656161191,
+        "y": 88.93332722062216,
+        "zoom": 0.8527776504296283
+      }
+    },
+    {
+      "example": "studio-vendure-foundation",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -54,
+        "right": 888,
+        "bottom": 252
+      },
+      "viewport": {
+        "x": 48,
+        "y": 256.44594594594594,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-vendure-foundation",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 240
+      },
+      "viewport": {
+        "x": 48,
+        "y": 235.54054054054052,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-zammad-foundation",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -66,
+        "right": 900,
+        "bottom": 540.0000152587891
+      },
+      "viewport": {
+        "x": 48,
+        "y": 122.21332583957248,
+        "zoom": 0.9822222222222222
+      }
+    },
+    {
+      "example": "studio-zammad-foundation",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": -66,
+        "right": 868,
+        "bottom": 384
+      },
+      "viewport": {
+        "x": 56,
+        "y": 196,
+        "zoom": 1
+      }
+    },
+    {
+      "example": "studio-zammad-foundation",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 384
+      },
+      "viewport": {
+        "x": 48,
+        "y": 163.86486486486484,
+        "zoom": 0.9954954954954955
+      }
+    },
+    {
+      "example": "studio-zammad-foundation",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true,
+      "measuredExtent": {
+        "x": 0,
+        "y": 0,
+        "right": 888,
+        "bottom": 240
+      },
+      "viewport": {
+        "x": 48,
+        "y": 235.54054054054052,
+        "zoom": 0.9954954954954955
+      }
+    }
+  ],
+  "blocked": [],
+  "pageErrors": []
+}

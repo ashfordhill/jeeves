@@ -1,0 +1,127 @@
+{
+  "attempt": 1793801677265,
+  "owned": [
+    {
+      "id": "02fc17fc-10ed-44af-a11d-a511fec8336f",
+      "name": "UX14c owned launch 1440 1793801677265",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:14:37.336Z",
+      "updatedAt": "2026-11-04T14:14:37.336Z"
+    },
+    {
+      "id": "051f79ec-f63d-4e5f-9522-1ba72e2f1399",
+      "name": "Discourse · studio foundation",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:14:39.485Z",
+      "updatedAt": "2026-11-04T14:14:39.485Z"
+    },
+    {
+      "id": "7a15baa4-b1de-4cb1-96e7-e49a3727bfa3",
+      "name": "Vendure · studio foundation",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:14:59.514Z",
+      "updatedAt": "2026-11-04T14:14:59.514Z"
+    },
+    {
+      "id": "caeda959-81de-4f68-a5d2-64eef3764537",
+      "name": "Zammad · studio reference",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:15:16.424Z",
+      "updatedAt": "2026-11-04T14:15:16.424Z"
+    },
+    {
+      "id": "87faad5a-eee9-4284-89e2-bdd327e49a5c",
+      "name": "UX14c owned launch 1280 1793801677265",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:15:28.734Z",
+      "updatedAt": "2026-11-04T14:15:28.734Z"
+    },
+    {
+      "id": "5bcc2f9c-b1e8-442d-ba30-ef865da3618e",
+      "name": "Discourse · studio foundation",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:15:30.685Z",
+      "updatedAt": "2026-11-04T14:15:30.685Z"
+    },
+    {
+      "id": "23403da0-55cb-4f07-9094-de80bc2d6fa4",
+      "name": "Vendure · studio foundation",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:15:45.816Z",
+      "updatedAt": "2026-11-04T14:15:45.816Z"
+    },
+    {
+      "id": "af5c6048-fb18-41b1-bd1c-057baaba3089",
+      "name": "Zammad · studio reference",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:16:00.377Z",
+      "updatedAt": "2026-11-04T14:16:00.377Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "02fc17fc-10ed-44af-a11d-a511fec8336f",
+      "verified404": true
+    },
+    {
+      "id": "051f79ec-f63d-4e5f-9522-1ba72e2f1399",
+      "verified404": true
+    },
+    {
+      "id": "7a15baa4-b1de-4cb1-96e7-e49a3727bfa3",
+      "verified404": true
+    },
+    {
+      "id": "caeda959-81de-4f68-a5d2-64eef3764537",
+      "verified404": true
+    },
+    {
+      "id": "87faad5a-eee9-4284-89e2-bdd327e49a5c",
+      "verified404": true
+    },
+    {
+      "id": "5bcc2f9c-b1e8-442d-ba30-ef865da3618e",
+      "verified404": true
+    },
+    {
+      "id": "23403da0-55cb-4f07-9094-de80bc2d6fa4",
+      "verified404": true
+    },
+    {
+      "id": "af5c6048-fb18-41b1-bd1c-057baaba3089",
+      "verified404": true
+    }
+  ]
+}

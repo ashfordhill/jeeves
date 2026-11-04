@@ -10401,3 +10401,89 @@ production capacity/recovery approval or a benchmark result. Later C4a/C4b imple
 independent verification require a separate task. No UX14b product blocker remains. UX14b is complete
 and this worker stops after its scoped local commit. UX14c/UX14d and default rollout remain separate
 assignments; P73a/P73b and the backend batch remain paused.
+
+## UX14c — Backend benchmark studio foundations without backend resumption (2026-11-04)
+
+Completed exact UX14c on primary `main` from `93e7da61bd0ba2df12035883b33a43dd02c03ffd`, in the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan/shared protocol, model/configuration/coverage contracts, final decisions, C4 guidance,
+E08–E10 sources, frozen ledgers/reference packs, P71/P72 design evidence and the P73a checkpoint.
+No later UX unit, default rollout, sibling repo, live migration, new runtime/template/provider
+execution or paused backend work was started. This worker did not delegate or advance the queue.
+
+Added three separate versioned finite factories, strict goal manifests and fresh layouts under
+`packages/spec/src/studio-examples/`, registered in the existing opt-in studio Library and immutable
+source registry. CATALOG and the studio-study guide now describe ten reviewed studies. Original
+factory outputs, the historical chooser/default and all seven earlier studio outputs remain exact.
+The new Discourse/Vendure foundations are distinct from their detailed complete backend designs;
+Zammad is deliberately named a studio reference, not the missing complete benchmark example.
+
+Discourse and Vendure retain one modular API and one independent worker, PostgreSQL authority,
+private bytes, external thin clients and source provider boundaries. Internal modules stay explicit
+source/future work rather than new service cards or business forms. Vendure's hosted payment API
+boundary preserves Reference-v1 separately from the pinned Stripe adapter, exact money/order/stock,
+provider identity, original-byte callbacks and unknown/reconciliation obligations. It adds no
+hosted checkout UI or independent Billing deployment. SQL background work is one high-level C3
+logical channel reference shared by producer/consumer, with no new broker. Named source channels,
+payloads, claims, receipts and recovery remain distinct future contracts. Queue retention starts
+unspecified and does not replace command/business retention. The sources require no added cache
+or dedicated search cluster; current-policy PostgreSQL projections remain source work.
+
+The exact source external byte adapter/C1 contract maps to one C2 private resource and dependencies,
+avoiding duplicate provider cards under existing context binding rules. SMTP/TLS remains source
+while finite transport is Unspecified. Zammad's small support API/data/worker/channel reference
+retains every frozen obligation; detailed P73a/P73b remains incomplete and paused. Checkpoint helper
+files stay untouched/unwired, and no complete `zammad-core` benchmark example is registered. Its
+historical handoff provenance pins the prior commit/hash while this log continues append-only.
+
+Evidence: `docs/evidence/studio-ux/UX14c/`. The 434 goal rows map all 60 frozen cases and 195 exact
+observations to preserved source and future C4a fixed-contract or C4b hook/integration work. Source
+weights remain 66 candidate G / 34 H points per ledger; no observed points are earned. All source
+hashes and graph references resolve; every original D/V connection/responsibility and source
+scenario/dataset/objective is accounted for. Deep freezing, atomic insertion, portable round-trips,
+tamper rejection, unknown exact versions and hash mismatch behavior pass. There are 390 unresolved
+source-linked future work items with future-owner assignments, visible through existing Generate
+C4b review; fixed candidates explicitly name future C4a. Original D/V trace functions still report
+unsupported runtimes, not-run observations and zero observed points. No benchmark was executed.
+
+Direct Chromium inspection has 72 records at 1440×900 and 1280×800: mouse Library creation, C1/C2,
+all six useful C3 scopes, three saves per study per size, acknowledged reload, actual source downloads,
+shared-channel inspection from independent consumers, individual queued-member selection and source
+C4b object links. Discourse saves API language/DB provider/work retention; Vendure worker concurrency/
+file provider/work retention; Zammad API language/DB provider/work retention. These owned disposable
+variants retain seed provenance without asserting continued source-goal satisfaction. Six edited
+portable imports retain exact source hashes, decisions/assignments and topology. Navigation/review/
+export changes no semantics. All six generation requests return 422 `STUDIO_DESIGN_ONLY`, with no
+generation record; handoff evidence remains `unrecorded`.
+
+The final browser run records 36 real HTTP writes, zero page errors/console warnings/external
+requests and no blocked/unowned writes. Guards precede page creation and permit only exact-owned
+disposable routes. Separate guarded read-only passes confirm the legacy editor stays default at
+both sizes. All 13 original projects retain exact metadata, design/layout hashes and revisions;
+all 11 owned disposables including layout measurements are deleted and verified 404. Explicit
+before/after hashes cover all 48 frozen benchmark files and old factory/support/checkpoint sources.
+Unrelated tracked files, 42 feedback files/21 original-copy pairs, seven public fixtures and the
+entire earlier handoff prefix remain exact. No source feedback or user diagram was rewritten.
+
+Fresh scope geometry and read-only bounds measurements supply fitting cameras; shared layout/
+routing code is unchanged. Representative final C1/C2/C3, settings, queue and Generate screenshots
+were visually inspected. Existing long-name/zoom truncation remains with full inspector values.
+Attempt notes describe routine source-schema/context-binding corrections, a dev watcher restart
+after a rejected initial schema, and formatting newly captured JSON before the final passing checks.
+No validation was weakened and no product blocker remains.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with its Node bin directory prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces, existing source/test types and scripts.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- One-off goal/schema/portable/trace observations and both direct browser profiles: pass.
+- Scoped formatting, source/project preservation and staged whitespace including new logs: pass.
+
+Unit/E2E/template suites, snapshots, maintenance and `pnpm check` remain explicitly owner-deferred;
+none ran. No fixture typing adaptation was needed. No paid model/provider, external agent or
+application-generation execution occurred. This is design coverage, with no runtime support,
+provider integration, application correctness, upstream parity, production capacity/recovery
+approval or benchmark score claim. Later C4a/C4b implementation/verification needs a separate task.
+UX14c is complete; this worker stops after its scoped local commit. UX14d/default rollout remain
+separate assignments; P73a/P73b and the backend batch remain paused.

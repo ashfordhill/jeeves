@@ -1,0 +1,66 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "nodeBinPrepended": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "log": "lint.log",
+      "warnings": 2797,
+      "infos": 88,
+      "errors": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": "typecheck.log",
+      "scope": "Full workspaces, existing source/test types and scripts"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "log": "web-build.log",
+      "advisory": "Existing large-chunk advisory"
+    },
+    {
+      "command": "One-off production schema/goal/portable/atomic insertion observations",
+      "exitCode": 0,
+      "log": "goal-inspection.log"
+    },
+    {
+      "command": "Direct Chromium 1440x900 and 1280x800 inspection",
+      "exitCode": 0,
+      "log": "browser-inspection.log",
+      "records": 72,
+      "realHttpWrites": 36
+    },
+    {
+      "command": "Read-only source geometry/camera measurements",
+      "exitCode": 0,
+      "log": "layout-inspection.log",
+      "scopes": 12
+    },
+    {
+      "command": "One-off edited portable imports and existing backend trace inspection",
+      "exitCode": 0,
+      "log": "export-inspection.log"
+    },
+    {
+      "command": "One-off file and original-project preservation inspection",
+      "exitCode": 0,
+      "log": "preservation.log"
+    }
+  ],
+  "initialLint": "Evidence JSON formatting errors corrected before final full lint",
+  "fixtureTypingAdaptations": "None needed",
+  "deferred": [
+    "pnpm check",
+    "unit suites",
+    "E2E suites",
+    "template suites",
+    "snapshot maintenance",
+    "unit/E2E maintenance"
+  ],
+  "noModelProviderExternalAgentOrApplicationGenerationExecution": true
+}

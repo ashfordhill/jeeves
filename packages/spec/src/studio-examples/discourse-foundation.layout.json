@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "items": {},
+  "architecture": {
+    "studio:context": {
+      "positions": {
+        "studio:context:system": {
+          "x": 320,
+          "y": 160
+        },
+        "studio:context:dc-visitor": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:dc-member": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:context:dc-moderator": {
+          "x": 0,
+          "y": 288
+        },
+        "studio:context:dc-administrator": {
+          "x": 0,
+          "y": 432
+        },
+        "studio:context:dc-client-external": {
+          "x": 640,
+          "y": 0
+        },
+        "studio:context:dc-email-external": {
+          "x": 640,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 56,
+        "y": 118,
+        "zoom": 1
+      }
+    },
+    "studio:containers": {
+      "positions": {
+        "studio:context:dc-visitor": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:dc-member": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:context:dc-moderator": {
+          "x": 0,
+          "y": 288
+        },
+        "studio:context:dc-administrator": {
+          "x": 0,
+          "y": 432
+        },
+        "studio:element:api": {
+          "x": 480,
+          "y": 144
+        },
+        "studio:element:worker": {
+          "x": 480,
+          "y": 432
+        },
+        "studio:element:db": {
+          "x": 720,
+          "y": 144
+        },
+        "studio:element:files": {
+          "x": 720,
+          "y": 288
+        },
+        "studio:element:email": {
+          "x": 720,
+          "y": 432
+        },
+        "studio:element:client": {
+          "x": 240,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 48,
+        "y": 119.06756756756754,
+        "zoom": 0.9954954954954955
+      }
+    },
+    "studio:service:api": {
+      "positions": {
+        "studio:element:api": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:client": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:files": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:work": {
+          "x": 480,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 48,
+        "y": 229.56756756756755,
+        "zoom": 0.9954954954954955
+      }
+    },
+    "studio:service:worker": {
+      "positions": {
+        "studio:element:worker": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:work": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:email": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:files": {
+          "x": 480,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 48,
+        "y": 229.56756756756755,
+        "zoom": 0.9954954954954955
+      }
+    }
+  }
+}

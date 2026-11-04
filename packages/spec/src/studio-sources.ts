@@ -3,12 +3,21 @@ import { z } from "zod";
 import { contractCanonical } from "./architecture-contracts.ts";
 import { idSchema } from "./ids.ts";
 import communityGoal from "./studio-examples/community.goal.json" with { type: "json" };
+import discourseFoundationGoal from "./studio-examples/discourse-foundation.goal.json" with {
+  type: "json",
+};
 import enterpriseGoal from "./studio-examples/enterprise.goal.json" with { type: "json" };
 import linksGoal from "./studio-examples/links.goal.json" with { type: "json" };
 import mattermostGoal from "./studio-examples/mattermost.goal.json" with { type: "json" };
 import qrwtytargetGoal from "./studio-examples/qrwty-target.goal.json" with { type: "json" };
 import socialGoal from "./studio-examples/social.goal.json" with { type: "json" };
 import streamlyGoal from "./studio-examples/streamly.goal.json" with { type: "json" };
+import vendureFoundationGoal from "./studio-examples/vendure-foundation.goal.json" with {
+  type: "json",
+};
+import zammadFoundationGoal from "./studio-examples/zammad-foundation.goal.json" with {
+  type: "json",
+};
 import { definitionRefSchema, type StudioModel } from "./studio-model.ts";
 
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
@@ -111,6 +120,9 @@ export const studioGoalManifests: readonly StudioGoalManifest[] = freezeSource(
     linksGoal,
     communityGoal,
     socialGoal,
+    discourseFoundationGoal,
+    vendureFoundationGoal,
+    zammadFoundationGoal,
   ].map((manifest) => studioGoalManifestSchema.parse(manifest)),
 );
 

@@ -90,7 +90,7 @@ External API under Integrations; and Billing, Redirect and Notifications/Identit
 Billing, Redirect, Notifications and Identity each represent one application, with scalar provider
 or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
 The reusable Service and worker preset is a grouping of actual deployments, with no package-level
-language, provider or runtime. The seven reviewed studio studies are available through the
+language, provider or runtime. The ten reviewed studio studies are available through the
 opt-in studio Library; the remaining reconstruction assignments and default rollout stay later.
 
 ### Reviewed studio studies
@@ -102,11 +102,17 @@ and heavy processing with C3 queues, shared resources and optional CDN provider 
 libraries and business responsibilities remain source-linked C4b work. QRWTY has one Billing
 service, a separate Redirect and a C3 visit queue/analytics worker; Links stays a smaller reference.
 Community covers search and queued notifications; Social retains background media processing,
-feed/search/cache, realtime and an external native client boundary. These studies select no
+feed/search/cache, realtime and an external native client boundary. Separate Discourse and Vendure
+foundations retain modular APIs, independent workers, SQL authority, private bytes and external
+providers, with C3 logical work channels. Zammad has a small studio reference; detailed P73a/P73b
+design remains incomplete and paused. Their maps retain all 60 frozen cases and 195 observations
+as future C4a/C4b work. The source requires no added cache, broker or Billing deployment.
+These studies select no
 executable runtime template, provision no provider and supply no passing application evidence.
 Original studies, deployment declarations and benchmark inputs remain unchanged. See the
 [studio registry](packages/spec/src/studio-examples/index.ts), [UX14a evidence](docs/evidence/studio-ux/UX14a/README.md)
-and [UX14b evidence](docs/evidence/studio-ux/UX14b/README.md).
+and [UX14b evidence](docs/evidence/studio-ux/UX14b/README.md), plus the
+[backend studio references](docs/evidence/studio-ux/UX14c/README.md).
 
 Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
 has no runtime-support binding. Application entries can be created at C2 or as package members;
