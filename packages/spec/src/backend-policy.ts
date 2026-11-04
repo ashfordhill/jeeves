@@ -191,6 +191,32 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
             `named clause ${id} does not exist; recursive rule references are unsupported.`,
           );
     };
+    const parent = (c: { via?: string; path?: string[] }, at: (string | number)[]) => {
+      if (c.via && c.path)
+        invalid(at, "select either a legacy direct parent or a bounded parent path.");
+      let target = resource;
+      const seen = new Set(target ? [contractKey(target)] : []);
+      for (const id of c.path ?? (c.via ? [c.via] : [])) {
+        const relation = target?.relations.find((r) => r.id === id);
+        if (!relation) {
+          missing(at, "parent path must select existing forward relations.");
+          return undefined;
+        }
+        if (
+          relation.scope !== "same-scope" ||
+          relation.fields.some((k) => {
+            const f = field(target, k.source, at);
+            return !f?.required || f.nullable;
+          })
+        )
+          invalid(at, "parent path requires required nonnullable same-scope forward relations.");
+        target = backendEntity(design, relation.target);
+        if (target && seen.has(contractKey(target)))
+          invalid(at, "parent path cannot cycle or repeat an entity.");
+        if (target) seen.add(contractKey(target));
+      }
+      return target;
+    };
     for (const c of p.clauses) {
       const at = ["clauses", c.id];
       if (c.kind === "group-grant")
@@ -198,11 +224,7 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
       if (c.kind === "authenticated" && p.context.identity === "public")
         invalid(at, "authenticated requires a server-established principal or service context.");
       if (c.kind === "owner") {
-        const relation = c.via && resource?.relations.find((r) => r.id === c.via);
-        if (c.via && !relation) missing(at, "owner via must select one direct forward relation.");
-        if (relation && relation.scope !== "same-scope")
-          invalid(at, "parent owner requires a same-scope relation.");
-        field(relation ? backendEntity(design, relation.target) : resource, c.field, at, "uuid");
+        field(parent(c, at), c.field, at, "uuid");
         if (p.context.identity !== "session-principal")
           invalid(
             at,
@@ -210,19 +232,7 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
           );
       }
       if (c.kind === "visibility") {
-        const relation = c.via && resource?.relations.find((r) => r.id === c.via);
-        if (c.via && !relation)
-          missing(at, "visibility via must select one direct forward relation.");
-        const target = relation ? backendEntity(design, relation.target) : resource;
-        if (
-          relation &&
-          (relation.scope !== "same-scope" ||
-            relation.fields.some((k) => !field(resource, k.source, at)?.required))
-        )
-          invalid(
-            at,
-            "parent visibility requires a required same-scope relation; an absent nullable parent never matches.",
-          );
+        const target = parent(c, at);
         const f = field(target, c.field, at);
         if (f && target?.fields.find((a) => a.field === c.field)?.storage.kind !== "scalar")
           invalid(
@@ -273,13 +283,16 @@ export function validateBackendPolicies(design: DesignDocument): Finding[] {
             invalid(at, "named roles must select values from the exact persisted role enum.");
         } else {
           field(membership, c.active.field, at, "boolean");
-          const via = c.via && resource?.relations.find((r) => r.id === c.via);
-          if (c.via && !via)
-            missing(
-              at,
-              "membership via must name one direct forward resource relation; recursive traversal is unsupported.",
-            );
-          const target = via ? backendEntity(design, via.target) : resource;
+          if (c.access) {
+            const f = field(membership, c.access.field, at, "text");
+            distinct(c.access.values, [...at, "access", "values"]);
+            if (!f?.enumValues?.length || c.access.values.some((v) => !f.enumValues?.includes(v)))
+              invalid(
+                at,
+                "membership access must select values from its same persisted membership enum.",
+              );
+          }
+          const target = parent(c, at);
           const relation = membership?.relations.find((r) => r.id === c.relation);
           if (!relation)
             missing(at, "membership must name its direct resource/group/organization relation.");

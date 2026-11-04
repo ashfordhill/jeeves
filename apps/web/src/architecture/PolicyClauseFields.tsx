@@ -96,21 +96,16 @@ export function PolicyClauseFields({
 }) {
   const entities = draft.backend?.entities ?? [];
   const resource = entities.find((e) => contractKey(e) === contractKey(policy.resource));
+  const parentPath = "path" in c && c.path ? c.path : "via" in c && c.via ? [c.via] : [];
+  let parent = resource;
+  const pathChoices = [{ entity: parent, value: parentPath[0] ?? "" }];
+  for (const id of parentPath) {
+    const relation = parent?.relations.find((r) => r.id === id);
+    parent = entities.find((e) => relation && contractKey(e) === contractKey(relation.target));
+    pathChoices.push({ entity: parent, value: parentPath[pathChoices.length] ?? "" });
+  }
   const source =
-    "entity" in c
-      ? entities.find((e) => contractKey(e) === contractKey(c.entity))
-      : (c.kind === "visibility" || c.kind === "owner") && c.via
-        ? entities.find(
-            (e) =>
-              contractKey(e) ===
-              contractKey(
-                resource?.relations.find((r) => r.id === c.via)?.target ?? {
-                  id: "missing",
-                  version: "v1",
-                },
-              ),
-          )
-        : resource;
+    "entity" in c ? entities.find((e) => contractKey(e) === contractKey(c.entity)) : parent;
   const fields = source
     ? backendEntityFields({ ...design, architecture: draft }, source).filter((f) =>
         source.fields.some((a) => a.field === f.id && a.storage.kind === "scalar"),
@@ -146,9 +141,26 @@ export function PolicyClauseFields({
           label="Protected parent relation (optional)"
           value={c.via ?? ""}
           options={(resource?.relations ?? []).map((r) => ({ value: r.id, label: r.id }))}
-          onChange={(via) => onChange({ ...c, via: via || undefined })}
+          onChange={(via) => onChange({ ...c, via: via || undefined, path: undefined })}
         />
       ) : null}
+      {c.kind === "membership" || c.kind === "visibility" || c.kind === "owner"
+        ? pathChoices.slice(0, 3).map(({ entity, value }, index) => (
+            <Pick
+              key={parentPath.slice(0, index).join("/") || "root"}
+              label={`Current parent path ${index + 1} (optional)`}
+              value={value}
+              options={(entity?.relations ?? []).map((r) => ({
+                value: r.id,
+                label: `${r.id} → ${contractKey(r.target)}`,
+              }))}
+              onChange={(id) => {
+                const path = [...parentPath.slice(0, index), ...(id ? [id] : [])];
+                onChange({ ...c, via: undefined, path: path.length ? path : undefined });
+              }}
+            />
+          ))
+        : null}
       {"entity" in c ? (
         <Pick
           label="Persisted clause entity"
@@ -223,7 +235,7 @@ export function PolicyClauseFields({
               value: r.id,
               label: `${r.id} → ${contractKey(r.target)}`,
             }))}
-            onChange={(via) => onChange({ ...c, via: via || undefined })}
+            onChange={(via) => onChange({ ...c, via: via || undefined, path: undefined })}
           />
           <Pick
             label="Active membership boolean field"
@@ -232,9 +244,30 @@ export function PolicyClauseFields({
             onChange={(field) => onChange({ ...c, active: { field, value: true } })}
           />
           <Text size="xs">
-            Only active persisted membership grants a clause. At most one declared forward relation;
-            no recursive traversal.
+            Only active persisted membership grants a clause. A selected capability must match that
+            same membership row. At most three declared forward relations; cycles are forbidden.
           </Text>
+          <Pick
+            label="Membership capability enum field (optional)"
+            value={c.access?.field ?? ""}
+            options={fields
+              .filter((f) => f.enumValues?.length)
+              .map((f) => ({ value: f.id, label: f.name }))}
+            onChange={(field) =>
+              onChange({ ...c, access: field ? { field, values: [] } : undefined })
+            }
+          />
+          {c.access ? (
+            <Many
+              label="Allowed membership capabilities"
+              value={c.access.values}
+              max={20}
+              options={(fields.find((f) => f.id === c.access?.field)?.enumValues ?? []).map(
+                (value) => ({ value, label: value }),
+              )}
+              onChange={(values) => onChange({ ...c, access: { field: c.access!.field, values } })}
+            />
+          ) : null}
         </>
       ) : null}
       {c.kind === "visibility" ? (

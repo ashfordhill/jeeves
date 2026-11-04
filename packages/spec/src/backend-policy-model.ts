@@ -32,6 +32,7 @@ export const backendPolicyClauseSchema = z.discriminatedUnion("kind", [
     kind: z.literal("owner"),
     field: idSchema,
     via: idSchema.optional(),
+    path: z.array(idSchema).min(1).max(3).optional(),
   }),
   z.strictObject({
     id: idSchema,
@@ -51,7 +52,12 @@ export const backendPolicyClauseSchema = z.discriminatedUnion("kind", [
     relation: idSchema,
     /** At most one forward to-one relation from the protected resource. */
     via: idSchema.optional(),
+    path: z.array(idSchema).min(1).max(3).optional(),
     active: z.strictObject({ field: idSchema, value: z.literal(true) }),
+    /** Capability is checked on this same active principal/resource membership row. */
+    access: z
+      .strictObject({ field: idSchema, values: z.array(idSchema).min(1).max(20) })
+      .optional(),
   }),
   z.strictObject({
     id: idSchema,
@@ -86,6 +92,7 @@ export const backendPolicyClauseSchema = z.discriminatedUnion("kind", [
     id: idSchema,
     kind: z.literal("visibility"),
     via: idSchema.optional(),
+    path: z.array(idSchema).min(1).max(3).optional(),
     field: idSchema,
     value: z.union([z.boolean(), z.string().min(1).max(120), z.null()]),
   }),

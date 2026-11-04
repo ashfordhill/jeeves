@@ -8519,3 +8519,47 @@ Corrections, preservation and limitations:
   benchmark applications remain **absent/not run, zero observed implementation points**. No
   branches/worktrees/delegation/push/publication outside the local inspection library. Coordinator
   owns the batch checkpoint. **Do not start P73a or P74 from this assignment.**
+
+
+## 2026-11-03 — P73a: user-requested checkpoint before UX work (incomplete)
+
+The user explicitly paused the sequential P62a–P73b batch during P73a and requested a commit
+of work saved so far, switching attention to UX. Interrupted both the coordinator and P73a
+worker; both report idle/interrupted. Removed the 30-minute monitor's own cron entry and marked
+the ignored batch checkpoint paused. Resume requires an explicit user instruction. Completed
+packages through P72b remain committed; neither P73a nor P73b is complete and P74 stays unstarted.
+
+Saved the interrupted worker's seven scoped files:
+
+- Draft Zammad contract, authoritative data/aggregate and access-policy helper modules in
+  `packages/spec/src/zammad-core-{contracts,data,access}.ts`. These are not wired into a registered
+  complete example; no complete Zammad design or acceptance gate is claimed.
+- Optional capability predicates on the same membership row and bounded parent relation paths
+  in backend policy schemas/validation, with matching policy editor controls.
+- Named text constraints for the draft calendar/header formats.
+
+Only checkpoint hygiene followed the interruption: scoped formatting/import organization and a
+stable parent-path key replacing an array-index React key. No neighboring package implementation
+or finishing of the Zammad design was attempted.
+
+Checkpoint verification with Node24.21.0/pnpm12.16.1:
+
+- `pnpm lint`: exit0, 964 files; 2797 warnings/88 infos, no errors. Initial checkpoint run found
+  four formatting/import/key diagnostics, corrected before this final run. Final output:
+  `.jeeves-work/p73a/checkpoint-lint-final.log`.
+- `pnpm typecheck`: exit0 across all workspaces/scripts;
+  `.jeeves-work/p73a/checkpoint-typecheck-final.log`.
+- `pnpm --filter @jeeves/web build`: exit0, 1.56s, existing chunk-size advisory;
+  `.jeeves-work/p73a/checkpoint-build-final.log`.
+- `pnpm work run unit packages/spec/src/backend-policy.test.ts`: exit0, one file/13 existing tests;
+  `.jeeves-work/runs/2026-11-04T00-46-53-782Z-unit-bef510ab.{json,log}`. Import organization and
+  the editor key were the only subsequent changes. These existing tests do not fully verify
+  the newly drafted path/capability semantics.
+- Scoped `git diff --check` passes; earlier handoff entries retain their exact bytes.
+
+Limitations and next work: no new policy regression cases, complete Zammad factory, example
+registration, design trace, direct browser inspection of these partial controls, or P73a combined
+acceptance. Full `pnpm check` and deferred UI suites were not run. The active local preview remains
+available for the user's UX review. The checkpoint intentionally preserves unfinished design work;
+finish/review its semantics and acceptance before claiming P73a complete. No runtime generation,
+push or publication. **Batch paused for UX; do not automatically resume P73a/P73b or start P74.**
