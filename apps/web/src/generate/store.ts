@@ -2,6 +2,7 @@
  * Generate drawer state: the output folder, the baseline toggle, and the latest generation,
  * kept up to date from the server's event stream while one runs.
  */
+import { handoffFingerprint } from "@jeeves/spec";
 import { create } from "zustand";
 import {
   type AcceptancePack,
@@ -10,6 +11,7 @@ import {
   type Generation,
   type GenerationEvent,
 } from "../draw/api.ts";
+import { useDraw } from "../draw/store.ts";
 
 /** Lines kept in the browser; the server keeps the same number. */
 const LOG_CAP = 3000;
@@ -30,7 +32,7 @@ type GenerateState = {
   setOutputDir: (dir: string) => void;
   setBaseline: (baseline: boolean) => void;
   setAcceptancePack: (pack: string) => void;
-  start: () => Promise<void>;
+  start: (expectedRevision?: number, expectedFingerprint?: string) => Promise<void>;
   cancel: () => Promise<void>;
 };
 
@@ -54,7 +56,8 @@ export const useGenerate = create<GenerateState>((set, get) => {
       );
     } catch (error) {
       if (controller.signal.aborted) return;
-      set({ error: `Lost the generation's progress: ${(error as Error).message}` });
+      if (get().projectId === projectId)
+        set({ error: `Lost the generation's progress: ${(error as Error).message}` });
     } finally {
       if (following === controller) following = undefined;
     }
@@ -75,6 +78,7 @@ export const useGenerate = create<GenerateState>((set, get) => {
       set({
         projectId,
         generation: null,
+        starting: false,
         outputDir: "",
         defaultOutputDir: "",
         error: undefined,
@@ -95,7 +99,7 @@ export const useGenerate = create<GenerateState>((set, get) => {
         });
         if (overview.latest?.status === "running") void follow(projectId, overview.latest.id);
       } catch (error) {
-        set({ error: (error as Error).message });
+        if (get().projectId === projectId) set({ error: (error as Error).message });
       }
     },
 
@@ -104,19 +108,38 @@ export const useGenerate = create<GenerateState>((set, get) => {
     setBaseline: (baseline) => set({ baseline }),
     setAcceptancePack: (acceptancePack) => set({ acceptancePack }),
 
-    start: async () => {
+    start: async (expectedRevision, expectedFingerprint) => {
       const { projectId, outputDir, baseline, acceptancePack } = get();
       if (!projectId) return;
       set({ starting: true, error: undefined });
       try {
+        if (!(await useDraw.getState().flushEdits()))
+          throw new Error("Resolve the unsaved change before generating.");
+        await useDraw.getState().flushLayout();
+        if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
+          return;
+        if (
+          expectedRevision !== undefined &&
+          useDraw.getState().loaded?.design.revision !== expectedRevision
+        )
+          throw new Error("The design changed. Refresh the review before generating.");
+        const current = useDraw.getState().loaded;
+        if (
+          expectedFingerprint &&
+          current &&
+          (await handoffFingerprint(current.design, current.project)) !== expectedFingerprint
+        )
+          throw new Error("The design changed. Refresh the review before generating.");
         const generation = await api.startGeneration(projectId, {
           outputDir: outputDir.trim(),
           baseline,
           ...(acceptancePack ? { acceptancePack } : {}),
         });
+        if (get().projectId !== projectId) return;
         set({ generation, starting: false, outputDir: generation.outputDir });
         void follow(projectId, generation.id);
       } catch (error) {
+        if (get().projectId !== projectId) return;
         set({
           starting: false,
           error: error instanceof ApiError ? error.message : `Couldn't start: ${String(error)}`,
@@ -130,7 +153,7 @@ export const useGenerate = create<GenerateState>((set, get) => {
       try {
         await api.cancelGeneration(projectId, generation.id);
       } catch (error) {
-        set({ error: (error as Error).message });
+        if (get().projectId === projectId) set({ error: (error as Error).message });
       }
     },
   };

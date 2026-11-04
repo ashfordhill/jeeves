@@ -1,0 +1,67 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "height": 900,
+      "identity": "a2-db",
+      "scope": "studio:containers",
+      "selection": ["a2-db"],
+      "href": "/?project=a5e7df78-976a-4f4c-8738-c76792af44d2&studio=next&studioScope=studio%3Acontainers&studioTarget=studio%3Arelationship%3Astudio%3Apackage%3Adispatch%3Estudio%3Aelement%3Adb&studioMember=a2-db&studioMemberKind=connection#/draw"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "identity": "a1",
+      "scope": "studio:package:dispatch",
+      "selection": ["a1"],
+      "href": "/?project=a5e7df78-976a-4f4c-8738-c76792af44d2&studio=next&studioScope=studio%3Apackage%3Adispatch&studioTarget=studio%3Aelement%3Aa1#/draw"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "identity": "review-person",
+      "scope": "studio:context",
+      "selection": ["review-person"],
+      "href": "/?project=a5e7df78-976a-4f4c-8738-c76792af44d2&studio=next&studioScope=studio%3Acontext&studioTarget=studio%3Acontext%3Areview-person#/draw"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "normalScopeNavigationClearsObsoleteQuerySelection": true
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "identity": "a2-db",
+      "scope": "studio:containers",
+      "selection": ["a2-db"],
+      "href": "/?project=a5e7df78-976a-4f4c-8738-c76792af44d2&studio=next&studioScope=studio%3Acontainers&studioTarget=studio%3Arelationship%3Astudio%3Apackage%3Adispatch%3Estudio%3Aelement%3Adb&studioMember=a2-db&studioMemberKind=connection#/draw"
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "identity": "a1",
+      "scope": "studio:package:dispatch",
+      "selection": ["a1"],
+      "href": "/?project=a5e7df78-976a-4f4c-8738-c76792af44d2&studio=next&studioScope=studio%3Apackage%3Adispatch&studioTarget=studio%3Aelement%3Aa1#/draw"
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "identity": "review-person",
+      "scope": "studio:context",
+      "selection": ["review-person"],
+      "href": "/?project=a5e7df78-976a-4f4c-8738-c76792af44d2&studio=next&studioScope=studio%3Acontext&studioTarget=studio%3Acontext%3Areview-person#/draw"
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "normalScopeNavigationClearsObsoleteQuerySelection": true
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "warnings": [],
+  "unchangedSemanticAndLayout": true,
+  "guardsBeforePage": true
+}

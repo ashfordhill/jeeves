@@ -10067,3 +10067,95 @@ relative offsets. Temporary incident paths prioritize visibility and can cross o
 while moving. No product blocker remains. UX11b is complete; UX12 is the next exact assignment and
 is not started here. This worker stops after its scoped local commit. Studio remains opt-in until
 UX15; P73a/P73b and the backend batch remain paused.
+
+## 2026-11-04 — UX12: unified Generate review, activity and outputs (complete)
+
+Executed UX12 only on primary main from `718ce51b295111a3a2b7a746eac4da3ea3ee3c59`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan/shared protocol/exact assignment, interaction §7, model availability boundary, final
+owner decisions, C4 guidance and the real Generate/Runs/handoff/store seams. Audited the UX01
+retained-action inventory. No delegation, worktree/branch, sibling edit, backend resumption,
+provider/external-agent execution or new application generation. Unrelated `.jeeves-feedback/`
+remains untouched.
+
+The opt-in studio's Generate destination now has compact Review, Activity and conditional Outputs.
+Review flushes valid input/layout before its real read-only handoff capture, then separates design
+findings, unresolved choices, exact support, explicit C4b foundations/obligations and verification.
+Source/contract details, preserved declarations and notes are disclosed on demand. Captures survive
+in-app navigation; design revisions and semantic/project-name fingerprints make them stale.
+Deep links restore C1, C2 or the relevant C3 and canonical card/member selection, without restoring
+removed business/backend editors. Normal navigation clears obsolete selection parameters.
+
+Activity composes existing generation streaming and orchestration APIs, keeping generation/run/
+task/attempt identities and existing settings, explicit actions, cancellation, logs, checks, diffs,
+usage and restrictions. Generation settings/start live here as specified by the action inventory.
+File ownership conflicts remain inspectable even without output artifacts. Start flushes edits and
+checks the captured revision/fingerprint; an intervening accepted edit prevents its request. Failed
+input retains existing Retry/Discard feedback in Generate. Pause/cancel remain usable independently
+of failed design drafts. Late cross-project results are guarded. There is no duplicate studio drawer.
+
+Outputs appears for recorded application artifacts or a current captured selected-view diagram.
+Portable architecture exports explicitly supply no application runtime. Lossless source plus bounded
+handoff JSON/Markdown remain available even for design-only documents. Existing scope/ownership,
+partial approval and target source comparison are retained on demand through their actual workflows.
+Approval is architecture agreement only. SVG captures actual selected world geometry and visible
+labels using the existing portable static renderer; source/relationship IDs are retained, shared
+rendered trunks join real branches and receive no invented junction arrowheads. Stale/failed captures
+cannot masquerade as the current diagram. Full shape/settings detail remains in the studio/source.
+
+The existing server generation gate is retained. Orchestration readiness, planning and explicit
+start/resume/replan now also apply studioGenerationSupport before output inspection or job creation,
+including an older output-directory case. Cancellation stays allowed. Supported legacy generation
+keeps its request payload and eligibility; existing output/run restrictions remain in force.
+No runtime/catalog availability, template family, fixed acceptance or benchmark obligation changed.
+
+Evidence: `docs/evidence/studio-ux/UX12/`. Final direct Chromium observations at 1440×900 and
+1280×800 cover empty history, current/stale review, actual pending saves, real rename fingerprint
+invalidation, exact source/handoff downloads and legacy annotation retention. A held save delays
+review capture until acknowledgement; a start flush that changes revision prevents the request.
+A simulated HTTP 503 retains intent, disables start and permits a real successful Retry. Additional
+checks select a C1 person, a packaged C3 member, a C3 queue and one exact bundled C2 connection;
+semantic/layout hashes remain unchanged by navigation. Actual scope/ownership and partial approval
+save/reload through two real operations; their approval fingerprint matches and no generation exists.
+Downloaded SVG is parsed against actual positions, branch paths and arrow counts at both sizes.
+An existing target's source comparison remains read-only.
+
+Six generation and all eight orchestration states are explicitly simulated with owned records/
+interception, including progress, failure, ownership block, cancel, pause, provider wait and complete.
+Start/cancel requests are captured before any provider/executor work. Real historical Generation 44,
+Run 26, attempt logs/checks/diffs and output links are inspected read-only, without inheriting their
+passes. Direct real API observations reject studio generation/planning/start/resume/replan with 422
+STUDIO_DESIGN_ONLY. An exact-owned synthetic planned/paused run and simulated older directory
+exercise the guard; cancellation really returns 200 and becomes cancelled. Job counts stay zero.
+A supported legacy fixture reaches existing INVALID_OUTPUT_DIR validation without starting work.
+Default Design/Runs remain unchanged at both sizes. Representative screenshots and SVG previews
+were visually inspected; screenshot existence is not the functional proof.
+
+All final browser runs have zero page errors, external requests or blocked/unowned writes. The
+seven console errors in main/supplementary observations correspond exactly to deliberately
+intercepted HTTP 422/409/503 responses; default/navigation/handoff runs have none. Successful
+writes are actual responses, not fabricated successes. Owned disposables, including failed-attempt
+projects and synthetic local records, are deleted/verified 404; the final original 13-project set
+and all original semantic/layout hashes/revisions remain exact. Earlier handoff bytes, 21 feedback
+original/copy pairs, seven public fixtures, 48 frozen benchmark files, old factories and unrelated
+tracked source remain unchanged.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1, Node bin path prepended:
+
+- `pnpm lint`: final exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser, scoped evidence formatting, preservation and staged whitespace including new
+  logs: pass. Log trailing whitespace is normalized only.
+
+Bounded attempt notes record corrected local typing/driver assumptions, the fixed full-page link,
+SVG precision/HMR inspection and duplicate Activity-error findings, and intermediate evidence
+formatting. No dependency, fixture typing, snapshot or broad suite maintenance was needed.
+Unit/E2E/template suites and `pnpm check` remain explicitly deferred by the owner.
+
+Historical output paths need not still contain a current generated lock; their existing restrictions
+remain visible. SVG uses the existing static box renderer and two-decimal path precision, with full
+semantics in source. No new generated application or live-provider success is claimed. No product
+blocker remains. UX12 is complete; this worker stops after its scoped local commit. UX13 and later
+examples/default rollout are separate assignments. Studio remains opt-in until UX15; P73a/P73b and
+the backend batch remain paused.

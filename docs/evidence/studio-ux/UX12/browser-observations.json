@@ -1,0 +1,761 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "studio review, exact exports, C3 queue deep link, pending valid save before navigation, revision and fingerprint staleness",
+      "sourceSha256": "c01060868c2c9901e4766745855458d607220f21b54bbd3075b1a5a2d426c118",
+      "handoffFingerprint": "8917df4c7032c4bd42c8196027a3a99ddb77dd5a4fb6f389d7d408b90500457e",
+      "autosaveStatus": 200,
+      "revision": 2,
+      "fingerprintChange": "actual mouse project rename; semantic revision remains 2"
+    },
+    {
+      "width": 1440,
+      "kind": "real direct server guard",
+      "generation": "STUDIO_DESIGN_ONLY",
+      "orchestration": "STUDIO_DESIGN_ONLY",
+      "noGenerationCreated": true
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "studio review, exact exports, C3 queue deep link, pending valid save before navigation, revision and fingerprint staleness",
+      "sourceSha256": "c01060868c2c9901e4766745855458d607220f21b54bbd3075b1a5a2d426c118",
+      "handoffFingerprint": "227e537227005b9c8cfb45064b64e2118299f4d734dddef75741a08ead00b2ba",
+      "autosaveStatus": 200,
+      "revision": 2,
+      "fingerprintChange": "actual mouse project rename; semantic revision remains 2"
+    },
+    {
+      "width": 1280,
+      "kind": "real direct server guard",
+      "generation": "STUDIO_DESIGN_ONLY",
+      "orchestration": "STUDIO_DESIGN_ONLY",
+      "noGenerationCreated": true
+    },
+    {
+      "kind": "empty review",
+      "noOutputs": true,
+      "disabledStart": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "supported legacy eligibility and exact start payload",
+      "enabled": true,
+      "payload": {
+        "outputDir": "/tmp/ux12-simulated-output",
+        "baseline": false
+      },
+      "requestInterceptedBeforeServer": true,
+      "legacyAnnotationPreserved": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "SIMULATED generation state",
+      "status": "running",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "SIMULATED generation state",
+      "status": "failed",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "SIMULATED generation state",
+      "status": "blocked",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "SIMULATED generation state",
+      "status": "cancelled",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "SIMULATED generation state",
+      "status": "interrupted",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "SIMULATED generation state",
+      "status": "succeeded",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "supported legacy eligibility and exact start payload",
+      "enabled": true,
+      "payload": {
+        "outputDir": "/tmp/ux12-simulated-output",
+        "baseline": false
+      },
+      "requestInterceptedBeforeServer": true,
+      "legacyAnnotationPreserved": true
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "SIMULATED generation state",
+      "status": "running",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "SIMULATED generation state",
+      "status": "failed",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "SIMULATED generation state",
+      "status": "blocked",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "SIMULATED generation state",
+      "status": "cancelled",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "SIMULATED generation state",
+      "status": "interrupted",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "SIMULATED generation state",
+      "status": "succeeded",
+      "id": 701,
+      "providerCalls": 0
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "actual existing history/output inspection",
+      "generationId": 44,
+      "runId": 26,
+      "noExecution": true
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "actual existing history/output inspection",
+      "generationId": 44,
+      "runId": 26,
+      "noExecution": true
+    }
+  ],
+  "writes": [
+    {
+      "project": "43a8d692-99b5-43b5-8b68-424e1e01d50a",
+      "path": "/api/projects/43a8d692-99b5-43b5-8b68-424e1e01d50a/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "review-queue",
+            "name": "Review queue saved 1440"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "a1",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "a2",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "b",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "c",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "d",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "sink",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "unspecified",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "cache",
+                  "definition": {
+                    "id": "studio-cache",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "cache",
+                    "engine": "unspecified",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "x",
+                  "definition": {
+                    "id": "studio-browser",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "browser",
+                    "delivery": "standalone",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "z",
+                  "definition": {
+                    "id": "studio-external-api",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "external-api",
+                    "category": "generic",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "review-queue",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployable members.",
+                  "members": ["a1", "a2"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "a-b",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-c",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-d",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-b-sql",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "a2-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-db-two",
+                  "settings": {}
+                },
+                {
+                  "connection": "c-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "d-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-a",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-sink",
+                  "settings": {}
+                },
+                {
+                  "connection": "c-sink",
+                  "settings": {}
+                },
+                {
+                  "connection": "d-sink",
+                  "settings": {}
+                },
+                {
+                  "connection": "sink-a",
+                  "settings": {}
+                },
+                {
+                  "connection": "x-a",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-cache",
+                  "settings": {}
+                },
+                {
+                  "connection": "z-c",
+                  "settings": {}
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "project": "43a8d692-99b5-43b5-8b68-424e1e01d50a",
+      "path": "/api/projects/43a8d692-99b5-43b5-8b68-424e1e01d50a",
+      "status": 200,
+      "body": {
+        "name": "UX12 owned studio 1440 renamed"
+      }
+    },
+    {
+      "project": "fa4e5c08-11b1-475a-9522-b159944e5034",
+      "path": "/api/projects/fa4e5c08-11b1-475a-9522-b159944e5034/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "review-queue",
+            "name": "Review queue saved 1280"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "a1",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "a2",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "b",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "c",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "d",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "sink",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "unspecified",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "cache",
+                  "definition": {
+                    "id": "studio-cache",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "cache",
+                    "engine": "unspecified",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "x",
+                  "definition": {
+                    "id": "studio-browser",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "browser",
+                    "delivery": "standalone",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "z",
+                  "definition": {
+                    "id": "studio-external-api",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "external-api",
+                    "category": "generic",
+                    "provider": "unspecified"
+                  }
+                },
+                {
+                  "element": "review-queue",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployable members.",
+                  "members": ["a1", "a2"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "a-b",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-c",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-d",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-b-sql",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "a2-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-db-two",
+                  "settings": {}
+                },
+                {
+                  "connection": "c-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "d-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-a",
+                  "settings": {}
+                },
+                {
+                  "connection": "b-sink",
+                  "settings": {}
+                },
+                {
+                  "connection": "c-sink",
+                  "settings": {}
+                },
+                {
+                  "connection": "d-sink",
+                  "settings": {}
+                },
+                {
+                  "connection": "sink-a",
+                  "settings": {}
+                },
+                {
+                  "connection": "x-a",
+                  "settings": {}
+                },
+                {
+                  "connection": "a-cache",
+                  "settings": {}
+                },
+                {
+                  "connection": "z-c",
+                  "settings": {}
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "project": "fa4e5c08-11b1-475a-9522-b159944e5034",
+      "path": "/api/projects/fa4e5c08-11b1-475a-9522-b159944e5034",
+      "status": 200,
+      "body": {
+        "name": "UX12 owned studio 1280 renamed"
+      }
+    },
+    {
+      "project": "37778d2a-10fa-429f-98ea-484bc0dbf701",
+      "path": "/api/projects/37778d2a-10fa-429f-98ea-484bc0dbf701/generations",
+      "status": 422,
+      "body": {
+        "outputDir": "/tmp/ux12-simulated-output",
+        "baseline": false
+      }
+    },
+    {
+      "project": "37778d2a-10fa-429f-98ea-484bc0dbf701",
+      "path": "/api/projects/37778d2a-10fa-429f-98ea-484bc0dbf701/generations/701/cancel",
+      "status": 202,
+      "body": null
+    },
+    {
+      "project": "37778d2a-10fa-429f-98ea-484bc0dbf701",
+      "path": "/api/projects/37778d2a-10fa-429f-98ea-484bc0dbf701/generations",
+      "status": 422,
+      "body": {
+        "outputDir": "/tmp/ux12-simulated-output",
+        "baseline": false
+      }
+    },
+    {
+      "project": "37778d2a-10fa-429f-98ea-484bc0dbf701",
+      "path": "/api/projects/37778d2a-10fa-429f-98ea-484bc0dbf701/generations/701/cancel",
+      "status": 202,
+      "body": null
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "warnings": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "simulations": [
+    {
+      "kind": "blocked start request capture",
+      "body": {
+        "outputDir": "/tmp/ux12-simulated-output",
+        "baseline": false
+      },
+      "projectId": "37778d2a-10fa-429f-98ea-484bc0dbf701"
+    },
+    {
+      "kind": "simulated generation cancellation",
+      "path": "/api/projects/37778d2a-10fa-429f-98ea-484bc0dbf701/generations/701/cancel"
+    },
+    {
+      "kind": "blocked start request capture",
+      "body": {
+        "outputDir": "/tmp/ux12-simulated-output",
+        "baseline": false
+      },
+      "projectId": "37778d2a-10fa-429f-98ea-484bc0dbf701"
+    },
+    {
+      "kind": "simulated generation cancellation",
+      "path": "/api/projects/37778d2a-10fa-429f-98ea-484bc0dbf701/generations/701/cancel"
+    }
+  ],
+  "allGuardsBeforePage": true
+}

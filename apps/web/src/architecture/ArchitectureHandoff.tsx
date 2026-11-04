@@ -42,7 +42,11 @@ export function ArchitectureHandoff({
   view,
   onClose,
   diagramRoot = ".editor-canvas-area",
+  initialDiagram,
+  initialTab = "brief",
 }: {
+  initialDiagram?: HandoffDiagram;
+  initialTab?: "brief" | "coverage" | "scope";
   projection?: ArchitectureProjection;
   diagramRoot?: string;
   view: string;
@@ -55,6 +59,7 @@ export function ArchitectureHandoff({
     projection,
     view,
     diagramRoot,
+    initialDiagram,
     scenario: projection?.level === "deployment" ? undefined : selectedScenario,
   }));
   const [snapshot, setSnapshot] = useState<Handoff>();
@@ -62,7 +67,7 @@ export function ArchitectureHandoff({
   const [diagramError, setDiagramError] = useState<string>();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<string | null>("brief");
+  const [tab, setTab] = useState<string | null>(initialTab);
   const [scope, setScope] = useState<HandoffScope>(() =>
     structuredClone(
       base.design.architecture?.implementationHandoff ?? {
@@ -85,7 +90,8 @@ export function ArchitectureHandoff({
       },
     );
     const root = document.querySelector<HTMLElement>(capturedView.diagramRoot);
-    if (root && capturedView.projection)
+    if (capturedView.initialDiagram) setDiagram(capturedView.initialDiagram);
+    else if (root && capturedView.projection)
       captureHandoffDiagram(
         root,
         capturedView.projection,

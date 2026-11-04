@@ -57,7 +57,7 @@ function seconds(ms: number | undefined): string {
   return ms === undefined ? "" : `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s`;
 }
 
-function Steps({ generation }: { generation: Generation }) {
+export function Steps({ generation }: { generation: Generation }) {
   return (
     <ol className="generate-steps" aria-label="Steps">
       {generation.steps.map((step) => (
@@ -72,16 +72,21 @@ function Steps({ generation }: { generation: Generation }) {
   );
 }
 
-function Checks({ checks }: { checks: GenerationCheck[] }) {
+export function Checks({ checks }: { checks: GenerationCheck[] }) {
   if (checks.length === 0) return null;
   return (
     <>
-      {(["template", "application"] as const).map((layer) => {
+      {(["infrastructure", "template", "application"] as const).map((layer) => {
         const group = checks.filter((check) => (check.layer ?? "template") === layer);
         if (!group.length) return null;
         const passed = group.filter((check) => check.status === "passed").length;
         const skipped = group.filter((check) => check.status === "skipped").length;
-        const label = layer === "template" ? "Template conformance" : "Application acceptance";
+        const label =
+          layer === "infrastructure"
+            ? "Infrastructure checks"
+            : layer === "template"
+              ? "Template conformance"
+              : "Application acceptance";
         return (
           <section key={layer} className="generate-section" aria-label={label}>
             <h3>
@@ -134,7 +139,7 @@ function FileList({ title, paths }: { title: string; paths: string[] }) {
   );
 }
 
-function AppLinks({ generation }: { generation: Generation }) {
+export function AppLinks({ generation }: { generation: Generation }) {
   const urls = generation.report?.appUrls ?? [];
   if (urls.length === 0) return null;
   return (
@@ -156,14 +161,13 @@ function AppLinks({ generation }: { generation: Generation }) {
         )}
       </ul>
       <p className="generate-help">
-        The baseline check ran <code>docker compose down</code> afterwards. Start it with{" "}
-        <code>docker compose up --wait</code> in the output folder.
+        Start the app with <code>docker compose up --wait</code> in the output folder.
       </p>
     </section>
   );
 }
 
-function Report({ generation }: { generation: Generation }) {
+export function Report({ generation }: { generation: Generation }) {
   const report = generation.report;
   if (!report) return null;
   if (report.problems.length > 0) {
@@ -201,7 +205,7 @@ function Report({ generation }: { generation: Generation }) {
   );
 }
 
-function Log({ generation }: { generation: Generation }) {
+export function Log({ generation }: { generation: Generation }) {
   const ref = useRef<HTMLDivElement>(null);
   const lines = generation.log.length;
   // Keep the newest output in view unless the person scrolled up to read.

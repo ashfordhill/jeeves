@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDraw } from "../draw/store.ts";
+import { captureStudioDiagram } from "../studio/diagram-export.ts";
+import { isNextStudio } from "../studio/route.ts";
 import { type ViewId, viewFromHash } from "./views.ts";
 
 export function useHashView(): [ViewId, (next: ViewId) => void] {
@@ -15,7 +17,8 @@ export function useHashView(): [ViewId, (next: ViewId) => void] {
     void useDraw
       .getState()
       .flushEdits()
-      .then(() => {
+      .then(async (saved) => {
+        if (saved && next === "runs" && isNextStudio()) await captureStudioDiagram();
         window.location.hash = `/${next}`;
         setView(next);
       });

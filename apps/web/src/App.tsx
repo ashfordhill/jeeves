@@ -6,6 +6,7 @@
 import { MantineProvider } from "@mantine/core";
 import { DrawView } from "./draw/DrawView.tsx";
 import { ProjectMenu } from "./draw/ProjectMenu.tsx";
+import { GenerateView } from "./generate/GenerateView.tsx";
 import { RunsView } from "./runs/RunsView.tsx";
 import { SettingsView } from "./settings/SettingsView.tsx";
 import { StatusBar } from "./shell/StatusBar.tsx";
@@ -22,7 +23,7 @@ function ViewBody({ view }: { view: ViewId }) {
     case "draw":
       return <DrawView />;
     case "runs":
-      return <RunsView />;
+      return isNextStudio() ? <GenerateView /> : <RunsView />;
     case "settings":
       return <SettingsView />;
   }

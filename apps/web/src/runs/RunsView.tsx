@@ -3,6 +3,7 @@
  * remove tasks), then Start, Pause, Resume, or Cancel it, and watch the state of each task.
  * Everything works by mouse; there are no required shortcuts.
  */
+import { studioGenerationSupport } from "@jeeves/spec";
 import { ActionIcon, Button, Loader, NativeSelect, Textarea, TextInput } from "@mantine/core";
 import {
   IconAlertTriangle,
@@ -116,7 +117,7 @@ function duration(from: string, to: string | null): string {
   return ms < 60_000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms / 60_000)} min`;
 }
 
-export function RunsView() {
+export function RunsView({ embedded = false }: { embedded?: boolean }) {
   const projectId = useDraw((s) => s.loaded?.project.id);
   const drawStatus = useDraw((s) => s.status);
   const open = useDraw((s) => s.open);
@@ -147,7 +148,7 @@ export function RunsView() {
     );
   }
   return (
-    <div className="runs-view">
+    <div className={`runs-view${embedded ? " runs-embedded" : ""}`}>
       <RunList />
       <RunPanel />
     </div>
@@ -303,6 +304,8 @@ const actionButtons: Record<
 };
 
 function RunActions({ detail }: { detail: RunDetail }) {
+  const design = useDraw((s) => s.loaded?.design);
+  const unsupported = design ? !studioGenerationSupport(design).supported : true;
   const busy = useRuns((s) => s.busy);
   const act = useRuns((s) => s.act);
   const [confirming, setConfirming] = useState(false);
@@ -340,7 +343,9 @@ function RunActions({ detail }: { detail: RunDetail }) {
             color={color}
             variant={variant ?? "filled"}
             leftSection={<Icon size={16} aria-hidden />}
-            disabled={busy || needsTasks}
+            disabled={
+              busy || needsTasks || (unsupported && ["start", "resume", "replan"].includes(action))
+            }
             onClick={() => (action === "cancel" ? setConfirming(true) : void act(action))}
           >
             {label}

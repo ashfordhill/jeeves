@@ -1,0 +1,14 @@
+{
+  "project": {
+    "id": "a5e7df78-976a-4f4c-8738-c76792af44d2",
+    "name": "UX12 owned exact navigation",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T12:34:26.174Z",
+    "updatedAt": "2026-11-04T12:34:26.174Z"
+  },
+  "verified404": true
+}

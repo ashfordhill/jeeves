@@ -281,12 +281,33 @@ function ProjectStudio({
       studioViewKeys.containers,
   );
   const scope = scopes.find((item) => item.key === scopeKey) ?? views.containers;
-  const [selections, setSelections] = useState<Record<string, string | undefined>>({});
-  const [memberSelection, setMemberSelection] = useState<{
-    scope: string;
-    path: string;
-    target: RelationshipTarget;
-  }>();
+  const [selections, setSelections] = useState<Record<string, string | undefined>>(() => {
+    const target = new URLSearchParams(window.location.search).get("studioTarget");
+    return target &&
+      (scope.nodes.some((item) => item.id === target) ||
+        scope.edges.some((item) => item.id === target) ||
+        studioPaths(scope).some((item) => item.id === target))
+      ? { [scope.key]: target }
+      : {};
+  });
+  const [memberSelection, setMemberSelection] = useState<
+    | {
+        scope: string;
+        path: string;
+        target: RelationshipTarget;
+      }
+    | undefined
+  >(() => {
+    const query = new URLSearchParams(window.location.search);
+    const id = query.get("studioMember");
+    const kind = query.get("studioMemberKind");
+    const path = selections[scope.key];
+    if (!id || !path || (kind !== "connection" && kind !== "context")) return;
+    const edge = scope.edges.find((item) => item.id === path);
+    if (!(kind === "connection" ? edge?.connectionIds : edge?.contextRelationshipIds)?.includes(id))
+      return;
+    return { scope: scope.key, path, target: { kind, id } };
+  });
   const [hand, setHand] = useState(false);
   const [tool, setTool] = useState<BaseCreation>();
   const [connector, setConnector] = useState<string>();
@@ -344,11 +365,20 @@ function ProjectStudio({
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("studioScope", scope.key);
+    if (selected) url.searchParams.set("studioTarget", selected);
+    else url.searchParams.delete("studioTarget");
+    if (selectedMember) {
+      url.searchParams.set("studioMember", selectedMember.id);
+      url.searchParams.set("studioMemberKind", selectedMember.kind);
+    } else {
+      url.searchParams.delete("studioMember");
+      url.searchParams.delete("studioMemberKind");
+    }
     window.history.replaceState(null, "", url);
     setPreferences((current) =>
       current.scope === scope.key ? current : { ...current, scope: scope.key },
     );
-  }, [scope.key, setPreferences]);
+  }, [scope.key, selected, selectedMember, setPreferences]);
   useEffect(() => {
     // Keep the shared store's canonical selection useful to the existing chat; UX13 owns its tools.
     const ids =

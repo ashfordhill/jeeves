@@ -12,6 +12,7 @@ import {
   type RunsOverview,
   type TaskPatch,
 } from "../draw/api.ts";
+import { useDraw } from "../draw/store.ts";
 
 type RunsState = {
   projectId?: string;
@@ -60,19 +61,28 @@ export function movedOrder(detail: RunDetail, taskId: number, delta: -1 | 1): nu
 
 export const useRuns = create<RunsState>((set, get) => {
   /** Runs `fn` as the one action in flight, then refreshes; errors are shown, not thrown. */
-  const perform = async (fn: (projectId: string, runId: number) => Promise<unknown>) => {
+  const perform = async (
+    fn: (projectId: string, runId: number) => Promise<unknown>,
+    flush = false,
+  ) => {
     const { projectId, selectedId } = get();
     if (!projectId || selectedId === undefined) return false;
     set({ busy: true, error: undefined });
     try {
+      if (flush && !(await useDraw.getState().flushEdits()))
+        throw new Error("Resolve the unsaved change before continuing.");
+      if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
+        return false;
       await fn(projectId, selectedId);
       return true;
     } catch (error) {
-      set({ error: message(error) });
+      if (get().projectId === projectId) set({ error: message(error) });
       return false;
     } finally {
-      await get().refresh();
-      set({ busy: false });
+      if (get().projectId === projectId) {
+        await get().refresh();
+        set({ busy: false });
+      }
     }
   };
 
@@ -82,6 +92,7 @@ export const useRuns = create<RunsState>((set, get) => {
     load: async (projectId) => {
       set({
         projectId,
+        busy: false,
         overview: undefined,
         selectedId: undefined,
         detail: undefined,
@@ -94,7 +105,7 @@ export const useRuns = create<RunsState>((set, get) => {
         const latest = overview.runs[0];
         if (latest) await get().select(latest.id);
       } catch (error) {
-        set({ error: message(error) });
+        if (get().projectId === projectId) set({ error: message(error) });
       }
     },
 
@@ -104,9 +115,9 @@ export const useRuns = create<RunsState>((set, get) => {
       set({ selectedId: runId, detail: undefined });
       try {
         const detail = await api.run(projectId, runId);
-        if (get().selectedId === runId) set({ detail });
+        if (get().projectId === projectId && get().selectedId === runId) set({ detail });
       } catch (error) {
-        set({ error: message(error) });
+        if (get().projectId === projectId) set({ error: message(error) });
       }
     },
 
@@ -121,7 +132,7 @@ export const useRuns = create<RunsState>((set, get) => {
         if (get().projectId !== projectId) return;
         set({ overview, ...(detail && get().selectedId === selectedId && { detail }) });
       } catch (error) {
-        set({ error: message(error) });
+        if (get().projectId === projectId) set({ error: message(error) });
       }
     },
 
@@ -130,13 +141,19 @@ export const useRuns = create<RunsState>((set, get) => {
       if (!projectId) return;
       set({ busy: true, error: undefined });
       try {
+        if (!(await useDraw.getState().flushEdits()))
+          throw new Error("Resolve the unsaved change before planning.");
+        await useDraw.getState().flushLayout();
+        if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
+          return;
         const run = await api.planRun(projectId);
+        if (get().projectId !== projectId) return;
         set({ selectedId: run.id });
         await get().refresh();
       } catch (error) {
-        set({ error: message(error) });
+        if (get().projectId === projectId) set({ error: message(error) });
       } finally {
-        set({ busy: false });
+        if (get().projectId === projectId) set({ busy: false });
       }
     },
 
@@ -146,7 +163,10 @@ export const useRuns = create<RunsState>((set, get) => {
     note: (note) => perform((id, run) => api.runNote(id, run, note)),
 
     act: async (action) => {
-      await perform((projectId, runId) => api.runAction(projectId, runId, action));
+      await perform(
+        (projectId, runId) => api.runAction(projectId, runId, action),
+        ["start", "resume", "replan"].includes(action),
+      );
     },
 
     editTask: (taskId, patch) =>

@@ -1,0 +1,158 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "actual selected diagram SVG",
+      "nodes": 9,
+      "arrows": 16,
+      "semanticRevision": 1,
+      "sourcePositionsExact": true,
+      "sharedTrunksJoinedToRealBranches": true,
+      "portableOutputsPresentWithoutApplicationClaim": true,
+      "svgSha256": "b2ced6d888906b1164691902b1ab00f2c9fdc4663d8b893e7b1ed94b9b65fcaf"
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "actual selected diagram SVG",
+      "nodes": 9,
+      "arrows": 16,
+      "semanticRevision": 1,
+      "sourcePositionsExact": true,
+      "sharedTrunksJoinedToRealBranches": true,
+      "portableOutputsPresentWithoutApplicationClaim": true,
+      "svgSha256": "c80e17cb77b82d3da9514bdd0b10a0dc5fa4b6a21bf8f340a70cb43b6f7f5b50"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "kind": "actual scope/ownership/approval saves",
+      "revision": 3,
+      "assignment": {
+        "id": "review-latency",
+        "kind": "objective",
+        "owner": "Public reviewer",
+        "blocks": "Later capacity field test"
+      },
+      "approvalFingerprintMatches": true,
+      "status": "Ready for implementation review",
+      "noGenerationCreated": true
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "kind": "actual saved scope/ownership reload",
+      "revision": 3
+    },
+    {
+      "kind": "actual existing target source comparison",
+      "projectId": "a538e227-b662-48da-885e-e44f41c9c137",
+      "readOnly": true
+    }
+  ],
+  "writes": [
+    {
+      "projectId": "a64a1955-3b9b-4cdd-b484-fc48370b1868",
+      "status": 200,
+      "method": "POST",
+      "body": {
+        "baseRevision": 1,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "architecture": {
+              "nodes": [],
+              "system": {
+                "name": "Public scope fixture",
+                "description": "Public synthetic architecture review."
+              },
+              "objectives": [
+                {
+                  "id": "review-latency",
+                  "name": "Unverified latency target",
+                  "scope": {
+                    "kind": "system"
+                  },
+                  "metric": "response-time",
+                  "window": "",
+                  "boundary": ""
+                }
+              ],
+              "relationships": [],
+              "implementationHandoff": {
+                "description": "Public service architecture only. Runtime targets remain unverified.",
+                "partial": true,
+                "excludedScope": "Runtime targets and deployment evidence are outside this architecture review.",
+                "assignments": [
+                  {
+                    "kind": "objective",
+                    "id": "review-latency",
+                    "owner": "Public reviewer",
+                    "blocks": "Later capacity field test"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "projectId": "a64a1955-3b9b-4cdd-b484-fc48370b1868",
+      "status": 200,
+      "method": "POST",
+      "body": {
+        "baseRevision": 2,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "architecture": {
+              "nodes": [],
+              "system": {
+                "name": "Public scope fixture",
+                "description": "Public synthetic architecture review."
+              },
+              "objectives": [
+                {
+                  "id": "review-latency",
+                  "name": "Unverified latency target",
+                  "scope": {
+                    "kind": "system"
+                  },
+                  "metric": "response-time",
+                  "window": "",
+                  "boundary": ""
+                }
+              ],
+              "relationships": [],
+              "implementationHandoff": {
+                "description": "Public service architecture only. Runtime targets remain unverified.",
+                "partial": true,
+                "excludedScope": "Runtime targets and deployment evidence are outside this architecture review.",
+                "assignments": [
+                  {
+                    "kind": "objective",
+                    "id": "review-latency",
+                    "owner": "Public reviewer",
+                    "blocks": "Later capacity field test"
+                  }
+                ],
+                "review": {
+                  "fingerprint": "d06afad98a446173d38c8ed5a22cbf5e4e0017219a83f8abb8d530887385ac4d",
+                  "approval": "Public architecture scope approved; no runtime or implementation passes claimed."
+                }
+              }
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "warnings": [],
+  "guardsBeforePage": true
+}

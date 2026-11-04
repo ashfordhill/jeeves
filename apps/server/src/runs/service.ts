@@ -29,7 +29,7 @@ import {
   unverifiedExtensionOperations,
 } from "@jeeves/orchestrator";
 import { type ModelProvider, ProviderError } from "@jeeves/providers";
-import type { TemplateLookup } from "@jeeves/spec";
+import { studioGenerationSupport, type TemplateLookup } from "@jeeves/spec";
 import { and, asc, desc, eq, getTableColumns, inArray, notInArray, sql } from "drizzle-orm";
 import { type ModelSource, modelLabel } from "../chat/service.ts";
 import type { Db } from "../db/client.ts";
@@ -168,12 +168,16 @@ export class RunService {
         ready: false,
         reason: "Target workspaces are planning only; runs are unavailable.",
       };
+    const state = await this.design.getDesign(projectId);
+    const support = state && studioGenerationSupport(state.design);
+    if (support && !support.supported)
+      return { outputDir: project.outputDir, ready: false, reason: support.message };
     const { outputDir } = project;
     if (!outputDir) {
       return {
         outputDir,
         ready: false,
-        reason: "Generate the project first (Draw view, Generate button).",
+        reason: "Generate the project first in Generate.",
       };
     }
     try {
@@ -295,6 +299,10 @@ export class RunService {
         code: "PLANNING_WORKSPACE",
         message: "Target workspaces are planning only; runs are unavailable.",
       };
+    const state = await this.design.getDesign(projectId);
+    const support = state && studioGenerationSupport(state.design);
+    if (support && !support.supported)
+      return { ok: false, status: 422, code: support.code, message: support.message };
     const readiness = await this.readiness(projectId);
     if (!readiness) return notFound("Project");
     if (!readiness.ready || !readiness.outputDir) {
@@ -608,6 +616,12 @@ export class RunService {
     const run = await this.findRun(projectId, runId);
     if (!run) return notFound();
     if (action === "edit" || !allows(run.status, action)) return wrongState(run, action);
+    if (["start", "resume", "replan"].includes(action)) {
+      const state = await this.design.getDesign(projectId);
+      const support = state && studioGenerationSupport(state.design);
+      if (support && !support.supported)
+        return { ok: false, status: 422, code: support.code, message: support.message };
+    }
     const now = new Date();
     const transition = (status: RunStatus, set: Partial<Run> = {}) =>
       this.db
