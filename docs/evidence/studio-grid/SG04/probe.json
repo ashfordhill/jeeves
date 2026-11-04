@@ -1,0 +1,140 @@
+{
+  "examples": ["studio-tinyurl@1.0.0"],
+  "manifestHash": "4a808cc6cd4557815b283543a896ee22dbaa56370c909da81144f0fe5b2a6d33",
+  "manifestHashMatches": true,
+  "sources": ["resolved"],
+  "designFindings": [
+    "NEEDS_TEMPLATE  Studio settings and packages are design intent; application generation has no studio runtime resolver.",
+    "NEEDS_TEMPLATE  \"Web app\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Shorten API\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Redirect service\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Analytics worker\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"CDN\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Links database\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Link cache\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Click events\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"Analytics store\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  \"URL reputation API\" needs a template before it can be generated.",
+    "NEEDS_TEMPLATE  “Creates and lists links” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Forwards cache misses” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Writes links” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Counts requests” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Checks destinations” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Reads hot links” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Reads links on miss” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Publishes clicks” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Delivers clicks” is a planned relationship; generation is not implemented.",
+    "NEEDS_TEMPLATE  “Writes aggregates” is a planned relationship; generation is not implemented."
+  ],
+  "studioFindings": [
+    "NEEDS_TEMPLATE  Studio settings and packages are design intent; application generation has no studio runtime resolver."
+  ],
+  "counts": {
+    "elements": 10,
+    "connections": 10,
+    "packages": 1,
+    "components": 11,
+    "componentConnections": 15
+  },
+  "blueprint": {
+    "services": [
+      "worker:analytics:3c",
+      "redirect:redirect:4c",
+      "service:shorten-api:4c",
+      "browser:web:0c"
+    ],
+    "resources": [
+      "database:analytics-store",
+      "cdn:cdn",
+      "queue:click-events",
+      "cache:link-cache",
+      "database:links-db"
+    ],
+    "externals": ["reputation"],
+    "groups": ["link-platform:redirect+shorten-api"],
+    "connections": 10,
+    "componentLinks": 15,
+    "omitted": [],
+    "findingCodes": ["NEEDS_TEMPLATE"]
+  },
+  "views": [
+    {
+      "key": "studio:context",
+      "nodes": [
+        "studio:context:system",
+        "studio:context:link-creator",
+        "studio:context:url-reputation",
+        "studio:context:visitor"
+      ]
+    },
+    {
+      "key": "studio:containers",
+      "nodes": [
+        "studio:context:link-creator",
+        "studio:context:visitor",
+        "studio:element:analytics",
+        "studio:element:analytics-store",
+        "studio:element:cdn",
+        "studio:element:link-cache",
+        "studio:element:links-db",
+        "studio:element:reputation",
+        "studio:element:web",
+        "studio:package:link-platform"
+      ]
+    },
+    {
+      "key": "studio:package:link-platform",
+      "nodes": [
+        "studio:element:cdn",
+        "studio:element:click-events",
+        "studio:element:link-cache",
+        "studio:element:links-db",
+        "studio:element:redirect",
+        "studio:element:reputation",
+        "studio:element:shorten-api",
+        "studio:element:web"
+      ]
+    },
+    {
+      "key": "studio:service:analytics",
+      "nodes": [
+        "studio:element:analytics",
+        "studio:element:analytics-store",
+        "studio:element:click-events"
+      ]
+    },
+    {
+      "key": "studio:service:redirect",
+      "nodes": [
+        "studio:element:cdn",
+        "studio:element:click-events",
+        "studio:element:link-cache",
+        "studio:element:links-db",
+        "studio:element:redirect"
+      ]
+    },
+    {
+      "key": "studio:service:shorten-api",
+      "nodes": [
+        "studio:element:link-cache",
+        "studio:element:links-db",
+        "studio:element:reputation",
+        "studio:element:shorten-api",
+        "studio:element:web"
+      ]
+    },
+    {
+      "key": "studio:service:web",
+      "nodes": ["studio:element:shorten-api", "studio:element:web"]
+    }
+  ],
+  "layoutKeys": [
+    "studio:context",
+    "studio:containers",
+    "studio:package:link-platform",
+    "studio:service:shorten-api",
+    "studio:service:redirect",
+    "studio:service:analytics",
+    "studio:service:web"
+  ]
+}

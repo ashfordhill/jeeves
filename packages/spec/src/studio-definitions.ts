@@ -191,6 +191,7 @@ const labels: Readonly<Record<string, string>> = {
   mysql: "MySQL",
   sqlite: "SQLite",
   mongodb: "MongoDB",
+  clickhouse: "ClickHouse",
   "self-hosted": "Self-hosted",
   neon: "Neon",
   supabase: "Supabase",

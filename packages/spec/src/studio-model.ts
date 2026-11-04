@@ -241,6 +241,7 @@ export const studioDatabaseEngineSchema = z.enum([
   "mysql",
   "sqlite",
   "mongodb",
+  "clickhouse",
 ]);
 export const studioDatabaseProviderSchema = z.enum([
   ...hostedProviders,
@@ -254,6 +255,8 @@ export const studioDatabaseProviders = {
   mysql: hostedProviders,
   sqlite: ["unspecified", "self-hosted", "cloudflare-d1", "external"],
   mongodb: ["unspecified", "self-hosted", "external"],
+  /** SG04: analytical column store (TinyURL analytics). */
+  clickhouse: ["unspecified", "self-hosted", "aws", "google-cloud", "external"],
 } as const;
 export const studioCacheEngineSchema = z.enum(["unspecified", "redis-compatible", "memcached"]);
 export const studioCacheProviderSchema = z.enum([...hostedProviders, "upstash"]);

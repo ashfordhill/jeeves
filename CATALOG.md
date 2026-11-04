@@ -13,7 +13,7 @@ packages, C3 queues, typed provider intent and one source-preserving graph. Read
 | Connect actual boundaries or shared resources | Connection tool or inspector Connections; explicit identity reuse |
 | Group independently deployed services | Select multiple C2 cards → Group as package |
 | Reuse a finite composition | Library Presets; Saved architecture templates manages its local lifecycle |
-| Create a source-mapped reference project | New project → Architecture study or Library Examples |
+| Create the TinyURL reference project | New project → Architecture study or Library Examples |
 | Review readiness, source obligations and evidence | Generate Review |
 | Use existing supported generation/run controls | Generate Activity |
 | Export lossless source, portable handoff or selected diagram | Generate Review/Outputs |
@@ -49,35 +49,22 @@ External API under Integrations; and Billing, Redirect and Notifications/Identit
 Billing, Redirect, Notifications and Identity each represent one application, with scalar provider
 or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
 The reusable Service and worker preset is a grouping of actual deployments, with no package-level
-language, provider or runtime. The fourteen reviewed studio studies are available through the
+language, provider or runtime. The single reviewed studio study, TinyURL, is available through the
 default studio Library and New project chooser.
 
-### Reviewed studio studies
+### Reviewed studio study
 
-[Mattermost, Enterprise, Streamly, QRWTY target, Links & QR, Community and Social](docs/examples/studio-studies.md) have separate versioned
-finite factories and pinned goal manifests. Mattermost retains one modular server and its separate
-job process; Enterprise retains its domain API and independent worker; Streamly separates playback
-and heavy processing with C3 queues, shared resources and optional CDN provider identity. Internal
-libraries and business responsibilities remain source-linked C4b work. QRWTY has one Billing
-service, a separate Redirect and a C3 visit queue/analytics worker; Links stays a smaller reference.
-Community covers search and queued notifications; Social retains background media processing,
-feed/search/cache, realtime and an external native client boundary. Separate Discourse and Vendure
-foundations retain modular APIs, independent workers, SQL authority, private bytes and external
-providers, with C3 logical work channels. Zammad has a small studio reference; detailed P73a/P73b
-design remains incomplete and paused. Their maps retain all 60 frozen cases and 195 observations
-as future C4a/C4b work. The source requires no added cache, broker or Billing deployment.
-Original QRWTY retains its approved cohesive API/browser/Postgres reference separately from the
-existing executable legacy recipe. Dropshipping preserves one managed Worker with bundled storefront/
-admin, D1/R2, hosted Stripe and explicit Workflows/email/vendor boundaries; no customer accounts
-or queue substitution is introduced. Inventory and grocery are limited software/device references:
-hardware, fields/actions, offline behavior, data/API access and recognition quality remain unknown.
-All 14 coverage rows now have separate source maps; no full-product claim follows.
-These studies select no executable runtime template, provision no provider and supply no passing application evidence.
-Original studies, deployment declarations and benchmark inputs remain unchanged. See the
-[studio registry](packages/spec/src/studio-examples/index.ts), [UX14a evidence](docs/evidence/studio-ux/UX14a/README.md)
-and [UX14b evidence](docs/evidence/studio-ux/UX14b/README.md), plus the
-[backend studio references](docs/evidence/studio-ux/UX14c/README.md) and
-[field-study evidence](docs/evidence/studio-ux/UX14d/README.md).
+Since SG04 the studio ships one study, [TinyURL](docs/examples/studio-studies.md), with a
+versioned factory, a pinned goal manifest and C3 components: a Link platform group around the
+Shorten API and Redirect service, a web client, analytics worker, CDN, PostgreSQL links database,
+Redis link cache, ClickHouse analytics store, a C3 click-events queue and an external URL
+reputation API. It is the read-heavy/low-latency example (cache-aside with single-flight,
+range-allocated IDs, 302 with a short edge max-age, batched click publishing). The fourteen earlier
+studies were removed from the product; git history and the UX14a–UX14d evidence keep them, and
+projects created from them still open. The study selects no executable runtime template,
+provisions no provider and supplies no passing application evidence. See the
+[studio registry](packages/spec/src/studio-examples/index.ts) and
+[SG04 evidence](docs/evidence/studio-grid/SG04/README.md).
 
 Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
 has no runtime-support binding. Application entries can be created at C2 or as package members;
@@ -184,7 +171,7 @@ Three focused views, declared local deployment and unverified workload intent sh
 
 All runtime implementations remain unsupported; application observations are absent/not run and
 observed points remain zero. This TypeScript/REST adaptation supplies no upstream compatibility,
-generated application or measured capacity. The fresh Mattermost studio study is the default;
+generated application or measured capacity. The TinyURL studio study is the fresh-install default;
 saved projects do not adopt any example automatically. See the [complete study and 20-row/66-observation trace](docs/examples/discourse-core.md)
 and [example source](packages/spec/src/discourse-core-example.ts).
 

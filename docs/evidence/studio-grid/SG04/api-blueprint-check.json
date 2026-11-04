@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "parses": true,
+  "services": ["analytics:3c", "redirect:4c", "shorten-api:4c", "web:0c"],
+  "resources": 5,
+  "externals": 1,
+  "groups": 1,
+  "connections": 10,
+  "componentLinks": 15,
+  "omitted": [],
+  "origin": {
+    "example": { "id": "studio-tinyurl", "version": "1.0.0" },
+    "goalManifestSha256": "4a808cc6cd4557815b283543a896ee22dbaa56370c909da81144f0fe5b2a6d33"
+  },
+  "studioFindings": ["NEEDS_TEMPLATE"]
+}

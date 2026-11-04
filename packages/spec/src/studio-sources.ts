@@ -2,26 +2,7 @@
 import { z } from "zod";
 import { contractCanonical } from "./architecture-contracts.ts";
 import { idSchema } from "./ids.ts";
-import communityGoal from "./studio-examples/community.goal.json" with { type: "json" };
-import discourseFoundationGoal from "./studio-examples/discourse-foundation.goal.json" with {
-  type: "json",
-};
-import dropshippingGoal from "./studio-examples/dropshipping.goal.json" with { type: "json" };
-import enterpriseGoal from "./studio-examples/enterprise.goal.json" with { type: "json" };
-import groceryGoal from "./studio-examples/grocery.goal.json" with { type: "json" };
-import inventoryGoal from "./studio-examples/inventory.goal.json" with { type: "json" };
-import linksGoal from "./studio-examples/links.goal.json" with { type: "json" };
-import mattermostGoal from "./studio-examples/mattermost.goal.json" with { type: "json" };
-import qrwtyoriginalGoal from "./studio-examples/qrwty-original.goal.json" with { type: "json" };
-import qrwtytargetGoal from "./studio-examples/qrwty-target.goal.json" with { type: "json" };
-import socialGoal from "./studio-examples/social.goal.json" with { type: "json" };
-import streamlyGoal from "./studio-examples/streamly.goal.json" with { type: "json" };
-import vendureFoundationGoal from "./studio-examples/vendure-foundation.goal.json" with {
-  type: "json",
-};
-import zammadFoundationGoal from "./studio-examples/zammad-foundation.goal.json" with {
-  type: "json",
-};
+import tinyurlGoal from "./studio-examples/tinyurl.goal.json" with { type: "json" };
 import { definitionRefSchema, type StudioModel } from "./studio-model.ts";
 
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
@@ -116,22 +97,7 @@ function freezeSource<T>(value: T): T {
   return value;
 }
 export const studioGoalManifests: readonly StudioGoalManifest[] = freezeSource(
-  [
-    mattermostGoal,
-    enterpriseGoal,
-    streamlyGoal,
-    qrwtytargetGoal,
-    linksGoal,
-    communityGoal,
-    socialGoal,
-    discourseFoundationGoal,
-    vendureFoundationGoal,
-    zammadFoundationGoal,
-    qrwtyoriginalGoal,
-    dropshippingGoal,
-    inventoryGoal,
-    groceryGoal,
-  ].map((manifest) => studioGoalManifestSchema.parse(manifest)),
+  [tinyurlGoal].map((manifest) => studioGoalManifestSchema.parse(manifest)),
 );
 
 export async function studioGoalManifestHash(manifest: StudioGoalManifest): Promise<string> {

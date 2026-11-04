@@ -9,8 +9,8 @@ existing supported legacy template/recipe designs retain their generation eligib
 
 ## Everyday workflow
 
-- Open **New project** from the project menu. Architecture study offers fourteen source-mapped
-  studio examples; a fresh installation starts with the Mattermost studio study. Blank architecture
+- Open **New project** from the project menu. Architecture study offers the TinyURL study, which
+  is also where a fresh installation starts. Blank architecture
   starts an empty design. Existing resource-workspace and QR Studio recipe starting points remain
   available with their original bounded configuration and support.
 - Use **C1** for the system, people and external systems; **C2** for applications, resources and
@@ -96,9 +96,9 @@ backend declarations and deployment records remain in lossless source export and
 The old Explorer, focused-view selector, freeform board, deep business/API/schema editors and duplicate
 Generate drawer are absent from normal navigation.
 
-The [fourteen studies](examples/studio-studies.md) retain exact source manifests and explicit future
-C4a/C4b obligations. Inventory and grocery remain limited concepts with unresolved requirements;
-the Zammad reference does not complete P73a/P73b. No tidy diagram earns backend benchmark points.
+The [TinyURL study](examples/studio-studies.md) is the only study (SG04); it keeps an exact source
+manifest and explicit future implementation obligations. The fourteen earlier studies were
+removed; projects created from them still open. No tidy diagram earns backend benchmark points.
 See [CATALOG](../CATALOG.md) and [modeling guidance](c4-modeling.md) for conceptual boundaries.
 
 The read-only [blueprint](studio-blueprint.md) (`GET /projects/:id/blueprint`) is the

@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "example": {
+    "id": "studio-tinyurl",
+    "version": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "plan",
+      "path": "docs/build-plan-studio-grid.md",
+      "commit": "0f98e4ff6861cf7cdd3d815e98ec9a5379e78f96",
+      "sha256": "436b9748913bb584d730e5f58fed584736afc420e1101b11487495d4e4fe969c"
+    }
+  ],
+  "requirements": [
+    {
+      "requirementId": "foundation",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 TinyURL study"
+      },
+      "summary": "Finite settings and C3 components are design intent with no selected executable template.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": [
+        "web",
+        "shorten-api",
+        "redirect",
+        "analytics",
+        "cdn",
+        "links-db",
+        "link-cache",
+        "click-events",
+        "analytics-store",
+        "reputation"
+      ],
+      "connectionIds": [],
+      "remainingWork": "A separate code-generation service must read the blueprint and implement and verify the services. Studio application generation remains unsupported."
+    },
+    {
+      "requirementId": "boundary-web",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Web app: browser client where link creators shorten and manage links.",
+      "disposition": "represented-design",
+      "nodeIds": ["web"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-shorten-api",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Shorten API: validates destinations, allocates short codes and stores links.",
+      "disposition": "represented-design",
+      "nodeIds": ["shorten-api"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-redirect",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Redirect service: resolves short codes from cache or database and answers with a redirect.",
+      "disposition": "represented-design",
+      "nodeIds": ["redirect"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-analytics",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Analytics worker: consumes click events and writes aggregates.",
+      "disposition": "represented-design",
+      "nodeIds": ["analytics"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-cdn",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "CDN: terminates visitor traffic and caches redirects for a short edge max-age.",
+      "disposition": "represented-design",
+      "nodeIds": ["cdn"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-links-db",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Links database: authoritative short code to destination mapping (PostgreSQL).",
+      "disposition": "represented-design",
+      "nodeIds": ["links-db"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-link-cache",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Link cache: Redis cache of hot short codes.",
+      "disposition": "represented-design",
+      "nodeIds": ["link-cache"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-click-events",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Click events: asynchronous queue between redirects and analytics.",
+      "disposition": "represented-design",
+      "nodeIds": ["click-events"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-analytics-store",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Analytics store: ClickHouse column store for click aggregates.",
+      "disposition": "represented-design",
+      "nodeIds": ["analytics-store"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "boundary-reputation",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "URL reputation API: external check that a destination is not malicious.",
+      "disposition": "represented-design",
+      "nodeIds": ["reputation"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "group-link-platform",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C2"
+      },
+      "summary": "Link platform: group frame around Shorten API and Redirect service.",
+      "disposition": "represented-design",
+      "nodeIds": ["shorten-api", "redirect"],
+      "connectionIds": [],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "read-heavy",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 performance"
+      },
+      "summary": "About 100 reads per write: cache-aside with in-process L1 plus Redis, single-flight stampede protection, 302 with short edge max-age, batched asynchronous click publishing.",
+      "disposition": "represented-design",
+      "nodeIds": ["redirect", "link-cache", "cdn", "click-events"],
+      "connectionIds": ["redirect-cache", "cdn-redirect", "redirect-clicks"],
+      "remainingWork": "Design intent only; application implementation and verification remain later."
+    },
+    {
+      "requirementId": "behavior-shorten",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C3 Shorten API"
+      },
+      "summary": "Shorten: rate-limit callers, check destination reputation, allocate a range-based base62 code and persist the link.",
+      "disposition": "c4b",
+      "nodeIds": ["shorten-api"],
+      "connectionIds": ["shorten-db", "shorten-reputation"],
+      "remainingWork": "Implement link creation, validation and code allocation within the Shorten API. No runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-redirect",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C3 Redirect service"
+      },
+      "summary": "Redirect: resolve the code cache-first, fall back to the database on a miss, answer 302 and publish a click event.",
+      "disposition": "c4b",
+      "nodeIds": ["redirect"],
+      "connectionIds": ["redirect-cache", "redirect-db", "redirect-clicks"],
+      "remainingWork": "Implement resolution, the redirect response and click publishing within the Redirect service. No runtime is supplied."
+    },
+    {
+      "requirementId": "behavior-analytics",
+      "source": {
+        "sourceId": "plan",
+        "location": "\u00a77 C3 Analytics worker"
+      },
+      "summary": "Analytics: consume click batches and roll them up per link and hour.",
+      "disposition": "c4b",
+      "nodeIds": ["analytics"],
+      "connectionIds": ["click-events-analytics", "analytics-write"],
+      "remainingWork": "Implement click aggregation within the Analytics worker. No runtime is supplied."
+    }
+  ]
+}

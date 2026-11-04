@@ -11,7 +11,7 @@ import {
 import { api, type Project } from "../draw/api.ts";
 
 /** The example a fresh installation opens with, and the chooser's preselected study. */
-export const DEFAULT_EXAMPLE_ID = "studio-mattermost-reference";
+export const DEFAULT_EXAMPLE_ID = "studio-tinyurl";
 
 export async function createExampleProject(id: string, name?: string): Promise<Project> {
   const example = studioArchitectureExamples.some((item) => item.id === id)

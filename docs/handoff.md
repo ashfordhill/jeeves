@@ -10880,3 +10880,75 @@ Notes for SG04:
   but plan §7 does not list one.
 - Removing the 14 studies will remove the `studies` section of this evidence script; that is fine.
 - Library fragment copy and pattern insertion still do not carry components (SG02 gap).
+
+## 2026-11-04 — SG04: TinyURL study replaces the fourteen studies (complete)
+
+Executed SG04 only on primary `main` from `0f98e4f`, as a fresh sequential worker. Read AGENTS,
+the studio grid plan (O1–O9; D1 adopt, D2 keep the Resource workspace/QR Studio starters and
+Blank, D3 queues C3-only), the execution units, SG02/SG03 handoffs and the study sources. No
+generation/runtime, P73a/P73b or backend batch work.
+
+What changed:
+
+- New `packages/spec/src/studio-examples/tinyurl.ts` (`studio-tinyurl@1.0.0`, "TinyURL · studio
+  study"), `tinyurl.goal.json` (source: the plan file with its SHA-256 at `0f98e4f`; boundary rows
+  plus a foundation row and three c4b behaviour rows, which become unresolved decisions) and
+  `tinyurl.layout.json` (existing per-scope position format for C1, C2, the package scope and the
+  four service scopes). C1: Link creator, Visitor, TinyURL, URL reputation API (bound to the
+  `reputation` element). C2: Web app, Shorten API, Redirect service (redirect kind, cache/store
+  lookups), Analytics worker, CDN (origin redirect, cacheRedirects enabled), Links database
+  (PostgreSQL, 2 read replicas, `short_code`), Link cache (Redis cluster, LRU), Click events (topic,
+  12 partitions, C3 only), Analytics store (ClickHouse), URL reputation API; 10 connections
+  (9 visible at C2); package `link-platform` = Shorten API + Redirect service. C3: 11 components
+  and 15 component links per plan §7 (rate limiter on Redis, reputation external call with circuit
+  breaker, range-allocation ID generator, link writer; cache reader L1+Redis single-flight, replica
+  link reader, 302 responder with 60 s edge max-age, batched click publisher; click consumer,
+  custom aggregation, aggregate writer). Service performance settings set on all three services.
+- `study.ts`: optional `parts` argument (packages, components, componentConnections).
+- Registry (`studio-examples/index.ts`) and `studio-sources.ts` now hold only TinyURL. The fourteen
+  studies' `.ts`, `.goal.json` and `.layout.json` files are deleted (git history keeps them).
+- Web: `DEFAULT_EXAMPLE_ID = "studio-tinyurl"` (fresh install + chooser preselection); chooser
+  card text "Start from the TinyURL design study." Library Examples reads the same registry.
+- Additive spec change: database engine `clickhouse` (providers unspecified/self-hosted/aws/
+  google-cloud/external; label ClickHouse), documented in configuration matrix §3.
+- Docs: `docs/examples/studio-studies.md` rewritten for TinyURL; CATALOG (task row, vocabulary
+  sentence, "Reviewed studio study" section, Discourse default sentence), README and studio guide
+  mentions. Append-only history and historical evidence untouched.
+
+Observations: evidence `docs/evidence/studio-grid/SG04/` (README, `probe.mts`, `capture.mjs`,
+screenshots). `validateStudio` gives only the standing design-only NEEDS_TEMPLATE notice;
+`designBlueprintSchema.parse(designBlueprint(design))` succeeds with 4 services, 5 resources,
+1 external, 1 group, 10 connections, 15 component links and `omitted: []`; the real blueprint
+endpoint agrees. A removed study's origin resolves as `unavailable`. Browser (1440×900, 1280×800):
+chooser and Library Examples show only TinyURL; C1 (4 nodes, 3 lines) and C2 (10 nodes, 9 lines)
+render. The four owner projects (none has a studio origin) were read with GET only, return 200 for
+project/design/layout/findings/blueprint, and their revisions/`updatedAt` are unchanged; browser
+writes naming them were blocked (none attempted). Four disposable projects were created and deleted.
+
+Checks (Node 24.21.0): `pnpm lint` exit 0 (2,797 warnings / 88 infos, unchanged); `pnpm typecheck`
+exit 0; `pnpm --filter @jeeves/web build` exit 0 (existing chunk advisory). `pnpm check`, unit and
+E2E suites not run (owner-deferred); no test referenced the removed studies, so none changed. Dev
+servers on 4300/4310 were already running and left running.
+
+Deviations and decisions:
+
+- ClickHouse engine added (plan §7 names it; no engine fitted). Additive within studio v1 and
+  blueprint 1.
+- Shorten API also connects to Link cache ("Counts requests") so the Redis rate limiter traces a
+  real C2 connection; 10 C2 connections total, within the plan's under-12 target.
+- Resource owners: links-db → Shorten API, link-cache and click-events → Redirect service,
+  analytics-store → Analytics worker. No gateway (plan §7 lists none).
+- Older architecture examples (`architectureExample`, e.g. `mattermost-example.ts`) are not
+  studies and remain, as do their tests.
+
+Notes for SG05:
+
+- At C2 the package currently collapses to one "Link platform" card (old projection) and
+  components are not drawn; SG05 should show it as an open frame and project the 11 components.
+  Component-to-component links use `{kind: "component"}` targets inside the same host.
+- `tinyurl.layout.json` keys: `studio:context`, `studio:containers`, `studio:package:link-platform`,
+  `studio:service:{shorten-api,redirect,analytics,web}`. SG06 removes saved positions; the study
+  can then drop its layout file (pass no `initialLayout`).
+- `docs/plans/studio-ux/example-coverage.md` still describes the fourteen-row UX coverage plan;
+  it is historical planning and was left unchanged. CATALOG's opening "fourteen exact design
+  definitions" refers to kinds (now fifteen with gateway); SG10 can correct it.

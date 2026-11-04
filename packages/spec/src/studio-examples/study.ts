@@ -2,8 +2,9 @@
 import { type Architecture, architectureSchema } from "../architecture.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "../design.ts";
 import { type LayoutDocument, layoutSchema } from "../layout.ts";
+import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
 import { studioDefinitions } from "../studio-definitions.ts";
-import { studioDefinitionRef } from "../studio-model.ts";
+import { type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
 import type { StudioConnectionCreation, StudioElementCreation } from "../studio-operations.ts";
 import { studioGoalManifests } from "../studio-sources.ts";
 import { studioViews } from "../studio-view.ts";
@@ -22,6 +23,12 @@ export function createStudioStudy(
   connections: StudioConnectionCreation[],
   context: Pick<Architecture, "system" | "nodes" | "relationships">,
   initialLayout?: unknown,
+  /** SG04: optional group frames and C3 components, stored exactly as given. */
+  parts: {
+    packages?: StudioPackage[];
+    components?: StudioComponent[];
+    componentConnections?: StudioComponentConnection[];
+  } = {},
 ): { name: string; design: DesignDocument; layout: LayoutDocument } {
   const manifest = studioGoalManifests.find(
     (item) => item.example.id === study.id && item.example.version === study.version,
@@ -76,11 +83,15 @@ export function createStudioStudy(
           settings: item.settings,
           ...(item.owner && { owner: item.owner }),
         })),
-        packages: [],
+        packages: parts.packages ?? [],
         connections: connections.map((item) => ({
           connection: item.id,
           settings: item.settings,
         })),
+        ...(parts.components?.length && { components: parts.components }),
+        ...(parts.componentConnections?.length && {
+          componentConnections: parts.componentConnections,
+        }),
       },
       decisions,
       implementationHandoff: {

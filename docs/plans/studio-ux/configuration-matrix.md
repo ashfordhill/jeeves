@@ -80,7 +80,7 @@ selected service's C3 resource picker creates ownership explicitly and can reuse
 
 | Kind and capability | Typed settings beyond `kind` | Default / limitations |
 | --- | --- | --- |
-| `database` / Database | `engine`: unspecified/postgresql/mysql/sqlite/mongodb; `provider`: below | Both unspecified. Engine first, compatible provider second. No tables, entities, field types, queries, migrations, database name, credentials or connection pool tuning in this version. |
+| `database` / Database | `engine`: unspecified/postgresql/mysql/sqlite/mongodb/clickhouse (clickhouse added in SG04); `provider`: below | Both unspecified. Engine first, compatible provider second. No tables, entities, field types, queries, migrations, database name, credentials or connection pool tuning in this version. |
 | `cache` / Cache | `engine`: unspecified/redis-compatible/memcached; `provider`: below; `ttlSeconds?`: integer 1–604800 | Engine/provider unspecified; TTL absent. TTL is a cache design policy, not user-data retention. No key schemas, invalidation programs or eviction/cluster controls. |
 | `queue` / Queue or topic | `mode`: work-queue/topic; `provider`: below; `retentionSeconds?`: integer 60–1209600 | mode work-queue; provider unspecified; retention absent. Queue storage retention is technical, not business retention. Provider feasibility belongs in Generate; never silently clamp a value. No exactly-once checkbox, DLQ automation, event schema editor or retry workflow. |
 | `object-store` / Object storage | `provider`: below; `access`: private/public | Provider unspecified, access private. No real bucket creation/name, lifecycle rules, signing-key forms or upload workflow designer. Access records intent; provider integration is C4b. |
@@ -96,6 +96,7 @@ Provider compatibility is a finite catalog table, not a cross-product of every v
 | MySQL | unspecified, self-hosted, aws, google-cloud, external |
 | SQLite | unspecified, self-hosted, cloudflare-d1, external |
 | MongoDB | unspecified, self-hosted, external |
+| ClickHouse (SG04) | unspecified, self-hosted, aws, google-cloud, external |
 | Redis-compatible cache | unspecified, self-hosted, aws, google-cloud, upstash, external |
 | Memcached | unspecified, self-hosted, aws, google-cloud, external |
 | Queue/topic | unspecified, self-hosted, cloudflare-queues, aws, google-cloud, external |

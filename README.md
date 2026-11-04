@@ -9,7 +9,7 @@ default interface, following the [resolved feedback](.docs/visual-improvements/2
 Use the scope-aware palette or Library to create finite applications/resources, configure provider
 intent, share C3 queues and group independent services. Click to inspect, double-click useful detail,
 and use Tidy and fit and chronological Undo/Redo. The [studio guide](docs/architecture-studio.md)
-explains autosave, source-preserving legacy compatibility and all fourteen source-mapped studies.
+explains autosave, source-preserving legacy compatibility and the TinyURL study.
 
 Generate is the single Review/Activity/Outputs destination. Studio definitions remain **design-only**;
 application generation is blocked until an exact runtime resolver exists. Existing supported legacy
@@ -38,8 +38,8 @@ docker pull ghcr.io/ashfordhill/jeeves:latest
 docker run --rm --name jeeves -p 4300:4300 ghcr.io/ashfordhill/jeeves:latest
 ```
 
-Historical C1/C2/C3 Mattermost screenshots, courtesy of Astra; the current studio uses a separate
-source-mapped study. See the studio guide and combined evidence for the implemented interface:
+Historical C1/C2/C3 Mattermost screenshots, courtesy of Astra; the current studio ships the
+TinyURL study instead. See the studio guide and combined evidence for the implemented interface:
 
 ### C1
 <p align="center"><img src=".docs/mattermost-c1.png" width="600"/></p>

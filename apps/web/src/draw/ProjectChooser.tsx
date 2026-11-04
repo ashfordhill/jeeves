@@ -150,7 +150,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 id: "study",
                 icon: <IconSitemap size={24} />,
                 title: "Architecture study",
-                description: "Start from a source-mapped studio design study.",
+                description: "Start from the TinyURL design study.",
               },
               {
                 id: "resource",

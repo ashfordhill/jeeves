@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "items": {},
+  "architecture": {
+    "studio:context": {
+      "positions": {
+        "studio:context:link-creator": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:visitor": {
+          "x": 0,
+          "y": 320
+        },
+        "studio:context:system": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:context:url-reputation": {
+          "x": 480,
+          "y": 160
+        }
+      }
+    },
+    "studio:containers": {
+      "positions": {
+        "studio:context:link-creator": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:visitor": {
+          "x": 0,
+          "y": 320
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:cdn": {
+          "x": 240,
+          "y": 320
+        },
+        "studio:package:link-platform": {
+          "x": 480,
+          "y": 160
+        },
+        "studio:element:reputation": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:links-db": {
+          "x": 720,
+          "y": 160
+        },
+        "studio:element:link-cache": {
+          "x": 720,
+          "y": 320
+        },
+        "studio:element:analytics": {
+          "x": 720,
+          "y": 480
+        },
+        "studio:element:analytics-store": {
+          "x": 960,
+          "y": 480
+        }
+      }
+    },
+    "studio:package:link-platform": {
+      "positions": {
+        "studio:element:web": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:cdn": {
+          "x": 0,
+          "y": 320
+        },
+        "studio:element:shorten-api": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:redirect": {
+          "x": 240,
+          "y": 320
+        },
+        "studio:element:reputation": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:links-db": {
+          "x": 480,
+          "y": 160
+        },
+        "studio:element:link-cache": {
+          "x": 480,
+          "y": 320
+        },
+        "studio:element:click-events": {
+          "x": 480,
+          "y": 480
+        }
+      }
+    },
+    "studio:service:shorten-api": {
+      "positions": {
+        "studio:element:web": {
+          "x": 0,
+          "y": 160
+        },
+        "studio:element:shorten-api": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:reputation": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:links-db": {
+          "x": 480,
+          "y": 160
+        },
+        "studio:element:link-cache": {
+          "x": 480,
+          "y": 320
+        }
+      }
+    },
+    "studio:service:redirect": {
+      "positions": {
+        "studio:element:cdn": {
+          "x": 0,
+          "y": 160
+        },
+        "studio:element:redirect": {
+          "x": 240,
+          "y": 160
+        },
+        "studio:element:link-cache": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:links-db": {
+          "x": 480,
+          "y": 160
+        },
+        "studio:element:click-events": {
+          "x": 480,
+          "y": 320
+        }
+      }
+    },
+    "studio:service:analytics": {
+      "positions": {
+        "studio:element:click-events": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:analytics": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:analytics-store": {
+          "x": 480,
+          "y": 0
+        }
+      }
+    },
+    "studio:service:web": {
+      "positions": {
+        "studio:element:web": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:shorten-api": {
+          "x": 240,
+          "y": 0
+        }
+      }
+    }
+  }
+}
