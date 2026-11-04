@@ -1,0 +1,1068 @@
+{
+  "result": "all-descriptors-and-visibility-conditions-accounted-for",
+  "definitionKinds": 14,
+  "definitionFieldRows": 81,
+  "relationshipFields": [
+    {
+      "path": "planned.label",
+      "label": "Action",
+      "group": "General",
+      "control": "text",
+      "min": 1,
+      "max": 60
+    },
+    {
+      "path": "planned.protocol",
+      "label": "Protocol",
+      "group": "General",
+      "control": "select",
+      "choices": [
+        {
+          "value": "Unspecified",
+          "label": "Unspecified"
+        },
+        {
+          "value": "HTTPS",
+          "label": "HTTPS"
+        },
+        {
+          "value": "HTTP",
+          "label": "HTTP"
+        },
+        {
+          "value": "gRPC",
+          "label": "gRPC"
+        },
+        {
+          "value": "WebSocket",
+          "label": "WebSocket"
+        },
+        {
+          "value": "SSE",
+          "label": "SSE"
+        },
+        {
+          "value": "SQL",
+          "label": "SQL"
+        },
+        {
+          "value": "Redis",
+          "label": "Redis"
+        },
+        {
+          "value": "Messaging",
+          "label": "Messaging"
+        },
+        {
+          "value": "Native binding",
+          "label": "Native binding"
+        }
+      ]
+    },
+    {
+      "path": "planned.interaction",
+      "label": "Interaction",
+      "group": "General",
+      "control": "select",
+      "choices": [
+        {
+          "value": "Request / response",
+          "label": "Request / response"
+        },
+        {
+          "value": "Asynchronous",
+          "label": "Asynchronous"
+        },
+        {
+          "value": "Streaming",
+          "label": "Streaming"
+        }
+      ]
+    },
+    {
+      "path": "planned.security",
+      "label": "Access",
+      "group": "Options",
+      "control": "select",
+      "choices": [
+        {
+          "value": "Service identity",
+          "label": "Service identity"
+        },
+        {
+          "value": "User identity",
+          "label": "User identity"
+        },
+        {
+          "value": "Public",
+          "label": "Public"
+        },
+        {
+          "value": "Private network",
+          "label": "Private network"
+        }
+      ],
+      "help": "Intent; no authorization or secret is supplied."
+    },
+    {
+      "path": "settings.timeoutMs",
+      "label": "Timeout",
+      "group": "Options",
+      "control": "integer",
+      "min": 1,
+      "max": 300000,
+      "unit": "ms",
+      "optional": true,
+      "applicability": "request-policy"
+    },
+    {
+      "path": "settings.retry.mode",
+      "label": "Retry",
+      "group": "Options",
+      "control": "select",
+      "choices": [
+        {
+          "value": "unspecified",
+          "label": "Unspecified"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        }
+      ],
+      "applicability": "request-policy",
+      "help": "Attempts are additional attempts; unsafe operations need implementation review."
+    },
+    {
+      "path": "settings.retry.attempts",
+      "label": "Attempts",
+      "group": "Options",
+      "control": "integer",
+      "min": 1,
+      "max": 10,
+      "applicability": "fixed-retry"
+    },
+    {
+      "path": "settings.retry.delayMs",
+      "label": "Delay",
+      "group": "Options",
+      "control": "integer",
+      "min": 1,
+      "max": 60000,
+      "unit": "ms",
+      "applicability": "fixed-retry"
+    },
+    {
+      "path": "settings.channelUse",
+      "label": "Channel role",
+      "group": "Options",
+      "control": "select",
+      "choices": [
+        {
+          "value": "publish",
+          "label": "Publish"
+        },
+        {
+          "value": "consume",
+          "label": "Consume"
+        }
+      ],
+      "applicability": "queue"
+    }
+  ],
+  "additionalCanonicalFields": [
+    {
+      "kind": "context-relationship",
+      "path": "description",
+      "label": "Action",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "Action saves/reloads. No Protocol or Options tab."
+    },
+    {
+      "kind": "package",
+      "path": "name/description/members",
+      "label": "Package canonical text and independent members",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "Name/purpose reload, independent member language settings. Member creation/removal/Ungroup are UX08, excluded here."
+    }
+  ],
+  "c1CanonicalTextEvidence": "docs/evidence/studio-ux/UX07a/README.md",
+  "packageActionsEvidence": "docs/evidence/studio-ux/UX08b/README.md",
+  "rows": [
+    {
+      "kind": "service",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "service",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "service",
+      "path": "settings.execution",
+      "label": "Execution",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "service",
+      "path": "settings.language",
+      "label": "Language",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "service",
+      "path": "settings.host",
+      "label": "Host",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "service",
+      "path": "settings.exposure",
+      "label": "Exposure",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "browser",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "browser",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "browser",
+      "path": "settings.delivery",
+      "label": "Delivery",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "browser",
+      "path": "settings.provider",
+      "label": "Hosting provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.delivery",
+        "equals": "standalone"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.delivery",
+        "equals": "standalone"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "browser",
+      "path": "settings.servedBy",
+      "label": "Served by",
+      "group": "Connections",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.delivery",
+        "equals": "bundled"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.delivery",
+        "equals": "bundled"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "worker",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "worker",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "worker",
+      "path": "settings.execution",
+      "label": "Execution",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "worker",
+      "path": "settings.language",
+      "label": "Language",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "worker",
+      "path": "settings.host",
+      "label": "Host",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "worker",
+      "path": "settings.concurrency",
+      "label": "Concurrency",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "settings.execution",
+      "label": "Execution",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "settings.language",
+      "label": "Language",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "settings.host",
+      "label": "Host",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "settings.exposure",
+      "label": "Exposure",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "billing",
+      "path": "settings.provider",
+      "label": "Payment provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "settings.execution",
+      "label": "Execution",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "settings.language",
+      "label": "Language",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "settings.host",
+      "label": "Host",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "settings.exposure",
+      "label": "Exposure",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "settings.lookupStoreConnection",
+      "label": "Lookup store",
+      "group": "Connections",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "redirect",
+      "path": "settings.lookupCacheConnection",
+      "label": "Lookup cache",
+      "group": "Connections",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "settings.execution",
+      "label": "Execution",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "settings.language",
+      "label": "Language",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "settings.host",
+      "label": "Host",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "settings.exposure",
+      "label": "Exposure",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "notification",
+      "path": "settings.provider",
+      "label": "Delivery provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "settings.execution",
+      "label": "Execution",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "settings.language",
+      "label": "Language",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "settings.host",
+      "label": "Host",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "conditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": {
+        "path": "settings.execution",
+        "equals": "managed"
+      },
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "settings.exposure",
+      "label": "Exposure",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "identity",
+      "path": "settings.provider",
+      "label": "Identity integration",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07a/browser-observations.json",
+      "checks": "UX07a application/conditional save, reload, validation, irrelevant-field and portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "database",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "database",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "database",
+      "path": "owner",
+      "label": "Owner",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "database",
+      "path": "settings.engine",
+      "label": "Engine",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "database",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cache",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cache",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cache",
+      "path": "owner",
+      "label": "Owner",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cache",
+      "path": "settings.engine",
+      "label": "Engine",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cache",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cache",
+      "path": "settings.ttlSeconds",
+      "label": "TTL",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "queue",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "queue",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "queue",
+      "path": "owner",
+      "label": "Owner",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "queue",
+      "path": "settings.mode",
+      "label": "Mode",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "queue",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "queue",
+      "path": "settings.retentionSeconds",
+      "label": "Retention",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "object-store",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "object-store",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "object-store",
+      "path": "owner",
+      "label": "Owner",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "object-store",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "object-store",
+      "path": "settings.access",
+      "label": "Access",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "search",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "search",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "search",
+      "path": "owner",
+      "label": "Owner",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "search",
+      "path": "settings.engine",
+      "label": "Engine",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "search",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cdn",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cdn",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cdn",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "cdn",
+      "path": "settings.origin",
+      "label": "Origin",
+      "group": "Connections",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "external-api",
+      "path": "element.name",
+      "label": "Name",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "external-api",
+      "path": "element.description",
+      "label": "Purpose",
+      "group": "General",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "external-api",
+      "path": "settings.category",
+      "label": "Category",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    },
+    {
+      "kind": "external-api",
+      "path": "settings.provider",
+      "label": "Provider",
+      "group": "Options",
+      "evidence": "docs/evidence/studio-ux/UX07b/browser-observations.json",
+      "checks": "UX07b canonical text, applicable sections, finite choices/ranges, save, reload and exact portable round trip observations",
+      "descriptorConditions": null,
+      "descriptorChecked": true
+    }
+  ],
+  "earlierCoverage": "docs/evidence/studio-ux/UX07b/field-coverage.json",
+  "validation": "UX02a 70 malformed cases; UX03 50 numeric boundary cases and 83 compatibility combinations; UX07a/b real form/save/reload/export and irrelevant-field observations",
+  "finalIntegration": "pre-rollout-session-observations.json and default-session-observations.json"
+}

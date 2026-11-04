@@ -1,8 +1,9 @@
 # Exact studio implementation assignments
 
 Read the [parent plan](../../build-plan-studio-ux.md) and its linked contracts. This is an ordered
-queue of **25 work units**, not an instruction to execute them all. All are unstarted when this
-plan is written. A parent with suffixes is a milestone, not one assignment. If assigned UX02,
+queue of **25 work units**, completed sequentially through UX15 on 2026-11-04.
+[Combined acceptance](../../evidence/studio-ux/UX15/README.md) records the implementation and limits.
+This queue is retained as its specification, not an instruction to restart it. A parent with suffixes is a milestone, not one assignment. If assigned UX02,
 implement its first unfinished child only and report the parent incomplete.
 
 ```text

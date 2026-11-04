@@ -1,0 +1,324 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "scenario": "fresh page role colors and solid outlines independent of legacy editor styles",
+      "colors": [
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "data",
+          "color": "#a36b10",
+          "border": "solid",
+          "background": "color(srgb 0.93898 0.937059 0.912078)"
+        },
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "data",
+          "color": "#a36b10",
+          "border": "solid",
+          "background": "color(srgb 0.93898 0.937059 0.912078)"
+        },
+        {
+          "family": "worker",
+          "color": "#b05c20",
+          "border": "solid",
+          "background": "color(srgb 0.943569 0.931765 0.917726)"
+        },
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "api",
+          "color": "#2676bd",
+          "border": "solid",
+          "background": "color(srgb 0.894863 0.940941 0.973137)"
+        },
+        {
+          "family": "client",
+          "color": "#8053b7",
+          "border": "solid",
+          "background": "color(srgb 0.926627 0.928588 0.97102)"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "fresh-install fallback uses studio seed",
+      "simulatedEmptyProjectList": true,
+      "actualCreationAndSave": true,
+      "origin": {
+        "example": {
+          "id": "studio-mattermost-reference",
+          "version": "1.0.0"
+        },
+        "goalManifestSha256": "8a540c8cc0b3492379aade3f19d4bae516b07cf58c5fe68bdc61ff1c2fad6f70"
+      },
+      "noFlag": true
+    },
+    {
+      "width": 1440,
+      "scenario": "new-study insertion error",
+      "realServerStatus": 422,
+      "project": "b412feb3-7eec-4cbc-95d5-9ff007e9cddc",
+      "noPartialInsertion": true
+    },
+    {
+      "width": 1440,
+      "scenario": "chooser defaults fourteen finite studies and failed creation cleans exact owned project",
+      "choices": 14,
+      "failedDeleted404": true,
+      "retryCreated": true,
+      "oldProjectUnchanged": true
+    },
+    {
+      "width": 1280,
+      "scenario": "fresh page role colors and solid outlines independent of legacy editor styles",
+      "colors": [
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "data",
+          "color": "#a36b10",
+          "border": "solid",
+          "background": "color(srgb 0.93898 0.937059 0.912078)"
+        },
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "data",
+          "color": "#a36b10",
+          "border": "solid",
+          "background": "color(srgb 0.93898 0.937059 0.912078)"
+        },
+        {
+          "family": "worker",
+          "color": "#b05c20",
+          "border": "solid",
+          "background": "color(srgb 0.943569 0.931765 0.917726)"
+        },
+        {
+          "family": "external",
+          "color": "#637687",
+          "border": "solid",
+          "background": "color(srgb 0.916392 0.940941 0.954078)"
+        },
+        {
+          "family": "api",
+          "color": "#2676bd",
+          "border": "solid",
+          "background": "color(srgb 0.894863 0.940941 0.973137)"
+        },
+        {
+          "family": "client",
+          "color": "#8053b7",
+          "border": "solid",
+          "background": "color(srgb 0.926627 0.928588 0.97102)"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "fresh-install fallback uses studio seed",
+      "simulatedEmptyProjectList": true,
+      "actualCreationAndSave": true,
+      "origin": {
+        "example": {
+          "id": "studio-mattermost-reference",
+          "version": "1.0.0"
+        },
+        "goalManifestSha256": "8a540c8cc0b3492379aade3f19d4bae516b07cf58c5fe68bdc61ff1c2fad6f70"
+      },
+      "noFlag": true
+    },
+    {
+      "width": 1280,
+      "scenario": "new-study insertion error",
+      "realServerStatus": 422,
+      "project": "b03c8d25-60bc-41e2-b5d3-f7f3b14f7da3",
+      "noPartialInsertion": true
+    },
+    {
+      "width": 1280,
+      "scenario": "chooser defaults fourteen finite studies and failed creation cleans exact owned project",
+      "choices": 14,
+      "failedDeleted404": true,
+      "retryCreated": true,
+      "oldProjectUnchanged": true
+    },
+    {
+      "width": 1440,
+      "scenario": "original legacy project opens through default compatibility and unified Generate read-only",
+      "id": "684f5790-df6b-4447-91d1-668cf7e1cc87",
+      "noLegacyWorkspace": true,
+      "guardBeforePage": true
+    },
+    {
+      "width": 1440,
+      "scenario": "original legacy project opens through default compatibility and unified Generate read-only",
+      "id": "a6eeb601-6efd-46e0-9444-f0edddad8d2e",
+      "noLegacyWorkspace": true,
+      "guardBeforePage": true
+    },
+    {
+      "width": 1280,
+      "scenario": "original legacy project opens through default compatibility and unified Generate read-only",
+      "id": "684f5790-df6b-4447-91d1-668cf7e1cc87",
+      "noLegacyWorkspace": true,
+      "guardBeforePage": true
+    },
+    {
+      "width": 1280,
+      "scenario": "original legacy project opens through default compatibility and unified Generate read-only",
+      "id": "a6eeb601-6efd-46e0-9444-f0edddad8d2e",
+      "noLegacyWorkspace": true,
+      "guardBeforePage": true
+    },
+    {
+      "scenario": "supported legacy eligibility reaches existing output validation",
+      "status": 422,
+      "code": "INVALID_OUTPUT_DIR",
+      "noApplicationGeneration": true
+    }
+  ],
+  "writes": [
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/4c7821cf-671c-4765-8ef2-c8331861e217/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/4c7821cf-671c-4765-8ef2-c8331861e217/layout",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/b412feb3-7eec-4cbc-95d5-9ff007e9cddc/operations",
+      "status": 422
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/b412feb3-7eec-4cbc-95d5-9ff007e9cddc",
+      "status": 204
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/61568099-eab1-4055-8028-08be8649af4a/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/61568099-eab1-4055-8028-08be8649af4a/layout",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/e70626c5-b2bf-47a5-97aa-741dc0c6988e/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/e70626c5-b2bf-47a5-97aa-741dc0c6988e/layout",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/b03c8d25-60bc-41e2-b5d3-f7f3b14f7da3/operations",
+      "status": 422
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/b03c8d25-60bc-41e2-b5d3-f7f3b14f7da3",
+      "status": 204
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/a7c27af9-fe55-49c5-a121-ca1aefa751b6/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/a7c27af9-fe55-49c5-a121-ca1aefa751b6/layout",
+      "status": 200
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "consoleMessages": [
+    {
+      "width": 1440,
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    },
+    {
+      "width": 1280,
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "guardsBeforePage": true,
+  "freshInstallReadSimulation": "Only GET project listing is empty; creation, operations, cleanup and errors use real server responses",
+  "noProviderOrGeneratedApplicationLaunched": true
+}

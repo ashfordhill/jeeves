@@ -1,0 +1,316 @@
+{
+  "schema": "jeeves.studio-project",
+  "schemaVersion": 1,
+  "design": {
+    "schemaVersion": 2,
+    "revision": 25,
+    "architecture": {
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "studio-926f486b-cc31-40e0-93d7-740f7ee9af3d",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "language": "typescript",
+              "exposure": "internal",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "studio-3380affb-1ed6-49ed-a632-4d4bc409b12c",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "studio-1cc7e70d-91fd-4e86-8b39-7550d856f58f",
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "database",
+              "engine": "postgresql",
+              "provider": "neon"
+            }
+          },
+          {
+            "element": "studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09",
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "cloudflare-queues",
+              "retentionSeconds": 3600
+            },
+            "owner": {
+              "kind": "element",
+              "id": "studio-926f486b-cc31-40e0-93d7-740f7ee9af3d"
+            }
+          }
+        ],
+        "packages": [
+          {
+            "id": "studio-ac9ae756-f229-428f-bc55-28af15509b45",
+            "name": "Order processing final",
+            "description": "",
+            "members": [
+              "studio-926f486b-cc31-40e0-93d7-740f7ee9af3d",
+              "studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209"
+            ]
+          }
+        ],
+        "connections": [
+          {
+            "connection": "studio-2f28478b-d7e3-4253-8909-dcd8688bf13e",
+            "settings": {}
+          },
+          {
+            "connection": "studio-7996a1ff-ecc8-449c-adb6-7ba83f0b2446",
+            "settings": {
+              "channelUse": "publish"
+            }
+          },
+          {
+            "connection": "studio-ac4a4231-e882-4f28-958d-ef0dde7fe513",
+            "settings": {
+              "channelUse": "consume"
+            }
+          },
+          {
+            "connection": "studio-3ee2008b-f295-4e57-8a02-c8fd40339715",
+            "settings": {
+              "channelUse": "consume"
+            }
+          }
+        ]
+      },
+      "system": {
+        "name": "UX15 owned session 1440 1793804822408",
+        "description": ""
+      },
+      "nodes": [],
+      "relationships": []
+    },
+    "elements": [
+      {
+        "id": "studio-926f486b-cc31-40e0-93d7-740f7ee9af3d",
+        "name": "Orders API",
+        "classification": {
+          "kind": "Application"
+        },
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209",
+        "name": "Order worker",
+        "classification": {
+          "kind": "Application"
+        },
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "studio-3380affb-1ed6-49ed-a632-4d4bc409b12c",
+        "name": "Audit worker",
+        "classification": {
+          "kind": "Application"
+        },
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "studio-1cc7e70d-91fd-4e86-8b39-7550d856f58f",
+        "name": "Order data",
+        "classification": {
+          "kind": "Data store"
+        },
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09",
+        "name": "Order events",
+        "classification": {
+          "kind": "Data store"
+        },
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      }
+    ],
+    "connections": [
+      {
+        "id": "studio-2f28478b-d7e3-4253-8909-dcd8688bf13e",
+        "kind": "uses-database",
+        "from": {
+          "element": "studio-926f486b-cc31-40e0-93d7-740f7ee9af3d"
+        },
+        "to": {
+          "element": "studio-1cc7e70d-91fd-4e86-8b39-7550d856f58f"
+        },
+        "planned": {
+          "label": "Stores orders",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "studio-7996a1ff-ecc8-449c-adb6-7ba83f0b2446",
+        "kind": "depends-on",
+        "from": {
+          "element": "studio-926f486b-cc31-40e0-93d7-740f7ee9af3d"
+        },
+        "to": {
+          "element": "studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09"
+        },
+        "planned": {
+          "label": "Publishes orders",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "studio-ac4a4231-e882-4f28-958d-ef0dde7fe513",
+        "kind": "depends-on",
+        "from": {
+          "element": "studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09"
+        },
+        "to": {
+          "element": "studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209"
+        },
+        "planned": {
+          "label": "Consumes orders",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "studio-3ee2008b-f295-4e57-8a02-c8fd40339715",
+        "kind": "depends-on",
+        "from": {
+          "element": "studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09"
+        },
+        "to": {
+          "element": "studio-3380affb-1ed6-49ed-a632-4d4bc409b12c"
+        },
+        "planned": {
+          "label": "Consumes orders",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "annotations": []
+  },
+  "layout": {
+    "schemaVersion": 1,
+    "items": {},
+    "architecture": {
+      "studio:containers": {
+        "positions": {},
+        "viewport": {
+          "x": 360,
+          "y": 284,
+          "zoom": 1
+        }
+      },
+      "studio:package:studio-ac9ae756-f229-428f-bc55-28af15509b45": {
+        "positions": {
+          "studio:element:studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-1cc7e70d-91fd-4e86-8b39-7550d856f58f": {
+            "x": 288,
+            "y": 0
+          },
+          "studio:element:studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09": {
+            "x": 576,
+            "y": 0
+          },
+          "studio:element:studio-926f486b-cc31-40e0-93d7-740f7ee9af3d": {
+            "x": 0,
+            "y": 168
+          }
+        }
+      },
+      "studio:service:studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209": {
+        "positions": {
+          "studio:element:studio-0d91fd14-d11c-4dcb-88b4-17a371ea2209": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09": {
+            "x": 288,
+            "y": 0
+          }
+        }
+      },
+      "studio:service:studio-3380affb-1ed6-49ed-a632-4d4bc409b12c": {
+        "positions": {},
+        "viewport": {
+          "x": 408,
+          "y": 356,
+          "zoom": 1
+        }
+      },
+      "studio:service:studio-926f486b-cc31-40e0-93d7-740f7ee9af3d": {
+        "positions": {
+          "studio:element:studio-1cc7e70d-91fd-4e86-8b39-7550d856f58f": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-1fa97fbc-1079-4d4a-908b-dee2f6aefd09": {
+            "x": 456,
+            "y": 216
+          },
+          "studio:element:studio-926f486b-cc31-40e0-93d7-740f7ee9af3d": {
+            "x": 288,
+            "y": 0
+          }
+        }
+      }
+    }
+  }
+}

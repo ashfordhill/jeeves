@@ -1,4 +1,4 @@
-import { architectureExamples } from "@jeeves/spec";
+import { studioArchitectureExamples } from "@jeeves/spec";
 import {
   Alert,
   Badge,
@@ -31,7 +31,9 @@ type Choice = "study" | "resource" | "recipe" | "blank";
 export function ProjectChooser({ onClose }: { onClose: () => void }) {
   const [choice, setChoice] = useState<Choice>("study");
   const [study, setStudy] = useState<string>(DEFAULT_EXAMPLE_ID);
-  const [name, setName] = useState<string>(architectureExamples[0].name);
+  const [name, setName] = useState<string>(
+    studioArchitectureExamples[0]?.name ?? "Architecture study",
+  );
   const [tagline, setTagline] = useState("Inventory, without the busywork.");
   const [qrTagline, setQrTagline] = useState("One link. Room to change.");
   const [preset, setPreset] = useState<"midnight" | "paper">("midnight");
@@ -78,7 +80,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
   }, [attempt]);
   const starter = catalog?.starters.find((item) => item.id === "resource-workspace");
   const recipe = catalog?.recipes.find((item) => item.id === "qr-studio");
-  const example = architectureExamples.find((item) => item.id === study);
+  const example = studioArchitectureExamples.find((item) => item.id === study);
   const allowed =
     !!name.trim() &&
     (choice === "blank" ||
@@ -148,13 +150,13 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 id: "study",
                 icon: <IconSitemap size={24} />,
                 title: "Architecture study",
-                description: "Start from an existing architecture example.",
+                description: "Start from a source-mapped studio design study.",
               },
               {
                 id: "resource",
                 icon: <IconLayoutDashboard size={24} />,
                 title: "Resource workspace",
-                description: "Accounts, private records and forms. Shape the data and screens.",
+                description: "Existing supported accounts, private records and forms.",
               },
               {
                 id: "recipe",
@@ -165,7 +167,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
               {
                 id: "blank",
                 icon: <IconPencil size={24} />,
-                title: "Blank canvas",
+                title: "Blank architecture",
                 description: "Draw your own applications, data stores and connections.",
               },
             ] as const
@@ -221,10 +223,17 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
               <NativeSelect
                 label="Study"
                 value={study}
-                data={architectureExamples.map((item) => ({ value: item.id, label: item.name }))}
+                data={studioArchitectureExamples.map((item) => ({
+                  value: item.id,
+                  label: item.name,
+                }))}
                 onChange={(event) => setStudy(event.currentTarget.value)}
               />
-              {example ? <Text size="sm">{example.description}</Text> : null}
+              {example ? (
+                <Text size="sm">
+                  {example.description} Design only; runtime generation is unsupported.
+                </Text>
+              ) : null}
             </>
           ) : choice === "resource" && starter ? (
             <>
@@ -237,9 +246,9 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 </Text>
               </Group>
               <Text size="sm">
-                Start with warehouses and stock items. Change the resources, fields and
-                relationships in the API editor. Account access, forms and paging are supplied by
-                versioned components.
+                Start with warehouses and stock items. Account access, forms and paging are supplied
+                by existing versioned components. Detailed source contracts stay preserved; new
+                domain behavior belongs in separately implemented C4b work.
               </Text>
               <div
                 className="starter-topology"

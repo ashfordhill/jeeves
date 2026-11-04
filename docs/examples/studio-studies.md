@@ -1,8 +1,9 @@
 # Finite studio studies
 
-In the opt-in studio (`?studio=next`), open **Library → Examples** and preview a study, then choose
+In the default studio, open **Library → Examples** and preview a study, then choose
 **Create example project**. This creates a separate editable project. The historical New project
-chooser/default and saved projects retain their existing behavior until the later rollout unit.
+factories and saved projects retain their source data. New project and fresh-install defaults now
+use the source-mapped studio studies; [UX15 acceptance](../evidence/studio-ux/UX15/README.md) records rollout.
 
 | Study at version 1.0.0 | Foundation and useful C3 scopes | Goal/source map |
 | --- | --- | --- |

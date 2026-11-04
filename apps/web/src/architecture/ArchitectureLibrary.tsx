@@ -24,9 +24,11 @@ import { PatternComposer } from "./PatternComposer.tsx";
 export function ArchitectureLibrary({
   onClose,
   onBack,
+  studio = false,
 }: {
   onClose: () => void;
   onBack: () => void;
+  studio?: boolean;
 }) {
   const [base] = useState(() => structuredClone(useDraw.getState().loaded!));
   const [entries, setEntries] = useState<ArchitectureLibraryEntry[]>([]);
@@ -194,7 +196,7 @@ export function ArchitectureLibrary({
               </Button>
             </>
           ) : null}
-          {entry?.state === "published" ? (
+          {entry?.state === "published" && !studio ? (
             <Button
               className="architecture-template-primary"
               color="cyan.9"
@@ -239,13 +241,23 @@ export function ArchitectureLibrary({
               onChange={(e) => setIdentity({ ...identity, purpose: e.currentTarget.value })}
             />
             <MultiSelect
-              label="Containers and components to copy"
+              label={
+                studio ? "Services and resources to copy" : "Containers and components to copy"
+              }
               data={[
-                ...base.design.elements.map((e) => ({
-                  value: `e:${e.id}`,
-                  label: `Container: ${e.name}`,
-                })),
-                ...(base.design.architecture?.components ?? []).map((c) => ({
+                ...base.design.elements
+                  .filter(
+                    (e) =>
+                      !studio ||
+                      base.design.architecture?.studio?.elements.some(
+                        (binding) => binding.element === e.id,
+                      ),
+                  )
+                  .map((e) => ({
+                    value: `e:${e.id}`,
+                    label: `Container: ${e.name}`,
+                  })),
+                ...(studio ? [] : (base.design.architecture?.components ?? [])).map((c) => ({
                   value: `c:${c.id}`,
                   label: `Component: ${c.name}`,
                 })),
@@ -305,67 +317,80 @@ export function ArchitectureLibrary({
                 </div>
               ))}
             </section>
-            <section aria-label="Exposed template options">
-              <h3>Exposed options</h3>
-              <MultiSelect
-                label="Finite component options"
-                disabled={entry.state !== "draft"}
-                data={entry.fragment.roles
-                  .filter((r) => !r.required && r.kind === "component")
-                  .flatMap((r) => {
-                    const c = entry.fragment.architecture.components?.find((c) => c.id === r.id);
-                    return (plannedCapability(c?.capability)?.fields ?? [])
-                      .filter((f) => f.options)
-                      .map((f) => ({ value: `${r.id}.${f.key}`, label: `${r.name}: ${f.label}` }));
-                  })}
-                value={metadata.exposedOptions.map((o) => `${o.role}.${o.field}`)}
-                onChange={(values) =>
-                  setMetadata({
-                    ...metadata,
-                    exposedOptions: values.map((s) => {
-                      const [role, field] = s.split(".");
-                      return { role: role!, field: field! };
-                    }),
-                  })
-                }
-                searchable
-              />
-            </section>
-            <section aria-label="Template extension points">
-              <h3>Extension points</h3>
-              {metadata.extensionPoints.map((p, i) => (
-                <Textarea
-                  key={p.role}
-                  label={entry.fragment.roles.find((r) => r.id === p.role)?.name ?? p.role}
-                  readOnly={entry.state !== "draft"}
-                  value={p.description}
-                  onChange={(e) =>
+            {!studio ? (
+              <section aria-label="Exposed template options">
+                <h3>Exposed options</h3>
+                <MultiSelect
+                  label="Finite component options"
+                  disabled={entry.state !== "draft"}
+                  data={entry.fragment.roles
+                    .filter((r) => !r.required && r.kind === "component")
+                    .flatMap((r) => {
+                      const c = entry.fragment.architecture.components?.find((c) => c.id === r.id);
+                      return (plannedCapability(c?.capability)?.fields ?? [])
+                        .filter((f) => f.options)
+                        .map((f) => ({
+                          value: `${r.id}.${f.key}`,
+                          label: `${r.name}: ${f.label}`,
+                        }));
+                    })}
+                  value={metadata.exposedOptions.map((o) => `${o.role}.${o.field}`)}
+                  onChange={(values) =>
                     setMetadata({
                       ...metadata,
-                      extensionPoints: metadata.extensionPoints.map((item, index) =>
-                        index === i ? { ...item, description: e.currentTarget.value } : item,
-                      ),
+                      exposedOptions: values.map((s) => {
+                        const [role, field] = s.split(".");
+                        return { role: role!, field: field! };
+                      }),
                     })
                   }
+                  searchable
                 />
-              ))}
-            </section>
-            <details>
-              <summary>Interfaces and policy guarantees</summary>
-              {entry.fragment.architecture.interfaces?.map((i) => (
-                <Text key={i.id} size="sm">
-                  {i.name}: {i.direction} · {i.contract.id}@{i.contract.version}
-                </Text>
-              ))}
-              {entry.fragment.architecture.bindings?.map((b) => (
-                <div key={b.id}>
-                  <Text fw={600}>{b.name}</Text>
-                  <Text size="sm" style={{ overflowWrap: "anywhere" }}>
-                    {JSON.stringify(b.policies)}
+              </section>
+            ) : null}
+            {metadata.extensionPoints.length ? (
+              <section aria-label="Template extension points">
+                <h3>Extension points</h3>
+                {metadata.extensionPoints.map((p, i) => (
+                  <Textarea
+                    key={p.role}
+                    label={entry.fragment.roles.find((r) => r.id === p.role)?.name ?? p.role}
+                    readOnly={entry.state !== "draft"}
+                    value={p.description}
+                    onChange={(e) =>
+                      setMetadata({
+                        ...metadata,
+                        extensionPoints: metadata.extensionPoints.map((item, index) =>
+                          index === i ? { ...item, description: e.currentTarget.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </section>
+            ) : null}
+            {entry.fragment.architecture.interfaces?.length ||
+            entry.fragment.architecture.bindings?.length ? (
+              <details>
+                <summary>Interfaces and policy guarantees</summary>
+                {entry.fragment.architecture.interfaces?.map((i) => (
+                  <Text key={i.id} size="sm">
+                    {i.name}: {i.direction} · {i.contract.id}@{i.contract.version}
                   </Text>
-                </div>
-              ))}
-            </details>
+                ))}
+                {entry.fragment.architecture.bindings?.map((b) => (
+                  <div key={b.id}>
+                    <Text fw={600}>{b.name}</Text>
+                    <Text size="sm" style={{ overflowWrap: "anywhere" }}>
+                      {JSON.stringify(b.policies)}
+                    </Text>
+                  </div>
+                ))}
+              </details>
+            ) : null}
+            {studio && entry.state === "published" ? (
+              <Text size="sm">Insert compatible published versions from Library Presets.</Text>
+            ) : null}
             {entry.state !== "draft" ? (
               <>
                 <TextInput

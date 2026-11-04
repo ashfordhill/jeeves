@@ -13,6 +13,8 @@ import {
   studioViews,
 } from "@jeeves/spec";
 import { useCallback, useEffect, useState } from "react";
+import { ProductConfiguration } from "../architecture/ArchitectureEditors.tsx";
+import { ArchitectureLibrary } from "../architecture/ArchitectureLibrary.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
@@ -41,6 +43,8 @@ export function StudioLibrary({
   const [existing, setExisting] = useState("");
   const [error, setError] = useState<string>();
   const [creating, setCreating] = useState(false);
+  const [manage, setManage] = useState(false);
+  const [product, setProduct] = useState(false);
   const [saved, setSaved] = useState<ArchitectureLibraryEntry[]>([]);
   const [libraryProblem, setLibraryProblem] = useState(false);
   const [roles, setRoles] = useState<LibraryInsertInput["roles"]>({});
@@ -207,6 +211,22 @@ export function StudioLibrary({
     }
   };
   const disabled = busy || creating;
+  if (manage)
+    return (
+      <ArchitectureLibrary
+        studio
+        onClose={() => {
+          setManage(false);
+          void loadSaved();
+        }}
+        onBack={() => {
+          setManage(false);
+          void loadSaved();
+        }}
+      />
+    );
+  if (product)
+    return <ProductConfiguration design={loaded.design} onClose={() => setProduct(false)} />;
   return (
     <ConfigurationDialog
       title="Library"
@@ -421,6 +441,39 @@ export function StudioLibrary({
                     ))
                 : null}
             </div>
+            {active === "Presets" && target === "c2" ? (
+              <div className="studio-library-footer">
+                <button
+                  type="button"
+                  onClick={() =>
+                    void useDraw
+                      .getState()
+                      .flushEdits()
+                      .then((ok) => {
+                        if (ok) setManage(true);
+                      })
+                  }
+                >
+                  Saved architecture templates
+                </button>
+                {loaded.design.recipe?.id === "qr-studio" &&
+                loaded.design.elements.some((item) => item.id === "qrwty-web") ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void useDraw
+                        .getState()
+                        .flushEdits()
+                        .then((ok) => {
+                          if (ok) setProduct(true);
+                        })
+                    }
+                  >
+                    Product configuration
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
             {active === "Presets" && target === "c2" ? (
               <details>
                 <summary>Existing runtime templates</summary>

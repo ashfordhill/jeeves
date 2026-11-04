@@ -23,9 +23,11 @@ not the whole sequence.
 The current UX specification is the [studio build plan](docs/build-plan-studio-ux.md), with
 [25 sequential assignments](docs/plans/studio-ux/execution-units.md) and the
 [resolved owner decisions](.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
-It supersedes conflicting older UI requirements. Assign one exact UX unit, starting with UX01
-when execution is requested; split parents require separate child assignments and local commits.
-The plan is not implemented and does not authorize starting its queue automatically.
+It supersedes conflicting older UI requirements. Its completed split children retain their
+separate evidence and local commits; do not restart the historical queue.
+UX01–UX15 are complete; the studio is the default and the temporary flag is removed.
+Read [UX15 acceptance](docs/evidence/studio-ux/UX15/README.md) before changing the implemented contracts.
+No remaining UX queue or runtime work is automatically authorized.
 P73a is checkpointed incomplete; P73a/P73b and the backend batch remain paused for this UX work.
 The [backend benchmark roadmap](docs/build-plan-backend-benchmarks.md) now specifies future
 Discourse, Vendure and Zammad core foundations. It is a plan, not implemented capability or
@@ -33,8 +35,8 @@ authorization to start the sequence. For that work, read its shared contract and
 [79-unit assignment queue](docs/plans/backend-benchmarks/execution-units.md). Execute one requested
 work unit at a time; split parents require separate child assignments and local commits.
 Keep architecture intent, template availability and verification evidence distinct.
-The [studio guide](docs/architecture-studio.md) describes the currently implemented, pre-cleanup UX;
-do not use its superseded controls as requirements for the new studio.
+The [studio guide](docs/architecture-studio.md) describes the implemented default studio.
+Historical evidence retains old controls as source history, not current requirements.
 For this UX cleanup, the user explicitly defers unit/E2E test maintenance and suite execution.
 Use lint, typecheck, a production build and direct browser inspection instead of `pnpm check`.
 

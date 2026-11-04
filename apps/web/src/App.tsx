@@ -1,5 +1,5 @@
 /**
- * App shell: header (brand, Draw / Runs / Settings tabs, project menu), the view stage on
+ * App shell: header (brand, Design / Generate / Settings tabs, project menu), the view stage on
  * paper, and the status bar. Layout and chrome follow automation-pitch. The Draw view lays out
  * its own inspector rail.
  */
@@ -7,7 +7,6 @@ import { MantineProvider } from "@mantine/core";
 import { DrawView } from "./draw/DrawView.tsx";
 import { ProjectMenu } from "./draw/ProjectMenu.tsx";
 import { GenerateView } from "./generate/GenerateView.tsx";
-import { RunsView } from "./runs/RunsView.tsx";
 import { SettingsView } from "./settings/SettingsView.tsx";
 import { StatusBar } from "./shell/StatusBar.tsx";
 import { useColorScheme } from "./shell/useColorScheme.ts";
@@ -15,7 +14,6 @@ import { useHashView } from "./shell/useHashView.ts";
 import { useServerHealth } from "./shell/useServerHealth.ts";
 import { ViewTabs } from "./shell/ViewTabs.tsx";
 import type { ViewId } from "./shell/views.ts";
-import { isNextStudio } from "./studio/route.ts";
 import { mantineTheme } from "./theme/mantineTheme.ts";
 
 function ViewBody({ view }: { view: ViewId }) {
@@ -23,24 +21,23 @@ function ViewBody({ view }: { view: ViewId }) {
     case "draw":
       return <DrawView />;
     case "runs":
-      return isNextStudio() ? <GenerateView /> : <RunsView />;
+      return <GenerateView />;
     case "settings":
       return <SettingsView />;
   }
 }
 
 export function App() {
-  const nextStudio = isNextStudio();
   const [view, setView] = useHashView();
   const [scheme, setScheme] = useColorScheme();
   const health = useServerHealth();
 
   return (
     <MantineProvider theme={mantineTheme} forceColorScheme={scheme}>
-      <header className={`app-header chrome-bar${nextStudio ? " studio-app-header" : ""}`}>
+      <header className="app-header chrome-bar studio-app-header">
         <span className="app-brand">Jeeves</span>
-        <ViewTabs view={view} onSelect={setView} studio={nextStudio} />
-        {nextStudio && view === "draw" ? <div id="studio-header-controls" /> : null}
+        <ViewTabs view={view} onSelect={setView} />
+        {view === "draw" ? <div id="studio-header-controls" /> : null}
         <span className="app-header-end">
           <ProjectMenu />
         </span>

@@ -1,0 +1,66 @@
+{
+  "owned": [
+    {
+      "id": "1f9e94f7-6ca0-4cff-8d75-bd9dac576c47",
+      "name": "UX15 owned library 1440 1793804260243",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:57:40.247Z",
+      "updatedAt": "2026-11-04T14:57:40.247Z"
+    },
+    {
+      "id": "8424b995-4f2a-43ea-8702-965a2c5652d4",
+      "name": "UX15 owned recipe 1440",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:57:43.477Z",
+      "updatedAt": "2026-11-04T14:57:43.477Z"
+    },
+    {
+      "id": "bfb70d26-4fa5-4a8b-95d4-e64e4610f9d6",
+      "name": "UX15 owned library 1280 1793804267247",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:57:48.090Z",
+      "updatedAt": "2026-11-04T14:57:48.090Z"
+    },
+    {
+      "id": "a769eef0-7f67-4bb8-b010-d51df1612a9d",
+      "name": "UX15 owned recipe 1280",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:57:50.450Z",
+      "updatedAt": "2026-11-04T14:57:50.450Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "1f9e94f7-6ca0-4cff-8d75-bd9dac576c47",
+      "verified404": true
+    },
+    {
+      "id": "8424b995-4f2a-43ea-8702-965a2c5652d4",
+      "verified404": true
+    },
+    {
+      "id": "bfb70d26-4fa5-4a8b-95d4-e64e4610f9d6",
+      "verified404": true
+    },
+    {
+      "id": "a769eef0-7f67-4bb8-b010-d51df1612a9d",
+      "verified404": true
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "owned": [
+    {
+      "id": "d8cb38e0-3946-4a58-bc57-025c54ed942b",
+      "name": "UX15 owned dense 1440 1793804822478",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:07:02.488Z",
+      "updatedAt": "2026-11-04T15:07:02.488Z"
+    },
+    {
+      "id": "84ccc404-cf7d-4742-ad5e-94e4ef9f315e",
+      "name": "UX15 owned dense 1280 1793804831169",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:07:11.171Z",
+      "updatedAt": "2026-11-04T15:07:11.171Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "d8cb38e0-3946-4a58-bc57-025c54ed942b",
+      "verified404": true
+    },
+    {
+      "id": "84ccc404-cf7d-4742-ad5e-94e4ef9f315e",
+      "verified404": true
+    }
+  ]
+}

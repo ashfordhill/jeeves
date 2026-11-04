@@ -1,85 +1,44 @@
 # Jeeves architecture catalog
 
-**Studio cleanup in progress:** [UX02a's typed model](packages/spec/src/studio-model.ts) now validates
-finite service/resource settings, exact definition references, package membership and logical
-resource ownership over existing graph identities. [UX02b's atomic commands](packages/spec/src/studio-operations.ts)
-now preserve those settings through explicit edits, deletion cleanup and existing history. The
-UX02c [reference remapper](packages/spec/src/studio-references.ts) and reusable Library insertion
-preserve studio settings with explicit dependency reuse. [Portable project exchange](packages/spec/src/studio-portable.ts)
-retains full design/layout data; implementation handoffs include exact locally resolved goal sources
-or an explicit unresolved result. The [legacy display adapter](packages/spec/src/studio-legacy.ts)
-uses known identities without migrating saved documents or adding technical defaults. The
-server and application compiler reject studio bindings before generation can start; legacy
-template eligibility is unchanged. [UX03's finite catalog](packages/spec/src/studio-definitions.ts)
-now supplies all 14 exact design definitions, typed field descriptors, capability symbols/theme
-colors, creation scopes, defaults and provider identity/compatibility metadata. The
-[service-and-worker preset](packages/spec/src/studio-presets.ts) expands into two independent
-applications and one shared, package-owned queue. [UX04a's pure node/scope projection](packages/spec/src/studio-view.ts)
-now supplies stable C1/C2/detail identities, one package overview card, real member summaries,
-selectable service anchors and shared resource references. It filters legacy internals for
-presentation while retaining their source identities, and keeps queues at C3. Browser delivery
-does not invent a Docker deployment. [UX04b's relationship projection](packages/spec/src/studio-relationships.ts)
-now groups repeated directed dependencies, preserves all protocol/contract members, derives queued
-communication from explicit roles and accounts for incomplete or ambiguous channels. C3 retains
-the actual connections; compatible fan-out includes branch/trunk data without saved wiring or
-shared editable settings. [UX05's opt-in shell](docs/evidence/studio-ux/UX05/README.md), selected
-with `?studio=next`, now renders those real projections with explicit depth navigation, independent
-chat/inspector rails and project-local cameras. [UX06a](docs/evidence/studio-ux/UX06a/README.md)
-adds shared autosave and one representative microservice form, with field-level conflict checks and
-explicit failure retry/discard. [UX06b](docs/evidence/studio-ux/UX06b/README.md) adds one chronological
-history for acknowledged semantic edits and architecture-layout scope snapshots, coordinated with
-pending forms and in-app project switching. Cameras remain outside history; drag/Tidy gestures
-remain later geometry work. [UX07a](docs/evidence/studio-ux/UX07a/README.md) now supplies compact
-autosaving inspectors for all seven exact application definitions, C1 canonical text and packages,
-plus safe canonical legacy edits. Provider/execution choices and existing dependency references
-remain typed settings; package members keep independent settings. [UX07b](docs/evidence/studio-ux/UX07b/README.md) adds all seven resource/integration forms,
-compatible provider and logical owner/origin selectors, shared C3 queue settings and individual
-connection policies. Aggregate selection first chooses a real connection; settings never bulk-edit
-a trunk. Timeout/retry appear only for eligible request/response protocols and clear atomically
-when inapplicable. Uneditable legacy relationships only highlight. The legacy editor remains the
-default. [UX08a](docs/evidence/studio-ux/UX08a/README.md) adds the scope-aware base palette, one
-finite Library with compact previews, compatible saved compositions and current runtime-template
-details, explicit package grouping
-and the service/worker package preset. New package applications join atomically; detail resources
-receive explicit owners. Existing dependencies are selected by identity without duplication.
-[UX08b](docs/evidence/studio-ux/UX08b/README.md) adds click-source/click-target connections,
-explicit queue roles/direction, exact existing-resource reuse and atomic Redirect dependency shortcuts.
-Packages expose Add/Remove member, safe Ungroup and separately confirmed Delete members; resources
-need explicit replacement owners when their owner disappears. Connections and optional references
-clean up together. [UX09](docs/evidence/studio-ux/UX09/README.md) adds fixed role dimensions,
-capability colors/icons, optional bundled provider marks, solid outlines and selection without fading.
-Zoom changes bounded text density while preserving graph geometry and full inspector/source values.
-[UX10](docs/evidence/studio-ux/UX10/README.md) adds obstacle-aware orthogonal paths, compatible
-shared trunks and separately selectable protocol branches, with exact source membership and
-direction. Compact labels reserve measured text bounds and disappear only where they cannot fit;
-their directed lines remain selectable. Shared trunks open a real-member chooser with no bulk
-settings. Movement and runtime resolution remain later work. The historical catalog below describes the existing
-offering; its older UI entry points must not override the
-[studio UX specification](docs/build-plan-studio-ux.md) during implementation.
+The finite C2/C3 studio is the default interface following [UX15's combined review](docs/evidence/studio-ux/UX15/README.md).
+It supplies fourteen exact design definitions, logical resource ownership, independent service
+packages, C3 queues, typed provider intent and one source-preserving graph. Read the
+[studio guide](docs/architecture-studio.md) for current navigation and
+[C4 guidance](docs/c4-modeling.md) for classification. No URL flag or legacy editing mode is required.
 
-Choose the boundaries and responsibilities your system needs. C1 describes a product, C2 its
-applications/stores, and C3 the cohesive responsibilities within an application. A design can
-be useful before its runtime templates exist.
-
-**Library** separates Containers · C2, Components · C3, Patterns, Examples and Runtime templates.
-All current options are editable through the UI. See the [studio guide](docs/architecture-studio.md)
-for authoring, [C4 guidance](docs/c4-modeling.md) for classification, and the
-[completed architecture roadmap](docs/build-plan-c4-evolution.md) for model contracts.
-
-| Design task | Entry point |
+| Design task | Current entry point |
 | --- | --- |
-| Choose an application, store or external provider | C2 → Add container |
-| Compose responsibilities inside one application | C3 → Add component |
-| Connect containers or internal responsibilities | Visible Connect actions; select arrows for contracts |
-| Design hosting, load balancing and replication | Deployment beside C1/C2/C3 |
-| Record ownership, lifecycle and capacity assumptions | Data & objectives |
-| Reuse a composition | Library → Patterns or Saved architecture templates |
-| Find missing decisions and interface obligations | Review |
-| Export a portable brief and the selected diagram | Editor actions → Implementation handoff |
+| Add an application, store or external integration | Scope-aware toolbar or Library Services/Resources/Integrations |
+| Inspect settings or meaningful dependencies | Click a card; double-click an expandable service/package for C3 |
+| Connect actual boundaries or shared resources | Connection tool or inspector Connections; explicit identity reuse |
+| Group independently deployed services | Select multiple C2 cards → Group as package |
+| Reuse a finite composition | Library Presets; Saved architecture templates manages its local lifecycle |
+| Create a source-mapped reference project | New project → Architecture study or Library Examples |
+| Review readiness, source obligations and evidence | Generate Review |
+| Use existing supported generation/run controls | Generate Activity |
+| Export lossless source, portable handoff or selected diagram | Generate Review/Outputs |
 
-Architecture intent, runtime/template availability and observed verification remain separate.
-New runtime/code-generation work is deferred. Existing template details stay in their own
-[documentation](docs/templates/README.md); this catalog describes reusable conceptual boundaries.
+[Strict model and commands](packages/spec/src/studio-model.ts),
+[finite definitions](packages/spec/src/studio-definitions.ts),
+[pure projections](packages/spec/src/studio-view.ts) and
+[portable exchange](packages/spec/src/studio-portable.ts) preserve canonical identities,
+versioned configuration, relationships and exact locally resolved sources. Compatible published
+compositions keep explicit dependency mappings. Legacy technical settings remain read-only;
+canonical text edits do not silently convert old objects. Layout remains separate from semantics.
+
+**Studio design ≠ runtime template ≠ verified behavior.** All studio-bound designs are design-only:
+the server and compiler reject application generation before jobs because no studio runtime resolver
+exists. Mixed legacy/studio designs have the same guard. Provider/language choices create neither
+working adapters nor deployable code. Existing supported legacy templates, starters and recipes
+retain their original eligibility and restrictions; actual verification stays tied to its recorded
+project/revision/environment. Portable design export remains available for unsupported designs.
+
+The current Library groups are Services, Resources, Integrations, Presets and Examples. Existing
+runtime-template details remain within Presets; supported legacy project/recipe creation remains
+in the project menu. Old contracts, backend/business declarations, focused views, scenarios and
+annotations remain preserved/exportable. Their former authoring controls are absent from normal
+studio navigation. The conceptual catalog and historical offerings below describe retained model
+and implementation boundaries, not permission to expose the removed editors.
 
 ## Finite studio vocabulary
 
@@ -91,7 +50,7 @@ Billing, Redirect, Notifications and Identity each represent one application, wi
 or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
 The reusable Service and worker preset is a grouping of actual deployments, with no package-level
 language, provider or runtime. The fourteen reviewed studio studies are available through the
-opt-in studio Library; default rollout remains a separate assignment.
+default studio Library and New project chooser.
 
 ### Reviewed studio studies
 
@@ -131,8 +90,7 @@ the capability symbol. Language, hosting and integration choices remain unverifi
 
 Known old capability/template identities retain their explicit [read-only mapping](packages/spec/src/studio-legacy.ts);
 unknown families retain a neutral symbol and their original data. Old planning definitions remain
-loadable. This catalog does not alter the existing Library surface or supported runtime templates;
-later studio UI units consume its metadata. Generation still rejects studio designs, while portable
+loadable. The default studio consumes this metadata while preserving supported runtime templates. Generation still rejects studio designs, while portable
 design export remains available.
 
 ## Availability and reuse
@@ -144,20 +102,19 @@ design export remains available.
 | Product recipe | A composition with reviewed domain implementation and protected acceptance supplied by the recipe. |
 | Planned | A block with editable design options or an architecture example. It has no runtime implementation or capacity proof. It prevents generation until the unsupported intent is resolved. |
 
-**Library** exposes implemented templates and planned blocks. Its **Examples** tab creates separate editable planning projects. **New project** also
+**Library** exposes finite studio definitions and current template details. Its **Examples** group creates separate source-mapped design projects. **New project** also
 offers the existing resource starter and product recipe. The library is not a
 claim that every possible combination is compatible. Unsupported attachments and
 connections retain their existing validation.
 
-The design assistant can use the same planned C2/C3 families and options to sketch
-context, containers and responsibilities from a brief. Chat edits use the shared
+The studio assistant uses the same finite manual-edit commands to sketch context, applications,
+resources, packages and relationships from a brief. Chat edits use the shared
 validation and one undo step per turn. Planned choices keep their availability
 label and generation block; see [P44 evidence](docs/evidence/p44/README.md).
 
-Dynamic scenarios reference existing context/C2/C3 relationships, with actor/start conditions,
+Preserved historical dynamic scenarios reference existing context/C2/C3 relationships, with actor/start conditions,
 main and named alternative/failure paths, expected outcomes/invariants linked to requirements
-and decisions, and client feature states coupled to exact bindings and operations. Mouse editing,
-history and scripted chat share validation. Expectation reviews become stale when relevant
+and decisions, and client feature states coupled to exact bindings and operations. Their stored model retains its validation; normal studio navigation offers no scenario editor. Expectation reviews become stale when relevant
 contracts change; they are authored design agreement, never test results. Legacy P45 scenarios
 remain lossless and explicitly incomplete. See the [scenario contract](docs/architecture-scenarios.md)
 and [P54 evidence](docs/evidence/p54/README.md). Runtime availability is unchanged.
@@ -175,7 +132,7 @@ one deployed service or database.
 
 ### Mattermost architecture reference
 
-**Default architecture study, editable.** A source-backed translation of published Mattermost
+**Preserved historical source study.** A source-backed translation of published Mattermost
 application and scaling diagrams. Seven C2 boundaries, thirteen C3 components, three focused
 views, three backend scenarios with failure branches and two deployment environments. The AWS
 layout follows the selected published image; Kubernetes is a separate proposed adaptation.
@@ -201,8 +158,8 @@ Three focused views, declared local deployment and unverified workload intent sh
 
 All runtime implementations remain unsupported; application observations are absent/not run and
 observed points remain zero. This TypeScript/REST adaptation supplies no upstream compatibility,
-generated application or measured capacity. Mattermost remains the default; saved projects do not
-adopt the example automatically. See the [complete study and 20-row/66-observation trace](docs/examples/discourse-core.md)
+generated application or measured capacity. The fresh Mattermost studio study is the default;
+saved projects do not adopt any example automatically. See the [complete study and 20-row/66-observation trace](docs/examples/discourse-core.md)
 and [example source](packages/spec/src/discourse-core-example.ts).
 
 ### Vendure core complete backend design
@@ -234,7 +191,7 @@ not YouTube's private implementation. See the [walkthrough](docs/examples/stream
 
 ### Enterprise web application
 
-**Architecture study, editable.** Available under New project and Library → Examples. Customers order through
+**Preserved historical source study.** Its separate finite interpretation is available under New project and Library Examples. Customers order through
 a web app; operations and finance staff work in a back-office console; one Orders
 API owns customers, catalog, orders and payment state; an order worker captures
 payments, notifies and reconciles asynchronously. Identity, payment and e-mail
@@ -254,7 +211,7 @@ a proposed technology; nothing in it selects a runtime template.
   clients (session, screens, API client).
 - Dynamic: "Customer places an order" and "Provider reports a payment outcome".
 - Source: `packages/spec/src/enterprise-web-example.ts`; also listed under
-  Library → Examples.
+  its separate finite studio interpretation in Library Examples.
 
 ### Resource workspace
 
@@ -532,7 +489,7 @@ traffic. Private responses and application authorization need explicit handling.
 ## C3 shared components
 
 [Exact backend implementation support](docs/backend-implementations.md) keeps responsibility families
-separate from exact registered modules. Technical details and Review report supported options,
+separate from exact registered modules. Generate source details retain declared options,
 explicit typed-hook seams and unsupported obligations for hosts, components, operations and
 relationships. **No production backend capability descriptors or new runtime offerings are
 registered by P69.** Expected evidence packs and observed verification remain separate.

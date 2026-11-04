@@ -496,6 +496,8 @@ export const useDraw = create<DrawState>()((set, get) => {
       if (previousProject) void formDrafts.flushProject(previousProject, true);
       const request = ++opening;
       await get().flushLayout();
+      // A superseded open must not create a fresh-install example before the later fetch guard.
+      if (request !== opening) return;
       set({
         status: "loading",
         error: undefined,

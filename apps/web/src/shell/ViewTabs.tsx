@@ -1,19 +1,11 @@
 /**
- * Top-bar Draw / Runs / Settings tabs, styled as automation-pitch's view switch.
+ * Top-bar Design / Generate / Settings tabs, styled as automation-pitch's view switch.
  * Arrow keys move between tabs; mouse alone is always enough.
  */
 import type { KeyboardEvent } from "react";
 import { VIEWS, type ViewId } from "./views.ts";
 
-export function ViewTabs({
-  view,
-  onSelect,
-  studio = false,
-}: {
-  view: ViewId;
-  onSelect: (next: ViewId) => void;
-  studio?: boolean;
-}) {
+export function ViewTabs({ view, onSelect }: { view: ViewId; onSelect: (next: ViewId) => void }) {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     const i = VIEWS.findIndex((v) => v.id === view);
@@ -42,7 +34,7 @@ export function ViewTabs({
               className={`view-switch-btn${on ? " is-on" : ""}`}
               onClick={() => onSelect(v.id)}
             >
-              {studio && v.id === "runs" ? "Generate" : v.label}
+              {v.label}
             </button>
           );
         })}

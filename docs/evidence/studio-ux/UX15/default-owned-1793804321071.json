@@ -1,0 +1,36 @@
+{
+  "owned": [
+    {
+      "id": "564ffdb0-ba24-4ab0-8db9-0f07bd80115d",
+      "name": "UX15 owned session 1440 1793804321071",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:58:41.143Z",
+      "updatedAt": "2026-11-04T14:58:41.143Z"
+    },
+    {
+      "id": "cd75a775-246d-4cb0-a747-46e7d88c1a66",
+      "name": "UX15 owned session 1280 1793804321071",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:58:56.030Z",
+      "updatedAt": "2026-11-04T14:58:56.030Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "564ffdb0-ba24-4ab0-8db9-0f07bd80115d",
+      "verified404": true
+    },
+    {
+      "id": "cd75a775-246d-4cb0-a747-46e7d88c1a66",
+      "verified404": true
+    }
+  ]
+}

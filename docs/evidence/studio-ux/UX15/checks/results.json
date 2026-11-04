@@ -1,0 +1,92 @@
+{
+  "unit": "UX15",
+  "result": "passed",
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "nodeBinPrepended": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "warnings": 2797,
+      "infos": 88,
+      "newErrors": 0,
+      "log": "lint.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "scope": "Full workspace, existing source/test types and scripts",
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "advisory": "Existing large-chunk advisory",
+      "log": "web-build.log"
+    },
+    {
+      "command": "One-off combined source/configuration/legacy audit",
+      "exitCode": 0,
+      "priorUnits": 24,
+      "coverageRows": 14,
+      "requirements": 946,
+      "definitionFields": 81,
+      "relationshipFields": 9,
+      "historicalFactories": 9,
+      "log": "combined-audit.log"
+    },
+    {
+      "command": "Direct Chromium default end-to-end owned design session",
+      "exitCode": 0,
+      "sizes": ["1440x900", "1280x800"],
+      "records": 6,
+      "httpResponses": 81,
+      "intentional503Failures": 2,
+      "log": "session-browser.log"
+    },
+    {
+      "command": "Direct Chromium default 24-node dense movement",
+      "exitCode": 0,
+      "sizes": ["1440x900", "1280x800"],
+      "records": 2,
+      "layoutSaves": 4,
+      "workerRequestsDuringMovement": 0,
+      "log": "dense-browser.log"
+    },
+    {
+      "command": "Direct Chromium retained local-library lifecycle and legacy recipe paths",
+      "exitCode": 0,
+      "sizes": ["1440x900", "1280x800"],
+      "records": 4,
+      "isolatedProductionLibraryRequests": 40,
+      "transport": "Fastify.inject for isolated local Library only; recipe writes use actual server",
+      "log": "retained-browser.log"
+    },
+    {
+      "command": "Direct Chromium fresh rollout, failed seed cleanup and read-only legacy navigation",
+      "exitCode": 0,
+      "sizes": ["1440x900", "1280x800"],
+      "records": 13,
+      "realHttpResponses": 18,
+      "intentionalReal422s": 2,
+      "log": "rollout-browser.log"
+    },
+    {
+      "command": "Local documentation link inspection and scoped preservation audit",
+      "exitCode": 0,
+      "localLinks": 336,
+      "handoffPrefixBytes": 1026565,
+      "immutableSourceFiles": 106,
+      "recordedOwnedProjectsVerified404": 28,
+      "liveConcurrentEditsDisclosed": true
+    }
+  ],
+  "unitE2ETemplateSuites": "Owner-deferred; not run or maintained",
+  "pnpmCheck": "Owner-deferred; not run",
+  "fixtureTypingAdaptations": 0,
+  "providerCalls": 0,
+  "applicationGenerations": 0,
+  "logs": "Trailing whitespace and ANSI presentation escapes normalized; command diagnostics/outcomes preserved.",
+  "preservationQualification": "Immutable sources/factories/earlier evidence exact; recorded live snapshot has 12 unchanged semantic documents and 10 unchanged layouts, with one context edit and three layout changes outside guarded worker traffic. No actor attribution or reset."
+}

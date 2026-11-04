@@ -1,0 +1,16 @@
+{
+  "result": "final-inspections-pass",
+  "notes": [
+    "Temporary session driver initially used Group instead of Create package. A new package was outside the retained camera; the visible Tidy and fit action restored it before mouse drilling. No forced clicks or hidden selection were used.",
+    "Layout-history inspection initially compared whole layout hashes, including independently saved cameras. It now compares the relevant positions and separately checks the exact semantic hash, matching the contract.",
+    "Retained-library driver corrected Mantine combobox/required-label/close-button names, dismissed the open multi-select with a mouse click and awaited the specific nested recipe dialog.",
+    "The library lifecycle uses actual production Fastify route handlers via inject and a temporary file-backed ArchitectureLibrary. Browser transport is redirected explicitly; it is not a live server, global publication or runtime proof. Recipe saves use the actual server.",
+    "The source audit handles array-shaped historical check commands and resolves growing historical handoff sources at their pinned commit. Sibling source files are read only and checked against their recorded hashes.",
+    "Fresh-install browser inspection uses only an empty GET project-list response; all creation/save/delete results are real. It exposed and fixed duplicate initial-open resolution before example creation. A real 422 seed refusal then proved exact owned cleanup and successful retry.",
+    "Fresh browser screenshot inspection exposed missing role colors after removing the legacy workspace import. The unchanged family tokens moved from legacy editor CSS to the shared theme; final fresh captures assert filled cards and solid borders before visiting any legacy dialog.",
+    "Initial repository lint found newly generated evidence JSON formatting. Scoped formatting fixed it; no lint rule was relaxed. All final checks and captures follow these corrections."
+  ],
+  "successfulResponses": "Never fabricated for semantic or layout saves. Deliberate HTTP503 failures are labeled in session records; the production-library bridge and empty-list read simulation are explicitly identified.",
+  "rawLocalLogs": "/tmp/ux15-*.log; final logs retained in checks. Temporary drivers are one-off inspections, not maintained tests.",
+  "cleanup": "Every driver finally deletes its exact owned projects and verifies 404; final project-set/hash/metadata equality independently checks all attempts."
+}

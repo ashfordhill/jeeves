@@ -10588,3 +10588,103 @@ C4b field tests must verify reproducibility, extension/regeneration preservation
 failures, plus bespoke code/repair-prompt effort. No runtime backlog is selected or started here.
 UX14d is complete; this worker stops after its scoped local commit. UX15/default rollout remains a
 separate assignment; P73a/P73b and the backend batch stay incomplete and paused.
+
+## 2026-11-04 — UX15: combined acceptance and default finite studio (complete)
+
+Executed UX15 only on primary `main`, starting at
+`6169c595e96beaaee6aea06d307c1eb31058ce9a`, under the owner's sequential fresh-worker batch.
+Read AGENTS, PLAN §§1–15, latest handoff/batch authority, all studio contracts/owner decisions,
+UX01's action inventory, all predecessor evidence and C4 guidance. This worker did not delegate,
+create a worktree/branch or advance beyond UX15. P73a/P73b and the backend batch remain paused
+and incomplete. No application runtime/provider/generator expansion or sibling edit occurred.
+
+The finite studio now loads on ordinary URLs. Removed the temporary switch file/branches; Design,
+unified Generate and Settings are the default shell. Old `#/runs` links still reach Generate.
+Fresh installations and the New project study chooser use the fourteen separate source-mapped
+studio factories; original factories and source bytes are preserved. Failed seed creation deletes
+only its newly owned project. An early stale-open generation check prevents a development remount
+from creating two initial studies before the existing later fetch guard.
+
+Combined action review repaired two retained destinations: Library Presets now opens local saved
+architecture lifecycle and existing bounded QR recipe configuration. Studio library management
+omits arbitrary historical component options/insertion; compatible published compositions retain
+the finite Presets insertion path. A fresh-browser screenshot check also found the card palette
+was implicitly loaded by the removed legacy workspace import. Moved its exact family color tokens
+into the shared theme; fresh pages now have solid filled role cards without opening legacy dialogs.
+README, CATALOG, studio/modeling/agent guidance, UX/backend roadmap status, study guide and the visual
+index describe actual defaults and design-only runtime limits. Historical evidence remains intact.
+
+Combined evidence is `docs/evidence/studio-ux/UX15/README.md` and linked observations:
+
+- Independently confirmed all 24 predecessor commits/evidence/check records; UX15 closes the 25-unit
+  milestone. Every one of 81 definition descriptor rows across 14 kinds, nine relationship fields,
+  visibility conditions and canonical context/package fields has linked validation, real save,
+  reload and export evidence. All 85 UX01 action families have final destinations/dispositions.
+- All E01–E14 /946 source requirement rows resolve, retain exact source hashes, match prior portable
+  seeds and round-trip losslessly. Inventory/grocery remain limited; Zammad remains a separate
+  small reference, with detailed P73a/P73b incomplete. All nine historical factory design/layout
+  outputs retain UX01 hashes. No studio definition becomes an executable template.
+- Current default mouse sessions at 1440×900 and 1280×800 create applications/resources, choose
+  providers, connect, share one C3 queue with two consumers, group services, remove hidden Host
+  settings atomically, configure, move/Tidy, Undo/Redo chronologically, reload, review and export.
+  Six final records contain 81 HTTP responses, including two labeled simulated 503 failures;
+  Retry uses real successful server writes. No fabricated semantic/layout save succeeds.
+- The unchanged public 24-node dense fixture supplies fan-out, cycle, mixed protocols and reverse
+  directions. Both sizes retain every mounted nonempty/full-opacity path throughout sampled drag;
+  unrelated geometry/labels remain exact, movement sends zero worker requests, and each drop makes
+  one settle and one layout save. Semantic hash/revision and reload positions remain exact. Four
+  actual layout writes and continuous recordings accompany the two final observations.
+- Retained-action inspection uses production Fastify Library handlers through `inject` with an
+  isolated temporary file-backed Library (40 requests), clearly labeled redirected transport.
+  Save/publish/clone/delete/retire work without changing the global Library. Bounded QR recipe
+  settings save/reload through the actual server with studio metadata absent. This is no external
+  publication or application/runtime result.
+- Thirteen rollout records cover fresh defaults, full chooser, real 422 refused insertion with
+  exact owned deletion and successful retry, filled/solid cards on a fresh page, and guarded
+  read-only original-project compatibility/unified Generate at both sizes. Only the empty GET
+  project listing is simulated for fresh-install fallback; writes/refusal/cleanup are real.
+  Supported legacy generation reaches existing `INVALID_OUTPUT_DIR`; studio requests return
+  `STUDIO_DESIGN_ONLY` with no generation record. No model/provider, external agent, generated
+  application or benchmark execution ran. Existing history/output flow evidence remains UX12's
+  explicitly distinguished real historical records and simulated state transports.
+
+Live-state preservation has a disclosed concurrency limit. The final 15:15:55 UTC comparison keeps
+the original 13-project set and all stable metadata. Twelve original semantic documents retain
+exact hashes/revisions; one existing Mattermost project (`9928f0b6…`) advanced revision1→2 during
+read-only investigation, deleting context relationship `member-system`. A read-only operation query
+records source `canvas` at 15:14:12 UTC, with no client attribution or studio migration. Ten original
+layouts remain exact; three have newer hashes/timestamps. Every worker browser guard was installed
+before page creation and logs zero unowned/blocked requests; direct mutation helpers require exact
+owned IDs. The coordinator confirms no browser/API work. Attribution is unknown. The latest live
+values are retained, never restored to old hashes. `live-project-investigation.json`,
+`concurrent-semantic-changes.json` and `project-preservation.json` retain that evidence rather than
+claiming all original live values stayed equal. Controlled owned-fixture compatibility and immutable
+source checks pass independently.
+
+All recorded owned disposables are deleted/404, and final original-project set equality covers
+attempt cleanup. File preservation verifies all earlier UX evidence, seven public fixtures,
+42 feedback files/21 original-copy pairs, all 48 frozen benchmark files, old factory/support/P73
+checkpoint sources, all fourteen studio seeds, five sibling source documents and every unrelated
+tracked file. Earlier handoff bytes are preserved exactly. Only UX15 scoped changes are committed.
+
+Required Node24.21.0/pnpm12.16.1 checks, with the Node bin path prepended: `pnpm lint`, full
+`pnpm typecheck` (workspaces/scripts and existing source/test types), and
+`pnpm --filter @jeeves/web build` pass. Lint retains 2,797 warnings/88 infos; the build retains its
+large-chunk advisory. Check logs, normalized only for ANSI presentation/trailing whitespace, are
+under UX15/checks. Scoped formatting, local documentation links and staged whitespace including
+new logs pass. No dependency or fixture typing adaptation was needed. The owner's subsequent
+“Allow minimal compilation fixes” confirms that allowance; broad test maintenance, snapshots,
+unit/E2E/template suites and `pnpm check` remain deferred and were not run.
+
+Known limits: fitting a large all-cycle graph can make text small; mouse pan/zoom and detail scopes
+remain necessary. Crowded labels may be omitted while selectable lines remain; temporary incident
+paths can cross geometry. Existing manual overlaps are preserved. Local layout history resets on
+reload; termination cannot guarantee an unacknowledged save. Live conversation quality and actual
+provider pricing remain unevaluated. No product completion gate remains; the concurrent live edit
+qualification is explicit, not an undisclosed migration or runtime claim.
+
+Stop after UX15. Later separately authorized C4a/C4b work must choose runtime/language priorities
+and generator placement, define real extension/regeneration boundaries, pin/reproduce builds,
+measure bespoke-code and repair-prompt effort, and verify integrations/failure/black-box behavior.
+Dropshipping vendor access and inventory/grocery unknowns remain unresolved. No runtime backlog,
+backend batch, external deployment, publication or live project migration is started by this unit.

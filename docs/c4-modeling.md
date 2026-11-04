@@ -2,11 +2,12 @@
 
 Read this before changing architecture authoring, catalog entries, connections or patterns. The user's current priority is a useful C2/C3 design experience and reusable composition. New application runtimes and generation expansion follow separately. These rules do not mark proposed capabilities implemented or authorize a queued package.
 
-## Active studio direction — 3 November 2026
+## Implemented studio direction — 4 November 2026
 
 The [studio UX plan](build-plan-studio-ux.md) and
 [resolved owner decisions](../.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md)
-govern the current cleanup. They specify intended behavior, not an already implemented interface.
+govern the implemented default studio. [UX15 acceptance](evidence/studio-ux/UX15/README.md)
+records the combined design checks. New runtime/template work remains separate.
 The standard C4 definitions below remain useful for understanding boundaries; they must not be used
 to override the owner's deliberate product choices:
 

@@ -1,0 +1,21 @@
+{
+  "owned": [
+    {
+      "id": "31e19812-75eb-41f9-ab88-506f402870b5",
+      "name": "UX15 owned session 1440 1793803703768",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T14:48:23.831Z",
+      "updatedAt": "2026-11-04T14:48:23.831Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "31e19812-75eb-41f9-ab88-506f402870b5",
+      "verified404": true
+    }
+  ]
+}

@@ -1,12 +1,11 @@
 # Deterministic application behavior and the qrwty proof
 
-**Current priority (2026-11-03):** the [studio UX build plan](build-plan-studio-ux.md) follows the
-[resolved feedback](../.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md) and has
-[25 bounded assignments](plans/studio-ux/execution-units.md). It is specified, not implemented.
-When requested, start with UX01 and execute one exact unit at a time. P73a is checkpointed
-incomplete; P73a/P73b and the backend batch remain paused. Do not start P74 or resume runtime
-work from the historical sequence below. The UX specification supersedes conflicting older UI
-preferences; actual template availability and benchmark evidence remain unchanged.
+**Current milestone (2026-11-04):** the [studio UX plan](build-plan-studio-ux.md)'s 25 assignments
+are complete; [UX15 acceptance](evidence/studio-ux/UX15/README.md) records combined review and default
+rollout. The finite studio supersedes the older UI. New definitions remain design-only; template
+availability and benchmark scores are unchanged. P73a is checkpointed incomplete; P73a/P73b and the
+backend batch remain paused. A later runtime/template field test requires a separate explicit task;
+do not infer P74 or any automatic queue resumption from the UX completion.
 
 **Earlier planning record (2026-11-01):** the [backend benchmark roadmap](build-plan-backend-benchmarks.md)
 specifies future Discourse, Vendure and Zammad core foundations. Its P58–P110 delivery packages

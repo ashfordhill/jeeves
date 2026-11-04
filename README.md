@@ -4,9 +4,18 @@ Jeeves is a web-application architecture studio intended to help Software Engine
 
 - Existing generator templates target TypeScript. The studio direction supports different service languages; additional runtimes remain future work.
 
-The [November studio build plan](docs/build-plan-studio-ux.md) specifies the next UI and configuration
-cleanup, following the [resolved feedback](.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
-It preserves the C4(a)/C4(b) boundary below. The plan is not implemented yet.
+The [November studio milestone](docs/evidence/studio-ux/UX15/README.md) is implemented and is the
+default interface, following the [resolved feedback](.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
+Use the scope-aware palette or Library to create finite applications/resources, configure provider
+intent, share C3 queues and group independent services. Click to inspect, double-click useful detail,
+and use Tidy and fit and chronological Undo/Redo. The [studio guide](docs/architecture-studio.md)
+explains autosave, source-preserving legacy compatibility and all fourteen source-mapped studies.
+
+Generate is the single Review/Activity/Outputs destination. Studio definitions remain **design-only**;
+application generation is blocked until an exact runtime resolver exists. Existing supported legacy
+templates and recipes retain their current flow. This UX work preserves the C4(a)/C4(b) boundary
+below and supplies no new application runtime, provider integration or benchmark pass. P73a/P73b
+and the backend batch remain incomplete/paused.
 
 <p align="center"><img src=".docs/c4-flow.svg" width="600"/></p>
 
@@ -29,7 +38,8 @@ docker pull ghcr.io/ashfordhill/jeeves:latest
 docker run --rm --name jeeves -p 4300:4300 ghcr.io/ashfordhill/jeeves:latest
 ```
 
-Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
+Historical C1/C2/C3 Mattermost screenshots, courtesy of Astra; the current studio uses a separate
+source-mapped study. See the studio guide and combined evidence for the implemented interface:
 
 ### C1
 <p align="center"><img src=".docs/mattermost-c1.png" width="600"/></p>
@@ -40,18 +50,18 @@ Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 ### C3
 <p align="center"><img src=".docs/mattermost-c3.png" width="600"/></p>
 
-## Planned Features
+## Current design capabilities and future runtime work
 
-- A chat helper on the side to help guide C2 and C3 design decisions
+- A chat helper uses the finite studio vocabulary for C1/C2/C3 design decisions; live conversation quality remains a later evaluation.
 
   - <p align="center"><img src=".docs/chat-assistant.png" width="300"/></p>
 
-- A library of pre-tested C2 and C3 components to mix, configure and connect together
+- A finite design Library supports selection, configuration and composition. Pre-tested runtime coverage for these new definitions remains future work.
 
   - <p align="center"><img src=".docs/component-library.png" width="300"/></p>
 
 
-- Configurable options within C2 and C3 components to indicate expected load at certain bottlenecks (keep design MVP level, enterprise level or flexible enough to change later on?)
+- Provider, language, execution and bounded technical options express design intent. Capacity targets and new runtime/provider implementation need separately scoped work.
 
 - Docker-oriented execution intent and provider choices; Kubernetes/Helm are outside the current studio scope
 

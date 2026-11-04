@@ -1,8 +1,10 @@
 # Studio UX and configurable architecture build plan
 
-**Status: specified, not implemented.** Written 2026-11-03 for sequential Sol 6.1 xhigh
-assignments. The owner has completed the review questions; this document translates the answers
-into concrete implementation work. Do not execute the queue merely because this plan exists.
+**Status: implemented as the default studio, UX01–UX15 complete (2026-11-04).**
+[Combined acceptance and limits](evidence/studio-ux/UX15/README.md) record all 25 assignments.
+Written 2026-11-03 for sequential Sol 6.1 xhigh assignments; the contracts below remain the
+implementation specification. The temporary URL flag is removed. This completion authorizes no
+new runtime sequence or backend resumption.
 
 This plan replaces conflicting historical UI requirements for the current cleanup. It does not
 resume P73a/P73b or the backend runtime roadmap. P73a remains a partial checkpoint. Existing
@@ -93,7 +95,7 @@ contain contracts, schemas and behavior internally. Those are template-owned, no
 ## 5. Delivery and verification
 
 The new namespace **UX01–UX15**, including mandatory child units, avoids collisions with S/P
-history and P58–P110. There are **25 individual assignments**, all initially unstarted. Assign one
+history and P58–P110. There are **25 individual assignments**, now completed with separate local commits and evidence. Assign one
 exact unit. A request for a split parent means its first unfinished child only. Commit each completed
 unit locally with its exact ID; do not combine children or advance automatically.
 
@@ -126,8 +128,8 @@ byte-identical. Never use screenshot existence alone as proof that a gesture, sa
 
 ## 6. Rollout and compatibility
 
-Build the new surface behind a temporary `studio=next` URL flag introduced in UX05, with no visible
-feature-toggle menu. It composes the existing app/store; do not fork a second application. Earlier
+The implementation used a temporary `studio=next` URL flag from UX05 through the combined UX15
+review. UX15 removed it; ordinary URLs now load the studio with no feature-toggle menu. It composes the existing app/store; do not fork a second application. Earlier
 model/projection units are usable by disposable fixtures without changing the normal interface.
 UX15 switches the default only after the combined checks pass, then removes the temporary switch.
 Do not ship empty toolbar actions or placeholder tabs as the final interface.
@@ -156,8 +158,8 @@ outcomes include the amount of bespoke code still required, number of low-level 
 clarity of integration points and verified behavior under failure. Do not manufacture targets or
 declare those outcomes achieved during this UI work.
 
-The next executable assignment, when requested, is **UX01**. No outstanding product question
-requires another broad questionnaire before this plan can be reviewed.
+The 25-unit UX queue is complete. There is no automatic next assignment. Later runtime priorities,
+extension contracts, generator deployment and real field tests require a separately requested task.
 
 ## 8. Copyable single-unit assignment
 

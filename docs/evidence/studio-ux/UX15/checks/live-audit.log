@@ -1,0 +1,1 @@
+{"readOnly":true,"events":[{"project":"9928f0b6-c54c-4081-b8d4-5bdff0b5875c","source":"canvas","revision":2,"createdAt":"2026-11-04T15:14:12.598Z","removedContextRelationships":[{"id":"member-system","from":"member","to":"system","description":"Collaborates through messages and files"}]}],"unownedWorkerRequests":0}

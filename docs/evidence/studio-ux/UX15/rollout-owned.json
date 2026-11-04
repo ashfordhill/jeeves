@@ -1,0 +1,111 @@
+{
+  "owned": [
+    {
+      "id": "4c7821cf-671c-4765-8ef2-c8331861e217",
+      "name": "Mattermost · studio study",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:06:51.257Z",
+      "updatedAt": "2026-11-04T15:06:51.257Z"
+    },
+    {
+      "id": "b412feb3-7eec-4cbc-95d5-9ff007e9cddc",
+      "name": "UX15 owned chooser 1440",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:06:52.427Z",
+      "updatedAt": "2026-11-04T15:06:52.427Z"
+    },
+    {
+      "id": "61568099-eab1-4055-8028-08be8649af4a",
+      "name": "UX15 owned chooser 1440",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:06:52.558Z",
+      "updatedAt": "2026-11-04T15:06:52.558Z"
+    },
+    {
+      "id": "e70626c5-b2bf-47a5-97aa-741dc0c6988e",
+      "name": "Mattermost · studio study",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:06:53.552Z",
+      "updatedAt": "2026-11-04T15:06:53.552Z"
+    },
+    {
+      "id": "b03c8d25-60bc-41e2-b5d3-f7f3b14f7da3",
+      "name": "UX15 owned chooser 1280",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:06:54.662Z",
+      "updatedAt": "2026-11-04T15:06:54.662Z"
+    },
+    {
+      "id": "a7c27af9-fe55-49c5-a121-ca1aefa751b6",
+      "name": "UX15 owned chooser 1280",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:06:54.791Z",
+      "updatedAt": "2026-11-04T15:06:54.791Z"
+    },
+    {
+      "id": "4575ee7f-c560-48d7-86c4-f8799c43bf67",
+      "name": "UX15 owned supported eligibility",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T15:07:01.355Z",
+      "updatedAt": "2026-11-04T15:07:01.355Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "4c7821cf-671c-4765-8ef2-c8331861e217",
+      "verified404": true
+    },
+    {
+      "id": "b412feb3-7eec-4cbc-95d5-9ff007e9cddc",
+      "verified404": true
+    },
+    {
+      "id": "61568099-eab1-4055-8028-08be8649af4a",
+      "verified404": true
+    },
+    {
+      "id": "e70626c5-b2bf-47a5-97aa-741dc0c6988e",
+      "verified404": true
+    },
+    {
+      "id": "b03c8d25-60bc-41e2-b5d3-f7f3b14f7da3",
+      "verified404": true
+    },
+    {
+      "id": "a7c27af9-fe55-49c5-a121-ca1aefa751b6",
+      "verified404": true
+    },
+    {
+      "id": "4575ee7f-c560-48d7-86c4-f8799c43bf67",
+      "verified404": true
+    }
+  ]
+}

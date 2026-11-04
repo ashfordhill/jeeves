@@ -1,0 +1,536 @@
+{
+  "result": "all-baseline-action-families-accounted-for",
+  "inventory": "docs/evidence/studio-ux/UX01/action-inventory.md",
+  "families": 85,
+  "rows": [
+    {
+      "baselineSurface": "shell/ViewTabs.tsx, views.ts",
+      "actions": "Design; Runs; Settings",
+      "acceptedDestination": "Design remains studio; Runs becomes Generate; Settings remains application settings.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "shell/StatusBar.tsx",
+      "actions": "Dark mode",
+      "acceptedDestination": "Retain theme toggle in application chrome; local UI preference. Health remains read-only.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/ProjectMenu.tsx",
+      "actions": "Project menu; Rename project; recent project entries; All projects\u2026",
+      "acceptedDestination": "Project selector/browser in slim header. Existing rename/open/search/delete remain mouse accessible there.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/ProjectBrowser.tsx",
+      "actions": "Search projects; open project; Delete [project]; Delete confirmation; Cancel; close",
+      "acceptedDestination": "Retain project browser; no deletion of active diagrams during inspection.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/ProjectMenu.tsx",
+      "actions": "Create target from this design",
+      "acceptedDestination": "Project selector's explicit create/copy workflow, preserving baseline/provenance. Not a second diagram.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/ProjectMenu.tsx",
+      "actions": "New from recipe; New project",
+      "acceptedDestination": "Project chooser; supported recipes remain reachable as Presets in Library/creation.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/ProjectChooser.tsx",
+      "actions": "Choose Architecture study / Resource workspace / QR Studio / Blank canvas; Study selector; Retry catalog; Create project; Cancel",
+      "acceptedDestination": "Project creation/Library Examples and Presets; preserve real supported legacy paths. Excluded route/schema forms do not return as creation defaults.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "architecture/ArchitectureTargets.tsx",
+      "actions": "Create target; Cancel; recipe handling choice; Current baseline; Proposed target; Changes; Refresh comparison; Close comparison",
+      "acceptedDestination": "Explicit project creation plus read-only baseline/source comparison in Generate Review. Preserve target restrictions and declarations.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureWorkspace.tsx header",
+      "actions": "Editor actions (ellipsis)",
+      "acceptedDestination": "Remove this launcher; account for every child below.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Freeform board & annotations; Architecture diagram",
+      "acceptedDestination": "Remove freeform navigation. Studio is the normal diagram; preserve old annotations in export.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu / Find object dialog",
+      "actions": "Find object; query and choose result",
+      "acceptedDestination": "Remove separate Find/Explorer surface. Card/relationship mouse selection and depth navigation are the retained discovery path; no replacement search/map requirement.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Undo layout; Redo layout",
+      "acceptedDestination": "One chronological header Undo/Redo with semantic changes.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Hide inspector; Show inspector",
+      "acceptedDestination": "Independent right rail toggle in slim header/rail.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Edit context",
+      "acceptedDestination": "C1 object click opens compact inspector.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Add component",
+      "acceptedDestination": "Scope-aware finite toolbar/Library; arbitrary component/module authoring removed.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Show implementation adapters",
+      "acceptedDestination": "Removed from studio. Preserve declarations and expose source details in Generate when requested.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Connect components; Connect dependency",
+      "acceptedDestination": "Scope-aware Connection tool and compatible existing-resource picker, using actual identities. No arbitrary backend dependency editor.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu (QR Studio only)",
+      "actions": "Product configuration",
+      "acceptedDestination": "Preserve bounded supported recipe configuration under Library Presets/project recipe detail; exclude API/business schema editing.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "API contracts",
+      "acceptedDestination": "Generate Review source/contract detail and portable Outputs. Read-only schemas remain inspectable; old operation/resource editors removed.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu / toolbar",
+      "actions": "Data responsibilities and objectives; Data & objectives",
+      "acceptedDestination": "Generate Review read-only source/readiness details. Deep data/objective editors removed from normal studio.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu / AnnotationDraft",
+      "actions": "Suggest responsibility annotations; Add selected annotations; Cancel",
+      "acceptedDestination": "Remove authoring entry. Existing suggestions/annotations survive source export; no substitute annotation tool.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu / Review button",
+      "actions": "Architecture review ([count]); Review",
+      "acceptedDestination": "Generate Review. Findings link back to applicable card/scope, never removed deep editors.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Findings ([count]); select finding; dismiss notice",
+      "acceptedDestination": "Generate Review actionable list and concise local errors. Dismiss notice retained.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Inspect evidence",
+      "acceptedDestination": "Generate Review exact revision-bound evidence detail; do not imply current verification.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Implementation handoff",
+      "acceptedDestination": "Generate Review/Outputs retain scope/ownership/review/export capability and stale-revision behavior.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Local deployment; Deployment plans",
+      "acceptedDestination": "Remove normal editor entry; declarations remain inspectable in Generate/source export. Small execution setting remains in application inspector.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Type colors",
+      "acceptedDestination": "Remove separate legend launcher; recognizable capability icons/colors on cards and Library. No essential model mutation lost.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu",
+      "actions": "Generate code",
+      "acceptedDestination": "Generate unified destination; opening does not start work; preserve supported legacy generation and target restrictions.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace menu / toolbar",
+      "actions": "Saved revision [n]; Saved",
+      "acceptedDestination": "Remove persistent success chrome; pending/error feedback only. These are status labels, not commands.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureWorkspace header",
+      "actions": "Undo; Redo",
+      "acceptedDestination": "One chronological mouse-accessible pair, including layout.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureWorkspace header",
+      "actions": "C1 Context; C2 Containers; C3 Components",
+      "acceptedDestination": "Explicit C1/C2 navigation; C3 only for selected expandable scope with breadcrumb/back. No global C3 empty view.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureWorkspace header",
+      "actions": "Deployment",
+      "acceptedDestination": "Remove normal studio tab; retain stored source/obligations in Generate.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureWorkspace header",
+      "actions": "Component container selector",
+      "acceptedDestination": "Remove flat parent selector; double-click meaningful children and breadcrumb/back.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureWorkspace header",
+      "actions": "Library",
+      "acceptedDestination": "One Library with compatible Services/Resources/Integrations/Presets/Examples.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "studio-toolbar",
+      "actions": "Explorer; Close explorer; Search design; outline choose/open child",
+      "acceptedDestination": "Remove Explorer/map. Mouse card selection and double-click/breadcrumb replace outline navigation.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "studio-toolbar C1",
+      "actions": "Edit people & systems",
+      "acceptedDestination": "C1 Person/External system/Connection tools and selected context inspector.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "studio-toolbar C2",
+      "actions": "+ Add container; Connect containers",
+      "acceptedDestination": "Finite C2 creation palette; Connection tool with explicit source/target/form.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "studio-toolbar C3",
+      "actions": "\u2190 C2; + Add component; Connect components; Connect dependency",
+      "acceptedDestination": "Breadcrumb/back plus finite package/service C3 tools. C3 queues/resources meaningful; no arbitrary component editor.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "studio-toolbar",
+      "actions": "Patterns",
+      "acceptedDestination": "Library Presets/reusable compositions; no separate Patterns entry.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "FocusedViews.tsx",
+      "actions": "C2 view (Whole system and each saved view); New focused view; Edit view; Save view; Delete view; Cancel; hidden connections link and member selection",
+      "acceptedDestination": "Remove named/focused-view editing/navigation. Preserve exact records and hidden relationships in portable source; whole architecture uses C1/C2/C3.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace rail",
+      "actions": "Open chat; Collapse chat",
+      "acceptedDestination": "Independent left rail toggle; chat initially open.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace rail",
+      "actions": "Close inspector; card inspect; relationship inspect",
+      "acceptedDestination": "Independent right inspector rail with finite eligible forms; no empty report.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "workspace errors/empty states",
+      "actions": "Refresh architecture; Describe this system; Browse building blocks; Add component; start example/project actions",
+      "acceptedDestination": "Refresh/retry remain concise on relevant error; creation uses finite Library/toolbar/chooser. No placeholder empty C3.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureGraph.tsx cards",
+      "actions": "Inspect [name]; responsibility-row [name] \u203a; Design components \u2192; Open components",
+      "acceptedDestination": "Click inspects; double-click only actual expandable scopes. Remove inline responsibility lists and redundant open-child buttons.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureGraph.tsx relationships",
+      "actions": "Inspect relationship: [description]; line click",
+      "acceptedDestination": "Individual selectable branch/settings; multi-member trunk chooser preserves identities.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureGraph.tsx Controls",
+      "actions": "Zoom in; Zoom out; Fit view",
+      "acceptedDestination": "Wheel/pan remain; one visible Tidy and fit replaces fit controls. No separate Fit menu.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram bottom",
+      "actions": "Fit diagram; Focus selection; Auto-arrange",
+      "acceptedDestination": "One visible Tidy and fit. Selection remains inspect, without forcing a camera change.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram menu",
+      "actions": "Diagram options (ellipsis)",
+      "acceptedDestination": "Remove launcher; children mapped below.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram menu",
+      "actions": "Flow right; Flow down",
+      "acceptedDestination": "Remove direction choice; deterministic left-to-right arrangement. Existing layout records preserved.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram menu",
+      "actions": "Fit selected; Focus selected object",
+      "acceptedDestination": "Remove duplicate focus actions. Tidy and fit and pan/zoom remain.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram menu",
+      "actions": "Nudge left; Nudge right; Nudge up; Nudge down",
+      "acceptedDestination": "Remove nudge menu; whole-card mouse drag with grid landing handles movement.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram menu",
+      "actions": "Undo layout; Redo layout; Auto-arrange diagram",
+      "acceptedDestination": "Unified Undo/Redo and Tidy and fit.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "diagram error",
+      "actions": "Retry layout",
+      "acceptedDestination": "Keep concise error/retry with last valid graph visible.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "Scenarios.tsx both menus",
+      "actions": "Hide scenario; each scoped scenario name; Add scenario; Edit scenario",
+      "acceptedDestination": "Remove scenario toolbar/editor/playback; retain data in Generate source/obligation detail/export.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "Scenarios.tsx panel",
+      "actions": "Path selector; previous/next step; select step; clear",
+      "acceptedDestination": "Same removal; no scenario authoring or playback in studio.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/Toolbar.tsx",
+      "actions": "Select; Hand",
+      "acceptedDestination": "Always present in floating toolbar.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/Toolbar.tsx",
+      "actions": "Service; Elements; each registry palette template",
+      "acceptedDestination": "Finite C2/compatible C3 base types and Library; actual supported templates retained under Presets detail.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/Toolbar.tsx",
+      "actions": "Attachments; each compatible attachment template",
+      "acceptedDestination": "No arbitrary attachment palette; retain fixed supported-template configuration in Presets, meaningful resources through scope-aware forms.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/Toolbar.tsx",
+      "actions": "Connector",
+      "acceptedDestination": "Explicit two-click compatible Connection tool/form.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/Toolbar.tsx",
+      "actions": "Text; Sticky note; Frame",
+      "acceptedDestination": "Removed from normal palette/navigation; old data exported without rewriting.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/Toolbar.tsx",
+      "actions": "Delete selection",
+      "acceptedDestination": "Retain mouse deletion in contextual selection/inspector controls with shared-owner/reference validation.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/SubtypeControl.tsx",
+      "actions": "each compatible template subtype; Needs a template",
+      "acceptedDestination": "New studio definition/provider choices; supported old templates stay Presets. No silent legacy conversion or template substitution.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "draw/inspector/Inspector.tsx",
+      "actions": "Add attachment; each compatible attachment; remove attachment; remove connection; delete element/connection",
+      "acceptedDestination": "Fixed-template details remain in Presets; finite studio inspector Connections/deletion preserves validation. Old business/attachment authoring does not reappear.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "PlannedInspector / ComponentDetails / ComponentEditor",
+      "actions": "Configure container/component; Edit relationship; Delete; Save; Cancel; API operation links; Data/Access/Behavior/Effects/Settings editors",
+      "acceptedDestination": "Replace only allowed technical fields with compact autosave inspector. Remove route/type/entity/policy/state/effect/hook/business editors; exact stored data still informs Generate and exports.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "InterfaceEditor / RelationshipBindings",
+      "actions": "Edit/add/remove interfaces/contracts/bindings; review requirements",
+      "acceptedDestination": "Remove normal authoring surfaces; Generate retains read-only exact source/obligation details.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureDeployments.tsx menus",
+      "actions": "Add placement / each deployment placement choice; Custom placement; Add infrastructure / each infrastructure choice; Custom infrastructure",
+      "acceptedDestination": "Remove deployment authoring (including Kubernetes/Helm). All historical declarations preserved.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureDeployments / LocalDeployment",
+      "actions": "environment selection; add/edit/delete environment, node, instance, connector; Save/Cancel; local view/instance selection",
+      "acceptedDestination": "Same removal; read-only declared arrangement/source in Generate, no new deployment editor or runtime action.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "CapabilityCatalog.tsx",
+      "actions": "Containers / Components / Examples / Patterns tabs; search; scope picker; choose catalog capability; New project from starter; Create [example]; Saved architecture templates; Reference compositions",
+      "acceptedDestination": "Single scope-compatible Library with finite groups/presets/examples; old definitions do not imply runtime support.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "PatternComposer.tsx",
+      "actions": "role/resource/relationship binding pickers; variant/options; Apply pattern / Insert template; Cancel",
+      "acceptedDestination": "Compatible reusable-composition preview and explicit Add in Library; no business authoring/guarantee claims.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureLibrary.tsx",
+      "actions": "Save as architecture template; Save draft; Delete draft; Publish version; Preview insertion; New version; Retire version; search/select template; Cancel/back",
+      "acceptedDestination": "Preserve reusable-library lifecycle under Library Presets; no extra toolbar. Public local library publishing is distinct from provider/runtime execution.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureProofWorkshop.tsx",
+      "actions": "Study; create/reference composition; Cancel",
+      "acceptedDestination": "Library reference presets/examples; preserve design-only status and provenance.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureReview.tsx",
+      "actions": "finding navigation; accepted decision/review detail; pattern suggestions; Close",
+      "acceptedDestination": "Generate Review; deep editor destinations replaced by card/source context, preserve acceptance provenance.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ArchitectureHandoff.tsx",
+      "actions": "Download Markdown; Download JSON; Download SVG; save review scope/ownership; approve review; Close handoff",
+      "acceptedDestination": "Generate Review/Outputs with same revision/fingerprint binding; portable source remains available even for design-only studio.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "api-reference/ApiWorkspace.tsx",
+      "actions": "API selector; operation selection; Full API reference; Response schemas and examples; Retry; close",
+      "acceptedDestination": "Read-only Generate Review contract/source detail and Outputs.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "api-reference/ApiWorkspace.tsx",
+      "actions": "Edit operation; resource configuration; extension Save/Cancel",
+      "acceptedDestination": "Excluded manual API/data/business editors removed, stored declarations preserved.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "GenerateDrawer.tsx",
+      "actions": "Hide generate output",
+      "acceptedDestination": "Close/back within unified Generate; no duplicate drawer.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "GenerateDrawer.tsx",
+      "actions": "Output folder; Run baseline check; Fixed acceptance pack",
+      "acceptedDestination": "Existing supported generation settings in Generate Activity; no changes to fixed acceptance/runtime capability.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "GenerateDrawer.tsx",
+      "actions": "Show findings; Generate / Regenerate; Cancel; app/output links; logs/file-list disclosure",
+      "acceptedDestination": "Generate Review, Activity and Outputs. Explicit start only; unsupported studio generation guarded separately.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "runs/RunsView.tsx",
+      "actions": "Plan a run; New run settings; Git strategy; Retries after failed attempt; Execution mode",
+      "acceptedDestination": "Generate Activity for existing supported flow, preserving restrictions; opening Generate performs no write.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "runs/RunsView.tsx",
+      "actions": "each run selection; Start; Resume; Pause; Plan again; Cancel run; confirmation/cancel",
+      "acceptedDestination": "Generate Activity run history/controls; keep generation IDs distinct from run IDs.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "runs/RunsView.tsx",
+      "actions": "Move task up/down; Edit task; Remove task; confirm remove; Save/Cancel task",
+      "acceptedDestination": "Generate Activity supported existing orchestration details. No provider invocation during UX01 inspection.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "runs/RunsView.tsx",
+      "actions": "attempts/events/output/diff/usage/ledger/human-help disclosures; Add note; Dismiss error",
+      "acceptedDestination": "Generate Activity/Outputs with actual available units and precise errors.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "chat/ChatPanel.tsx",
+      "actions": "send; file attach/remove; ask-user choice; per-turn Undo; conversation controls",
+      "acceptedDestination": "Existing chat rail; shared studio commands/tools in UX13; display available usage only. No broad chat redesign.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "settings/SettingsView.tsx",
+      "actions": "Copy provider setup command; role/provider/model selection; Save settings",
+      "acceptedDestination": "Retain Settings. Distinguish model providers from runtime catalog providers. No cloud onboarding.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    },
+    {
+      "baselineSurface": "ConfigurationDialog.tsx and standard modals",
+      "actions": "Close; Cancel; Save/Apply; confirmation/error Retry/Discard",
+      "acceptedDestination": "Creation confirms Add; existing-object valid edits autosave via shared controller; preserve explicit reusable-library/recipe/review lifecycle and concise failures. Excluded editors removed rather than hidden.",
+      "finalAudit": "Accounted for against the current default route; see disposition notes."
+    }
+  ],
+  "currentRoutes": [
+    "apps/web/src/App.tsx",
+    "apps/web/src/studio/StudioWorkspace.tsx",
+    "apps/web/src/studio/StudioLibrary.tsx",
+    "apps/web/src/generate/GenerateView.tsx",
+    "apps/web/src/draw/ProjectMenu.tsx",
+    "apps/web/src/draw/ProjectChooser.tsx"
+  ],
+  "dispositionNotes": {
+    "retained": "Project CRUD/targets; supported starter/recipe creation; bounded QR recipe configuration; local reusable-library lifecycle; finite creation/edit/dependency/membership; chronological history; Generate review/scope/source/approval/target comparison, generation/run/log/output controls; settings/chat.",
+    "removed": "Old Explorer/find outline, focused/named view and flat parent controls, freeform/annotations, implementation-adapter toggles, old capability/component/business/API/backend/deployment/scenario editors, duplicate Review/Patterns/Data/Findings/Generate launchers, separate layout history, arrange/focus/flow/nudge menus, persistent Saved status. Stored declarations remain lossless source.",
+    "integrationRepairs": "Library Presets now reaches its saved lifecycle and bounded recipe configuration, with legacy arbitrary component options/insertion hidden in studio mode. Fresh chooser/default uses separate studio seeds. No removed editor can be selected from these routes."
+  },
+  "browserEvidence": [
+    "default-session-observations.json",
+    "default-retained-observations.json",
+    "rollout-observations.json"
+  ],
+  "staticSwitchAudit": "No studio=next, isNextStudio or nextStudio references remain under apps/web/src; route.ts deleted."
+}

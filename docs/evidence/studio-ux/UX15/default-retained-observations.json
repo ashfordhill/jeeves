@@ -1,0 +1,331 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "scenario": "saved-library lifecycle retained",
+      "realProductionRouteHandlers": true,
+      "isolatedLibraryTransport": true,
+      "saveDraft": true,
+      "publishLocalVersion": true,
+      "cloneVersion": true,
+      "deleteDraft": true,
+      "retireVersion": true,
+      "noBusinessEditor": true,
+      "globalLibraryUntouched": true
+    },
+    {
+      "width": 1440,
+      "scenario": "legacy recipe settings save reload and generation controls retained",
+      "studioAbsent": true,
+      "noGenerationLaunched": true
+    },
+    {
+      "width": 1280,
+      "scenario": "saved-library lifecycle retained",
+      "realProductionRouteHandlers": true,
+      "isolatedLibraryTransport": true,
+      "saveDraft": true,
+      "publishLocalVersion": true,
+      "cloneVersion": true,
+      "deleteDraft": true,
+      "retireVersion": true,
+      "noBusinessEditor": true,
+      "globalLibraryUntouched": true
+    },
+    {
+      "width": 1280,
+      "scenario": "legacy recipe settings save reload and generation controls retained",
+      "studioAbsent": true,
+      "noGenerationLaunched": true
+    }
+  ],
+  "writes": [
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1440/1.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1440/1.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1440/1.0.0/clone",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1440/2.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1440/1.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1280/1.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1280/1.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1280/1.0.0/clone",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1280/2.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "POST",
+      "path": "/architecture-library/ux15-inspection-1280/1.0.0/change",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "transport": "browser to production Fastify.inject with isolated local library",
+      "method": "GET",
+      "path": "/architecture-library?all=true",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "messages": [],
+  "blocked": [],
+  "isolatedLibraryTemporaryDirectory": true,
+  "globalLibraryExact": true,
+  "guardsBeforePage": true,
+  "noExternalPublication": true
+}

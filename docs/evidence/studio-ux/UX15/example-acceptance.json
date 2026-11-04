@@ -1,0 +1,403 @@
+{
+  "result": "14-source-rows-accounted-for",
+  "examples": [
+    {
+      "row": "E01",
+      "unit": "UX14a",
+      "example": {
+        "id": "studio-mattermost-reference",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/mattermost.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14a/README.md",
+      "requirements": 46,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": [
+        "objective-interactive-latency",
+        "objective-event-latency",
+        "source-decision-deployment-choice",
+        "source-decision-capacity-choice",
+        "source-decision-backend-template-boundary",
+        "scope-limit"
+      ],
+      "sourceHash": "8a540c8cc0b3492379aade3f19d4bae516b07cf58c5fe68bdc61ff1c2fad6f70",
+      "sourceFiles": 3,
+      "requirementRows": 46,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:jobs", "studio:service:server", "studio:service:web"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E02",
+      "unit": "UX14a",
+      "example": {
+        "id": "studio-enterprise-web",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/enterprise.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14a/README.md",
+      "requirements": 49,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": [],
+      "sourceHash": "00809a59e4a2c1458fdb8de7f7b9e15be78c4dea5aab4ec9c81973fbed6417b8",
+      "sourceFiles": 2,
+      "requirementRows": 49,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": [
+        "studio:service:api",
+        "studio:service:backoffice",
+        "studio:service:web",
+        "studio:service:worker"
+      ],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E03",
+      "unit": "UX14a",
+      "example": {
+        "id": "studio-video-platform",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/streamly.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14a/README.md",
+      "requirements": 88,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": [
+        "objective-playback-throughput",
+        "objective-playback-latency",
+        "objective-media-traffic",
+        "objective-catalog-recovery",
+        "objective-discovery-freshness",
+        "source-decision-capacity-review",
+        "finite-language-limit"
+      ],
+      "sourceHash": "820f2050f97a14e6b14ad728f1da1beb858b337aeae1ac597650f0e729c782fd",
+      "sourceFiles": 2,
+      "requirementRows": 88,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": [
+        "studio:service:activity",
+        "studio:service:api",
+        "studio:service:console",
+        "studio:service:playback",
+        "studio:service:processor",
+        "studio:service:web"
+      ],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E04",
+      "unit": "UX14b",
+      "example": {
+        "id": "studio-qrwty-target",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/qrwty-target.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14b/README.md",
+      "requirements": 96,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["objective-production-recovery", "source-decision-production-objectives"],
+      "sourceHash": "1f4b2adbeab2c32fc65509e756e63b4f4c98e3471d2b8bd81f39925da69cc7bb",
+      "sourceFiles": 4,
+      "requirementRows": 96,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": [
+        "studio:service:admin",
+        "studio:service:api",
+        "studio:service:billing",
+        "studio:service:redirect",
+        "studio:service:web",
+        "studio:service:worker"
+      ],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E05",
+      "unit": "UX14b",
+      "example": {
+        "id": "studio-link-platform",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/links.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14b/README.md",
+      "requirements": 45,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["source-scope"],
+      "sourceHash": "bfa131dd14d79092414e019ae469a65d6a202fd51cd2496780aed9d27bc5f00b",
+      "sourceFiles": 1,
+      "requirementRows": 45,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": [
+        "studio:service:api",
+        "studio:service:redirect",
+        "studio:service:web",
+        "studio:service:worker"
+      ],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E06",
+      "unit": "UX14b",
+      "example": {
+        "id": "studio-community",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/community.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14b/README.md",
+      "requirements": 47,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["source-scope"],
+      "sourceHash": "f5aa00026e257ac295b319af75bdd364d7bdc7a1bb6a4a9d30f71ba571a69704",
+      "sourceFiles": 1,
+      "requirementRows": 47,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": [
+        "studio:service:api",
+        "studio:service:notifications",
+        "studio:service:web",
+        "studio:service:worker"
+      ],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E07",
+      "unit": "UX14b",
+      "example": {
+        "id": "studio-social",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/social.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14b/README.md",
+      "requirements": 49,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["source-scope"],
+      "sourceHash": "800135dc524dc850e1c65d8708de5cbe5a17cb03fb99f5da86093a7d02ef8236",
+      "sourceFiles": 1,
+      "requirementRows": 49,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": [
+        "studio:service:api",
+        "studio:service:realtime",
+        "studio:service:web",
+        "studio:service:worker"
+      ],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E08",
+      "unit": "UX14c",
+      "example": {
+        "id": "studio-discourse-foundation",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/discourse-foundation.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14c/README.md",
+      "requirements": 159,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": [
+        "objective-dc-workload-rate",
+        "objective-dc-read-latency",
+        "objective-dc-command-latency",
+        "objective-dc-worker-lag",
+        "workload"
+      ],
+      "sourceHash": "5a7908b80a73091ef1525265887a14af4297cbfd1331581c0d926b750ba80b88",
+      "sourceFiles": 23,
+      "requirementRows": 159,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:api", "studio:service:worker"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E09",
+      "unit": "UX14c",
+      "example": {
+        "id": "studio-vendure-foundation",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/vendure-foundation.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14c/README.md",
+      "requirements": 168,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["workload"],
+      "sourceHash": "4de70d0e5d0e9aab00f5694c2ebf336b8b2480492d8a5bcd4bb084ff2123c39d",
+      "sourceFiles": 28,
+      "requirementRows": 168,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:api", "studio:service:worker"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E10",
+      "unit": "UX14c",
+      "example": {
+        "id": "studio-zammad-foundation",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/zammad-foundation.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14c/README.md",
+      "requirements": 107,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["workload", "paused-detailed-design"],
+      "sourceHash": "522ad7eb92a97e4a7947dede1af28a0f2114e4bd5c58cf6f516a81f822b18d1a",
+      "sourceFiles": 20,
+      "requirementRows": 107,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:api", "studio:service:worker"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E11",
+      "unit": "UX14d",
+      "example": {
+        "id": "studio-qrwty-original",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/qrwty-original.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14d/README.md",
+      "requirements": 19,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["additive-feature-unapproved", "historical-device-background"],
+      "sourceHash": "167667e29ea2d3866ffb6587a3e1673354fe0bdebf94a1ba0429b74351802176",
+      "sourceFiles": 5,
+      "requirementRows": 19,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:api", "studio:service:web"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E12",
+      "unit": "UX14d",
+      "example": {
+        "id": "studio-dropshipping",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/dropshipping.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14d/README.md",
+      "requirements": 51,
+      "coverage": "source-mapped-design",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["vendor-access"],
+      "sourceHash": "64af0673cfd7451b55a1775cee946a6584c38fb61f3f538279a57e78605e41e4",
+      "sourceFiles": 4,
+      "requirementRows": 51,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:admin", "studio:service:storefront", "studio:service:worker"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E13",
+      "unit": "UX14d",
+      "example": {
+        "id": "studio-inventory",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/inventory.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14d/README.md",
+      "requirements": 12,
+      "coverage": "bounded-design-with-unresolved-source-questions",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": ["hardware-unknown", "fields-actions-unknown", "offline-unknown"],
+      "sourceHash": "e9bde3ee4cabb5f58b7e1bfb35a4179bf6279bcd4cbdb2ceca32843649a13056",
+      "sourceFiles": 2,
+      "requirementRows": 12,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:api", "studio:service:web", "studio:service:worker"],
+      "evidenceChecked": true
+    },
+    {
+      "row": "E14",
+      "unit": "UX14d",
+      "example": {
+        "id": "studio-grocery",
+        "version": "1.0.0"
+      },
+      "manifest": "packages/spec/src/studio-examples/grocery.goal.json",
+      "evidence": "docs/evidence/studio-ux/UX14d/README.md",
+      "requirements": 10,
+      "coverage": "bounded-design-with-unresolved-source-questions",
+      "runtime": "design-only-no-studio-runtime-resolver",
+      "unknowns": [
+        "device-unknown",
+        "vendor-access-unknown",
+        "recognition-quality-unknown",
+        "label-formats-unknown"
+      ],
+      "sourceHash": "688b0c2a0c390e695e1271d3d2a64f6857ef77bfa779dadc841d83f548ceb8e8",
+      "sourceFiles": 2,
+      "requirementRows": 10,
+      "sourceHashesExact": true,
+      "priorPortableSeedExact": true,
+      "roundTripExact": true,
+      "structurallyValid": true,
+      "runtimeSupported": false,
+      "usefulC3": ["studio:service:api"],
+      "evidenceChecked": true
+    }
+  ],
+  "requirements": 946,
+  "runtimeEvidence": "No studio application generated or run; E13/E14 remain explicitly limited"
+}

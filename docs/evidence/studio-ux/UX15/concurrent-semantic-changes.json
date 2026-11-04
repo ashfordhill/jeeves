@@ -1,0 +1,84 @@
+{
+  "rows": [
+    {
+      "id": "9928f0b6-c54c-4081-b8d4-5bdff0b5875c",
+      "beforeHash": "0aa9f53fff7f1b316919bd5a9322125b445632a691d288dc612ca052a76a120c",
+      "afterHash": "c30902253150558d53837802e4234a9ca685fbb39e19ed4aeee94ad21cdfc3bd",
+      "beforeRevision": 1,
+      "afterRevision": 2,
+      "diff": [
+        {
+          "path": "/revision",
+          "before": 1,
+          "after": 2
+        },
+        {
+          "path": "/architecture/relationships/0/id",
+          "before": "member-system",
+          "after": "admin-system"
+        },
+        {
+          "path": "/architecture/relationships/0/from",
+          "before": "member",
+          "after": "admin"
+        },
+        {
+          "path": "/architecture/relationships/0/description",
+          "before": "Collaborates through messages and files",
+          "after": "Administers the deployment and access"
+        },
+        {
+          "path": "/architecture/relationships/1/id",
+          "before": "admin-system",
+          "after": "system-push"
+        },
+        {
+          "path": "/architecture/relationships/1/to",
+          "before": "system",
+          "after": "push-context"
+        },
+        {
+          "path": "/architecture/relationships/1/from",
+          "before": "admin",
+          "after": "system"
+        },
+        {
+          "path": "/architecture/relationships/1/container",
+          "before": "web",
+          "after": "server"
+        },
+        {
+          "path": "/architecture/relationships/1/description",
+          "before": "Administers the deployment and access",
+          "after": "Sends mobile notifications"
+        },
+        {
+          "path": "/architecture/relationships/2/id",
+          "before": "system-push",
+          "after": "system-email"
+        },
+        {
+          "path": "/architecture/relationships/2/to",
+          "before": "push-context",
+          "after": "email-context"
+        },
+        {
+          "path": "/architecture/relationships/2/description",
+          "before": "Sends mobile notifications",
+          "after": "Sends notification mail"
+        },
+        {
+          "path": "/architecture/relationships/3",
+          "before": {
+            "id": "system-email",
+            "to": "email-context",
+            "from": "system",
+            "container": "server",
+            "description": "Sends notification mail"
+          }
+        }
+      ]
+    }
+  ],
+  "attribution": "No attribution to a client; worker mutation guards permit exact-owned disposables only. Latest values retained."
+}

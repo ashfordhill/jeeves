@@ -421,3 +421,60 @@ body,
 [data-mantine-color-scheme="light"] .status-badge {
   color: var(--status-ink);
 }
+
+/* Capability colors belong to the shared theme, independently of legacy editor mounting. */
+[data-family] {
+  --type-color: #637687;
+}
+[data-family="api"] {
+  --type-color: #2676bd;
+}
+[data-family="client"] {
+  --type-color: #8053b7;
+}
+[data-family="endpoint"] {
+  --type-color: #087e80;
+}
+[data-family="domain"] {
+  --type-color: #5a60b6;
+}
+[data-family="data"] {
+  --type-color: #a36b10;
+}
+[data-family="worker"] {
+  --type-color: #b05c20;
+}
+[data-family="messaging"] {
+  --type-color: #b44d78;
+}
+[data-family="system"] {
+  --type-color: #337787;
+}
+:root[data-theme="dark"] [data-family="api"] {
+  --type-color: #75b9f4;
+}
+:root[data-theme="dark"] [data-family="client"] {
+  --type-color: #c1a0ef;
+}
+:root[data-theme="dark"] [data-family="endpoint"] {
+  --type-color: #60d2c9;
+}
+:root[data-theme="dark"] [data-family="domain"] {
+  --type-color: #a7abf4;
+}
+:root[data-theme="dark"] [data-family="data"] {
+  --type-color: #e8c276;
+}
+:root[data-theme="dark"] [data-family="worker"] {
+  --type-color: #f4ad7b;
+}
+:root[data-theme="dark"] [data-family="messaging"] {
+  --type-color: #ec9fbd;
+}
+:root[data-theme="dark"] [data-family="external"],
+:root[data-theme="dark"] [data-family="person"] {
+  --type-color: #b7cad8;
+}
+:root[data-theme="dark"] [data-family="system"] {
+  --type-color: #8dc5d1;
+}
