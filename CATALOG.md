@@ -46,7 +46,10 @@ receive explicit owners. Existing dependencies are selected by identity without 
 explicit queue roles/direction, exact existing-resource reuse and atomic Redirect dependency shortcuts.
 Packages expose Add/Remove member, safe Ungroup and separately confirmed Delete members; resources
 need explicit replacement owners when their owner disappears. Connections and optional references
-clean up together. Routing, movement and runtime resolution remain later work. The historical catalog below describes the existing
+clean up together. [UX09](docs/evidence/studio-ux/UX09/README.md) adds fixed role dimensions,
+capability colors/icons, optional bundled provider marks, solid outlines and selection without fading.
+Zoom changes bounded text density while preserving graph geometry and full inspector/source values.
+Shared routing, movement and runtime resolution remain later work. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

@@ -132,16 +132,16 @@
 }
 .studio-card {
   box-sizing: border-box;
-  width: 216px;
-  height: 96px;
-  background: var(--cream);
-  border: 2px solid var(--line);
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--type-color) 9%, var(--cream));
+  border: 2px solid var(--type-color);
   border-radius: 12px;
   color: var(--ink);
-  padding: 14px;
+  padding: 10px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
 }
 .studio-card strong {
@@ -153,8 +153,62 @@
   overflow: hidden;
   overflow-wrap: anywhere;
 }
-.studio-card > svg {
+.studio-role-icon {
+  position: relative;
+  color: var(--type-color);
   flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+}
+.studio-provider-mark {
+  position: absolute;
+  right: -5px;
+  bottom: -6px;
+  display: flex;
+  border-radius: 3px;
+  background: var(--cream);
+  padding: 1px;
+}
+.studio-card-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.studio-card-purpose,
+.studio-card-technology {
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.studio-card-technology {
+  color: var(--ink-soft);
+}
+.studio-card[data-shape="cylinder"] {
+  border-radius: 50% / 12px;
+  padding-top: 14px;
+  padding-bottom: 8px;
+  position: relative;
+}
+.studio-card[data-shape="cylinder"]::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  height: 12px;
+  border: 2px solid var(--type-color);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.studio-card[data-kind="person"] {
+  border-radius: 20px;
+}
+.studio-card:hover {
+  box-shadow: 0 0 0 1px var(--type-color);
 }
 .studio-card[data-selected="true"] {
   outline: 3px solid var(--blue);
@@ -162,6 +216,9 @@
 }
 .studio-card .react-flow__handle {
   opacity: 0;
+  pointer-events: none;
+}
+.studio-relation-text {
   pointer-events: none;
 }
 .studio-tools {

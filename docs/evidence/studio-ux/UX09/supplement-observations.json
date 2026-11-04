@@ -1,0 +1,279 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "viewport": 1440,
+      "scenario": "mouse selects visible edge with full accessible name and inspector values, 3px emphasis, no dimming/layout",
+      "zoom": 0.45,
+      "edgeId": "studio:relationship:studio:element:service>studio:element:db",
+      "point": {
+        "x": 136.40931701660156,
+        "y": 294.6244812011719
+      },
+      "selected": {
+        "stroke": "rgb(26, 143, 212)",
+        "width": "3px",
+        "opacity": "1"
+      },
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "scenario": "mouse selects visible edge with full accessible name and inspector values, 3px emphasis, no dimming/layout",
+      "zoom": 1.15,
+      "edgeId": "studio:relationship:studio:element:service>studio:element:db",
+      "point": {
+        "x": 294.15716552734375,
+        "y": 510.2625427246094
+      },
+      "selected": {
+        "stroke": "rgb(26, 143, 212)",
+        "width": "3px",
+        "opacity": "1"
+      },
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "scenario": "both sides of 0.55 and 1.10 text thresholds",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "scenario": "dark capability palette, accessible full names, role icons and exact source/layout preservation",
+      "colors": [
+        {
+          "id": "studio:context:person",
+          "family": "external",
+          "border": "rgb(183, 202, 216)",
+          "background": "color(srgb 0.171647 0.253294 0.304627)",
+          "opacity": "1",
+          "icon": "rgb(183, 202, 216)",
+          "role": "tabler-icon tabler-icon-user ",
+          "aria": "Inspect International customer operations manager"
+        },
+        {
+          "id": "studio:context:system",
+          "family": "generic",
+          "border": "rgb(99, 118, 135)",
+          "background": "color(srgb 0.142 0.223647 0.276039)",
+          "opacity": "1",
+          "icon": "rgb(99, 118, 135)",
+          "role": "tabler-icon tabler-icon-box ",
+          "aria": "Inspect Customer operations platform with a deliberately long system name"
+        },
+        {
+          "id": "studio:element:browser",
+          "family": "client",
+          "border": "rgb(193, 160, 239)",
+          "background": "color(srgb 0.175176 0.238471 0.312745)",
+          "opacity": "1",
+          "icon": "rgb(193, 160, 239)",
+          "role": "tabler-icon tabler-icon-browser ",
+          "aria": "Inspect Customer operations browser"
+        },
+        {
+          "id": "studio:element:cache",
+          "family": "data",
+          "border": "rgb(232, 194, 118)",
+          "background": "color(srgb 0.188941 0.250471 0.270039)",
+          "opacity": "1",
+          "icon": "rgb(232, 194, 118)",
+          "role": "tabler-icon tabler-icon-stack-2 ",
+          "aria": "Inspect Shared customer session cache"
+        },
+        {
+          "id": "studio:element:db",
+          "family": "data",
+          "border": "rgb(232, 194, 118)",
+          "background": "color(srgb 0.188941 0.250471 0.270039)",
+          "opacity": "1",
+          "icon": "rgb(232, 194, 118)",
+          "role": "tabler-icon tabler-icon-database ",
+          "aria": "Inspect PostgreSQL customer records database"
+        },
+        {
+          "id": "studio:element:external",
+          "family": "external",
+          "border": "rgb(183, 202, 216)",
+          "background": "color(srgb 0.171647 0.253294 0.304627)",
+          "opacity": "1",
+          "icon": "rgb(183, 202, 216)",
+          "role": "tabler-icon tabler-icon-plug ",
+          "aria": "Inspect Cloudflare delivery integration"
+        },
+        {
+          "id": "studio:element:service",
+          "family": "api",
+          "border": "rgb(117, 185, 244)",
+          "background": "color(srgb 0.148353 0.247294 0.31451)",
+          "opacity": "1",
+          "icon": "rgb(117, 185, 244)",
+          "role": "tabler-icon tabler-icon-server ",
+          "aria": "Inspect International customer communication and payment reconciliation service"
+        },
+        {
+          "id": "studio:element:unknown",
+          "family": "external",
+          "border": "rgb(183, 202, 216)",
+          "background": "color(srgb 0.171647 0.253294 0.304627)",
+          "opacity": "1",
+          "icon": "rgb(183, 202, 216)",
+          "role": "tabler-icon tabler-icon-plug ",
+          "aria": "Inspect Custom external provider integration"
+        },
+        {
+          "id": "studio:package:package",
+          "family": "api",
+          "border": "rgb(117, 185, 244)",
+          "background": "color(srgb 0.148353 0.247294 0.31451)",
+          "opacity": "1",
+          "icon": "rgb(117, 185, 244)",
+          "role": "tabler-icon tabler-icon-packages ",
+          "aria": "Inspect Communication and background processing package"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "mouse selects visible edge with full accessible name and inspector values, 3px emphasis, no dimming/layout",
+      "zoom": 0.45,
+      "edgeId": "studio:relationship:studio:element:service>studio:element:db",
+      "point": {
+        "x": 136.40931701660156,
+        "y": 294.6244812011719
+      },
+      "selected": {
+        "stroke": "rgb(26, 143, 212)",
+        "width": "3px",
+        "opacity": "1"
+      },
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "mouse selects visible edge with full accessible name and inspector values, 3px emphasis, no dimming/layout",
+      "zoom": 1.15,
+      "edgeId": "studio:relationship:studio:element:service>studio:element:db",
+      "point": {
+        "x": 294.15716552734375,
+        "y": 510.2625427246094
+      },
+      "selected": {
+        "stroke": "rgb(26, 143, 212)",
+        "width": "3px",
+        "opacity": "1"
+      },
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "both sides of 0.55 and 1.10 text thresholds",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "dark capability palette, accessible full names, role icons and exact source/layout preservation",
+      "colors": [
+        {
+          "id": "studio:context:person",
+          "family": "external",
+          "border": "rgb(183, 202, 216)",
+          "background": "color(srgb 0.171647 0.253294 0.304627)",
+          "opacity": "1",
+          "icon": "rgb(183, 202, 216)",
+          "role": "tabler-icon tabler-icon-user ",
+          "aria": "Inspect International customer operations manager"
+        },
+        {
+          "id": "studio:context:system",
+          "family": "generic",
+          "border": "rgb(99, 118, 135)",
+          "background": "color(srgb 0.142 0.223647 0.276039)",
+          "opacity": "1",
+          "icon": "rgb(99, 118, 135)",
+          "role": "tabler-icon tabler-icon-box ",
+          "aria": "Inspect Customer operations platform with a deliberately long system name"
+        },
+        {
+          "id": "studio:element:browser",
+          "family": "client",
+          "border": "rgb(193, 160, 239)",
+          "background": "color(srgb 0.175176 0.238471 0.312745)",
+          "opacity": "1",
+          "icon": "rgb(193, 160, 239)",
+          "role": "tabler-icon tabler-icon-browser ",
+          "aria": "Inspect Customer operations browser"
+        },
+        {
+          "id": "studio:element:cache",
+          "family": "data",
+          "border": "rgb(232, 194, 118)",
+          "background": "color(srgb 0.188941 0.250471 0.270039)",
+          "opacity": "1",
+          "icon": "rgb(232, 194, 118)",
+          "role": "tabler-icon tabler-icon-stack-2 ",
+          "aria": "Inspect Shared customer session cache"
+        },
+        {
+          "id": "studio:element:db",
+          "family": "data",
+          "border": "rgb(232, 194, 118)",
+          "background": "color(srgb 0.188941 0.250471 0.270039)",
+          "opacity": "1",
+          "icon": "rgb(232, 194, 118)",
+          "role": "tabler-icon tabler-icon-database ",
+          "aria": "Inspect PostgreSQL customer records database"
+        },
+        {
+          "id": "studio:element:external",
+          "family": "external",
+          "border": "rgb(183, 202, 216)",
+          "background": "color(srgb 0.171647 0.253294 0.304627)",
+          "opacity": "1",
+          "icon": "rgb(183, 202, 216)",
+          "role": "tabler-icon tabler-icon-plug ",
+          "aria": "Inspect Cloudflare delivery integration"
+        },
+        {
+          "id": "studio:element:service",
+          "family": "api",
+          "border": "rgb(117, 185, 244)",
+          "background": "color(srgb 0.148353 0.247294 0.31451)",
+          "opacity": "1",
+          "icon": "rgb(117, 185, 244)",
+          "role": "tabler-icon tabler-icon-server ",
+          "aria": "Inspect International customer communication and payment reconciliation service"
+        },
+        {
+          "id": "studio:element:unknown",
+          "family": "external",
+          "border": "rgb(183, 202, 216)",
+          "background": "color(srgb 0.171647 0.253294 0.304627)",
+          "opacity": "1",
+          "icon": "rgb(183, 202, 216)",
+          "role": "tabler-icon tabler-icon-plug ",
+          "aria": "Inspect Custom external provider integration"
+        },
+        {
+          "id": "studio:package:package",
+          "family": "api",
+          "border": "rgb(117, 185, 244)",
+          "background": "color(srgb 0.148353 0.247294 0.31451)",
+          "opacity": "1",
+          "icon": "rgb(117, 185, 244)",
+          "role": "tabler-icon tabler-icon-packages ",
+          "aria": "Inspect Communication and background processing package"
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "messages": [],
+  "errors": [],
+  "writes": []
+}

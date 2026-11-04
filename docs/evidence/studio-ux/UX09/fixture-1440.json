@@ -1,0 +1,439 @@
+{
+  "design": {
+    "elements": [
+      {
+        "id": "service",
+        "name": "International customer communication and payment reconciliation service",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Coordinates payment updates across all customer accounts, retaining the complete stored purpose in the inspector.",
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "billing",
+        "name": "Payment processing service",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "worker",
+        "name": "Background fulfillment worker",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "browser",
+        "name": "Customer operations browser",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "db",
+        "name": "PostgreSQL customer records database",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "cache",
+        "name": "Shared customer session cache",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "external",
+        "name": "Cloudflare delivery integration",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "External system"
+        }
+      },
+      {
+        "id": "unknown",
+        "name": "Custom external provider integration",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "",
+        "classification": {
+          "kind": "External system"
+        }
+      },
+      {
+        "id": "queue",
+        "name": "Customer communication event channel",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "description": "Shared architecture responsibility for this public synthetic inspection.",
+        "classification": {
+          "kind": "Data store"
+        }
+      }
+    ],
+    "revision": 1,
+    "annotations": [],
+    "connections": [
+      {
+        "id": "service-database",
+        "to": {
+          "element": "db"
+        },
+        "from": {
+          "element": "service"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Updates payment status and notifies customer subscribers",
+          "protocol": "SQL",
+          "security": "Private network",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "service-external",
+        "to": {
+          "element": "external"
+        },
+        "from": {
+          "element": "service"
+        },
+        "kind": "calls",
+        "planned": {
+          "label": "Sends delivery updates",
+          "protocol": "HTTPS",
+          "security": "Public",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "publish",
+        "to": {
+          "element": "queue"
+        },
+        "from": {
+          "element": "billing"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Publishes customer notifications",
+          "protocol": "Messaging",
+          "security": "Private network",
+          "interaction": "Asynchronous"
+        }
+      },
+      {
+        "id": "consume",
+        "to": {
+          "element": "worker"
+        },
+        "from": {
+          "element": "queue"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Processes notifications",
+          "protocol": "Messaging",
+          "security": "Private network",
+          "interaction": "Asynchronous"
+        }
+      }
+    ],
+    "architecture": {
+      "nodes": [
+        {
+          "id": "person",
+          "kind": "person",
+          "name": "International customer operations manager",
+          "description": "Oversees customer operations and notifications."
+        },
+        {
+          "id": "outside",
+          "kind": "external-system",
+          "name": "External payment and customer communication provider",
+          "description": "An independently owned system."
+        }
+      ],
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "service",
+            "settings": {
+              "kind": "service",
+              "exposure": "internal",
+              "language": "typescript",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "billing",
+            "settings": {
+              "kind": "billing",
+              "exposure": "internal",
+              "language": "unspecified",
+              "provider": "stripe",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-billing",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "worker",
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "browser",
+            "settings": {
+              "kind": "browser",
+              "delivery": "standalone",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-browser",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "db",
+            "settings": {
+              "kind": "database",
+              "engine": "postgresql",
+              "provider": "supabase"
+            },
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "cache",
+            "settings": {
+              "kind": "cache",
+              "engine": "redis-compatible",
+              "provider": "upstash"
+            },
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "external",
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "cloudflare"
+            },
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "unknown",
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "external"
+            },
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "package",
+              "kind": "package"
+            },
+            "element": "queue",
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "packages": [
+          {
+            "id": "package",
+            "name": "Communication and background processing package",
+            "members": ["billing", "worker"],
+            "description": "Two independent runtime applications grouped for navigation."
+          }
+        ],
+        "connections": [
+          {
+            "settings": {},
+            "connection": "service-database"
+          },
+          {
+            "settings": {},
+            "connection": "service-external"
+          },
+          {
+            "settings": {
+              "channelUse": "publish"
+            },
+            "connection": "publish"
+          },
+          {
+            "settings": {
+              "channelUse": "consume"
+            },
+            "connection": "consume"
+          }
+        ]
+      },
+      "system": {
+        "name": "Customer operations platform with a deliberately long system name",
+        "description": "Full system purpose stays in its inspector."
+      },
+      "relationships": [
+        {
+          "id": "person-system",
+          "to": "system",
+          "from": "person",
+          "description": "Manages customer operations and notification settings"
+        }
+      ]
+    },
+    "schemaVersion": 2
+  },
+  "layout": {
+    "items": {},
+    "architecture": {
+      "studio:context": {
+        "positions": {
+          "studio:context:person": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:context:system": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:context:outside": {
+            "x": 240,
+            "y": 0
+          }
+        }
+      },
+      "studio:containers": {
+        "positions": {
+          "studio:element:db": {
+            "x": 240,
+            "y": 144
+          },
+          "studio:element:cache": {
+            "x": 0,
+            "y": 144
+          },
+          "studio:context:person": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:context:system": {
+            "x": 240,
+            "y": 0
+          },
+          "studio:element:browser": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:service": {
+            "x": 0,
+            "y": 288
+          },
+          "studio:element:unknown": {
+            "x": 240,
+            "y": 288
+          },
+          "studio:package:package": {
+            "x": 480,
+            "y": 288
+          },
+          "studio:element:external": {
+            "x": 480,
+            "y": 144
+          }
+        }
+      },
+      "studio:package:package": {
+        "positions": {
+          "studio:element:queue": {
+            "x": 240,
+            "y": 0
+          },
+          "studio:element:worker": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:billing": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      }
+    },
+    "schemaVersion": 1
+  }
+}

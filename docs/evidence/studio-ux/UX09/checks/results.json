@@ -1,0 +1,31 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "warnings": 2797,
+      "infos": 88,
+      "errors": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "advisory": "existing large chunk advisory"
+    }
+  ],
+  "directBrowser": {
+    "mainObservations": 32,
+    "focusedObservations": 8,
+    "defaultEditorSizes": 2,
+    "result": "passed",
+    "browserWrites": 0
+  },
+  "deferred": ["pnpm check", "unit/E2E/template maintenance and suites"],
+  "logNormalization": "trailing whitespace only"
+}

@@ -1,6 +1,11 @@
-import type { StudioScopeProjection, StudioViewNode } from "@jeeves/spec";
+import type { StudioRelationship, StudioScopeProjection, StudioViewNode } from "@jeeves/spec";
 import {
   Background,
+  BaseEdge,
+  type Edge,
+  type EdgeProps,
+  EdgeText,
+  getBezierPath,
   Handle,
   MarkerType,
   type Node,
@@ -8,27 +13,98 @@ import {
   Position,
   ReactFlow,
   type ReactFlowInstance,
+  useViewport,
   type Viewport,
 } from "@xyflow/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDraw } from "../draw/store.ts";
-import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import {
+  boundedStudioText,
+  StudioProviderMark,
+  StudioRoleIcon,
+  studioCardDetails,
+  studioCardSize,
+} from "./card-appearance.tsx";
 import { initialPosition, type Point } from "./creation.ts";
 
 type Card = Node<{ item: StudioViewNode }, "studio">;
 function StudioCard({ data, selected }: NodeProps<Card>) {
+  const { zoom } = useViewport();
+  const design = useDraw((state) => state.loaded?.design);
+  const item = data.item;
+  const details = design ? studioCardDetails(item, design) : {};
+  const detailed = zoom >= 1.1;
   return (
-    <div className="studio-card" data-selected={selected} title={data.item.name}>
+    <div
+      className="studio-card"
+      data-selected={selected}
+      data-kind={item.kind}
+      data-shape={item.visual.shape}
+      data-family={item.visual.color}
+      data-density={detailed ? "detail" : "name"}
+      title={[item.name, item.description, details.technology].filter(Boolean).join("\n")}
+    >
       <Handle type="target" position={Position.Left} />
-      <TemplateIcon name={data.item.visual.icon} size={24} />
-      <strong>{data.item.name}</strong>
+      <span className="studio-role-icon">
+        <StudioRoleIcon node={item} />
+        <StudioProviderMark provider={details.providerKey} label={details.provider} />
+      </span>
+      <span className="studio-card-text">
+        <strong>{item.name}</strong>
+        {detailed && item.description.trim() ? (
+          <span className="studio-card-purpose">{item.description}</span>
+        ) : null}
+        {detailed && details.technology ? (
+          <span className="studio-card-technology">{details.technology}</span>
+        ) : null}
+      </span>
       <Handle type="source" position={Position.Right} />
     </div>
   );
 }
 const nodeTypes = { studio: StudioCard };
 
-/** Navigation scaffold. The later geometry units own placement, drag, trunks and label density. */
+type Relation = Edge<{ item: StudioRelationship }, "studio">;
+function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
+  const { zoom } = useViewport();
+  const [path, x, y] = getBezierPath(props);
+  const item = data?.item;
+  const action = item?.actions.join(" / ") ?? "";
+  const protocols = item?.protocols
+    .filter((protocol) => protocol !== "In process" && protocol !== "Unspecified")
+    .join(" / ");
+  const protocolText = boundedStudioText(protocols ?? "", 18);
+  const label =
+    zoom >= 1.1 && protocolText
+      ? `${boundedStudioText(action, 53 - Array.from(protocolText).length)} · ${protocolText}`
+      : boundedStudioText(action, zoom >= 1.1 ? 56 : 36);
+  return (
+    <>
+      <BaseEdge
+        id={props.id}
+        path={path}
+        markerEnd={props.markerEnd}
+        style={props.style}
+        interactionWidth={12}
+      />
+      {zoom >= 0.55 && label ? (
+        <EdgeText
+          x={x}
+          y={y}
+          label={label}
+          labelStyle={{ fill: "var(--ink)", fontSize: 12 }}
+          labelBgStyle={{ fill: "var(--cream)" }}
+          labelBgPadding={[3, 2]}
+          labelBgBorderRadius={2}
+          className="studio-relation-text"
+        />
+      ) : null}
+    </>
+  );
+}
+const edgeTypes = { studio: StudioRelation };
+
+/** Fixed role geometry; the later units own placement, dragging and shared route geometry. */
 export function StudioGraph({
   scope,
   selection,
@@ -58,7 +134,7 @@ export function StudioGraph({
 }) {
   const container = useRef<HTMLElement>(null);
   const saved = useDraw((state) => state.loaded?.layout.architecture?.[scope.key]);
-  const [flow, setFlow] = useState<ReactFlowInstance<Card>>();
+  const [flow, setFlow] = useState<ReactFlowInstance<Card, Relation>>();
   const viewport = saved?.viewport;
   const appliedCamera = useRef(JSON.stringify(viewport));
   useEffect(() => {
@@ -78,27 +154,34 @@ export function StudioGraph({
           selected:
             selection === item.id || selectedIds?.includes(item.id) || connecting === item.id,
           ariaLabel: `Inspect ${item.name}`,
-          width: 216,
-          height: 96,
+          ...studioCardSize(item),
+          style: studioCardSize(item),
         }),
       ),
     [scope, selection, selectedIds, saved?.positions, connecting],
   );
   const edges = useMemo(
     () =>
-      scope.edges.map((edge) => ({
-        id: edge.id,
-        source: edge.from,
-        target: edge.to,
-        label: edge.actions.join(" / "),
-        selected: selection === edge.id,
-        markerEnd: { type: MarkerType.ArrowClosed, color: "var(--ink-soft)" },
-        style: { stroke: "var(--ink-soft)", strokeWidth: 2 },
-        labelStyle: { fill: "var(--ink)", fontSize: 12 },
-        labelBgStyle: { fill: "var(--cream)" },
-        interactionWidth: 12,
-        ariaLabel: `Inspect relationship: ${edge.actions.join(" / ")}`,
-      })),
+      scope.edges.map(
+        (edge): Relation => ({
+          id: edge.id,
+          type: "studio",
+          source: edge.from,
+          target: edge.to,
+          data: { item: edge },
+          selected: selection === edge.id,
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: selection === edge.id ? "var(--blue)" : "var(--ink-soft)",
+          },
+          style: {
+            stroke: selection === edge.id ? "var(--blue)" : "var(--ink-soft)",
+            strokeWidth: selection === edge.id ? 3 : 2,
+          },
+          interactionWidth: 12,
+          ariaLabel: `Inspect relationship: ${edge.actions.join(" / ")}${edge.protocols.length ? `; ${edge.protocols.join(" / ")}` : ""}`,
+        }),
+      ),
     [scope, selection],
   );
   return (
@@ -114,6 +197,7 @@ export function StudioGraph({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={!hand}

@@ -57,7 +57,7 @@ export const initialPosition = (index: number): Point => ({
   y: Math.floor(index / 3) * 168,
 });
 
-/** Nearest free 24-unit grid cell. Current cards are 216×96; geometry units own later sizing. */
+/** Nearest free 24-unit grid cell, conservatively reserving the largest 216×96 role. */
 export function landing(point: Point, obstacles: Point[]): Point {
   const origin = { x: Math.round(point.x / 24) * 24, y: Math.round(point.y / 24) * 24 };
   const distance = (p: Point) => (p.x - point.x) ** 2 + (p.y - point.y) ** 2;

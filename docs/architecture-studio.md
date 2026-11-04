@@ -62,15 +62,24 @@ an explicit owner choice for each resource; queues require a replacement applica
 Delete members preserves shared resources and other consumers. Optional CDN origins/browser serving
 references and Redirect shortcuts clear when their referenced target is explicitly deleted.
 Each accepted action is one semantic history step; cancel/rejection leaves no partial graph.
+**UX09** gives applications/packages fixed 216×96 world boxes, resources/integrations 168×96 and
+people 144×96. Capability colors and role icons remain visible, including distinct cache, queue and
+package marks; known providers can add a bundled mark. Every box has a solid outline. Selection adds
+a 3px halo without fading the rest of the diagram. Names use at most two lines with full hover and
+accessible text. Below 0.55 zoom, only names/icons and relationship lines appear; from 0.55,
+relationships add a short action. From 1.10, cards can show actual purpose/language/provider values
+and relationships add a concise protocol. Zoom and selection preserve world geometry and source
+values. Full values remain in the inspector.
 The remaining drag/Tidy gestures,
-final geometry, unified Generate and studio chat tools remain later units; the
+shared routing, unified Generate and studio chat tools remain later units; the
 [UX05 action mapping](evidence/studio-ux/UX05/README.md),
 [UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
 [UX06b history evidence](evidence/studio-ux/UX06b/README.md) and
 [UX07a inspector evidence](evidence/studio-ux/UX07a/README.md) and
 [UX07b resource/connection evidence](evidence/studio-ux/UX07b/README.md) and
 [UX08a creation evidence](evidence/studio-ux/UX08a/README.md) and
-[UX08b connection/membership evidence](evidence/studio-ux/UX08b/README.md) record those limits.
+[UX08b connection/membership evidence](evidence/studio-ux/UX08b/README.md) and
+[UX09 appearance evidence](evidence/studio-ux/UX09/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

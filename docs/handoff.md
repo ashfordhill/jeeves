@@ -9770,3 +9770,67 @@ cannot guarantee an unacknowledged save; local layout history does not become re
 No product blocker remains. UX08b is complete with UX08a; UX09 is the next exact unit boundary and
 is not started here. This worker stops after its scoped local commit. Studio remains opt-in until
 UX15; P73a/P73b and the backend batch remain paused.
+
+## 2026-11-04 — UX09: compact role symbols, selection and zoom text (complete)
+
+Executed UX09 only on primary main from `2eafbc2f0be24587b5e73bf61fb53b55862eb29f`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan and exact assignment/shared protocol, interaction §4, C4 guidance/final decisions,
+ArchitectureGraph/type-style/relationship labels/CSS and the actual new studio projection/creation
+paths. No delegation, branch/worktree, sibling edit, backend resumption, provider/external-agent
+execution, application generation or remote logo fetch. Unrelated `.jeeves-feedback/` is preserved.
+
+The opt-in studio now uses fixed 216×96 application/package, 168×96 resource/integration and
+144×96 person world boxes. Solid capability-colored borders/fills and meaningful icons include a
+database cylinder, distinct cache stack, queue/channel and package group mark. Optional bundled
+Tabler provider marks complement the role icon; unmarked/unknown providers retain it. Colors do not
+encode support/readiness. Selection adds a 3px halo or edge emphasis without changing unrelated
+colors/opacity; hover stays weaker. Long names use two-line ellipsis with full hover/accessible text.
+No repeated kind captions, responsibility lists, dotted status boxes or empty explanatory text appears.
+
+Below 0.55 zoom, cards show names/icons and edges show only lines/arrows, with no label plate.
+From 0.55, edges show a bounded 36-character action. From 1.10, optional one-line purpose and actual
+language/engine/provider values appear, and useful protocols fit within the 56-character edge label.
+Unspecified/In process add no visual protocol suffix. Full source values remain in the inspector.
+The custom edge retains the scaffold's Bezier routing and 12px line hit target; shared routing/trunks
+and label-collision work remain UX10. Creation still conservatively reserves the largest role, with
+only its stale sizing comment updated. No movement/Tidy or default rollout is included.
+
+Evidence: `docs/evidence/studio-ux/UX09/`. Guarded direct Chromium inspection passes 32 main and
+eight focused observations at 1440×900 and 1280×800, plus unchanged default-editor inspection at both
+sizes. Required screenshots at 0.45, 0.75 and 1.15 cover C1/C2/package C3, long names, person,
+service/package, PostgreSQL/database, cache, queue and external providers. Checks observe stable
+world positions/dimensions and retained node DOM identities; path comparison allows 0.001-world-unit
+floating handle measurement precision. No layout worker is created or messaged by zoom/selection.
+Mouse card and edge selection retain exact colors/opacity, expose full stored inspector values and
+use the strong outline/stroke. Both sides of text thresholds, empty values, unspecified protocol,
+bundled provider marks/fallback icons, full accessibility names and adaptive dark colors pass.
+Representative screenshots across densities, desktop sizes and selected/dark/default states were
+visually inspected. Controls remain reachable without horizontal document overflow.
+
+All browser passes have zero attempted writes, page errors, console warnings/errors, external
+requests or blocked/unowned writes. Guards precede page creation. Real API setup/deletion is confined
+to exact owned disposables; no success response is fabricated. Original projects keep exact model/
+layout hashes and revisions, and the final project set matches the baseline. Final-pass disposables
+are deleted/verified 404; earlier attempted disposables also clean up. Exact portable source/layout
+round trips pass. Earlier handoff bytes, 21 feedback original/copy pairs, seven public fixtures,
+48 frozen benchmark files, old factories and unrelated tracked source remain exact.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace including new
+  evidence/check logs: pass. Check logs normalize trailing whitespace only.
+
+Bounded attempt notes record the unavailable python alias, local strict fixture/action/enum
+corrections, floating edge measurement tolerance and source formatting correction. A final bounded
+review omitted the Unspecified protocol suffix and repeated focused browser/type/build checks.
+No fixture typing adaptation, dependency, snapshot or broader test maintenance was needed.
+Unit/E2E/template suites and `pnpm check` remain explicitly deferred.
+
+Existing routes can cross cards and labels can overlap; UX10 owns those changes. Cameras may still
+clip remote objects after panel changes, and drag/Tidy remain UX11. No product blocker remains.
+UX09 is complete; UX10 is the next exact assignment boundary and is not started here. This worker
+stops after its scoped local commit. Studio stays opt-in until UX15; P73a/P73b/backend remain paused.
