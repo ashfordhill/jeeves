@@ -94,15 +94,17 @@ generated application or measured capacity. Mattermost remains the default; save
 adopt the example automatically. See the [complete study and 20-row/66-observation trace](docs/examples/discourse-core.md)
 and [example source](packages/spec/src/discourse-core-example.ts).
 
-### Vendure core partial backend design
+### Vendure core complete backend design
 
-**Partial editable backend design (P72a).** One modular API, independent worker and PostgreSQL
-with explicit external client, bytes, delivery, payment and warehouse boundaries. Exact frozen
-REST contracts, checked USD minor-unit storage, immutable quote/order snapshots, current scoped
-access and bounded queries are available as architecture intent. Upstream GraphQL parity is
-excluded. P72b owns behavior/recovery, eight H seams, scenarios and final trace. No runtime,
-foundation readiness or observed acceptance is supplied. See the
-[partial study](docs/examples/vendure-core.md) and [source/adaptation map](docs/reference/backend-benchmarks.md#vendure-core-p60b).
+**Complete editable design (P72a/P72b), runtime unavailable.** One modular API, independent
+worker and PostgreSQL with explicit client, bytes, mail, payment and warehouse boundaries. Exact
+USD snapshots, scoped access, local atomic commands, last-item locks, held expiry, verified
+callbacks, unknown-payment reconciliation and cumulative fulfillment are declared. Eight typed
+H seams, five journeys and the 20-row/63-observation trace remain unrun. Upstream GraphQL parity is
+excluded. The original partial factory stays available; saved projects do not adopt the example.
+See the [complete study](docs/examples/vendure-core.md),
+[composition source](packages/spec/src/vendure-core-complete.ts) and
+[source/adaptation map](docs/reference/backend-benchmarks.md#vendure-core-p60b).
 
 ### Streamly video platform
 

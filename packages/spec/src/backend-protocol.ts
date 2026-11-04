@@ -5,8 +5,10 @@ import {
   contractKey,
   contractOwnerElement,
 } from "./architecture-contracts.ts";
-import { backendValueChecks } from "./backend-behavior.ts";
+import { backendValueChecks, backendValueFits } from "./backend-behavior.ts";
 import type { BackendOperation } from "./backend-behavior-model.ts";
+import { validateCommerceProtocol } from "./backend-commerce-protocol.ts";
+import { commerceProcedureRules } from "./backend-commerce-protocol-model.ts";
 import { backendEntityFields } from "./backend-entity.ts";
 import { validateBackendPolicyUse } from "./backend-policy.ts";
 import { backendQuerySources } from "./backend-queries.ts";
@@ -57,6 +59,16 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
     (o.access.policy.kind !== "policy" || !same(o.access.policy.reference, rootAccess.policy))
   )
     bad("Operation root access must agree with its exact protocol record policy.");
+  out.push(...validateCommerceProtocol(design, o));
+  const commerceRules = commerceProcedureRules[p.procedure as keyof typeof commerceProcedureRules];
+  if (commerceRules) {
+    if (
+      !p.commerce ||
+      contractCanonical([...p.commerce.rules].sort()) !==
+        contractCanonical([...commerceRules].sort())
+    )
+      bad("Commerce procedure requires its exact finite safety rules.");
+  } else if (p.commerce) bad("Commerce settings require a reviewed commerce procedure.");
   const distinct = (xs: string[], name: string) => {
     if (new Set(xs).size !== xs.length) bad(`${name} must be distinct.`);
   };
@@ -142,14 +154,24 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
       bad("Each record requires an exact entity policy.");
       continue;
     }
+    if (
+      r.authority &&
+      (same(r.entity, aggregate.root) ||
+        policy.context.identity !== "verified-service" ||
+        !policy.context.service ||
+        !p.commerce)
+    )
+      bad(
+        "Source-authorized module access must be a scoped service participant of a finite commerce command, never its root authority.",
+      );
     const dataset = a.datasets?.find((d) => d.id === e.dataset);
     if (p.execution === "authorized-worker") {
       const worker = design.elements.find((e) => e.id === host);
-      const allowed = r.writes.length ? dataset?.writers : dataset?.readers;
+      const allowed = r.writes.length || r.delete ? dataset?.writers : dataset?.readers;
       if (
         worker?.planned !== "background-worker" ||
         !allowed?.some((v) =>
-          r.writes.length
+          r.writes.length || r.delete
             ? v.kind === o.target.owner.kind && v.id === o.target.owner.id
             : contractOwnerElement(design, v) === host,
         )
@@ -329,7 +351,72 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
             procedures: ["notification-materialize"],
           },
         };
-        const spec = supported[rule];
+        if (rule === "selected-lifecycle-transition" && commerceRules)
+          supported[rule]!.procedures.push(p.procedure);
+        const spec =
+          rule === "commerce-validated-plan" && commerceRules
+            ? {
+                fields: [
+                  "product-id",
+                  "actor-id",
+                  "recipient-id",
+                  "notification-id",
+                  "action",
+                  "text",
+                  "projection-version",
+                  "target-id",
+                  "identity",
+                  "kind",
+                  "content-hash",
+                  "state",
+                  "name",
+                  "sku",
+                  "price",
+                  "published",
+                  "price-version",
+                  "id",
+                  "cart-id",
+                  "variant-id",
+                  "quantity",
+                  "quote-id",
+                  "cart-version",
+                  "owner-id",
+                  "address",
+                  "subtotal",
+                  "tax",
+                  "shipping",
+                  "total",
+                  "tax-policy",
+                  "shipping-policy",
+                  "expires-at",
+                  "unit-price",
+                  "order-id",
+                  "location-id",
+                  "source-cart-version",
+                  "source-price-version",
+                  "provider",
+                  "request-key",
+                  "amount",
+                  "provider-id",
+                  "payment-id",
+                  "event-id",
+                  "original-sha256",
+                  "at",
+                  "allocated",
+                  "on-hand",
+                  "shipment-id",
+                  "line-id",
+                  "order-version",
+                  "seller-id",
+                  "fee",
+                  "lines",
+                  "mapping-id",
+                  "revision",
+                  "last-revision",
+                ],
+                procedures: Object.keys(commerceProcedureRules),
+              }
+            : supported[rule];
         if (!spec || !spec.fields.includes(w.field) || !spec.procedures.includes(p.procedure))
           bad(
             "Derived writers must select a reviewed procedure/field rule; no generic result override.",
@@ -349,6 +436,11 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
         if (!value) bad("Hook result path must resolve exactly.");
       }
     }
+    if (
+      r.delete &&
+      (p.procedure !== "cart-mutate" || o.target.operation !== "remove-line" || r.writes.length)
+    )
+      bad("Only remove-line may delete its exact selected cart line, without scalar updates.");
     if (r.selection === "local-effect") {
       if (
         r.writes.length ||
@@ -374,8 +466,8 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
         resource: r.entity,
         selection: { kind: "policy", reference: r.policy },
         action: r.action,
-        site: r.writes.length ? "write" : "read",
-        projection: r.writes.length ? r.writeProjection : r.readProjection,
+        site: r.writes.length || r.delete ? "write" : "read",
+        projection: r.writes.length || r.delete ? r.writeProjection : r.readProjection,
         fields: writable,
         path,
       }),
@@ -501,6 +593,7 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
     }
   } else if (
     o.writes.length ||
+    p.records.some((r) => r.delete) ||
     p.receipt !== "none" ||
     o.idempotency.kind !== "read-only" ||
     o.transaction.kind !== "read-only"
@@ -508,7 +601,8 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
     bad("Pure read strategies cannot mutate, publish work or store command receipts.");
   if (
     o.idempotency.kind === "source-message" &&
-    (p.procedure !== "inbound-reply" || p.receipt !== "atomic-source-message-and-command")
+    (!["inbound-reply", "payment-callback", "warehouse-apply"].includes(p.procedure) ||
+      p.receipt !== "atomic-source-message-and-command")
   )
     bad(
       "Source-message identity belongs only to the original-byte authenticated inbound protocol.",
@@ -516,6 +610,12 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
   if (
     p.externalIO !== "none" &&
     ![
+      "payment-callback",
+      "payment-reconcile",
+      "payment-dispatch",
+      "financial-dispatch",
+      "commerce-delivery",
+      "warehouse-apply",
       "file-inspect",
       "private-download",
       "inbound-reply",
@@ -538,6 +638,51 @@ export function validateBackendProtocol(design: DesignDocument, o: BackendOperat
       bad("Private byte output belongs only to the authorized proxy protocol.");
     if (v.source === "validated-hook" && !hook)
       bad("Validated hook output requires its exact hook.");
+  }
+  for (const v of p.outputs) {
+    if (v.renames) {
+      const output = wire.output.find((f) => f.id === v.path[0]);
+      const fields = output?.type === "array" ? output.items?.fields : output?.fields;
+      distinct(
+        v.renames.map((r) => r.field),
+        "Output aliases",
+      );
+      for (const r of v.renames) {
+        if (!v.fields.includes(r.source) || !fields?.some((f) => f.id === r.field))
+          bad("Output alias must map a selected source field to an exact wire item field.");
+        const q = v.query && m.queries?.find((q) => same(q, v.query!)),
+          alias = q?.projection.find((p) => p.id === r.source),
+          source = q && alias && backendQuerySources(design, q).get(alias.field.source),
+          from = source && allFields(source.entity).find((f) => f.id === alias!.field.field),
+          to = fields?.find((f) => f.id === r.field);
+        if (from && to && !backendValueFits(from, to))
+          bad("Output alias source type must fit its exact wire item field.");
+      }
+    }
+    const assetPage = ["catalog-assets-page", "catalog-search-page"].includes(v.derivation ?? "");
+    const hasRecord = (fields: string[]) =>
+      p.records.some((r) => fields.every((f) => allFields(r.entity).some((v) => v.id === f)));
+    if (
+      assetPage &&
+      (!hasRecord(["object-key", "product-id", "variant-id"]) ||
+        !p.queries.some((r) => {
+          const q = m.queries?.find((q) => same(q, r));
+          return !!q && allFields(q.root).some((f) => f.id === "object-key");
+        }))
+    )
+      bad(
+        "Catalog pages require exact bounded current asset selection, never inferred public object keys.",
+      );
+    if (
+      v.derivation === "shipment-quantity-page" &&
+      !hasRecord(["shipment-id", "line-id", "quantity"])
+    )
+      bad("Shipment pages require bounded exact shipment-line participants.");
+    if (
+      v.derivation === "order-snapshot-page" &&
+      !hasRecord(["order-id", "unit-price", "quantity"])
+    )
+      bad("Order pages require their immutable purchased-line participants.");
   }
   for (const v of p.outputs) {
     if (v.query) {

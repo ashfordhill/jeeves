@@ -1560,7 +1560,7 @@ it("rejects executable/opaque schemas, unsafe hook paths and unbounded collectio
       code: "eval",
     }).success,
   ).toBe(false);
-  expect(backendModelSchema.safeParse({ ...model(d), effects: Array(101).fill(e) }).success).toBe(
+  expect(backendModelSchema.safeParse({ ...model(d), effects: Array(129).fill(e) }).success).toBe(
     false,
   );
   const legacy = JSON.parse(

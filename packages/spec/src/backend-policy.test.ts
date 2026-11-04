@@ -550,7 +550,7 @@ it("rejects body/header/queue role authority, recursive rules, unbounded policie
   expect(
     backendModelSchema.safeParse({
       ...model(fixture()),
-      accessPolicies: Array.from({ length: 101 }, () => p),
+      accessPolicies: Array.from({ length: 161 }, () => p),
     }).success,
   ).toBe(false);
 });

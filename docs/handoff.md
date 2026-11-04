@@ -8399,3 +8399,123 @@ Corrections, preservation and limits:
 **P72a is complete; parent P72 is incomplete. P72b is the next unstarted assignment.**
 Exact local commit/checkRecords/browser/preservation limits are recorded in
 `.jeeves-work/p72a/completion.json`. Stop here for the coordinator's next assignment.
+
+
+## 2026-11-03 — P72b complete Vendure command, payment and recovery design
+
+**P72b and parent P72 are complete as design work. P73a is next; stop here.** Implemented only
+P72b on primary `main` from `11b4c9926e29e19fe3c82d455a094a5188cd59f7`. No runtime or generation.
+Read the authorized batch checkpoint/notes, PLAN §15 and applicable earlier sections, latest
+handoff, C4/studio guidance, shared benchmark contract, exact split, P72, frozen V contracts/
+fixtures/63-observation ledger and P60b map before assembly.
+
+Built:
+
+- Examples now creates **Vendure core · complete backend design** through an independent wrapper.
+  The original P72a partial factory remains unchanged. All exact old contracts, entity/storage,
+  policy, aggregate and interface/binding identities remain; API/aggregate successors are explicit.
+  Dataset worker grants are additive, with the API remaining the sole application authority.
+  Current counts: **30 entities, 48 aggregate versions,10 queries, 9 lifecycles,47 operations,
+  55 effects, 8 hooks and 11 capability settings**. Separate delivery/reconciliation records hold
+  durable recovery identities; the existing session implementation still exclusively owns sessions.
+- Finite commerce procedures bind normalized wire inputs, exact local participants/policies,
+  field writers/deletion, current version fences, lifecycle dispatch and output interpretation.
+  Typed safety rules specify cart/order/reservation-then-stock-UUID lock order, exact checked USD
+  quote/snapshot arithmetic, last-item all-or-conflict checkout, active-only expiry, held/consumed
+  protection, original-byte callback authentication, null-provider-ID authoritative lookup,
+  monotone late settlement, unknown-payment holds/reconciliation and cumulative paid fulfillment.
+  Source-authorized scoped module access never replaces the root actor/service policy.
+- Checkout/domain/history/audit/receipt/intent are one local set. Attempt+hold commit precedes a
+  separate **submit-payment** commit and then external dispatch/result application. Payout submission
+  is also separate from its provider call. No descriptor promises SQL/network atomicity or rollback
+  of an accepted charge. Unknown preserves original provider/refund/payout identity. No fresh-key
+  charge, time-based held-stock release, mutable purchased counters or phantom returned provider ID.
+- All eight H signatures and strict result schemas match the frozen independent contracts.
+  Seven pure proposal/quotation hooks and one effectful Stripe seam have exact safe errors,
+  acceptance IDs, five-second cooperative limits, 64KiB result bounds and owned future hook paths.
+  Stripe runs after committed intent with required readiness before source mutation and a separate
+  delivery failure/reconciliation operation. Reference-v1 is distinct from the concrete pinned
+  Stripe protocol, 23h same-key retry window and later account reconciliation. Missing hooks remain
+  unavailable; no scaffold/provider/runtime implementation is written or registered.
+- Typed finite H settings and commerce safety are inspectable in the existing focused Behavior
+  protocol editor. Summed stock/fulfillment and immutable quote/order tables stay in exact procedure
+  settings/references; no artificial mutable reserved/paid/fulfilled counters were introduced to
+  fit scalar-counter configurations. Five expected journeys, three focused C2 views, one/two-API
+  deployment declarations, unmeasured V-core objectives and the 20-row/63-observation trace are linked
+  through the same model. CATALOG/studio/roadmap/complete guide describe actual design availability.
+- Narrow prerequisites: source-authorized internal participants and explicit selected-line deletion
+  are typed, preserved through composition/export/compiler IR and validated. Queries cannot hide a
+  deletion behind zero scalar writers. Safety checks reject snapshot replacement and lifecycle or
+  field-writer bypass. Two complete copies use158 policies/110 effects/198 contracts; bounded 160 policies/128 effects
+  support them and the existing 200-contract limit is preserved.
+  Regression tests cover each exact edge and one-over rejection. Old cap tests now test the new one-over
+  bounds; frozen benchmark expectations and acceptance identities were never changed.
+
+Validation, Node **24.21.0** explicitly in PATH:
+
+- `pnpm lint`, all workspace/script types through `pnpm work run typecheck`, and production
+  `pnpm --filter @jeeves/web build` passed. Exact final counts/records are in
+  `.jeeves-work/p72b/completion.json`; existing lint diagnostics and large-chunk advisory remain.
+- **25 focused offline files /353 tests** passed in
+  `.jeeves-work/runs/2026-11-03T23-55-01-955Z-unit-ade3d89b.json` (**23.9s**, `sourceChanged:false`).
+  Selection covers new complete-model/schema/trace/negative/reuse/compiler cases, exact frozen V/D
+  protocols, data/access/behavior/effects/settings, immutable old examples and legacy generation/
+  registry output guards. A final **3-file/15-test** run passed after the read mapping, raw-factory isolation and seller-version fixes, including the unchanged Discourse complete compiler:
+  `.jeeves-work/runs/2026-11-04T00-23-10-769Z-unit-23b66035.json` (**20.1s**, `sourceChanged:false`).
+  Final all-workspace/script type record:
+  `.jeeves-work/runs/2026-11-04T00-26-04-140Z-typecheck-348c5076.json` (**15.9s**, `sourceChanged:false`).
+  Final lint: 961 files, 2756 warnings/88 infos, exit0 (base 2436/79). Production build: 1.77s, exit0.
+  UI unit/E2E maintenance/execution and full `pnpm check` remain explicitly deferred.
+- Mouse creation, typed checkout Save/Cancel, atomic Undo/Redo/reload, all eight H setting inspectors,
+  verified-callback recovery and a real stale409 retaining the draft passed. Dark390 fulfillment
+  inspection has no horizontal overflow. Downloaded JSON retains the entire backend and null
+  generation evidence; the loaded C3 SVG exports. Library extraction/publication/insertion and exact
+  pinned reuse preserve the full graph and physical identities; their history/reload and cleanup
+  evidence is retained under `.jeeves-work/p72b/`. Final scoped axe counts are in completion.
+- Preservation audit verifies **1555 other tracked files**, including all 48 frozen benchmark files,
+  46 legacy fixtures, old partial/other example sources, all runtimes/templates/artifacts/version
+  pins, locks/modules/global readiness and the exact earlier handoff prefix. Scoped links/imports
+  and `git diff --check` pass. No dependency/lock or runtime registry change.
+
+Corrections, preservation and limitations:
+
+- Early probes corrected response-outcome mappings, narrow service projections and lifecycle
+  dispatch; test-helper failures were corrected. The first broad run identified the two old
+  collection-cap assertions; they were deliberately moved to161/129 alongside new exact-edge tests,
+  after proving two-copy composition needs158 policies/110 effects. The final read-only deletion
+  regression check was added during review. Exact public catalog/search DTOs now use a
+  typed variant-ID alias and bounded asset/immutable-child assembly; a negative alias-type check
+  rejects a price-to-ID mapping. Complete factory calls isolate recipe arrays from later calls
+  and the original partial factory. Seller settlement fences the seller/fee snapshot version1,
+  independently of the current fulfilled/returned order version, matching the frozen seller-plan. Failure logs remain separate from passing records.
+- Browser creation initially saw a watcher-restart502. Two later direct design reads during large
+  composition/history refresh encountered local DB connection timeouts. A third timeout500
+  occurred on the final current-version cleanup Undo, after insertion/reuse/history/reload
+  assertions passed; an idle-aware mouse continuation completes that remaining restoration. The stable continuation
+  checks actual committed mouse and reload responses. Its functional assertions passed, but its
+  final strict diagnostic assertion failed on two auxiliary health503 responses; the current composition also recorded one health503; the raw exit1
+  and qualified functional result are both retained. Final current-version browser results are
+  recorded separately. Inspection helper errors (axe context, scroll position, theme label and
+  pinned-only reuse candidates) were corrected without weakening product matching. A bare external
+  fixture lacked required binding guarantees and was correctly refused; the accepted fixture
+  carries the complete source C4 interfaces/bindings without its backend. The current-source
+  inspection helper initially closed before publication completed; the continuation completed
+  publication by mouse and awaited its visible published state. A stopped helper corrected a
+  reference lookup before insertion; the disposable baseline was verified unchanged. The large two-copy review/architecture
+  fingerprint is slow (individual architecture responses around 24–26s); no responsiveness/workload
+  objective is claimed. Broader UX/performance cleanup remains deferred as authorized.
+- Raw original-project **design and layout JSON** is saved before/after, not just hashes. All 13
+  original semantic documents match. Twelve layouts match. QRWTY's layout continued changing
+  concurrently: 138 logged PUTs through 2026-11-04 00:35:30 UTC, including later changes to C1/C2/C3
+  viewports and positions. Client identity is not attributed. The earlier five-field snapshot is
+  retained in `layout-investigation.json`; the final captured 14-path delta (including added view
+  objects), hashes and all logged PUTs are in `layout-final-retained.json`. A final helper's old-hash
+  assertion correctly detected the newer layout; no current layout was reset or overwritten.
+- Only exact owned disposable project IDs are deleted and the owned local library versions are
+  retired; existing library history/projects/previews remain. Exact cleanup IDs, HTTP status and
+  post-cleanup preservation/health evidence are in completion and cleanup records.
+- No application runtime, migrations, hook scaffolds, capability descriptors, new application
+  generation, upstream code port, provider execution, secrets or measured capacity. All three
+  benchmark applications remain **absent/not run, zero observed implementation points**. No
+  branches/worktrees/delegation/push/publication outside the local inspection library. Coordinator
+  owns the batch checkpoint. **Do not start P73a or P74 from this assignment.**

@@ -235,11 +235,11 @@ export const backendModelSchema = z.strictObject({
   aggregates: z.array(backendAggregateSchema).max(100).default([]),
   // Preserve P63a serialized models that predate queries without adding an empty collection.
   queries: z.array(backendQuerySchema).max(100).optional(),
-  accessPolicies: z.array(backendAccessPolicySchema).max(100).optional(),
+  accessPolicies: z.array(backendAccessPolicySchema).max(160).optional(),
   accessBindings: z.array(backendAccessBindingSchema).max(200).optional(),
   lifecycles: z.array(backendLifecycleSchema).max(100).optional(),
   operations: z.array(backendOperationSchema).max(200).optional(),
-  effects: z.array(backendEffectSchema).max(100).optional(),
+  effects: z.array(backendEffectSchema).max(128).optional(),
   hooks: z.array(backendHookSchema).max(100).optional(),
   capabilityConfigs: z.array(backendCapabilityConfigSchema).max(100).optional(),
   implementations: z.array(backendImplementationSchema).max(500).optional(),

@@ -78,7 +78,7 @@ it("registers an independent explicitly partial study without changing Mattermos
   const d = fixture();
   expect(architectureExamples[0]?.id).toBe("mattermost-reference");
   expect(architectureExample("discourse-core").name).toContain("complete");
-  expect(architectureExample("vendure-core").name).toContain("partial");
+  expect(architectureExample("vendure-core").name).toContain("complete");
   expect(structural(d)).toEqual([]);
   expect(model(d).entities).toHaveLength(28);
   expect(model(d).queries).toHaveLength(10);

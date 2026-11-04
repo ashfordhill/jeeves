@@ -213,7 +213,7 @@ atomic undo/redo and conflict retention. The catalog currently advertises **zero
 descriptors**. Legacy `NEEDS_TEMPLATE` and Generate remain unchanged. See
 [exact implementation support](backend-implementations.md) for the model, matching rules and limits.
 P69 and [P70's pure compiler plan](backend-plan.md) are complete. The compiler preview is a package API;
-this authoring UI still reports implementation support. P71a/P71b complete the Discourse design; P72a is next. No backend application runtime is supplied.
+this authoring UI still reports implementation support. P71 and P72 complete the Discourse and Vendure designs; P73a is next. No backend application runtime is supplied.
 
 
 The Examples library now includes **Discourse core · partial backend design** alongside the
@@ -239,9 +239,13 @@ query aliases. Reusable complete fragments retain the scenario actor as their 21
 role limit is 32, with no change to existing entry identities.
 
 
-**Vendure core · partial backend design** is now available in Examples. Its
-[P72a guide](examples/vendure-core.md) describes exact REST/data/money/current access. P72b
-behavior/hooks/scenarios remain incomplete. Access visibility controls now include explicit null
-for nullable scalar associations and one optional forward parent; an absent parent never matches
-its publication predicate. This permits product-only and variant-associated assets to retain
-current publication without treating an object key as public authority. No runtime is supplied.
+**Vendure core · complete backend design** is available in Examples. The
+[P72 guide](examples/vendure-core.md) describes exact money/data/access, finite atomic commands,
+payment uncertainty/late settlement, held expiry, fulfillment, eight typed H seams and five journeys.
+Behavior → Bounded protocol plan → **commerce safety** inspects the versioned rules, lock order,
+callback/replay limits and typed project policy settings without a JSON/code editor. These fixed
+settings belong to the declared policy version; they do not supply an implementation. Existing
+batch/deadline, input, record, dispatch, output and explanatory fields remain in focused sections.
+The retained partial factory and old definitions are unchanged. Source-authorized internal module
+access retains the current root command policy, scoped service purpose and exact local participants.
+A remove-line plan explicitly deletes the selected row. No runtime or application pass is supplied.

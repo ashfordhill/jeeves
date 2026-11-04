@@ -6,7 +6,10 @@ import { DISCOURSE_CORE_EXAMPLE, discourseCoreExample } from "./discourse-core-e
 import { ENTERPRISE_WEB_EXAMPLE, enterpriseWebExample } from "./enterprise-web-example.ts";
 import type { LayoutDocument } from "./layout.ts";
 import { MATTERMOST_EXAMPLE, mattermostExample } from "./mattermost-example.ts";
-import { VENDURE_CORE_EXAMPLE, vendureCoreExample } from "./vendure-core-example.ts";
+import {
+  VENDURE_CORE_COMPLETE_EXAMPLE as VENDURE_CORE_EXAMPLE,
+  vendureCoreExampleComplete as vendureCoreExample,
+} from "./vendure-core-complete.ts";
 import { VIDEO_PLATFORM_EXAMPLE, videoPlatformExample } from "./video-platform-example.ts";
 
 /** The first entry is the default starting design for a new Jeeves installation. */

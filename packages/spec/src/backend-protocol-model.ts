@@ -1,10 +1,16 @@
 /** Finite orchestration intent for protocols that cannot be expressed as scalar row actions.
  * These plans describe algorithms; they neither execute them nor assert template support. */
 import { z } from "zod";
+import {
+  backendCommerceHookSettingsSchema,
+  backendCommerceProtocolSchema,
+  commerceProcedures,
+} from "./backend-commerce-protocol-model.ts";
 import { contractTypeReferenceSchema as exact } from "./contract-shapes.ts";
 import { idSchema } from "./ids.ts";
 
 export const backendProtocolProcedures = [
+  ...commerceProcedures,
   "membership-upsert",
   "grant-upsert",
   "discussion-create",
@@ -39,6 +45,8 @@ const path = z.array(idSchema).min(1).max(5);
 export const backendProtocolPlanSchema = z.strictObject({
   schemaVersion: z.literal(1),
   procedure: z.enum(backendProtocolProcedures),
+  commerce: backendCommerceProtocolSchema.optional(),
+  hookSettings: backendCommerceHookSettingsSchema.optional(),
   locking: z
     .literal("all-selected-existing-rows-stable-order-then-recheck")
     .default("all-selected-existing-rows-stable-order-then-recheck"),
@@ -70,6 +78,7 @@ export const backendProtocolPlanSchema = z.strictObject({
         entity: exact,
         policy: exact,
         action: idSchema,
+        authority: z.literal("source-authorized-module").optional(),
         readProjection: idSchema,
         writeProjection: idSchema.optional(),
         selection: z.enum([
@@ -85,6 +94,7 @@ export const backendProtocolPlanSchema = z.strictObject({
         keys: z
           .array(z.strictObject({ field: idSchema, input: path, selector: path.optional() }))
           .max(10),
+        delete: z.literal(true).optional(),
         writes: z
           .array(
             z.strictObject({
@@ -117,6 +127,7 @@ export const backendProtocolPlanSchema = z.strictObject({
                 z.strictObject({
                   kind: z.literal("derived"),
                   rule: z.enum([
+                    "commerce-validated-plan",
                     "inbox-channel-membership",
                     "email-channel-membership",
                     "validated-bytes",
@@ -158,6 +169,7 @@ export const backendProtocolPlanSchema = z.strictObject({
         literal: z.union([z.string().max(200), z.int(), z.boolean(), z.null()]).optional(),
         derivation: z
           .enum([
+            "commerce-authorized-snapshot",
             "recorded-activity-count",
             "trust-window-start",
             "server-clock",
@@ -226,8 +238,17 @@ export const backendProtocolPlanSchema = z.strictObject({
         entity: exact.optional(),
         query: exact.optional(),
         selector: path.optional(),
+        renames: z
+          .array(z.strictObject({ field: idSchema, source: idSchema }))
+          .max(40)
+          .optional(),
         derivation: z
           .enum([
+            "catalog-assets-page",
+            "catalog-search-page",
+            "shipment-quantity-page",
+            "order-snapshot-page",
+            "commerce-operation-result",
             "safe-response-headers",
             "query-cursor",
             "subscription-channels",

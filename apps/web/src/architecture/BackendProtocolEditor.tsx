@@ -4,7 +4,7 @@ import {
   backendProtocolProcedures,
   contractKey,
 } from "@jeeves/spec";
-import { NativeSelect, Stack, Text, Textarea } from "@mantine/core";
+import { NativeSelect, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import { useState } from "react";
 import { Count, namedOptions, Pick } from "./BackendFields.tsx";
 import { type BehaviorContext, inputPaths, ValueSourceFields } from "./BehaviorValueFields.tsx";
@@ -39,7 +39,15 @@ export function BackendProtocolEditor({
       <NativeSelect
         label="Protocol plan section"
         value={section}
-        data={["overview", "inputs", "records", "hook snapshots", "lifecycle dispatch", "outputs"]}
+        data={[
+          "overview",
+          "inputs",
+          "records",
+          "hook snapshots",
+          "lifecycle dispatch",
+          "outputs",
+          ...(p.commerce ? ["commerce safety"] : []),
+        ]}
         onChange={(e) => setSection(e.currentTarget.value)}
       />
       {section === "overview" ? (
@@ -92,6 +100,46 @@ export function BackendProtocolEditor({
           ))}
           <Text size="xs">Fixed acceptance identities: {p.acceptance.join(", ")}</Text>
         </>
+      ) : null}
+      {section === "commerce safety" && p.commerce ? (
+        <Stack gap="xs">
+          <Text fw={600}>Commerce safety contract</Text>
+          <Text size="sm">
+            These finite versioned requirements describe the selected procedure. Implementations
+            remain unavailable.
+          </Text>
+          <Text size="sm">Lock order: {p.commerce.stockOrder}</Text>
+          <Text size="sm">{p.commerce.lockRecheck}</Text>
+          <Text size="sm">
+            Local commit: {p.commerce.localAtomicity}; external boundary:{" "}
+            {p.commerce.externalAtomicity}
+          </Text>
+          <ul>
+            {p.commerce.rules.map((rule) => (
+              <li key={rule}>{rule.replaceAll("-", " ")}</li>
+            ))}
+          </ul>
+          <Text size="sm">
+            Callbacks: original bytes before parse; {p.commerce.callbacks.maximumBytes} bytes; ±
+            {p.commerce.callbacks.toleranceSeconds}s. Command replay {p.commerce.replaySeconds}s;
+            Stripe same-key automatic retry {p.commerce.stripeRetrySeconds}s.
+          </Text>
+          {p.hookSettings ? (
+            <section aria-label="Typed project hook settings">
+              <Text fw={600}>Project policy · {p.hookSettings.kind}</Text>
+              {Object.entries(p.hookSettings)
+                .filter(([key]) => key !== "kind")
+                .map(([key, value]) => (
+                  <TextInput
+                    key={key}
+                    label={`Policy ${key.replace(/[A-Z]/g, (c) => ` ${c.toLowerCase()}`)}`}
+                    value={String(value)}
+                    readOnly
+                  />
+                ))}
+            </section>
+          ) : null}
+        </Stack>
       ) : null}
       {section === "inputs"
         ? p.inputs.map((v, i) => (
@@ -208,6 +256,8 @@ export function BackendProtocolEditor({
             </details>
           ))}
           <Text size="xs">
+            {record.delete ? "Delete the exact selected cart line; no scalar replacement. " : ""}
+            {record.authority ? "Scoped internal module after current root authorization. " : ""}
             Current read projection {record.readProjection}; write projection{" "}
             {record.writeProjection ?? "none"}; action {record.action}. Server fields, lifecycle
             transitions and exact policies remain validated.
@@ -296,6 +346,8 @@ export function BackendProtocolEditor({
               {v.path.join(" / ")} ← {v.source}
               {v.entity ? ` · ${contractKey(v.entity)} / ${v.fields.join(", ")}` : ""}
               {v.query ? ` · ${contractKey(v.query)} / ${v.fields.join(", ")}` : ""}
+              {v.derivation ? ` · ${v.derivation}` : ""}
+              {v.renames?.map((r) => ` · ${r.field} from ${r.source}`).join("")}
             </Text>
           ))
         : null}
