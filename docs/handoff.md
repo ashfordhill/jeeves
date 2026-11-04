@@ -10698,3 +10698,13 @@ or editable element. Mouse-only operation is unchanged; the studio guide lists t
 Checks: Biome on the changed file and web `tsc --noEmit` pass. Tests remain owner-deferred.
 A larger studio canvas redesign (C3 tab, grid layout, edge reduction) is under discussion and
 not started by this fix.
+
+## 2026-11-04 — Studio grid plan proposed (planning only)
+
+Owner reviewed the default studio and asked for an automation-illustrator-style canvas. Wrote
+`docs/build-plan-studio-grid.md` and `docs/plans/studio-grid/execution-units.md` (SG01–SG10)
+recording decisions O1–O9: C1/C2/C3 tabs with whole-system C3, fully automatic ELK grid layout,
+no free placement, handle drag-to-create, merged lines, generic services with performance
+settings, TinyURL replacing all fourteen studies, and a read-only blueprint API as the
+code-generation boundary. Open decisions D1–D3 have stated defaults. No code changed; no unit
+is started. AGENTS.md points at the plan.

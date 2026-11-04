@@ -28,6 +28,9 @@ separate evidence and local commits; do not restart the historical queue.
 UX01–UX15 are complete; the studio is the default and the temporary flag is removed.
 Read [UX15 acceptance](docs/evidence/studio-ux/UX15/README.md) before changing the implemented contracts.
 No remaining UX queue or runtime work is automatically authorized.
+The proposed [studio grid plan](docs/build-plan-studio-grid.md) (SG01–SG10: C1/C2/C3 tabs,
+automatic ELK grid layout, handle drag-to-create, merged lines, C3 components, blueprint API,
+TinyURL study) records the owner's 2026-11-04 decisions. Execute only an assigned SG unit.
 P73a is checkpointed incomplete; P73a/P73b and the backend batch remain paused for this UX work.
 The [backend benchmark roadmap](docs/build-plan-backend-benchmarks.md) now specifies future
 Discourse, Vendure and Zammad core foundations. It is a plan, not implemented capability or
