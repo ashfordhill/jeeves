@@ -7,6 +7,7 @@ import {
   type StudioViewNode,
   studioApplicationKinds,
   studioDefinitions,
+  studioNodeKeys,
   studioScopes,
   studioViewKeys,
   studioViews,
@@ -111,6 +112,7 @@ function SelectionSummary({
   node,
   edge,
   onElement,
+  onComponent,
   onConnection,
   onCreate,
   onMember,
@@ -119,6 +121,7 @@ function SelectionSummary({
   node?: StudioViewNode;
   edge?: StudioRelationship;
   onElement: (id: string) => void;
+  onComponent: (id: string) => void;
   onConnection: (id: string) => void;
   onCreate: (draft: ConnectionDraft) => void;
   onMember: (target: RelationshipTarget) => void;
@@ -158,6 +161,7 @@ function SelectionSummary({
             node={node}
             design={loaded.design}
             onElement={onElement}
+            onComponent={onComponent}
             onConnection={onConnection}
             onCreate={onCreate}
           />
@@ -1288,6 +1292,11 @@ function ProjectStudio({
                   navigate(target.key);
                   setPick({ scope: target.key, id: node.id });
                 }
+              }}
+              onComponent={(id) => {
+                void formDrafts.flushProject(loaded.project.id, true);
+                navigate(views.components.key);
+                setPick({ scope: views.components.key, id: studioNodeKeys.component(id) });
               }}
               onConnection={(id) => {
                 const target = [scope, ...scopes].find((item) =>

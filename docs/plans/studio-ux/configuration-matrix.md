@@ -198,7 +198,9 @@ version-1 studio documents read unchanged. Source: `studio-model.ts`, `studio-co
 | cdn | `cacheRedirects` disabled/enabled |
 
 Minimum replicas may not exceed maximum; `autoscaleOn` needs a maximum above the minimum.
-Descriptors are `studioPerformanceFields`, kept outside `definition.fields` until SG09.
+Descriptors are `studioPerformanceFields`, kept outside `definition.fields`; since SG09 the
+inspector appends them to Options (after the definition fields), with an empty input or
+**Unspecified** meaning absent.
 
 **Components** are `architecture.studio.components[]` (`id`, `host`, `name`, optional
 `description`, `settings`) and `architecture.studio.componentConnections[]` (`id`, `from`,

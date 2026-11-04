@@ -18,8 +18,7 @@ existing supported legacy template/recipe designs retain their generation eligib
   an open labelled frame around its member applications and the resources it owns; C3 the whole
   system at once, each application that has components drawn as a frame containing them, with
   queues, resources and external systems around the frames. Component links follow their traced
-  C2 connection's direction. Click a card or frame to inspect it (components are read-only until
-  their inspector arrives). The selection carries across tabs by identity; a component maps to its
+  C2 connection's direction. Click a card or frame to inspect it. The selection carries across tabs by identity; a component maps to its
   application at C1/C2. There is no double-click drill, breadcrumb or back. Old per-service or
   package scope links and saved preferences open C3. Zoom changes text density only.
 - Every view is laid out automatically (ELK layered, left to right, on a 32px grid; frames are
@@ -31,7 +30,9 @@ existing supported legacy template/recipe designs retain their generation eligib
   open a picker of the kinds valid for that level and side: people and external systems at C1;
   generic services (microservice, worker, gateway, identity, notifications), browser app,
   resources, CDN and external API at C2; at C3, components of the same application (from a
-  component) and the resources, queues and integrations it can use. A C3 queue or resource
+  component, or from the application's own card or frame; SG09) and the resources, queues and
+  integrations it can use. A component added from an application starts unlinked, and an
+  application's first component turns its C3 card into a frame. A C3 queue or resource
   created from an application, or from one of its components, is owned by that application. The
   box and its relationship are created as one undoable action, and the new line is selected with
   its connection form open and defaults filled; correct them there. A new component (whose
@@ -50,6 +51,19 @@ existing supported legacy template/recipe designs retain their generation eligib
 - Use the selected object's compact General/Options/Connections sections. Empty sections are hidden.
   Technical settings follow the [finite configuration matrix](plans/studio-ux/configuration-matrix.md).
   Provider selections express intent; they provision nothing and supply no implementation.
+  Service, worker and gateway Options add replicas, autoscale signal, request timeout and
+  concurrency limit; databases add read replicas and partition key, caches topology and
+  eviction, queues partitions, and the CDN redirect caching (SG09). Every one is optional: an
+  empty input or **Unspecified** removes it.
+- A C3 component's inspector (SG09) shows its kind, host application and typical third-party
+  product, then a readiness list: each link its settings need (connected, or the missing-link
+  gap) and other gaps such as a custom component without a purpose. **General** holds Name and
+  Purpose (a custom component's purpose is its generated stub's one-line contract) and
+  **Remove component** (one undoable action; its links go with it). **Options** holds the kind's
+  settings, with fields that only apply to another choice hidden and cleared with it (block size
+  needs range allocation). **Connections** lists its links; a traced link opens its C2
+  connection, where an external call's timeout and retries are edited, and **Unlink** removes
+  only the component link. Add links with the component's `+` handles.
 - Open **Generate** for Review, Activity and conditional Outputs. Opening it starts no execution.
   Review separates structural checks, unresolved choices, implementation availability, C4b work
   and recorded verification. Source/contract detail is read-only and available on demand.

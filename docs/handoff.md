@@ -11359,3 +11359,83 @@ Notes for SG09:
   `createComponent` with no link, or with a link that traces the box's connection.
 - New components are created with `createStudioComponentSettings` defaults. A new custom
   component has no description (a CONFIG_REQUIRED readiness gap) until the purpose field exists.
+
+## 2026-11-04 — SG09: component and performance inspector (complete)
+
+I ran SG09 alone on primary `main` from `223a340`, as a fresh sequential worker. I read AGENTS,
+the studio grid plan (§5, O5), the execution units, the SG02, SG03, SG05 and SG08 handoffs, the
+configuration matrix §7–§8, the interaction contract §3 and the studio sources. No generation/
+runtime, server, P73a/P73b or backend batch work.
+
+What changed:
+
+- **`apps/web/src/studio/InspectorForm.tsx`**
+  - The field rendering is one shared `DraftField` (text, integer, select, reference) used by
+    element and component forms. Optional settings fields map an empty input, or a new
+    **Unspecified** select option, to an absent value. Help text is shown only for performance
+    and component fields (older forms render as before).
+  - Element forms append `studioPerformanceFields[kind]` to Options (creating the tab when the
+    definition had none, e.g. Shorten API). Validation is the existing `studioSettingsSchema`
+    parse, so the replica/autoscale refinements and the partition-key pattern show as field
+    errors.
+  - The read-only `ComponentSummary` is replaced by `ComponentForm`: kind, host and typical
+    third-party facts; a readiness list (each `studioComponentRequirements` entry as connected
+    or its gap message, plus other component findings from `validateStudio`, such as a custom
+    component without purpose); General (Name, Purpose, **Remove component**), Options (the
+    kind's descriptors) and Connections (its links, opening the traced connection or the other
+    component, with **Unlink** = `disconnectComponent`; an external call also shows the traced
+    connection's timeout/retry).
+- **`apps/web/src/studio/component-drafts.ts`** (new): the component `DraftSpec` on the existing
+  `formDrafts` controller (identity project + component + kind; one `editComponent` per
+  batch; 500 ms / blur; prompt select commit; Retry/Discard; undoable), dead-letter queue
+  choices (queues other than the source), and the one conditional field: block size shows only
+  for range allocation and is cleared with a strategy change in the same edit.
+- **`spawn.ts`**: an application endpoint at C3 (card or frame) now also offers its hostable
+  component kinds (browser apps: auth guard, external call, custom); choosing one runs
+  `createComponent` with no link. The picker uses the per-kind component icons.
+- **Spec**: `studio-view.ts` exports `studioComponentVisuals` (previously private
+  `componentVisual`); nothing else in `packages/spec` changed.
+- **`StudioWorkspace.tsx`**: an `onComponent` callback selects a component at C3 (used by
+  component-to-component links). `studio.css`: component meta, readiness and help styles; the
+  old summary styles are removed.
+- Docs: the studio guide (C3 creation from an application, performance Options, the component
+  inspector) and a configuration matrix §7 sentence. Evidence:
+  `docs/evidence/studio-grid/SG09/` (README, `capture.mjs`, `capture-log.json`, 52 screenshots).
+
+Results (both sizes, real mouse, disposable TinyURL projects): every component kind and every
+new service, worker, gateway, database, cache, queue and CDN setting edited, autosaved and
+read back from the design; invalid replicas, partition key and ID minimum length rejected
+locally with the stored value unchanged, then corrected; undo/redo of a component edit; a
+reload keeps edits; Web app gains its first component through its `+` handle and becomes a
+frame; Remove component works; the blueprint endpoint reflects the edits. No page errors. Owner
+projects untouched (none blocked or attempted; `updatedAt` equal). Both disposable projects
+deleted (204).
+
+Checks (Node 24.21.0):
+
+- `pnpm lint`: exit 0 (2,797 warnings / 88 infos, unchanged).
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk advisory).
+- `pnpm check`, unit and E2E suites not run (owner-deferred). No test changed.
+
+Deviations and known issues:
+
+- Remove component has no confirmation dialog; it is one undoable action (element delete keeps
+  its dialog because it reassigns owners).
+- Integer bound errors use the Zod text (`Too big: expected number to be <=32`), as element
+  forms already do.
+- New components from an application box are unlinked; their readiness list shows the missing
+  dependency until a link is drawn with the component's `+` handle. A link that traces an
+  existing box connection is not offered from the application's `+` (the plan's alternative).
+- The external call's timeout/retry are shown, not edited, in the component form; the row opens
+  the traced connection's form.
+- Dev servers: temporary Vite on 4302 started and stopped by me; nothing started on 4300; the
+  API on 4310 was reused and left running.
+
+Notes for SG10:
+
+- The C3 fit zoom is unchanged by this unit; component inspector text is the readable place for
+  full settings.
+- `studioPerformanceFields` are still outside `definition.fields`; the web merges them. Moving
+  them into definitions would be a spec choice, not needed for behaviour.
+- No unit or E2E test referenced the removed read-only component summary.

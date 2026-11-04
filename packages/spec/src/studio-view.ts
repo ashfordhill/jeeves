@@ -104,18 +104,20 @@ export const studioScopes = (views: StudioViews): StudioScopeProjection[] => [
   views.containers,
   views.components,
 ];
-const componentVisual: Record<StudioComponentKind, StudioVisual> = {
-  "rate-limiter": { icon: "shield", color: "generic", shape: "box" },
-  "cache-reader": { icon: "bolt", color: "data", shape: "box" },
-  "id-generator": { icon: "repeat", color: "generic", shape: "box" },
-  "redirect-responder": { icon: "route", color: "api", shape: "box" },
-  "event-publisher": { icon: "plug-connected", color: "messaging", shape: "box" },
-  "event-consumer": { icon: "plug", color: "messaging", shape: "box" },
-  "data-access": { icon: "database", color: "data", shape: "box" },
-  "auth-guard": { icon: "lock", color: "generic", shape: "box" },
-  "external-call": { icon: "world", color: "external", shape: "box" },
-  custom: { icon: "puzzle", color: "generic", shape: "box" },
-};
+/** Per-kind C3 component card visual; also used by the studio `+` picker (SG09). */
+export const studioComponentVisuals: Readonly<Record<StudioComponentKind, Readonly<StudioVisual>>> =
+  {
+    "rate-limiter": { icon: "shield", color: "generic", shape: "box" },
+    "cache-reader": { icon: "bolt", color: "data", shape: "box" },
+    "id-generator": { icon: "repeat", color: "generic", shape: "box" },
+    "redirect-responder": { icon: "route", color: "api", shape: "box" },
+    "event-publisher": { icon: "plug-connected", color: "messaging", shape: "box" },
+    "event-consumer": { icon: "plug", color: "messaging", shape: "box" },
+    "data-access": { icon: "database", color: "data", shape: "box" },
+    "auth-guard": { icon: "lock", color: "generic", shape: "box" },
+    "external-call": { icon: "world", color: "external", shape: "box" },
+    custom: { icon: "puzzle", color: "generic", shape: "box" },
+  };
 
 function executionIntent(binding?: StudioElementBinding): StudioExecutionIntent | undefined {
   const settings = binding?.settings;
@@ -324,7 +326,7 @@ export function studioViews(
             item.description ?? studioComponentDefinitions[item.settings.kind].description,
           source: "studio",
           role: "member",
-          visual: { ...componentVisual[item.settings.kind] },
+          visual: { ...studioComponentVisuals[item.settings.kind] },
           parent: studioNodeKeys.element(item.host),
         }),
       ),

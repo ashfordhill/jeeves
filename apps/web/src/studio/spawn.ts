@@ -19,6 +19,7 @@ import {
   type StudioViewNode,
   studioComponentDefinitions,
   studioComponentKinds,
+  studioComponentVisuals,
   studioDefinitions,
   studioResourceKinds,
 } from "@jeeves/spec";
@@ -63,7 +64,7 @@ export const spawnChoiceIcon = (choice: SpawnChoice) =>
       : "world"
     : choice.type === "element"
       ? studioDefinitions[choice.kind].visual.icon
-      : "puzzle";
+      : studioComponentVisuals[choice.kind].icon;
 
 /** The semantic endpoint a handle on this box stands for, or none (packages, legacy cards). */
 export function spawnEndpoint(
@@ -137,23 +138,30 @@ export function spawnChoices(endpoint: SpawnEndpoint, side: SpawnSide): SpawnCho
   }
   return [];
 }
+/** Component kinds an application of this kind may host (browser apps: client-safe only). */
+const hostedComponents = (hostKind: StudioKind) =>
+  studioComponentKinds
+    .filter((kind) => hostKind !== "browser" || studioComponentDefinitions[kind].browserHost)
+    .map((kind): SpawnChoice => ({ type: "component", kind }));
 /** C3: components inside the same application, plus resources and queues it can use. */
 export function c3SpawnChoices(endpoint: SpawnEndpoint, side: SpawnSide): SpawnChoice[] {
   if (endpoint.type === "context") return [];
-  if (endpoint.type === "element")
-    return c3Kinds
+  if (endpoint.type === "element") {
+    const elements = c3Kinds
       .filter((kind) => {
         const defaults =
           side === "out" ? defaultsFor(endpoint.kind, kind) : defaultsFor(kind, endpoint.kind);
         // A new queue needs an owning application at this box's end.
         return defaults && (kind !== "queue" || applicationKind(endpoint.kind));
       })
-      .map((kind) => ({ type: "element", kind }));
-  const components = studioComponentKinds
-    .filter(
-      (kind) => endpoint.hostKind !== "browser" || studioComponentDefinitions[kind].browserHost,
-    )
-    .map((kind): SpawnChoice => ({ type: "component", kind }));
+      .map((kind): SpawnChoice => ({ type: "element", kind }));
+    // SG09: an application (card or frame) gains a component inside it, with no link yet.
+    return [
+      ...(applicationKind(endpoint.kind) ? hostedComponents(endpoint.kind) : []),
+      ...elements,
+    ];
+  }
+  const components = hostedComponents(endpoint.hostKind);
   const elements = c3Kinds
     .filter((kind) => viaDefaults(endpoint, kind, side))
     .map((kind): SpawnChoice => ({ type: "element", kind }));
@@ -220,9 +228,26 @@ export function spawnOps(
   }
   if (choice.type === "context") throw new Error("Add people and external systems at C1.");
   if (choice.type === "component") {
-    if (endpoint.type !== "component" || level !== "components")
-      throw new Error("Add components from a component inside its application at C3.");
+    if (level !== "components") throw new Error("Add components at C3.");
     const definition = studioComponentDefinitions[choice.kind];
+    if (endpoint.type === "element") {
+      // SG09: a first (or further) component inside this application, not linked to anything.
+      if (!applicationKind(endpoint.kind))
+        throw new Error("Components live inside an application.");
+      if (endpoint.kind === "browser" && !definition.browserHost)
+        throw new Error(`A browser app cannot host a ${definition.name}.`);
+      const ops = buildStudioCommand(design, {
+        type: "createComponent",
+        component: {
+          id: created,
+          host: endpoint.id,
+          name: uniqueName(definition.name, names),
+          settings: createStudioComponentSettings(choice.kind),
+        },
+      }).ops;
+      applied(design, ops);
+      return { ops, node: `studio:component:${created}`, relation: "" };
+    }
     const ops = buildStudioCommand(design, {
       type: "createComponent",
       component: {

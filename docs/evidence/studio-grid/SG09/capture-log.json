@@ -1,0 +1,391 @@
+{
+  "owners": 4,
+  "blocked": [],
+  "writes": 64,
+  "created": [
+    {
+      "id": "4b784d63-db95-41d9-b3e5-4af23581df63",
+      "name": "SG09 disposable TinyURL 1440x900"
+    },
+    {
+      "id": "e8c7247a-0875-4e87-acd2-3a6817def4d8",
+      "name": "SG09 disposable TinyURL 1280x800"
+    }
+  ],
+  "deleted": {
+    "4b784d63-db95-41d9-b3e5-4af23581df63": 204,
+    "e8c7247a-0875-4e87-acd2-3a6817def4d8": 204
+  },
+  "shots": [
+    "1440x900-service-options-before.png",
+    "1440x900-service-options-invalid.png",
+    "1440x900-service-options.png",
+    "1440x900-worker-options.png",
+    "1440x900-database-options.png",
+    "1440x900-cache-options.png",
+    "1440x900-cdn-options.png",
+    "1440x900-gateway-options.png",
+    "1440x900-C3-before.png",
+    "1440x900-queue-options.png",
+    "1440x900-component-rate-limiter.png",
+    "1440x900-component-reputation-check.png",
+    "1440x900-component-id-generator-invalid.png",
+    "1440x900-component-id-generator.png",
+    "1440x900-component-link-writer.png",
+    "1440x900-component-link-cache-reader.png",
+    "1440x900-component-redirect-responder.png",
+    "1440x900-component-click-publisher.png",
+    "1440x900-component-click-consumer.png",
+    "1440x900-component-custom-gap.png",
+    "1440x900-component-click-aggregation.png",
+    "1440x900-component-reputation-connections.png",
+    "1440x900-web-app-picker.png",
+    "1440x900-component-auth-guard.png",
+    "1440x900-C3-web-app-frame.png",
+    "1440x900-C3-after-remove.png",
+    "1280x800-service-options-before.png",
+    "1280x800-service-options-invalid.png",
+    "1280x800-service-options.png",
+    "1280x800-worker-options.png",
+    "1280x800-database-options.png",
+    "1280x800-cache-options.png",
+    "1280x800-cdn-options.png",
+    "1280x800-gateway-options.png",
+    "1280x800-C3-before.png",
+    "1280x800-queue-options.png",
+    "1280x800-component-rate-limiter.png",
+    "1280x800-component-reputation-check.png",
+    "1280x800-component-id-generator-invalid.png",
+    "1280x800-component-id-generator.png",
+    "1280x800-component-link-writer.png",
+    "1280x800-component-link-cache-reader.png",
+    "1280x800-component-redirect-responder.png",
+    "1280x800-component-click-publisher.png",
+    "1280x800-component-click-consumer.png",
+    "1280x800-component-custom-gap.png",
+    "1280x800-component-click-aggregation.png",
+    "1280x800-component-reputation-connections.png",
+    "1280x800-web-app-picker.png",
+    "1280x800-component-auth-guard.png",
+    "1280x800-C3-web-app-frame.png",
+    "1280x800-C3-after-remove.png"
+  ],
+  "errors": [],
+  "obs": {
+    "1440x900": {
+      "invalidReplicas": {
+        "error": [
+          "Maximum replicas must be at least the minimum.",
+          "Autoscaling needs a maximum replica count above the minimum (default 1)."
+        ],
+        "saved": 10
+      },
+      "service": {
+        "min": 2,
+        "max": 12,
+        "autoscaleOn": "requests-per-second",
+        "timeout": 3000,
+        "concurrency": 500
+      },
+      "worker": {
+        "max": 6
+      },
+      "invalidPartition": ["Use one column name: letters, digits and underscores"],
+      "database": {
+        "readReplicas": 3,
+        "partitionKey": "link_code"
+      },
+      "cache": {
+        "topology": "standalone",
+        "eviction": "lfu"
+      },
+      "cdnCleared": "absent",
+      "cdn": "enabled",
+      "gatewayPicker": 12,
+      "gateway": {
+        "provider": "envoy",
+        "min": 2,
+        "max": 4
+      },
+      "queue": 24,
+      "invalidMinLength": {
+        "error": ["Too big: expected number to be <=32"],
+        "saved": 7
+      },
+      "customGap": ["A custom component needs a one-line purpose for its generated stub."],
+      "externalLinks": [
+        "→ URL reputation APIChecks destinations · HTTPS · timeout 800 ms · 1 retry, 100 ms apartUnlink"
+      ],
+      "components": {
+        "Rate limiter": {
+          "key": "api-key",
+          "kind": "rate-limiter",
+          "limit": 120,
+          "store": "redis",
+          "algorithm": "token-bucket",
+          "windowSeconds": 60
+        },
+        "Reputation check": {
+          "kind": "external-call",
+          "circuitBreaker": "disabled"
+        },
+        "ID generator": {
+          "kind": "id-generator",
+          "encoding": "base62",
+          "strategy": "range-allocation",
+          "blockSize": 500,
+          "minLength": 7
+        },
+        "Link writer": {
+          "kind": "data-access",
+          "poolSize": 20,
+          "readRouting": "primary",
+          "statementTimeoutMs": 2000
+        },
+        "Link cache reader": {
+          "kind": "cache-reader",
+          "pattern": "cache-aside",
+          "stampede": "single-flight",
+          "l1MaxEntries": 100000,
+          "l1TtlSeconds": 60,
+          "l2TtlSeconds": 3600,
+          "negativeTtlSeconds": 30
+        },
+        "Link reader": {
+          "kind": "data-access",
+          "poolSize": 50,
+          "readRouting": "replica",
+          "statementTimeoutMs": 200
+        },
+        "Redirect responder": {
+          "kind": "redirect-responder",
+          "status": "307",
+          "edgeMaxAgeSeconds": 120
+        },
+        "Click publisher": {
+          "kind": "event-publisher",
+          "outbox": "disabled",
+          "lingerMs": 50,
+          "batchSize": 500
+        },
+        "Click consumer": {
+          "kind": "event-consumer",
+          "batchSize": 1000,
+          "retryLimit": 5,
+          "concurrency": 8
+        },
+        "Click aggregation": {
+          "kind": "custom",
+          "purpose": "Rolls clicks up per link and hour."
+        },
+        "Aggregate writer": {
+          "kind": "data-access",
+          "poolSize": 10,
+          "readRouting": "primary",
+          "statementTimeoutMs": 30000
+        }
+      },
+      "undoRedo": {
+        "before": 32,
+        "undone": 20,
+        "redone": 32
+      },
+      "webPicker": [
+        "Component in this applicationAuth guardExternal callCustom",
+        "Resource or integrationDatabaseCacheQueueObject storageSearch indexCDNExternal API"
+      ],
+      "webFrame": "react-flow__node react-flow__node-frame nopan selectable draggable",
+      "authGuard": {
+        "host": "Web app",
+        "credential": "session"
+      },
+      "reloadRateLimit": "120",
+      "reloadCredential": "session",
+      "blueprint": {
+        "shortenSettings": {
+          "minReplicas": 2,
+          "maxReplicas": 12,
+          "requestTimeoutMs": 3000
+        },
+        "rateLimiter": {
+          "key": "api-key",
+          "kind": "rate-limiter",
+          "limit": 120,
+          "store": "redis",
+          "algorithm": "token-bucket",
+          "windowSeconds": 60
+        },
+        "webComponents": ["Auth guard:session"],
+        "database": {
+          "kind": "database",
+          "engine": "postgresql",
+          "provider": "self-hosted",
+          "partitionKey": "link_code",
+          "readReplicas": 3
+        }
+      },
+      "removed": {
+        "stored": false,
+        "boxes": 0
+      }
+    },
+    "1280x800": {
+      "invalidReplicas": {
+        "error": [
+          "Maximum replicas must be at least the minimum.",
+          "Autoscaling needs a maximum replica count above the minimum (default 1)."
+        ],
+        "saved": 10
+      },
+      "service": {
+        "min": 2,
+        "max": 12,
+        "autoscaleOn": "requests-per-second",
+        "timeout": 3000,
+        "concurrency": 500
+      },
+      "worker": {
+        "max": 6
+      },
+      "invalidPartition": ["Use one column name: letters, digits and underscores"],
+      "database": {
+        "readReplicas": 3,
+        "partitionKey": "link_code"
+      },
+      "cache": {
+        "topology": "standalone",
+        "eviction": "lfu"
+      },
+      "cdnCleared": "absent",
+      "cdn": "enabled",
+      "gatewayPicker": 12,
+      "gateway": {
+        "provider": "envoy",
+        "min": 2,
+        "max": 4
+      },
+      "queue": 24,
+      "invalidMinLength": {
+        "error": ["Too big: expected number to be <=32"],
+        "saved": 7
+      },
+      "customGap": ["A custom component needs a one-line purpose for its generated stub."],
+      "externalLinks": [
+        "→ URL reputation APIChecks destinations · HTTPS · timeout 800 ms · 1 retry, 100 ms apartUnlink"
+      ],
+      "components": {
+        "Rate limiter": {
+          "key": "api-key",
+          "kind": "rate-limiter",
+          "limit": 120,
+          "store": "redis",
+          "algorithm": "token-bucket",
+          "windowSeconds": 60
+        },
+        "Reputation check": {
+          "kind": "external-call",
+          "circuitBreaker": "disabled"
+        },
+        "ID generator": {
+          "kind": "id-generator",
+          "encoding": "base62",
+          "strategy": "range-allocation",
+          "blockSize": 500,
+          "minLength": 7
+        },
+        "Link writer": {
+          "kind": "data-access",
+          "poolSize": 20,
+          "readRouting": "primary",
+          "statementTimeoutMs": 2000
+        },
+        "Link cache reader": {
+          "kind": "cache-reader",
+          "pattern": "cache-aside",
+          "stampede": "single-flight",
+          "l1MaxEntries": 100000,
+          "l1TtlSeconds": 60,
+          "l2TtlSeconds": 3600,
+          "negativeTtlSeconds": 30
+        },
+        "Link reader": {
+          "kind": "data-access",
+          "poolSize": 50,
+          "readRouting": "replica",
+          "statementTimeoutMs": 200
+        },
+        "Redirect responder": {
+          "kind": "redirect-responder",
+          "status": "307",
+          "edgeMaxAgeSeconds": 120
+        },
+        "Click publisher": {
+          "kind": "event-publisher",
+          "outbox": "disabled",
+          "lingerMs": 50,
+          "batchSize": 500
+        },
+        "Click consumer": {
+          "kind": "event-consumer",
+          "batchSize": 1000,
+          "retryLimit": 5,
+          "concurrency": 8
+        },
+        "Click aggregation": {
+          "kind": "custom",
+          "purpose": "Rolls clicks up per link and hour."
+        },
+        "Aggregate writer": {
+          "kind": "data-access",
+          "poolSize": 10,
+          "readRouting": "primary",
+          "statementTimeoutMs": 30000
+        }
+      },
+      "undoRedo": {
+        "before": 32,
+        "undone": 20,
+        "redone": 32
+      },
+      "webPicker": [
+        "Component in this applicationAuth guardExternal callCustom",
+        "Resource or integrationDatabaseCacheQueueObject storageSearch indexCDNExternal API"
+      ],
+      "webFrame": "react-flow__node react-flow__node-frame nopan selectable draggable",
+      "authGuard": {
+        "host": "Web app",
+        "credential": "session"
+      },
+      "reloadRateLimit": "120",
+      "reloadCredential": "session",
+      "blueprint": {
+        "shortenSettings": {
+          "minReplicas": 2,
+          "maxReplicas": 12,
+          "requestTimeoutMs": 3000
+        },
+        "rateLimiter": {
+          "key": "api-key",
+          "kind": "rate-limiter",
+          "limit": 120,
+          "store": "redis",
+          "algorithm": "token-bucket",
+          "windowSeconds": 60
+        },
+        "webComponents": ["Auth guard:session"],
+        "database": {
+          "kind": "database",
+          "engine": "postgresql",
+          "provider": "self-hosted",
+          "partitionKey": "link_code",
+          "readReplicas": 3
+        }
+      },
+      "removed": {
+        "stored": false,
+        "boxes": 0
+      }
+    }
+  },
+  "ownerUnchanged": true
+}
