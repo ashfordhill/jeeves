@@ -56,8 +56,9 @@ export type RailTab = "inspector" | "findings" | "chat";
  * One undoable step. `design` marks a server-side edit made here; the server's history holds the
  * actual snapshots. `layout` holds board item changes; `architecture` holds a scope snapshot.
  */
+type CreationPositions = Record<string, Record<string, { x: number; y: number }>>;
 type Step =
-  | { kind: "design" }
+  | { kind: "design"; creationPositions?: CreationPositions }
   | {
       kind: "layout";
       before: Record<string, LayoutItem | undefined>;
@@ -132,6 +133,11 @@ type DrawState = {
 
   open(projectId?: string): Promise<void>;
   edit(ops: OperationInput[]): Promise<boolean>;
+  /** Rebuild creation against the serialized revision; publish its placement only after acceptance. */
+  createPlaced(
+    projectId: string,
+    rebuild: (design: DesignDocument) => { ops: OperationInput[]; positions: CreationPositions },
+  ): Promise<boolean>;
   editIntent(intent: DraftIntent): Promise<DraftResult>;
   /** Flush valid inspector input and wait for the existing serialized design queue. */
   flushEdits(): Promise<boolean>;
@@ -442,11 +448,28 @@ export const useDraw = create<DrawState>()((set, get) => {
         }
         const result = await api[direction](projectId, loaded.design.revision);
         if (!settle(result)) return false;
-        if (steps.at(-1)?.kind === "design") steps.pop();
+        const step = steps.at(-1)?.kind === "design" ? steps.pop() : undefined;
+        if (direction === "redo" && step?.kind === "design" && step.creationPositions) {
+          const current = get().loaded;
+          if (current?.project.id === projectId) {
+            let layout = current.layout;
+            for (const [key, positions] of Object.entries(step.creationPositions)) {
+              const view = layout.architecture?.[key];
+              layout = viewAt(layout, key, {
+                ...view,
+                positions: { ...view?.positions, ...positions },
+              });
+            }
+            set({
+              loaded: { ...current, layout: pruneArchitectureLayout(layout, current.design) },
+            });
+            scheduleLayoutSave();
+          }
+        }
         setHistory(projectId, {
           ...history(projectId),
           [source]: steps,
-          [destination]: [...history(projectId)[destination], { kind: "design" }],
+          [destination]: [...history(projectId)[destination], step ?? { kind: "design" }],
         });
         if (get().loaded?.project.id === projectId) set({ notice: undefined });
         return true;
@@ -574,6 +597,43 @@ export const useDraw = create<DrawState>()((set, get) => {
         // The server drops its redo chain on a new edit; local layout redo goes with it.
         if (ok) record(loaded.project.id, { kind: "design" });
         return ok;
+      });
+    },
+
+    async createPlaced(projectId, rebuild) {
+      if (!(await get().flushEdits())) return false;
+      return chain(async () => {
+        const loaded = get().loaded;
+        if (!loaded || loaded.project.id !== projectId) return false;
+        const { ops, positions } = rebuild(loaded.design);
+        const result = await api.edit(projectId, loaded.design.revision, ops);
+        if (!settle(result) || !result.ok) return false;
+        record(projectId, { kind: "design", creationPositions: positions });
+        const current = get().loaded;
+        if (current?.project.id === projectId) {
+          let layout = current.layout;
+          for (const [key, additions] of Object.entries(positions)) {
+            const view = layout.architecture?.[key];
+            layout = viewAt(layout, key, {
+              ...view,
+              positions: { ...view?.positions, ...additions },
+            });
+          }
+          set({ loaded: { ...current, layout: pruneArchitectureLayout(layout, current.design) } });
+          scheduleLayoutSave();
+        } else {
+          // A valid creation still finishes its original project's placement after navigation.
+          let layout = await api.getLayout(projectId);
+          for (const [key, additions] of Object.entries(positions)) {
+            const view = layout.architecture?.[key];
+            layout = viewAt(layout, key, {
+              ...view,
+              positions: { ...view?.positions, ...additions },
+            });
+          }
+          await api.putLayout(projectId, pruneArchitectureLayout(layout, result.state.design));
+        }
+        return true;
       });
     },
 

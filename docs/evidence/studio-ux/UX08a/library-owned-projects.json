@@ -1,0 +1,41 @@
+[
+  {
+    "id": "e3305ba4-ad1c-43df-95ab-7a6698778205",
+    "name": "UX08a owned legacy grouping and library",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T09:57:45.113Z",
+    "updatedAt": "2026-11-04T09:57:45.113Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "db7aa7d0-d22e-4969-8d8d-54f0fe5cc2f6",
+    "name": "Mattermost · architecture reference",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T09:57:51.881Z",
+    "updatedAt": "2026-11-04T09:57:51.881Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "fc31f513-3ebd-4103-bd26-8abd18d0bcc1",
+    "name": "Mattermost · architecture reference",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T09:57:51.988Z",
+    "updatedAt": "2026-11-04T09:57:51.988Z",
+    "deleted": true,
+    "verified404": true
+  }
+]

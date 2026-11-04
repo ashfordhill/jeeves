@@ -13,6 +13,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { initialPosition, type Point } from "./creation.ts";
 
 type Card = Node<{ item: StudioViewNode }, "studio">;
 function StudioCard({ data, selected }: NodeProps<Card>) {
@@ -31,20 +32,29 @@ const nodeTypes = { studio: StudioCard };
 export function StudioGraph({
   scope,
   selection,
+  selectedIds,
+  placing,
   hand,
   camera,
   onCamera,
   onSelect,
   onOpen,
+  onPlace,
+  onCenter,
 }: {
   scope: StudioScopeProjection;
   selection?: string;
+  selectedIds?: string[];
+  placing: boolean;
   hand: boolean;
   camera?: Viewport;
   onCamera: (camera: Viewport) => void;
   onSelect: (id?: string) => void;
   onOpen: (key?: string) => void;
+  onPlace: (point: Point) => void;
+  onCenter: (point: Point) => void;
 }) {
+  const container = useRef<HTMLElement>(null);
   const saved = useDraw((state) => state.loaded?.layout.architecture?.[scope.key]);
   const [flow, setFlow] = useState<ReactFlowInstance<Card>>();
   const viewport = saved?.viewport;
@@ -61,18 +71,15 @@ export function StudioGraph({
         (item, index): Card => ({
           id: item.id,
           type: "studio",
-          position: saved?.positions[item.id] ?? {
-            x: (index % 3) * 288,
-            y: Math.floor(index / 3) * 168,
-          },
+          position: saved?.positions[item.id] ?? initialPosition(index),
           data: { item },
-          selected: selection === item.id,
+          selected: selection === item.id || selectedIds?.includes(item.id),
           ariaLabel: `Inspect ${item.name}`,
           width: 216,
           height: 96,
         }),
       ),
-    [scope, selection, saved?.positions],
+    [scope, selection, selectedIds, saved?.positions],
   );
   const edges = useMemo(
     () =>
@@ -94,6 +101,8 @@ export function StudioGraph({
   return (
     <section
       className="studio-graph"
+      ref={container}
+      data-placing={placing || undefined}
       aria-label={`${scope.level === "context" ? "C1" : scope.level === "containers" ? "C2" : "C3"} ${scope.name}`}
       data-scope={scope.key}
     >
@@ -113,18 +122,30 @@ export function StudioGraph({
         defaultViewport={camera ?? viewport}
         fitView={!camera && !viewport}
         fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
-        onMoveEnd={(_, next) => onCamera(next)}
+        onMoveEnd={(_, next) => {
+          onCamera(next);
+          const bounds = container.current?.getBoundingClientRect();
+          if (flow && bounds)
+            onCenter(
+              flow.screenToFlowPosition({
+                x: bounds.x + bounds.width / 2 - 108,
+                y: bounds.y + bounds.height / 2 - 48,
+              }),
+            );
+        }}
         onNodeClick={(_, node) => {
-          if (!hand) onSelect(node.id);
+          if (!hand && !placing) onSelect(node.id);
         }}
         onNodeDoubleClick={(_, node) => {
-          if (!hand) onOpen(node.data.item.drillKey);
+          if (!hand && !placing) onOpen(node.data.item.drillKey);
         }}
         onEdgeClick={(_, edge) => {
-          if (!hand) onSelect(edge.id);
+          if (!hand && !placing) onSelect(edge.id);
         }}
-        onPaneClick={() => {
-          if (!hand) onSelect();
+        onPaneClick={(event) => {
+          if (placing && flow)
+            onPlace(flow.screenToFlowPosition({ x: event.clientX, y: event.clientY }));
+          else if (!hand) onSelect();
         }}
       >
         <Background gap={24} color="var(--grid-dot)" />

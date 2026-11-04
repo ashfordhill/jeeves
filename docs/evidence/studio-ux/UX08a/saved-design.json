@@ -1,0 +1,860 @@
+{
+  "design": {
+    "elements": [
+      {
+        "id": "studio-fa5ffb22-4e1e-4c21-a6a2-66ea951da3a4",
+        "name": "Microservice",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-36bd8cb9-9ff3-45e4-b9b4-c48c50be3b2b",
+        "name": "Browser app",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-82cac058-b4f0-437e-a712-1ee678784b69",
+        "name": "Database",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-8c47f9aa-cb91-41e1-a0b8-3644a6b5da0d",
+        "name": "Cache",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-482ef445-6904-4896-9b22-65f44e60c574",
+        "name": "External API",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "External system"
+        }
+      },
+      {
+        "id": "studio-49b56989-d88a-4341-9867-960ec7300f2c",
+        "name": "Billing",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-9cac6291-6c71-408b-b50f-8378679a8ebe",
+        "name": "Microservice 2",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-04a17e88-7184-4ec1-ba22-c435df8754c4",
+        "name": "Worker service",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b",
+        "name": "Work queue",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-fb0b5586-065f-4ad7-b0d2-ce7292cb1a9f",
+        "name": "Microservice 3",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-7bd2cd77-c970-40f8-a681-2a32a255f911",
+        "name": "Database 2",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-00c74cdb-3a64-43a5-981b-c51ebc8b9a0b",
+        "name": "Cache 2",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-7c9c939b-5889-481b-b3b0-480fdac5d0b4",
+        "name": "Queue",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-e07d6917-8308-4106-89ee-7c8df985419a",
+        "name": "Database 3",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-27a8a048-6774-4164-80b3-e28ebc5da882",
+        "name": "Cache 3",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-4b48cef3-267a-4d0d-8915-c08adc36035e",
+        "name": "Queue 2",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-3e8aa4f2-a566-4cfc-9c53-acb7c8d88f8b",
+        "name": "Worker service 2",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-487f30f9-c5c6-492c-beea-d123edcc0fbc",
+        "name": "Redirect",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-d65b84e8-6e86-4e3b-89ec-effde279e22a",
+        "name": "Notifications",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-efafed73-249f-4cbc-8bdb-c6c9e4a55c7c",
+        "name": "Identity",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "studio-789bf08c-eb44-4bbf-a892-a66878e82a58",
+        "name": "Object storage",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-382a399f-32a6-44aa-bbd1-cd9202128f1e",
+        "name": "Search index",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "studio-bd80a1c7-a8dc-47c6-8d66-e1e08362aac8",
+        "name": "CDN",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "External system"
+        }
+      }
+    ],
+    "revision": 28,
+    "annotations": [],
+    "connections": [
+      {
+        "id": "studio-af5f74f2-04a4-485a-8c77-f497d8c13d1a",
+        "to": {
+          "element": "studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b"
+        },
+        "from": {
+          "element": "studio-9cac6291-6c71-408b-b50f-8378679a8ebe"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Publishes",
+          "protocol": "Messaging",
+          "security": "Service identity",
+          "interaction": "Asynchronous"
+        }
+      },
+      {
+        "id": "studio-21c03744-76b3-48bb-be66-ef2897d298ee",
+        "to": {
+          "element": "studio-04a17e88-7184-4ec1-ba22-c435df8754c4"
+        },
+        "from": {
+          "element": "studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "security": "Service identity",
+          "interaction": "Asynchronous"
+        }
+      }
+    ],
+    "architecture": {
+      "nodes": [
+        {
+          "id": "studio-534693bd-cef2-4e57-82d0-532aca7d1126",
+          "kind": "person",
+          "name": "Person",
+          "description": ""
+        },
+        {
+          "id": "studio-35cf4be5-4166-408b-aeeb-8acef25a17a7",
+          "kind": "external-system",
+          "name": "External system",
+          "description": ""
+        }
+      ],
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "studio-fa5ffb22-4e1e-4c21-a6a2-66ea951da3a4",
+            "settings": {
+              "kind": "service",
+              "exposure": "internal",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-36bd8cb9-9ff3-45e4-b9b4-c48c50be3b2b",
+            "settings": {
+              "kind": "browser",
+              "delivery": "standalone",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-browser",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-82cac058-b4f0-437e-a712-1ee678784b69",
+            "settings": {
+              "kind": "database",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-8c47f9aa-cb91-41e1-a0b8-3644a6b5da0d",
+            "settings": {
+              "kind": "cache",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-482ef445-6904-4896-9b22-65f44e60c574",
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-49b56989-d88a-4341-9867-960ec7300f2c",
+            "settings": {
+              "kind": "billing",
+              "exposure": "internal",
+              "language": "unspecified",
+              "provider": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-billing",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-9cac6291-6c71-408b-b50f-8378679a8ebe",
+            "settings": {
+              "kind": "service",
+              "exposure": "internal",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-04a17e88-7184-4ec1-ba22-c435df8754c4",
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-94aad513-b04c-4e3f-8db4-5ba4334446e4",
+              "kind": "package"
+            },
+            "element": "studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b",
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-fb0b5586-065f-4ad7-b0d2-ce7292cb1a9f",
+            "settings": {
+              "kind": "service",
+              "exposure": "internal",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-94aad513-b04c-4e3f-8db4-5ba4334446e4",
+              "kind": "package"
+            },
+            "element": "studio-7bd2cd77-c970-40f8-a681-2a32a255f911",
+            "settings": {
+              "kind": "database",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-94aad513-b04c-4e3f-8db4-5ba4334446e4",
+              "kind": "package"
+            },
+            "element": "studio-00c74cdb-3a64-43a5-981b-c51ebc8b9a0b",
+            "settings": {
+              "kind": "cache",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-94aad513-b04c-4e3f-8db4-5ba4334446e4",
+              "kind": "package"
+            },
+            "element": "studio-7c9c939b-5889-481b-b3b0-480fdac5d0b4",
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-9cac6291-6c71-408b-b50f-8378679a8ebe",
+              "kind": "element"
+            },
+            "element": "studio-e07d6917-8308-4106-89ee-7c8df985419a",
+            "settings": {
+              "kind": "database",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-9cac6291-6c71-408b-b50f-8378679a8ebe",
+              "kind": "element"
+            },
+            "element": "studio-27a8a048-6774-4164-80b3-e28ebc5da882",
+            "settings": {
+              "kind": "cache",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "studio-9cac6291-6c71-408b-b50f-8378679a8ebe",
+              "kind": "element"
+            },
+            "element": "studio-4b48cef3-267a-4d0d-8915-c08adc36035e",
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-3e8aa4f2-a566-4cfc-9c53-acb7c8d88f8b",
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-487f30f9-c5c6-492c-beea-d123edcc0fbc",
+            "settings": {
+              "kind": "redirect",
+              "exposure": "public",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-redirect",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-d65b84e8-6e86-4e3b-89ec-effde279e22a",
+            "settings": {
+              "kind": "notification",
+              "exposure": "internal",
+              "language": "unspecified",
+              "provider": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-notification",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-efafed73-249f-4cbc-8bdb-c6c9e4a55c7c",
+            "settings": {
+              "kind": "identity",
+              "exposure": "internal",
+              "language": "unspecified",
+              "provider": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-identity",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-789bf08c-eb44-4bbf-a892-a66878e82a58",
+            "settings": {
+              "kind": "object-store",
+              "access": "private",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-object-store",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-382a399f-32a6-44aa-bbd1-cd9202128f1e",
+            "settings": {
+              "kind": "search",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-search",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-bd80a1c7-a8dc-47c6-8d66-e1e08362aac8",
+            "settings": {
+              "kind": "cdn",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-cdn",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "packages": [
+          {
+            "id": "studio-94aad513-b04c-4e3f-8db4-5ba4334446e4",
+            "name": "Service and worker",
+            "preset": {
+              "id": "studio-service-worker",
+              "version": "1.0.0"
+            },
+            "members": [
+              "studio-9cac6291-6c71-408b-b50f-8378679a8ebe",
+              "studio-04a17e88-7184-4ec1-ba22-c435df8754c4",
+              "studio-fb0b5586-065f-4ad7-b0d2-ce7292cb1a9f"
+            ],
+            "description": ""
+          },
+          {
+            "id": "studio-6b2b0268-7253-4f22-b0c2-2894ddc31906",
+            "name": "Explicit selected applications",
+            "members": [
+              "studio-fa5ffb22-4e1e-4c21-a6a2-66ea951da3a4",
+              "studio-36bd8cb9-9ff3-45e4-b9b4-c48c50be3b2b"
+            ],
+            "description": ""
+          }
+        ],
+        "connections": [
+          {
+            "settings": {
+              "channelUse": "publish"
+            },
+            "connection": "studio-af5f74f2-04a4-485a-8c77-f497d8c13d1a"
+          },
+          {
+            "settings": {
+              "channelUse": "consume"
+            },
+            "connection": "studio-21c03744-76b3-48bb-be66-ef2897d298ee"
+          }
+        ]
+      },
+      "system": {
+        "name": "UX08a owned placement and library",
+        "description": ""
+      },
+      "relationships": []
+    },
+    "schemaVersion": 2
+  },
+  "layout": {
+    "items": {},
+    "architecture": {
+      "studio:context": {
+        "positions": {
+          "studio:context:system": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:context:studio-35cf4be5-4166-408b-aeeb-8acef25a17a7": {
+            "x": -432,
+            "y": 72
+          },
+          "studio:context:studio-534693bd-cef2-4e57-82d0-532aca7d1126": {
+            "x": -432,
+            "y": 192
+          }
+        }
+      },
+      "studio:containers": {
+        "positions": {
+          "studio:element:studio-27a8a048-6774-4164-80b3-e28ebc5da882": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-36bd8cb9-9ff3-45e4-b9b4-c48c50be3b2b": {
+            "x": -240,
+            "y": 984
+          },
+          "studio:element:studio-382a399f-32a6-44aa-bbd1-cd9202128f1e": {
+            "x": -96,
+            "y": -120
+          },
+          "studio:element:studio-3e8aa4f2-a566-4cfc-9c53-acb7c8d88f8b": {
+            "x": 240,
+            "y": 0
+          },
+          "studio:element:studio-482ef445-6904-4896-9b22-65f44e60c574": {
+            "x": 480,
+            "y": 984
+          },
+          "studio:element:studio-487f30f9-c5c6-492c-beea-d123edcc0fbc": {
+            "x": 144,
+            "y": -120
+          },
+          "studio:element:studio-49b56989-d88a-4341-9867-960ec7300f2c": {
+            "x": 72,
+            "y": 528
+          },
+          "studio:element:studio-789bf08c-eb44-4bbf-a892-a66878e82a58": {
+            "x": 144,
+            "y": 240
+          },
+          "studio:element:studio-82cac058-b4f0-437e-a712-1ee678784b69": {
+            "x": 0,
+            "y": 984
+          },
+          "studio:element:studio-8c47f9aa-cb91-41e1-a0b8-3644a6b5da0d": {
+            "x": 240,
+            "y": 984
+          },
+          "studio:element:studio-bd80a1c7-a8dc-47c6-8d66-e1e08362aac8": {
+            "x": -96,
+            "y": 120
+          },
+          "studio:element:studio-d65b84e8-6e86-4e3b-89ec-effde279e22a": {
+            "x": 144,
+            "y": 120
+          },
+          "studio:element:studio-e07d6917-8308-4106-89ee-7c8df985419a": {
+            "x": 576,
+            "y": 168
+          },
+          "studio:element:studio-efafed73-249f-4cbc-8bdb-c6c9e4a55c7c": {
+            "x": 144,
+            "y": -240
+          },
+          "studio:element:studio-fa5ffb22-4e1e-4c21-a6a2-66ea951da3a4": {
+            "x": 72,
+            "y": 648
+          },
+          "studio:package:studio-6b2b0268-7253-4f22-b0c2-2894ddc31906": {
+            "x": 0,
+            "y": 408
+          },
+          "studio:package:studio-94aad513-b04c-4e3f-8db4-5ba4334446e4": {
+            "x": 72,
+            "y": 768
+          }
+        }
+      },
+      "studio:package:studio-6b2b0268-7253-4f22-b0c2-2894ddc31906": {
+        "positions": {
+          "studio:element:studio-36bd8cb9-9ff3-45e4-b9b4-c48c50be3b2b": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-fa5ffb22-4e1e-4c21-a6a2-66ea951da3a4": {
+            "x": 288,
+            "y": 0
+          }
+        }
+      },
+      "studio:package:studio-94aad513-b04c-4e3f-8db4-5ba4334446e4": {
+        "positions": {
+          "studio:element:studio-00c74cdb-3a64-43a5-981b-c51ebc8b9a0b": {
+            "x": 288,
+            "y": 336
+          },
+          "studio:element:studio-04a17e88-7184-4ec1-ba22-c435df8754c4": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-27a8a048-6774-4164-80b3-e28ebc5da882": {
+            "x": 576,
+            "y": -120
+          },
+          "studio:element:studio-4b48cef3-267a-4d0d-8915-c08adc36035e": {
+            "x": -240,
+            "y": 168
+          },
+          "studio:element:studio-7bd2cd77-c970-40f8-a681-2a32a255f911": {
+            "x": 48,
+            "y": 336
+          },
+          "studio:element:studio-7c9c939b-5889-481b-b3b0-480fdac5d0b4": {
+            "x": 528,
+            "y": 336
+          },
+          "studio:element:studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b": {
+            "x": 288,
+            "y": 0
+          },
+          "studio:element:studio-9cac6291-6c71-408b-b50f-8378679a8ebe": {
+            "x": 576,
+            "y": 0
+          },
+          "studio:element:studio-e07d6917-8308-4106-89ee-7c8df985419a": {
+            "x": 0,
+            "y": 216
+          },
+          "studio:element:studio-fb0b5586-065f-4ad7-b0d2-ce7292cb1a9f": {
+            "x": -192,
+            "y": 336
+          }
+        }
+      },
+      "studio:service:studio-04a17e88-7184-4ec1-ba22-c435df8754c4": {
+        "positions": {
+          "studio:element:studio-04a17e88-7184-4ec1-ba22-c435df8754c4": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b": {
+            "x": 288,
+            "y": 0
+          }
+        }
+      },
+      "studio:service:studio-9cac6291-6c71-408b-b50f-8378679a8ebe": {
+        "positions": {
+          "studio:element:studio-27a8a048-6774-4164-80b3-e28ebc5da882": {
+            "x": -96,
+            "y": 336
+          },
+          "studio:element:studio-4b48cef3-267a-4d0d-8915-c08adc36035e": {
+            "x": 144,
+            "y": 336
+          },
+          "studio:element:studio-8e3fcfa8-6bde-4601-a71f-d6d22afe144b": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:studio-9cac6291-6c71-408b-b50f-8378679a8ebe": {
+            "x": 288,
+            "y": 0
+          },
+          "studio:element:studio-e07d6917-8308-4106-89ee-7c8df985419a": {
+            "x": -336,
+            "y": 336
+          }
+        }
+      }
+    },
+    "schemaVersion": 1
+  }
+}

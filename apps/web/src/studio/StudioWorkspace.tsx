@@ -1,6 +1,7 @@
 import {
   type StudioRelationship,
   type StudioViewNode,
+  studioApplicationKinds,
   studioDefinitions,
   studioViewKeys,
   studioViews,
@@ -8,24 +9,38 @@ import {
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
+  IconBoxMultiple,
   IconChevronLeft,
   IconHandStop,
   IconLayoutSidebarRight,
+  IconLibrary,
   IconMessageCircle,
   IconPointer,
+  IconSelectAll,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
+import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { formDrafts } from "../draw/form-drafts.ts";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
+import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import { ConnectionForm } from "./ConnectionForm.tsx";
 import { connectionSpec, type RelationshipTarget } from "./connection-drafts.ts";
+import {
+  type BaseCreation,
+  baseTools,
+  type Creation,
+  createAt,
+  creationLabel,
+  type Point,
+} from "./creation.ts";
 import { DraftFeedback } from "./DraftFeedback.tsx";
 import { InspectorForm } from "./InspectorForm.tsx";
 import { useStudioPreferences } from "./preferences.ts";
 import { StudioGraph } from "./StudioGraph.tsx";
+import { StudioLibrary } from "./StudioLibrary.tsx";
 import "./studio.css";
 
 function RailResize({
@@ -231,6 +246,15 @@ function ProjectStudio({
   const scope = scopes.find((item) => item.key === scopeKey) ?? views.containers;
   const [selections, setSelections] = useState<Record<string, string | undefined>>({});
   const [hand, setHand] = useState(false);
+  const [tool, setTool] = useState<BaseCreation>();
+  const [library, setLibrary] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [multiple, setMultiple] = useState(false);
+  const [groupSelection, setGroupSelection] = useState<string[]>([]);
+  const [grouping, setGrouping] = useState(false);
+  const [groupName, setGroupName] = useState("Service package");
+  const [groupError, setGroupError] = useState<string>();
+  const center = useRef<Point>({ x: 0, y: 168 });
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const selected = selections[scope.key];
   const selectedNode = scope.nodes.find((node) => node.id === selected);
@@ -279,9 +303,18 @@ function ProjectStudio({
     if (key && scopes.some((item) => item.key === key)) {
       void formDrafts.flushProject(loaded.project.id, true);
       setScopeKey(key);
+      setTool(undefined);
+      setMultiple(false);
+      setGroupSelection([]);
+      setLibrary(false);
     }
   };
   const select = (id?: string) => {
+    if (multiple && id) {
+      setGroupSelection((current) =>
+        current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+      );
+    } else if (!id) setGroupSelection([]);
     if (id !== selected) void formDrafts.flushProject(loaded.project.id, true);
     setSelections((current) => ({ ...current, [scope.key]: id }));
     const node = scope.nodes.find((item) => item.id === id);
@@ -303,6 +336,38 @@ function ProjectStudio({
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
   };
   const goBack = () => navigate(scope.parentKey);
+  const add = async (creation: Creation, point = center.current) => {
+    if (creating) return false;
+    setCreating(true);
+    const key = scope.key;
+    try {
+      const id = await createAt(loaded.project.id, key, creation, point);
+      if (!id) return false;
+      if (useDraw.getState().loaded?.project.id === loaded.project.id) {
+        setSelections((current) => ({ ...current, [key]: id }));
+        setPreferences((current) => ({ ...current, inspectorOpen: true }));
+        setTool(undefined);
+        setMultiple(false);
+        setGroupSelection([]);
+      }
+      return true;
+    } finally {
+      setCreating(false);
+    }
+  };
+  const groupMembers = groupSelection.flatMap((id) => {
+    const node = scope.nodes.find((node) => node.id === id);
+    return node && studioApplicationKinds.some((kind) => kind === node.kind)
+      ? node.refs.flatMap((ref) => (ref.kind === "element" ? [ref.id] : []))
+      : [];
+  });
+  useEffect(() => {
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setTool(undefined);
+    };
+    window.addEventListener("keydown", cancel);
+    return () => window.removeEventListener("keydown", cancel);
+  }, []);
   const header = (
     <>
       <nav className="studio-depth" aria-label="Architecture depth">
@@ -431,6 +496,8 @@ function ProjectStudio({
           key={scope.key}
           scope={scope}
           selection={selected}
+          selectedIds={groupSelection}
+          placing={!!tool && !creating}
           hand={hand}
           camera={preferences.cameras[scope.key]}
           onCamera={(camera) =>
@@ -441,14 +508,25 @@ function ProjectStudio({
           }
           onSelect={select}
           onOpen={navigate}
+          onCenter={(point) => {
+            center.current = point;
+          }}
+          onPlace={(point) => {
+            if (tool) void add({ type: "base", kind: tool }, point);
+          }}
         />
         <div className="studio-tools" role="toolbar" aria-label="Diagram tools">
           <button
             type="button"
             title="Select"
             aria-label="Select"
-            aria-pressed={!hand}
-            onClick={() => setHand(false)}
+            aria-pressed={!hand && !tool && !multiple}
+            onClick={() => {
+              setHand(false);
+              setTool(undefined);
+              setMultiple(false);
+              setGroupSelection([]);
+            }}
           >
             <IconPointer size={19} />
           </button>
@@ -457,11 +535,174 @@ function ProjectStudio({
             title="Hand"
             aria-label="Hand"
             aria-pressed={hand}
-            onClick={() => setHand(true)}
+            onClick={() => {
+              setHand(true);
+              setTool(undefined);
+              setMultiple(false);
+              setGroupSelection([]);
+            }}
           >
             <IconHandStop size={19} />
           </button>
+          {baseTools(scope).map((kind) => (
+            <button
+              type="button"
+              key={kind}
+              title={creationLabel(kind)}
+              aria-label={creationLabel(kind)}
+              aria-pressed={tool === kind}
+              disabled={creating}
+              onClick={() => {
+                setHand(false);
+                setMultiple(false);
+                setGroupSelection([]);
+                setTool(kind);
+              }}
+            >
+              <TemplateIcon
+                name={
+                  kind === "person"
+                    ? "user"
+                    : kind === "external-system"
+                      ? "world"
+                      : studioDefinitions[kind].visual.icon
+                }
+                size={19}
+              />
+            </button>
+          ))}
+          {scope.level === "containers" ? (
+            <button
+              type="button"
+              title="Select multiple applications"
+              aria-label="Select multiple applications"
+              aria-pressed={multiple}
+              onClick={() => {
+                setMultiple((value) => !value);
+                setGroupSelection([]);
+                setHand(false);
+                setTool(undefined);
+              }}
+            >
+              <IconSelectAll size={19} />
+            </button>
+          ) : null}
+          {scope.level === "containers" &&
+          groupMembers.length >= 2 &&
+          groupMembers.length === groupSelection.length ? (
+            <button
+              type="button"
+              title="Group as package"
+              aria-label="Group as package"
+              disabled={creating}
+              onClick={() => {
+                setGrouping(true);
+                setGroupError(undefined);
+                setGroupName("Service package");
+              }}
+            >
+              <IconBoxMultiple size={19} />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            title="Library"
+            aria-label="Library"
+            disabled={creating}
+            onClick={() => {
+              setLibrary(true);
+              setTool(undefined);
+              setHand(false);
+            }}
+          >
+            <IconLibrary size={19} />
+          </button>
         </div>
+        {tool ? (
+          <div className="studio-placement-hint" role="status">
+            Click the canvas to place {creationLabel(tool)}. Select cancels.
+          </div>
+        ) : multiple ? (
+          <div className="studio-placement-hint" role="status">
+            Click two or more application cards, then Group as package.
+          </div>
+        ) : null}
+        {library ? (
+          <StudioLibrary
+            scope={scope}
+            busy={creating}
+            onAdd={add}
+            onClose={() => setLibrary(false)}
+            onExisting={(id) => {
+              const target = [scope, ...scopes].find((item) =>
+                item.nodes.some((node) =>
+                  node.refs.some((ref) => ref.kind === "element" && ref.id === id),
+                ),
+              );
+              const node = target?.nodes.find((node) =>
+                node.refs.some((ref) => ref.kind === "element" && ref.id === id),
+              );
+              if (target && node) {
+                navigate(target.key);
+                setSelections((current) => ({ ...current, [target.key]: node.id }));
+                setPreferences((current) => ({ ...current, inspectorOpen: true }));
+              }
+            }}
+          />
+        ) : null}
+        {grouping ? (
+          <ConfigurationDialog
+            title="Group as package"
+            size="lg"
+            onClose={() => {
+              if (!creating) setGrouping(false);
+            }}
+            footer={
+              <div className="studio-library-footer">
+                {groupError ? <p role="alert">{groupError}</p> : null}
+                <button type="button" disabled={creating} onClick={() => setGrouping(false)}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={creating || !groupName.trim() || groupName.trim().length > 120}
+                  onClick={() =>
+                    void add({ type: "group", members: groupMembers, name: groupName }).then(
+                      (ok) => {
+                        if (ok) setGrouping(false);
+                        else
+                          setGroupError(
+                            useDraw.getState().notice?.message ??
+                              "Could not group these applications.",
+                          );
+                      },
+                    )
+                  }
+                >
+                  {creating ? "Grouping…" : "Create package"}
+                </button>
+              </div>
+            }
+          >
+            <label className="studio-form-field">
+              Package name
+              <input
+                value={groupName}
+                maxLength={120}
+                onChange={(event) => setGroupName(event.currentTarget.value)}
+              />
+            </label>
+            <ul>
+              {groupMembers.map((id) => (
+                <li key={id}>{loaded.design.elements.find((item) => item.id === id)?.name}</li>
+              ))}
+            </ul>
+            <p>
+              Groups these independent applications. No additional runtime, resource or relationship
+              is created.
+            </p>
+          </ConfigurationDialog>
+        ) : null}
         {notice ? (
           <div className="studio-notice" role={notice.tone === "error" ? "alert" : "status"}>
             <span>{notice.message}</span>

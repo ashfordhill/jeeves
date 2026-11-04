@@ -176,6 +176,10 @@
   border-radius: 10px;
   background: var(--cream);
   box-shadow: var(--chip-shadow);
+  max-width: calc(100% - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 5;
 }
 .studio-tools button {
   display: flex;
@@ -188,6 +192,79 @@
 }
 .studio-tools button[aria-pressed="true"] {
   background: var(--yellow);
+}
+.studio-tools button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.studio-placement-hint {
+  position: absolute;
+  top: 64px;
+  left: 12px;
+  right: 12px;
+  text-align: center;
+  pointer-events: none;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.studio-graph[data-placing="true"] .react-flow__pane {
+  cursor: crosshair;
+}
+.studio-library nav,
+.studio-library-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.studio-library button,
+.studio-library-footer button {
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--grid-dot);
+  border-radius: 7px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.studio-library button[aria-current="page"] {
+  background: var(--yellow);
+}
+.studio-library-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.studio-library-list > button {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  text-align: left;
+}
+.studio-library-list span {
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.studio-library-existing {
+  margin-top: 16px;
+}
+.studio-library-preview p,
+.studio-library-footer p {
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.studio-library-footer {
+  justify-content: flex-end;
+  margin: 0;
+}
+.studio-library-footer p {
+  flex: 1 1 100%;
+  color: var(--minus);
+  margin: 0;
 }
 .studio-selection-summary {
   padding: 4px 16px 20px;

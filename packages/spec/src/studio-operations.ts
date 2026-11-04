@@ -193,7 +193,13 @@ export function buildStudioCommand(
         });
       }
       for (const item of input.connections ?? []) connect(item);
-      if (input.package) studio.packages.push(input.package);
+      if (input.package) {
+        // Package-scope placement creates the application and joins its existing package in one
+        // batch. The caller rebuilds this complete membership against the latest accepted design.
+        const index = studio.packages.findIndex((item) => item.id === input.package?.id);
+        if (index < 0) studio.packages.push(input.package);
+        else studio.packages[index] = input.package;
+      }
       break;
     }
     case "edit": {

@@ -1,0 +1,151 @@
+{
+  "id": "ux08a-public-worker",
+  "version": "1.0.0",
+  "state": "published",
+  "draftRevision": 1,
+  "fragment": {
+    "formatVersion": 1,
+    "id": "ux08a-public-worker",
+    "version": "1.0.0",
+    "name": "Reusable worker with existing queue",
+    "description": "Public finite composition that requires an explicitly selected existing queue.",
+    "roles": [
+      {
+        "id": "r1",
+        "name": "Reusable worker",
+        "purpose": "Independent planned boundary.",
+        "kind": "boundary",
+        "required": false,
+        "ownership": "Unspecified",
+        "classification": "Application",
+        "hostRoles": [],
+        "create": {
+          "id": "r1",
+          "name": "Reusable worker",
+          "classification": {
+            "kind": "Application"
+          },
+          "template": null,
+          "config": {},
+          "attachments": [],
+          "notes": ""
+        }
+      },
+      {
+        "id": "r2",
+        "name": "Shared queue",
+        "purpose": "Required dependency; select an existing compatible boundary.",
+        "kind": "host",
+        "required": true,
+        "ownership": "Unspecified",
+        "classification": "Data store",
+        "hostRoles": [],
+        "create": {
+          "id": "r2",
+          "name": "Shared queue",
+          "classification": {
+            "kind": "Data store"
+          },
+          "template": null,
+          "config": {},
+          "attachments": [],
+          "notes": ""
+        },
+        "studio": {
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          }
+        }
+      }
+    ],
+    "architecture": {
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "r1",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            }
+          }
+        ],
+        "packages": [],
+        "connections": [
+          {
+            "connection": "r3",
+            "settings": {
+              "channelUse": "consume"
+            }
+          }
+        ]
+      },
+      "system": {
+        "name": "Reusable architecture",
+        "description": ""
+      },
+      "nodes": [],
+      "relationships": [],
+      "components": [],
+      "scenarios": [],
+      "contracts": [],
+      "interfaces": [],
+      "bindings": [],
+      "datasets": [],
+      "objectives": [],
+      "reviewRequirements": [],
+      "decisions": [],
+      "componentRelationships": []
+    },
+    "connections": [
+      {
+        "id": "r3",
+        "kind": "depends-on",
+        "from": {
+          "element": "r2"
+        },
+        "to": {
+          "element": "r1"
+        },
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "invariants": [],
+    "extensionPoints": [
+      {
+        "role": "r1",
+        "description": "Extend through explicit contracts while preserving the published invariants."
+      }
+    ]
+  },
+  "metadata": {
+    "name": "Reusable worker with existing queue",
+    "purpose": "Public finite composition that requires an explicitly selected existing queue.",
+    "invariants": [],
+    "extensionPoints": [
+      {
+        "role": "r1",
+        "description": "Extend through explicit contracts while preserving the published invariants."
+      }
+    ],
+    "exposedOptions": []
+  },
+  "contentHash": "0c24a766d9d683ceab8c065d01b6e8c44122847c0fc767f72cce5cbede1d244f",
+  "availability": "architecture only"
+}

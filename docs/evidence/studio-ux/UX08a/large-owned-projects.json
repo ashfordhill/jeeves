@@ -1,0 +1,15 @@
+[
+  {
+    "id": "f4679ff6-4426-4589-8b97-cf64ca16a6c5",
+    "name": "UX08a owned placement and library",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T10:09:57.192Z",
+    "updatedAt": "2026-11-04T10:09:57.192Z",
+    "deleted": true,
+    "verified404": true
+  }
+]

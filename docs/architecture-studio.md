@@ -36,13 +36,25 @@ unspecified. Individual connections expose Action, Protocol, Interaction, Access
 timeout/retry/channel role; an aggregate first requires choosing one real connection. Changing
 protocol/interaction removes newly inapplicable policies atomically. Bare C1 relationships edit only
 their action; uneditable legacy relationships highlight without an empty form. No business/backend
-editor is reachable from these forms. Membership actions and dependency creation remain UX08. The remaining creation, drag/Tidy gestures,
+editor is reachable from these forms. **UX08a** adds a floating scope-aware palette and one Library grouped into compatible Services,
+Resources, Integrations, Presets and Examples. Click a base tool, then blank canvas to create at a
+free 24-unit grid position; Select cancels. Library previews use Add/Cancel. Presets include Billing,
+Redirect, Notifications, Identity and the Service and worker package. Package-scope applications
+join that package atomically; detail resources receive its explicit package/service owner. At C2,
+Select multiple applications and click their cards, then Group as package. Creation selects the
+accepted object, opens its inspector and uses one semantic undo step; rejected batches leave no
+partial graph or position. Library selects existing objects by ID for inspection and exposes
+existing runtime-template details within Presets. Compatible published studio compositions keep
+exact version/hash references and require explicit existing-dependency IDs before insertion. New
+integrations are placed at C2; creating their C3 relationships remains UX08b. Examples create separate projects from preserved
+sources. Connector, dependency creation and membership removal remain UX08b. The remaining drag/Tidy gestures,
 final geometry, unified Generate and studio chat tools remain later units; the
 [UX05 action mapping](evidence/studio-ux/UX05/README.md),
 [UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
 [UX06b history evidence](evidence/studio-ux/UX06b/README.md) and
 [UX07a inspector evidence](evidence/studio-ux/UX07a/README.md) and
-[UX07b resource/connection evidence](evidence/studio-ux/UX07b/README.md) record those limits.
+[UX07b resource/connection evidence](evidence/studio-ux/UX07b/README.md) and
+[UX08a creation evidence](evidence/studio-ux/UX08a/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

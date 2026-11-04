@@ -9601,3 +9601,89 @@ remain later units. Owner changes can correctly move a private resource into pac
 termination cannot guarantee an unacknowledged save, as in UX06. There is no remaining product
 blocker or scope deviation. UX07 is complete with UX07a. UX08a is the next unit boundary and is not
 started here. This worker stops after its scoped local UX07b commit; P73a/P73b/backend remain paused.
+
+
+## 2026-11-04 — UX08a: scope-aware placement, unified Library and explicit packages (complete)
+
+Executed UX08a only on primary main from `9b51408084451aee786d397938d6c4875a5c5c92`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan, exact assignment/shared protocol, interaction §2, configuration §6, model/C4 guidance,
+final decisions and existing Toolbar/catalog/Library/composer/shared-command paths. No delegation,
+branch/worktree, sibling edit, backend resumption, provider/external-agent execution or application
+generation. Original feedback, factories, frozen benchmarks and unrelated `.jeeves-feedback/` remain
+preserved.
+
+Added the scope-aware floating base palette with mouse placement and Select cancellation. C1 offers
+Person/External system; C2 offers Microservice/Browser app/Database/Cache/External API; package C3
+adds Microservice and C3 resources; service C3 offers Database/Cache/Queue. No generic Component,
+annotation or placeholder Connector appears. One Library supplies compatible finite Services,
+Resources, Integrations, Presets and Examples, compact Add/Cancel previews, named services, the
+Service and worker package, compatible published compositions and current exact runtime-template
+details within Presets. Examples create separate projects from unchanged sources; rejected example
+insertion deletes only its newly created project. New integrations are placed at C2 in this unit;
+their C3 creation requires UX08b's explicit relationship flow. Existing integrations remain selectable.
+
+Creation rebuilds through the existing serialized queue against its latest accepted design, validates
+and submits one atomic operations batch. New package applications join actual membership; only
+logical resources receive the active service/package owner. Browser creation adds no API/store.
+Creation initializes nearest free 24-unit grid positions with 16-unit clearance for newly appearing
+cards across affected scopes, preserves existing positions, selects the accepted object and opens
+its inspector. Rejection/cancellation leaves no partial graph or orphan position. Local redo retains
+initial placements within the same semantic history step. A valid in-flight creation retains its
+original project target after navigation. Fixed the shared create command's existing-package append
+gap so package-scope insertion replaces membership atomically. Explicit mouse multi-selection and
+Group as package adds a grouping without a runtime, resource or relationship.
+
+Compatible saved compositions retain pinned version/content hash and require exact existing
+resource IDs, including equally named queues. Existing ownership remains unchanged. Older planned
+families/designers are excluded from new finite choices. CATALOG/current guidance describe this
+implemented opt-in boundary without expanding runtime/template availability.
+
+Evidence: `docs/evidence/studio-ux/UX08a/`. Main direct Chromium inspection passes 15 scenarios and
+57 browser mutation responses at each initial desktop size, 1440×900 and 1280×800. Additional
+Library/legacy/example inspection passes six scenarios/12 responses, saved-composition inspection
+three scenarios/six real responses, and C3 Library coverage four scenarios/24 responses. All finite
+kinds and each eligible base tool have mouse creation evidence. Checks include named/package
+presets, package browser/Identity additions, ownership, exact-ID reuse, grouping, Select/preview
+cancel, genuine invalid-batch rejection, no partial state, one-step undo/redo, acknowledged reload,
+exact portable exchange and collision-free initial positions across affected scopes. Both desktop
+sizes retain reachable controls without document overflow. Screenshots were visually inspected;
+accepted requests/source/reload prove persistence. Three bounded one-off grid comparisons pass.
+
+The saved-composition browser case routes only the read-only Library GET to a public fixture
+published by the production ArchitectureLibrary in an owned temporary directory. This avoids
+publishing permanent artifacts into the user's real global Library. All mutations and successful
+acknowledgements use the real API. The real global Library stays exact. Final passes have no page
+errors, external requests, blocked/unowned writes or unexpected console messages; deliberate real
+422 refusals produce their expected browser resource-error messages. Read-only default-editor
+inspection waits for real graph nodes at both sizes and records zero writes/warnings/errors.
+Guards precede page creation. All 13 original projects retain exact semantic/layout hashes/revisions,
+and the final project set equals the baseline. Final-pass disposables are deleted/verified 404;
+terminated-attempt owned-project cleanup is separately recorded. Earlier handoff bytes, 21 feedback
+original/copy pairs, seven public fixtures, 48 frozen benchmark files and unrelated tracked source
+remain exact.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct guarded browser inspection, scoped formatting, preservation and staged whitespace,
+  including new evidence/check logs: pass.
+
+Routine corrections and bounded attempt notes are committed. They include inspection loader/ARIA/
+debounce/JSON/negative-zero expectations, the shared package-append gap, a captured select-event
+value, Library retry-hook lint, cross-scope initial placement and waiting for the legacy graph before
+capture. One development hot-reload warning prompted a clean repeat. Two parallel inspection shell
+sessions ended with SIGTERM/143; the coordinator confirmed it sent no termination. Recovered the
+exact owned disposable, verified 404 and repeated relevant inspection serially. Raw exploratory
+scripts/logs remain ignored. No existing fixture typing adaptation, dependency, snapshot or broader
+test maintenance was needed. Unit/E2E/template suites and `pnpm check` remain explicitly deferred.
+Check logs normalize trailing whitespace only.
+
+Existing UX05 cameras can still clip a remote card after inspector changes or preserve a zoom at
+which a large composition extends beyond the viewport; final fit/routing/drag/Tidy remain later
+units. Semantic and layout persistence are separate, and browser termination cannot guarantee an
+unacknowledged save. No product blocker remains. UX08a is complete; UX08b is the next exact unit
+boundary and is not started here. This worker stops after its scoped local commit. P73a/P73b and
+the backend batch remain paused.

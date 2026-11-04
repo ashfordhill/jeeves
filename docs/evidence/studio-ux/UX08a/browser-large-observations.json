@@ -1,0 +1,3993 @@
+{
+  "result": "passed",
+  "initialViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "scenario": "C2 each base tool mouse placement and standalone browser",
+      "baseTypes": ["Microservice", "Browser app", "Database", "Cache", "External API"],
+      "browserDoesNotAddApiDatabase": true,
+      "oneRevisionPerPlacement": true,
+      "selectedAfterAcceptance": true,
+      "grid": 24
+    },
+    {
+      "scenario": "Select and Library preview cancel",
+      "noSemanticOrPositionWrite": true
+    },
+    {
+      "scenario": "named service Billing compact preview Add",
+      "oneAtomicEdit": true
+    },
+    {
+      "scenario": "Service and worker package preset",
+      "applications": 2,
+      "sharedQueues": 1,
+      "realRelationships": 2,
+      "noPackageRuntime": true
+    },
+    {
+      "scenario": "preset one-step undo redo and acknowledged reload",
+      "noOrphanPositions": true,
+      "redoLandingRestored": true
+    },
+    {
+      "scenario": "forced invalid atomic package creation",
+      "realServerRejection": true,
+      "noPartialElementsConnectionsPackageOrPosition": true,
+      "previewRetainedForCancel": true
+    },
+    {
+      "scenario": "package scope base types and atomic member/owner defaults",
+      "newApplicationJoinsPackage": true,
+      "resourcesExplicitlyPackageOwned": true
+    },
+    {
+      "scenario": "service scope base resources and exact-ID existing picker",
+      "noNewIndependentServiceTool": true,
+      "resourceOwnerExplicit": true,
+      "reuseSelectsExistingWithoutDuplication": true
+    },
+    {
+      "scenario": "finite Library all 14 kinds mouse creation",
+      "noUnboundedLegacyFamilies": true
+    },
+    {
+      "scenario": "explicit mouse selected grouping one undoable batch",
+      "twoMembersPreserved": true,
+      "noRuntimeResourceConnectionAdded": true,
+      "reload": true
+    },
+    {
+      "scenario": "C1 person/external system mouse creation",
+      "oneSystem": true,
+      "noRuntimeElements": true
+    },
+    {
+      "scenario": "desktop palette preview package direct inspection",
+      "width": 1440,
+      "height": 900,
+      "noDocumentOverflow": true
+    },
+    {
+      "scenario": "desktop palette preview package direct inspection",
+      "width": 1280,
+      "height": 800,
+      "noDocumentOverflow": true
+    },
+    {
+      "scenario": "initial creation landing positions across every affected scope",
+      "clearance": 16,
+      "grid": 24,
+      "pairsChecked": 165
+    },
+    {
+      "scenario": "typed portable export/import exact",
+      "exact": true
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 0,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "b4d02cf4e76e8bc40d7b46d23137d9e92fb92ad476bea8661fc41c64d1ada3ee"
+          },
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-2e163d9c-7afe-4196-aa40-0daba65346e0",
+              "name": "Microservice",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "3ae8421306c4dfc9e8d6b133621179df2aec4315fae3a45cde40f2a88813206a"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0",
+              "name": "Browser app",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "ca4aa702e23e817e5c4c5ac2b6a9581301c26e38ef3666941a40babc6effc437"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 2,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-e356eb60-0c37-493b-a066-7571c984806e",
+              "name": "Database",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "9cbd4a69e659ea7a585bf9722072ef595f723a3a6b0690be81fb9e0a48c72180"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 3,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-60ad113e-8057-49e4-845b-f598a79cfcb0",
+              "name": "Cache",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "caaf674d7c5aeeffda11461cb028ffaaf8269192f8f52268e3a77bb1644579b9"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 4,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626",
+              "name": "External API",
+              "classification": {
+                "kind": "External system"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "e338390fc659b7c723c829facd22266617ddf8440cd837094e83cad0043c3dbf"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 5,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449",
+              "name": "Billing",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "ec22878c55db63e7c8111e2aab59e55a4d66b6fefd9e3018e4ee28d6febd9f3d"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 6,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db",
+              "name": "Microservice 2",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-f8876029-fba8-4d66-a0b4-924006a05295",
+              "name": "Worker service",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-079f6c96-885b-409e-b493-10ae1837645c",
+              "name": "Work queue",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "connect",
+            "connection": {
+              "id": "studio-b4104e48-61d7-45ed-8a40-76831c688ea6",
+              "kind": "depends-on",
+              "from": {
+                "element": "studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db"
+              },
+              "to": {
+                "element": "studio-079f6c96-885b-409e-b493-10ae1837645c"
+              },
+              "planned": {
+                "label": "Publishes",
+                "protocol": "Messaging",
+                "interaction": "Asynchronous",
+                "security": "Service identity"
+              }
+            }
+          },
+          {
+            "op": "connect",
+            "connection": {
+              "id": "studio-1afa5382-db6c-49bd-abaf-17c47b8f71fb",
+              "kind": "depends-on",
+              "from": {
+                "element": "studio-079f6c96-885b-409e-b493-10ae1837645c"
+              },
+              "to": {
+                "element": "studio-f8876029-fba8-4d66-a0b4-924006a05295"
+              },
+              "planned": {
+                "label": "Consumes",
+                "protocol": "Messaging",
+                "interaction": "Asynchronous",
+                "security": "Service identity"
+              }
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "58c443b90eac47fda9941c35c75730f0f4d7b439e033b3f220e0ce7f0984c683"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 7,
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/redo",
+      "status": 200,
+      "body": {
+        "baseRevision": 8,
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 422,
+      "body": {
+        "baseRevision": 9,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-ceb10735-de7f-4385-808a-ee75b8dc8b32",
+              "name": "Microservice 3",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-9bf81be9-6edf-4b57-9dfa-f7d4167123c0",
+              "name": "Worker service 2",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-95af8582-a8bf-424e-b6b9-29e3abcfb912",
+              "name": "Work queue 2",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "connect",
+            "connection": {
+              "id": "studio-fe2e5332-b929-4e7b-8d48-7ce7b6ca2d8c",
+              "kind": "depends-on",
+              "from": {
+                "element": "studio-ceb10735-de7f-4385-808a-ee75b8dc8b32"
+              },
+              "to": {
+                "element": "studio-95af8582-a8bf-424e-b6b9-29e3abcfb912"
+              },
+              "planned": {
+                "label": "Publishes",
+                "protocol": "Messaging",
+                "interaction": "Asynchronous",
+                "security": "Service identity"
+              }
+            }
+          },
+          {
+            "op": "connect",
+            "connection": {
+              "id": "studio-9ca4d699-db79-4cce-9ef4-135b734a80f8",
+              "kind": "depends-on",
+              "from": {
+                "element": "studio-95af8582-a8bf-424e-b6b9-29e3abcfb912"
+              },
+              "to": {
+                "element": "studio-9bf81be9-6edf-4b57-9dfa-f7d4167123c0"
+              },
+              "planned": {
+                "label": "Consumes",
+                "protocol": "Messaging",
+                "interaction": "Asynchronous",
+                "security": "Service identity"
+              }
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "a9dbaf80a0e9c05b84d64c9a80b6c29e04b3cead0106a08ba7b8b2db6b844207"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 9,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-5408bc5a-8949-495f-b42a-baf0bd980af2",
+              "name": "Microservice 3",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "cd1b94125beac7c01ae5b4cea2f44bcc0b0df2fa36be975e95cc5dd5b298bb51"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 10,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-93c4a19b-5320-4a16-9afb-ac139bdebf97",
+              "name": "Database 2",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "ad0fba3f433d968fc2644d56465995919fd48597b75c38a403c6fa2c49b8ba75"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 11,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c",
+              "name": "Cache 2",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "d4e8f8ab1d56ae229ccc4320139093453210961376387fa53577cd14256f3790"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 12,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa",
+              "name": "Queue",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "e3d9bf27c64ee8847dc03c791b90946cfce9c34b65b99289921f51065f1312ca"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 13,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-f8d67fd3-295a-4e10-a396-b1d65f608529",
+              "name": "Database 3",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "1362ce0069cd4807164d7f370a4315304c65e231ecba09e6541b7065f6de20bc"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 14,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b",
+              "name": "Cache 3",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "5276ba01eb3970bbb36f4d14105fa1608a77d42faf8016215e98aeca0943e734"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 15,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f",
+              "name": "Queue 2",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "a49639435b2af2217b35f9443c382fb664002152929233848544528421edeb51"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 16,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323",
+              "name": "Worker service 2",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "b009f6c38a897b03925fc7d02e314f8a1d6a8fbe8a713f2864cf816686a73816"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 17,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac",
+              "name": "Redirect",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "d50d329324c032c1b8850d058478225615686973140dc36da53cfd4861c963b2"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 18,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-7baeeb7c-687a-4a33-be48-5d880d67dae4",
+              "name": "Notifications",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "0d41345bc3b48ce3c1d7482315c222d31120850b8f76c870340776573d78e3aa"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 19,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-f5a92272-4052-4885-afb5-bdf689fb866e",
+              "name": "Identity",
+              "classification": {
+                "kind": "Application"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "9d4ef844f93a3c24d8846884b72bb4c6a29871d9f2e2a6de1cae5b6c13103a9b"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 20,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-9c32273f-f68f-4412-9d39-522cd8e83211",
+              "name": "Object storage",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "099e5cd6532da55c56192fa3a3e2d1e1d93dfa61d80bc8a049bc11f64c0e6fd7"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 21,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-c605a8e3-1726-4a91-b324-bfef484f0645",
+              "name": "Search index",
+              "classification": {
+                "kind": "Data store"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "54f25f29116b834affef09acf5434ff0f8e475325b95c7ae79e3ba7de7f8a2be"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 22,
+        "ops": [
+          {
+            "op": "addElement",
+            "element": {
+              "id": "studio-e761c663-4822-4ee1-b46b-570a3c3633b5",
+              "name": "CDN",
+              "classification": {
+                "kind": "External system"
+              },
+              "template": null,
+              "config": {},
+              "attachments": [],
+              "notes": ""
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "69b1fce34420d170752c5fee047b9629b3c25f56c432e05e2278acb8a4cd6606"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              },
+              "studio:element:studio-e761c663-4822-4ee1-b46b-570a3c3633b5": {
+                "x": -96,
+                "y": -120
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 23,
+        "ops": [
+          {
+            "op": "setStudio",
+            "sha256": "1e7b09545105804656fc3f8f425b53991c1066f15ecb0b3201f15cebb687b079"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              },
+              "studio:element:studio-e761c663-4822-4ee1-b46b-570a3c3633b5": {
+                "x": -96,
+                "y": -120
+              },
+              "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+                "x": 96,
+                "y": 504
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 24,
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              },
+              "studio:element:studio-e761c663-4822-4ee1-b46b-570a3c3633b5": {
+                "x": -96,
+                "y": -120
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/redo",
+      "status": 200,
+      "body": {
+        "baseRevision": 25,
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              },
+              "studio:element:studio-e761c663-4822-4ee1-b46b-570a3c3633b5": {
+                "x": -96,
+                "y": -120
+              },
+              "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+                "x": 96,
+                "y": 504
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 26,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "c257813b7f48fd9b6e750739207ba83f64d82f5379c4467ba1749ee6f4248e18"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-e761c663-4822-4ee1-b46b-570a3c3633b5": {
+                "x": -96,
+                "y": -120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+                "x": 96,
+                "y": 504
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:context": {
+            "positions": {
+              "studio:context:system": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:context:studio-ca2c2df1-cf84-4cff-b678-4cf8af4f4aa5": {
+                "x": -504,
+                "y": 216
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 27,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "c6baa63bffd167b9ce8abb60c5801926b1fd0ce197bce1413104e85401a4b151"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f4679ff6-4426-4589-8b97-cf64ca16a6c5/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:studio-1b8626bd-b855-4493-a7b2-16ab9a3a4449": {
+                "x": 72,
+                "y": 624
+              },
+              "studio:element:studio-2258dbc4-d10a-4e6b-bf72-5ba26640d626": {
+                "x": 408,
+                "y": 1128
+              },
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 72,
+                "y": 744
+              },
+              "studio:element:studio-60ad113e-8057-49e4-845b-f598a79cfcb0": {
+                "x": 168,
+                "y": 1128
+              },
+              "studio:element:studio-75d36c5a-daf1-43c7-ab2f-3f9d0aa3b323": {
+                "x": 144,
+                "y": 0
+              },
+              "studio:element:studio-7baeeb7c-687a-4a33-be48-5d880d67dae4": {
+                "x": 48,
+                "y": 120
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:studio-9c32273f-f68f-4412-9d39-522cd8e83211": {
+                "x": 144,
+                "y": -240
+              },
+              "studio:element:studio-c605a8e3-1726-4a91-b324-bfef484f0645": {
+                "x": 384,
+                "y": 0
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": -312,
+                "y": 1128
+              },
+              "studio:element:studio-e356eb60-0c37-493b-a066-7571c984806e": {
+                "x": -72,
+                "y": 1128
+              },
+              "studio:element:studio-e761c663-4822-4ee1-b46b-570a3c3633b5": {
+                "x": -96,
+                "y": -120
+              },
+              "studio:element:studio-f5a92272-4052-4885-afb5-bdf689fb866e": {
+                "x": -96,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:studio-fa4521bd-ff18-4405-bdd3-9f34c9a3d7ac": {
+                "x": 144,
+                "y": -120
+              },
+              "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+                "x": 96,
+                "y": 504
+              },
+              "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+                "x": 72,
+                "y": 864
+              }
+            }
+          },
+          "studio:package:studio-1fb4f107-d831-4953-8268-f3f4a2fc7ca3": {
+            "positions": {
+              "studio:element:studio-2e163d9c-7afe-4196-aa40-0daba65346e0": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-db6837dd-ba99-4de4-a9ae-d7190d0e89e0": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-bf3b2022-61a4-4407-90cd-271d6079a672": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-272ff85d-77fc-49c7-9c9a-3bd32839fd4c": {
+                "x": 216,
+                "y": 384
+              },
+              "studio:element:studio-5408bc5a-8949-495f-b42a-baf0bd980af2": {
+                "x": -264,
+                "y": 384
+              },
+              "studio:element:studio-5aa686bf-8b9e-45e9-a9b3-6a2c9393cbaa": {
+                "x": 456,
+                "y": 384
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": 288,
+                "y": 144
+              },
+              "studio:element:studio-93c4a19b-5320-4a16-9afb-ac139bdebf97": {
+                "x": -24,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 288,
+                "y": 504
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": 288,
+                "y": 264
+              }
+            }
+          },
+          "studio:service:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-7bea3204-fe4b-4bc8-ad9d-3511486f940b": {
+                "x": -168,
+                "y": 384
+              },
+              "studio:element:studio-bebf4d0a-a1ee-47f5-8304-54df43a1c5db": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:studio-cc4bb93a-753b-4757-a856-50bb2dbacf8f": {
+                "x": 72,
+                "y": 384
+              },
+              "studio:element:studio-f8d67fd3-295a-4e10-a396-b1d65f608529": {
+                "x": -408,
+                "y": 384
+              }
+            }
+          },
+          "studio:service:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+            "positions": {
+              "studio:element:studio-079f6c96-885b-409e-b493-10ae1837645c": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:studio-f8876029-fba8-4d66-a0b4-924006a05295": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          },
+          "studio:context": {
+            "positions": {
+              "studio:context:system": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:context:studio-ca2c2df1-cf84-4cff-b678-4cf8af4f4aa5": {
+                "x": -504,
+                "y": 216
+              },
+              "studio:context:studio-76bbc396-40da-450b-bf06-7150b10311c7": {
+                "x": -504,
+                "y": 96
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "originalProjectsUnchanged": 13,
+  "providersExecuted": 0,
+  "generations": 0
+}

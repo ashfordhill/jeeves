@@ -1,0 +1,109 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "scenario": "legacy applications without architecture grouped explicitly",
+      "existingElementsUnchanged": true,
+      "noEditableStudioBindingsAdded": true
+    },
+    {
+      "scenario": "legacy grouping undo removes only newly added architecture and redo restores package",
+      "oneStep": true
+    },
+    {
+      "scenario": "current runtime template exact detail read-only",
+      "width": 1440,
+      "height": 900,
+      "noWrite": true
+    },
+    {
+      "scenario": "current runtime template exact detail read-only",
+      "width": 1280,
+      "height": 800,
+      "noWrite": true
+    },
+    {
+      "scenario": "example creation real invalid-batch rejection cleans exact newly owned project",
+      "originalProjectUntouched": true,
+      "noOrphanProject": true
+    },
+    {
+      "scenario": "preserved example creates a separate project from exact factory output",
+      "source": "mattermost-reference",
+      "existingProjectUntouched": true,
+      "noGeneration": true
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/projects/e3305ba4-ad1c-43df-95ab-7a6698778205/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/e3305ba4-ad1c-43df-95ab-7a6698778205/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/e3305ba4-ad1c-43df-95ab-7a6698778205/undo",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/e3305ba4-ad1c-43df-95ab-7a6698778205/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/e3305ba4-ad1c-43df-95ab-7a6698778205/redo",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/e3305ba4-ad1c-43df-95ab-7a6698778205/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/db7aa7d0-d22e-4969-8d8d-54f0fe5cc2f6/operations",
+      "status": 422
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/db7aa7d0-d22e-4969-8d8d-54f0fe5cc2f6",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/fc31f513-3ebd-4103-bd26-8abd18d0bcc1/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/fc31f513-3ebd-4103-bd26-8abd18d0bcc1/layout",
+      "status": 200
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "errors": [],
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ]
+}

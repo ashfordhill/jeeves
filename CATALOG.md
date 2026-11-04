@@ -37,7 +37,12 @@ compatible provider and logical owner/origin selectors, shared C3 queue settings
 connection policies. Aggregate selection first chooses a real connection; settings never bulk-edit
 a trunk. Timeout/retry appear only for eligible request/response protocols and clear atomically
 when inapplicable. Uneditable legacy relationships only highlight. The legacy editor remains the
-default. Creation/membership actions, routing and runtime resolution remain later work. The historical catalog below describes the existing
+default. [UX08a](docs/evidence/studio-ux/UX08a/README.md) adds the scope-aware base palette, one
+finite Library with compact previews, compatible saved compositions and current runtime-template
+details, explicit package grouping
+and the service/worker package preset. New package applications join atomically; detail resources
+receive explicit owners. Existing dependencies are selected by identity without duplication.
+Connection creation, dependency/membership actions, routing and runtime resolution remain later work. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

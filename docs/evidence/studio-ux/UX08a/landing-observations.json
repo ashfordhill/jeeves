@@ -1,0 +1,70 @@
+{
+  "result": "passed",
+  "method": "Three bounded one-off comparisons against all free grid cells in a 61×61 reference region; no maintained suite.",
+  "records": [
+    {
+      "point": {
+        "x": 11,
+        "y": -13
+      },
+      "obstacles": [],
+      "landing": {
+        "x": 0,
+        "y": -24
+      },
+      "nearestSquaredDistance": 242,
+      "grid": 24,
+      "clearance": 16
+    },
+    {
+      "point": {
+        "x": 12,
+        "y": 12
+      },
+      "obstacles": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "landing": {
+        "x": 0,
+        "y": 120
+      },
+      "nearestSquaredDistance": 11808,
+      "grid": 24,
+      "clearance": 16
+    },
+    {
+      "point": {
+        "x": 70,
+        "y": 80
+      },
+      "obstacles": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 240,
+          "y": 120
+        },
+        {
+          "x": -240,
+          "y": -120
+        },
+        {
+          "x": 0,
+          "y": 240
+        }
+      ],
+      "landing": {
+        "x": 0,
+        "y": 120
+      },
+      "nearestSquaredDistance": 6500,
+      "grid": 24,
+      "clearance": 16
+    }
+  ]
+}

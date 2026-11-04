@@ -1,0 +1,156 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "scenario": "package C3 Library browser/named service join and other resource owners",
+      "width": 1440,
+      "height": 900,
+      "integrationsDeferredToExplicitDependencyFlow": true
+    },
+    {
+      "scenario": "service C3 Library resources remain visible and explicitly owned through reload",
+      "width": 1440,
+      "height": 900,
+      "noIndependentApplicationOrIntegrationAdd": true
+    },
+    {
+      "scenario": "package C3 Library browser/named service join and other resource owners",
+      "width": 1280,
+      "height": 800,
+      "integrationsDeferredToExplicitDependencyFlow": true
+    },
+    {
+      "scenario": "service C3 Library resources remain visible and explicitly owned through reload",
+      "width": 1280,
+      "height": 800,
+      "noIndependentApplicationOrIntegrationAdd": true
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/f230013b-63ff-4707-8f94-5e4bbb996b2a/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/layout",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/operations",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/283bc807-d070-4983-bd1f-810b79130a14/layout",
+      "status": 200
+    }
+  ],
+  "blocked": [],
+  "console": [],
+  "errors": [],
+  "connectionCreationDeferredToUX08b": true
+}
