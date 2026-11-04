@@ -1,0 +1,364 @@
+/**
+ * SG03: the read-only code-generation boundary. A blueprint is a versioned projection of the
+ * studio model holding only generation-relevant parts. It omits layout, presentation, history and
+ * studio UI state. It states design intent only: it never claims a template, runtime or evidence.
+ */
+import { z } from "zod";
+import { containerContext } from "./architecture.ts";
+import type { DesignDocument } from "./design.ts";
+import { findingSchema } from "./findings.ts";
+import { idSchema } from "./ids.ts";
+import { connectionPresentation, relationshipInteractionSchema } from "./relationship-display.ts";
+import {
+  type StudioComponentTargetKind,
+  studioComponentDefinitions,
+  studioComponentKindSchema,
+  studioComponentRequirements,
+  studioComponentSettingsSchema,
+} from "./studio-components.ts";
+import {
+  definitionRefSchema,
+  type StudioElementBinding,
+  studioApplicationKinds,
+  studioChannelUseSchema,
+  studioDefinitionStatus,
+  studioExternalCategorySchema,
+  studioExternalProviderSchema,
+  studioOwnerSchema,
+  studioRetrySchema,
+  studioSettingsSchema,
+} from "./studio-model.ts";
+import { validateStudio } from "./studio-validation.ts";
+
+export const blueprintVersion = 1 as const;
+const text = z.string();
+const definition = z.strictObject({
+  ...definitionRefSchema.shape,
+  /** `unresolved` keeps an unknown definition version explicit; it is never substituted. */
+  status: z.enum(["known", "unresolved"]),
+});
+const elementBase = {
+  id: idSchema,
+  name: text,
+  description: text.optional(),
+  definition,
+  /** The C1 node (external system) that reuses this element at C1, if any. */
+  context: idSchema.optional(),
+};
+
+const componentTargetKindSchema = z.enum([
+  "application",
+  "identity",
+  "database",
+  "cache",
+  "queue",
+  "search",
+  "object-store",
+  "cdn",
+  "external-api",
+] satisfies StudioComponentTargetKind[]);
+/** One C3 module inside its service. `thirdParty` is typical implementation intent only. */
+export const blueprintComponentSchema = z.strictObject({
+  id: idSchema,
+  name: text,
+  purpose: text.optional(),
+  kind: studioComponentKindSchema,
+  settings: studioComponentSettingsSchema,
+  thirdParty: z.array(text),
+  /** Element kinds the settings need a link to before the component is ready. */
+  requires: z.array(z.strictObject({ kinds: z.array(componentTargetKindSchema), reason: text })),
+});
+/** One C2 deployable: one future generated service. */
+export const blueprintServiceSchema = z.strictObject({
+  ...elementBase,
+  kind: z.enum(studioApplicationKinds),
+  settings: studioSettingsSchema,
+  /** The group frame (studio package) this deployable belongs to, if any. */
+  group: idSchema.optional(),
+  components: z.array(blueprintComponentSchema),
+});
+export const blueprintResourceSchema = z.strictObject({
+  ...elementBase,
+  kind: z.enum(["database", "cache", "queue", "object-store", "search", "cdn"]),
+  settings: studioSettingsSchema,
+  owner: studioOwnerSchema.optional(),
+});
+/** A studio External API element, or a C1 external system without a C2 element. */
+export const blueprintExternalSchema = z.discriminatedUnion("source", [
+  z.strictObject({
+    source: z.literal("element"),
+    ...elementBase,
+    category: studioExternalCategorySchema,
+    provider: studioExternalProviderSchema,
+  }),
+  z.strictObject({ source: z.literal("context"), id: idSchema, name: text, description: text }),
+]);
+export const blueprintGroupSchema = z.strictObject({
+  id: idSchema,
+  name: text,
+  description: text,
+  members: z.array(idSchema),
+});
+export const blueprintEndpointSchema = z.strictObject({
+  kind: z.enum(["service", "resource", "external", "system"]),
+  id: idSchema,
+});
+/** A resolved C2 connection: identity, intent and the studio binding's request policies. */
+export const blueprintConnectionSchema = z.strictObject({
+  id: idSchema,
+  source: z.enum(["design", "context"]),
+  from: blueprintEndpointSchema,
+  to: blueprintEndpointSchema,
+  action: text,
+  protocol: text,
+  interaction: relationshipInteractionSchema.optional(),
+  access: text.optional(),
+  channelUse: studioChannelUseSchema.optional(),
+  timeoutMs: z.int().optional(),
+  retry: studioRetrySchema.optional(),
+});
+/** A component's use of a sibling component or, through a traced C2 connection, an element. */
+export const blueprintComponentLinkSchema = z.strictObject({
+  id: idSchema,
+  service: idSchema,
+  from: idSchema,
+  to: z.discriminatedUnion("kind", [
+    z.strictObject({ kind: z.literal("component"), id: idSchema }),
+    z.strictObject({ kind: z.literal("element"), id: idSchema, via: idSchema }),
+  ]),
+  label: text.optional(),
+});
+export const blueprintOmissionSchema = z.strictObject({
+  kind: z.enum(["element", "connection", "component", "component-link"]),
+  id: idSchema,
+  reason: z.enum(["no-studio-binding", "endpoint-outside-blueprint", "host-not-a-service"]),
+});
+export const designBlueprintSchema = z.strictObject({
+  blueprint: z.literal(blueprintVersion),
+  /** Semantic design revision the blueprint was read from. */
+  revision: z.int().nonnegative(),
+  system: z.strictObject({ name: text, description: text }),
+  services: z.array(blueprintServiceSchema),
+  resources: z.array(blueprintResourceSchema),
+  externals: z.array(blueprintExternalSchema),
+  groups: z.array(blueprintGroupSchema),
+  connections: z.array(blueprintConnectionSchema),
+  componentLinks: z.array(blueprintComponentLinkSchema),
+  /** Design parts that exist but are outside the finite studio model, so nothing vanishes silently. */
+  omitted: z.array(blueprintOmissionSchema),
+  /** Studio findings at this revision; readiness gaps are `CONFIG_REQUIRED`. */
+  findings: z.array(findingSchema),
+});
+export type DesignBlueprint = z.output<typeof designBlueprintSchema>;
+export type BlueprintEndpoint = z.output<typeof blueprintEndpointSchema>;
+
+/** JSON Schema (draft 2020-12) of the blueprint, for a generator outside this repository. */
+export function designBlueprintJsonSchema() {
+  return z.toJSONSchema(designBlueprintSchema, { target: "draft-2020-12", io: "output" });
+}
+
+const byId = <T extends { id: string }>(items: readonly T[]) =>
+  [...items].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+const resourceKinds = new Set<string>(blueprintResourceSchema.shape.kind.options);
+const applicationKinds = new Set<string>(studioApplicationKinds);
+const clone = <T>(value: T): T => structuredClone(value);
+
+/**
+ * Pure and deterministic: the same design always gives the same blueprint, sorted by identity.
+ * Only studio-bound elements become services, resources or externals; everything else is listed
+ * in `omitted`. The design is never changed.
+ */
+export function designBlueprint(design: DesignDocument, projectName = ""): DesignBlueprint {
+  const architecture = design.architecture;
+  const studio = architecture?.studio;
+  const bindings = new Map<string, StudioElementBinding>(
+    (studio?.elements ?? []).map((binding) => [binding.element, binding]),
+  );
+  const groupOf = new Map(
+    (studio?.packages ?? []).flatMap((pkg) => pkg.members.map((id) => [id, pkg.id] as const)),
+  );
+  const contextFor = new Map(
+    (architecture?.nodes ?? []).flatMap((node) =>
+      node.kind === "external-system" && node.container ? [[node.container, node.id] as const] : [],
+    ),
+  );
+  const endpointKind = new Map<string, BlueprintEndpoint["kind"]>();
+  const omitted: DesignBlueprint["omitted"] = [];
+  const services: DesignBlueprint["services"] = [];
+  const resources: DesignBlueprint["resources"] = [];
+  const externals: DesignBlueprint["externals"] = [];
+
+  for (const element of byId(design.elements)) {
+    const binding = bindings.get(element.id);
+    if (!binding) {
+      omitted.push({ kind: "element", id: element.id, reason: "no-studio-binding" });
+      continue;
+    }
+    const settings = binding.settings;
+    const status = studioDefinitionStatus(binding.definition, settings.kind);
+    const base = {
+      id: element.id,
+      name: element.name,
+      ...(element.description && { description: element.description }),
+      definition: { ...binding.definition, status: status === "known" ? "known" : "unresolved" },
+      ...(contextFor.has(element.id) && { context: contextFor.get(element.id) }),
+    } as const;
+    if (applicationKinds.has(settings.kind)) {
+      endpointKind.set(element.id, "service");
+      const group = groupOf.get(element.id);
+      services.push({
+        ...base,
+        kind: settings.kind as DesignBlueprint["services"][number]["kind"],
+        settings: clone(settings),
+        ...(group && { group }),
+        components: [],
+      });
+    } else if (resourceKinds.has(settings.kind)) {
+      endpointKind.set(element.id, "resource");
+      resources.push({
+        ...base,
+        kind: settings.kind as DesignBlueprint["resources"][number]["kind"],
+        settings: clone(settings),
+        ...(binding.owner && { owner: { ...binding.owner } }),
+      });
+    } else if (settings.kind === "external-api") {
+      endpointKind.set(element.id, "external");
+      externals.push({
+        source: "element",
+        ...base,
+        category: settings.category,
+        provider: settings.provider,
+      });
+    }
+  }
+  const contextExternals = new Set<string>();
+  for (const node of byId(architecture?.nodes ?? []))
+    if (node.kind === "external-system" && !(node.container && endpointKind.has(node.container))) {
+      contextExternals.add(node.id);
+      externals.push({
+        source: "context",
+        id: node.id,
+        name: node.name,
+        description: node.description,
+      });
+    }
+
+  const serviceById = new Map(services.map((service) => [service.id, service]));
+  const components = byId(studio?.components ?? []);
+  const componentHost = new Map<string, string>();
+  for (const item of components) {
+    const service = serviceById.get(item.host);
+    if (!service) {
+      omitted.push({ kind: "component", id: item.id, reason: "host-not-a-service" });
+      continue;
+    }
+    componentHost.set(item.id, item.host);
+    const definitionFor = studioComponentDefinitions[item.settings.kind];
+    service.components.push({
+      id: item.id,
+      name: item.name,
+      ...(item.description && { purpose: item.description }),
+      kind: item.settings.kind,
+      settings: clone(item.settings),
+      thirdParty: [...definitionFor.thirdParty],
+      requires: studioComponentRequirements(item.settings).map((need) => ({
+        kinds: [...need.kinds],
+        reason: need.reason,
+      })),
+    });
+  }
+
+  const connectionSettings = new Map(
+    (studio?.connections ?? []).map((item) => [item.connection, item.settings]),
+  );
+  const connections: DesignBlueprint["connections"] = [];
+  for (const connection of byId(design.connections)) {
+    const from = endpointKind.get(connection.from.element);
+    const to = endpointKind.get(connection.to.element);
+    if (!from || !to) {
+      omitted.push({ kind: "connection", id: connection.id, reason: "endpoint-outside-blueprint" });
+      continue;
+    }
+    const shown = connectionPresentation(connection, design);
+    const settings = connectionSettings.get(connection.id);
+    connections.push({
+      id: connection.id,
+      source: "design",
+      from: { kind: from, id: connection.from.element },
+      to: { kind: to, id: connection.to.element },
+      action: shown.description,
+      protocol: shown.protocol,
+      interaction: shown.interaction,
+      ...(connection.planned && { access: connection.planned.security }),
+      ...(settings?.channelUse && { channelUse: settings.channelUse }),
+      ...(settings?.timeoutMs !== undefined && { timeoutMs: settings.timeoutMs }),
+      ...(settings?.retry && { retry: { ...settings.retry } }),
+    });
+  }
+  // C1 integrations with external systems that have no C2 element. People are not generated.
+  const contextEnd = (id: string): BlueprintEndpoint | undefined => {
+    if (id === "context:system") return { kind: "system", id: "system" };
+    if (id.startsWith("context:")) {
+      const node = id.slice("context:".length);
+      return contextExternals.has(node) ? { kind: "external", id: node } : undefined;
+    }
+    const kind = endpointKind.get(id);
+    return kind ? { kind, id } : undefined;
+  };
+  for (const relation of byId(containerContext(design).relationships)) {
+    const from = contextEnd(relation.source);
+    const to = contextEnd(relation.target);
+    if (!from || !to || (from.kind !== "external" && to.kind !== "external")) continue;
+    connections.push({
+      id: relation.id,
+      source: "context",
+      from,
+      to,
+      action: relation.description,
+      protocol: relation.protocol,
+    });
+  }
+
+  const componentLinks: DesignBlueprint["componentLinks"] = [];
+  for (const link of byId(studio?.componentConnections ?? [])) {
+    const service = componentHost.get(link.from);
+    const reachable =
+      service &&
+      (link.to.kind === "component"
+        ? componentHost.get(link.to.id) === service
+        : endpointKind.has(link.to.id));
+    if (!service || !reachable) {
+      omitted.push({ kind: "component-link", id: link.id, reason: "endpoint-outside-blueprint" });
+      continue;
+    }
+    componentLinks.push({
+      id: link.id,
+      service,
+      from: link.from,
+      to: { ...link.to },
+      ...(link.label && { label: link.label }),
+    });
+  }
+
+  return {
+    blueprint: blueprintVersion,
+    revision: design.revision,
+    system: {
+      name: architecture?.system.name ?? projectName,
+      description: architecture?.system.description ?? "",
+    },
+    services,
+    resources,
+    externals,
+    groups: byId(studio?.packages ?? []).map((pkg) => ({
+      id: pkg.id,
+      name: pkg.name,
+      description: pkg.description,
+      members: [...pkg.members].sort(),
+    })),
+    connections,
+    componentLinks,
+    omitted,
+    findings: validateStudio(design).map((item) => clone(item)),
+  };
+}

@@ -39,6 +39,7 @@ export const studioKinds = [
   "redirect",
   "notification",
   "identity",
+  "gateway",
   "database",
   "cache",
   "queue",
@@ -57,6 +58,7 @@ export const studioApplicationKinds = [
   "redirect",
   "notification",
   "identity",
+  "gateway",
 ] as const;
 export const studioResourceKinds = [
   "database",
@@ -115,6 +117,17 @@ export const studioNotificationProviderSchema = z.enum([
   "external",
 ]);
 export const studioIdentityProviderSchema = z.enum(["unspecified", "oidc", "external"]);
+/** SG03: gateway routing and product intent. Third-party gateways are the intended implementation. */
+export const studioGatewayRoutingSchema = z.enum(["path-prefix", "host-name"]);
+export const studioGatewayProviderSchema = z.enum([
+  "unspecified",
+  "envoy",
+  "kong",
+  "nginx",
+  "traefik",
+  "aws-api-gateway",
+  "external",
+]);
 
 /** SG02 scaling signal. Queue lag only makes sense for an application that consumes a queue. */
 export const studioAutoscaleSignalSchema = z.enum(["cpu", "requests-per-second", "queue-lag"]);
@@ -199,6 +212,13 @@ export const studioIdentitySettingsSchema = applicationSettings("identity", {
   ...scalingFields,
   ...requestFields,
   provider: studioIdentityProviderSchema,
+});
+export const studioGatewaySettingsSchema = applicationSettings("gateway", {
+  exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
+  routing: studioGatewayRoutingSchema,
+  provider: studioGatewayProviderSchema,
 });
 export const studioBrowserSettingsSchema = z.discriminatedUnion("delivery", [
   z.strictObject({
@@ -374,6 +394,7 @@ export const studioSettingsSchemas = {
   redirect: studioRedirectSettingsSchema,
   notification: studioNotificationSettingsSchema,
   identity: studioIdentitySettingsSchema,
+  gateway: studioGatewaySettingsSchema,
   database: studioDatabaseSettingsSchema,
   cache: studioCacheSettingsSchema,
   queue: studioQueueSettingsSchema,
@@ -391,6 +412,7 @@ export const studioSettingsSchema = z.discriminatedUnion("kind", [
   studioRedirectSettingsSchema,
   studioNotificationSettingsSchema,
   studioIdentitySettingsSchema,
+  studioGatewaySettingsSchema,
   studioDatabaseSettingsSchema,
   studioCacheSettingsSchema,
   studioQueueSettingsSchema,
@@ -417,6 +439,13 @@ export function createStudioSettings<K extends StudioKind>(kind: K): StudioSetti
     redirect: { kind: "redirect", ...application, exposure: "public" },
     notification: { kind: "notification", ...application, provider: "unspecified" },
     identity: { kind: "identity", ...application, provider: "unspecified" },
+    gateway: {
+      kind: "gateway",
+      ...application,
+      exposure: "public",
+      routing: "path-prefix",
+      provider: "unspecified",
+    },
     database: { kind: "database", engine: "unspecified", provider: "unspecified" },
     cache: { kind: "cache", engine: "unspecified", provider: "unspecified" },
     queue: { kind: "queue", mode: "work-queue", provider: "unspecified" },

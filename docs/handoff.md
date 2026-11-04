@@ -10819,3 +10819,64 @@ Notes for SG03 (blueprint):
 Known gaps for later units: library fragment copy (`architecture-library.ts`) and pattern
 insertion do not carry components yet. The studio projection (`studio-view.ts`) ignores
 components until SG05. Nothing creates components in the UI until SG08/SG09.
+
+## 2026-11-04 — SG03: blueprint API, the code-generation boundary (complete)
+
+Executed SG03 only on primary `main` from `46a7676`, as a fresh sequential worker, plus the
+coordinator's addition of a `gateway` application kind (O5). Read AGENTS, the studio grid plan
+(O1–O9; D1–D3 defaults), the execution units, SG01/SG02 handoffs and the studio sources. No
+generator, generation/runtime, P73a/P73b or backend batch work.
+
+What changed:
+
+- `packages/spec/src/studio-blueprint.ts` (new, exported): `designBlueprintSchema` (`blueprint: 1`,
+  strict Zod), `designBlueprintJsonSchema()` (draft 2020-12) and the pure, deterministic
+  `designBlueprint(design, projectName)`. It holds `revision`, `system`, `services` (settings,
+  group, C1 context node, nested C3 `components` with settings, purpose, `thirdParty`, `requires`),
+  `resources`, `externals` (studio External API elements, plus C1 external systems without an
+  element), `groups`, resolved `connections` (typed endpoints, action, protocol, interaction,
+  access, channel use, timeout, retry; C1 relationships to element-less externals as
+  `source: "context"`), `componentLinks`, `omitted` (with reasons) and studio `findings`. No layout,
+  presentation, history or UI state.
+- Server: `DesignService.blueprint()` and `GET /projects/:id/blueprint` (`no-store`, 404/400).
+  Read-only; it reads the current document without history queries.
+- Gateway: `gateway` added to `studioKinds`/`studioApplicationKinds`; settings = common application
+  + exposure (default public) + `routing` path-prefix/host-name + `provider`
+  unspecified/envoy/kong/nginx/traefik/aws-api-gateway/external + SG02 performance fields;
+  definition `studio-gateway@1.0.0` in the Services library group (C2 and package scopes, icon
+  `arrows-split`). It appears in the existing library automatically; no other UI change.
+- Docs: new `docs/studio-blueprint.md` (the boundary), configuration matrix §8 (gateway) and §7 row,
+  CATALOG paragraphs (gateway, blueprint), a studio guide paragraph. Evidence:
+  `docs/evidence/studio-grid/SG03/README.md`.
+
+Observations (`observe.mts` with tsx against the running dev API): gateway definition/defaults/
+rejections; all 14 studies give a parsing, deterministic blueprint and stay byte-identical; the 4
+owner projects (GET only) return 200, parse, are stable and equal the pure function, with revisions
+and `updatedAt` unchanged; 404/400; one disposable TinyURL-shaped project with a gateway and ten
+components round-trips through the real endpoint, then was deleted (204, then 404).
+
+Checks (Node 24.21.0): `pnpm lint` exit 0 (2,797 warnings / 88 infos, unchanged); `pnpm typecheck`
+exit 0; `pnpm --filter @jeeves/web build` exit 0 (existing chunk advisory). `pnpm check`, unit and
+E2E suites not run (owner-deferred). No screenshots (no UI change apart from the automatic Gateway
+library entry). The dev servers on 4300/4310 were already running and were left running; the API
+watcher reloaded the route.
+
+Decisions and deviations:
+
+- Only studio-bound elements are generated parts. Legacy elements go to `omitted`
+  (`no-studio-binding`), so the owner's current projects (all pre-studio documents) have
+  near-empty blueprints. People are not included.
+- Settings are copied as stored (key order follows the document). `requires` lists what a
+  component's settings need, not whether it is met; unmet needs are the `CONFIG_REQUIRED` findings.
+- The legacy display mapping `api-gateway` → `service` is unchanged so old documents read as before.
+- Adding a kind or enum value is treated as additive within `blueprint: 1` (documented); a
+  generator must reject what it does not understand.
+
+Notes for SG04:
+
+- Build the TinyURL study from studio commands like `observe.mts` §4; check its blueprint with
+  `designBlueprintSchema.parse(designBlueprint(design))`. The probe output
+  (`tinyurl-probe-blueprint.json`) is a reasonable shape reference. A gateway is available if wanted,
+  but plan §7 does not list one.
+- Removing the 14 studies will remove the `studies` section of this evidence script; that is fine.
+- Library fragment copy and pattern insertion still do not carry components (SG02 gap).

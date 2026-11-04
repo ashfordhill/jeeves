@@ -8,6 +8,7 @@ import {
   type CreateTarget,
   createTargetSchema,
   type DesignDocument,
+  designBlueprint,
   designSchema,
   emptyDesign,
   emptyLayout,
@@ -201,6 +202,13 @@ export class DesignService {
   async apiPreview(projectId: string) {
     const state = await this.getDesign(projectId);
     return state ? designApiPreview(state.design, this.registry) : undefined;
+  }
+
+  /** SG03 code-generation boundary: read-only, derived on request, never stored. */
+  async blueprint(projectId: string) {
+    const project = await this.getProject(projectId);
+    if (!project) return undefined;
+    return designBlueprint((await this.current(this.db, project)).document, project.name);
   }
 
   async architecture(projectId: string) {

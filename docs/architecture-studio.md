@@ -101,6 +101,10 @@ C4a/C4b obligations. Inventory and grocery remain limited concepts with unresolv
 the Zammad reference does not complete P73a/P73b. No tidy diagram earns backend benchmark points.
 See [CATALOG](../CATALOG.md) and [modeling guidance](c4-modeling.md) for conceptual boundaries.
 
+The read-only [blueprint](studio-blueprint.md) (`GET /projects/:id/blueprint`) is the
+code-generation boundary: a versioned projection of the studio model that a future, separate
+generator reads. It holds design intent only.
+
 Later separately requested runtime work must choose template/language priorities, establish exact
 extension and regeneration contracts, and verify reproducible builds, integration failures and
 actual application behavior. The UX milestone neither resumes the paused backend batch nor decides

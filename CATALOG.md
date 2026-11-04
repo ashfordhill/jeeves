@@ -102,6 +102,18 @@ Kafka) but no component has a template; it is design-only and generation remains
 Inspector and canvas use is planned for later SG units. Details:
 [configuration matrix §7](docs/plans/studio-ux/configuration-matrix.md#7-studio-grid-additions-sg02).
 
+A **Gateway** service kind (`studio-gateway@1.0.0`) records a public entry point with routing
+intent (path prefix or host name) and a third-party product choice (Envoy, Kong, NGINX, Traefik,
+Amazon API Gateway); it authors no routes and has no template
+([configuration matrix §8](docs/plans/studio-ux/configuration-matrix.md#8-gateway-application-kind-sg03)).
+
+### Blueprint: the code-generation boundary
+
+`GET /projects/:id/blueprint` returns a read-only, versioned (`blueprint: 1`) projection of the
+studio model: system, services with settings and components, resources, externals, group frames
+and resolved connections. A future, separate generator reads only this. It carries design intent,
+not template availability or verification evidence. See [studio blueprint](docs/studio-blueprint.md).
+
 Known old capability/template identities retain their explicit [read-only mapping](packages/spec/src/studio-legacy.ts);
 unknown families retain a neutral symbol and their original data. Old planning definitions remain
 loadable. The default studio consumes this metadata while preserving supported runtime templates. Generation still rejects studio designs, while portable

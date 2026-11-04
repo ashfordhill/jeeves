@@ -189,7 +189,7 @@ version-1 studio documents read unchanged. Source: `studio-model.ts`, `studio-co
 
 | Where | New optional fields |
 | --- | --- |
-| service, billing, redirect, notification, identity | `minReplicas` 0–1000, `maxReplicas` 1–1000, `autoscaleOn` cpu/requests-per-second/queue-lag, `requestTimeoutMs` 1–300000, `concurrencyLimit` 1–100000 |
+| service, billing, redirect, notification, identity, gateway (SG03) | `minReplicas` 0–1000, `maxReplicas` 1–1000, `autoscaleOn` cpu/requests-per-second/queue-lag, `requestTimeoutMs` 1–300000, `concurrencyLimit` 1–100000 |
 | worker | replicas and `autoscaleOn` as above; its existing `concurrency` remains its limit; no request timeout |
 | database | `readReplicas` 0–15, `partitionKey` (one column name) |
 | cache | `topology` standalone/cluster, `eviction` lru/lfu/ttl/none |
@@ -226,3 +226,19 @@ sequence/range ID → database, Redis counter → cache, outbox → database, ex
 replica read routing without a replicated database, and a custom component without a purpose.
 Deleting a host removes its components; deleting a traced connection or target removes the links.
 
+
+## 8. Gateway application kind (SG03)
+
+Owner decision O5 lists a gateway among the generic services. `gateway` is a common application
+kind pinned at `studio-gateway@1.0.0`, created at C2 or as a package member ("Services" library
+group), with the §2 common fields and the §7 performance fields.
+
+| Field / stored path | Values and new default | Visibility and effect |
+| --- | --- | --- |
+| Exposure / `S.exposure` | `public` (default), `internal` | Public entry intent; no authentication or TLS guarantee. |
+| Routing / `S.routing` | `path-prefix` (default), `host-name` | How requests are matched to downstream services. Intent only: no route table, rewrite rule or per-route editor. Downstream services are the gateway's outgoing connections. |
+| Gateway product / `S.provider` | `unspecified` (default), `envoy`, `kong`, `nginx`, `traefik`, `aws-api-gateway`, `external` | Third-party product intent. Selecting one creates no configuration, deployment or credential. |
+
+The read-only legacy display mapping (`api-gateway` family → `service`) is unchanged, so existing
+documents read exactly as before. Generation still rejects studio designs; the gateway is listed
+in the [blueprint](../../studio-blueprint.md) like every other service.
