@@ -1,0 +1,29 @@
+{
+  "scenario": "single-service",
+  "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/single-service.json",
+  "semanticSha256": "37217a45ab2518dd67be6bbc1dcdaee0a166e7f98e8765506907810cb03b980e",
+  "inputFrozenAndUnchanged": true,
+  "reorderExact": true,
+  "renameIdentityExact": true,
+  "portableRoundTripExact": true,
+  "scopes": [
+    {
+      "key": "studio:context",
+      "nodeIds": ["studio:context:system"],
+      "edges": [],
+      "trunks": []
+    },
+    {
+      "key": "studio:containers",
+      "nodeIds": ["studio:element:single-billing"],
+      "edges": [],
+      "trunks": []
+    }
+  ],
+  "source": {
+    "accounting": [],
+    "unresolved": [],
+    "suppressed": [],
+    "componentRelationships": []
+  }
+}

@@ -18,8 +18,12 @@ applications and one shared, package-owned queue. [UX04a's pure node/scope proje
 now supplies stable C1/C2/detail identities, one package overview card, real member summaries,
 selectable service anchors and shared resource references. It filters legacy internals for
 presentation while retaining their source identities, and keeps queues at C3. Browser delivery
-does not invent a Docker deployment. Relationship aggregation, the new authoring UI and runtime
-resolution remain unimplemented. The historical catalog below describes the existing
+does not invent a Docker deployment. [UX04b's relationship projection](packages/spec/src/studio-relationships.ts)
+now groups repeated directed dependencies, preserves all protocol/contract members, derives queued
+communication from explicit roles and accounts for incomplete or ambiguous channels. C3 retains
+the actual connections; compatible fan-out includes branch/trunk data without saved wiring or
+shared editable settings. The new authoring UI, routing and runtime resolution remain
+unimplemented. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

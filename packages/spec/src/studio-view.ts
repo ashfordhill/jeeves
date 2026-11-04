@@ -11,6 +11,12 @@ import type {
   StudioOwner,
 } from "./studio-model.ts";
 import { studioApplicationKinds } from "./studio-model.ts";
+import {
+  type StudioRelationship,
+  type StudioRelationshipSource,
+  type StudioTrunk,
+  withStudioRelationships,
+} from "./studio-relationships.ts";
 
 export type StudioSemanticRef =
   | { kind: "system" }
@@ -64,6 +70,8 @@ export interface StudioScopeProjection {
   parentKey?: string;
   breadcrumb: StudioBreadcrumb[];
   nodes: StudioViewNode[];
+  edges: StudioRelationship[];
+  trunks: StudioTrunk[];
 }
 export interface StudioViews {
   context: StudioScopeProjection;
@@ -75,6 +83,7 @@ export interface StudioViews {
     omittedElements: { ref: StudioSemanticRef; reason: "deployment-infrastructure" }[];
     /** An unowned, disconnected legacy queue cannot acquire an invented service scope. */
     unscopedQueues: StudioSemanticRef[];
+    relationships: StudioRelationshipSource;
   };
 }
 export type StudioViewDefinitions = Readonly<
@@ -103,8 +112,8 @@ function executionIntent(binding?: StudioElementBinding): StudioExecutionIntent 
 }
 
 /**
- * All useful detail scopes are returned, with stable keys for explicit navigation. Relationships
- * and their aggregate provenance are added separately; this projection never authors wiring.
+ * All useful detail scopes and relationship provenance are returned, with stable keys for explicit
+ * navigation. This projection never authors wiring, runtime settings or layout.
  */
 export function studioViews(
   design: DesignDocument,
@@ -205,6 +214,8 @@ export function studioViews(
     description: system.description,
     breadcrumb: [{ key: studioViewKeys.context, name: "C1" }],
     nodes: [system, ...byId(architecture?.nodes ?? []).map(contextNode)],
+    edges: [],
+    trunks: [],
   };
   const c2Breadcrumb = [{ key: studioViewKeys.containers, name: "C2" }];
   const c2Context = containerContext(design);
@@ -216,6 +227,8 @@ export function studioViews(
     description: system.description,
     parentKey: studioViewKeys.context,
     breadcrumb: c2Breadcrumb,
+    edges: [],
+    trunks: [],
     nodes: visible
       .filter((element) => {
         if (membership.has(element.id) || kindFor(element) === "queue") return false;
@@ -294,6 +307,8 @@ export function studioViews(
       description: pkg.description,
       parentKey: containers.key,
       breadcrumb: [...c2Breadcrumb, { key, name: pkg.name }],
+      edges: [],
+      trunks: [],
       nodes: relevant(members, pkg.id).map((element) =>
         nodeFor(element, members.has(element.id) ? "member" : "reference"),
       ),
@@ -311,6 +326,8 @@ export function studioViews(
       name: element.name,
       description: element.description ?? "",
       parentKey: pkg ? studioViewKeys.package(pkg.id) : containers.key,
+      edges: [],
+      trunks: [],
       breadcrumb: [
         ...c2Breadcrumb,
         ...(pkg ? [{ key: studioViewKeys.package(pkg.id), name: pkg.name }] : []),
@@ -335,7 +352,7 @@ export function studioViews(
     }
     view.nodes = byId(view.nodes);
   }
-  return {
+  return withStudioRelationships(design, {
     context,
     containers,
     details: [...details].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)),
@@ -354,6 +371,7 @@ export function studioViews(
             ),
         )
         .map((element) => elementRef(element.id)),
+      relationships: { accounting: [], unresolved: [], suppressed: [], componentRelationships: [] },
     },
-  };
+  });
 }

@@ -1,0 +1,242 @@
+packages/spec/src/studio-relationships.ts:217:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    215 │     trunks: [] as StudioTrunk[],
+    216 │   }));
+  > 217 │   const context = scopes[0]!,
+        │                   ^^^^^^^^^^
+    218 │     containers = scopes[1]!;
+    219 │   const nodeFor = (scope: StudioScopeProjection, ref: StudioSemanticRef) =>
+
+
+packages/spec/src/studio-relationships.ts:218:18 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    216 │   }));
+    217 │   const context = scopes[0]!,
+  > 218 │     containers = scopes[1]!;
+        │                  ^^^^^^^^^^
+    219 │   const nodeFor = (scope: StudioScopeProjection, ref: StudioSemanticRef) =>
+    220 │     scope.nodes.find((node) => node.refs.some((r) => refKey(r) === refKey(ref)))?.id;
+
+
+packages/spec/src/studio-relationships.ts:243:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    241 │     // Endpoint identities, never labels, protocols, member order or an array index.
+    242 │     const id = `studio:relationship:${from}>${to}`;
+  > 243 │     const index = edgeIndexes.get(scope.key)!;
+        │                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    244 │     const edge = index.get(id);
+    245 │     if (edge) edge.members.push(member);
+
+
+packages/spec/src/studio-relationships.ts:276:20 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    274 │   };
+    275 │   for (const connection of ordered(design.connections)) {
+  > 276 │     const member = connectionMembers.get(connection.id)!;
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    277 │     if (!member.queueIds.length) c2Add(member);
+    278 │     for (const scope of scopes.slice(2)) {
+
+
+packages/spec/src/studio-relationships.ts:317:22 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    315 │       consumers: Connection[] = [];
+    316 │     for (const connection of links) {
+  > 317 │       const member = connectionMembers.get(connection.id)!;
+        │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    318 │       const role = channelRole(connection);
+    319 │       if (!role) {
+
+
+packages/spec/src/studio-relationships.ts:328:60 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    326 │         application &&
+    327 │         (bindings.has(other)
+  > 328 │           ? studioApplicationKinds.some((kind) => kind === bindings.get(other)!.settings.kind)
+        │                                                            ^^^^^^^^^^^^^^^^^^^^
+    329 │           : containerClassification(application).kind === "Application");
+    330 │       if (
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    326 326 │           application &&
+    327 327 │           (bindings.has(other)
+    328     │ - ··········?·studioApplicationKinds.some((kind)·=>·kind·===·bindings.get(other)!.settings.kind)
+        328 │ + ··········?·studioApplicationKinds.some((kind)·=>·kind·===·bindings.get(other)?.settings.kind)
+    329 329 │             : containerClassification(application).kind === "Application");
+    330 330 │         if (
+
+
+packages/spec/src/studio-relationships.ts:344:40 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    342 │     for (const missing of ["missing-producer", "missing-consumer"] as const) {
+    343 │       if (missing === "missing-producer" ? publishers.length : consumers.length) continue;
+  > 344 │       const members = links.map((c) => connectionMembers.get(c.id)!);
+        │                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    345 │       issue(missing, {
+    346 │         ...provenance(members),
+
+
+packages/spec/src/studio-relationships.ts:357:26 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    355 │     for (const publish of publishers)
+    356 │       for (const consume of consumers) {
+  > 357 │         const members = [connectionMembers.get(publish.id)!, connectionMembers.get(consume.id)!];
+        │                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    358 │         c2Add({
+    359 │           ...provenance(members),
+
+
+packages/spec/src/studio-relationships.ts:357:62 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    355 │     for (const publish of publishers)
+    356 │       for (const consume of consumers) {
+  > 357 │         const members = [connectionMembers.get(publish.id)!, connectionMembers.get(consume.id)!];
+        │                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    358 │         c2Add({
+    359 │           ...provenance(members),
+
+
+packages/spec/src/studio-relationships.ts:432:37 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    430 │       !source.unresolved.some((s) => s.member.connectionIds.includes(connection.id))
+    431 │     )
+  > 432 │       issue("source-not-projected", connectionMembers.get(connection.id)!);
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    433 │     source.accounting.push({
+    434 │       connectionId: connection.id,
+
+
+packages/spec/src/studio-relationships.ts:490:27 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    488 │     result.push({
+    489 │       ...provenance(members),
+  > 490 │       id: `studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m) => m.id)).join("|")}`,
+        │                           ^^^^^^^^^^^
+    491 │       from: entries[0]!.edge.from,
+    492 │       protocol: members[0]!.protocols[0]!,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    488 488 │       result.push({
+    489 489 │         ...provenance(members),
+    490     │ - ······id:·`studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m)·=>·m.id)).join("|")}`,
+        490 │ + ······id:·`studio:trunk:${entries[0]?.edge.from}:${sorted(members.map((m)·=>·m.id)).join("|")}`,
+    491 491 │         from: entries[0]!.edge.from,
+    492 492 │         protocol: members[0]!.protocols[0]!,
+
+
+packages/spec/src/studio-relationships.ts:491:13 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    489 │       ...provenance(members),
+    490 │       id: `studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m) => m.id)).join("|")}`,
+  > 491 │       from: entries[0]!.edge.from,
+        │             ^^^^^^^^^^^
+    492 │       protocol: members[0]!.protocols[0]!,
+    493 │       interaction: members[0]!.interactions[0]!,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    489 489 │         ...provenance(members),
+    490 490 │         id: `studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m) => m.id)).join("|")}`,
+    491     │ - ······from:·entries[0]!.edge.from,
+        491 │ + ······from:·entries[0]?.edge.from,
+    492 492 │         protocol: members[0]!.protocols[0]!,
+    493 493 │         interaction: members[0]!.interactions[0]!,
+
+
+packages/spec/src/studio-relationships.ts:492:17 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    490 │       id: `studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m) => m.id)).join("|")}`,
+    491 │       from: entries[0]!.edge.from,
+  > 492 │       protocol: members[0]!.protocols[0]!,
+        │                 ^^^^^^^^^^^
+    493 │       interaction: members[0]!.interactions[0]!,
+    494 │       branches,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    490 490 │         id: `studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m) => m.id)).join("|")}`,
+    491 491 │         from: entries[0]!.edge.from,
+    492     │ - ······protocol:·members[0]!.protocols[0]!,
+        492 │ + ······protocol:·members[0]?.protocols[0]!,
+    493 493 │         interaction: members[0]!.interactions[0]!,
+    494 494 │         branches,
+
+
+packages/spec/src/studio-relationships.ts:492:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    490 │       id: `studio:trunk:${entries[0]!.edge.from}:${sorted(members.map((m) => m.id)).join("|")}`,
+    491 │       from: entries[0]!.edge.from,
+  > 492 │       protocol: members[0]!.protocols[0]!,
+        │                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+    493 │       interaction: members[0]!.interactions[0]!,
+    494 │       branches,
+
+
+packages/spec/src/studio-relationships.ts:493:20 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    491 │       from: entries[0]!.edge.from,
+    492 │       protocol: members[0]!.protocols[0]!,
+  > 493 │       interaction: members[0]!.interactions[0]!,
+        │                    ^^^^^^^^^^^
+    494 │       branches,
+    495 │     });
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    491 491 │         from: entries[0]!.edge.from,
+    492 492 │         protocol: members[0]!.protocols[0]!,
+    493     │ - ······interaction:·members[0]!.interactions[0]!,
+        493 │ + ······interaction:·members[0]?.interactions[0]!,
+    494 494 │         branches,
+    495 495 │       });
+
+
+packages/spec/src/studio-relationships.ts:493:20 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    491 │       from: entries[0]!.edge.from,
+    492 │       protocol: members[0]!.protocols[0]!,
+  > 493 │       interaction: members[0]!.interactions[0]!,
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    494 │       branches,
+    495 │     });
+
+
+Skipped 5 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 3 files in 18ms. Fixed 1 file.
+Found 16 warnings.

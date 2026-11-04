@@ -9155,3 +9155,74 @@ remain authoritative. Initial logs are retained. No test fixture/type adaptation
 maintenance was needed. Unit/E2E/template suites and `pnpm check` remain explicitly deferred. No new
 runtime/availability is claimed. UX04a is complete; UX04b owns relationship aggregation/provenance
 and the combined UX04 boundary remains incomplete. This worker stops after its scoped local commit.
+
+
+## 2026-11-04 — UX04b: directed aggregates and complete queued provenance (complete)
+
+Executed UX04b only on primary main from UX04a commit
+`0db7607c07e6542844e6ba9a57197052925bb2e6`, under the owner's sequential fresh-worker batch.
+Read AGENTS, PLAN §1–§15, latest handoff/batch authorization, studio plan/exact UX04b assignment,
+model §§4–5, interaction §5 and related scope contracts, resolved decisions, C4 guidance, canonical
+connection presentation, component dependencies and contract/binding sources. No delegation,
+branch/worktree, sibling edit, external-agent/provider execution, application generation, old
+factory/benchmark rewrite or backend resumption. Unrelated `.jeeves-feedback/` remains preserved.
+
+`studioViews` now returns pure C1/C2/C3 `edges`, compatible `trunks` and explicit source relationship
+accounting through exported `studio-relationships.ts`. Directed endpoint aggregates preserve all
+members, original source/target refs, connection/queue/component/capability IDs, binding/interface
+IDs and exact contract versions. Different actions never define identity; reverse directions stay
+separate and mixed protocols/interactions remain inspectable member values. Repeated database
+uses become one displayed relationship without deleting any source connection. C3 includes actual
+incident connections for its service/package scope, with real resource references and no remote
+internal graph expansion. Context actions retain their IDs; unconfigurable legacy component
+relationships retain source summaries rather than fabricated child/owner self-arrows.
+
+C2 queued summaries use only explicit studio roles or unambiguous existing binding roles and retain
+the queue plus both publish/consume connection IDs for every producer/consumer pair. Legacy consume
+bindings can sit on application→queue dependency arrows: their explicit role determines C2 message
+flow while C3 preserves the canonical arrow. New studio roles must follow the existing validated
+message-flow convention. Missing, conflicting or invalid roles/endpoints remain explicit unresolved
+source; no labels/names/direction-only inference or fabricated consumer. Package-internal traffic
+and single-service queue self-use have explicit suppression provenance and no C2 self-arrow.
+Compatible fan-out data keeps exact branch/member IDs and has no saved connection or editable
+retry/timeout setting. CATALOG records the implemented presentation boundary. No geometry, product
+rendering, shell, inspector, runtime or generation capability is added here.
+
+Evidence: `docs/evidence/studio-ux/UX04b/`. One-off accounting checks pass for all seven UX01 inputs
+plus 17 derived public inspection inputs (24 scenarios / 27 properties), including fan-out,
+application/package aggregation, repeated/shared stores, mixed direct/queued protocols, reverse
+arrows, cycles, internal package queues, incomplete/disconnected channels, ambiguous/conflicting
+roles, legacy dependency direction, multiple publish/consume pairs and canonical planned-field
+precedence. Deeply frozen input designs and supplied projections remain unchanged; exact reorder,
+rename-identity and portable export/import comparisons pass. Every source connection has exact
+appearance/suppression/unresolved references; aggregate/trunk unions, queue pair identities and all
+branch memberships are checked. No source-not-projected fallback is used. All nine historical
+factory design/layout hashes remain exact, with every binding/interface/contract/component
+relationship accounted for. Frozen feedback, benchmark and original fixture bytes remain intact.
+
+Direct browser inspection at 1440×900 and 1280×800 preserves existing QRWTY C2/API-C3 counts
+(16/22 cards, 21/39 labels). A labeled disposable data preview imports the actual projection and
+exercises mouse aggregate/member/trunk selection, scope changes, internal package traffic, shared
+stores, incomplete channels and legacy consume direction. This is inspection evidence, not the
+later shipped diagram/shell. The guard predates page creation; zero writes/blocked requests,
+page/console/HTTP errors occur. Three instances of the existing React Flow attribution warning and
+previously recorded saved-camera clipping remain. All 13 existing project semantic/layout hashes
+and revisions remain exact. No semantic mutation/disposable API project was necessary; existing
+servers remain loopback-only on documented ports.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with Node PATH prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- One-off relationship accounting and direct browser observations: exit 0.
+- Scoped formatting and staged whitespace, including new logs: pass.
+
+Routine corrections covered callback narrowing in the initial scoped compile, removal of new
+non-null-assertion warnings before verification, generated evidence formatting and splitting the
+capture to stay within Biome's existing file-size limit. Initial logs are retained; no lint rule or
+size bound was relaxed. No fixture typing adaptation or broader test maintenance was needed.
+Unit/E2E/template suites, snapshots, their maintenance and `pnpm check` remain explicitly deferred.
+No product blocker or scope deviation remains. UX04 is complete with UX04a; UX05 is the next unit's
+opt-in shell boundary, not started here. P73a/P73b and the backend batch remain paused. Stop after
+this scoped local UX04b commit.

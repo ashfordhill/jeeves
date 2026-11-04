@@ -1,0 +1,4839 @@
+{
+  "scenario": "legacy-rich",
+  "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/legacy-rich.json",
+  "semanticSha256": "d1bc93ffb1f91924a9a06f7d281ed6a2e696f7f3bce20dea065bfb9623da35a0",
+  "inputFrozenAndUnchanged": true,
+  "reorderExact": true,
+  "renameIdentityExact": true,
+  "portableRoundTripExact": true,
+  "scopes": [
+    {
+      "key": "studio:context",
+      "nodeIds": [
+        "studio:context:system",
+        "studio:context:dc-administrator",
+        "studio:context:dc-client-external",
+        "studio:context:dc-email-external",
+        "studio:context:dc-files-external",
+        "studio:context:dc-member",
+        "studio:context:dc-moderator",
+        "studio:context:dc-visitor"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-administrator"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-administrator-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-administrator>studio:context:system",
+          "from": "studio:context:dc-administrator",
+          "to": "studio:context:system",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-administrator"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-administrator-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-administrator-system",
+              "kind": "context",
+              "action": "Uses currently authorized discussion operations",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Uses currently authorized discussion operations"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-client-external"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-client-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-client-external>studio:context:system",
+          "from": "studio:context:dc-client-external",
+          "to": "studio:context:system",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-client-external"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-client-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-client-system",
+              "kind": "context",
+              "action": "Consumes exact REST/JSON contracts",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Consumes exact REST/JSON contracts"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-member"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-member-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-member>studio:context:system",
+          "from": "studio:context:dc-member",
+          "to": "studio:context:system",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-member"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-member-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-member-system",
+              "kind": "context",
+              "action": "Uses currently authorized discussion operations",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Uses currently authorized discussion operations"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-moderator"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-moderator-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-moderator>studio:context:system",
+          "from": "studio:context:dc-moderator",
+          "to": "studio:context:system",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-moderator"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-moderator-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-moderator-system",
+              "kind": "context",
+              "action": "Uses currently authorized discussion operations",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Uses currently authorized discussion operations"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-visitor"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-visitor-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-visitor>studio:context:system",
+          "from": "studio:context:dc-visitor",
+          "to": "studio:context:system",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-visitor"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-visitor-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-visitor-system",
+              "kind": "context",
+              "action": "Creates account or manages session",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Creates account or manages session"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "context",
+              "id": "dc-email-external"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-system-email"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:system>studio:context:dc-email-external",
+          "from": "studio:context:system",
+          "to": "studio:context:dc-email-external",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-email-external"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-system-email"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-system-email",
+              "kind": "context",
+              "action": "Sends eligible notifications with reconciliation",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Sends eligible notifications with reconciliation"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "system"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "context",
+              "id": "dc-files-external"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-system-files"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:system>studio:context:dc-files-external",
+          "from": "studio:context:system",
+          "to": "studio:context:dc-files-external",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "system"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-files-external"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-system-files"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-system-files",
+              "kind": "context",
+              "action": "Stores private bytes behind current application policy",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Stores private bytes behind current application policy"],
+          "protocols": [],
+          "interactions": []
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:containers",
+      "nodeIds": [
+        "studio:context:dc-administrator",
+        "studio:context:dc-member",
+        "studio:context:dc-moderator",
+        "studio:context:dc-visitor",
+        "studio:element:dc-api",
+        "studio:element:dc-client",
+        "studio:element:dc-db",
+        "studio:element:dc-email",
+        "studio:element:dc-files",
+        "studio:element:dc-worker"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-administrator"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-administrator-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-administrator>studio:element:dc-api",
+          "from": "studio:context:dc-administrator",
+          "to": "studio:element:dc-api",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-administrator"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-administrator-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-administrator-system",
+              "kind": "context",
+              "action": "Uses currently authorized discussion operations",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Uses currently authorized discussion operations"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-member"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-member-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-member>studio:element:dc-api",
+          "from": "studio:context:dc-member",
+          "to": "studio:element:dc-api",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-member"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-member-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-member-system",
+              "kind": "context",
+              "action": "Uses currently authorized discussion operations",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Uses currently authorized discussion operations"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-moderator"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-moderator-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-moderator>studio:element:dc-api",
+          "from": "studio:context:dc-moderator",
+          "to": "studio:element:dc-api",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-moderator"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-moderator-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-moderator-system",
+              "kind": "context",
+              "action": "Uses currently authorized discussion operations",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Uses currently authorized discussion operations"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "context",
+              "id": "dc-visitor"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "connectionIds": [],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-visitor-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:context:dc-visitor>studio:element:dc-api",
+          "from": "studio:context:dc-visitor",
+          "to": "studio:element:dc-api",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "context",
+                  "id": "dc-visitor"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-visitor-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-visitor-system",
+              "kind": "context",
+              "action": "Creates account or manages session",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Creates account or manages session"],
+          "protocols": [],
+          "interactions": []
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-db"
+            }
+          ],
+          "connectionIds": ["dc-api-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-audit",
+            "dc-categories",
+            "dc-content",
+            "dc-moderation",
+            "dc-privacy",
+            "dc-search",
+            "dc-sessions",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-access-activity-sql",
+            "dc-access-administrative-audit-sql",
+            "dc-access-category-sql",
+            "dc-access-grant-sql",
+            "dc-access-group-sql",
+            "dc-access-mail-receipt-sql",
+            "dc-access-membership-sql",
+            "dc-access-post-sql",
+            "dc-access-revision-sql",
+            "dc-access-topic-sql",
+            "dc-access-trust-sql",
+            "dc-access-workspace-member-sql",
+            "dc-activity-dataset-storage",
+            "dc-adjudication-dataset-storage",
+            "dc-attachment-dataset-storage",
+            "dc-attachment-link-dataset-storage",
+            "dc-attachments-attachment-link-sql",
+            "dc-attachments-attachment-sql",
+            "dc-attachments-post-sql",
+            "dc-attachments-topic-sql",
+            "dc-audit-audit-sql",
+            "dc-audit-category-sql",
+            "dc-audit-dataset-storage",
+            "dc-category-dataset-storage",
+            "dc-content-attachment-link-sql",
+            "dc-content-audit-sql",
+            "dc-content-category-sql",
+            "dc-content-post-sql",
+            "dc-content-revision-sql",
+            "dc-content-subscription-sql",
+            "dc-content-topic-sql",
+            "dc-flag-dataset-storage",
+            "dc-grant-dataset-storage",
+            "dc-group-dataset-storage",
+            "dc-hold-dataset-storage",
+            "dc-membership-dataset-storage",
+            "dc-moderation-adjudication-history-sql",
+            "dc-moderation-adjudication-sql",
+            "dc-moderation-audit-sql",
+            "dc-moderation-flag-sql",
+            "dc-moderation-post-sql",
+            "dc-moderation-topic-sql",
+            "dc-post-dataset-storage",
+            "dc-privacy-administrative-audit-sql",
+            "dc-privacy-hold-sql",
+            "dc-privacy-notification-sql",
+            "dc-privacy-post-sql",
+            "dc-privacy-privacy-request-sql",
+            "dc-privacy-request-dataset-storage",
+            "dc-privacy-revision-sql",
+            "dc-privacy-subscription-sql",
+            "dc-revision-dataset-storage",
+            "dc-search-post-sql",
+            "dc-search-projection-dataset-storage",
+            "dc-search-search-projection-sql",
+            "dc-search-topic-sql",
+            "dc-subscription-dataset-storage",
+            "dc-subscriptions-digest-sql",
+            "dc-subscriptions-notification-sql",
+            "dc-subscriptions-post-sql",
+            "dc-subscriptions-subscription-sql",
+            "dc-subscriptions-topic-sql",
+            "dc-topic-dataset-storage",
+            "dc-trust-dataset-storage",
+            "dc-workspace-dataset-storage",
+            "dc-workspace-member-dataset-storage"
+          ],
+          "interfaceIds": [
+            "dc-access-activity-sql-required",
+            "dc-access-administrative-audit-sql-required",
+            "dc-access-category-sql-required",
+            "dc-access-grant-sql-required",
+            "dc-access-group-sql-required",
+            "dc-access-mail-receipt-sql-required",
+            "dc-access-membership-sql-required",
+            "dc-access-post-sql-required",
+            "dc-access-revision-sql-required",
+            "dc-access-topic-sql-required",
+            "dc-access-trust-sql-required",
+            "dc-access-workspace-member-sql-required",
+            "dc-activity-data-dc-db-provided",
+            "dc-activity-data-store-provided",
+            "dc-activity-dataset-storage-required",
+            "dc-adjudication-data-dc-db-provided",
+            "dc-adjudication-data-store-provided",
+            "dc-adjudication-dataset-storage-required",
+            "dc-adjudication-history-data-store-provided",
+            "dc-administrative-audit-data-store-provided",
+            "dc-attachment-data-dc-db-provided",
+            "dc-attachment-data-store-provided",
+            "dc-attachment-dataset-storage-required",
+            "dc-attachment-link-data-dc-db-provided",
+            "dc-attachment-link-data-store-provided",
+            "dc-attachment-link-dataset-storage-required",
+            "dc-attachments-attachment-link-sql-required",
+            "dc-attachments-attachment-sql-required",
+            "dc-attachments-post-sql-required",
+            "dc-attachments-topic-sql-required",
+            "dc-audit-audit-sql-required",
+            "dc-audit-category-sql-required",
+            "dc-audit-data-dc-db-provided",
+            "dc-audit-data-store-provided",
+            "dc-audit-dataset-storage-required",
+            "dc-category-data-dc-db-provided",
+            "dc-category-data-store-provided",
+            "dc-category-dataset-storage-required",
+            "dc-content-attachment-link-sql-required",
+            "dc-content-audit-sql-required",
+            "dc-content-category-sql-required",
+            "dc-content-post-sql-required",
+            "dc-content-revision-sql-required",
+            "dc-content-subscription-sql-required",
+            "dc-content-topic-sql-required",
+            "dc-digest-data-store-provided",
+            "dc-flag-data-dc-db-provided",
+            "dc-flag-data-store-provided",
+            "dc-flag-dataset-storage-required",
+            "dc-grant-data-dc-db-provided",
+            "dc-grant-data-store-provided",
+            "dc-grant-dataset-storage-required",
+            "dc-group-data-dc-db-provided",
+            "dc-group-data-store-provided",
+            "dc-group-dataset-storage-required",
+            "dc-hold-data-dc-db-provided",
+            "dc-hold-data-store-provided",
+            "dc-hold-dataset-storage-required",
+            "dc-mail-receipt-data-store-provided",
+            "dc-membership-data-dc-db-provided",
+            "dc-membership-data-store-provided",
+            "dc-membership-dataset-storage-required",
+            "dc-moderation-adjudication-history-sql-required",
+            "dc-moderation-adjudication-sql-required",
+            "dc-moderation-audit-sql-required",
+            "dc-moderation-flag-sql-required",
+            "dc-moderation-post-sql-required",
+            "dc-moderation-topic-sql-required",
+            "dc-notification-data-store-provided",
+            "dc-post-data-dc-db-provided",
+            "dc-post-data-store-provided",
+            "dc-post-dataset-storage-required",
+            "dc-privacy-administrative-audit-sql-required",
+            "dc-privacy-hold-sql-required",
+            "dc-privacy-notification-sql-required",
+            "dc-privacy-post-sql-required",
+            "dc-privacy-privacy-request-sql-required",
+            "dc-privacy-request-data-dc-db-provided",
+            "dc-privacy-request-data-store-provided",
+            "dc-privacy-request-dataset-storage-required",
+            "dc-privacy-revision-sql-required",
+            "dc-privacy-subscription-sql-required",
+            "dc-revision-data-dc-db-provided",
+            "dc-revision-data-store-provided",
+            "dc-revision-dataset-storage-required",
+            "dc-search-post-sql-required",
+            "dc-search-projection-data-dc-db-provided",
+            "dc-search-projection-data-store-provided",
+            "dc-search-projection-dataset-storage-required",
+            "dc-search-search-projection-sql-required",
+            "dc-search-topic-sql-required",
+            "dc-subscription-data-dc-db-provided",
+            "dc-subscription-data-store-provided",
+            "dc-subscription-dataset-storage-required",
+            "dc-subscriptions-digest-sql-required",
+            "dc-subscriptions-notification-sql-required",
+            "dc-subscriptions-post-sql-required",
+            "dc-subscriptions-subscription-sql-required",
+            "dc-subscriptions-topic-sql-required",
+            "dc-topic-data-dc-db-provided",
+            "dc-topic-data-store-provided",
+            "dc-topic-dataset-storage-required",
+            "dc-trust-data-dc-db-provided",
+            "dc-trust-data-store-provided",
+            "dc-trust-dataset-storage-required",
+            "dc-workspace-data-dc-db-provided",
+            "dc-workspace-dataset-storage-required",
+            "dc-workspace-member-data-dc-db-provided",
+            "dc-workspace-member-data-store-provided",
+            "dc-workspace-member-dataset-storage-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-activity-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-adjudication-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-adjudication-history-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-administrative-audit-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-attachment-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-attachment-link-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-audit-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-category-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-digest-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-flag-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-grant-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-group-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-hold-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-mail-receipt-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-membership-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-notification-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-post-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-privacy-request-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-revision-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-search-projection-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-subscription-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-topic-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-trust-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-workspace-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-workspace-member-data",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-db",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-db"
+                }
+              ],
+              "connectionIds": ["dc-api-db"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-audit",
+                "dc-categories",
+                "dc-content",
+                "dc-moderation",
+                "dc-privacy",
+                "dc-search",
+                "dc-sessions",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-access-activity-sql",
+                "dc-access-administrative-audit-sql",
+                "dc-access-category-sql",
+                "dc-access-grant-sql",
+                "dc-access-group-sql",
+                "dc-access-mail-receipt-sql",
+                "dc-access-membership-sql",
+                "dc-access-post-sql",
+                "dc-access-revision-sql",
+                "dc-access-topic-sql",
+                "dc-access-trust-sql",
+                "dc-access-workspace-member-sql",
+                "dc-activity-dataset-storage",
+                "dc-adjudication-dataset-storage",
+                "dc-attachment-dataset-storage",
+                "dc-attachment-link-dataset-storage",
+                "dc-attachments-attachment-link-sql",
+                "dc-attachments-attachment-sql",
+                "dc-attachments-post-sql",
+                "dc-attachments-topic-sql",
+                "dc-audit-audit-sql",
+                "dc-audit-category-sql",
+                "dc-audit-dataset-storage",
+                "dc-category-dataset-storage",
+                "dc-content-attachment-link-sql",
+                "dc-content-audit-sql",
+                "dc-content-category-sql",
+                "dc-content-post-sql",
+                "dc-content-revision-sql",
+                "dc-content-subscription-sql",
+                "dc-content-topic-sql",
+                "dc-flag-dataset-storage",
+                "dc-grant-dataset-storage",
+                "dc-group-dataset-storage",
+                "dc-hold-dataset-storage",
+                "dc-membership-dataset-storage",
+                "dc-moderation-adjudication-history-sql",
+                "dc-moderation-adjudication-sql",
+                "dc-moderation-audit-sql",
+                "dc-moderation-flag-sql",
+                "dc-moderation-post-sql",
+                "dc-moderation-topic-sql",
+                "dc-post-dataset-storage",
+                "dc-privacy-administrative-audit-sql",
+                "dc-privacy-hold-sql",
+                "dc-privacy-notification-sql",
+                "dc-privacy-post-sql",
+                "dc-privacy-privacy-request-sql",
+                "dc-privacy-request-dataset-storage",
+                "dc-privacy-revision-sql",
+                "dc-privacy-subscription-sql",
+                "dc-revision-dataset-storage",
+                "dc-search-post-sql",
+                "dc-search-projection-dataset-storage",
+                "dc-search-search-projection-sql",
+                "dc-search-topic-sql",
+                "dc-subscription-dataset-storage",
+                "dc-subscriptions-digest-sql",
+                "dc-subscriptions-notification-sql",
+                "dc-subscriptions-post-sql",
+                "dc-subscriptions-subscription-sql",
+                "dc-subscriptions-topic-sql",
+                "dc-topic-dataset-storage",
+                "dc-trust-dataset-storage",
+                "dc-workspace-dataset-storage",
+                "dc-workspace-member-dataset-storage"
+              ],
+              "interfaceIds": [
+                "dc-access-activity-sql-required",
+                "dc-access-administrative-audit-sql-required",
+                "dc-access-category-sql-required",
+                "dc-access-grant-sql-required",
+                "dc-access-group-sql-required",
+                "dc-access-mail-receipt-sql-required",
+                "dc-access-membership-sql-required",
+                "dc-access-post-sql-required",
+                "dc-access-revision-sql-required",
+                "dc-access-topic-sql-required",
+                "dc-access-trust-sql-required",
+                "dc-access-workspace-member-sql-required",
+                "dc-activity-data-dc-db-provided",
+                "dc-activity-data-store-provided",
+                "dc-activity-dataset-storage-required",
+                "dc-adjudication-data-dc-db-provided",
+                "dc-adjudication-data-store-provided",
+                "dc-adjudication-dataset-storage-required",
+                "dc-adjudication-history-data-store-provided",
+                "dc-administrative-audit-data-store-provided",
+                "dc-attachment-data-dc-db-provided",
+                "dc-attachment-data-store-provided",
+                "dc-attachment-dataset-storage-required",
+                "dc-attachment-link-data-dc-db-provided",
+                "dc-attachment-link-data-store-provided",
+                "dc-attachment-link-dataset-storage-required",
+                "dc-attachments-attachment-link-sql-required",
+                "dc-attachments-attachment-sql-required",
+                "dc-attachments-post-sql-required",
+                "dc-attachments-topic-sql-required",
+                "dc-audit-audit-sql-required",
+                "dc-audit-category-sql-required",
+                "dc-audit-data-dc-db-provided",
+                "dc-audit-data-store-provided",
+                "dc-audit-dataset-storage-required",
+                "dc-category-data-dc-db-provided",
+                "dc-category-data-store-provided",
+                "dc-category-dataset-storage-required",
+                "dc-content-attachment-link-sql-required",
+                "dc-content-audit-sql-required",
+                "dc-content-category-sql-required",
+                "dc-content-post-sql-required",
+                "dc-content-revision-sql-required",
+                "dc-content-subscription-sql-required",
+                "dc-content-topic-sql-required",
+                "dc-digest-data-store-provided",
+                "dc-flag-data-dc-db-provided",
+                "dc-flag-data-store-provided",
+                "dc-flag-dataset-storage-required",
+                "dc-grant-data-dc-db-provided",
+                "dc-grant-data-store-provided",
+                "dc-grant-dataset-storage-required",
+                "dc-group-data-dc-db-provided",
+                "dc-group-data-store-provided",
+                "dc-group-dataset-storage-required",
+                "dc-hold-data-dc-db-provided",
+                "dc-hold-data-store-provided",
+                "dc-hold-dataset-storage-required",
+                "dc-mail-receipt-data-store-provided",
+                "dc-membership-data-dc-db-provided",
+                "dc-membership-data-store-provided",
+                "dc-membership-dataset-storage-required",
+                "dc-moderation-adjudication-history-sql-required",
+                "dc-moderation-adjudication-sql-required",
+                "dc-moderation-audit-sql-required",
+                "dc-moderation-flag-sql-required",
+                "dc-moderation-post-sql-required",
+                "dc-moderation-topic-sql-required",
+                "dc-notification-data-store-provided",
+                "dc-post-data-dc-db-provided",
+                "dc-post-data-store-provided",
+                "dc-post-dataset-storage-required",
+                "dc-privacy-administrative-audit-sql-required",
+                "dc-privacy-hold-sql-required",
+                "dc-privacy-notification-sql-required",
+                "dc-privacy-post-sql-required",
+                "dc-privacy-privacy-request-sql-required",
+                "dc-privacy-request-data-dc-db-provided",
+                "dc-privacy-request-data-store-provided",
+                "dc-privacy-request-dataset-storage-required",
+                "dc-privacy-revision-sql-required",
+                "dc-privacy-subscription-sql-required",
+                "dc-revision-data-dc-db-provided",
+                "dc-revision-data-store-provided",
+                "dc-revision-dataset-storage-required",
+                "dc-search-post-sql-required",
+                "dc-search-projection-data-dc-db-provided",
+                "dc-search-projection-data-store-provided",
+                "dc-search-projection-dataset-storage-required",
+                "dc-search-search-projection-sql-required",
+                "dc-search-topic-sql-required",
+                "dc-subscription-data-dc-db-provided",
+                "dc-subscription-data-store-provided",
+                "dc-subscription-dataset-storage-required",
+                "dc-subscriptions-digest-sql-required",
+                "dc-subscriptions-notification-sql-required",
+                "dc-subscriptions-post-sql-required",
+                "dc-subscriptions-subscription-sql-required",
+                "dc-subscriptions-topic-sql-required",
+                "dc-topic-data-dc-db-provided",
+                "dc-topic-data-store-provided",
+                "dc-topic-dataset-storage-required",
+                "dc-trust-data-dc-db-provided",
+                "dc-trust-data-store-provided",
+                "dc-trust-dataset-storage-required",
+                "dc-workspace-data-dc-db-provided",
+                "dc-workspace-dataset-storage-required",
+                "dc-workspace-member-data-dc-db-provided",
+                "dc-workspace-member-data-store-provided",
+                "dc-workspace-member-dataset-storage-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-activity-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-adjudication-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-adjudication-history-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-administrative-audit-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-attachment-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-attachment-link-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-audit-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-category-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-digest-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-flag-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-grant-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-group-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-hold-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-mail-receipt-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-membership-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-notification-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-post-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-privacy-request-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-revision-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-search-projection-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-subscription-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-topic-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-trust-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-workspace-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-workspace-member-data",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-db",
+              "kind": "connection",
+              "action": "Reads/writes domain and atomic event intent",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads/writes domain and atomic event intent"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-files"
+            }
+          ],
+          "connectionIds": ["dc-api-files"],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-system-files"],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-attachments"],
+          "bindingIds": [
+            "dc-private-bytes-api",
+            "dc-private-bytes-read-object",
+            "dc-private-bytes-write-object"
+          ],
+          "interfaceIds": ["dc-private-bytes-api-required", "dc-private-bytes-dc-files-provided"],
+          "contractRefs": [
+            {
+              "id": "dc-private-bytes",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-files",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-files",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-files"
+                }
+              ],
+              "connectionIds": ["dc-api-files"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-attachments"],
+              "bindingIds": [
+                "dc-private-bytes-api",
+                "dc-private-bytes-read-object",
+                "dc-private-bytes-write-object"
+              ],
+              "interfaceIds": [
+                "dc-private-bytes-api-required",
+                "dc-private-bytes-dc-files-provided"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-private-bytes",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-files",
+              "kind": "connection",
+              "action": "Stages and proxies authorized private bytes",
+              "protocols": ["HTTPS/S3"],
+              "interactions": ["Request / response"]
+            },
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-files"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-system-files"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-system-files",
+              "kind": "context",
+              "action": "Stores private bytes behind current application policy",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": [
+            "Stages and proxies authorized private bytes",
+            "Stores private bytes behind current application policy"
+          ],
+          "protocols": ["HTTPS/S3"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "connectionIds": ["dc-api-worker"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-cleanup",
+            "dc-content",
+            "dc-notifications",
+            "dc-privacy",
+            "dc-projections",
+            "dc-search",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-create-topic-post-worker",
+            "dc-create-topic-projs-intent-binding",
+            "dc-edit-post-proj-edit-post-intent-binding",
+            "dc-inbound-email-post-worker",
+            "dc-inbound-email-proj-inbound-email-intent-binding",
+            "dc-privacy-privacy-intent-binding",
+            "dc-reply-post-worker",
+            "dc-reply-proj-reply-intent-binding",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding",
+            "dc-schedule-digest-digests-intent-binding",
+            "dc-stage-file-private-cleanup-intent-binding",
+            "dc-state-post-proj-state-post-intent-binding"
+          ],
+          "interfaceIds": [
+            "dc-create-topic-post-worker-provided",
+            "dc-create-topic-post-worker-required",
+            "dc-create-topic-projs-intent-binding-provided",
+            "dc-create-topic-projs-intent-binding-required",
+            "dc-edit-post-proj-edit-post-intent-binding-provided",
+            "dc-edit-post-proj-edit-post-intent-binding-required",
+            "dc-inbound-email-post-worker-provided",
+            "dc-inbound-email-post-worker-required",
+            "dc-inbound-email-proj-inbound-email-intent-binding-provided",
+            "dc-inbound-email-proj-inbound-email-intent-binding-required",
+            "dc-privacy-privacy-intent-binding-provided",
+            "dc-privacy-privacy-intent-binding-required",
+            "dc-reply-post-worker-provided",
+            "dc-reply-post-worker-required",
+            "dc-reply-proj-reply-intent-binding-provided",
+            "dc-reply-proj-reply-intent-binding-required",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding-provided",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding-required",
+            "dc-schedule-digest-digests-intent-binding-provided",
+            "dc-schedule-digest-digests-intent-binding-required",
+            "dc-stage-file-private-cleanup-intent-binding-provided",
+            "dc-stage-file-private-cleanup-intent-binding-required",
+            "dc-state-post-proj-state-post-intent-binding-provided",
+            "dc-state-post-proj-state-post-intent-binding-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-worker-protocol",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-worker",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-worker",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "connectionIds": ["dc-api-worker"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-cleanup",
+                "dc-content",
+                "dc-notifications",
+                "dc-privacy",
+                "dc-projections",
+                "dc-search",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-create-topic-post-worker",
+                "dc-create-topic-projs-intent-binding",
+                "dc-edit-post-proj-edit-post-intent-binding",
+                "dc-inbound-email-post-worker",
+                "dc-inbound-email-proj-inbound-email-intent-binding",
+                "dc-privacy-privacy-intent-binding",
+                "dc-reply-post-worker",
+                "dc-reply-proj-reply-intent-binding",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding",
+                "dc-schedule-digest-digests-intent-binding",
+                "dc-stage-file-private-cleanup-intent-binding",
+                "dc-state-post-proj-state-post-intent-binding"
+              ],
+              "interfaceIds": [
+                "dc-create-topic-post-worker-provided",
+                "dc-create-topic-post-worker-required",
+                "dc-create-topic-projs-intent-binding-provided",
+                "dc-create-topic-projs-intent-binding-required",
+                "dc-edit-post-proj-edit-post-intent-binding-provided",
+                "dc-edit-post-proj-edit-post-intent-binding-required",
+                "dc-inbound-email-post-worker-provided",
+                "dc-inbound-email-post-worker-required",
+                "dc-inbound-email-proj-inbound-email-intent-binding-provided",
+                "dc-inbound-email-proj-inbound-email-intent-binding-required",
+                "dc-privacy-privacy-intent-binding-provided",
+                "dc-privacy-privacy-intent-binding-required",
+                "dc-reply-post-worker-provided",
+                "dc-reply-post-worker-required",
+                "dc-reply-proj-reply-intent-binding-provided",
+                "dc-reply-proj-reply-intent-binding-required",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding-provided",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding-required",
+                "dc-schedule-digest-digests-intent-binding-provided",
+                "dc-schedule-digest-digests-intent-binding-required",
+                "dc-stage-file-private-cleanup-intent-binding-provided",
+                "dc-stage-file-private-cleanup-intent-binding-required",
+                "dc-state-post-proj-state-post-intent-binding-provided",
+                "dc-state-post-proj-state-post-intent-binding-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-worker-protocol",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-worker",
+              "kind": "connection",
+              "action": "Publishes bounded notification/projection/cleanup/digest/privacy channels through PostgreSQL",
+              "protocols": ["SQL"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": [
+            "Publishes bounded notification/projection/cleanup/digest/privacy channels through PostgreSQL"
+          ],
+          "protocols": ["SQL"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-client"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "connectionIds": ["dc-client-api"],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-client-system"],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-audit",
+            "dc-content",
+            "dc-moderation",
+            "dc-privacy",
+            "dc-search",
+            "dc-sessions",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-access-api-binding",
+            "dc-access-api-binding-v2",
+            "dc-audit-api-binding",
+            "dc-audit-api-binding-v2",
+            "dc-content-api-binding",
+            "dc-content-api-binding-v2",
+            "dc-digests-api-binding",
+            "dc-digests-api-binding-v2",
+            "dc-files-api-binding",
+            "dc-files-api-binding-v2",
+            "dc-inbound-api-binding",
+            "dc-inbound-api-binding-v2",
+            "dc-moderation-api-binding",
+            "dc-moderation-api-binding-v2",
+            "dc-privacy-api-binding",
+            "dc-privacy-api-binding-v2",
+            "dc-search-api-binding",
+            "dc-search-api-binding-v2",
+            "dc-sessions-api-binding",
+            "dc-sessions-api-binding-v2",
+            "dc-subscriptions-api-binding",
+            "dc-subscriptions-api-binding-v2",
+            "dc-trust-api-binding",
+            "dc-trust-api-binding-v2"
+          ],
+          "interfaceIds": [
+            "dc-access-api-provided",
+            "dc-access-api-provided-v2",
+            "dc-access-api-required",
+            "dc-access-api-required-v2",
+            "dc-audit-api-provided",
+            "dc-audit-api-provided-v2",
+            "dc-audit-api-required",
+            "dc-audit-api-required-v2",
+            "dc-content-api-provided",
+            "dc-content-api-provided-v2",
+            "dc-content-api-required",
+            "dc-content-api-required-v2",
+            "dc-digests-api-provided",
+            "dc-digests-api-provided-v2",
+            "dc-digests-api-required",
+            "dc-digests-api-required-v2",
+            "dc-files-api-provided",
+            "dc-files-api-provided-v2",
+            "dc-files-api-required",
+            "dc-files-api-required-v2",
+            "dc-inbound-api-provided",
+            "dc-inbound-api-provided-v2",
+            "dc-inbound-api-required",
+            "dc-inbound-api-required-v2",
+            "dc-moderation-api-provided",
+            "dc-moderation-api-provided-v2",
+            "dc-moderation-api-required",
+            "dc-moderation-api-required-v2",
+            "dc-privacy-api-provided",
+            "dc-privacy-api-provided-v2",
+            "dc-privacy-api-required",
+            "dc-privacy-api-required-v2",
+            "dc-search-api-provided",
+            "dc-search-api-provided-v2",
+            "dc-search-api-required",
+            "dc-search-api-required-v2",
+            "dc-sessions-api-provided",
+            "dc-sessions-api-provided-v2",
+            "dc-sessions-api-required",
+            "dc-sessions-api-required-v2",
+            "dc-subscriptions-api-provided",
+            "dc-subscriptions-api-provided-v2",
+            "dc-subscriptions-api-required",
+            "dc-subscriptions-api-required-v2",
+            "dc-trust-api-provided",
+            "dc-trust-api-provided-v2",
+            "dc-trust-api-required",
+            "dc-trust-api-required-v2"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-access-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-access-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-audit-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-audit-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-content-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-content-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-digests-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-digests-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-files-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-files-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-inbound-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-inbound-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-moderation-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-moderation-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-privacy-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-privacy-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-search-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-search-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-sessions-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-sessions-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-subscriptions-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-subscriptions-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-trust-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-trust-api",
+              "version": "v2"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-client>studio:element:dc-api",
+          "from": "studio:element:dc-client",
+          "to": "studio:element:dc-api",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-client"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": ["dc-client-api"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-audit",
+                "dc-content",
+                "dc-moderation",
+                "dc-privacy",
+                "dc-search",
+                "dc-sessions",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-access-api-binding",
+                "dc-access-api-binding-v2",
+                "dc-audit-api-binding",
+                "dc-audit-api-binding-v2",
+                "dc-content-api-binding",
+                "dc-content-api-binding-v2",
+                "dc-digests-api-binding",
+                "dc-digests-api-binding-v2",
+                "dc-files-api-binding",
+                "dc-files-api-binding-v2",
+                "dc-inbound-api-binding",
+                "dc-inbound-api-binding-v2",
+                "dc-moderation-api-binding",
+                "dc-moderation-api-binding-v2",
+                "dc-privacy-api-binding",
+                "dc-privacy-api-binding-v2",
+                "dc-search-api-binding",
+                "dc-search-api-binding-v2",
+                "dc-sessions-api-binding",
+                "dc-sessions-api-binding-v2",
+                "dc-subscriptions-api-binding",
+                "dc-subscriptions-api-binding-v2",
+                "dc-trust-api-binding",
+                "dc-trust-api-binding-v2"
+              ],
+              "interfaceIds": [
+                "dc-access-api-provided",
+                "dc-access-api-provided-v2",
+                "dc-access-api-required",
+                "dc-access-api-required-v2",
+                "dc-audit-api-provided",
+                "dc-audit-api-provided-v2",
+                "dc-audit-api-required",
+                "dc-audit-api-required-v2",
+                "dc-content-api-provided",
+                "dc-content-api-provided-v2",
+                "dc-content-api-required",
+                "dc-content-api-required-v2",
+                "dc-digests-api-provided",
+                "dc-digests-api-provided-v2",
+                "dc-digests-api-required",
+                "dc-digests-api-required-v2",
+                "dc-files-api-provided",
+                "dc-files-api-provided-v2",
+                "dc-files-api-required",
+                "dc-files-api-required-v2",
+                "dc-inbound-api-provided",
+                "dc-inbound-api-provided-v2",
+                "dc-inbound-api-required",
+                "dc-inbound-api-required-v2",
+                "dc-moderation-api-provided",
+                "dc-moderation-api-provided-v2",
+                "dc-moderation-api-required",
+                "dc-moderation-api-required-v2",
+                "dc-privacy-api-provided",
+                "dc-privacy-api-provided-v2",
+                "dc-privacy-api-required",
+                "dc-privacy-api-required-v2",
+                "dc-search-api-provided",
+                "dc-search-api-provided-v2",
+                "dc-search-api-required",
+                "dc-search-api-required-v2",
+                "dc-sessions-api-provided",
+                "dc-sessions-api-provided-v2",
+                "dc-sessions-api-required",
+                "dc-sessions-api-required-v2",
+                "dc-subscriptions-api-provided",
+                "dc-subscriptions-api-provided-v2",
+                "dc-subscriptions-api-required",
+                "dc-subscriptions-api-required-v2",
+                "dc-trust-api-provided",
+                "dc-trust-api-provided-v2",
+                "dc-trust-api-required",
+                "dc-trust-api-required-v2"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-access-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-access-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-audit-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-audit-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-content-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-content-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-digests-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-digests-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-files-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-files-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-inbound-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-inbound-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-moderation-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-moderation-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-privacy-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-privacy-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-search-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-search-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-sessions-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-sessions-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-subscriptions-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-subscriptions-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-trust-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-trust-api",
+                  "version": "v2"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-client-api",
+              "kind": "connection",
+              "action": "Calls scoped REST operations",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            },
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-client"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-client-system"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-client-system",
+              "kind": "context",
+              "action": "Consumes exact REST/JSON contracts",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": ["Calls scoped REST operations", "Consumes exact REST/JSON contracts"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-db"
+            }
+          ],
+          "connectionIds": ["dc-worker-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-cleanup", "dc-mail", "dc-notifications", "dc-projections"],
+          "bindingIds": [
+            "dc-cleanup-attachment-link-sql",
+            "dc-cleanup-attachment-sql",
+            "dc-digest-dataset-storage",
+            "dc-mail-receipt-dataset-storage",
+            "dc-notification-dataset-storage",
+            "dc-notifications-digest-sql",
+            "dc-notifications-hold-sql",
+            "dc-notifications-notification-sql",
+            "dc-notifications-post-sql",
+            "dc-notifications-privacy-request-sql",
+            "dc-notifications-revision-sql",
+            "dc-notifications-subscription-sql",
+            "dc-notifications-topic-sql",
+            "dc-projections-post-sql",
+            "dc-projections-search-projection-sql",
+            "dc-projections-topic-sql"
+          ],
+          "interfaceIds": [
+            "dc-attachment-data-store-provided",
+            "dc-attachment-link-data-store-provided",
+            "dc-cleanup-attachment-link-sql-required",
+            "dc-cleanup-attachment-sql-required",
+            "dc-digest-data-dc-db-provided",
+            "dc-digest-data-store-provided",
+            "dc-digest-dataset-storage-required",
+            "dc-hold-data-store-provided",
+            "dc-mail-receipt-data-dc-db-provided",
+            "dc-mail-receipt-dataset-storage-required",
+            "dc-notification-data-dc-db-provided",
+            "dc-notification-data-store-provided",
+            "dc-notification-dataset-storage-required",
+            "dc-notifications-digest-sql-required",
+            "dc-notifications-hold-sql-required",
+            "dc-notifications-notification-sql-required",
+            "dc-notifications-post-sql-required",
+            "dc-notifications-privacy-request-sql-required",
+            "dc-notifications-revision-sql-required",
+            "dc-notifications-subscription-sql-required",
+            "dc-notifications-topic-sql-required",
+            "dc-post-data-store-provided",
+            "dc-privacy-request-data-store-provided",
+            "dc-projections-post-sql-required",
+            "dc-projections-search-projection-sql-required",
+            "dc-projections-topic-sql-required",
+            "dc-revision-data-store-provided",
+            "dc-search-projection-data-store-provided",
+            "dc-subscription-data-store-provided",
+            "dc-topic-data-store-provided"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-attachment-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-attachment-link-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-digest-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-hold-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-mail-receipt-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-notification-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-post-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-privacy-request-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-revision-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-search-projection-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-subscription-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-topic-data",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-worker>studio:element:dc-db",
+          "from": "studio:element:dc-worker",
+          "to": "studio:element:dc-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-db"
+                }
+              ],
+              "connectionIds": ["dc-worker-db"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-cleanup", "dc-mail", "dc-notifications", "dc-projections"],
+              "bindingIds": [
+                "dc-cleanup-attachment-link-sql",
+                "dc-cleanup-attachment-sql",
+                "dc-digest-dataset-storage",
+                "dc-mail-receipt-dataset-storage",
+                "dc-notification-dataset-storage",
+                "dc-notifications-digest-sql",
+                "dc-notifications-hold-sql",
+                "dc-notifications-notification-sql",
+                "dc-notifications-post-sql",
+                "dc-notifications-privacy-request-sql",
+                "dc-notifications-revision-sql",
+                "dc-notifications-subscription-sql",
+                "dc-notifications-topic-sql",
+                "dc-projections-post-sql",
+                "dc-projections-search-projection-sql",
+                "dc-projections-topic-sql"
+              ],
+              "interfaceIds": [
+                "dc-attachment-data-store-provided",
+                "dc-attachment-link-data-store-provided",
+                "dc-cleanup-attachment-link-sql-required",
+                "dc-cleanup-attachment-sql-required",
+                "dc-digest-data-dc-db-provided",
+                "dc-digest-data-store-provided",
+                "dc-digest-dataset-storage-required",
+                "dc-hold-data-store-provided",
+                "dc-mail-receipt-data-dc-db-provided",
+                "dc-mail-receipt-dataset-storage-required",
+                "dc-notification-data-dc-db-provided",
+                "dc-notification-data-store-provided",
+                "dc-notification-dataset-storage-required",
+                "dc-notifications-digest-sql-required",
+                "dc-notifications-hold-sql-required",
+                "dc-notifications-notification-sql-required",
+                "dc-notifications-post-sql-required",
+                "dc-notifications-privacy-request-sql-required",
+                "dc-notifications-revision-sql-required",
+                "dc-notifications-subscription-sql-required",
+                "dc-notifications-topic-sql-required",
+                "dc-post-data-store-provided",
+                "dc-privacy-request-data-store-provided",
+                "dc-projections-post-sql-required",
+                "dc-projections-search-projection-sql-required",
+                "dc-projections-topic-sql-required",
+                "dc-revision-data-store-provided",
+                "dc-search-projection-data-store-provided",
+                "dc-subscription-data-store-provided",
+                "dc-topic-data-store-provided"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-attachment-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-attachment-link-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-digest-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-hold-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-mail-receipt-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-notification-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-post-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-privacy-request-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-revision-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-search-projection-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-subscription-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-topic-data",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-worker-db",
+              "kind": "connection",
+              "action": "Claims named channels and reads/writes eligible effects",
+              "protocols": ["SQL"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": ["Claims named channels and reads/writes eligible effects"],
+          "protocols": ["SQL"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-email"
+            }
+          ],
+          "connectionIds": ["dc-worker-email"],
+          "queueIds": [],
+          "contextRelationshipIds": ["dc-system-email"],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-notifications"],
+          "bindingIds": [
+            "dc-email-deliver",
+            "dc-email-send",
+            "dc-email-v2-deliver",
+            "dc-email-v2-lookup"
+          ],
+          "interfaceIds": [
+            "dc-email-delivery-dc-email-provided",
+            "dc-email-send-required",
+            "dc-email-v2-provided",
+            "dc-email-v2-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-email-delivery",
+              "version": "v1"
+            },
+            {
+              "id": "dc-email-delivery",
+              "version": "v2"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-worker>studio:element:dc-email",
+          "from": "studio:element:dc-worker",
+          "to": "studio:element:dc-email",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-email"
+                }
+              ],
+              "connectionIds": ["dc-worker-email"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-notifications"],
+              "bindingIds": [
+                "dc-email-deliver",
+                "dc-email-send",
+                "dc-email-v2-deliver",
+                "dc-email-v2-lookup"
+              ],
+              "interfaceIds": [
+                "dc-email-delivery-dc-email-provided",
+                "dc-email-send-required",
+                "dc-email-v2-provided",
+                "dc-email-v2-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-email-delivery",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-email-delivery",
+                  "version": "v2"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-worker-email",
+              "kind": "connection",
+              "action": "Delivers eligible mail or records uncertainty",
+              "protocols": ["SMTP/TLS"],
+              "interactions": ["Asynchronous"]
+            },
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-email"
+                }
+              ],
+              "connectionIds": [],
+              "queueIds": [],
+              "contextRelationshipIds": ["dc-system-email"],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "context:dc-system-email",
+              "kind": "context",
+              "action": "Sends eligible notifications with reconciliation",
+              "protocols": [],
+              "interactions": []
+            }
+          ],
+          "actions": [
+            "Delivers eligible mail or records uncertainty",
+            "Sends eligible notifications with reconciliation"
+          ],
+          "protocols": ["SMTP/TLS"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-files"
+            }
+          ],
+          "connectionIds": ["dc-worker-files"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-cleanup"],
+          "bindingIds": ["dc-private-bytes-cleanup", "dc-private-bytes-delete-orphan"],
+          "interfaceIds": [
+            "dc-private-bytes-cleanup-required",
+            "dc-private-bytes-dc-files-provided"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-private-bytes",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-worker>studio:element:dc-files",
+          "from": "studio:element:dc-worker",
+          "to": "studio:element:dc-files",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-files"
+                }
+              ],
+              "connectionIds": ["dc-worker-files"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-cleanup"],
+              "bindingIds": ["dc-private-bytes-cleanup", "dc-private-bytes-delete-orphan"],
+              "interfaceIds": [
+                "dc-private-bytes-cleanup-required",
+                "dc-private-bytes-dc-files-provided"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-private-bytes",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-worker-files",
+              "kind": "connection",
+              "action": "Rechecks and removes eligible orphan bytes",
+              "protocols": ["HTTPS/S3"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Rechecks and removes eligible orphan bytes"],
+          "protocols": ["HTTPS/S3"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:dc-api",
+      "nodeIds": [
+        "studio:element:dc-api",
+        "studio:element:dc-client",
+        "studio:element:dc-db",
+        "studio:element:dc-files",
+        "studio:element:dc-worker"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-db"
+            }
+          ],
+          "connectionIds": ["dc-api-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-audit",
+            "dc-categories",
+            "dc-content",
+            "dc-moderation",
+            "dc-privacy",
+            "dc-search",
+            "dc-sessions",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-access-activity-sql",
+            "dc-access-administrative-audit-sql",
+            "dc-access-category-sql",
+            "dc-access-grant-sql",
+            "dc-access-group-sql",
+            "dc-access-mail-receipt-sql",
+            "dc-access-membership-sql",
+            "dc-access-post-sql",
+            "dc-access-revision-sql",
+            "dc-access-topic-sql",
+            "dc-access-trust-sql",
+            "dc-access-workspace-member-sql",
+            "dc-activity-dataset-storage",
+            "dc-adjudication-dataset-storage",
+            "dc-attachment-dataset-storage",
+            "dc-attachment-link-dataset-storage",
+            "dc-attachments-attachment-link-sql",
+            "dc-attachments-attachment-sql",
+            "dc-attachments-post-sql",
+            "dc-attachments-topic-sql",
+            "dc-audit-audit-sql",
+            "dc-audit-category-sql",
+            "dc-audit-dataset-storage",
+            "dc-category-dataset-storage",
+            "dc-content-attachment-link-sql",
+            "dc-content-audit-sql",
+            "dc-content-category-sql",
+            "dc-content-post-sql",
+            "dc-content-revision-sql",
+            "dc-content-subscription-sql",
+            "dc-content-topic-sql",
+            "dc-flag-dataset-storage",
+            "dc-grant-dataset-storage",
+            "dc-group-dataset-storage",
+            "dc-hold-dataset-storage",
+            "dc-membership-dataset-storage",
+            "dc-moderation-adjudication-history-sql",
+            "dc-moderation-adjudication-sql",
+            "dc-moderation-audit-sql",
+            "dc-moderation-flag-sql",
+            "dc-moderation-post-sql",
+            "dc-moderation-topic-sql",
+            "dc-post-dataset-storage",
+            "dc-privacy-administrative-audit-sql",
+            "dc-privacy-hold-sql",
+            "dc-privacy-notification-sql",
+            "dc-privacy-post-sql",
+            "dc-privacy-privacy-request-sql",
+            "dc-privacy-request-dataset-storage",
+            "dc-privacy-revision-sql",
+            "dc-privacy-subscription-sql",
+            "dc-revision-dataset-storage",
+            "dc-search-post-sql",
+            "dc-search-projection-dataset-storage",
+            "dc-search-search-projection-sql",
+            "dc-search-topic-sql",
+            "dc-subscription-dataset-storage",
+            "dc-subscriptions-digest-sql",
+            "dc-subscriptions-notification-sql",
+            "dc-subscriptions-post-sql",
+            "dc-subscriptions-subscription-sql",
+            "dc-subscriptions-topic-sql",
+            "dc-topic-dataset-storage",
+            "dc-trust-dataset-storage",
+            "dc-workspace-dataset-storage",
+            "dc-workspace-member-dataset-storage"
+          ],
+          "interfaceIds": [
+            "dc-access-activity-sql-required",
+            "dc-access-administrative-audit-sql-required",
+            "dc-access-category-sql-required",
+            "dc-access-grant-sql-required",
+            "dc-access-group-sql-required",
+            "dc-access-mail-receipt-sql-required",
+            "dc-access-membership-sql-required",
+            "dc-access-post-sql-required",
+            "dc-access-revision-sql-required",
+            "dc-access-topic-sql-required",
+            "dc-access-trust-sql-required",
+            "dc-access-workspace-member-sql-required",
+            "dc-activity-data-dc-db-provided",
+            "dc-activity-data-store-provided",
+            "dc-activity-dataset-storage-required",
+            "dc-adjudication-data-dc-db-provided",
+            "dc-adjudication-data-store-provided",
+            "dc-adjudication-dataset-storage-required",
+            "dc-adjudication-history-data-store-provided",
+            "dc-administrative-audit-data-store-provided",
+            "dc-attachment-data-dc-db-provided",
+            "dc-attachment-data-store-provided",
+            "dc-attachment-dataset-storage-required",
+            "dc-attachment-link-data-dc-db-provided",
+            "dc-attachment-link-data-store-provided",
+            "dc-attachment-link-dataset-storage-required",
+            "dc-attachments-attachment-link-sql-required",
+            "dc-attachments-attachment-sql-required",
+            "dc-attachments-post-sql-required",
+            "dc-attachments-topic-sql-required",
+            "dc-audit-audit-sql-required",
+            "dc-audit-category-sql-required",
+            "dc-audit-data-dc-db-provided",
+            "dc-audit-data-store-provided",
+            "dc-audit-dataset-storage-required",
+            "dc-category-data-dc-db-provided",
+            "dc-category-data-store-provided",
+            "dc-category-dataset-storage-required",
+            "dc-content-attachment-link-sql-required",
+            "dc-content-audit-sql-required",
+            "dc-content-category-sql-required",
+            "dc-content-post-sql-required",
+            "dc-content-revision-sql-required",
+            "dc-content-subscription-sql-required",
+            "dc-content-topic-sql-required",
+            "dc-digest-data-store-provided",
+            "dc-flag-data-dc-db-provided",
+            "dc-flag-data-store-provided",
+            "dc-flag-dataset-storage-required",
+            "dc-grant-data-dc-db-provided",
+            "dc-grant-data-store-provided",
+            "dc-grant-dataset-storage-required",
+            "dc-group-data-dc-db-provided",
+            "dc-group-data-store-provided",
+            "dc-group-dataset-storage-required",
+            "dc-hold-data-dc-db-provided",
+            "dc-hold-data-store-provided",
+            "dc-hold-dataset-storage-required",
+            "dc-mail-receipt-data-store-provided",
+            "dc-membership-data-dc-db-provided",
+            "dc-membership-data-store-provided",
+            "dc-membership-dataset-storage-required",
+            "dc-moderation-adjudication-history-sql-required",
+            "dc-moderation-adjudication-sql-required",
+            "dc-moderation-audit-sql-required",
+            "dc-moderation-flag-sql-required",
+            "dc-moderation-post-sql-required",
+            "dc-moderation-topic-sql-required",
+            "dc-notification-data-store-provided",
+            "dc-post-data-dc-db-provided",
+            "dc-post-data-store-provided",
+            "dc-post-dataset-storage-required",
+            "dc-privacy-administrative-audit-sql-required",
+            "dc-privacy-hold-sql-required",
+            "dc-privacy-notification-sql-required",
+            "dc-privacy-post-sql-required",
+            "dc-privacy-privacy-request-sql-required",
+            "dc-privacy-request-data-dc-db-provided",
+            "dc-privacy-request-data-store-provided",
+            "dc-privacy-request-dataset-storage-required",
+            "dc-privacy-revision-sql-required",
+            "dc-privacy-subscription-sql-required",
+            "dc-revision-data-dc-db-provided",
+            "dc-revision-data-store-provided",
+            "dc-revision-dataset-storage-required",
+            "dc-search-post-sql-required",
+            "dc-search-projection-data-dc-db-provided",
+            "dc-search-projection-data-store-provided",
+            "dc-search-projection-dataset-storage-required",
+            "dc-search-search-projection-sql-required",
+            "dc-search-topic-sql-required",
+            "dc-subscription-data-dc-db-provided",
+            "dc-subscription-data-store-provided",
+            "dc-subscription-dataset-storage-required",
+            "dc-subscriptions-digest-sql-required",
+            "dc-subscriptions-notification-sql-required",
+            "dc-subscriptions-post-sql-required",
+            "dc-subscriptions-subscription-sql-required",
+            "dc-subscriptions-topic-sql-required",
+            "dc-topic-data-dc-db-provided",
+            "dc-topic-data-store-provided",
+            "dc-topic-dataset-storage-required",
+            "dc-trust-data-dc-db-provided",
+            "dc-trust-data-store-provided",
+            "dc-trust-dataset-storage-required",
+            "dc-workspace-data-dc-db-provided",
+            "dc-workspace-dataset-storage-required",
+            "dc-workspace-member-data-dc-db-provided",
+            "dc-workspace-member-data-store-provided",
+            "dc-workspace-member-dataset-storage-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-activity-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-adjudication-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-adjudication-history-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-administrative-audit-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-attachment-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-attachment-link-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-audit-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-category-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-digest-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-flag-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-grant-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-group-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-hold-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-mail-receipt-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-membership-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-notification-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-post-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-privacy-request-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-revision-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-search-projection-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-subscription-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-topic-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-trust-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-workspace-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-workspace-member-data",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-db",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-db"
+                }
+              ],
+              "connectionIds": ["dc-api-db"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-audit",
+                "dc-categories",
+                "dc-content",
+                "dc-moderation",
+                "dc-privacy",
+                "dc-search",
+                "dc-sessions",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-access-activity-sql",
+                "dc-access-administrative-audit-sql",
+                "dc-access-category-sql",
+                "dc-access-grant-sql",
+                "dc-access-group-sql",
+                "dc-access-mail-receipt-sql",
+                "dc-access-membership-sql",
+                "dc-access-post-sql",
+                "dc-access-revision-sql",
+                "dc-access-topic-sql",
+                "dc-access-trust-sql",
+                "dc-access-workspace-member-sql",
+                "dc-activity-dataset-storage",
+                "dc-adjudication-dataset-storage",
+                "dc-attachment-dataset-storage",
+                "dc-attachment-link-dataset-storage",
+                "dc-attachments-attachment-link-sql",
+                "dc-attachments-attachment-sql",
+                "dc-attachments-post-sql",
+                "dc-attachments-topic-sql",
+                "dc-audit-audit-sql",
+                "dc-audit-category-sql",
+                "dc-audit-dataset-storage",
+                "dc-category-dataset-storage",
+                "dc-content-attachment-link-sql",
+                "dc-content-audit-sql",
+                "dc-content-category-sql",
+                "dc-content-post-sql",
+                "dc-content-revision-sql",
+                "dc-content-subscription-sql",
+                "dc-content-topic-sql",
+                "dc-flag-dataset-storage",
+                "dc-grant-dataset-storage",
+                "dc-group-dataset-storage",
+                "dc-hold-dataset-storage",
+                "dc-membership-dataset-storage",
+                "dc-moderation-adjudication-history-sql",
+                "dc-moderation-adjudication-sql",
+                "dc-moderation-audit-sql",
+                "dc-moderation-flag-sql",
+                "dc-moderation-post-sql",
+                "dc-moderation-topic-sql",
+                "dc-post-dataset-storage",
+                "dc-privacy-administrative-audit-sql",
+                "dc-privacy-hold-sql",
+                "dc-privacy-notification-sql",
+                "dc-privacy-post-sql",
+                "dc-privacy-privacy-request-sql",
+                "dc-privacy-request-dataset-storage",
+                "dc-privacy-revision-sql",
+                "dc-privacy-subscription-sql",
+                "dc-revision-dataset-storage",
+                "dc-search-post-sql",
+                "dc-search-projection-dataset-storage",
+                "dc-search-search-projection-sql",
+                "dc-search-topic-sql",
+                "dc-subscription-dataset-storage",
+                "dc-subscriptions-digest-sql",
+                "dc-subscriptions-notification-sql",
+                "dc-subscriptions-post-sql",
+                "dc-subscriptions-subscription-sql",
+                "dc-subscriptions-topic-sql",
+                "dc-topic-dataset-storage",
+                "dc-trust-dataset-storage",
+                "dc-workspace-dataset-storage",
+                "dc-workspace-member-dataset-storage"
+              ],
+              "interfaceIds": [
+                "dc-access-activity-sql-required",
+                "dc-access-administrative-audit-sql-required",
+                "dc-access-category-sql-required",
+                "dc-access-grant-sql-required",
+                "dc-access-group-sql-required",
+                "dc-access-mail-receipt-sql-required",
+                "dc-access-membership-sql-required",
+                "dc-access-post-sql-required",
+                "dc-access-revision-sql-required",
+                "dc-access-topic-sql-required",
+                "dc-access-trust-sql-required",
+                "dc-access-workspace-member-sql-required",
+                "dc-activity-data-dc-db-provided",
+                "dc-activity-data-store-provided",
+                "dc-activity-dataset-storage-required",
+                "dc-adjudication-data-dc-db-provided",
+                "dc-adjudication-data-store-provided",
+                "dc-adjudication-dataset-storage-required",
+                "dc-adjudication-history-data-store-provided",
+                "dc-administrative-audit-data-store-provided",
+                "dc-attachment-data-dc-db-provided",
+                "dc-attachment-data-store-provided",
+                "dc-attachment-dataset-storage-required",
+                "dc-attachment-link-data-dc-db-provided",
+                "dc-attachment-link-data-store-provided",
+                "dc-attachment-link-dataset-storage-required",
+                "dc-attachments-attachment-link-sql-required",
+                "dc-attachments-attachment-sql-required",
+                "dc-attachments-post-sql-required",
+                "dc-attachments-topic-sql-required",
+                "dc-audit-audit-sql-required",
+                "dc-audit-category-sql-required",
+                "dc-audit-data-dc-db-provided",
+                "dc-audit-data-store-provided",
+                "dc-audit-dataset-storage-required",
+                "dc-category-data-dc-db-provided",
+                "dc-category-data-store-provided",
+                "dc-category-dataset-storage-required",
+                "dc-content-attachment-link-sql-required",
+                "dc-content-audit-sql-required",
+                "dc-content-category-sql-required",
+                "dc-content-post-sql-required",
+                "dc-content-revision-sql-required",
+                "dc-content-subscription-sql-required",
+                "dc-content-topic-sql-required",
+                "dc-digest-data-store-provided",
+                "dc-flag-data-dc-db-provided",
+                "dc-flag-data-store-provided",
+                "dc-flag-dataset-storage-required",
+                "dc-grant-data-dc-db-provided",
+                "dc-grant-data-store-provided",
+                "dc-grant-dataset-storage-required",
+                "dc-group-data-dc-db-provided",
+                "dc-group-data-store-provided",
+                "dc-group-dataset-storage-required",
+                "dc-hold-data-dc-db-provided",
+                "dc-hold-data-store-provided",
+                "dc-hold-dataset-storage-required",
+                "dc-mail-receipt-data-store-provided",
+                "dc-membership-data-dc-db-provided",
+                "dc-membership-data-store-provided",
+                "dc-membership-dataset-storage-required",
+                "dc-moderation-adjudication-history-sql-required",
+                "dc-moderation-adjudication-sql-required",
+                "dc-moderation-audit-sql-required",
+                "dc-moderation-flag-sql-required",
+                "dc-moderation-post-sql-required",
+                "dc-moderation-topic-sql-required",
+                "dc-notification-data-store-provided",
+                "dc-post-data-dc-db-provided",
+                "dc-post-data-store-provided",
+                "dc-post-dataset-storage-required",
+                "dc-privacy-administrative-audit-sql-required",
+                "dc-privacy-hold-sql-required",
+                "dc-privacy-notification-sql-required",
+                "dc-privacy-post-sql-required",
+                "dc-privacy-privacy-request-sql-required",
+                "dc-privacy-request-data-dc-db-provided",
+                "dc-privacy-request-data-store-provided",
+                "dc-privacy-request-dataset-storage-required",
+                "dc-privacy-revision-sql-required",
+                "dc-privacy-subscription-sql-required",
+                "dc-revision-data-dc-db-provided",
+                "dc-revision-data-store-provided",
+                "dc-revision-dataset-storage-required",
+                "dc-search-post-sql-required",
+                "dc-search-projection-data-dc-db-provided",
+                "dc-search-projection-data-store-provided",
+                "dc-search-projection-dataset-storage-required",
+                "dc-search-search-projection-sql-required",
+                "dc-search-topic-sql-required",
+                "dc-subscription-data-dc-db-provided",
+                "dc-subscription-data-store-provided",
+                "dc-subscription-dataset-storage-required",
+                "dc-subscriptions-digest-sql-required",
+                "dc-subscriptions-notification-sql-required",
+                "dc-subscriptions-post-sql-required",
+                "dc-subscriptions-subscription-sql-required",
+                "dc-subscriptions-topic-sql-required",
+                "dc-topic-data-dc-db-provided",
+                "dc-topic-data-store-provided",
+                "dc-topic-dataset-storage-required",
+                "dc-trust-data-dc-db-provided",
+                "dc-trust-data-store-provided",
+                "dc-trust-dataset-storage-required",
+                "dc-workspace-data-dc-db-provided",
+                "dc-workspace-dataset-storage-required",
+                "dc-workspace-member-data-dc-db-provided",
+                "dc-workspace-member-data-store-provided",
+                "dc-workspace-member-dataset-storage-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-activity-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-adjudication-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-adjudication-history-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-administrative-audit-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-attachment-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-attachment-link-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-audit-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-category-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-digest-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-flag-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-grant-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-group-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-hold-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-mail-receipt-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-membership-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-notification-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-post-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-privacy-request-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-revision-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-search-projection-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-subscription-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-topic-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-trust-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-workspace-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-workspace-member-data",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-db",
+              "kind": "connection",
+              "action": "Reads/writes domain and atomic event intent",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads/writes domain and atomic event intent"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-files"
+            }
+          ],
+          "connectionIds": ["dc-api-files"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-attachments"],
+          "bindingIds": [
+            "dc-private-bytes-api",
+            "dc-private-bytes-read-object",
+            "dc-private-bytes-write-object"
+          ],
+          "interfaceIds": ["dc-private-bytes-api-required", "dc-private-bytes-dc-files-provided"],
+          "contractRefs": [
+            {
+              "id": "dc-private-bytes",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-files",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-files",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-files"
+                }
+              ],
+              "connectionIds": ["dc-api-files"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-attachments"],
+              "bindingIds": [
+                "dc-private-bytes-api",
+                "dc-private-bytes-read-object",
+                "dc-private-bytes-write-object"
+              ],
+              "interfaceIds": [
+                "dc-private-bytes-api-required",
+                "dc-private-bytes-dc-files-provided"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-private-bytes",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-files",
+              "kind": "connection",
+              "action": "Stages and proxies authorized private bytes",
+              "protocols": ["HTTPS/S3"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Stages and proxies authorized private bytes"],
+          "protocols": ["HTTPS/S3"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "connectionIds": ["dc-api-worker"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-cleanup",
+            "dc-content",
+            "dc-notifications",
+            "dc-privacy",
+            "dc-projections",
+            "dc-search",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-create-topic-post-worker",
+            "dc-create-topic-projs-intent-binding",
+            "dc-edit-post-proj-edit-post-intent-binding",
+            "dc-inbound-email-post-worker",
+            "dc-inbound-email-proj-inbound-email-intent-binding",
+            "dc-privacy-privacy-intent-binding",
+            "dc-reply-post-worker",
+            "dc-reply-proj-reply-intent-binding",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding",
+            "dc-schedule-digest-digests-intent-binding",
+            "dc-stage-file-private-cleanup-intent-binding",
+            "dc-state-post-proj-state-post-intent-binding"
+          ],
+          "interfaceIds": [
+            "dc-create-topic-post-worker-provided",
+            "dc-create-topic-post-worker-required",
+            "dc-create-topic-projs-intent-binding-provided",
+            "dc-create-topic-projs-intent-binding-required",
+            "dc-edit-post-proj-edit-post-intent-binding-provided",
+            "dc-edit-post-proj-edit-post-intent-binding-required",
+            "dc-inbound-email-post-worker-provided",
+            "dc-inbound-email-post-worker-required",
+            "dc-inbound-email-proj-inbound-email-intent-binding-provided",
+            "dc-inbound-email-proj-inbound-email-intent-binding-required",
+            "dc-privacy-privacy-intent-binding-provided",
+            "dc-privacy-privacy-intent-binding-required",
+            "dc-reply-post-worker-provided",
+            "dc-reply-post-worker-required",
+            "dc-reply-proj-reply-intent-binding-provided",
+            "dc-reply-proj-reply-intent-binding-required",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding-provided",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding-required",
+            "dc-schedule-digest-digests-intent-binding-provided",
+            "dc-schedule-digest-digests-intent-binding-required",
+            "dc-stage-file-private-cleanup-intent-binding-provided",
+            "dc-stage-file-private-cleanup-intent-binding-required",
+            "dc-state-post-proj-state-post-intent-binding-provided",
+            "dc-state-post-proj-state-post-intent-binding-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-worker-protocol",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-worker",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-worker",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "connectionIds": ["dc-api-worker"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-cleanup",
+                "dc-content",
+                "dc-notifications",
+                "dc-privacy",
+                "dc-projections",
+                "dc-search",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-create-topic-post-worker",
+                "dc-create-topic-projs-intent-binding",
+                "dc-edit-post-proj-edit-post-intent-binding",
+                "dc-inbound-email-post-worker",
+                "dc-inbound-email-proj-inbound-email-intent-binding",
+                "dc-privacy-privacy-intent-binding",
+                "dc-reply-post-worker",
+                "dc-reply-proj-reply-intent-binding",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding",
+                "dc-schedule-digest-digests-intent-binding",
+                "dc-stage-file-private-cleanup-intent-binding",
+                "dc-state-post-proj-state-post-intent-binding"
+              ],
+              "interfaceIds": [
+                "dc-create-topic-post-worker-provided",
+                "dc-create-topic-post-worker-required",
+                "dc-create-topic-projs-intent-binding-provided",
+                "dc-create-topic-projs-intent-binding-required",
+                "dc-edit-post-proj-edit-post-intent-binding-provided",
+                "dc-edit-post-proj-edit-post-intent-binding-required",
+                "dc-inbound-email-post-worker-provided",
+                "dc-inbound-email-post-worker-required",
+                "dc-inbound-email-proj-inbound-email-intent-binding-provided",
+                "dc-inbound-email-proj-inbound-email-intent-binding-required",
+                "dc-privacy-privacy-intent-binding-provided",
+                "dc-privacy-privacy-intent-binding-required",
+                "dc-reply-post-worker-provided",
+                "dc-reply-post-worker-required",
+                "dc-reply-proj-reply-intent-binding-provided",
+                "dc-reply-proj-reply-intent-binding-required",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding-provided",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding-required",
+                "dc-schedule-digest-digests-intent-binding-provided",
+                "dc-schedule-digest-digests-intent-binding-required",
+                "dc-stage-file-private-cleanup-intent-binding-provided",
+                "dc-stage-file-private-cleanup-intent-binding-required",
+                "dc-state-post-proj-state-post-intent-binding-provided",
+                "dc-state-post-proj-state-post-intent-binding-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-worker-protocol",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-worker",
+              "kind": "connection",
+              "action": "Publishes bounded notification/projection/cleanup/digest/privacy channels through PostgreSQL",
+              "protocols": ["SQL"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": [
+            "Publishes bounded notification/projection/cleanup/digest/privacy channels through PostgreSQL"
+          ],
+          "protocols": ["SQL"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-client"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "connectionIds": ["dc-client-api"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-audit",
+            "dc-content",
+            "dc-moderation",
+            "dc-privacy",
+            "dc-search",
+            "dc-sessions",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-access-api-binding",
+            "dc-access-api-binding-v2",
+            "dc-audit-api-binding",
+            "dc-audit-api-binding-v2",
+            "dc-content-api-binding",
+            "dc-content-api-binding-v2",
+            "dc-digests-api-binding",
+            "dc-digests-api-binding-v2",
+            "dc-files-api-binding",
+            "dc-files-api-binding-v2",
+            "dc-inbound-api-binding",
+            "dc-inbound-api-binding-v2",
+            "dc-moderation-api-binding",
+            "dc-moderation-api-binding-v2",
+            "dc-privacy-api-binding",
+            "dc-privacy-api-binding-v2",
+            "dc-search-api-binding",
+            "dc-search-api-binding-v2",
+            "dc-sessions-api-binding",
+            "dc-sessions-api-binding-v2",
+            "dc-subscriptions-api-binding",
+            "dc-subscriptions-api-binding-v2",
+            "dc-trust-api-binding",
+            "dc-trust-api-binding-v2"
+          ],
+          "interfaceIds": [
+            "dc-access-api-provided",
+            "dc-access-api-provided-v2",
+            "dc-access-api-required",
+            "dc-access-api-required-v2",
+            "dc-audit-api-provided",
+            "dc-audit-api-provided-v2",
+            "dc-audit-api-required",
+            "dc-audit-api-required-v2",
+            "dc-content-api-provided",
+            "dc-content-api-provided-v2",
+            "dc-content-api-required",
+            "dc-content-api-required-v2",
+            "dc-digests-api-provided",
+            "dc-digests-api-provided-v2",
+            "dc-digests-api-required",
+            "dc-digests-api-required-v2",
+            "dc-files-api-provided",
+            "dc-files-api-provided-v2",
+            "dc-files-api-required",
+            "dc-files-api-required-v2",
+            "dc-inbound-api-provided",
+            "dc-inbound-api-provided-v2",
+            "dc-inbound-api-required",
+            "dc-inbound-api-required-v2",
+            "dc-moderation-api-provided",
+            "dc-moderation-api-provided-v2",
+            "dc-moderation-api-required",
+            "dc-moderation-api-required-v2",
+            "dc-privacy-api-provided",
+            "dc-privacy-api-provided-v2",
+            "dc-privacy-api-required",
+            "dc-privacy-api-required-v2",
+            "dc-search-api-provided",
+            "dc-search-api-provided-v2",
+            "dc-search-api-required",
+            "dc-search-api-required-v2",
+            "dc-sessions-api-provided",
+            "dc-sessions-api-provided-v2",
+            "dc-sessions-api-required",
+            "dc-sessions-api-required-v2",
+            "dc-subscriptions-api-provided",
+            "dc-subscriptions-api-provided-v2",
+            "dc-subscriptions-api-required",
+            "dc-subscriptions-api-required-v2",
+            "dc-trust-api-provided",
+            "dc-trust-api-provided-v2",
+            "dc-trust-api-required",
+            "dc-trust-api-required-v2"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-access-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-access-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-audit-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-audit-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-content-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-content-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-digests-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-digests-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-files-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-files-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-inbound-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-inbound-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-moderation-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-moderation-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-privacy-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-privacy-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-search-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-search-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-sessions-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-sessions-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-subscriptions-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-subscriptions-api",
+              "version": "v2"
+            },
+            {
+              "id": "dc-trust-api",
+              "version": "v1"
+            },
+            {
+              "id": "dc-trust-api",
+              "version": "v2"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-client>studio:element:dc-api",
+          "from": "studio:element:dc-client",
+          "to": "studio:element:dc-api",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-client"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "connectionIds": ["dc-client-api"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-audit",
+                "dc-content",
+                "dc-moderation",
+                "dc-privacy",
+                "dc-search",
+                "dc-sessions",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-access-api-binding",
+                "dc-access-api-binding-v2",
+                "dc-audit-api-binding",
+                "dc-audit-api-binding-v2",
+                "dc-content-api-binding",
+                "dc-content-api-binding-v2",
+                "dc-digests-api-binding",
+                "dc-digests-api-binding-v2",
+                "dc-files-api-binding",
+                "dc-files-api-binding-v2",
+                "dc-inbound-api-binding",
+                "dc-inbound-api-binding-v2",
+                "dc-moderation-api-binding",
+                "dc-moderation-api-binding-v2",
+                "dc-privacy-api-binding",
+                "dc-privacy-api-binding-v2",
+                "dc-search-api-binding",
+                "dc-search-api-binding-v2",
+                "dc-sessions-api-binding",
+                "dc-sessions-api-binding-v2",
+                "dc-subscriptions-api-binding",
+                "dc-subscriptions-api-binding-v2",
+                "dc-trust-api-binding",
+                "dc-trust-api-binding-v2"
+              ],
+              "interfaceIds": [
+                "dc-access-api-provided",
+                "dc-access-api-provided-v2",
+                "dc-access-api-required",
+                "dc-access-api-required-v2",
+                "dc-audit-api-provided",
+                "dc-audit-api-provided-v2",
+                "dc-audit-api-required",
+                "dc-audit-api-required-v2",
+                "dc-content-api-provided",
+                "dc-content-api-provided-v2",
+                "dc-content-api-required",
+                "dc-content-api-required-v2",
+                "dc-digests-api-provided",
+                "dc-digests-api-provided-v2",
+                "dc-digests-api-required",
+                "dc-digests-api-required-v2",
+                "dc-files-api-provided",
+                "dc-files-api-provided-v2",
+                "dc-files-api-required",
+                "dc-files-api-required-v2",
+                "dc-inbound-api-provided",
+                "dc-inbound-api-provided-v2",
+                "dc-inbound-api-required",
+                "dc-inbound-api-required-v2",
+                "dc-moderation-api-provided",
+                "dc-moderation-api-provided-v2",
+                "dc-moderation-api-required",
+                "dc-moderation-api-required-v2",
+                "dc-privacy-api-provided",
+                "dc-privacy-api-provided-v2",
+                "dc-privacy-api-required",
+                "dc-privacy-api-required-v2",
+                "dc-search-api-provided",
+                "dc-search-api-provided-v2",
+                "dc-search-api-required",
+                "dc-search-api-required-v2",
+                "dc-sessions-api-provided",
+                "dc-sessions-api-provided-v2",
+                "dc-sessions-api-required",
+                "dc-sessions-api-required-v2",
+                "dc-subscriptions-api-provided",
+                "dc-subscriptions-api-provided-v2",
+                "dc-subscriptions-api-required",
+                "dc-subscriptions-api-required-v2",
+                "dc-trust-api-provided",
+                "dc-trust-api-provided-v2",
+                "dc-trust-api-required",
+                "dc-trust-api-required-v2"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-access-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-access-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-audit-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-audit-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-content-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-content-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-digests-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-digests-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-files-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-files-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-inbound-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-inbound-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-moderation-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-moderation-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-privacy-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-privacy-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-search-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-search-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-sessions-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-sessions-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-subscriptions-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-subscriptions-api",
+                  "version": "v2"
+                },
+                {
+                  "id": "dc-trust-api",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-trust-api",
+                  "version": "v2"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-client-api",
+              "kind": "connection",
+              "action": "Calls scoped REST operations",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Calls scoped REST operations"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:dc-worker",
+      "nodeIds": [
+        "studio:element:dc-api",
+        "studio:element:dc-db",
+        "studio:element:dc-email",
+        "studio:element:dc-files",
+        "studio:element:dc-worker"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-api"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "connectionIds": ["dc-api-worker"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [
+            "dc-access",
+            "dc-attachments",
+            "dc-cleanup",
+            "dc-content",
+            "dc-notifications",
+            "dc-privacy",
+            "dc-projections",
+            "dc-search",
+            "dc-subscriptions"
+          ],
+          "bindingIds": [
+            "dc-create-topic-post-worker",
+            "dc-create-topic-projs-intent-binding",
+            "dc-edit-post-proj-edit-post-intent-binding",
+            "dc-inbound-email-post-worker",
+            "dc-inbound-email-proj-inbound-email-intent-binding",
+            "dc-privacy-privacy-intent-binding",
+            "dc-reply-post-worker",
+            "dc-reply-proj-reply-intent-binding",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding",
+            "dc-schedule-digest-digests-intent-binding",
+            "dc-stage-file-private-cleanup-intent-binding",
+            "dc-state-post-proj-state-post-intent-binding"
+          ],
+          "interfaceIds": [
+            "dc-create-topic-post-worker-provided",
+            "dc-create-topic-post-worker-required",
+            "dc-create-topic-projs-intent-binding-provided",
+            "dc-create-topic-projs-intent-binding-required",
+            "dc-edit-post-proj-edit-post-intent-binding-provided",
+            "dc-edit-post-proj-edit-post-intent-binding-required",
+            "dc-inbound-email-post-worker-provided",
+            "dc-inbound-email-post-worker-required",
+            "dc-inbound-email-proj-inbound-email-intent-binding-provided",
+            "dc-inbound-email-proj-inbound-email-intent-binding-required",
+            "dc-privacy-privacy-intent-binding-provided",
+            "dc-privacy-privacy-intent-binding-required",
+            "dc-reply-post-worker-provided",
+            "dc-reply-post-worker-required",
+            "dc-reply-proj-reply-intent-binding-provided",
+            "dc-reply-proj-reply-intent-binding-required",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding-provided",
+            "dc-req-proj-rebuild-proj-rebuild-intent-binding-required",
+            "dc-schedule-digest-digests-intent-binding-provided",
+            "dc-schedule-digest-digests-intent-binding-required",
+            "dc-stage-file-private-cleanup-intent-binding-provided",
+            "dc-stage-file-private-cleanup-intent-binding-required",
+            "dc-state-post-proj-state-post-intent-binding-provided",
+            "dc-state-post-proj-state-post-intent-binding-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-worker-protocol",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-api>studio:element:dc-worker",
+          "from": "studio:element:dc-api",
+          "to": "studio:element:dc-worker",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-api"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "connectionIds": ["dc-api-worker"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [
+                "dc-access",
+                "dc-attachments",
+                "dc-cleanup",
+                "dc-content",
+                "dc-notifications",
+                "dc-privacy",
+                "dc-projections",
+                "dc-search",
+                "dc-subscriptions"
+              ],
+              "bindingIds": [
+                "dc-create-topic-post-worker",
+                "dc-create-topic-projs-intent-binding",
+                "dc-edit-post-proj-edit-post-intent-binding",
+                "dc-inbound-email-post-worker",
+                "dc-inbound-email-proj-inbound-email-intent-binding",
+                "dc-privacy-privacy-intent-binding",
+                "dc-reply-post-worker",
+                "dc-reply-proj-reply-intent-binding",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding",
+                "dc-schedule-digest-digests-intent-binding",
+                "dc-stage-file-private-cleanup-intent-binding",
+                "dc-state-post-proj-state-post-intent-binding"
+              ],
+              "interfaceIds": [
+                "dc-create-topic-post-worker-provided",
+                "dc-create-topic-post-worker-required",
+                "dc-create-topic-projs-intent-binding-provided",
+                "dc-create-topic-projs-intent-binding-required",
+                "dc-edit-post-proj-edit-post-intent-binding-provided",
+                "dc-edit-post-proj-edit-post-intent-binding-required",
+                "dc-inbound-email-post-worker-provided",
+                "dc-inbound-email-post-worker-required",
+                "dc-inbound-email-proj-inbound-email-intent-binding-provided",
+                "dc-inbound-email-proj-inbound-email-intent-binding-required",
+                "dc-privacy-privacy-intent-binding-provided",
+                "dc-privacy-privacy-intent-binding-required",
+                "dc-reply-post-worker-provided",
+                "dc-reply-post-worker-required",
+                "dc-reply-proj-reply-intent-binding-provided",
+                "dc-reply-proj-reply-intent-binding-required",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding-provided",
+                "dc-req-proj-rebuild-proj-rebuild-intent-binding-required",
+                "dc-schedule-digest-digests-intent-binding-provided",
+                "dc-schedule-digest-digests-intent-binding-required",
+                "dc-stage-file-private-cleanup-intent-binding-provided",
+                "dc-stage-file-private-cleanup-intent-binding-required",
+                "dc-state-post-proj-state-post-intent-binding-provided",
+                "dc-state-post-proj-state-post-intent-binding-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-worker-protocol",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-api-worker",
+              "kind": "connection",
+              "action": "Publishes bounded notification/projection/cleanup/digest/privacy channels through PostgreSQL",
+              "protocols": ["SQL"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": [
+            "Publishes bounded notification/projection/cleanup/digest/privacy channels through PostgreSQL"
+          ],
+          "protocols": ["SQL"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-db"
+            }
+          ],
+          "connectionIds": ["dc-worker-db"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-cleanup", "dc-mail", "dc-notifications", "dc-projections"],
+          "bindingIds": [
+            "dc-cleanup-attachment-link-sql",
+            "dc-cleanup-attachment-sql",
+            "dc-digest-dataset-storage",
+            "dc-mail-receipt-dataset-storage",
+            "dc-notification-dataset-storage",
+            "dc-notifications-digest-sql",
+            "dc-notifications-hold-sql",
+            "dc-notifications-notification-sql",
+            "dc-notifications-post-sql",
+            "dc-notifications-privacy-request-sql",
+            "dc-notifications-revision-sql",
+            "dc-notifications-subscription-sql",
+            "dc-notifications-topic-sql",
+            "dc-projections-post-sql",
+            "dc-projections-search-projection-sql",
+            "dc-projections-topic-sql"
+          ],
+          "interfaceIds": [
+            "dc-attachment-data-store-provided",
+            "dc-attachment-link-data-store-provided",
+            "dc-cleanup-attachment-link-sql-required",
+            "dc-cleanup-attachment-sql-required",
+            "dc-digest-data-dc-db-provided",
+            "dc-digest-data-store-provided",
+            "dc-digest-dataset-storage-required",
+            "dc-hold-data-store-provided",
+            "dc-mail-receipt-data-dc-db-provided",
+            "dc-mail-receipt-dataset-storage-required",
+            "dc-notification-data-dc-db-provided",
+            "dc-notification-data-store-provided",
+            "dc-notification-dataset-storage-required",
+            "dc-notifications-digest-sql-required",
+            "dc-notifications-hold-sql-required",
+            "dc-notifications-notification-sql-required",
+            "dc-notifications-post-sql-required",
+            "dc-notifications-privacy-request-sql-required",
+            "dc-notifications-revision-sql-required",
+            "dc-notifications-subscription-sql-required",
+            "dc-notifications-topic-sql-required",
+            "dc-post-data-store-provided",
+            "dc-privacy-request-data-store-provided",
+            "dc-projections-post-sql-required",
+            "dc-projections-search-projection-sql-required",
+            "dc-projections-topic-sql-required",
+            "dc-revision-data-store-provided",
+            "dc-search-projection-data-store-provided",
+            "dc-subscription-data-store-provided",
+            "dc-topic-data-store-provided"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-attachment-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-attachment-link-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-digest-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-hold-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-mail-receipt-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-notification-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-post-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-privacy-request-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-revision-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-search-projection-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-subscription-data",
+              "version": "v1"
+            },
+            {
+              "id": "dc-topic-data",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-worker>studio:element:dc-db",
+          "from": "studio:element:dc-worker",
+          "to": "studio:element:dc-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-db"
+                }
+              ],
+              "connectionIds": ["dc-worker-db"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-cleanup", "dc-mail", "dc-notifications", "dc-projections"],
+              "bindingIds": [
+                "dc-cleanup-attachment-link-sql",
+                "dc-cleanup-attachment-sql",
+                "dc-digest-dataset-storage",
+                "dc-mail-receipt-dataset-storage",
+                "dc-notification-dataset-storage",
+                "dc-notifications-digest-sql",
+                "dc-notifications-hold-sql",
+                "dc-notifications-notification-sql",
+                "dc-notifications-post-sql",
+                "dc-notifications-privacy-request-sql",
+                "dc-notifications-revision-sql",
+                "dc-notifications-subscription-sql",
+                "dc-notifications-topic-sql",
+                "dc-projections-post-sql",
+                "dc-projections-search-projection-sql",
+                "dc-projections-topic-sql"
+              ],
+              "interfaceIds": [
+                "dc-attachment-data-store-provided",
+                "dc-attachment-link-data-store-provided",
+                "dc-cleanup-attachment-link-sql-required",
+                "dc-cleanup-attachment-sql-required",
+                "dc-digest-data-dc-db-provided",
+                "dc-digest-data-store-provided",
+                "dc-digest-dataset-storage-required",
+                "dc-hold-data-store-provided",
+                "dc-mail-receipt-data-dc-db-provided",
+                "dc-mail-receipt-dataset-storage-required",
+                "dc-notification-data-dc-db-provided",
+                "dc-notification-data-store-provided",
+                "dc-notification-dataset-storage-required",
+                "dc-notifications-digest-sql-required",
+                "dc-notifications-hold-sql-required",
+                "dc-notifications-notification-sql-required",
+                "dc-notifications-post-sql-required",
+                "dc-notifications-privacy-request-sql-required",
+                "dc-notifications-revision-sql-required",
+                "dc-notifications-subscription-sql-required",
+                "dc-notifications-topic-sql-required",
+                "dc-post-data-store-provided",
+                "dc-privacy-request-data-store-provided",
+                "dc-projections-post-sql-required",
+                "dc-projections-search-projection-sql-required",
+                "dc-projections-topic-sql-required",
+                "dc-revision-data-store-provided",
+                "dc-search-projection-data-store-provided",
+                "dc-subscription-data-store-provided",
+                "dc-topic-data-store-provided"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-attachment-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-attachment-link-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-digest-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-hold-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-mail-receipt-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-notification-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-post-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-privacy-request-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-revision-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-search-projection-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-subscription-data",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-topic-data",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-worker-db",
+              "kind": "connection",
+              "action": "Claims named channels and reads/writes eligible effects",
+              "protocols": ["SQL"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": ["Claims named channels and reads/writes eligible effects"],
+          "protocols": ["SQL"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-email"
+            }
+          ],
+          "connectionIds": ["dc-worker-email"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-notifications"],
+          "bindingIds": [
+            "dc-email-deliver",
+            "dc-email-send",
+            "dc-email-v2-deliver",
+            "dc-email-v2-lookup"
+          ],
+          "interfaceIds": [
+            "dc-email-delivery-dc-email-provided",
+            "dc-email-send-required",
+            "dc-email-v2-provided",
+            "dc-email-v2-required"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-email-delivery",
+              "version": "v1"
+            },
+            {
+              "id": "dc-email-delivery",
+              "version": "v2"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-worker>studio:element:dc-email",
+          "from": "studio:element:dc-worker",
+          "to": "studio:element:dc-email",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-email"
+                }
+              ],
+              "connectionIds": ["dc-worker-email"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-notifications"],
+              "bindingIds": [
+                "dc-email-deliver",
+                "dc-email-send",
+                "dc-email-v2-deliver",
+                "dc-email-v2-lookup"
+              ],
+              "interfaceIds": [
+                "dc-email-delivery-dc-email-provided",
+                "dc-email-send-required",
+                "dc-email-v2-provided",
+                "dc-email-v2-required"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-email-delivery",
+                  "version": "v1"
+                },
+                {
+                  "id": "dc-email-delivery",
+                  "version": "v2"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-worker-email",
+              "kind": "connection",
+              "action": "Delivers eligible mail or records uncertainty",
+              "protocols": ["SMTP/TLS"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": ["Delivers eligible mail or records uncertainty"],
+          "protocols": ["SMTP/TLS"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "dc-worker"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "dc-files"
+            }
+          ],
+          "connectionIds": ["dc-worker-files"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": ["dc-cleanup"],
+          "bindingIds": ["dc-private-bytes-cleanup", "dc-private-bytes-delete-orphan"],
+          "interfaceIds": [
+            "dc-private-bytes-cleanup-required",
+            "dc-private-bytes-dc-files-provided"
+          ],
+          "contractRefs": [
+            {
+              "id": "dc-private-bytes",
+              "version": "v1"
+            }
+          ],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:dc-worker>studio:element:dc-files",
+          "from": "studio:element:dc-worker",
+          "to": "studio:element:dc-files",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-worker"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "dc-files"
+                }
+              ],
+              "connectionIds": ["dc-worker-files"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": ["dc-cleanup"],
+              "bindingIds": ["dc-private-bytes-cleanup", "dc-private-bytes-delete-orphan"],
+              "interfaceIds": [
+                "dc-private-bytes-cleanup-required",
+                "dc-private-bytes-dc-files-provided"
+              ],
+              "contractRefs": [
+                {
+                  "id": "dc-private-bytes",
+                  "version": "v1"
+                }
+              ],
+              "capabilityRefs": [],
+              "id": "connection:dc-worker-files",
+              "kind": "connection",
+              "action": "Rechecks and removes eligible orphan bytes",
+              "protocols": ["HTTPS/S3"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Rechecks and removes eligible orphan bytes"],
+          "protocols": ["HTTPS/S3"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": []
+    }
+  ],
+  "source": {
+    "accounting": [
+      {
+        "connectionId": "dc-api-db",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-db",
+            "memberIds": ["connection:dc-api-db"]
+          },
+          {
+            "scopeKey": "studio:service:dc-api",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-db",
+            "memberIds": ["connection:dc-api-db"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "dc-api-files",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-files",
+            "memberIds": ["connection:dc-api-files"]
+          },
+          {
+            "scopeKey": "studio:service:dc-api",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-files",
+            "memberIds": ["connection:dc-api-files"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "dc-api-worker",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-worker",
+            "memberIds": ["connection:dc-api-worker"]
+          },
+          {
+            "scopeKey": "studio:service:dc-api",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-worker",
+            "memberIds": ["connection:dc-api-worker"]
+          },
+          {
+            "scopeKey": "studio:service:dc-worker",
+            "edgeId": "studio:relationship:studio:element:dc-api>studio:element:dc-worker",
+            "memberIds": ["connection:dc-api-worker"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "dc-client-api",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-client>studio:element:dc-api",
+            "memberIds": ["connection:dc-client-api"]
+          },
+          {
+            "scopeKey": "studio:service:dc-api",
+            "edgeId": "studio:relationship:studio:element:dc-client>studio:element:dc-api",
+            "memberIds": ["connection:dc-client-api"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "dc-worker-db",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-worker>studio:element:dc-db",
+            "memberIds": ["connection:dc-worker-db"]
+          },
+          {
+            "scopeKey": "studio:service:dc-worker",
+            "edgeId": "studio:relationship:studio:element:dc-worker>studio:element:dc-db",
+            "memberIds": ["connection:dc-worker-db"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "dc-worker-email",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-worker>studio:element:dc-email",
+            "memberIds": ["connection:dc-worker-email"]
+          },
+          {
+            "scopeKey": "studio:service:dc-worker",
+            "edgeId": "studio:relationship:studio:element:dc-worker>studio:element:dc-email",
+            "memberIds": ["connection:dc-worker-email"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "dc-worker-files",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:dc-worker>studio:element:dc-files",
+            "memberIds": ["connection:dc-worker-files"]
+          },
+          {
+            "scopeKey": "studio:service:dc-worker",
+            "edgeId": "studio:relationship:studio:element:dc-worker>studio:element:dc-files",
+            "memberIds": ["connection:dc-worker-files"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      }
+    ],
+    "unresolved": [],
+    "suppressed": [],
+    "componentRelationships": [
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-categories-access"],
+        "componentIds": ["dc-access", "dc-categories"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-categories-access",
+        "kind": "component",
+        "action": "Checks administrator grants",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-content-access"],
+        "componentIds": ["dc-access", "dc-content"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-content-access",
+        "kind": "component",
+        "action": "Checks current category grants",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-content-audit"],
+        "componentIds": ["dc-audit", "dc-content"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-content-audit",
+        "kind": "component",
+        "action": "Appends protected mutation metadata",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-files-access"],
+        "componentIds": ["dc-access", "dc-attachments"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-files-access",
+        "kind": "component",
+        "action": "Checks owner and parent access",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-files-content"],
+        "componentIds": ["dc-attachments", "dc-content"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-files-content",
+        "kind": "component",
+        "action": "Associates validated private attachments",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-moderation-access"],
+        "componentIds": ["dc-access", "dc-moderation"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-moderation-access",
+        "kind": "component",
+        "action": "Checks moderator and current category access",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-moderation-content"],
+        "componentIds": ["dc-content", "dc-moderation"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-moderation-content",
+        "kind": "component",
+        "action": "Applies audited content decisions",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-privacy-access"],
+        "componentIds": ["dc-access", "dc-privacy"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-privacy-access",
+        "kind": "component",
+        "action": "Checks subject/admin authority and holds",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-search-access"],
+        "componentIds": ["dc-access", "dc-search"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-search-access",
+        "kind": "component",
+        "action": "Filters before matching/snippets/pages",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      },
+      {
+        "sourceRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "targetRefs": [
+          {
+            "kind": "element",
+            "id": "dc-api"
+          }
+        ],
+        "connectionIds": [],
+        "queueIds": [],
+        "contextRelationshipIds": [],
+        "componentRelationshipIds": ["dc-subscriptions-access"],
+        "componentIds": ["dc-access", "dc-subscriptions"],
+        "bindingIds": [],
+        "interfaceIds": [],
+        "contractRefs": [],
+        "capabilityRefs": [],
+        "id": "component:dc-subscriptions-access",
+        "kind": "component",
+        "action": "Checks owner and current topic access",
+        "protocols": ["In process"],
+        "interactions": ["Request / response"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1398 @@
+{
+  "scenario": "two-protocols-reverse-cycle",
+  "sourceInput": "derived-inputs.json#two-protocols-reverse-cycle",
+  "semanticSha256": "0eb2db55a82fce3a675177d40ba33529e78b4ba4133c7687536a48c8b4f2ff6f",
+  "inputFrozenAndUnchanged": true,
+  "reorderExact": true,
+  "renameIdentityExact": true,
+  "portableRoundTripExact": true,
+  "scopes": [
+    {
+      "key": "studio:context",
+      "nodeIds": ["studio:context:system"],
+      "edges": [],
+      "trunks": []
+    },
+    {
+      "key": "studio:containers",
+      "nodeIds": [
+        "studio:element:channel-one",
+        "studio:element:channel-producer",
+        "studio:element:channel-two"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "connectionIds": ["reverse"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+          "from": "studio:element:channel-one",
+          "to": "studio:element:channel-producer",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "connectionIds": ["reverse"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:reverse",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["cycle-next"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+          "from": "studio:element:channel-one",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["cycle-next"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:cycle-next",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "connectionIds": ["https-one", "stream-one"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["https-one"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:https-one",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            },
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["stream-one"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:stream-one",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["WebSocket"],
+              "interactions": ["Streaming"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON", "WebSocket"],
+          "interactions": ["Request / response", "Streaming"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["https-two"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["https-two"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:https-two",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "connectionIds": ["cycle-back"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-two>studio:element:channel-producer",
+          "from": "studio:element:channel-two",
+          "to": "studio:element:channel-producer",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "connectionIds": ["cycle-back"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:cycle-back",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            },
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["cycle-next", "reverse"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:trunk:studio:element:channel-one:connection:cycle-next|connection:reverse",
+          "from": "studio:element:channel-one",
+          "protocol": "HTTPS/JSON",
+          "interaction": "Request / response",
+          "branches": [
+            {
+              "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+              "to": "studio:element:channel-producer",
+              "memberIds": ["connection:reverse"],
+              "connectionIds": ["reverse"]
+            },
+            {
+              "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+              "to": "studio:element:channel-two",
+              "memberIds": ["connection:cycle-next"],
+              "connectionIds": ["cycle-next"]
+            }
+          ]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            },
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["https-one", "https-two"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:trunk:studio:element:channel-producer:connection:https-one|connection:https-two",
+          "from": "studio:element:channel-producer",
+          "protocol": "HTTPS/JSON",
+          "interaction": "Request / response",
+          "branches": [
+            {
+              "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+              "to": "studio:element:channel-one",
+              "memberIds": ["connection:https-one"],
+              "connectionIds": ["https-one"]
+            },
+            {
+              "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+              "to": "studio:element:channel-two",
+              "memberIds": ["connection:https-two"],
+              "connectionIds": ["https-two"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "studio:service:channel-one",
+      "nodeIds": [
+        "studio:element:channel-one",
+        "studio:element:channel-producer",
+        "studio:element:channel-two"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "connectionIds": ["reverse"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+          "from": "studio:element:channel-one",
+          "to": "studio:element:channel-producer",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "connectionIds": ["reverse"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:reverse",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["cycle-next"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+          "from": "studio:element:channel-one",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["cycle-next"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:cycle-next",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "connectionIds": ["https-one", "stream-one"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["https-one"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:https-one",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            },
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["stream-one"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:stream-one",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["WebSocket"],
+              "interactions": ["Streaming"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON", "WebSocket"],
+          "interactions": ["Request / response", "Streaming"]
+        }
+      ],
+      "trunks": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            },
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["cycle-next", "reverse"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:trunk:studio:element:channel-one:connection:cycle-next|connection:reverse",
+          "from": "studio:element:channel-one",
+          "protocol": "HTTPS/JSON",
+          "interaction": "Request / response",
+          "branches": [
+            {
+              "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+              "to": "studio:element:channel-producer",
+              "memberIds": ["connection:reverse"],
+              "connectionIds": ["reverse"]
+            },
+            {
+              "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+              "to": "studio:element:channel-two",
+              "memberIds": ["connection:cycle-next"],
+              "connectionIds": ["cycle-next"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "studio:service:channel-producer",
+      "nodeIds": [
+        "studio:element:channel-one",
+        "studio:element:channel-producer",
+        "studio:element:channel-two",
+        "studio:element:shared-queue"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "connectionIds": ["reverse"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+          "from": "studio:element:channel-one",
+          "to": "studio:element:channel-producer",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "connectionIds": ["reverse"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:reverse",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "connectionIds": ["https-one", "stream-one"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["https-one"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:https-one",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            },
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["stream-one"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:stream-one",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["WebSocket"],
+              "interactions": ["Streaming"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON", "WebSocket"],
+          "interactions": ["Request / response", "Streaming"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["https-two"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["https-two"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:https-two",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "connectionIds": ["cycle-back"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-two>studio:element:channel-producer",
+          "from": "studio:element:channel-two",
+          "to": "studio:element:channel-producer",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "connectionIds": ["cycle-back"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:cycle-back",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            },
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["https-one", "https-two"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:trunk:studio:element:channel-producer:connection:https-one|connection:https-two",
+          "from": "studio:element:channel-producer",
+          "protocol": "HTTPS/JSON",
+          "interaction": "Request / response",
+          "branches": [
+            {
+              "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+              "to": "studio:element:channel-one",
+              "memberIds": ["connection:https-one"],
+              "connectionIds": ["https-one"]
+            },
+            {
+              "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+              "to": "studio:element:channel-two",
+              "memberIds": ["connection:https-two"],
+              "connectionIds": ["https-two"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "studio:service:channel-two",
+      "nodeIds": [
+        "studio:element:channel-one",
+        "studio:element:channel-producer",
+        "studio:element:channel-two"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["cycle-next"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+          "from": "studio:element:channel-one",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["cycle-next"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:cycle-next",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["https-two"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["https-two"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:https-two",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "connectionIds": ["cycle-back"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-two>studio:element:channel-producer",
+          "from": "studio:element:channel-two",
+          "to": "studio:element:channel-producer",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "connectionIds": ["cycle-back"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:cycle-back",
+              "kind": "connection",
+              "action": "Same action",
+              "protocols": ["HTTPS/JSON"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Same action"],
+          "protocols": ["HTTPS/JSON"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": []
+    }
+  ],
+  "source": {
+    "accounting": [
+      {
+        "connectionId": "cycle-back",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-two>studio:element:channel-producer",
+            "memberIds": ["connection:cycle-back"]
+          },
+          {
+            "scopeKey": "studio:service:channel-producer",
+            "edgeId": "studio:relationship:studio:element:channel-two>studio:element:channel-producer",
+            "memberIds": ["connection:cycle-back"]
+          },
+          {
+            "scopeKey": "studio:service:channel-two",
+            "edgeId": "studio:relationship:studio:element:channel-two>studio:element:channel-producer",
+            "memberIds": ["connection:cycle-back"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "cycle-next",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+            "memberIds": ["connection:cycle-next"]
+          },
+          {
+            "scopeKey": "studio:service:channel-one",
+            "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+            "memberIds": ["connection:cycle-next"]
+          },
+          {
+            "scopeKey": "studio:service:channel-two",
+            "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-two",
+            "memberIds": ["connection:cycle-next"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "https-one",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["connection:https-one"]
+          },
+          {
+            "scopeKey": "studio:service:channel-one",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["connection:https-one"]
+          },
+          {
+            "scopeKey": "studio:service:channel-producer",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["connection:https-one"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "https-two",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+            "memberIds": ["connection:https-two"]
+          },
+          {
+            "scopeKey": "studio:service:channel-producer",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+            "memberIds": ["connection:https-two"]
+          },
+          {
+            "scopeKey": "studio:service:channel-two",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+            "memberIds": ["connection:https-two"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "reverse",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+            "memberIds": ["connection:reverse"]
+          },
+          {
+            "scopeKey": "studio:service:channel-one",
+            "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+            "memberIds": ["connection:reverse"]
+          },
+          {
+            "scopeKey": "studio:service:channel-producer",
+            "edgeId": "studio:relationship:studio:element:channel-one>studio:element:channel-producer",
+            "memberIds": ["connection:reverse"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "stream-one",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["connection:stream-one"]
+          },
+          {
+            "scopeKey": "studio:service:channel-one",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["connection:stream-one"]
+          },
+          {
+            "scopeKey": "studio:service:channel-producer",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["connection:stream-one"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      }
+    ],
+    "unresolved": [
+      {
+        "id": "missing-consumer:queue:shared-queue",
+        "reason": "missing-consumer",
+        "member": {
+          "sourceRefs": [],
+          "targetRefs": [],
+          "connectionIds": [],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "queue:shared-queue",
+          "kind": "queued",
+          "action": "Queued communication",
+          "protocols": [],
+          "interactions": ["Asynchronous"]
+        }
+      },
+      {
+        "id": "missing-producer:queue:shared-queue",
+        "reason": "missing-producer",
+        "member": {
+          "sourceRefs": [],
+          "targetRefs": [],
+          "connectionIds": [],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "queue:shared-queue",
+          "kind": "queued",
+          "action": "Queued communication",
+          "protocols": [],
+          "interactions": ["Asynchronous"]
+        }
+      }
+    ],
+    "suppressed": [],
+    "componentRelationships": []
+  }
+}

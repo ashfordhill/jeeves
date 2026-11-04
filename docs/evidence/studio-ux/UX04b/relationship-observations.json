@@ -1,0 +1,1468 @@
+{
+  "result": "passed",
+  "scenarioCount": 24,
+  "observations": [
+    {
+      "scenario": "single-service",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/single-service.json",
+      "semanticSha256": "37217a45ab2518dd67be6bbc1dcdaee0a166e7f98e8765506907810cb03b980e",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/single-service.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 0,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "package",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/package.json",
+      "semanticSha256": "39b865f910458b8ba989a24f6ccfe4aeee76bf31d4ed6244527b85262303e7ae",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/package.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:package:processing-package",
+          "nodeCount": 5,
+          "edgeCount": 4,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:package-api",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:package-worker",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 4,
+      "unresolved": [],
+      "suppressed": [
+        {
+          "id": "suppressed:connection:package-link-3",
+          "reason": "internal-package",
+          "connectionIds": ["package-link-3"]
+        },
+        {
+          "id": "suppressed:connection:package-link-4",
+          "reason": "internal-package",
+          "connectionIds": ["package-link-4"]
+        },
+        {
+          "id": "suppressed:queued:package-queue:package-link-1:package-link-2",
+          "reason": "internal-package",
+          "connectionIds": ["package-link-1", "package-link-2"]
+        }
+      ]
+    },
+    {
+      "scenario": "shared-data",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/shared-data.json",
+      "semanticSha256": "48362d42e8fb6eded3a202d2eaf62b97c47d6b20537c5e62408c99ee5863a798",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/shared-data.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 6,
+          "edgeCount": 5,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:data-one",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:data-two",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 1
+        }
+      ],
+      "accountedConnections": 5,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "shared-channel",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/shared-channel.json",
+      "semanticSha256": "a771c52ce0cee89de6f85645a7acd6ea09296a6ca2fc813aed354da2c27ec7c5",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/shared-channel.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "dense-graph",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/dense-graph.json",
+      "semanticSha256": "1152008704acd5927c21938fe31ede0649bd48c011b7e2c6a0643a0554f19550",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/dense-graph.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 24,
+          "edgeCount": 47,
+          "trunkCount": 3
+        },
+        {
+          "key": "studio:service:dense-01",
+          "nodeCount": 24,
+          "edgeCount": 25,
+          "trunkCount": 3
+        },
+        {
+          "key": "studio:service:dense-02",
+          "nodeCount": 3,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-03",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-04",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-05",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-06",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-07",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-08",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-09",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-10",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-11",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-12",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-13",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-14",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-15",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-16",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-17",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-18",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-19",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-20",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-21",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-22",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-23",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dense-24",
+          "nodeCount": 3,
+          "edgeCount": 3,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 47,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "legacy-supported",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/legacy-supported.json",
+      "semanticSha256": "657c69c0a113b47dcc115992f60725b22452d976a93eafec06de7681a2d69352",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/legacy-supported.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:links",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:web",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 2,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "legacy-rich",
+      "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/legacy-rich.json",
+      "semanticSha256": "d1bc93ffb1f91924a9a06f7d281ed6a2e696f7f3bce20dea065bfb9623da35a0",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/legacy-rich.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 8,
+          "edgeCount": 7,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 10,
+          "edgeCount": 11,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dc-api",
+          "nodeCount": 5,
+          "edgeCount": 4,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:dc-worker",
+          "nodeCount": 5,
+          "edgeCount": 4,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 7,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "two-protocols-reverse-cycle",
+      "sourceInput": "derived-inputs.json#two-protocols-reverse-cycle",
+      "semanticSha256": "0eb2db55a82fce3a675177d40ba33529e78b4ba4133c7687536a48c8b4f2ff6f",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/two-protocols-reverse-cycle.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 5,
+          "trunkCount": 2
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 3,
+          "edgeCount": 3,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 4,
+          "edgeCount": 4,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 3,
+          "edgeCount": 3,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 6,
+      "unresolved": [
+        {
+          "id": "missing-consumer:queue:shared-queue",
+          "reason": "missing-consumer",
+          "connectionIds": []
+        },
+        {
+          "id": "missing-producer:queue:shared-queue",
+          "reason": "missing-producer",
+          "connectionIds": []
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "repeated-shared-store",
+      "sourceInput": "derived-inputs.json#repeated-shared-store",
+      "semanticSha256": "23f2ea2f8c536ae0d8347ef268507050a7b8c4e8aee482b39339cfa7d4e34d83",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/repeated-shared-store.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 6,
+          "edgeCount": 5,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:data-one",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:data-two",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 1
+        }
+      ],
+      "accountedConnections": 6,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "same-package-queue",
+      "sourceInput": "derived-inputs.json#same-package-queue",
+      "semanticSha256": "39b865f910458b8ba989a24f6ccfe4aeee76bf31d4ed6244527b85262303e7ae",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/same-package-queue.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:package:processing-package",
+          "nodeCount": 5,
+          "edgeCount": 4,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:package-api",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:package-worker",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 4,
+      "unresolved": [],
+      "suppressed": [
+        {
+          "id": "suppressed:connection:package-link-3",
+          "reason": "internal-package",
+          "connectionIds": ["package-link-3"]
+        },
+        {
+          "id": "suppressed:connection:package-link-4",
+          "reason": "internal-package",
+          "connectionIds": ["package-link-4"]
+        },
+        {
+          "id": "suppressed:queued:package-queue:package-link-1:package-link-2",
+          "reason": "internal-package",
+          "connectionIds": ["package-link-1", "package-link-2"]
+        }
+      ]
+    },
+    {
+      "scenario": "producer-only",
+      "sourceInput": "derived-inputs.json#producer-only",
+      "semanticSha256": "e8167b4058301411eb6538071231b140ee9ab4c86f1eafca943f7939e50b72b3",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/producer-only.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 1,
+      "unresolved": [
+        {
+          "id": "missing-consumer:queue:shared-queue",
+          "reason": "missing-consumer",
+          "connectionIds": ["shared-channel-link-1"]
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "consumer-only",
+      "sourceInput": "derived-inputs.json#consumer-only",
+      "semanticSha256": "3a825b44f5197aa93fead3f437e821e6cb756970c14af2798fc3116555fb0724",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/consumer-only.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 2,
+      "unresolved": [
+        {
+          "id": "missing-producer:queue:shared-queue",
+          "reason": "missing-producer",
+          "connectionIds": ["shared-channel-link-2", "shared-channel-link-3"]
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "disconnected-queue",
+      "sourceInput": "derived-inputs.json#disconnected-queue",
+      "semanticSha256": "7d96c111bd4773ad07b09ed70ec39c0269c46e6a535eb8b6042618d55a974381",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/disconnected-queue.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 0,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 0,
+      "unresolved": [
+        {
+          "id": "missing-consumer:queue:shared-queue",
+          "reason": "missing-consumer",
+          "connectionIds": []
+        },
+        {
+          "id": "missing-producer:queue:shared-queue",
+          "reason": "missing-producer",
+          "connectionIds": []
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "single-service-self-channel",
+      "sourceInput": "derived-inputs.json#single-service-self-channel",
+      "semanticSha256": "fe43c22ad9dbf2a38b44710e5242f719aefd41144673531b7c7ff83c95776fcc",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/single-service-self-channel.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 2,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 2,
+      "unresolved": [],
+      "suppressed": [
+        {
+          "id": "suppressed:queued:shared-queue:shared-channel-link-1:shared-channel-link-2",
+          "reason": "self-channel",
+          "connectionIds": ["shared-channel-link-1", "shared-channel-link-2"]
+        }
+      ]
+    },
+    {
+      "scenario": "roles-not-inferred-from-labels",
+      "sourceInput": "derived-inputs.json#roles-not-inferred-from-labels",
+      "semanticSha256": "ad8959c98aee1d7e4c747c889dabae5130470437d89c224fb47805a763b154e8",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/roles-not-inferred-from-labels.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [
+        {
+          "id": "ambiguous-channel-role:connection:shared-channel-link-1",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["shared-channel-link-1"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:shared-channel-link-2",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["shared-channel-link-2"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:shared-channel-link-3",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["shared-channel-link-3"]
+        },
+        {
+          "id": "missing-consumer:queue:shared-queue",
+          "reason": "missing-consumer",
+          "connectionIds": [
+            "shared-channel-link-1",
+            "shared-channel-link-2",
+            "shared-channel-link-3"
+          ]
+        },
+        {
+          "id": "missing-producer:queue:shared-queue",
+          "reason": "missing-producer",
+          "connectionIds": [
+            "shared-channel-link-1",
+            "shared-channel-link-2",
+            "shared-channel-link-3"
+          ]
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "invalid-explicit-direction",
+      "sourceInput": "derived-inputs.json#invalid-explicit-direction",
+      "semanticSha256": "aae080e08b076659f0f5fc9292b43299a6585d9806087715f6908486ce88d92a",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/invalid-explicit-direction.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [
+        {
+          "id": "invalid-channel-direction:connection:shared-channel-link-1",
+          "reason": "invalid-channel-direction",
+          "connectionIds": ["shared-channel-link-1"]
+        },
+        {
+          "id": "missing-producer:queue:shared-queue",
+          "reason": "missing-producer",
+          "connectionIds": [
+            "shared-channel-link-1",
+            "shared-channel-link-2",
+            "shared-channel-link-3"
+          ]
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "fanout-to-consumer-package",
+      "sourceInput": "derived-inputs.json#fanout-to-consumer-package",
+      "semanticSha256": "6fc59911ccbeee964400605d6c8c2db0ef30a8ad5b90308d555426953a25bb9f",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/fanout-to-consumer-package.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:package:consumer-package",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "package-shared-store-aggregate",
+      "sourceInput": "derived-inputs.json#package-shared-store-aggregate",
+      "semanticSha256": "c48f601ea256a9c1a81a010666f6831cdd659d98630039899e495d2104978de6",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/package-shared-store-aggregate.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 5,
+          "edgeCount": 4,
+          "trunkCount": 2
+        },
+        {
+          "key": "studio:package:data-apps",
+          "nodeCount": 6,
+          "edgeCount": 5,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:data-one",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:data-two",
+          "nodeCount": 4,
+          "edgeCount": 3,
+          "trunkCount": 1
+        }
+      ],
+      "accountedConnections": 7,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "explicit-legacy-roles",
+      "sourceInput": "derived-inputs.json#explicit-legacy-roles",
+      "semanticSha256": "319e0ac6c5c142bd0266e86631876c9686289ab60d6039d0214556660c205bf9",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/explicit-legacy-roles.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "legacy-consumer-dependency-direction",
+      "sourceInput": "derived-inputs.json#legacy-consumer-dependency-direction",
+      "semanticSha256": "4bd629cf2140acf7655a1fe28f5be239ef17169f45a57bdc43041714a180a064",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/legacy-consumer-dependency-direction.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "conflicting-legacy-roles",
+      "sourceInput": "derived-inputs.json#conflicting-legacy-roles",
+      "semanticSha256": "d4f3e2f00e9aeb3291d906b4a6552f82af84e4421ef890d9931e16bd272fcdf9",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/conflicting-legacy-roles.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [
+        {
+          "id": "ambiguous-channel-role:connection:shared-channel-link-1",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["shared-channel-link-1"]
+        },
+        {
+          "id": "missing-producer:queue:shared-queue",
+          "reason": "missing-producer",
+          "connectionIds": [
+            "shared-channel-link-1",
+            "shared-channel-link-2",
+            "shared-channel-link-3"
+          ]
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "scenario": "queued-mixed-leg-protocols",
+      "sourceInput": "derived-inputs.json#queued-mixed-leg-protocols",
+      "semanticSha256": "0c56198a71fb0fd74862f74827309e0f6dac6c0aa1018bf1dd5ecc7ee0afb73f",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/queued-mixed-leg-protocols.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "multiple-publish-connections",
+      "sourceInput": "derived-inputs.json#multiple-publish-connections",
+      "semanticSha256": "256bdbf64cb613e33b5002f05dc51bb489c796c69edfc9fddee12d90c44ca193",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/multiple-publish-connections.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 4,
+      "unresolved": [],
+      "suppressed": []
+    },
+    {
+      "scenario": "planned-canonical-precedence",
+      "sourceInput": "derived-inputs.json#planned-canonical-precedence",
+      "semanticSha256": "15f88635e43b525e86b16c72a0a23621c9276a632cb24f4320571d929b625c0e",
+      "inputFrozenAndUnchanged": true,
+      "reorderExact": true,
+      "renameIdentityExact": true,
+      "portableRoundTripExact": true,
+      "map": "relationship-maps/planned-canonical-precedence.json",
+      "scopes": [
+        {
+          "key": "studio:context",
+          "nodeCount": 1,
+          "edgeCount": 0,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:containers",
+          "nodeCount": 3,
+          "edgeCount": 2,
+          "trunkCount": 1
+        },
+        {
+          "key": "studio:service:channel-one",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-producer",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        },
+        {
+          "key": "studio:service:channel-two",
+          "nodeCount": 2,
+          "edgeCount": 1,
+          "trunkCount": 0
+        }
+      ],
+      "accountedConnections": 3,
+      "unresolved": [],
+      "suppressed": []
+    }
+  ],
+  "factories": [
+    {
+      "id": "mattermost-reference",
+      "connections": 10,
+      "bindings": 12,
+      "componentRelationships": 15,
+      "unresolved": [],
+      "unchanged": true
+    },
+    {
+      "id": "discourse-core",
+      "connections": 7,
+      "bindings": 127,
+      "componentRelationships": 10,
+      "unresolved": [],
+      "unchanged": true
+    },
+    {
+      "id": "vendure-core",
+      "connections": 9,
+      "bindings": 79,
+      "componentRelationships": 12,
+      "unresolved": [],
+      "unchanged": true
+    },
+    {
+      "id": "video-platform",
+      "connections": 26,
+      "bindings": 48,
+      "componentRelationships": 22,
+      "unresolved": [],
+      "unchanged": true
+    },
+    {
+      "id": "enterprise-web",
+      "connections": 14,
+      "bindings": 0,
+      "componentRelationships": 19,
+      "unresolved": [
+        {
+          "id": "ambiguous-channel-role:connection:api-queue",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["api-queue"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:queue-worker",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["queue-worker"]
+        },
+        {
+          "id": "missing-consumer:queue:queue",
+          "reason": "missing-consumer",
+          "connectionIds": ["api-queue", "queue-worker"]
+        },
+        {
+          "id": "missing-producer:queue:queue",
+          "reason": "missing-producer",
+          "connectionIds": ["api-queue", "queue-worker"]
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "id": "qrwty-target",
+      "connections": 17,
+      "bindings": 52,
+      "componentRelationships": 13,
+      "unresolved": [],
+      "unchanged": true
+    },
+    {
+      "id": "link-platform",
+      "connections": 19,
+      "bindings": 0,
+      "componentRelationships": 0,
+      "unresolved": [
+        {
+          "id": "ambiguous-channel-role:connection:api-queue",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["api-queue"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:queue-worker",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["queue-worker"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:redirect-queue",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["redirect-queue"]
+        },
+        {
+          "id": "missing-consumer:queue:queue",
+          "reason": "missing-consumer",
+          "connectionIds": ["api-queue", "queue-worker", "redirect-queue"]
+        },
+        {
+          "id": "missing-producer:queue:queue",
+          "reason": "missing-producer",
+          "connectionIds": ["api-queue", "queue-worker", "redirect-queue"]
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "id": "community",
+      "connections": 19,
+      "bindings": 0,
+      "componentRelationships": 0,
+      "unresolved": [
+        {
+          "id": "ambiguous-channel-role:connection:api-queue",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["api-queue"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:queue-worker",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["queue-worker"]
+        },
+        {
+          "id": "missing-consumer:queue:queue",
+          "reason": "missing-consumer",
+          "connectionIds": ["api-queue", "queue-worker"]
+        },
+        {
+          "id": "missing-producer:queue:queue",
+          "reason": "missing-producer",
+          "connectionIds": ["api-queue", "queue-worker"]
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "id": "social",
+      "connections": 19,
+      "bindings": 0,
+      "componentRelationships": 0,
+      "unresolved": [
+        {
+          "id": "ambiguous-channel-role:connection:api-queue",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["api-queue"]
+        },
+        {
+          "id": "ambiguous-channel-role:connection:queue-worker",
+          "reason": "ambiguous-channel-role",
+          "connectionIds": ["queue-worker"]
+        },
+        {
+          "id": "missing-consumer:queue:queue",
+          "reason": "missing-consumer",
+          "connectionIds": ["api-queue", "queue-worker"]
+        },
+        {
+          "id": "missing-producer:queue:queue",
+          "reason": "missing-producer",
+          "connectionIds": ["api-queue", "queue-worker"]
+        }
+      ],
+      "unchanged": true
+    }
+  ],
+  "checks": {
+    "exactFanOut": true,
+    "queueBothConnectionRefs": true,
+    "repeatedStoreAggregated": true,
+    "mixedProtocolsRemainSeparateMembers": true,
+    "reverseArrowDistinct": true,
+    "cycleEdgesPreserved": true,
+    "samePackageNoSelfArrow": true,
+    "internalConnectionsVisibleInC3": true,
+    "scopeExcludesRemoteGraph": true,
+    "incompleteChannelsDoNotInventEndpoints": true,
+    "disconnectedQueueReported": true,
+    "singleServiceNoQueueLoop": true,
+    "rolesNeverInferredFromLabels": true,
+    "conflictingRolesUnresolved": true,
+    "existingExplicitRolesSupported": true,
+    "legacyDependencyDirectionPreserved": true,
+    "plannedCanonicalPrecedence": true,
+    "allSourceConnectionsAccounted": true,
+    "allBindingsContractsInterfacesAndComponentRelationsRetained": true,
+    "compatibleTrunksHaveExactBranches": true,
+    "inputFrozenAndUnchanged": true,
+    "suppliedProjectionFrozenAndUnchanged": true,
+    "queuedMixedProtocolsRemainExplicit": true,
+    "allPublishConsumePairsRetained": true,
+    "reorderExact": true,
+    "renameIdentityExact": true,
+    "portableRoundTripExact": true
+  }
+}

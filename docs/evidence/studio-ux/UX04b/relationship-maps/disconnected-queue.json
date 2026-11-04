@@ -1,0 +1,84 @@
+{
+  "scenario": "disconnected-queue",
+  "sourceInput": "derived-inputs.json#disconnected-queue",
+  "semanticSha256": "7d96c111bd4773ad07b09ed70ec39c0269c46e6a535eb8b6042618d55a974381",
+  "inputFrozenAndUnchanged": true,
+  "reorderExact": true,
+  "renameIdentityExact": true,
+  "portableRoundTripExact": true,
+  "scopes": [
+    {
+      "key": "studio:context",
+      "nodeIds": ["studio:context:system"],
+      "edges": [],
+      "trunks": []
+    },
+    {
+      "key": "studio:containers",
+      "nodeIds": [
+        "studio:element:channel-one",
+        "studio:element:channel-producer",
+        "studio:element:channel-two"
+      ],
+      "edges": [],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:channel-producer",
+      "nodeIds": ["studio:element:channel-producer", "studio:element:shared-queue"],
+      "edges": [],
+      "trunks": []
+    }
+  ],
+  "source": {
+    "accounting": [],
+    "unresolved": [
+      {
+        "id": "missing-consumer:queue:shared-queue",
+        "reason": "missing-consumer",
+        "member": {
+          "sourceRefs": [],
+          "targetRefs": [],
+          "connectionIds": [],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "queue:shared-queue",
+          "kind": "queued",
+          "action": "Queued communication",
+          "protocols": [],
+          "interactions": ["Asynchronous"]
+        }
+      },
+      {
+        "id": "missing-producer:queue:shared-queue",
+        "reason": "missing-producer",
+        "member": {
+          "sourceRefs": [],
+          "targetRefs": [],
+          "connectionIds": [],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "queue:shared-queue",
+          "kind": "queued",
+          "action": "Queued communication",
+          "protocols": [],
+          "interactions": ["Asynchronous"]
+        }
+      }
+    ],
+    "suppressed": [],
+    "componentRelationships": []
+  }
+}

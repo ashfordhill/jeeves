@@ -1,0 +1,125 @@
+{
+  "result": "passed",
+  "startingCommit": "0db7607c07e6542844e6ba9a57197052925bb2e6",
+  "startingTrackedFiles": 1797,
+  "unchangedTrackedFiles": 1793,
+  "scopedExistingChanges": [
+    "CATALOG.md",
+    "docs/handoff.md",
+    "packages/spec/src/index.ts",
+    "packages/spec/src/studio-view.ts"
+  ],
+  "feedbackPairs": [
+    {
+      "source": ".jeeves-feedback/PzufI5UjUN.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/PzufI5UjUN.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/UX-Feedback.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/UX-Feedback.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-1.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-1.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-2.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-2.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.excalidraw",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.excalidraw",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.svg",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.svg",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-2.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-2.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/chrome_FlmBak2gUQ.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_FlmBak2gUQ.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/chrome_PjQUjhqJA5.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_PjQUjhqJA5.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-2.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-2.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-3.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-3.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-4.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-4.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-5.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-5.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-6.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-6.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-7.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-7.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/uses-tenant-product-apis.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/uses-tenant-product-apis.png",
+      "unchanged": true
+    }
+  ],
+  "publicFixtureFilesUnchanged": 7,
+  "frozenBenchmarkFilesUnchanged": 48,
+  "earlierHandoffBytesPreserved": true,
+  "handoffPrefixSha256": "68625876a7f62cf7342487dcb815b8859f2168dae0a82ced512d1eb8b227b42b",
+  "siblingRepositoryEdits": 0,
+  "unrelatedFeedbackPreserved": true
+}

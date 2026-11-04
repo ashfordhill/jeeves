@@ -71,6 +71,7 @@ export * from "./studio-operations.ts";
 export * from "./studio-portable.ts";
 export * from "./studio-presets.ts";
 export * from "./studio-references.ts";
+export * from "./studio-relationships.ts";
 export * from "./studio-sources.ts";
 export * from "./studio-support.ts";
 export * from "./studio-validation.ts";

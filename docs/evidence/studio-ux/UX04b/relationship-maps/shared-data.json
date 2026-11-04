@@ -1,0 +1,828 @@
+{
+  "scenario": "shared-data",
+  "sourceInput": "docs/evidence/studio-ux/UX01/fixtures/shared-data.json",
+  "semanticSha256": "48362d42e8fb6eded3a202d2eaf62b97c47d6b20537c5e62408c99ee5863a798",
+  "inputFrozenAndUnchanged": true,
+  "reorderExact": true,
+  "renameIdentityExact": true,
+  "portableRoundTripExact": true,
+  "scopes": [
+    {
+      "key": "studio:context",
+      "nodeIds": ["studio:context:system"],
+      "edges": [],
+      "trunks": []
+    },
+    {
+      "key": "studio:containers",
+      "nodeIds": [
+        "studio:element:cache-one",
+        "studio:element:cache-two",
+        "studio:element:data-one",
+        "studio:element:data-two",
+        "studio:element:owned-db",
+        "studio:element:shared-db"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "cache-one"
+            }
+          ],
+          "connectionIds": ["shared-data-link-4"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-one>studio:element:cache-one",
+          "from": "studio:element:data-one",
+          "to": "studio:element:cache-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "cache-one"
+                }
+              ],
+              "connectionIds": ["shared-data-link-4"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-4",
+              "kind": "connection",
+              "action": "Uses",
+              "protocols": ["Redis"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Uses"],
+          "protocols": ["Redis"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "shared-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-1"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-one>studio:element:shared-db",
+          "from": "studio:element:data-one",
+          "to": "studio:element:shared-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-db"
+                }
+              ],
+              "connectionIds": ["shared-data-link-1"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-1",
+              "kind": "connection",
+              "action": "Reads & writes",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads & writes"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "cache-two"
+            }
+          ],
+          "connectionIds": ["shared-data-link-5"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-two>studio:element:cache-two",
+          "from": "studio:element:data-two",
+          "to": "studio:element:cache-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "cache-two"
+                }
+              ],
+              "connectionIds": ["shared-data-link-5"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-5",
+              "kind": "connection",
+              "action": "Uses",
+              "protocols": ["Redis"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Uses"],
+          "protocols": ["Redis"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "owned-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-3"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-two>studio:element:owned-db",
+          "from": "studio:element:data-two",
+          "to": "studio:element:owned-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "owned-db"
+                }
+              ],
+              "connectionIds": ["shared-data-link-3"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-3",
+              "kind": "connection",
+              "action": "Reads & writes",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads & writes"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "shared-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-2"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-two>studio:element:shared-db",
+          "from": "studio:element:data-two",
+          "to": "studio:element:shared-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-db"
+                }
+              ],
+              "connectionIds": ["shared-data-link-2"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-2",
+              "kind": "connection",
+              "action": "Reads",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "owned-db"
+            },
+            {
+              "kind": "element",
+              "id": "shared-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-2", "shared-data-link-3"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:trunk:studio:element:data-two:connection:shared-data-link-2|connection:shared-data-link-3",
+          "from": "studio:element:data-two",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "branches": [
+            {
+              "edgeId": "studio:relationship:studio:element:data-two>studio:element:owned-db",
+              "to": "studio:element:owned-db",
+              "memberIds": ["connection:shared-data-link-3"],
+              "connectionIds": ["shared-data-link-3"]
+            },
+            {
+              "edgeId": "studio:relationship:studio:element:data-two>studio:element:shared-db",
+              "to": "studio:element:shared-db",
+              "memberIds": ["connection:shared-data-link-2"],
+              "connectionIds": ["shared-data-link-2"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "studio:service:data-one",
+      "nodeIds": [
+        "studio:element:cache-one",
+        "studio:element:data-one",
+        "studio:element:shared-db"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "cache-one"
+            }
+          ],
+          "connectionIds": ["shared-data-link-4"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-one>studio:element:cache-one",
+          "from": "studio:element:data-one",
+          "to": "studio:element:cache-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "cache-one"
+                }
+              ],
+              "connectionIds": ["shared-data-link-4"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-4",
+              "kind": "connection",
+              "action": "Uses",
+              "protocols": ["Redis"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Uses"],
+          "protocols": ["Redis"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-one"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "shared-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-1"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-one>studio:element:shared-db",
+          "from": "studio:element:data-one",
+          "to": "studio:element:shared-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-one"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-db"
+                }
+              ],
+              "connectionIds": ["shared-data-link-1"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-1",
+              "kind": "connection",
+              "action": "Reads & writes",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads & writes"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:data-two",
+      "nodeIds": [
+        "studio:element:cache-two",
+        "studio:element:data-two",
+        "studio:element:owned-db",
+        "studio:element:shared-db"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "cache-two"
+            }
+          ],
+          "connectionIds": ["shared-data-link-5"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-two>studio:element:cache-two",
+          "from": "studio:element:data-two",
+          "to": "studio:element:cache-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "cache-two"
+                }
+              ],
+              "connectionIds": ["shared-data-link-5"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-5",
+              "kind": "connection",
+              "action": "Uses",
+              "protocols": ["Redis"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Uses"],
+          "protocols": ["Redis"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "owned-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-3"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-two>studio:element:owned-db",
+          "from": "studio:element:data-two",
+          "to": "studio:element:owned-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "owned-db"
+                }
+              ],
+              "connectionIds": ["shared-data-link-3"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-3",
+              "kind": "connection",
+              "action": "Reads & writes",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads & writes"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "shared-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-2"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:data-two>studio:element:shared-db",
+          "from": "studio:element:data-two",
+          "to": "studio:element:shared-db",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "data-two"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-db"
+                }
+              ],
+              "connectionIds": ["shared-data-link-2"],
+              "queueIds": [],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-data-link-2",
+              "kind": "connection",
+              "action": "Reads",
+              "protocols": ["SQL"],
+              "interactions": ["Request / response"]
+            }
+          ],
+          "actions": ["Reads"],
+          "protocols": ["SQL"],
+          "interactions": ["Request / response"]
+        }
+      ],
+      "trunks": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "data-two"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "owned-db"
+            },
+            {
+              "kind": "element",
+              "id": "shared-db"
+            }
+          ],
+          "connectionIds": ["shared-data-link-2", "shared-data-link-3"],
+          "queueIds": [],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:trunk:studio:element:data-two:connection:shared-data-link-2|connection:shared-data-link-3",
+          "from": "studio:element:data-two",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "branches": [
+            {
+              "edgeId": "studio:relationship:studio:element:data-two>studio:element:owned-db",
+              "to": "studio:element:owned-db",
+              "memberIds": ["connection:shared-data-link-3"],
+              "connectionIds": ["shared-data-link-3"]
+            },
+            {
+              "edgeId": "studio:relationship:studio:element:data-two>studio:element:shared-db",
+              "to": "studio:element:shared-db",
+              "memberIds": ["connection:shared-data-link-2"],
+              "connectionIds": ["shared-data-link-2"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source": {
+    "accounting": [
+      {
+        "connectionId": "shared-data-link-1",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:data-one>studio:element:shared-db",
+            "memberIds": ["connection:shared-data-link-1"]
+          },
+          {
+            "scopeKey": "studio:service:data-one",
+            "edgeId": "studio:relationship:studio:element:data-one>studio:element:shared-db",
+            "memberIds": ["connection:shared-data-link-1"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "shared-data-link-2",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:data-two>studio:element:shared-db",
+            "memberIds": ["connection:shared-data-link-2"]
+          },
+          {
+            "scopeKey": "studio:service:data-two",
+            "edgeId": "studio:relationship:studio:element:data-two>studio:element:shared-db",
+            "memberIds": ["connection:shared-data-link-2"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "shared-data-link-3",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:data-two>studio:element:owned-db",
+            "memberIds": ["connection:shared-data-link-3"]
+          },
+          {
+            "scopeKey": "studio:service:data-two",
+            "edgeId": "studio:relationship:studio:element:data-two>studio:element:owned-db",
+            "memberIds": ["connection:shared-data-link-3"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "shared-data-link-4",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:data-one>studio:element:cache-one",
+            "memberIds": ["connection:shared-data-link-4"]
+          },
+          {
+            "scopeKey": "studio:service:data-one",
+            "edgeId": "studio:relationship:studio:element:data-one>studio:element:cache-one",
+            "memberIds": ["connection:shared-data-link-4"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "shared-data-link-5",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:data-two>studio:element:cache-two",
+            "memberIds": ["connection:shared-data-link-5"]
+          },
+          {
+            "scopeKey": "studio:service:data-two",
+            "edgeId": "studio:relationship:studio:element:data-two>studio:element:cache-two",
+            "memberIds": ["connection:shared-data-link-5"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      }
+    ],
+    "unresolved": [],
+    "suppressed": [],
+    "componentRelationships": []
+  }
+}

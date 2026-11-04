@@ -1,0 +1,417 @@
+{
+  "scenario": "queued-mixed-leg-protocols",
+  "sourceInput": "derived-inputs.json#queued-mixed-leg-protocols",
+  "semanticSha256": "0c56198a71fb0fd74862f74827309e0f6dac6c0aa1018bf1dd5ecc7ee0afb73f",
+  "inputFrozenAndUnchanged": true,
+  "reorderExact": true,
+  "renameIdentityExact": true,
+  "portableRoundTripExact": true,
+  "scopes": [
+    {
+      "key": "studio:context",
+      "nodeIds": ["studio:context:system"],
+      "edges": [],
+      "trunks": []
+    },
+    {
+      "key": "studio:containers",
+      "nodeIds": [
+        "studio:element:channel-one",
+        "studio:element:channel-producer",
+        "studio:element:channel-two"
+      ],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "connectionIds": ["shared-channel-link-1", "shared-channel-link-2"],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["shared-channel-link-1", "shared-channel-link-2"],
+              "queueIds": ["shared-queue"],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "queued:shared-queue:shared-channel-link-1:shared-channel-link-2",
+              "kind": "queued",
+              "action": "Queued communication",
+              "protocols": ["AMQP/TLS", "Messaging"],
+              "interactions": ["Asynchronous"],
+              "channel": {
+                "queueId": "shared-queue",
+                "publishConnectionId": "shared-channel-link-1",
+                "consumeConnectionId": "shared-channel-link-2"
+              }
+            }
+          ],
+          "actions": ["Queued communication"],
+          "protocols": ["AMQP/TLS", "Messaging"],
+          "interactions": ["Asynchronous"]
+        },
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["shared-channel-link-1", "shared-channel-link-3"],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["shared-channel-link-1", "shared-channel-link-3"],
+              "queueIds": ["shared-queue"],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "queued:shared-queue:shared-channel-link-1:shared-channel-link-3",
+              "kind": "queued",
+              "action": "Queued communication",
+              "protocols": ["Messaging"],
+              "interactions": ["Asynchronous"],
+              "channel": {
+                "queueId": "shared-queue",
+                "publishConnectionId": "shared-channel-link-1",
+                "consumeConnectionId": "shared-channel-link-3"
+              }
+            }
+          ],
+          "actions": ["Queued communication"],
+          "protocols": ["Messaging"],
+          "interactions": ["Asynchronous"]
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:channel-one",
+      "nodeIds": ["studio:element:channel-one", "studio:element:shared-queue"],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "shared-queue"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-one"
+            }
+          ],
+          "connectionIds": ["shared-channel-link-2"],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:shared-queue>studio:element:channel-one",
+          "from": "studio:element:shared-queue",
+          "to": "studio:element:channel-one",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-queue"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-one"
+                }
+              ],
+              "connectionIds": ["shared-channel-link-2"],
+              "queueIds": ["shared-queue"],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-channel-link-2",
+              "kind": "connection",
+              "action": "Consumes",
+              "protocols": ["AMQP/TLS"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": ["Consumes"],
+          "protocols": ["AMQP/TLS"],
+          "interactions": ["Asynchronous"]
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:channel-producer",
+      "nodeIds": ["studio:element:channel-producer", "studio:element:shared-queue"],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "shared-queue"
+            }
+          ],
+          "connectionIds": ["shared-channel-link-1"],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:channel-producer>studio:element:shared-queue",
+          "from": "studio:element:channel-producer",
+          "to": "studio:element:shared-queue",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-producer"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-queue"
+                }
+              ],
+              "connectionIds": ["shared-channel-link-1"],
+              "queueIds": ["shared-queue"],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-channel-link-1",
+              "kind": "connection",
+              "action": "Publishes",
+              "protocols": ["Messaging"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": ["Publishes"],
+          "protocols": ["Messaging"],
+          "interactions": ["Asynchronous"]
+        }
+      ],
+      "trunks": []
+    },
+    {
+      "key": "studio:service:channel-two",
+      "nodeIds": ["studio:element:channel-two", "studio:element:shared-queue"],
+      "edges": [
+        {
+          "sourceRefs": [
+            {
+              "kind": "element",
+              "id": "shared-queue"
+            }
+          ],
+          "targetRefs": [
+            {
+              "kind": "element",
+              "id": "channel-two"
+            }
+          ],
+          "connectionIds": ["shared-channel-link-3"],
+          "queueIds": ["shared-queue"],
+          "contextRelationshipIds": [],
+          "componentRelationshipIds": [],
+          "componentIds": [],
+          "bindingIds": [],
+          "interfaceIds": [],
+          "contractRefs": [],
+          "capabilityRefs": [],
+          "id": "studio:relationship:studio:element:shared-queue>studio:element:channel-two",
+          "from": "studio:element:shared-queue",
+          "to": "studio:element:channel-two",
+          "members": [
+            {
+              "sourceRefs": [
+                {
+                  "kind": "element",
+                  "id": "shared-queue"
+                }
+              ],
+              "targetRefs": [
+                {
+                  "kind": "element",
+                  "id": "channel-two"
+                }
+              ],
+              "connectionIds": ["shared-channel-link-3"],
+              "queueIds": ["shared-queue"],
+              "contextRelationshipIds": [],
+              "componentRelationshipIds": [],
+              "componentIds": [],
+              "bindingIds": [],
+              "interfaceIds": [],
+              "contractRefs": [],
+              "capabilityRefs": [],
+              "id": "connection:shared-channel-link-3",
+              "kind": "connection",
+              "action": "Consumes",
+              "protocols": ["Messaging"],
+              "interactions": ["Asynchronous"]
+            }
+          ],
+          "actions": ["Consumes"],
+          "protocols": ["Messaging"],
+          "interactions": ["Asynchronous"]
+        }
+      ],
+      "trunks": []
+    }
+  ],
+  "source": {
+    "accounting": [
+      {
+        "connectionId": "shared-channel-link-1",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-2"]
+          },
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+            "memberIds": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-3"]
+          },
+          {
+            "scopeKey": "studio:service:channel-producer",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:shared-queue",
+            "memberIds": ["connection:shared-channel-link-1"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "shared-channel-link-2",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-one",
+            "memberIds": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-2"]
+          },
+          {
+            "scopeKey": "studio:service:channel-one",
+            "edgeId": "studio:relationship:studio:element:shared-queue>studio:element:channel-one",
+            "memberIds": ["connection:shared-channel-link-2"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      },
+      {
+        "connectionId": "shared-channel-link-3",
+        "appearances": [
+          {
+            "scopeKey": "studio:containers",
+            "edgeId": "studio:relationship:studio:element:channel-producer>studio:element:channel-two",
+            "memberIds": ["queued:shared-queue:shared-channel-link-1:shared-channel-link-3"]
+          },
+          {
+            "scopeKey": "studio:service:channel-two",
+            "edgeId": "studio:relationship:studio:element:shared-queue>studio:element:channel-two",
+            "memberIds": ["connection:shared-channel-link-3"]
+          }
+        ],
+        "suppressedIds": [],
+        "unresolvedIds": []
+      }
+    ],
+    "unresolved": [],
+    "suppressed": [],
+    "componentRelationships": []
+  }
+}
