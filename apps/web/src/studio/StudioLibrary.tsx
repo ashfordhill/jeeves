@@ -10,6 +10,7 @@ import {
   studioDefinitions,
   studioLibraryGroups,
   studioPackagePresets,
+  studioScopes,
   studioViews,
 } from "@jeeves/spec";
 import { useCallback, useEffect, useState } from "react";
@@ -23,6 +24,7 @@ import { type Creation, creationLabel, creationScope } from "./creation.ts";
 
 export function StudioLibrary({
   scope,
+  owner,
   busy,
   onAdd,
   onExisting,
@@ -30,6 +32,8 @@ export function StudioLibrary({
   onClose,
 }: {
   scope: StudioScopeProjection;
+  /** C3 only: the selected application that owns new resources and queues. */
+  owner?: { id: string; name: string };
   busy: boolean;
   onAdd: (creation: Creation) => Promise<boolean>;
   onExisting: (id: string) => void;
@@ -98,7 +102,7 @@ export function StudioLibrary({
   const target = creationScope(scope);
   const views = studioViews(loaded.design, studioDefinitions, loaded.project.name);
   const visibleIds = new Set(
-    [views.context, views.containers, ...views.details].flatMap((view) =>
+    studioScopes(views).flatMap((view) =>
       view.nodes.flatMap((node) =>
         node.refs.flatMap((ref) => (ref.kind === "element" ? [ref.id] : [])),
       ),
@@ -349,12 +353,10 @@ export function StudioLibrary({
             ) : null}
             {definition || preset ? (
               <p>
-                {scope.level === "detail"
-                  ? scope.scope.kind === "package" &&
-                    definition &&
-                    ["application", "browser", "worker"].includes(definition.role)
-                    ? "Joins this package."
-                    : `Owned by ${scope.name}.`
+                {scope.level === "components"
+                  ? owner
+                    ? `Owned by ${owner.name}.`
+                    : "Unowned. Select an application first to make it the owner."
                   : "Added at C2."}{" "}
                 Select the new object to configure it. Runtime support and C4b work are reviewed in
                 Generate.
@@ -533,7 +535,7 @@ export function StudioLibrary({
                       })}
                   </select>
                 </label>
-                {existing && scope.level === "detail" ? (
+                {existing && scope.level === "components" && owner ? (
                   <button
                     type="button"
                     onClick={() => {

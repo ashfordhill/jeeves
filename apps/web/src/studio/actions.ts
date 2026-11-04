@@ -7,6 +7,7 @@ import {
   type StudioKind,
   studioApplicationKinds,
   studioDefinitions,
+  studioScopes,
   studioViews,
 } from "@jeeves/spec";
 import { useDraw } from "../draw/store.ts";
@@ -100,10 +101,8 @@ export function commitAction(
     const old = studioViews(design, studioDefinitions, loaded?.project.name ?? "System");
     const next = studioViews(result.design, studioDefinitions, loaded?.project.name ?? "System");
     const positions: Record<string, Record<string, { x: number; y: number }>> = {};
-    for (const scope of [next.context, next.containers, ...next.details]) {
-      const previous = [old.context, old.containers, ...old.details].find(
-        (item) => item.key === scope.key,
-      );
+    for (const scope of studioScopes(next)) {
+      const previous = studioScopes(old).find((item) => item.key === scope.key);
       const fresh = scope.nodes.filter(
         (node) => !previous?.nodes.some((item) => item.id === node.id),
       );

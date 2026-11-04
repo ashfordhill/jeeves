@@ -2,6 +2,7 @@
 import { containerContext } from "./architecture.ts";
 import { containerClassification, isExternalResponsibility } from "./architecture-choices.ts";
 import type { DesignDocument, Element } from "./design.ts";
+import { type StudioComponentKind, studioComponentDefinitions } from "./studio-components.ts";
 import { type StudioDefinition, type StudioVisual, studioVisual } from "./studio-definitions.ts";
 import { legacyStudioKind } from "./studio-legacy.ts";
 import type {
@@ -10,7 +11,6 @@ import type {
   StudioKind,
   StudioOwner,
 } from "./studio-model.ts";
-import { studioApplicationKinds } from "./studio-model.ts";
 import {
   type StudioRelationship,
   type StudioRelationshipSource,
@@ -20,18 +20,25 @@ import {
 
 export type StudioSemanticRef =
   | { kind: "system" }
-  | { kind: "context" | "element" | "package"; id: string };
+  | { kind: "context" | "element" | "package" | "component"; id: string };
+/** Three equal levels (SG05). C3 is one whole-system projection, never a per-service scope. */
 export const studioViewKeys = {
   context: "studio:context",
   containers: "studio:containers",
-  service: (id: string) => `studio:service:${id}`,
-  package: (id: string) => `studio:package:${id}`,
+  components: "studio:components",
 } as const;
+/**
+ * Pre-SG05 per-service/package detail scope keys may remain in saved URLs, preferences and layout
+ * records. They are read as the whole-system C3 view and are never rewritten.
+ */
+export const isLegacyStudioDetailKey = (key: string) =>
+  key.startsWith("studio:service:") || key.startsWith("studio:package:");
 export const studioNodeKeys = {
   system: "studio:context:system",
   context: (id: string) => `studio:context:${id}`,
   element: (id: string) => `studio:element:${id}`,
   package: (id: string) => `studio:package:${id}`,
+  component: (id: string) => `studio:component:${id}`,
 } as const;
 
 /** A browser is an application boundary, with no invented Docker deployment. */
@@ -43,7 +50,7 @@ export type StudioExecutionIntent =
 export interface StudioViewNode {
   id: string;
   refs: StudioSemanticRef[];
-  kind: StudioKind | "generic" | "package" | "person" | "system" | "external-system";
+  kind: StudioKind | "generic" | "package" | "component" | "person" | "system" | "external-system";
   name: string;
   description: string;
   source: "studio" | "legacy" | "context";
@@ -53,22 +60,21 @@ export interface StudioViewNode {
   definitionStatus?: "known" | "unresolved";
   owner?: StudioOwner;
   execution?: StudioExecutionIntent;
-  drillKey?: string;
+  /** C3 component kind, from the finite SG02 catalog. */
+  componentKind?: StudioComponentKind;
+  /** An open labelled group: a package at C2, an application holding components at C3. */
+  frame?: true;
+  /** The frame node this node is drawn inside. Presentation only; never ownership or wiring. */
+  parent?: string;
   /** Summary of real applications; a package has no execution/settings of its own. */
   members?: { ref: StudioSemanticRef; name: string; execution?: StudioExecutionIntent }[];
 }
-export interface StudioBreadcrumb {
-  key: string;
-  name: string;
-}
 export interface StudioScopeProjection {
   key: string;
-  level: "context" | "containers" | "detail";
+  level: "context" | "containers" | "components";
   scope: StudioSemanticRef;
   name: string;
   description: string;
-  parentKey?: string;
-  breadcrumb: StudioBreadcrumb[];
   nodes: StudioViewNode[];
   edges: StudioRelationship[];
   trunks: StudioTrunk[];
@@ -76,12 +82,12 @@ export interface StudioScopeProjection {
 export interface StudioViews {
   context: StudioScopeProjection;
   containers: StudioScopeProjection;
-  details: StudioScopeProjection[];
+  components: StudioScopeProjection;
   /** Source stays in the design for Generate/export; omitted internals never become fake children. */
   source: {
     summarizedComponents: { id: string; owner: StudioSemanticRef }[];
     omittedElements: { ref: StudioSemanticRef; reason: "deployment-infrastructure" }[];
-    /** An unowned, disconnected legacy queue cannot acquire an invented service scope. */
+    /** Queues missing from C3 (none today; kept so source accounting stays explicit). */
     unscopedQueues: StudioSemanticRef[];
     relationships: StudioRelationshipSource;
   };
@@ -92,6 +98,24 @@ export type StudioViewDefinitions = Readonly<
 const byId = <T extends { id: string }>(items: readonly T[]) =>
   [...items].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 const elementRef = (id: string): StudioSemanticRef => ({ kind: "element", id });
+/** C1, C2 and C3 in tab order. */
+export const studioScopes = (views: StudioViews): StudioScopeProjection[] => [
+  views.context,
+  views.containers,
+  views.components,
+];
+const componentVisual: Record<StudioComponentKind, StudioVisual> = {
+  "rate-limiter": { icon: "shield", color: "generic", shape: "box" },
+  "cache-reader": { icon: "bolt", color: "data", shape: "box" },
+  "id-generator": { icon: "repeat", color: "generic", shape: "box" },
+  "redirect-responder": { icon: "route", color: "api", shape: "box" },
+  "event-publisher": { icon: "plug-connected", color: "messaging", shape: "box" },
+  "event-consumer": { icon: "plug", color: "messaging", shape: "box" },
+  "data-access": { icon: "database", color: "data", shape: "box" },
+  "auth-guard": { icon: "lock", color: "generic", shape: "box" },
+  "external-call": { icon: "world", color: "external", shape: "box" },
+  custom: { icon: "puzzle", color: "generic", shape: "box" },
+};
 
 function executionIntent(binding?: StudioElementBinding): StudioExecutionIntent | undefined {
   const settings = binding?.settings;
@@ -112,8 +136,8 @@ function executionIntent(binding?: StudioElementBinding): StudioExecutionIntent 
 }
 
 /**
- * All useful detail scopes and relationship provenance are returned, with stable keys for explicit
- * navigation. This projection never authors wiring, runtime settings or layout.
+ * C1, C2 and the whole-system C3 with relationship provenance, under stable keys. This projection
+ * never authors wiring, runtime settings or layout.
  */
 export function studioViews(
   design: DesignDocument,
@@ -130,13 +154,6 @@ export function studioViews(
   );
   const kindFor = (element: Element) =>
     bindings.get(element.id)?.settings.kind ?? legacyStudioKind(element);
-  const application = (element: Element) => {
-    const binding = bindings.get(element.id);
-    // A legacy external identity provider is not a new independently authored Identity service.
-    return binding
-      ? studioApplicationKinds.some((value) => value === binding.settings.kind)
-      : containerClassification(element).kind === "Application";
-  };
   const omittedElements: StudioViews["source"]["omittedElements"] = [];
   const visible = byId(design.elements).filter((element) => {
     if (bindings.has(element.id)) return true;
@@ -204,7 +221,6 @@ export function studioViews(
     source: "context",
     role: "primary",
     visual: { ...studioVisual() },
-    drillKey: studioViewKeys.containers,
   };
   const context: StudioScopeProjection = {
     key: studioViewKeys.context,
@@ -212,68 +228,15 @@ export function studioViews(
     scope: { kind: "system" },
     name: system.name,
     description: system.description,
-    breadcrumb: [{ key: studioViewKeys.context, name: "C1" }],
     nodes: [system, ...byId(architecture?.nodes ?? []).map(contextNode)],
     edges: [],
     trunks: [],
   };
-  const c2Breadcrumb = [{ key: studioViewKeys.containers, name: "C2" }];
   const c2Context = containerContext(design);
-  const containers: StudioScopeProjection = {
-    key: studioViewKeys.containers,
-    level: "containers",
-    scope: { kind: "system" },
-    name: system.name,
-    description: system.description,
-    parentKey: studioViewKeys.context,
-    breadcrumb: c2Breadcrumb,
-    edges: [],
-    trunks: [],
-    nodes: visible
-      .filter((element) => {
-        if (membership.has(element.id) || kindFor(element) === "queue") return false;
-        const owner = bindings.get(element.id)?.owner;
-        if (owner?.kind !== "package") return true;
-        const pkg = packages.find((item) => item.id === owner.id);
-        if (!pkg) return true;
-        // Only package-owned resources whose every connection stays inside can collapse with it.
-        return design.connections.some(
-          (connection) =>
-            (connection.from.element === element.id &&
-              !pkg.members.includes(connection.to.element)) ||
-            (connection.to.element === element.id &&
-              !pkg.members.includes(connection.from.element)),
-        );
-      })
-      .map((element) => nodeFor(element, "primary")),
-  };
-  containers.nodes.push(...c2Context.nodes.filter((node) => !node.container).map(contextNode));
-  if (
-    c2Context.relationships.some(
-      (relation) => relation.source === "context:system" || relation.target === "context:system",
-    )
-  )
-    containers.nodes.push({ ...system, drillKey: undefined });
-  const details: StudioScopeProjection[] = [];
-  // One-hop only: ownership and actual incident connections; never remote internals or scalar boxes.
-  const relevant = (owners: Set<string>, packageId?: string) => {
-    const ids = new Set(owners);
-    for (const binding of studio?.elements ?? [])
-      if (
-        (binding.owner?.kind === "element" && owners.has(binding.owner.id)) ||
-        (packageId && binding.owner?.kind === "package" && binding.owner.id === packageId)
-      )
-        ids.add(binding.element);
-    for (const connection of design.connections) {
-      if (owners.has(connection.from.element)) ids.add(connection.to.element);
-      if (owners.has(connection.to.element)) ids.add(connection.from.element);
-    }
-    return visible.filter((element) => ids.has(element.id));
-  };
-  for (const pkg of packages) {
-    const key = studioViewKeys.package(pkg.id);
-    const members = new Set(pkg.members);
-    const summary: StudioViewNode = {
+  // C2: one card per deployable or resource. A package is an open, labelled frame around its
+  // member applications and the resources it owns; it has no execution or settings of its own.
+  const packageNodes = packages.map(
+    (pkg): StudioViewNode => ({
       id: studioNodeKeys.package(pkg.id),
       refs: [{ kind: "package", id: pkg.id }],
       kind: "package",
@@ -282,7 +245,7 @@ export function studioViews(
       source: "studio",
       role: "primary",
       visual: { icon: "building", color: "api", shape: "box" },
-      drillKey: key,
+      frame: true,
       members: [...pkg.members].sort().flatMap((id) => {
         const element = elements.get(id);
         return element
@@ -297,65 +260,81 @@ export function studioViews(
             ]
           : [];
       }),
-    };
-    containers.nodes.push(summary);
-    details.push({
-      key,
-      level: "detail",
-      scope: { kind: "package", id: pkg.id },
-      name: pkg.name,
-      description: pkg.description,
-      parentKey: containers.key,
-      breadcrumb: [...c2Breadcrumb, { key, name: pkg.name }],
-      edges: [],
-      trunks: [],
-      nodes: relevant(members, pkg.id).map((element) =>
-        nodeFor(element, members.has(element.id) ? "member" : "reference"),
+    }),
+  );
+  const packageFor = (element: Element) => {
+    const owner = bindings.get(element.id)?.owner;
+    return (
+      membership.get(element.id) ??
+      (owner?.kind === "package" ? packages.find((item) => item.id === owner.id) : undefined)
+    );
+  };
+  const containers: StudioScopeProjection = {
+    key: studioViewKeys.containers,
+    level: "containers",
+    scope: { kind: "system" },
+    name: system.name,
+    description: system.description,
+    edges: [],
+    trunks: [],
+    nodes: [
+      ...visible
+        .filter((element) => kindFor(element) !== "queue")
+        .map((element) => {
+          const node = nodeFor(element, membership.has(element.id) ? "member" : "primary");
+          const pkg = packageFor(element);
+          return pkg ? { ...node, parent: studioNodeKeys.package(pkg.id) } : node;
+        }),
+      ...packageNodes,
+    ],
+  };
+  containers.nodes.push(...c2Context.nodes.filter((node) => !node.container).map(contextNode));
+  if (
+    c2Context.relationships.some(
+      (relation) => relation.source === "context:system" || relation.target === "context:system",
+    )
+  )
+    containers.nodes.push({ ...system });
+  // C3: the whole system at once. Each application that has components is a frame containing
+  // them; queues, resources and external systems sit around the frames.
+  const visibleIds = new Set(visible.map((element) => element.id));
+  const components = byId(studio?.components ?? []).filter((item) => visibleIds.has(item.host));
+  const hosts = new Set(components.map((item) => item.host));
+  const componentScope: StudioScopeProjection = {
+    key: studioViewKeys.components,
+    level: "components",
+    scope: { kind: "system" },
+    name: system.name,
+    description: system.description,
+    edges: [],
+    trunks: [],
+    nodes: [
+      ...visible.map((element) => {
+        const node = nodeFor(element, hosts.has(element.id) ? "owner" : "primary");
+        return hosts.has(element.id) ? { ...node, frame: true as const } : node;
+      }),
+      ...components.map(
+        (item): StudioViewNode => ({
+          id: studioNodeKeys.component(item.id),
+          refs: [{ kind: "component", id: item.id }],
+          kind: "component",
+          componentKind: item.settings.kind,
+          name: item.name,
+          description:
+            item.description ?? studioComponentDefinitions[item.settings.kind].description,
+          source: "studio",
+          role: "member",
+          visual: { ...componentVisual[item.settings.kind] },
+          parent: studioNodeKeys.element(item.host),
+        }),
       ),
-    });
-  }
-  for (const element of visible.filter(application)) {
-    const dependencies = relevant(new Set([element.id]));
-    if (!dependencies.some((item) => item.id !== element.id)) continue;
-    const pkg = membership.get(element.id);
-    const key = studioViewKeys.service(element.id);
-    details.push({
-      key,
-      level: "detail",
-      scope: elementRef(element.id),
-      name: element.name,
-      description: element.description ?? "",
-      parentKey: pkg ? studioViewKeys.package(pkg.id) : containers.key,
-      edges: [],
-      trunks: [],
-      breadcrumb: [
-        ...c2Breadcrumb,
-        ...(pkg ? [{ key: studioViewKeys.package(pkg.id), name: pkg.name }] : []),
-        { key, name: element.name },
-      ],
-      nodes: dependencies.map((item) =>
-        nodeFor(item, item.id === element.id ? "owner" : "reference"),
-      ),
-    });
-  }
-  const detailKeys = new Set(details.map((view) => view.key));
-  for (const view of [containers, ...details]) {
-    for (const node of view.nodes) {
-      const ref = node.refs.find((ref) => ref.kind === "element");
-      if (
-        ref &&
-        "id" in ref &&
-        node.role !== "owner" &&
-        detailKeys.has(studioViewKeys.service(ref.id))
-      )
-        node.drillKey = studioViewKeys.service(ref.id);
-    }
-    view.nodes = byId(view.nodes);
-  }
+    ],
+  };
+  for (const view of [containers, componentScope]) view.nodes = byId(view.nodes);
   return withStudioRelationships(design, {
     context,
     containers,
-    details: [...details].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)),
+    components: componentScope,
     source: {
       summarizedComponents: byId(architecture?.components ?? []).map((component) => ({
         id: component.id,
@@ -366,9 +345,7 @@ export function studioViews(
         .filter(
           (element) =>
             kindFor(element) === "queue" &&
-            !details.some((view) =>
-              view.nodes.some((node) => node.id === studioNodeKeys.element(element.id)),
-            ),
+            !componentScope.nodes.some((node) => node.id === studioNodeKeys.element(element.id)),
         )
         .map((element) => elementRef(element.id)),
       relationships: { accounting: [], unresolved: [], suppressed: [], componentRelationships: [] },

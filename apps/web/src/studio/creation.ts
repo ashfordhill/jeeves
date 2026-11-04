@@ -17,6 +17,7 @@ import {
   studioDefinitions,
   studioNodeKeys,
   studioResourceKinds,
+  studioScopes,
   studioServiceWorkerPreset,
   studioViews,
 } from "@jeeves/spec";
@@ -30,22 +31,15 @@ export type Creation =
   | { type: "package" }
   | { type: "composition"; entry: ArchitectureLibraryEntry; roles: LibraryInsertInput["roles"] }
   | { type: "group"; members: string[]; name: string };
+/** C3 is whole-system: resources and queues created there are owned by the selected application. */
 export function creationScope(scope: StudioScopeProjection): StudioCreationScope | undefined {
-  return scope.level === "context"
-    ? undefined
-    : scope.level === "containers"
-      ? "c2"
-      : scope.scope.kind === "package"
-        ? "c3-package"
-        : "c3-service";
+  return scope.level === "context" ? undefined : scope.level === "containers" ? "c2" : "c3-service";
 }
 export function baseTools(scope: StudioScopeProjection): BaseCreation[] {
   if (scope.level === "context") return ["person", "external-system"];
   if (scope.level === "containers")
     return ["service", "browser", "database", "cache", "external-api"];
-  return scope.scope.kind === "package"
-    ? ["service", "database", "cache", "queue"]
-    : ["database", "cache", "queue"];
+  return ["database", "cache", "queue"];
 }
 export const creationLabel = (kind: BaseCreation) =>
   kind === "person"
@@ -85,6 +79,8 @@ export async function createAt(
   scopeKey: string,
   creation: Creation,
   point: Point,
+  /** C3 only: the application that owns a new resource or queue. */
+  owner?: string,
 ): Promise<string | undefined> {
   const ids = {
     package: id(),
@@ -103,9 +99,7 @@ export async function createAt(
   const ok = await useDraw.getState().createPlaced(projectId, (design: DesignDocument) => {
     const loaded = useDraw.getState().loaded;
     const views = studioViews(design, studioDefinitions, loaded?.project.name ?? "System");
-    const scope = [views.context, views.containers, ...views.details].find(
-      (item) => item.key === scopeKey,
-    );
+    const scope = studioScopes(views).find((item) => item.key === scopeKey);
     if (!scope) throw new Error("This scope changed; reopen it to add an object.");
     const names = new Set([
       ...design.elements.map((item) => item.name),
@@ -169,7 +163,8 @@ export async function createAt(
         const target = creationScope(scope);
         if (!target || !definition.creationScopes.includes(target))
           throw new Error("This building block cannot be created in this scope.");
-        const application = studioApplicationKinds.some((item) => item === kind);
+        if (kind === "queue" && scope.level === "components" && !owner)
+          throw new Error("Select the application that owns this queue first.");
         const created: Extract<StudioCommand, { type: "create" }> = {
           type: "create",
           system,
@@ -179,19 +174,11 @@ export async function createAt(
               name: uniqueName(definition.creationName, names),
               settings: structuredClone(definition.defaults),
               ...(studioResourceKinds.some((resource) => resource === kind) &&
-                scope.level === "detail" &&
-                (scope.scope.kind === "package" || scope.scope.kind === "element") && {
-                  owner: { kind: scope.scope.kind, id: scope.scope.id },
-                }),
+                scope.level === "components" &&
+                owner && { owner: { kind: "element" as const, id: owner } }),
             },
           ],
         };
-        if (application && scope.scope.kind === "package") {
-          const packageId = scope.scope.id;
-          const pkg = design.architecture?.studio?.packages.find((item) => item.id === packageId);
-          if (!pkg) throw new Error("Package changed; reopen it to add a member.");
-          created.package = { ...pkg, members: [...pkg.members, ids.service] };
-        }
         command = created;
       } else if (creation.type === "package") {
         if (scope.level !== "containers") throw new Error("Create packages at C2.");
@@ -239,9 +226,7 @@ export async function createAt(
     });
     if (!applied.ok) throw new Error(applied.errors[0]?.message ?? "This creation is invalid.");
     const next = studioViews(applied.design, studioDefinitions, loaded?.project.name ?? "System");
-    const nextScope = [next.context, next.containers, ...next.details].find(
-      (item) => item.key === scopeKey,
-    );
+    const nextScope = studioScopes(next).find((item) => item.key === scopeKey);
     const additions =
       nextScope?.nodes.filter((node) => !scope.nodes.some((old) => old.id === node.id)) ?? [];
     if (!additions.some((node) => node.id === selected)) {
@@ -250,10 +235,8 @@ export async function createAt(
       selected = first.id;
     }
     const placements: Record<string, Record<string, Point>> = {};
-    for (const target of [next.context, next.containers, ...next.details]) {
-      const previous = [views.context, views.containers, ...views.details].find(
-        (item) => item.key === target.key,
-      );
+    for (const target of studioScopes(next)) {
+      const previous = studioScopes(views).find((item) => item.key === target.key);
       const fresh = target.nodes.filter(
         (node) => !previous?.nodes.some((old) => old.id === node.id),
       );

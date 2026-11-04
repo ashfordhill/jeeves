@@ -21,6 +21,7 @@ export { boundedStudioText } from "./text.ts";
 
 /** World dimensions belong to the role, never the camera, name or support status. */
 export function studioCardSize(node: StudioViewNode) {
+  if (node.kind === "component") return { width: 192, height: 72 };
   return {
     width:
       node.kind === "person"

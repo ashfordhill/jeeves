@@ -4,6 +4,7 @@ import { containerClassification } from "./architecture-choices.ts";
 import type { Connection, DesignDocument } from "./design.ts";
 import { capabilityEndpoint } from "./design.ts";
 import { connectionPresentation, type RelationshipInteraction } from "./relationship-display.ts";
+import type { StudioComponentConnection } from "./studio-components.ts";
 import { legacyStudioKind } from "./studio-legacy.ts";
 import { studioApplicationKinds } from "./studio-model.ts";
 import type { StudioScopeProjection, StudioSemanticRef, StudioViews } from "./studio-view.ts";
@@ -220,8 +221,9 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
     trunks: [],
   });
   const context = freshScope(views.context),
-    containers = freshScope(views.containers);
-  const scopes = [context, containers, ...views.details.map(freshScope)];
+    containers = freshScope(views.containers),
+    componentScope = freshScope(views.components);
+  const scopes = [context, containers, componentScope];
   const nodeFor = (scope: StudioScopeProjection, ref: StudioSemanticRef) =>
     scope.nodes.find((node) => node.refs.some((r) => refKey(r) === refKey(ref)))?.id;
   const c2Node = (ref: StudioSemanticRef): string | undefined => {
@@ -278,23 +280,82 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
       });
     } else add(containers, from, to, member);
   };
+  // C3 component links. An element link draws along its `via` C2 connection, in that
+  // connection's direction, so C3 never contradicts C2. Hosts without a link for a connection
+  // keep the connection on their frame.
+  const studioComponents = new Map(studio?.components?.map((item) => [item.id, item]));
+  const componentNode = (id: string) => nodeFor(componentScope, { kind: "component", id });
+  const traced = new Map<string, { link: StudioComponentConnection; host: string }[]>();
+  for (const link of ordered(studio?.componentConnections ?? [])) {
+    const from = studioComponents.get(link.from);
+    if (!from) continue;
+    if (link.to.kind === "component") {
+      const target = studioComponents.get(link.to.id);
+      const fromNode = componentNode(link.from),
+        toNode = target && componentNode(target.id);
+      if (!fromNode || !toNode || fromNode === toNode) continue;
+      add(componentScope, fromNode, toNode, {
+        ...empty(),
+        id: `component-link:${link.id}`,
+        kind: "component",
+        action: link.label ?? "Uses",
+        protocols: ["In process"],
+        interactions: [],
+        sourceRefs: [{ kind: "component", id: link.from }],
+        targetRefs: [{ kind: "component", id: target.id }],
+        componentIds: sorted([link.from, target.id]),
+        componentRelationshipIds: [link.id],
+      });
+      continue;
+    }
+    const entries = traced.get(link.to.via) ?? [];
+    entries.push({ link, host: from.host });
+    traced.set(link.to.via, entries);
+  }
   for (const connection of ordered(design.connections)) {
     const member = requireEntry(connectionMembers, connection.id);
     if (!member.queueIds.length) c2Add(member);
-    for (const scope of scopes.slice(2)) {
-      const scopeRef = scope.scope;
-      const owners =
-        scopeRef.kind === "package"
-          ? (studio?.packages.find((p) => p.id === scopeRef.id)?.members ?? [])
-          : scopeRef.kind === "element"
-            ? [scopeRef.id]
-            : [];
-      if (!owners.includes(connection.from.element) && !owners.includes(connection.to.element))
-        continue;
-      const from = nodeFor(scope, elementRef(connection.from.element)),
-        to = nodeFor(scope, elementRef(connection.to.element));
-      if (from && to) add(scope, from, to, member);
-    }
+    const fromNode = nodeFor(componentScope, elementRef(connection.from.element)),
+      toNode = nodeFor(componentScope, elementRef(connection.to.element));
+    if (!fromNode || !toNode) continue;
+    const links = traced.get(connection.id) ?? [];
+    const side = (element: string, node: string) => {
+      const own = links.filter(
+        (entry) =>
+          entry.host === element &&
+          entry.link.to.kind === "element" &&
+          entry.link.to.id !== element,
+      );
+      const ends = own.flatMap(({ link }) => {
+        const id = componentNode(link.from);
+        return id ? [{ id, link }] : [];
+      });
+      return ends.length ? ends : [{ id: node, link: undefined }];
+    };
+    for (const from of side(connection.from.element, fromNode))
+      for (const to of side(connection.to.element, toNode)) {
+        if (from.id === to.id) continue;
+        const used = [from.link, to.link].filter((link) => link !== undefined);
+        add(
+          componentScope,
+          from.id,
+          to.id,
+          used.length
+            ? {
+                ...member,
+                id: `${member.id}:${used.map((link) => link.id).join("|")}`,
+                kind: "component",
+                action: used.find((link) => link.label)?.label ?? member.action,
+                sourceRefs: from.link
+                  ? [{ kind: "component", id: from.link.from }]
+                  : member.sourceRefs,
+                targetRefs: to.link ? [{ kind: "component", id: to.link.from }] : member.targetRefs,
+                componentIds: sorted([...member.componentIds, ...used.map((link) => link.from)]),
+                componentRelationshipIds: sorted(used.map((link) => link.id)),
+              }
+            : member,
+        );
+      }
   }
   // Roles come only from an explicit studio setting or an unambiguous existing binding.
   // Names, labels, arrow orientation alone and asynchronous intent cannot imply a role.
@@ -465,7 +526,7 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
   return {
     context,
     containers,
-    details: scopes.slice(2),
+    components: componentScope,
     source: { ...views.source, relationships: source },
   };
 }

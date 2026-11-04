@@ -1,4 +1,9 @@
-import type { StudioScopeProjection, StudioViewNode } from "@jeeves/spec";
+import {
+  type StudioScopeProjection,
+  type StudioViewNode,
+  studioComponentDefinitions,
+  studioDefinitions,
+} from "@jeeves/spec";
 import {
   Background,
   BaseEdge,
@@ -24,7 +29,7 @@ import {
   studioCardSize,
 } from "./card-appearance.tsx";
 import { initialPosition, type Point } from "./creation.ts";
-import { arrangeStudio, studioFit, studioLanding } from "./layout.ts";
+import { arrangeStudio, studioFit, studioFrames, studioLanding } from "./layout.ts";
 import {
   movedStudioGeometry,
   type StudioGeometry,
@@ -37,12 +42,42 @@ import { routeStudio } from "./routing-client.ts";
 import { useStudioRouting } from "./use-routing.ts";
 import { useStudioSettle } from "./use-settle.ts";
 
-type Card = Node<{ item: StudioViewNode }, "studio">;
+type Card = Node<{ item: StudioViewNode }, "studio" | "frame">;
+/** An open labelled group: a package at C2, an application with its components at C3. */
+function StudioFrame({ data, selected }: NodeProps<Card>) {
+  const item = data.item;
+  const kind =
+    item.kind === "package"
+      ? "Package"
+      : item.kind in studioDefinitions
+        ? studioDefinitions[item.kind as keyof typeof studioDefinitions].creationName
+        : "Application";
+  return (
+    <div
+      className="studio-frame"
+      data-selected={selected}
+      data-kind={item.kind}
+      data-family={item.visual.color}
+      title={[item.name, item.description].filter(Boolean).join("\n")}
+    >
+      <Handle type="target" position={Position.Left} />
+      <span className="studio-frame-header">
+        <span className="studio-role-icon">
+          <StudioRoleIcon node={item} />
+        </span>
+        <strong>{item.name}</strong>
+        <span className="studio-frame-kind">{kind}</span>
+      </span>
+      <Handle type="source" position={Position.Right} />
+    </div>
+  );
+}
 function StudioCard({ data, selected }: NodeProps<Card>) {
   const { zoom } = useViewport();
   const design = useDraw((state) => state.loaded?.design);
   const item = data.item;
   const details = design ? studioCardDetails(item, design) : {};
+  if (item.componentKind) details.technology = studioComponentDefinitions[item.componentKind].name;
   const detailed = zoom >= 1.1;
   return (
     <div
@@ -72,7 +107,7 @@ function StudioCard({ data, selected }: NodeProps<Card>) {
     </div>
   );
 }
-const nodeTypes = { studio: StudioCard };
+const nodeTypes = { studio: StudioCard, frame: StudioFrame };
 
 type Relation = Edge<{ path: StudioPath; route: StudioRoute }, "studio">;
 function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
@@ -132,7 +167,6 @@ export function StudioGraph({
   camera,
   onCamera,
   onSelect,
-  onOpen,
   onPlace,
   onCenter,
 }: {
@@ -147,7 +181,6 @@ export function StudioGraph({
   camera?: Viewport;
   onCamera: (camera: Viewport) => void;
   onSelect: (id?: string) => void;
-  onOpen: (key?: string) => void;
   onPlace: (point: Point) => void;
   onCenter: (point: Point) => void;
 }) {
@@ -175,18 +208,30 @@ export function StudioGraph({
     if (viewport) void flow.setViewport(viewport);
   }, [flow, viewport]);
   const arranged = useMemo(() => arrangeStudio(scope), [scope]);
+  const parents = useMemo(() => studioFrames(scope), [scope]);
+  const frames = useMemo(() => new Set(Object.values(parents)), [parents]);
+  // Framed scopes are arranged automatically (SG05; SG06 replaces this with ELK). Saved positions
+  // from older collapsed-package or per-service layouts are ignored there, never rewritten.
+  const automatic = frames.size > 0;
   const boxes = useMemo(
     () =>
       Object.fromEntries(
-        scope.nodes.map((item, index) => [
-          item.id,
-          {
-            ...(saved?.positions[item.id] ?? arranged[item.id] ?? initialPosition(index)),
-            ...studioCardSize(item),
-          },
-        ]),
+        scope.nodes.map((item, index) => {
+          const box = arranged[item.id];
+          return [
+            item.id,
+            {
+              ...((automatic ? undefined : saved?.positions[item.id]) ??
+                box ??
+                initialPosition(index)),
+              ...(frames.has(item.id) && box
+                ? { width: box.width, height: box.height }
+                : studioCardSize(item)),
+            },
+          ];
+        }),
       ),
-    [scope.nodes, saved?.positions, arranged],
+    [scope.nodes, saved?.positions, arranged, automatic, frames],
   );
   const settledBoxes = useMemo(
     () =>
@@ -225,6 +270,7 @@ export function StudioGraph({
     fixed?.paths === paths && fixed.boxes === JSON.stringify(settledBoxes)
       ? fixed.geometry
       : undefined,
+    parents,
   );
   const targetGeometry = useMemo(
     () =>
@@ -281,22 +327,40 @@ export function StudioGraph({
   }, []);
   const nodes = useMemo(
     () =>
-      scope.nodes.map(
-        (item, index): Card => ({
+      scope.nodes.map((item, index): Card => {
+        const size = {
+          width: boxes[item.id]?.width ?? studioCardSize(item).width,
+          height: boxes[item.id]?.height ?? studioCardSize(item).height,
+        };
+        return {
           id: item.id,
-          type: "studio",
+          type: frames.has(item.id) ? "frame" : "studio",
           position: frame.nodes[item.id] ?? initialPosition(index),
           data: { item },
           selected:
             (multiple ? selectedIds?.includes(item.id) : selection === item.id) ||
             connecting === item.id,
           ariaLabel: `Inspect ${item.name}`,
-          ...studioCardSize(item),
+          // Frames sit beneath relationships; cards sit above them.
+          zIndex: frames.has(item.id) ? 0 : 3,
+          ...(automatic && { draggable: false }),
+          ...size,
           measured: measured[item.id],
-          style: studioCardSize(item),
-        }),
-      ),
-    [scope, selection, selectedIds, multiple, frame.nodes, connecting, measured],
+          style: size,
+        };
+      }),
+    [
+      scope,
+      selection,
+      selectedIds,
+      multiple,
+      frame.nodes,
+      connecting,
+      measured,
+      boxes,
+      frames,
+      automatic,
+    ],
   );
   const tidy = async () => {
     if (!flow || !container.current || busy || dragging || !projectId || !routing.ready) return;
@@ -361,7 +425,7 @@ export function StudioGraph({
           target: path.item.to,
           data: { path, route: geometry[path.id] as StudioRoute },
           selected,
-          zIndex: path.branchIds ? 0 : 1,
+          zIndex: path.branchIds ? 1 : 2,
           markerEnd: {
             type: MarkerType.ArrowClosed,
             color: selected ? "var(--blue)" : "var(--ink-soft)",
@@ -382,10 +446,12 @@ export function StudioGraph({
       ref={container}
       data-placing={placing || undefined}
       aria-label={`${scope.level === "context" ? "C1" : scope.level === "containers" ? "C2" : "C3"} ${scope.name}`}
+      data-automatic={automatic || undefined}
       data-scope={scope.key}
       data-dragging={!!dragging}
       onPointerDownCapture={(event) => {
-        if (busy || hand || placing || connecting !== undefined || event.button !== 0) return;
+        if (automatic || busy || hand || placing || connecting !== undefined || event.button !== 0)
+          return;
         const target = event.target as HTMLElement;
         if (
           !target.closest(".react-flow__node") ||
@@ -401,7 +467,13 @@ export function StudioGraph({
       }}
     >
       <ReactFlow
-        onInit={setFlow}
+        onInit={(instance) => {
+          setFlow(instance);
+          // Framed scopes fit their deterministic arrangement explicitly, frames included.
+          const bounds = container.current?.getBoundingClientRect();
+          if (automatic && !camera && !viewport && bounds)
+            void instance.setViewport(studioFit(boxes, {}, bounds.width, bounds.height));
+        }}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
@@ -413,13 +485,15 @@ export function StudioGraph({
         nodesConnectable={false}
         elementsSelectable={!hand}
         elevateEdgesOnSelect={false}
+        // A selected frame must stay beneath its components and relationships.
+        elevateNodesOnSelect={!automatic}
         panOnDrag={hand ? true : [1, 2]}
         zoomOnDoubleClick={false}
         deleteKeyCode={null}
         minZoom={0.1}
         maxZoom={2}
         defaultViewport={viewport ?? camera}
-        fitView={!camera && !viewport}
+        fitView={!automatic && !camera && !viewport}
         fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
         onNodesChange={(changes) => {
           const dimensions = changes.filter(
@@ -519,9 +593,6 @@ export function StudioGraph({
         }}
         onNodeClick={(_, node) => {
           if (!hand && !placing) onSelect(node.id);
-        }}
-        onNodeDoubleClick={(_, node) => {
-          if (!hand && !placing && connecting === undefined) onOpen(node.data.item.drillKey);
         }}
         onEdgeClick={(_, edge) => {
           if (!hand && !placing) onSelect(edge.id);

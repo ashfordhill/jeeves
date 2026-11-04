@@ -117,7 +117,7 @@ export function ConnectionCreator({
     : design.elements.filter(
         (item) =>
           endpointKind(design, item.id) &&
-          (scope.level === "detail" ||
+          (scope.level === "components" ||
             item.id === draft.from ||
             item.id === draft.to ||
             endpointKind(design, item.id) !== "queue"),

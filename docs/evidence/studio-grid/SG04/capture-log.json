@@ -6,10 +6,7 @@
     "b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62"
   ],
   "blocked": [],
-  "created": [
-    "e20232df-ce8f-457c-9145-63257d5a8f9e",
-    "9c178c06-7e8b-4423-bb4a-74419aed643c"
-  ],
+  "created": ["e20232df-ce8f-457c-9145-63257d5a8f9e", "9c178c06-7e8b-4423-bb4a-74419aed643c"],
   "deleted": {
     "e20232df-ce8f-457c-9145-63257d5a8f9e": 204,
     "9c178c06-7e8b-4423-bb4a-74419aed643c": 204
@@ -26,9 +23,7 @@
   ],
   "observations": {
     "1440x900": {
-      "studyOptions": [
-        "TinyURL · studio study"
-      ],
+      "studyOptions": ["TinyURL · studio study"],
       "selected": "studio-tinyurl",
       "projectName": "TinyURL · studio study",
       "C1": [
@@ -51,14 +46,10 @@
         "studio:package:link-platform | Link platform"
       ],
       "C2edges": 9,
-      "libraryExamples": [
-        "TinyURL · studio study"
-      ]
+      "libraryExamples": ["TinyURL · studio study"]
     },
     "1280x800": {
-      "studyOptions": [
-        "TinyURL · studio study"
-      ],
+      "studyOptions": ["TinyURL · studio study"],
       "selected": "studio-tinyurl",
       "projectName": "TinyURL · studio study",
       "C1": [
@@ -81,9 +72,7 @@
         "studio:package:link-platform | Link platform"
       ],
       "C2edges": 9,
-      "libraryExamples": [
-        "TinyURL · studio study"
-      ]
+      "libraryExamples": ["TinyURL · studio study"]
     }
   }
 }

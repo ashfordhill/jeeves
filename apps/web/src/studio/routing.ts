@@ -410,10 +410,20 @@ export function studioRouteGeometry(
   nodes: Record<string, RouteBox>,
   measure: (text: string) => number,
   fixed: StudioGeometry = {},
+  parents: Record<string, string> = {},
 ): Record<string, StudioRoute> {
   const result: Record<string, StudioRoute> = { ...fixed },
     occupied: Point[][] = Object.values(fixed).map((route) => route.points);
-  const boxes = Object.values(nodes).map((b) => inflate(b, 12));
+  const frames = new Set(Object.values(parents));
+  const all = Object.entries(nodes).map(([id, b]) => ({ id, box: inflate(b, 12) }));
+  const boxes = all.map(({ box }) => box);
+  // A frame is an obstacle only for paths that neither start nor end inside it.
+  const obstacles = (path: StudioPath) => {
+    const inside = new Set(
+      [path.item.from, path.item.to].flatMap((id) => (parents[id] ? [parents[id]] : [])),
+    );
+    return inside.size ? all.filter(({ id }) => !inside.has(id)).map(({ box }) => box) : boxes;
+  };
   const top = Math.min(0, ...boxes.map((b) => b.y)) - 24;
   const starts = paths.filter((p) => !p.trunk),
     ends = paths.filter((p) => !p.branchIds);
@@ -454,8 +464,8 @@ export function studioRouteGeometry(
     };
     const busClear =
       targets.every((t) => t.x > bus.x + 12) &&
-      !blocked(bus, { x: bus.x, y: min }, boxes) &&
-      !blocked(bus, { x: bus.x, y: max }, boxes);
+      !blocked(bus, { x: bus.x, y: min }, obstacles(path)) &&
+      !blocked(bus, { x: bus.x, y: max }, obstacles(path));
     if (busClear) {
       save(path.id, [source, bus, { x: bus.x, y: min }, { x: bus.x, y: max }]);
       branches.forEach((branch, i) => {
@@ -478,21 +488,25 @@ export function studioRouteGeometry(
     const start = junction ?? { x: source.x + 12, y: source.y },
       end = { x: target.x - 12, y: target.y };
     let points: Point[];
+    const around = obstacles(path);
     if (target.x <= source.x) {
       const y = top - feedback++ * 12,
         a = { x: start.x, y },
         b = { x: end.x, y };
       points = [
-        ...orthogonal(start, a, boxes, occupied, y),
+        ...orthogonal(start, a, around, occupied, y),
         b,
-        ...orthogonal(b, end, boxes, occupied, y),
+        ...orthogonal(b, end, around, occupied, y),
       ];
-    } else points = orthogonal(start, end, boxes, occupied);
+    } else points = orthogonal(start, end, around, occupied);
     save(path.id, simplify([source, ...points, target]), junction);
   }
   // Reserve the actual bounded high-detail text (and the medium variant) once, independent of zoom.
   const reserved: RouteBox[] = [
-    ...Object.values(nodes).map((b) => inflate(b, 6)),
+    // A frame reserves only its header strip, so labels can sit between its components.
+    ...Object.entries(nodes).map(([id, b]) =>
+      inflate(frames.has(id) ? { ...b, height: 40 } : b, 6),
+    ),
     ...Object.values(fixed).flatMap((route) => (route.label ? [route.label] : [])),
   ];
   const labeled = new Set(

@@ -17,6 +17,7 @@ export function useStudioRouting(
   nodes: Record<string, RouteBox>,
   moving: boolean,
   fixed?: StudioGeometry,
+  parents?: Record<string, string>,
 ) {
   const [fontReady, setFontReady] = useState(false);
   useEffect(() => {
@@ -44,8 +45,9 @@ export function useStudioRouting(
         ]),
       ),
       ...(fixed && { fixed }),
+      ...(parents && Object.keys(parents).length && { parents }),
     };
-  }, [scope, paths, nodes, fontReady, fixed]);
+  }, [scope, paths, nodes, fontReady, fixed, parents]);
   const key = useMemo(() => JSON.stringify(input), [input]);
   const latest = useRef(input);
   latest.current = input;

@@ -13,10 +13,13 @@ to override the owner's deliberate product choices:
 
 - Docker is the default execution intent for new Jeeves-managed services. Preserve real managed,
   browser and external/device boundaries; language intent is independent of current template support.
-- A C2 card can be one application or a **service package** of independent applications. A package
-  is a grouping, not another process/container. Its actual member deployments remain explicit.
-- C3 is the selected service/package's configurable detail view. A package can expose independent
-  services here; this is a Jeeves product convention, not standard C4's internal-component definition.
+- A C2 card is one deployable application, browser client or resource. A **service package** of
+  independent applications is drawn at C2 as an open labelled group frame around its members; it
+  is a grouping, not another process/container (studio grid D1, SG05).
+- C3 is one whole-system view: each application with components is a frame containing its
+  finite-catalog components, with queues, resources and external systems around them. A component
+  link to an element draws along its `via` C2 connection, so C3 never contradicts C2. C1/C2/C3 are
+  equal tabs; there are no per-service detail scopes or drill-down (studio grid O1).
 - Queues/topics appear as resources at C3, with one identity across producer/consumer views.
   C2 summarizes queued communication with provenance. The queue is not a custom microservice.
 - Put scalar settings in the inspector. Do not split Billing into policy/provider/entitlement boxes,

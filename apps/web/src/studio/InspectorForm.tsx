@@ -7,11 +7,12 @@ import {
   type StudioFieldGroup,
   type StudioSettings,
   type StudioViewNode,
+  studioComponentDefinitions,
   studioDefinitions,
   studioFieldGroups,
   studioProviderChoices,
 } from "@jeeves/spec";
-import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
 import { type DraftValues, formDrafts } from "../draw/form-drafts.ts";
 import { applicationKind, type ConnectionDraft, commitAction, endpointKind } from "./actions.ts";
 import { DependencyActions } from "./DependencyActions.tsx";
@@ -46,6 +47,45 @@ function selectChange(
   return changes;
 }
 
+/** Read-only C3 component facts until the component inspector arrives (SG09). */
+function ComponentSummary({ id, design }: { id: string; design: DesignDocument }) {
+  const component = design.architecture?.studio?.components?.find((item) => item.id === id);
+  if (!component) return null;
+  const definition = studioComponentDefinitions[component.settings.kind];
+  const host = design.elements.find((item) => item.id === component.host)?.name;
+  const settings = Object.entries(component.settings).filter(([key]) => key !== "kind");
+  return (
+    <div className="studio-component-summary">
+      <p>{component.description ?? definition.description}</p>
+      <dl>
+        <dt>Component</dt>
+        <dd>{definition.name}</dd>
+        {host ? (
+          <>
+            <dt>Inside</dt>
+            <dd>{host}</dd>
+          </>
+        ) : null}
+        {definition.thirdParty.length ? (
+          <>
+            <dt>Typical third-party</dt>
+            <dd>{definition.thirdParty.join(", ")}</dd>
+          </>
+        ) : null}
+        {settings.map(([key, value]) => {
+          const field = definition.fields.find((item) => item.path === `settings.${key}`);
+          return (
+            <Fragment key={key}>
+              <dt>{field?.label ?? key}</dt>
+              <dd>{String(value)}</dd>
+            </Fragment>
+          );
+        })}
+      </dl>
+    </div>
+  );
+}
+
 export function InspectorForm({
   projectId,
   node,
@@ -63,9 +103,10 @@ export function InspectorForm({
 }) {
   const ref = node.refs[0];
   const spec = useMemo(
-    () => ref && inspectorSpec(projectId, ref, node.name, design),
+    () => ref && ref.kind !== "component" && inspectorSpec(projectId, ref, node.name, design),
     [projectId, ref, node.name, design],
   );
+  if (ref?.kind === "component") return <ComponentSummary id={ref.id} design={design} />;
   if (!spec) return node.description ? <p>{node.description}</p> : null;
   return (
     <TargetForm

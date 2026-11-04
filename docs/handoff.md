@@ -10952,3 +10952,75 @@ Notes for SG05:
 - `docs/plans/studio-ux/example-coverage.md` still describes the fourteen-row UX coverage plan;
   it is historical planning and was left unchanged. CATALOG's opening "fourteen exact design
   definitions" refers to kinds (now fifteen with gateway); SG10 can correct it.
+
+## 2026-11-04 — SG05: C1/C2/C3 tabs and whole-system C3 projection (complete)
+
+Executed SG05 only on primary `main` from `ac7ab02`, as a fresh sequential worker. Read AGENTS,
+the studio grid plan (O1–O9; D1 adopt, D2 keep starters, D3 queues C3-only), the execution units,
+SG02–SG04 handoffs and the studio sources. No ELK, line/label styling, creation-gesture,
+generation/runtime, P73a/P73b or backend batch work.
+
+What changed:
+
+- `packages/spec/src/studio-view.ts`: `StudioViews.details[]` is replaced by one
+  `components` scope (`studio:components`, level `"components"`); breadcrumb, `parentKey`,
+  `drillKey` and `studioViewKeys.service/package` are gone. New: `studioScopes(views)` (C1, C2,
+  C3), `isLegacyStudioDetailKey`, `studioNodeKeys.component`, semantic ref kind `component`, node
+  kind `component` with `componentKind`, and presentation-only `frame`/`parent`. C2: every
+  non-queue element is a card; a package is an open frame (`frame: true`) whose members and
+  package-owned resources carry `parent`. C3: every visible element; applications with components
+  are frames; each component is a node inside its host; queues, resources and externals are cards.
+  People/context nodes are not on C3.
+- `studio-relationships.ts`: C3 edges. Component → component links draw inside the frame
+  (member kind `component`, protocol "In process"). A component → element link draws along its
+  `via` connection in that connection's direction, replacing the host end with the component
+  (several components tracing one connection give one line each); untraced connections stay on
+  the frame. Such members keep `connectionIds` (so the inspector opens the traced connection) and
+  add `componentIds`/`componentRelationshipIds`. C2 package members are real nodes now, so
+  `internal-package` suppression no longer occurs.
+- Web: header tabs C1/C2/C3; no double-click drill, breadcrumb or back. One selection by identity
+  (`carrySelection`: same node id, shared ref, a component's host, or an edge sharing a
+  connection/context id); it survives tab switches. Old detail scope keys in the URL or saved
+  preferences open C3; old per-scope cameras/layout records are simply unused. Frames render as a
+  `frame` node type (dashed, header with name and kind; packages dotted) beneath relationships;
+  component cards are 192×72. `layout.ts` arranges frame contents first with the existing layering
+  and places each frame as one box (`arrangeStudio`, `studioFrames`). Framed scopes (C2 with
+  packages, C3 with components) are automatic: saved positions are ignored there, nodes are not
+  draggable, the camera fits the arrangement explicitly, and a selected frame is not elevated
+  over its components. Routing accepts child→frame `parents`: a frame is an obstacle only for
+  paths that do not start/end inside it, and it reserves only its header for labels.
+- C3 creation (minimum after removing service scopes): tools database/cache/queue, catalog
+  `c3-service`; the selected application (or a selected component's host) owns new resources and
+  queues and is the source of new integrations; a queue without one is refused with a message.
+  Library text and "Use existing dependency" follow that owner. Application creation into a
+  package from C3 is gone (use C2 membership actions).
+- Inspector: a component shows a read-only summary (kind, host, third-party, stored settings).
+- Docs: studio guide workflow bullets and C4 modeling guidance bullets for the new levels.
+  Evidence: `docs/evidence/studio-grid/SG05/README.md` (probe, capture script/log, 16 screenshots).
+
+Checks (Node 24.21.0): `pnpm lint` exit 0 (2,797 warnings / 88 infos, unchanged); `pnpm typecheck`
+exit 0; `pnpm --filter @jeeves/web build` exit 0 (existing chunk advisory). `pnpm check`, unit and
+E2E suites not run (owner-deferred). Browser observations are in the evidence README: tabs by
+mouse, selection carry C2→C3→C2→C1→C3, double-click leaves the scope unchanged, legacy keys open
+C3, no page errors; Streamly owner project opened read-only with all non-GET requests aborted
+(none attempted); owner revisions/`updatedAt` unchanged; 4 disposable projects created and deleted.
+
+Deviations and notes:
+
+- `docs/evidence/studio-grid/SG04/capture-log.json` was reformatted (whitespace only) because it
+  was the single `pnpm lint` error at `ac7ab02`.
+- An application is a frame at C3 only when it has components (Web app stays a card). SG09's
+  first component on a service will turn that card into a frame.
+- Packages are not drawn at C3 (frames are per application). ELK compound nodes could nest them.
+- Component links whose label is absent use the traced connection's action (e.g. the ID generator
+  line to Links database reads "Writes links"); give study links labels if that reads oddly.
+
+Notes for SG06:
+
+- Replace `arrangeStudio`/`studioFrames` in `layout.ts` with ELK compound layout using node
+  `parent`/`frame`; frames are already separate node ids with absolute coordinates (no React Flow
+  `parentId`). The routing worker input now has `parents`. Remove the `automatic` special cases in
+  `StudioGraph.tsx` when saved positions and drag go away everywhere.
+- Fitted C3 for TinyURL is wide (≈0.3 zoom at 1440×900 with chat open; labels hidden below 0.55).
+- `tinyurl.layout.json` still holds the old detail keys; they are ignored and can go with saved
+  positions. `createAt`/`commitAction` still compute placements for all three scopes.

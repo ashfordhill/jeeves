@@ -1,0 +1,115 @@
+{
+  "keys": ["studio:context", "studio:containers", "studio:components"],
+  "context": {
+    "key": "studio:context",
+    "level": "context",
+    "nodes": [
+      "studio:context:system | TinyURL",
+      "studio:context:link-creator | Link creator",
+      "studio:context:url-reputation | URL reputation API",
+      "studio:context:visitor | Visitor"
+    ],
+    "edges": [
+      "studio:context:link-creator -> studio:context:system | Shortens and manages links | ",
+      "studio:context:system -> studio:context:url-reputation | Checks destination reputation | ",
+      "studio:context:visitor -> studio:context:system | Follows a short link | "
+    ]
+  },
+  "containers": {
+    "key": "studio:containers",
+    "level": "containers",
+    "nodes": [
+      "studio:context:link-creator | Link creator",
+      "studio:context:visitor | Visitor",
+      "studio:element:analytics | Analytics worker",
+      "studio:element:analytics-store | Analytics store",
+      "studio:element:cdn | CDN",
+      "studio:element:link-cache | Link cache",
+      "studio:element:links-db | Links database",
+      "studio:element:redirect in studio:package:link-platform | Redirect service",
+      "studio:element:reputation | URL reputation API",
+      "studio:element:shorten-api in studio:package:link-platform | Shorten API",
+      "studio:element:web | Web app",
+      "studio:package:link-platform [frame] | Link platform"
+    ],
+    "edges": [
+      "studio:context:link-creator -> studio:element:web | Shortens and manages links | ",
+      "studio:context:visitor -> studio:element:cdn | Follows a short link | ",
+      "studio:element:analytics -> studio:element:analytics-store | Writes aggregates | analytics-write",
+      "studio:element:cdn -> studio:element:redirect | Forwards cache misses | cdn-redirect",
+      "studio:element:redirect -> studio:element:analytics | Queued communication | click-events-analytics,redirect-clicks",
+      "studio:element:redirect -> studio:element:link-cache | Reads hot links | redirect-cache",
+      "studio:element:redirect -> studio:element:links-db | Reads links on miss | redirect-db",
+      "studio:element:shorten-api -> studio:element:link-cache | Counts requests | shorten-cache",
+      "studio:element:shorten-api -> studio:element:links-db | Writes links | shorten-db",
+      "studio:element:shorten-api -> studio:element:reputation | Checks destination reputation / Checks destinations | shorten-reputation",
+      "studio:element:web -> studio:element:shorten-api | Creates and lists links | web-shorten"
+    ]
+  },
+  "components": {
+    "key": "studio:components",
+    "level": "components",
+    "nodes": [
+      "studio:component:analytics-aggregation in studio:element:analytics | Click aggregation",
+      "studio:component:analytics-click-consumer in studio:element:analytics | Click consumer",
+      "studio:component:analytics-data in studio:element:analytics | Aggregate writer",
+      "studio:component:redirect-cache-reader in studio:element:redirect | Link cache reader",
+      "studio:component:redirect-click-publisher in studio:element:redirect | Click publisher",
+      "studio:component:redirect-data in studio:element:redirect | Link reader",
+      "studio:component:redirect-responder in studio:element:redirect | Redirect responder",
+      "studio:component:shorten-data in studio:element:shorten-api | Link writer",
+      "studio:component:shorten-id-generator in studio:element:shorten-api | ID generator",
+      "studio:component:shorten-rate-limiter in studio:element:shorten-api | Rate limiter",
+      "studio:component:shorten-reputation-check in studio:element:shorten-api | Reputation check",
+      "studio:element:analytics [frame] | Analytics worker",
+      "studio:element:analytics-store | Analytics store",
+      "studio:element:cdn | CDN",
+      "studio:element:click-events | Click events",
+      "studio:element:link-cache | Link cache",
+      "studio:element:links-db | Links database",
+      "studio:element:redirect [frame] | Redirect service",
+      "studio:element:reputation | URL reputation API",
+      "studio:element:shorten-api [frame] | Shorten API",
+      "studio:element:web | Web app"
+    ],
+    "edges": [
+      "studio:component:analytics-aggregation -> studio:component:analytics-data | Writes rollups | ",
+      "studio:component:analytics-click-consumer -> studio:component:analytics-aggregation | Hands batch | ",
+      "studio:component:analytics-data -> studio:element:analytics-store | Writes aggregates | analytics-write",
+      "studio:component:redirect-cache-reader -> studio:component:redirect-data | Loads on miss | ",
+      "studio:component:redirect-cache-reader -> studio:element:link-cache | Reads hot links | redirect-cache",
+      "studio:component:redirect-click-publisher -> studio:element:click-events | Publishes clicks | redirect-clicks",
+      "studio:component:redirect-data -> studio:element:links-db | Reads links on miss | redirect-db",
+      "studio:component:redirect-responder -> studio:component:redirect-cache-reader | Resolves code | ",
+      "studio:component:redirect-responder -> studio:component:redirect-click-publisher | Records click | ",
+      "studio:component:shorten-data -> studio:element:links-db | Writes links | shorten-db",
+      "studio:component:shorten-id-generator -> studio:component:shorten-data | Supplies code | ",
+      "studio:component:shorten-id-generator -> studio:element:links-db | Writes links | shorten-db",
+      "studio:component:shorten-rate-limiter -> studio:element:link-cache | Counts requests | shorten-cache",
+      "studio:component:shorten-reputation-check -> studio:element:reputation | Checks destinations | shorten-reputation",
+      "studio:element:cdn -> studio:element:redirect | Forwards cache misses | cdn-redirect",
+      "studio:element:click-events -> studio:component:analytics-click-consumer | Delivers clicks | click-events-analytics",
+      "studio:element:web -> studio:element:shorten-api | Creates and lists links | web-shorten"
+    ]
+  },
+  "counts": {
+    "c2Nodes": 12,
+    "c2Frames": 1,
+    "c2Edges": 11,
+    "c3Nodes": 21,
+    "c3Frames": 3,
+    "c3Components": 11,
+    "c3Queues": 1,
+    "c3Edges": 17,
+    "componentLinks": 15,
+    "componentLinksDrawn": 15
+  },
+  "viaConsistent": true,
+  "unresolved": [],
+  "unscopedQueues": [],
+  "legacyKey": [
+    ["studio:service:redirect", true],
+    ["studio:package:link-platform", true],
+    ["studio:components", false]
+  ]
+}

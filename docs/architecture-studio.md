@@ -13,10 +13,18 @@ existing supported legacy template/recipe designs retain their generation eligib
   is also where a fresh installation starts. Blank architecture
   starts an empty design. Existing resource-workspace and QR Studio recipe starting points remain
   available with their original bounded configuration and support.
-- Use **C1** for the system, people and external systems; **C2** for applications, resources and
-  packages. Click a card to inspect. Double-click the system to reach C2, or a package/service with
-  useful dependencies to open C3. Breadcrumb/back restores the parent scope and its camera.
-  Zoom changes text density; it never changes structural depth or invents empty children.
+- **C1**, **C2** and **C3** are three equal tabs (SG05, 2026-11-04). C1 shows the system, people
+  and external systems; C2 each application, browser client and resource, with a package drawn as
+  an open labelled frame around its member applications and the resources it owns; C3 the whole
+  system at once, each application that has components drawn as a frame containing them, with
+  queues, resources and external systems around the frames. Component links follow their traced
+  C2 connection's direction. Click a card or frame to inspect it (components are read-only until
+  their inspector arrives). The selection carries across tabs by identity; a component maps to its
+  application at C1/C2. There is no double-click drill, breadcrumb or back. Old per-service or
+  package scope links and saved preferences open C3. Zoom changes text density only.
+- Framed views (C2 with packages, C3 with components) are arranged automatically and cannot be
+  dragged; older saved positions are ignored there, not rewritten. At C3, new queues and resources
+  are owned by the selected application (or a selected component's application); a queue needs one.
 - Choose a finite tool, then click blank canvas to place it. **Select** cancels placement.
   Optional shortcuts: V selects, H pans, Escape cancels; they are ignored while typing.
   **Library** groups compatible Services, Resources, Integrations, Presets and Examples.

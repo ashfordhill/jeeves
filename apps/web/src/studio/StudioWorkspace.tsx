@@ -1,9 +1,13 @@
 import {
   buildStudioCommand,
+  isLegacyStudioDetailKey,
   type StudioRelationship,
+  type StudioScopeProjection,
+  type StudioSemanticRef,
   type StudioViewNode,
   studioApplicationKinds,
   studioDefinitions,
+  studioScopes,
   studioViewKeys,
   studioViews,
 } from "@jeeves/spec";
@@ -12,7 +16,6 @@ import {
   IconArrowForwardUp,
   IconArrowUpRight,
   IconBoxMultiple,
-  IconChevronLeft,
   IconHandStop,
   IconLayoutSidebarRight,
   IconLibrary,
@@ -245,6 +248,41 @@ function SelectionSummary({
   );
 }
 
+const refKey = (ref: StudioSemanticRef) => ("id" in ref ? `${ref.kind}:${ref.id}` : ref.kind);
+/**
+ * Carry a selection across C1/C2/C3 by identity: the same element, context object, package or
+ * connection. A component maps to its host application outside C3. No counterpart, no selection.
+ */
+function carrySelection(
+  from: StudioScopeProjection | undefined,
+  id: string,
+  to: StudioScopeProjection,
+): string | undefined {
+  if (!from) return undefined;
+  const exists = (scope: StudioScopeProjection, value: string) =>
+    scope.nodes.some((node) => node.id === value) ||
+    scope.edges.some((edge) => edge.id === value) ||
+    studioPaths(scope).some((path) => path.id === value);
+  if (from.key === to.key) return exists(to, id) ? id : undefined;
+  const node = from.nodes.find((item) => item.id === id);
+  if (node) {
+    if (to.nodes.some((item) => item.id === node.id)) return node.id;
+    const refs = new Set(node.refs.map(refKey));
+    const match = to.nodes.find((item) => item.refs.some((ref) => refs.has(refKey(ref))));
+    if (match) return match.id;
+    const host = node.kind === "component" ? node.parent : undefined;
+    return host && to.nodes.some((item) => item.id === host) ? host : undefined;
+  }
+  const edge =
+    studioPaths(from).find((path) => path.id === id)?.item ??
+    from.edges.find((item) => item.id === id);
+  if (!edge) return undefined;
+  const ids = new Set([...edge.connectionIds, ...edge.contextRelationshipIds]);
+  return to.edges.find((item) =>
+    [...item.connectionIds, ...item.contextRelationshipIds].some((value) => ids.has(value)),
+  )?.id;
+}
+
 export function StudioWorkspace() {
   const loaded = useDraw((state) => state.loaded);
   if (!loaded) return null;
@@ -273,40 +311,28 @@ function ProjectStudio({
     () => studioViews(loaded.design, studioDefinitions, loaded.project.name),
     [loaded.design, loaded.project.name],
   );
-  const scopes = useMemo(() => [views.context, views.containers, ...views.details], [views]);
-  const [scopeKey, setScopeKey] = useState(
-    () =>
+  const scopes = useMemo(() => studioScopes(views), [views]);
+  const [scopeKey, setScopeKey] = useState(() => {
+    const saved =
       new URLSearchParams(window.location.search).get("studioScope") ??
       preferences.scope ??
-      studioViewKeys.containers,
-  );
-  const scope = scopes.find((item) => item.key === scopeKey) ?? views.containers;
-  const [selections, setSelections] = useState<Record<string, string | undefined>>(() => {
-    const target = new URLSearchParams(window.location.search).get("studioTarget");
-    return target &&
-      (scope.nodes.some((item) => item.id === target) ||
-        scope.edges.some((item) => item.id === target) ||
-        studioPaths(scope).some((item) => item.id === target))
-      ? { [scope.key]: target }
-      : {};
+      studioViewKeys.containers;
+    // Old per-service/package detail scopes (URLs, preferences) open the whole-system C3.
+    return isLegacyStudioDetailKey(saved) ? studioViewKeys.components : saved;
   });
-  const [memberSelection, setMemberSelection] = useState<
-    | {
-        scope: string;
-        path: string;
-        target: RelationshipTarget;
-      }
-    | undefined
-  >(() => {
+  const scope = scopes.find((item) => item.key === scopeKey) ?? views.containers;
+  // One selection, by identity, shared by all three tabs.
+  const [pick, setPick] = useState<{ scope: string; id: string } | undefined>(() => {
+    const target = new URLSearchParams(window.location.search).get("studioTarget");
+    return target && carrySelection(scope, target, scope)
+      ? { scope: scope.key, id: target }
+      : undefined;
+  });
+  const [memberSelection, setMemberSelection] = useState<RelationshipTarget | undefined>(() => {
     const query = new URLSearchParams(window.location.search);
     const id = query.get("studioMember");
     const kind = query.get("studioMemberKind");
-    const path = selections[scope.key];
-    if (!id || !path || (kind !== "connection" && kind !== "context")) return;
-    const edge = scope.edges.find((item) => item.id === path);
-    if (!(kind === "connection" ? edge?.connectionIds : edge?.contextRelationshipIds)?.includes(id))
-      return;
-    return { scope: scope.key, path, target: { kind, id } };
+    return id && (kind === "connection" || kind === "context") ? { kind, id } : undefined;
   });
   const [hand, setHand] = useState(false);
   const [tool, setTool] = useState<BaseCreation>();
@@ -322,26 +348,49 @@ function ProjectStudio({
   const [groupError, setGroupError] = useState<string>();
   const center = useRef<Point>({ x: 0, y: 168 });
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
-  const selected = selections[scope.key];
-  const selectedMember =
-    memberSelection?.scope === scope.key && memberSelection.path === selected
-      ? memberSelection.target
-      : undefined;
+  const selected = useMemo(
+    () =>
+      pick
+        ? carrySelection(
+            scopes.find((item) => item.key === pick.scope),
+            pick.id,
+            scope,
+          )
+        : undefined,
+    [pick, scopes, scope],
+  );
   const selectedNode = scope.nodes.find((node) => node.id === selected);
   const pathRelationships = useMemo(() => studioPaths(scope), [scope]);
   const selectedEdge =
     pathRelationships.find((path) => path.id === selected)?.item ??
-    scope.edges.find((edge) => edge.id === selected) ??
-    (selectedMember
-      ? pathRelationships.find(
-          (path) =>
-            !path.branchIds &&
-            (selectedMember.kind === "connection"
-              ? path.item.connectionIds
-              : path.item.contextRelationshipIds
-            ).includes(selectedMember.id),
-        )?.item
-      : undefined);
+    scope.edges.find((edge) => edge.id === selected);
+  const selectedMember =
+    memberSelection &&
+    selectedEdge &&
+    (memberSelection.kind === "connection"
+      ? selectedEdge.connectionIds
+      : selectedEdge.contextRelationshipIds
+    ).includes(memberSelection.id)
+      ? memberSelection
+      : undefined;
+  // C3 creation has no per-service scope: the selected application (or a selected component's
+  // host) owns new queues and resources and is the source of new integrations.
+  const c3Owner =
+    scope.level === "components" && selectedNode
+      ? (() => {
+          const node =
+            selectedNode.kind === "component"
+              ? scope.nodes.find((item) => item.id === selectedNode.parent)
+              : selectedNode;
+          const ref = node?.refs.find((item) => item.kind === "element");
+          return node &&
+            ref &&
+            "id" in ref &&
+            studioApplicationKinds.some((kind) => kind === node.kind)
+            ? { id: ref.id, name: node.name }
+            : undefined;
+        })()
+      : undefined;
   // Unknown and purely source-only legacy relationships select without opening an empty inspector.
   const inspectNode = selectedNode;
   const inspectEdge =
@@ -356,8 +405,6 @@ function ProjectStudio({
       : undefined;
   const inspectable = !!(inspectNode || inspectEdge);
   const inspectorOpen = preferences.inspectorOpen && inspectable;
-  const expandable =
-    selectedNode?.drillKey && scopes.find((item) => item.key === selectedNode.drillKey);
 
   useEffect(() => {
     setHeaderHost(document.getElementById("studio-header-controls"));
@@ -417,7 +464,11 @@ function ProjectStudio({
             ? ref.id
             : undefined;
       if (!endpoint) {
-        setConnectorError("Open the package and choose an actual application endpoint.");
+        setConnectorError(
+          node?.kind === "component"
+            ? "Choose the application frame, not one of its components."
+            : "Choose an application inside the package.",
+        );
         return;
       }
       if (!connector) {
@@ -451,7 +502,7 @@ function ProjectStudio({
       );
     } else if (!id) setGroupSelection([]);
     if (id !== selected) void formDrafts.flushProject(loaded.project.id, true);
-    setSelections((current) => ({ ...current, [scope.key]: id }));
+    setPick(id ? { scope: scope.key, id } : undefined);
     const node = scope.nodes.find((item) => item.id === id);
     const edge =
       pathRelationships.find((path) => path.id === id)?.item ??
@@ -462,11 +513,7 @@ function ProjectStudio({
           ...edge.contextRelationshipIds.map((id) => ({ kind: "context" as const, id })),
         ]
       : [];
-    setMemberSelection(
-      id && targets.length === 1 && targets[0]
-        ? { scope: scope.key, path: id, target: targets[0] }
-        : undefined,
-    );
+    setMemberSelection(id && targets.length === 1 ? targets[0] : undefined);
     if (
       (node && node.kind !== "generic") ||
       edge?.contextRelationshipIds.some((id) =>
@@ -483,29 +530,26 @@ function ProjectStudio({
     if (rail === "inspectorOpen") void formDrafts.flushProject(loaded.project.id, true);
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
   };
-  const goBack = () => navigate(scope.parentKey);
   const add = async (creation: Creation, point = center.current) => {
     if (creating) return false;
     if (
       creation.type === "base" &&
-      scope.level === "detail" &&
+      scope.level === "components" &&
+      c3Owner &&
       creation.kind !== "person" &&
       creation.kind !== "external-system" &&
       studioDefinitions[creation.kind].role === "integration"
     ) {
-      setConnectionDraft({
-        newKind: creation.kind,
-        ...(scope.scope.kind === "element" ? { from: scope.scope.id } : {}),
-      });
+      setConnectionDraft({ newKind: creation.kind, from: c3Owner.id });
       return true;
     }
     setCreating(true);
     const key = scope.key;
     try {
-      const id = await createAt(loaded.project.id, key, creation, point);
+      const id = await createAt(loaded.project.id, key, creation, point, c3Owner?.id);
       if (!id) return false;
       if (useDraw.getState().loaded?.project.id === loaded.project.id) {
-        setSelections((current) => ({ ...current, [key]: id }));
+        setPick({ scope: key, id });
         setPreferences((current) => ({ ...current, inspectorOpen: true }));
         setTool(undefined);
         setMultiple(false);
@@ -566,44 +610,13 @@ function ProjectStudio({
         >
           C2
         </button>
-        {scope.level === "detail" ? (
-          <nav className="studio-breadcrumb" aria-label="Detail breadcrumb">
-            <button
-              type="button"
-              title="Back to parent scope"
-              aria-label="Back to parent scope"
-              onClick={goBack}
-            >
-              <IconChevronLeft size={16} />
-            </button>
-            {scope.breadcrumb
-              .filter((item) => item.key !== views.containers.key)
-              .map((item) =>
-                item.key === scope.key ? (
-                  <span key={item.key} aria-current="page" title={item.name}>
-                    C3 · {item.name}
-                  </span>
-                ) : (
-                  <button
-                    key={item.key}
-                    type="button"
-                    title={item.name}
-                    onClick={() => navigate(item.key)}
-                  >
-                    {item.name}
-                  </button>
-                ),
-              )}
-          </nav>
-        ) : expandable ? (
-          <button
-            type="button"
-            title={`Open ${expandable.name}`}
-            onClick={() => navigate(expandable.key)}
-          >
-            C3
-          </button>
-        ) : null}
+        <button
+          type="button"
+          aria-current={scope.level === "components" ? "page" : undefined}
+          onClick={() => navigate(views.components.key)}
+        >
+          C3
+        </button>
       </nav>
       <div className="studio-header-actions">
         <button
@@ -700,7 +713,6 @@ function ProjectStudio({
             }))
           }
           onSelect={select}
-          onOpen={navigate}
           onCenter={(point) => {
             center.current = point;
           }}
@@ -863,7 +875,7 @@ function ProjectStudio({
               const current = useDraw.getState().loaded;
               if (!current || current.project.id !== loaded.project.id) return;
               const next = studioViews(current.design, studioDefinitions, current.project.name);
-              const target = [next.context, next.containers, ...next.details].find(
+              const target = studioScopes(next).find(
                 (item) =>
                   item.key === scope.key &&
                   item.edges.some(
@@ -876,7 +888,7 @@ function ProjectStudio({
                   edge.connectionIds.includes(id) || edge.contextRelationshipIds.includes(id),
               );
               if (edge && target) {
-                setSelections((value) => ({ ...value, [target.key]: edge.id }));
+                setPick({ scope: target.key, id: edge.id });
                 setPreferences((value) => ({ ...value, inspectorOpen: true }));
               }
             }}
@@ -897,11 +909,9 @@ function ProjectStudio({
             busy={creating}
             onAdd={add}
             onClose={() => setLibrary(false)}
+            owner={c3Owner}
             onUseExisting={(id) =>
-              setConnectionDraft({
-                ...(scope.scope.kind === "element" ? { from: scope.scope.id } : {}),
-                to: id,
-              })
+              setConnectionDraft({ ...(c3Owner ? { from: c3Owner.id } : {}), to: id })
             }
             onExisting={(id) => {
               const target = [scope, ...scopes].find((item) =>
@@ -914,7 +924,7 @@ function ProjectStudio({
               );
               if (target && node) {
                 navigate(target.key);
-                setSelections((current) => ({ ...current, [target.key]: node.id }));
+                setPick({ scope: target.key, id: node.id });
                 setPreferences((current) => ({ ...current, inspectorOpen: true }));
               }
             }}
@@ -1015,7 +1025,7 @@ function ProjectStudio({
               key={selected}
               chosenMember={selectedMember}
               onMember={(target) => {
-                if (selected) setMemberSelection({ scope: scope.key, path: selected, target });
+                if (selected) setMemberSelection(target);
               }}
               node={inspectNode}
               edge={inspectEdge}
@@ -1031,7 +1041,7 @@ function ProjectStudio({
                 );
                 if (target && node) {
                   navigate(target.key);
-                  setSelections((current) => ({ ...current, [target.key]: node.id }));
+                  setPick({ scope: target.key, id: node.id });
                 }
               }}
               onConnection={(id) => {
@@ -1041,7 +1051,7 @@ function ProjectStudio({
                 const edge = target?.edges.find((edge) => edge.connectionIds.includes(id));
                 if (target && edge) {
                   navigate(target.key);
-                  setSelections((current) => ({ ...current, [target.key]: edge.id }));
+                  setPick({ scope: target.key, id: edge.id });
                 }
               }}
             />

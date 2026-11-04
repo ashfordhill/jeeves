@@ -26,8 +26,7 @@
   gap: 10px;
 }
 .studio-depth,
-.studio-header-actions,
-.studio-breadcrumb {
+.studio-header-actions {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -35,17 +34,6 @@
 }
 .studio-depth {
   flex: 1;
-}
-.studio-breadcrumb {
-  overflow: hidden;
-}
-.studio-breadcrumb span,
-.studio-breadcrumb > button:not(:first-child) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 130px;
-  font-size: 12px;
 }
 .studio-depth > button {
   flex: 0 0 auto;
@@ -250,9 +238,74 @@
   outline: 3px solid var(--blue);
   outline-offset: 2px;
 }
-.studio-card .react-flow__handle {
+.studio-card .react-flow__handle,
+.studio-frame .react-flow__handle {
   opacity: 0;
   pointer-events: none;
+}
+.studio-graph[data-automatic] .studio-card {
+  cursor: pointer;
+}
+.studio-card[data-kind="component"] {
+  border-width: 1.5px;
+  border-radius: 8px;
+  padding: 8px;
+  gap: 8px;
+}
+/* An open labelled group: a package at C2, an application with its components at C3. */
+.studio-frame {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 2px dashed var(--type-color);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--type-color) 4%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+}
+.studio-frame[data-kind="package"] {
+  border-style: dotted;
+  background: transparent;
+}
+.studio-frame:hover {
+  box-shadow: 0 0 0 1px var(--type-color);
+}
+.studio-frame[data-selected="true"] {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+.studio-frame-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  min-width: 0;
+}
+.studio-frame-header strong {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.studio-frame-kind {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.studio-component-summary dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: 13px;
+  margin: 0;
+}
+.studio-component-summary dt {
+  color: var(--ink-soft);
+}
+.studio-component-summary dd {
+  margin: 0;
 }
 .studio-relation-text {
   pointer-events: none;
@@ -593,4 +646,7 @@
 .studio-library-footer button:disabled {
   opacity: 0.45;
   cursor: default;
+}
+.studio-card[data-kind="component"] strong {
+  font-size: 13px;
 }

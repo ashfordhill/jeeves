@@ -6,6 +6,7 @@ import {
   handoffFingerprint,
   handoffHash,
   studioDefinitions,
+  studioScopes,
   studioViews,
 } from "@jeeves/spec";
 import { create } from "zustand";
@@ -28,13 +29,11 @@ export async function captureStudioDiagram() {
     if (root.dataset.dragging === "true")
       throw new Error("Finish moving the card before exporting.");
     const views = studioViews(base.design, studioDefinitions, base.project.name);
-    const scope = [views.context, views.containers, ...views.details].find(
-      (item) => item.key === root.dataset.scope,
-    );
+    const scope = studioScopes(views).find((item) => item.key === root.dataset.scope);
     if (!scope) throw new Error("The selected scope is no longer available.");
     const paths = studioPaths(scope);
     const projection: ArchitectureProjection = {
-      level: scope.level === "detail" ? "components" : scope.level,
+      level: scope.level,
       name: scope.name,
       description: scope.description,
       resources: [],

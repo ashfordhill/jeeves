@@ -6,6 +6,7 @@ import {
   type Finding,
   handoffFingerprint,
   studioDefinitions,
+  studioScopes,
   studioViews,
 } from "@jeeves/spec";
 import { create } from "zustand";
@@ -61,7 +62,7 @@ export const useReview = create<ReviewState>((set) => ({
 /** Resolve semantic identities to existing visible cards/relationships, never to removed editors. */
 export function reviewLink(design: DesignDocument, project: Project, identity: string) {
   const views = studioViews(design, studioDefinitions, project.name);
-  const scopes = [views.context, views.containers, ...views.details];
+  const scopes = studioScopes(views);
   const component = design.architecture?.components?.find((item) => item.id === identity);
   const attachmentOwner = design.elements.find((item) =>
     item.attachments.some((attachment) => attachment.id === identity),

@@ -7,6 +7,8 @@ export interface StudioRoutingInput {
   nodes: Record<string, RouteBox>;
   widths: Record<string, number>;
   fixed?: StudioGeometry;
+  /** Child → frame node IDs (SG05), so paths may enter their own frame. */
+  parents?: Record<string, string>;
 }
 const cache = new Map<string, StudioGeometry>();
 type Job = { promise: Promise<StudioGeometry>; cancel: () => void; users: number };

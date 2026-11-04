@@ -7,7 +7,7 @@ import { studioDefinitions } from "../studio-definitions.ts";
 import { type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
 import type { StudioConnectionCreation, StudioElementCreation } from "../studio-operations.ts";
 import { studioGoalManifests } from "../studio-sources.ts";
-import { studioViews } from "../studio-view.ts";
+import { studioScopes, studioViews } from "../studio-view.ts";
 
 export type StudioStudy = {
   id: string;
@@ -115,7 +115,7 @@ export function createStudioStudy(
       schemaVersion: 1,
       items: {},
       architecture: Object.fromEntries(
-        [views.context, views.containers, ...views.details].map((view) => [
+        studioScopes(views).map((view) => [
           view.key,
           {
             positions: Object.fromEntries(

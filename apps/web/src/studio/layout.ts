@@ -71,12 +71,18 @@ export function studioLanding(
   }
 }
 
+type Link = { from: string; to: string; label: number };
+
 /** Stable SCC layers preserve left-to-right dependencies without pretending cycles are a DAG. */
-export function arrangeStudio(scope: StudioScopeProjection): Record<string, RouteBox> {
-  const ids = scope.nodes.map((node) => node.id).sort(compare);
+function arrangeFlat(
+  ids: string[],
+  links: Link[],
+  size: (id: string) => { width: number; height: number },
+): Record<string, RouteBox> {
+  ids = [...ids].sort(compare);
   const adjacent = new Map(ids.map((id) => [id, new Set<string>()]));
-  for (const edge of scope.edges)
-    if (edge.from !== edge.to && adjacent.has(edge.to)) adjacent.get(edge.from)?.add(edge.to);
+  for (const link of links)
+    if (link.from !== link.to && adjacent.has(link.to)) adjacent.get(link.from)?.add(link.to);
   const index = new Map<string, number>(),
     low = new Map<string, number>();
   const stack: string[] = [],
@@ -111,10 +117,11 @@ export function arrangeStudio(scope: StudioScopeProjection): Record<string, Rout
   const ranks = new Map<number, number>();
   const rank = (i: number): number => {
     if (ranks.has(i)) return ranks.get(i) as number;
-    const parents = scope.edges.filter(
-      (edge) => groupOf.get(edge.to) === i && groupOf.get(edge.from) !== i,
+    const parents = links.filter(
+      (link) =>
+        groupOf.get(link.to) === i && groupOf.has(link.from) && groupOf.get(link.from) !== i,
     );
-    const value = Math.max(0, ...parents.map((edge) => rank(groupOf.get(edge.from) as number) + 1));
+    const value = Math.max(0, ...parents.map((link) => rank(groupOf.get(link.from) as number) + 1));
     ranks.set(i, value);
     return value;
   };
@@ -128,25 +135,109 @@ export function arrangeStudio(scope: StudioScopeProjection): Record<string, Rout
     let y = 0,
       width = 0;
     for (const id of members) {
-      const node = scope.nodes.find((node) => node.id === id);
-      if (!node) continue;
-      const size = studioCardSize(node);
-      result[id] = { ...gridPoint({ x, y }), ...size };
-      y += size.height + 48;
-      width = Math.max(width, size.width);
+      const box = size(id);
+      result[id] = { ...gridPoint({ x, y }), ...box };
+      y += Math.ceil((box.height + 48) / GRID) * GRID;
+      width = Math.max(width, box.width);
     }
     // Reserve bounded high-detail relationship text, rather than a legacy fixed report panel.
-    const labels = scope.edges.filter((edge) => members.includes(edge.from));
     const labelWidth = Math.max(
       0,
-      ...labels.map(
-        (edge) =>
-          Math.min(56, edge.actions.join(" / ").length + edge.protocols.join(" / ").length + 3) * 8,
-      ),
+      ...links.filter((link) => members.includes(link.from)).map((link) => link.label),
     );
     x = Math.ceil((x + width + Math.max(48, labelWidth + 24)) / GRID) * GRID;
   }
   return result;
+}
+
+/** Frame padding: sides/bottom, and the header strip that holds the frame's name. */
+export const STUDIO_FRAME_PAD = 24;
+export const STUDIO_FRAME_HEADER = 48;
+
+/**
+ * Deterministic automatic arrangement. Frames (packages at C2, applications holding components at
+ * C3) are laid out inside first, then placed as one box; children follow their frame.
+ */
+export function arrangeStudio(scope: StudioScopeProjection): Record<string, RouteBox> {
+  const nodes = new Map(scope.nodes.map((node) => [node.id, node]));
+  const parentOf = (id: string) => {
+    const parent = nodes.get(id)?.parent;
+    return parent && nodes.has(parent) ? parent : undefined;
+  };
+  const label = (edge: StudioScopeProjection["edges"][number]) =>
+    Math.min(56, edge.actions.join(" / ").length + edge.protocols.join(" / ").length + 3) * 8;
+  // Inside a frame, labels are short component actions; in-process protocols are never shown.
+  const innerLabel = (edge: StudioScopeProjection["edges"][number]) =>
+    Math.min(
+      24,
+      edge.actions.join(" / ").length +
+        edge.protocols.filter((item) => item !== "In process" && item !== "Unspecified").join(" / ")
+          .length,
+    ) * 8;
+  const children = new Map<string, string[]>();
+  for (const node of scope.nodes) {
+    const parent = parentOf(node.id);
+    if (parent) children.set(parent, [...(children.get(parent) ?? []), node.id]);
+  }
+  const inner: Record<string, Record<string, RouteBox>> = {};
+  const frameSize: Record<string, { width: number; height: number }> = {};
+  for (const [frame, ids] of children) {
+    const local = new Set(ids);
+    const placed = arrangeFlat(
+      ids,
+      scope.edges
+        .filter((edge) => local.has(edge.from) && local.has(edge.to))
+        .map((edge) => ({ from: edge.from, to: edge.to, label: innerLabel(edge) })),
+      (id) => studioCardSize(nodes.get(id) as StudioScopeProjection["nodes"][number]),
+    );
+    inner[frame] = placed;
+    const boxes = Object.values(placed);
+    frameSize[frame] = {
+      width:
+        Math.ceil(
+          (Math.max(192, ...boxes.map((box) => box.x + box.width)) + STUDIO_FRAME_PAD * 2) / GRID,
+        ) * GRID,
+      height:
+        Math.ceil(
+          (Math.max(48, ...boxes.map((box) => box.y + box.height)) +
+            STUDIO_FRAME_HEADER +
+            STUDIO_FRAME_PAD) /
+            GRID,
+        ) * GRID,
+    };
+  }
+  const top = scope.nodes.filter((node) => !parentOf(node.id)).map((node) => node.id);
+  const lift = (id: string) => parentOf(id) ?? id;
+  const outer = arrangeFlat(
+    top,
+    scope.edges
+      .map((edge) => ({ from: lift(edge.from), to: lift(edge.to), label: label(edge) }))
+      .filter((link) => link.from !== link.to),
+    (id) =>
+      frameSize[id] ?? studioCardSize(nodes.get(id) as StudioScopeProjection["nodes"][number]),
+  );
+  const result: Record<string, RouteBox> = { ...outer };
+  for (const [frame, placed] of Object.entries(inner)) {
+    const origin = outer[frame];
+    if (!origin) continue;
+    for (const [id, box] of Object.entries(placed))
+      result[id] = {
+        ...box,
+        x: origin.x + STUDIO_FRAME_PAD + box.x,
+        y: origin.y + STUDIO_FRAME_HEADER + box.y,
+      };
+  }
+  return result;
+}
+
+/** Child → frame node IDs for a scope; empty when nothing is framed. */
+export function studioFrames(scope: StudioScopeProjection): Record<string, string> {
+  const ids = new Set(scope.nodes.map((node) => node.id));
+  return Object.fromEntries(
+    scope.nodes.flatMap((node) =>
+      node.parent && ids.has(node.parent) ? [[node.id, node.parent] as const] : [],
+    ),
+  );
 }
 
 /** Pixel padding, including routed bends and labels; never zoom past actual size. */
