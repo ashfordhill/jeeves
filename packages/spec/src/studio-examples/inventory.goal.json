@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "example": {
+    "id": "studio-inventory",
+    "version": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "docs/examples/inventory-labeling.md",
+      "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+      "sha256": "3438449325a26fe4d7fe265bd73c22ce05ac7bf0e0f698e7f56d30495ba14ba1"
+    },
+    {
+      "id": "study",
+      "path": "docs/examples/inventory-architecture.md",
+      "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+      "sha256": "fde63366609d87eddb53ce5571dd849fb06d141d6b2ce889f320292082b71bfd"
+    }
+  ],
+  "requirements": [
+    {
+      "requirementId": "device-boundary",
+      "source": {
+        "sourceId": "brief",
+        "location": "Shared standalone device platform"
+      },
+      "summary": "Screen/buttons/Wi-Fi terminal and printer are external boundaries; the server owns authoritative records and validation.",
+      "disposition": "represented-design",
+      "nodeIds": ["terminal", "printer", "api", "db"],
+      "connectionIds": ["terminal-api", "terminal-printer", "api-db"],
+      "remainingWork": ""
+    },
+    {
+      "requirementId": "separate-profile",
+      "source": {
+        "sourceId": "brief",
+        "location": "Device-application profiles"
+      },
+      "summary": "QRWTY and inventory are separate application profiles sharing transport/driver mechanisms, not a combined domain server requirement.",
+      "disposition": "c4b",
+      "nodeIds": ["terminal", "api"],
+      "connectionIds": ["terminal-api"],
+      "remainingWork": "Implement versioned profile compatibility, allowed actions, label templates and explicit server binding independently; no profile DSL/editor is supplied."
+    },
+    {
+      "requirementId": "identity-separation",
+      "source": {
+        "sourceId": "brief",
+        "location": "Distinguish these identities / stable payload"
+      },
+      "summary": "Product/SKU, individual item, label version, print job, inventory event and location are distinct; printed snapshots do not update with records.",
+      "disposition": "c4b",
+      "nodeIds": ["api", "db", "terminal", "printer"],
+      "connectionIds": ["api-db", "terminal-api", "terminal-printer"],
+      "remainingWork": "Implement exact typed identity/payload/label contracts after requirements settle; barcode/payload format remains undecided."
+    },
+    {
+      "requirementId": "retry-and-print",
+      "source": {
+        "sourceId": "brief",
+        "location": "Operation ID across retries / uncertain output"
+      },
+      "summary": "Retries must preserve one logical registration; reprint keeps item identity and uncertain physical output remains visible.",
+      "disposition": "c4b",
+      "nodeIds": ["terminal", "printer", "api", "db"],
+      "connectionIds": ["terminal-api", "terminal-printer", "api-db"],
+      "remainingWork": "Implement durable operation/job identity, restart/retry recovery and explicit reprint. No exactly-once physical print claim follows from this graph."
+    },
+    {
+      "requirementId": "stock-context",
+      "source": {
+        "sourceId": "brief",
+        "location": "Lookup / stock-changing scan / Receive-and-print"
+      },
+      "summary": "Lookup or printing alone must not change stock; stock changes require explicit supported workflow context and separate print outcomes.",
+      "disposition": "c4b",
+      "nodeIds": ["api", "db", "terminal"],
+      "connectionIds": ["terminal-api", "api-db"],
+      "remainingWork": "Define supported actions before implementing stock transitions; do not invent receive/move/retire requirements from the examples."
+    },
+    {
+      "requirementId": "software-study",
+      "source": {
+        "sourceId": "study",
+        "location": "P56 three-host seed / fifth browser block"
+      },
+      "summary": "Separate existing P56 study supplies API, worker, PostgreSQL, Stock changes and browser workspace; it is design evidence, not implemented inventory behavior.",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "worker", "db", "queue", "web"],
+      "connectionIds": ["api-db", "worker-db", "api-queue", "queue-worker", "web-api"],
+      "remainingWork": ""
+    },
+    {
+      "requirementId": "outbox-invariant",
+      "source": {
+        "sourceId": "study",
+        "location": "Atomic writer / retained intent / delivery"
+      },
+      "summary": "Stock authority and durable event intent must commit atomically in one selected store; delivery progress and tenant/event deduplication remain exact future contracts.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["api", "worker", "db", "queue"],
+      "connectionIds": ["api-db", "worker-db", "api-queue", "queue-worker"],
+      "remainingWork": "Future C4a must implement the preserved atomic persistence/acknowledgement/retry/deduplication and recovery contracts. Queue settings alone do not supply them."
+    },
+    {
+      "requirementId": "tenant-access",
+      "source": {
+        "sourceId": "study",
+        "location": "Tenant access / membership / export/delete/recovery scenarios"
+      },
+      "summary": "Current access checks apply at API/data, jobs and download; the P56 contract/scenario and production objectives remain preserved source.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["api", "worker", "db", "web"],
+      "connectionIds": ["web-api", "api-db", "worker-db"],
+      "remainingWork": "Future C4a/C4b implementation must preserve exact source authority/scenarios. Production objectives and acceptance stay unverified."
+    },
+    {
+      "requirementId": "hardware-unknown",
+      "source": {
+        "sourceId": "brief",
+        "location": "To fill in / exact hardware remains open"
+      },
+      "summary": "Exact screen/button/printer hardware, optional scanner engine/camera, location source and feedback remain open.",
+      "disposition": "unknown",
+      "nodeIds": ["terminal", "printer"],
+      "connectionIds": ["terminal-printer"],
+      "remainingWork": "Resolve hardware, printer protocol/language/label dimensions and optional input/location requirements before implementing device adapters."
+    },
+    {
+      "requirementId": "fields-actions-unknown",
+      "source": {
+        "sourceId": "brief",
+        "location": "To fill in / first fields and operations"
+      },
+      "summary": "Application name/repository, item fields, allowed actions and barcode/payload choices remain unresolved.",
+      "disposition": "unknown",
+      "nodeIds": ["api", "db", "terminal"],
+      "connectionIds": ["terminal-api"],
+      "remainingWork": "Confirm product fields/actions and identity/payload formats; examples such as price, receive or move are not new owner decisions."
+    },
+    {
+      "requirementId": "offline-unknown",
+      "source": {
+        "sourceId": "brief",
+        "location": "Local-server profile / full disconnected capture"
+      },
+      "summary": "A reachable local server may work without Internet; fully disconnected capture/printing and later synchronization remain separate unconfirmed requirements.",
+      "disposition": "unknown",
+      "nodeIds": ["terminal", "api", "printer"],
+      "connectionIds": ["terminal-api", "terminal-printer"],
+      "remainingWork": "Define local-server setup and offline requirements explicitly. Do not promise offline printing or synchronization from Wi-Fi support."
+    },
+    {
+      "requirementId": "reference-acceptance",
+      "source": {
+        "sourceId": "brief",
+        "location": "Reference acceptance scenario"
+      },
+      "summary": "Simulator product/price/text, distinct item IDs, reprint, timeout/restart, non-mutating lookup, movement history and physical decode are future acceptance examples.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["api", "db", "terminal", "printer"],
+      "connectionIds": ["api-db", "terminal-api", "terminal-printer"],
+      "remainingWork": "Once scope is confirmed, future C4a/C4b and physical-device verification must prove the applicable scenarios; a diagram or simulator is not physical output evidence."
+    }
+  ]
+}

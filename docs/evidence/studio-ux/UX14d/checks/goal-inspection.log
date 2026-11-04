@@ -1,0 +1,4 @@
+{"id":"studio-qrwty-original","rows":19,"c4b":16,"views":[{"key":"studio:context","nodes":3},{"key":"studio:containers","nodes":5},{"key":"studio:service:api","nodes":3},{"key":"studio:service:web","nodes":2}]}
+{"id":"studio-dropshipping","rows":51,"c4b":49,"views":[{"key":"studio:context","nodes":8},{"key":"studio:containers","nodes":12},{"key":"studio:service:admin","nodes":2},{"key":"studio:service:storefront","nodes":3},{"key":"studio:service:worker","nodes":10}]}
+{"id":"studio-inventory","rows":12,"c4b":10,"views":[{"key":"studio:context","nodes":4},{"key":"studio:containers","nodes":7},{"key":"studio:service:api","nodes":5},{"key":"studio:service:web","nodes":2},{"key":"studio:service:worker","nodes":3}]}
+{"id":"studio-grocery","rows":10,"c4b":8,"views":[{"key":"studio:context","nodes":5},{"key":"studio:containers","nodes":7},{"key":"studio:service:api","nodes":6}]}

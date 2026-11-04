@@ -1,0 +1,85 @@
+{
+  "result": "passed",
+  "records": [
+    {
+      "example": "studio-qrwty-original",
+      "width": 1440,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-qrwty-original",
+      "width": 1280,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-dropshipping",
+      "width": 1440,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-dropshipping",
+      "width": 1280,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-inventory",
+      "width": 1440,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-inventory",
+      "width": 1280,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-grocery",
+      "width": 1440,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    },
+    {
+      "example": "studio-grocery",
+      "width": 1280,
+      "threeInspectorSavesAcknowledged": true,
+      "revision": 4,
+      "sourceHashExact": true,
+      "allDecisionsAndAssignmentsExact": true,
+      "nodeIdentitiesAndTopologyExact": true,
+      "portableImportAccepted": true
+    }
+  ]
+}

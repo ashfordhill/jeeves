@@ -5,9 +5,13 @@ import {
   DISCOURSE_FOUNDATION_STUDIO_EXAMPLE,
   discourseFoundationStudioExample,
 } from "./discourse-foundation.ts";
+import { DROPSHIPPING_STUDIO_EXAMPLE, dropshippingStudioExample } from "./dropshipping.ts";
 import { ENTERPRISE_STUDIO_EXAMPLE, enterpriseStudioExample } from "./enterprise.ts";
+import { GROCERY_STUDIO_EXAMPLE, groceryStudioExample } from "./grocery.ts";
+import { INVENTORY_STUDIO_EXAMPLE, inventoryStudioExample } from "./inventory.ts";
 import { LINKS_STUDIO_EXAMPLE, linksStudioExample } from "./links.ts";
 import { MATTERMOST_STUDIO_EXAMPLE, mattermostStudioExample } from "./mattermost.ts";
+import { QRWTY_ORIGINAL_STUDIO_EXAMPLE, qrwtyOriginalStudioExample } from "./qrwty-original.ts";
 import { QRWTY_TARGET_STUDIO_EXAMPLE, qrwtyTargetStudioExample } from "./qrwty-target.ts";
 import { SOCIAL_STUDIO_EXAMPLE, socialStudioExample } from "./social.ts";
 import { STREAMLY_STUDIO_EXAMPLE, streamlyStudioExample } from "./streamly.ts";
@@ -31,6 +35,10 @@ export const studioArchitectureExamples = Object.freeze([
   DISCOURSE_FOUNDATION_STUDIO_EXAMPLE,
   VENDURE_FOUNDATION_STUDIO_EXAMPLE,
   ZAMMAD_FOUNDATION_STUDIO_EXAMPLE,
+  QRWTY_ORIGINAL_STUDIO_EXAMPLE,
+  DROPSHIPPING_STUDIO_EXAMPLE,
+  INVENTORY_STUDIO_EXAMPLE,
+  GROCERY_STUDIO_EXAMPLE,
 ]);
 
 export function studioArchitectureExample(id: string) {
@@ -55,6 +63,14 @@ export function studioArchitectureExample(id: string) {
       return vendureFoundationStudioExample();
     case ZAMMAD_FOUNDATION_STUDIO_EXAMPLE.id:
       return zammadFoundationStudioExample();
+    case QRWTY_ORIGINAL_STUDIO_EXAMPLE.id:
+      return qrwtyOriginalStudioExample();
+    case DROPSHIPPING_STUDIO_EXAMPLE.id:
+      return dropshippingStudioExample();
+    case INVENTORY_STUDIO_EXAMPLE.id:
+      return inventoryStudioExample();
+    case GROCERY_STUDIO_EXAMPLE.id:
+      return groceryStudioExample();
     default:
       throw new Error(`Unknown studio example ${id}.`);
   }

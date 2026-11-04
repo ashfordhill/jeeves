@@ -1,0 +1,1149 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:owner",
+        "studio:context:visitor",
+        "studio:element:api",
+        "studio:element:db",
+        "studio:element:web"
+      ],
+      "semanticHash": "1f09995d330118e7d914cd349e046f20b3760ba01f4c8d0a468c48158b01421b"
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": ["studio:context:owner", "studio:context:system", "studio:context:visitor"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "useful C3 api",
+      "nodes": ["studio:element:api", "studio:element:db", "studio:element:web"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "useful C3 web",
+      "nodes": ["studio:element:api", "studio:element:web"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "configuration save",
+      "element": "api",
+      "field": "language",
+      "value": "go",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "configuration save",
+      "element": "db",
+      "field": "provider",
+      "value": "neon",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "configuration save",
+      "element": "web",
+      "field": "provider",
+      "value": "cloudflare",
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "web",
+      "selectedTarget": "studio:element:web",
+      "scope": "studio:containers",
+      "designUnchanged": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-qrwty-original",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "167667e29ea2d3866ffb6587a3e1673354fe0bdebf94a1ba0429b74351802176",
+      "manifestRows": 19,
+      "c4b": 16,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:operator",
+        "studio:context:shopper",
+        "studio:element:access",
+        "studio:element:admin",
+        "studio:element:db",
+        "studio:element:email",
+        "studio:element:media",
+        "studio:element:payments",
+        "studio:element:storefront",
+        "studio:element:vendors",
+        "studio:element:worker",
+        "studio:element:workflow"
+      ],
+      "semanticHash": "fff89d7d4430d8eb67fb038681d18f2b761b27ea91bf40bdcfeeb1f2e665a4a3"
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": [
+        "studio:context:access-external",
+        "studio:context:email-external",
+        "studio:context:operator",
+        "studio:context:payments-external",
+        "studio:context:shopper",
+        "studio:context:system",
+        "studio:context:vendors-external",
+        "studio:context:workflow-external"
+      ]
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "useful C3 admin",
+      "nodes": ["studio:element:admin", "studio:element:worker"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "useful C3 storefront",
+      "nodes": ["studio:element:payments", "studio:element:storefront", "studio:element:worker"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "useful C3 worker",
+      "nodes": [
+        "studio:element:access",
+        "studio:element:admin",
+        "studio:element:db",
+        "studio:element:email",
+        "studio:element:media",
+        "studio:element:payments",
+        "studio:element:storefront",
+        "studio:element:vendors",
+        "studio:element:worker",
+        "studio:element:workflow"
+      ]
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "single managed Worker, two bundled browser assets, D1 and Workflows integration inspected",
+      "noQueue": true,
+      "noCustomerAccountService": true,
+      "workflowsNotQueue": true,
+      "sourceUnchanged": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "configuration save",
+      "element": "worker",
+      "field": "language",
+      "value": "javascript",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "configuration save",
+      "element": "media",
+      "field": "access",
+      "value": "public",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "configuration save",
+      "element": "workflow",
+      "field": "provider",
+      "value": "external",
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "storefront",
+      "selectedTarget": "studio:element:storefront",
+      "scope": "studio:containers",
+      "designUnchanged": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-dropshipping",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "64af0673cfd7451b55a1775cee946a6584c38fb61f3f538279a57e78605e41e4",
+      "manifestRows": 51,
+      "c4b": 49,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:operator",
+        "studio:element:api",
+        "studio:element:db",
+        "studio:element:printer",
+        "studio:element:terminal",
+        "studio:element:web",
+        "studio:element:worker"
+      ],
+      "semanticHash": "9a4d97de50ac0bff8935be3009cbe0f8a67f5a0c4b9b290e482b506536f54f4a"
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": [
+        "studio:context:operator",
+        "studio:context:printer-external",
+        "studio:context:system",
+        "studio:context:terminal-external"
+      ]
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "useful C3 api",
+      "nodes": [
+        "studio:element:api",
+        "studio:element:db",
+        "studio:element:queue",
+        "studio:element:terminal",
+        "studio:element:web"
+      ]
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "useful C3 web",
+      "nodes": ["studio:element:api", "studio:element:web"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "useful C3 worker",
+      "nodes": ["studio:element:db", "studio:element:queue", "studio:element:worker"]
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "queued branch and all underlying connections selectable",
+      "connectionIds": ["api-queue", "queue-worker"],
+      "members": [
+        "Inventory application → Stock changesRecords future durable stock intent · Messaging",
+        "Stock changes → Stock work processorDelivers stock-work references · Messaging"
+      ],
+      "technicalLabelsSuppressed": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "configuration save",
+      "element": "api",
+      "field": "language",
+      "value": "python",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "configuration save",
+      "element": "db",
+      "field": "provider",
+      "value": "supabase",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "configuration save",
+      "element": "queue",
+      "field": "retentionSeconds",
+      "value": 3600,
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "shared queue value from independent consumer scope",
+      "id": "queue",
+      "retentionSeconds": 3600
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "api",
+      "selectedTarget": "studio:element:api",
+      "scope": "studio:containers",
+      "designUnchanged": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-inventory",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "e9bde3ee4cabb5f58b7e1bfb35a4179bf6279bcd4cbdb2ceca32843649a13056",
+      "manifestRows": 12,
+      "c4b": 10,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:reviewer",
+        "studio:element:api",
+        "studio:element:client",
+        "studio:element:data-source",
+        "studio:element:db",
+        "studio:element:media",
+        "studio:element:recognition"
+      ],
+      "semanticHash": "6d352593f3e5e58d5176c9de0383c6a8e1dc1903771aead230c5784915b591f0"
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": [
+        "studio:context:capture-external",
+        "studio:context:data-external",
+        "studio:context:recognition-external",
+        "studio:context:reviewer",
+        "studio:context:system"
+      ]
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "useful C3 api",
+      "nodes": [
+        "studio:element:api",
+        "studio:element:client",
+        "studio:element:data-source",
+        "studio:element:db",
+        "studio:element:media",
+        "studio:element:recognition"
+      ]
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "configuration save",
+      "element": "api",
+      "field": "language",
+      "value": "go",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "configuration save",
+      "element": "media",
+      "field": "provider",
+      "value": "aws-s3",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "configuration save",
+      "element": "recognition",
+      "field": "provider",
+      "value": "external",
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "client",
+      "selectedTarget": "studio:context:capture-external",
+      "scope": "studio:context",
+      "designUnchanged": true
+    },
+    {
+      "width": 1440,
+      "example": "studio-grocery",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "688b0c2a0c390e695e1271d3d2a64f6857ef77bfa779dadc841d83f548ceb8e8",
+      "manifestRows": 10,
+      "c4b": 8,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:owner",
+        "studio:context:visitor",
+        "studio:element:api",
+        "studio:element:db",
+        "studio:element:web"
+      ],
+      "semanticHash": "1f09995d330118e7d914cd349e046f20b3760ba01f4c8d0a468c48158b01421b"
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": ["studio:context:owner", "studio:context:system", "studio:context:visitor"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "useful C3 api",
+      "nodes": ["studio:element:api", "studio:element:db", "studio:element:web"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "useful C3 web",
+      "nodes": ["studio:element:api", "studio:element:web"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "configuration save",
+      "element": "api",
+      "field": "language",
+      "value": "go",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "configuration save",
+      "element": "db",
+      "field": "provider",
+      "value": "neon",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "configuration save",
+      "element": "web",
+      "field": "provider",
+      "value": "cloudflare",
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "web",
+      "selectedTarget": "studio:element:web",
+      "scope": "studio:containers",
+      "designUnchanged": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-qrwty-original",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "167667e29ea2d3866ffb6587a3e1673354fe0bdebf94a1ba0429b74351802176",
+      "manifestRows": 19,
+      "c4b": 16,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:operator",
+        "studio:context:shopper",
+        "studio:element:access",
+        "studio:element:admin",
+        "studio:element:db",
+        "studio:element:email",
+        "studio:element:media",
+        "studio:element:payments",
+        "studio:element:storefront",
+        "studio:element:vendors",
+        "studio:element:worker",
+        "studio:element:workflow"
+      ],
+      "semanticHash": "fff89d7d4430d8eb67fb038681d18f2b761b27ea91bf40bdcfeeb1f2e665a4a3"
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": [
+        "studio:context:access-external",
+        "studio:context:email-external",
+        "studio:context:operator",
+        "studio:context:payments-external",
+        "studio:context:shopper",
+        "studio:context:system",
+        "studio:context:vendors-external",
+        "studio:context:workflow-external"
+      ]
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "useful C3 admin",
+      "nodes": ["studio:element:admin", "studio:element:worker"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "useful C3 storefront",
+      "nodes": ["studio:element:payments", "studio:element:storefront", "studio:element:worker"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "useful C3 worker",
+      "nodes": [
+        "studio:element:access",
+        "studio:element:admin",
+        "studio:element:db",
+        "studio:element:email",
+        "studio:element:media",
+        "studio:element:payments",
+        "studio:element:storefront",
+        "studio:element:vendors",
+        "studio:element:worker",
+        "studio:element:workflow"
+      ]
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "single managed Worker, two bundled browser assets, D1 and Workflows integration inspected",
+      "noQueue": true,
+      "noCustomerAccountService": true,
+      "workflowsNotQueue": true,
+      "sourceUnchanged": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "configuration save",
+      "element": "worker",
+      "field": "language",
+      "value": "javascript",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "configuration save",
+      "element": "media",
+      "field": "access",
+      "value": "public",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "configuration save",
+      "element": "workflow",
+      "field": "provider",
+      "value": "external",
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "storefront",
+      "selectedTarget": "studio:element:storefront",
+      "scope": "studio:containers",
+      "designUnchanged": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-dropshipping",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "64af0673cfd7451b55a1775cee946a6584c38fb61f3f538279a57e78605e41e4",
+      "manifestRows": 51,
+      "c4b": 49,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:operator",
+        "studio:element:api",
+        "studio:element:db",
+        "studio:element:printer",
+        "studio:element:terminal",
+        "studio:element:web",
+        "studio:element:worker"
+      ],
+      "semanticHash": "9a4d97de50ac0bff8935be3009cbe0f8a67f5a0c4b9b290e482b506536f54f4a"
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": [
+        "studio:context:operator",
+        "studio:context:printer-external",
+        "studio:context:system",
+        "studio:context:terminal-external"
+      ]
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "useful C3 api",
+      "nodes": [
+        "studio:element:api",
+        "studio:element:db",
+        "studio:element:queue",
+        "studio:element:terminal",
+        "studio:element:web"
+      ]
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "useful C3 web",
+      "nodes": ["studio:element:api", "studio:element:web"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "useful C3 worker",
+      "nodes": ["studio:element:db", "studio:element:queue", "studio:element:worker"]
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "queued branch and all underlying connections selectable",
+      "connectionIds": ["api-queue", "queue-worker"],
+      "members": [
+        "Inventory application → Stock changesRecords future durable stock intent · Messaging",
+        "Stock changes → Stock work processorDelivers stock-work references · Messaging"
+      ],
+      "technicalLabelsSuppressed": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "configuration save",
+      "element": "api",
+      "field": "language",
+      "value": "python",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "configuration save",
+      "element": "db",
+      "field": "provider",
+      "value": "supabase",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "configuration save",
+      "element": "queue",
+      "field": "retentionSeconds",
+      "value": 3600,
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "shared queue value from independent consumer scope",
+      "id": "queue",
+      "retentionSeconds": 3600
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "api",
+      "selectedTarget": "studio:element:api",
+      "scope": "studio:containers",
+      "designUnchanged": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-inventory",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "e9bde3ee4cabb5f58b7e1bfb35a4179bf6279bcd4cbdb2ceca32843649a13056",
+      "manifestRows": 12,
+      "c4b": 10,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "C2 exact nodes and no queue boxes",
+      "nodes": [
+        "studio:context:reviewer",
+        "studio:element:api",
+        "studio:element:client",
+        "studio:element:data-source",
+        "studio:element:db",
+        "studio:element:media",
+        "studio:element:recognition"
+      ],
+      "semanticHash": "6d352593f3e5e58d5176c9de0383c6a8e1dc1903771aead230c5784915b591f0"
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "C1 inspection without semantic mutation",
+      "nodes": [
+        "studio:context:capture-external",
+        "studio:context:data-external",
+        "studio:context:recognition-external",
+        "studio:context:reviewer",
+        "studio:context:system"
+      ]
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "useful C3 api",
+      "nodes": [
+        "studio:element:api",
+        "studio:element:client",
+        "studio:element:data-source",
+        "studio:element:db",
+        "studio:element:media",
+        "studio:element:recognition"
+      ]
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "configuration save",
+      "element": "api",
+      "field": "language",
+      "value": "go",
+      "beforeRevision": 1,
+      "afterRevision": 2
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "configuration save",
+      "element": "media",
+      "field": "provider",
+      "value": "aws-s3",
+      "beforeRevision": 2,
+      "afterRevision": 3
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "configuration save",
+      "element": "recognition",
+      "field": "provider",
+      "value": "external",
+      "beforeRevision": 3,
+      "afterRevision": 4
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "acknowledged reload",
+      "revision": 4,
+      "allThreeValuesRestored": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "source C4b affected-object mouse link",
+      "element": "client",
+      "selectedTarget": "studio:context:capture-external",
+      "scope": "studio:context",
+      "designUnchanged": true
+    },
+    {
+      "width": 1280,
+      "example": "studio-grocery",
+      "scenario": "portable export, source map, C4b and unsupported runtime",
+      "sourceHash": "688b0c2a0c390e695e1271d3d2a64f6857ef77bfa779dadc841d83f548ceb8e8",
+      "manifestRows": 10,
+      "c4b": 8,
+      "handoffSourceExact": true,
+      "evidenceEnvironment": "unrecorded",
+      "generationStatus": 422,
+      "generationCode": "STUDIO_DESIGN_ONLY",
+      "noGenerationRecord": true
+    }
+  ],
+  "writes": [
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/adeff7a4-80f8-49c1-9e5a-3c1e519ffcfc/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/adeff7a4-80f8-49c1-9e5a-3c1e519ffcfc/layout",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/adeff7a4-80f8-49c1-9e5a-3c1e519ffcfc/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/adeff7a4-80f8-49c1-9e5a-3c1e519ffcfc/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/adeff7a4-80f8-49c1-9e5a-3c1e519ffcfc/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/289de31a-f4b0-4fe8-80b5-0b5fdf1c5909/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/289de31a-f4b0-4fe8-80b5-0b5fdf1c5909/layout",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/289de31a-f4b0-4fe8-80b5-0b5fdf1c5909/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/289de31a-f4b0-4fe8-80b5-0b5fdf1c5909/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/289de31a-f4b0-4fe8-80b5-0b5fdf1c5909/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/c3d5f91d-792a-41f2-bcc5-59a76063c3bd/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/c3d5f91d-792a-41f2-bcc5-59a76063c3bd/layout",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/c3d5f91d-792a-41f2-bcc5-59a76063c3bd/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/c3d5f91d-792a-41f2-bcc5-59a76063c3bd/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/c3d5f91d-792a-41f2-bcc5-59a76063c3bd/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/fe6b0ba0-fb64-4841-a401-c7656774ded6/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/fe6b0ba0-fb64-4841-a401-c7656774ded6/layout",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/fe6b0ba0-fb64-4841-a401-c7656774ded6/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/fe6b0ba0-fb64-4841-a401-c7656774ded6/operations",
+      "status": 200
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/fe6b0ba0-fb64-4841-a401-c7656774ded6/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8f00b0de-5f77-4a57-bb41-029034c78240/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8f00b0de-5f77-4a57-bb41-029034c78240/layout",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8f00b0de-5f77-4a57-bb41-029034c78240/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8f00b0de-5f77-4a57-bb41-029034c78240/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8f00b0de-5f77-4a57-bb41-029034c78240/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8a956c49-e8e7-4442-838c-2067c34b3b86/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8a956c49-e8e7-4442-838c-2067c34b3b86/layout",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8a956c49-e8e7-4442-838c-2067c34b3b86/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8a956c49-e8e7-4442-838c-2067c34b3b86/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/8a956c49-e8e7-4442-838c-2067c34b3b86/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/c1c9d9e2-f7fe-464d-b3cb-36213fef5be8/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/c1c9d9e2-f7fe-464d-b3cb-36213fef5be8/layout",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/c1c9d9e2-f7fe-464d-b3cb-36213fef5be8/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/c1c9d9e2-f7fe-464d-b3cb-36213fef5be8/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/c1c9d9e2-f7fe-464d-b3cb-36213fef5be8/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects",
+      "status": 201
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/de6f532c-ad96-4371-b8bc-7196ec5a7ce9/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/de6f532c-ad96-4371-b8bc-7196ec5a7ce9/layout",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/de6f532c-ad96-4371-b8bc-7196ec5a7ce9/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/de6f532c-ad96-4371-b8bc-7196ec5a7ce9/operations",
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/de6f532c-ad96-4371-b8bc-7196ec5a7ce9/operations",
+      "status": 200
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "consoleMessages": [],
+  "guardsBeforePage": true,
+  "realHttpWrites": true,
+  "noModelsOrGeneratedApplicationExecution": true
+}

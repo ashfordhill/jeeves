@@ -90,8 +90,8 @@ External API under Integrations; and Billing, Redirect and Notifications/Identit
 Billing, Redirect, Notifications and Identity each represent one application, with scalar provider
 or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
 The reusable Service and worker preset is a grouping of actual deployments, with no package-level
-language, provider or runtime. The ten reviewed studio studies are available through the
-opt-in studio Library; the remaining reconstruction assignments and default rollout stay later.
+language, provider or runtime. The fourteen reviewed studio studies are available through the
+opt-in studio Library; default rollout remains a separate assignment.
 
 ### Reviewed studio studies
 
@@ -107,12 +107,18 @@ foundations retain modular APIs, independent workers, SQL authority, private byt
 providers, with C3 logical work channels. Zammad has a small studio reference; detailed P73a/P73b
 design remains incomplete and paused. Their maps retain all 60 frozen cases and 195 observations
 as future C4a/C4b work. The source requires no added cache, broker or Billing deployment.
-These studies select no
-executable runtime template, provision no provider and supply no passing application evidence.
+Original QRWTY retains its approved cohesive API/browser/Postgres reference separately from the
+existing executable legacy recipe. Dropshipping preserves one managed Worker with bundled storefront/
+admin, D1/R2, hosted Stripe and explicit Workflows/email/vendor boundaries; no customer accounts
+or queue substitution is introduced. Inventory and grocery are limited software/device references:
+hardware, fields/actions, offline behavior, data/API access and recognition quality remain unknown.
+All 14 coverage rows now have separate source maps; no full-product claim follows.
+These studies select no executable runtime template, provision no provider and supply no passing application evidence.
 Original studies, deployment declarations and benchmark inputs remain unchanged. See the
 [studio registry](packages/spec/src/studio-examples/index.ts), [UX14a evidence](docs/evidence/studio-ux/UX14a/README.md)
 and [UX14b evidence](docs/evidence/studio-ux/UX14b/README.md), plus the
-[backend studio references](docs/evidence/studio-ux/UX14c/README.md).
+[backend studio references](docs/evidence/studio-ux/UX14c/README.md) and
+[field-study evidence](docs/evidence/studio-ux/UX14d/README.md).
 
 Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
 has no runtime-support binding. Application entries can be created at C2 or as package members;

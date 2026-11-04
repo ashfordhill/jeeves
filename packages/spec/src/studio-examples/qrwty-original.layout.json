@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "items": {},
+  "architecture": {
+    "studio:context": {
+      "positions": {
+        "studio:context:system": {
+          "x": 320,
+          "y": 144
+        },
+        "studio:context:owner": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:visitor": {
+          "x": 0,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 222,
+        "y": 235,
+        "zoom": 1
+      }
+    },
+    "studio:containers": {
+      "positions": {
+        "studio:context:owner": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:visitor": {
+          "x": 0,
+          "y": 288
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:api": {
+          "x": 480,
+          "y": 144
+        },
+        "studio:element:db": {
+          "x": 720,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 48,
+        "y": 163.86486486486484,
+        "zoom": 0.9954954954954955
+      }
+    },
+    "studio:service:api": {
+      "positions": {
+        "studio:element:api": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:web": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 480,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 166,
+        "y": 235,
+        "zoom": 1
+      }
+    },
+    "studio:service:web": {
+      "positions": {
+        "studio:element:web": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:api": {
+          "x": 480,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 22,
+        "y": 235,
+        "zoom": 1
+      }
+    }
+  }
+}

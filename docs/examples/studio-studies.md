@@ -16,6 +16,10 @@ chooser/default and saved projects retain their existing behavior until the late
 | Discourse foundation | One modular discussion API, independent worker, shared PostgreSQL, private files and external thin client/email. C3 exposes the same logical SQL-backed work identity from producer and consumer. D01–D20 and all 66 observations remain future work. | [Manifest](../../packages/spec/src/studio-examples/discourse-foundation.goal.json), [factory](../../packages/spec/src/studio-examples/discourse-foundation.ts) |
 | Vendure foundation | One modular commerce API, independent worker, PostgreSQL, private catalog/receipt bytes and external client, email, hosted payment and warehouse boundaries. V01–V20 and all 63 observations remain future work. | [Manifest](../../packages/spec/src/studio-examples/vendure-foundation.goal.json), [factory](../../packages/spec/src/studio-examples/vendure-foundation.ts) |
 | Zammad reference | Small support API/data/background-work/external-channel reference. Z01–Z20 and all 66 observations are mapped; detailed P73a/P73b design remains incomplete and paused. This is a separate reference, not the missing complete benchmark example. | [Manifest](../../packages/spec/src/studio-examples/zammad-foundation.goal.json), [factory](../../packages/spec/src/studio-examples/zammad-foundation.ts) |
+| QRWTY original goal | Approved original cohesive HTTP API, browser and PostgreSQL; sessions, QR image/redirect/activity stay inside one API. This is distinct from the larger target, live project and existing supported recipe. | [Manifest](../../packages/spec/src/studio-examples/qrwty-original.goal.json), [factory](../../packages/spec/src/studio-examples/qrwty-original.ts) |
+| Dropshipping | One managed Cloudflare Worker serves bundled storefront/admin, uses D1/R2, Stripe-hosted checkout, Workflows, EmailSender and operator Access. Guest shoppers have no accounts. Vendor/order/compliance/branding behavior stays future work. | [Manifest](../../packages/spec/src/studio-examples/dropshipping.goal.json), [factory](../../packages/spec/src/studio-examples/dropshipping.ts) |
+| Inventory labeling — limited | P56 software API/worker/PostgreSQL/browser/work-channel foundation plus external terminal and physical-printer boundaries. Hardware, exact fields/actions, application identity and offline requirements remain unknown. | [Manifest](../../packages/spec/src/studio-examples/inventory.goal.json), [factory](../../packages/spec/src/studio-examples/inventory.ts) |
+| Grocery review — limited | External capture/review client, bounded application API, private media/data and recognition/reference-data boundaries. Device choice, vendor/data/API permissions, input formats and recognition quality remain unknown. | [Manifest](../../packages/spec/src/studio-examples/grocery.goal.json), [factory](../../packages/spec/src/studio-examples/grocery.ts) |
 
 Each manifest pins repository-relative source references, a Git revision and file SHA-256 values.
 Its requirement rows distinguish represented design, possible future fixed templates, C4b work
@@ -41,7 +45,8 @@ These are design studies. The server rejects application generation with `STUDIO
 No runtime resolver, application build, capacity result, provider integration or business acceptance
 is supplied by these diagrams. Future C4a/C4b implementation needs a separately authorized task.
 The original factories/briefs, frozen benchmark declarations and live projects are unchanged.
-The four remaining coverage rows, default rollout and paused backend work are separate assignments.
+All 14 coverage rows are accounted for across UX14a–UX14d. Default rollout and paused backend work
+remain separate assignments; limited source concepts are not completed products.
 
 QRWTY's cache fallback, disable propagation, billing callback deduplication, tenant authorization,
 analytics loss and recovery are pinned source/C4b obligations. Its illustrative timing values remain
@@ -66,4 +71,22 @@ preserved source; its finite transport is Unspecified. Zammad's SLA/calendar/rou
 visibility are future fixed/custom work, with no new business editor. The P73 checkpoint provenance
 pins the historical handoff commit, since that log continues to grow by append-only entries.
 
-Recorded inspection and limitations: [UX14a evidence](../evidence/studio-ux/UX14a/README.md), [UX14b evidence](../evidence/studio-ux/UX14b/README.md), [UX14c evidence](../evidence/studio-ux/UX14c/README.md).
+The original QRWTY reference preserves QR-01–QR-09, the approved session/ownership and wire
+contracts, and the historical recipe evidence without adopting P35 or changing a live application.
+Its historical hardware/location/map background is not silently revived; the sibling README
+qualifies QRWTY as a generation guinea pig and says custom hardware is not worth exploring.
+
+Dropshipping pins all 44 frozen GOAL clauses plus its architecture and scaffold handoff. Its
+Workflows object denotes a managed orchestration capability bound to the same Worker, not a
+message queue or another custom deployment. Durable order waits/recovery, idempotent signed
+payments, vendor conformance, human tasks, compliance, sourcing and branding remain future C4b
+implementation. Operator identity does not create shopper accounts. Only synthetic demo data
+belongs in these examples; the scaffold is not the complete storefront.
+
+Inventory does not turn firmware, printer drivers or forms into Docker services. Its separate P56
+software study preserves atomic stock/outbox/tenant obligations as future C4a/C4b work; a queue
+setting supplies none of those guarantees. Grocery chooses neither glasses nor phone and assumes
+no Retailmotus/Trax API permissions. Consented reference images and deterministic doubles can
+exercise future software boundaries, not prove recognition accuracy, stock counts or KPI results.
+
+Recorded inspection and limitations: [UX14a evidence](../evidence/studio-ux/UX14a/README.md), [UX14b evidence](../evidence/studio-ux/UX14b/README.md), [UX14c evidence](../evidence/studio-ux/UX14c/README.md), [UX14d evidence](../evidence/studio-ux/UX14d/README.md).

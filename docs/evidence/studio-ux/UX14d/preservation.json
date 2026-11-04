@@ -1,0 +1,364 @@
+{
+  "result": "passed",
+  "startingCommit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+  "startingTrackedFiles": 2723,
+  "scopedExistingChanges": [
+    "CATALOG.md",
+    "docs/examples/studio-studies.md",
+    "docs/handoff.md",
+    "packages/spec/src/studio-examples/index.ts",
+    "packages/spec/src/studio-sources.ts"
+  ],
+  "allUnrelatedTrackedFilesExact": true,
+  "feedbackFilesExact": 42,
+  "feedbackPairsExact": 21,
+  "publicFixturesExact": 7,
+  "frozenBenchmarkFilesExact": 48,
+  "beforeAfterHashes": [
+    {
+      "path": "benchmarks/README.md",
+      "before": "04b3f7432a472d0e98bd97e38f08dcbbab2ca4aa9dac3b6d9c4e2ad3f4392095",
+      "after": "04b3f7432a472d0e98bd97e38f08dcbbab2ca4aa9dac3b6d9c4e2ad3f4392095"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/README.md",
+      "before": "d2dd6fb7443cd609904cc278b8d9dc6c555aa784d438bbbce67afb7e07ac004b",
+      "after": "d2dd6fb7443cd609904cc278b8d9dc6c555aa784d438bbbce67afb7e07ac004b"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/contracts.openapi.yaml",
+      "before": "5eb9d8472291d4fc2f6456a8c68174b48af7f56e48da6f63ce8070105da37076",
+      "after": "5eb9d8472291d4fc2f6456a8c68174b48af7f56e48da6f63ce8070105da37076"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/fixtures.json",
+      "before": "9a56937b6bd800a7a05b2be4761a220351f5a463ea7e05c2a83036bd95475676",
+      "after": "9a56937b6bd800a7a05b2be4761a220351f5a463ea7e05c2a83036bd95475676"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/fixtures.ts",
+      "before": "1de7ec3f8a58a93399890d07305243c797b73f2645edacd1b137d0cd773c4e8e",
+      "after": "1de7ec3f8a58a93399890d07305243c797b73f2645edacd1b137d0cd773c4e8e"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/hello.txt",
+      "before": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+      "after": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/hooks.contracts.json",
+      "before": "d3bd2fd744becea29f03b9c07f4d8fc605dbc67ebe7550d481ba5afd447f31b7",
+      "after": "d3bd2fd744becea29f03b9c07f4d8fc605dbc67ebe7550d481ba5afd447f31b7"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/hooks.examples.json",
+      "before": "7baa5829a68b961c11c47e7d75989a3ff257c7062528b3f581f33711fc3af245",
+      "after": "7baa5829a68b961c11c47e7d75989a3ff257c7062528b3f581f33711fc3af245"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/hooks.md",
+      "before": "61949c14531348d11926492648974fcf264539a133a216ece0bc902a1a5fcd4c",
+      "after": "61949c14531348d11926492648974fcf264539a133a216ece0bc902a1a5fcd4c"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/integrity.json",
+      "before": "a4386c9bf63abe294ed87e5c896914b4647266946c65f0739a6495d9a4ea8788",
+      "after": "a4386c9bf63abe294ed87e5c896914b4647266946c65f0739a6495d9a4ea8788"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/manifest.json",
+      "before": "c6123191531c5f56d236c72dea89b98ce1415daa17bcd25215356f5f10c038b0",
+      "after": "c6123191531c5f56d236c72dea89b98ce1415daa17bcd25215356f5f10c038b0"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/requirements.json",
+      "before": "b60b420646b3b638626bc6ac6b285571378f4272ca17f567604564ac5109e274",
+      "after": "b60b420646b3b638626bc6ac6b285571378f4272ca17f567604564ac5109e274"
+    },
+    {
+      "path": "benchmarks/discourse-core/v1/source-map.json",
+      "before": "3ace90021fa47a42e510c1a3878e0369457fd44381f6c3059e34cf26eff4f2cf",
+      "after": "3ace90021fa47a42e510c1a3878e0369457fd44381f6c3059e34cf26eff4f2cf"
+    },
+    {
+      "path": "benchmarks/protocol/v1/README.md",
+      "before": "ef73c0a69740165974c50e3d9be54e3c997287891d06f6ae30aae48072bb6a7a",
+      "after": "ef73c0a69740165974c50e3d9be54e3c997287891d06f6ae30aae48072bb6a7a"
+    },
+    {
+      "path": "benchmarks/protocol/v1/components.openapi.json",
+      "before": "7792e34c52113dbc1e882fc2ddc11cf662f5b1574d499316eec075583a38dc26",
+      "after": "7792e34c52113dbc1e882fc2ddc11cf662f5b1574d499316eec075583a38dc26"
+    },
+    {
+      "path": "benchmarks/protocol/v1/synthetic.json",
+      "before": "8fbb150933b59a81178a94ebf6d96a478bf9fd203129f3129e9600b3470edfcd",
+      "after": "8fbb150933b59a81178a94ebf6d96a478bf9fd203129f3129e9600b3470edfcd"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/README.md",
+      "before": "7c868c4d380e7eb8913a9f9739f740841476e9aafe8e5d9f4915c5a53792f9cc",
+      "after": "7c868c4d380e7eb8913a9f9739f740841476e9aafe8e5d9f4915c5a53792f9cc"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/callbacks.contracts.json",
+      "before": "e749deda893a8942397f97d2aedd5252541315382ac7ee273387a9ca70b28b2d",
+      "after": "e749deda893a8942397f97d2aedd5252541315382ac7ee273387a9ca70b28b2d"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/callbacks.examples.json",
+      "before": "7f065c2136937f7bccc261040a84acc770ca39b4ae5cff59af412e9dd1707f79",
+      "after": "7f065c2136937f7bccc261040a84acc770ca39b4ae5cff59af412e9dd1707f79"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/contracts.openapi.yaml",
+      "before": "cc397ba4b11f60a7d7b94605e25c5cf7c65dd3b70956f1a4f0641e6888ded13f",
+      "after": "cc397ba4b11f60a7d7b94605e25c5cf7c65dd3b70956f1a4f0641e6888ded13f"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/fixtures.json",
+      "before": "26150761e0db8b270a4d5a3730a475588e07d2dec703444497788209787dbfe1",
+      "after": "26150761e0db8b270a4d5a3730a475588e07d2dec703444497788209787dbfe1"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/fixtures.ts",
+      "before": "edf09ac10f11094752b7922572597442205cebc2cc703355e2cc006c1103290f",
+      "after": "edf09ac10f11094752b7922572597442205cebc2cc703355e2cc006c1103290f"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/hooks.contracts.json",
+      "before": "a44992f2aa352c8109f2c8c38c746182f6362cd2246b4e3537377d53a509758f",
+      "after": "a44992f2aa352c8109f2c8c38c746182f6362cd2246b4e3537377d53a509758f"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/hooks.examples.json",
+      "before": "22bfac4b819457ba8077634dfcd01cf69fba26cf1461e0b2dda9c8332687cd00",
+      "after": "22bfac4b819457ba8077634dfcd01cf69fba26cf1461e0b2dda9c8332687cd00"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/hooks.md",
+      "before": "e8825124fa7813d54f5b9eec8ad6d1ac6e587e8b49794be56e0b4ab25c2789ac",
+      "after": "e8825124fa7813d54f5b9eec8ad6d1ac6e587e8b49794be56e0b4ab25c2789ac"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/integrity.json",
+      "before": "e9d05e49149eb2e34e7d68fa695141affc4640d4748cc81005f68f022957a62f",
+      "after": "e9d05e49149eb2e34e7d68fa695141affc4640d4748cc81005f68f022957a62f"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/manifest.json",
+      "before": "c91c0c838693c83fb2bedaa2c81553a1a8b22dd9fb87d301a317d7f094d7de75",
+      "after": "c91c0c838693c83fb2bedaa2c81553a1a8b22dd9fb87d301a317d7f094d7de75"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/providers.contracts.json",
+      "before": "13da5a541803e5576f96fcc52d0b7e0cedfe3fd43370d28aa5cda0c19817612f",
+      "after": "13da5a541803e5576f96fcc52d0b7e0cedfe3fd43370d28aa5cda0c19817612f"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/providers.examples.json",
+      "before": "6b8a15aee4dd9833cf365ed7c22cfca89a784972204e85d18341ba620404d1cf",
+      "after": "6b8a15aee4dd9833cf365ed7c22cfca89a784972204e85d18341ba620404d1cf"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/providers.md",
+      "before": "0c6511398aaf9d4b21949715b6cf681524f1ff061ad4f13cf9b3cde9ddb552dd",
+      "after": "0c6511398aaf9d4b21949715b6cf681524f1ff061ad4f13cf9b3cde9ddb552dd"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/receipt.txt",
+      "before": "144602371f31096e0d8e8e556b0fc97c46686753c8fd70fb8e6a980254c1b978",
+      "after": "144602371f31096e0d8e8e556b0fc97c46686753c8fd70fb8e6a980254c1b978"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/requirements.json",
+      "before": "0c9d38ed493e394a832736e1102724549409c195530b3aed20b68027854391dd",
+      "after": "0c9d38ed493e394a832736e1102724549409c195530b3aed20b68027854391dd"
+    },
+    {
+      "path": "benchmarks/vendure-core/v1/source-map.json",
+      "before": "4dabf20337b3286b55bb02f0bc58f39d153eff84981f24731a7b4b22b780068c",
+      "after": "4dabf20337b3286b55bb02f0bc58f39d153eff84981f24731a7b4b22b780068c"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/.gitattributes",
+      "before": "acdce485b78c5573bd1b9ab6057f2c2bfa4839dc0f07a9d293b1fccaf7772e55",
+      "after": "acdce485b78c5573bd1b9ab6057f2c2bfa4839dc0f07a9d293b1fccaf7772e55"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/README.md",
+      "before": "17c46397bb76ffb48d334ef7b64f0383f989b5b574443f81f6c80eb58d0e1641",
+      "after": "17c46397bb76ffb48d334ef7b64f0383f989b5b574443f81f6c80eb58d0e1641"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/contracts.openapi.yaml",
+      "before": "fddefe0ed16145ac992b83e5cea83615ca68e899fea09d1f585ea6741b3f33f2",
+      "after": "fddefe0ed16145ac992b83e5cea83615ca68e899fea09d1f585ea6741b3f33f2"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/fixtures.json",
+      "before": "b3e0035f078a02d5bbbc158aa4686d040179c0719a45feea7af72569ffccb736",
+      "after": "b3e0035f078a02d5bbbc158aa4686d040179c0719a45feea7af72569ffccb736"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/fixtures.ts",
+      "before": "903b95fea660741a5e7448465eb9a834386c0cdfa1a2802cfc4c21d2876209f8",
+      "after": "903b95fea660741a5e7448465eb9a834386c0cdfa1a2802cfc4c21d2876209f8"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/hooks.contracts.json",
+      "before": "664b82dd0ad47a1ba6795a6d4d77e5c5cd78cfddb1df3c0354609f947c45dc71",
+      "after": "664b82dd0ad47a1ba6795a6d4d77e5c5cd78cfddb1df3c0354609f947c45dc71"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/hooks.examples.json",
+      "before": "d657f1b373d6d9de60f7801592214477237943047aecfef161b5fa743f0d6ccc",
+      "after": "d657f1b373d6d9de60f7801592214477237943047aecfef161b5fa743f0d6ccc"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/hooks.md",
+      "before": "73932c7418abf99330d5f9fa748aa9d8f51e6edf55c9068802b328d44b26d7cd",
+      "after": "73932c7418abf99330d5f9fa748aa9d8f51e6edf55c9068802b328d44b26d7cd"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/inbound.eml",
+      "before": "65236a2990832d79ebea0cf44441b28bb02891608d7ca2befe6d0783b999c530",
+      "after": "65236a2990832d79ebea0cf44441b28bb02891608d7ca2befe6d0783b999c530"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/integrity.json",
+      "before": "f58e9b78e7584560c2fa38eba61cfe9d340faafab193ca0ea10b1f0f75637cd8",
+      "after": "f58e9b78e7584560c2fa38eba61cfe9d340faafab193ca0ea10b1f0f75637cd8"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/manifest.json",
+      "before": "f1a7ef8ee5e9555961f7c36aa27c17962e88d341aaec2c40d0237701c6681798",
+      "after": "f1a7ef8ee5e9555961f7c36aa27c17962e88d341aaec2c40d0237701c6681798"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/private.txt",
+      "before": "eff97f751200f549f5fee3db29f269e548d80b38dcc9353333e21da8dcb48a89",
+      "after": "eff97f751200f549f5fee3db29f269e548d80b38dcc9353333e21da8dcb48a89"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/requirements.json",
+      "before": "6869e74fa7dc03485fe0fba5c13db8e7e2b7289183c71045f61075b9eac9208d",
+      "after": "6869e74fa7dc03485fe0fba5c13db8e7e2b7289183c71045f61075b9eac9208d"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/source-map.json",
+      "before": "fc25b373292cc7b5bb62b546e5be39ff47a6e048f9e4aa81555669327c93b153",
+      "after": "fc25b373292cc7b5bb62b546e5be39ff47a6e048f9e4aa81555669327c93b153"
+    },
+    {
+      "path": "benchmarks/zammad-core/v1/sources.examples.json",
+      "before": "efe6e01f13bb5ba517ff82cf244781c729ea83f73fd976e3cd7451db2f2cdc97",
+      "after": "efe6e01f13bb5ba517ff82cf244781c729ea83f73fd976e3cd7451db2f2cdc97"
+    },
+    {
+      "path": "packages/spec/src/architecture-examples.ts",
+      "before": "4a0968361bd0c0b2933dab6ae86aebb2c84f01c9f6fbd4de9be250401d4765d0",
+      "after": "4a0968361bd0c0b2933dab6ae86aebb2c84f01c9f6fbd4de9be250401d4765d0"
+    },
+    {
+      "path": "packages/spec/src/architecture-proofs.ts",
+      "before": "1098f5d0fbf70e1c426520b1b9af6b2c3317eadf9c898cbaa3df2f4f281071cc",
+      "after": "1098f5d0fbf70e1c426520b1b9af6b2c3317eadf9c898cbaa3df2f4f281071cc"
+    },
+    {
+      "path": "packages/spec/src/backend-implementation-model.ts",
+      "before": "29702173a743035bff15aac65ad0a682e266ce3ef58f20bd50929d6098ac3f03",
+      "after": "29702173a743035bff15aac65ad0a682e266ce3ef58f20bd50929d6098ac3f03"
+    },
+    {
+      "path": "packages/spec/src/backend-implementations.ts",
+      "before": "157debab48c94c92937ac053bfb426713430cec846d9f188801135b307bf6d14",
+      "after": "157debab48c94c92937ac053bfb426713430cec846d9f188801135b307bf6d14"
+    },
+    {
+      "path": "packages/spec/src/discourse-core-complete.ts",
+      "before": "695f76363f9e93f21e85c466ac442f36c7aea3200d6e3385a3fc5d752e6f48db",
+      "after": "695f76363f9e93f21e85c466ac442f36c7aea3200d6e3385a3fc5d752e6f48db"
+    },
+    {
+      "path": "packages/spec/src/discourse-core-example.ts",
+      "before": "a9bab3904a45ef8d4c95152e5bbca97717423fdd383869453be29fce8b7e2438",
+      "after": "a9bab3904a45ef8d4c95152e5bbca97717423fdd383869453be29fce8b7e2438"
+    },
+    {
+      "path": "packages/spec/src/enterprise-web-example.ts",
+      "before": "8145bc7ce4d16e44bef181a6b81ce5ffebf6c0e785853dcf36956f9d2b6c9d3a",
+      "after": "8145bc7ce4d16e44bef181a6b81ce5ffebf6c0e785853dcf36956f9d2b6c9d3a"
+    },
+    {
+      "path": "packages/spec/src/mattermost-example.ts",
+      "before": "a9f5627cc6c947169a05def2b838f23295369761df2d81f64bfb1dcf5b7774eb",
+      "after": "a9f5627cc6c947169a05def2b838f23295369761df2d81f64bfb1dcf5b7774eb"
+    },
+    {
+      "path": "packages/spec/src/vendure-core-complete.ts",
+      "before": "3c1d01e70accf813801264aef4d7f48d8743738127230da6e63fb2e77860567b",
+      "after": "3c1d01e70accf813801264aef4d7f48d8743738127230da6e63fb2e77860567b"
+    },
+    {
+      "path": "packages/spec/src/vendure-core-example.ts",
+      "before": "a75ba7bd6ef6094a6d398377a67dc4ef2c95d14732f5634388c630eb47c90d8d",
+      "after": "a75ba7bd6ef6094a6d398377a67dc4ef2c95d14732f5634388c630eb47c90d8d"
+    },
+    {
+      "path": "packages/spec/src/video-platform-example.ts",
+      "before": "f1571a3fe420d4a5ea44f2445ed9bb0c170ebcabe72cda3b211f193754507edb",
+      "after": "f1571a3fe420d4a5ea44f2445ed9bb0c170ebcabe72cda3b211f193754507edb"
+    },
+    {
+      "path": "packages/spec/src/zammad-core-access.ts",
+      "before": "2670f92f2566ff19641657b0f071f3c7748f9b29174375c8420d356dbbcd8bec",
+      "after": "2670f92f2566ff19641657b0f071f3c7748f9b29174375c8420d356dbbcd8bec"
+    },
+    {
+      "path": "packages/spec/src/zammad-core-contracts.ts",
+      "before": "3e5434f21ba4c2f192dc2be05cfbde726c9a9b524405799d3bc4da633109157e",
+      "after": "3e5434f21ba4c2f192dc2be05cfbde726c9a9b524405799d3bc4da633109157e"
+    },
+    {
+      "path": "packages/spec/src/zammad-core-data.ts",
+      "before": "6d0f43d5432fffd0cb1d230540283f43114f2152e036462a09831125a522fc82",
+      "after": "6d0f43d5432fffd0cb1d230540283f43114f2152e036462a09831125a522fc82"
+    }
+  ],
+  "oldFactoriesAndSupportDescriptorsExact": true,
+  "p73CheckpointDraftsExact": true,
+  "previousTenStudioStudyOutputsExact": true,
+  "handoffPrefixBytes": 1018308,
+  "handoffPrefixSha256": "2ffbe5737afa5b8fce418d7a139289fb0ae73ae1acaf6ee6da489a6b17e09fe6",
+  "handoffPrefixExact": true,
+  "originalProjectsExact": 13,
+  "originalProjectMetadataExact": true,
+  "originalSetExact": true,
+  "ownedVerified404": [
+    "02406c1d-7d49-49d2-b479-179183d9e0db",
+    "14b2ba81-3ccd-4221-a310-01f4d543e3c1",
+    "289de31a-f4b0-4fe8-80b5-0b5fdf1c5909",
+    "2910bb41-6bb9-4c96-bb23-fd4742e0ffdc",
+    "43924066-e845-410d-953f-8e6f27b11058",
+    "46bdd4e1-d531-43bc-88a2-b8dd6ab79213",
+    "62aa1014-5844-467c-b0b8-bcff3237360b",
+    "7ad9417a-eeaa-40fb-9ba3-358f513d1d4a",
+    "8a956c49-e8e7-4442-838c-2067c34b3b86",
+    "8f00b0de-5f77-4a57-bb41-029034c78240",
+    "a2e2c9fa-d319-4fec-9231-3388e38d37b3",
+    "adeff7a4-80f8-49c1-9e5a-3c1e519ffcfc",
+    "b649518c-f390-4bf1-8880-bcad23ce4689",
+    "b6540f49-1d6b-4ab5-8243-f98f86cad0fe",
+    "c1c9d9e2-f7fe-464d-b3cb-36213fef5be8",
+    "c3d5f91d-792a-41f2-bcc5-59a76063c3bd",
+    "da8e599b-12e0-4330-8cc9-9e81d803ddad",
+    "de6f532c-ad96-4371-b8bc-7196ec5a7ce9",
+    "f0042dd8-04ed-4c22-8333-6c9169d4722f",
+    "fd53ff1a-bd1a-47ef-b576-d223e30560c5",
+    "fe6b0ba0-fb64-4841-a401-c7656774ded6",
+    "fe8b29be-b022-4fca-9cfd-c6bdafe23d4b"
+  ],
+  "noDisposableLeaks": true,
+  "siblingSourceFilesExact": true
+}

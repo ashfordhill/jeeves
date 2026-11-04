@@ -10487,3 +10487,104 @@ provider integration, application correctness, upstream parity, production capac
 approval or benchmark score claim. Later C4a/C4b implementation/verification needs a separate task.
 UX14c is complete; this worker stops after its scoped local commit. UX14d/default rollout remain
 separate assignments; P73a/P73b and the backend batch remain paused.
+
+## UX14d — Dropshipping and remaining documented field-study references (2026-11-04)
+
+Completed exact UX14d on primary `main` from `3b0c73b7b718c03694981ed3b0d6d5769fa2919e`, in the
+owner's authorized sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch
+scope, studio plan/shared protocol, model/configuration/interaction/coverage contracts, final owner
+decisions, C4 guidance and E11–E14 source briefs. Read the original QRWTY approved goal/fixture and
+recipe provenance, sibling README qualification, dropshipping's actual frozen GOAL/build plan and
+scaffold handoff, inventory's separate P56 study and grocery's linked concept. Sibling sources were
+read only; no application repo, live project, backend batch or default rollout was changed. This
+worker did not delegate or advance to another unit.
+
+Added four separate versioned finite factories, strict goal manifests and fresh layouts under
+`packages/spec/src/studio-examples/`, with opt-in Library/source registration and CATALOG/study-guide
+updates. All fourteen UX14 coverage rows now have explicit source/evidence entries in the combined
+inventory. The original nine-example chooser/default and old factories/recipes remain unchanged;
+all ten preceding studio design/layout outputs remain canonically exact.
+
+The original QRWTY reference retains its approved single cohesive HTTP application, browser and
+PostgreSQL. Authentication is internal; QR creation/images/redirects/activity remain one API.
+QR-01–QR-09, ownership, session/wire contracts and historical recipe evidence are mapped without
+claiming a newly generated app passed them. Its historical device/location/map background and
+unapproved additive-feature candidate remain explicitly unadopted/unknown; the sibling README's
+custom-hardware qualification and generation-guinea-pig purpose remain source. No P35 auto-adoption
+or live application repair occurs.
+
+Dropshipping preserves one managed Cloudflare Worker serving bundled storefront/admin assets,
+D1/SQLite, private R2, hosted Stripe checkout, Cloudflare EmailSender and operator Access. Workflows
+is a managed durable-orchestration capability bound to the same Worker class, not a queue or an
+independently deployed custom application. There are no guest customer accounts, queue substitution,
+separate Billing/Identity service or invented enabled vendor API. All 44 frozen GOAL clauses map to
+source/future work. Branding/catalog/compliance/money, signed/idempotent payments, order events/
+waits/recovery, vendor conformance, human tasks, sourcing, UI/quality and launch gates stay future
+C4a/C4b implementation. Vendor permissions remain unknown. The recorded scaffold is not the complete
+storefront; only public/synthetic demo material is exported, with no private business data/secrets.
+
+Inventory has a bounded P56 software foundation (API, worker, PostgreSQL, browser workspace and
+one C3 stock-work identity) plus external standalone-terminal/physical-printer boundaries. Atomic
+stock/outbox, current tenant access, acknowledgement/deduplication and physical print uncertainty
+remain future contracts, not guarantees supplied by queue settings. Exact hardware/scanner/location,
+fields/actions, application identity and offline requirements remain unknown. No firmware, driver
+or individual form becomes a Docker service. Grocery has an external capture/review client,
+bounded API, private media/data and external recognition/reference-data boundaries. Phone versus
+glasses, first journey, vendor/data/API permissions, input formats and recognition quality stay
+unknown. No Retailmotus/Trax access, actual stock counts, recognition/KPI result or full-product
+completion is invented. Limited source coverage accounts for E13/E14 without solving their questions.
+
+Evidence: `docs/evidence/studio-ux/UX14d/`. The four maps contain 92 goal rows, 83 unresolved
+source-linked decisions/future-owner assignments and ten explicit unknowns. One-off checks verify
+source SHA-256/graph references, deep freezing, atomic insertion, exact portable round-trips,
+tamper rejection, unavailable exact versions and hash-mismatch behavior. Every fresh relationship
+retains visible provenance; existing executable QRWTY retains its prior generation eligibility.
+The four actual seed source exports and eight edited browser exports preserve exact manifests,
+seed origin, identities/topology, decisions and handoff assignments. Edited disposable variants do
+not assert continued source-goal satisfaction.
+
+Direct Chromium inspection records 88 observations at 1440×900 and 1280×800: mouse Library creation,
+C1/C2 and all nine useful C3 scopes, three actual saves per reference per size, acknowledged reload,
+source downloads, source-linked review/object navigation and truthful Generate status. Dropshipping
+checks managed Host, both bundled Served by references, D1 engine/provider and Workflows category/
+provider with no retention field. Inventory checks individual C2 queued-member selection and one
+saved channel value from the independent consumer scope. Grocery's external-client review link
+correctly selects its C1 binding. The disposable settings are QRWTY API Go/DB Neon/browser Cloudflare;
+Dropshipping Worker JavaScript/R2 Public/workflow External; Inventory API Python/DB Supabase/channel
+3,600 seconds; Grocery API Go/media AWS S3/recognition External. No provider call or provisioning
+follows those settings.
+
+All eight direct generation requests return 422 `STUDIO_DESIGN_ONLY` before execution, with no
+generation record; handoff evidence remains `unrecorded`. Navigation/review/export causes no semantic
+mutation. The final main browser pass has 48 real HTTP writes, zero page errors/console warnings,
+external requests or blocked/unowned writes. Guards precede page creation and allow only exact-owned
+disposables/intended Library creation. A separate guarded read-only pass confirms the legacy editor
+remains default at both sizes. All 13 original projects retain exact metadata, design/layout hashes,
+revisions and project set. All 22 owned disposables, including layout measurements and interrupted
+attempts, are deleted and verified 404.
+
+Before/after preservation covers all unrelated tracked files, original factory/recipe/support bytes,
+48 frozen benchmark files, paused checkpoint sources, sibling source documents, 42 feedback files/
+21 original-copy pairs, seven public fixtures and the entire earlier handoff prefix. Fresh camera
+bounds were measured read-only; shared routing/layout code is unchanged. Representative final
+screenshots were visually inspected. Existing long-name/zoom truncation remains with full inspector/
+source values. Attempt notes disclose dev-watcher timing, existing inspector-tab/affected-link locator
+corrections, a rejected old-Node script launch and scoped JSON evidence formatting; final runs pass.
+No validation was weakened, no fixture typing adaptation was needed and no product blocker remains.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with its Node bin directory prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces, existing source/test types and scripts.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- One-off goal/schema/portable/atomic observations and both direct browser profiles: pass.
+- Scoped formatting, source/project preservation and staged whitespace including new logs: pass.
+
+Unit/E2E/template suites, snapshots, their maintenance and `pnpm check` remain owner-deferred; none
+ran. No paid model/provider, external agent or application-generation execution occurred. This is
+design coverage, not new runtime support, implemented integrations, reproducible application output,
+physical-device/recognition acceptance, legal/compliance approval or a benchmark result. Later C4a/
+C4b field tests must verify reproducibility, extension/regeneration preservation, actual behavior and
+failures, plus bespoke code/repair-prompt effort. No runtime backlog is selected or started here.
+UX14d is complete; this worker stops after its scoped local commit. UX15/default rollout remains a
+separate assignment; P73a/P73b and the backend batch stay incomplete and paused.

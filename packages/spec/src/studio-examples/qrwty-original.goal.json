@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "example": {
+    "id": "studio-qrwty-original",
+    "version": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "docs/examples/qrwty.md",
+      "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+      "sha256": "66fbe824918cacfc450ed1c8535870ef704fb464781f27af82e376fb05fcba9f"
+    },
+    {
+      "id": "legacy",
+      "path": "fixtures/designs/qrwty.json",
+      "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+      "sha256": "4ba193581ad6b249aa8891b31ec1dc639aa96fe58b6734e9e0552f0f05cc6d4b"
+    },
+    {
+      "id": "recipe",
+      "path": "recipes/qr-studio/0.1.0/manifest.json",
+      "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+      "sha256": "56c7a84bf3699b8a725b7a6dfe42b3cbc14bbebe157dc97245b7299daf51f317"
+    },
+    {
+      "id": "recipe-guide",
+      "path": "recipes/README.md",
+      "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+      "sha256": "bbc13e87d2c7537b0c9b2ab0b31ed2a939be7df6fbce64e0e8bcf004924dac17"
+    },
+    {
+      "id": "readme",
+      "path": "../qrwty/README.md",
+      "commit": "1cea38654f20b37b17f50b0d5c618549e5dbd270",
+      "sha256": "3a66cc533962db6002d876c3311009a425e2ae641f9af02a886a03f650c8a607"
+    }
+  ],
+  "requirements": [
+    {
+      "requirementId": "approved-boundaries",
+      "source": {
+        "sourceId": "brief",
+        "location": "Approved architecture"
+      },
+      "summary": "One HTTP service, one web frontend and separate PostgreSQL; authentication remains inside the cohesive application.",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": ""
+    },
+    {
+      "requirementId": "product-loop",
+      "source": {
+        "sourceId": "brief",
+        "location": "Product loop"
+      },
+      "summary": "Private QR resources retain a stable public redirect and downloadable image while destinations can change; activity counts requests.",
+      "disposition": "c4b",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4b application behavior must preserve stable identity/image and distinguish request totals from unique visitors; this studio reference supplies no runtime."
+    },
+    {
+      "requirementId": "authentication",
+      "source": {
+        "sourceId": "brief",
+        "location": "Approved architecture / authentication"
+      },
+      "summary": "Reviewed email/password sessions, HttpOnly cookies, logout/expiry, CSRF and server-derived owner identity; no external identity substitution.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["api", "db"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "Future C4a template binding/verification must preserve the approved session and ownership contracts. Existing accepted legacy support remains separate, unchanged evidence."
+    },
+    {
+      "requirementId": "fixed-wire-contracts",
+      "source": {
+        "sourceId": "brief",
+        "location": "Approved architecture / extension contract requirements"
+      },
+      "summary": "Same-origin proxy, isolated Postgres consumer, public origin /q/{id}, PNG attachment, no-store 302, unknown-ID 404 and bounded UTC activity.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a must bind and verify the exact preserved source contracts; these finite forms do not author routes or schemas."
+    },
+    {
+      "requirementId": "legacy-compatibility",
+      "source": {
+        "sourceId": "legacy",
+        "location": "Whole approved proving fixture"
+      },
+      "summary": "The approved executable legacy design remains supported independently of this new design-only reference.",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": ""
+    },
+    {
+      "requirementId": "recipe-compatibility",
+      "source": {
+        "sourceId": "recipe",
+        "location": "features / provided / provenance"
+      },
+      "summary": "QR Studio 0.1.0 is an existing experimental recipe with separately pinned implementation and acceptance, not runtime support for studio definitions.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Retain existing recipe flow and acceptance evidence; do not auto-adopt P35, attach this studio interpretation to its generator, or claim any new build was executed."
+    },
+    {
+      "requirementId": "additive-feature-unapproved",
+      "source": {
+        "sourceId": "brief",
+        "location": "After QR-01–QR-09 / candidate additive feature"
+      },
+      "summary": "Campaign label/owner filter remains a candidate requiring agreement, not an approved new product requirement.",
+      "disposition": "unknown",
+      "nodeIds": ["api", "web"],
+      "connectionIds": [],
+      "remainingWork": "Owner approval and an independently verified regeneration/preservation exercise remain separate future work."
+    },
+    {
+      "requirementId": "historical-device-background",
+      "source": {
+        "sourceId": "brief",
+        "location": "Historical product background (outside current milestone)"
+      },
+      "summary": "Physical printing/location/map workflow is preserved historical context, excluded from the approved proving milestone; it is not adopted in this reference.",
+      "disposition": "unknown",
+      "nodeIds": ["api", "web"],
+      "connectionIds": [],
+      "remainingWork": "Do not infer a device deployment, printer transport, label dimensions, location source, offline protocol or capacity commitments. Any revival requires separately agreed requirements."
+    },
+    {
+      "requirementId": "readme-qualification",
+      "source": {
+        "sourceId": "readme",
+        "location": "What about custom hardware? / Future moves"
+      },
+      "summary": "Sibling README qualifies QRWTY as a software-generation guinea pig and says custom hardware is not worth exploring.",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "web"],
+      "connectionIds": [],
+      "remainingWork": ""
+    },
+    {
+      "requirementId": "excluded-scope",
+      "source": {
+        "sourceId": "brief",
+        "location": "Excluded from this milestone"
+      },
+      "summary": "No billing, custom domains, messaging/Kubernetes/cloud/enterprise rollout, hardware, location, maps or scale result is supplied.",
+      "disposition": "c4b",
+      "nodeIds": ["api", "web", "db"],
+      "connectionIds": [],
+      "remainingWork": "Retain scope limits. Later runtime field tests must independently verify reproducibility, C4a behavior, C4b preservation, repairs/prompts and failures; do not repair the live project."
+    },
+    {
+      "requirementId": "qr-01",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-01"
+      },
+      "summary": "QR-01: Register/login Alice and Bob; create a resource as Alice; record returned ID and persisted destination. Logout invalidates the session. Unauthenticated creation/read/update/image/activity returns 401.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-02",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-02"
+      },
+      "summary": "QR-02: Download the real image, record its SHA-256, decode its pixels independently, and assert its URL is the configured public origin plus `/q/{id}`. The destination URL must not be embedded.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-03",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-03"
+      },
+      "summary": "QR-03: Request the decoded URL without automatic redirect following, assert 302, no-store, and original Location. Follow it to destination server A and verify A received the request. Assert one event for each redirect request, counting any second request explicitly.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-04",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-04"
+      },
+      "summary": "QR-04: Edit destination to server B. Assert identical resource/redirect ID and byte-identical downloaded QR image. Request the original decoded URL again; assert B is reached and A is not. Verify no cached permanent redirect masks the change.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-05",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-05"
+      },
+      "summary": "QR-05: Make repeated requests, including from the same client; assert total increases for every redirect request. Fixed test-only clock/data fixtures spanning UTC days verify bucket boundaries, zero days, bounded date range validation, and totals. Do not expose fixture/clock controls in the production app.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-06",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-06"
+      },
+      "summary": "QR-06: As Bob, list/read/update/download/activity cannot see Alice's resource; ID guessing and relationship manipulation do not bypass ownership. Lists contain only the current user's resources. Rejected requests do not change destination or scans.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-07",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-07"
+      },
+      "summary": "QR-07: Malformed payloads, unknown fields, invalid IDs, non-HTTP URLs, credential-bearing URLs, caller-supplied owner IDs, and missing IDs return documented 400/404 responses. Unknown redirects add no event; failed unauthorized updates preserve the destination.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-08",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-08"
+      },
+      "summary": "QR-08: Restart the service and Postgres with the same volumes. Login again, read the saved resource, decode the image again, follow the original URL to B, and verify persisted history plus exactly the new event.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    },
+    {
+      "requirementId": "qr-09",
+      "source": {
+        "sourceId": "brief",
+        "location": "Fixed acceptance cases / QR-09"
+      },
+      "summary": "QR-09: Drive account creation/login, resource create/edit, image download, and activity views in the browser by mouse. Check the visible totals agree with API/persisted evidence.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": ["web", "api", "db"],
+      "connectionIds": ["web-api", "api-db"],
+      "remainingWork": "Future C4a/C4b binding and independent acceptance must retain this exact obligation. P11 historical acceptance is preserved source evidence, not a passing result for this new reference."
+    }
+  ]
+}

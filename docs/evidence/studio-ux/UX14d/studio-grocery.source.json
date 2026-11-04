@@ -1,0 +1,925 @@
+{
+  "schema": "jeeves.studio-project",
+  "schemaVersion": 1,
+  "design": {
+    "schemaVersion": 2,
+    "revision": 0,
+    "architecture": {
+      "studio": {
+        "version": 1,
+        "origin": {
+          "example": {
+            "id": "studio-grocery",
+            "version": "1.0.0"
+          },
+          "goalManifestSha256": "688b0c2a0c390e695e1271d3d2a64f6857ef77bfa779dadc841d83f548ceb8e8"
+        },
+        "elements": [
+          {
+            "element": "client",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "unspecified"
+            }
+          },
+          {
+            "element": "api",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "language": "unspecified",
+              "exposure": "internal",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "db",
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "database",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "media",
+            "definition": {
+              "id": "studio-object-store",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "object-store",
+              "provider": "unspecified",
+              "access": "private"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "api"
+            }
+          },
+          {
+            "element": "recognition",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "recognition",
+              "provider": "unspecified"
+            }
+          },
+          {
+            "element": "data-source",
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "unspecified"
+            }
+          }
+        ],
+        "packages": [],
+        "connections": [
+          {
+            "connection": "client-api",
+            "settings": {}
+          },
+          {
+            "connection": "api-db",
+            "settings": {}
+          },
+          {
+            "connection": "api-media",
+            "settings": {}
+          },
+          {
+            "connection": "api-recognition",
+            "settings": {}
+          },
+          {
+            "connection": "api-data",
+            "settings": {}
+          }
+        ]
+      },
+      "implementationHandoff": {
+        "description": "Grocery review · limited study: design coverage and source-linked future implementation work only.",
+        "partial": true,
+        "excludedScope": "No application runtime, template binding, provisioning, generated build or behavior verification is supplied. Historical deployment and implementation detail remains pinned source.",
+        "assignments": [
+          {
+            "kind": "decision",
+            "id": "studio-c4b-field-goal",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Confirm the first journey and implement visit/task/review/reporting behavior with permitted data; no promised stock counts, priorities or KPI outcomes."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-first-software-fixture",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Future C4b must implement ingestion, human correction, uncertainty and priority calculation. Synthetic doubles exercise surrounding behavior only."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-device-unknown",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Owner must settle device and first journey before device implementation. The robot speculation in the concept is not a requirement."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-vendor-access-unknown",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Establish lawful/authorized available sources, API permissions and data contracts first. Public synthetic fixtures grant no vendor access."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-recognition-quality-unknown",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Keep uncertain matches uncertain; define evaluation criteria and gather independent evidence before claiming recognition performance or real stock counts."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-label-formats-unknown",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Resolve label/input formats and availability without inventing camera/reader hardware, vendor models or parsing accuracy."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-media-data-boundary",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Implement permitted capture/upload, current access, retention, review history and any optional location integration. No production privacy/access policy is established by a private resource setting."
+          },
+          {
+            "kind": "decision",
+            "id": "studio-c4b-evaluation-boundary",
+            "owner": "Future application/runtime implementer",
+            "blocks": "Future C4a/C4b field tests must verify reproducible foundations, integration failures and human correction independently; the concept remains explicitly limited."
+          }
+        ]
+      },
+      "system": {
+        "name": "Grocery review · limited study",
+        "description": "Bounded capture/review API, private media/data and external recognition. Device choice, data/API permissions and recognition quality remain unknown; no full-product or AR-performance claim."
+      },
+      "nodes": [
+        {
+          "id": "reviewer",
+          "kind": "person",
+          "name": "Field reviewer",
+          "description": "Reviews uncertain evidence and prioritizes permitted field work."
+        },
+        {
+          "id": "capture-external",
+          "kind": "external-system",
+          "name": "Capture and review device",
+          "description": "Phone/tablet/glasses choice remains unknown.",
+          "container": "client"
+        },
+        {
+          "id": "recognition-external",
+          "kind": "external-system",
+          "name": "Recognition provider",
+          "description": "Provider, API permissions and real-world performance remain unknown.",
+          "container": "recognition"
+        },
+        {
+          "id": "data-external",
+          "kind": "external-system",
+          "name": "Permitted reference data",
+          "description": "Catalog/value/KPI data availability and permissions remain unknown.",
+          "container": "data-source"
+        }
+      ],
+      "relationships": [
+        {
+          "id": "reviewer-system",
+          "from": "reviewer",
+          "to": "system",
+          "description": "Reviews shelf evidence and candidate priorities",
+          "container": "api"
+        },
+        {
+          "id": "capture-system",
+          "from": "capture-external",
+          "to": "system",
+          "description": "Supplies consented captures and corrections",
+          "container": "api"
+        },
+        {
+          "id": "system-recognition",
+          "from": "system",
+          "to": "recognition-external",
+          "description": "Requests uncertain candidate matches",
+          "container": "api"
+        },
+        {
+          "id": "data-system",
+          "from": "data-external",
+          "to": "system",
+          "description": "Supplies permitted reference data",
+          "container": "api"
+        }
+      ],
+      "decisions": [
+        {
+          "id": "studio-c4b-field-goal",
+          "name": "Field visits inspect product presence/promotion and prioritize effort using product value/KPI information; current workf",
+          "context": "concept: Background / Workflow. Field visits inspect product presence/promotion and prioritize effort using product value/KPI information; current workflow details are background.",
+          "decision": "Confirm the first journey and implement visit/task/review/reporting behavior with permitted data; no promised stock counts, priorities or KPI outcomes.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "client"
+            },
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "db"
+            },
+            {
+              "kind": "connection",
+              "id": "client-api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-first-software-fixture",
+          "name": "Consented/reference image and known reference data can produce candidate matches, human corrections and a recorded prior",
+          "context": "brief: First software fixture. Consented/reference image and known reference data can produce candidate matches, human corrections and a recorded prioritized result.",
+          "decision": "Future C4b must implement ingestion, human correction, uncertainty and priority calculation. Synthetic doubles exercise surrounding behavior only.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "client"
+            },
+            {
+              "kind": "element",
+              "id": "media"
+            },
+            {
+              "kind": "element",
+              "id": "db"
+            },
+            {
+              "kind": "element",
+              "id": "recognition"
+            },
+            {
+              "kind": "element",
+              "id": "data-source"
+            },
+            {
+              "kind": "connection",
+              "id": "client-api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-media"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            },
+            {
+              "kind": "connection",
+              "id": "api-recognition"
+            },
+            {
+              "kind": "connection",
+              "id": "api-data"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-device-unknown",
+          "name": "Device choice, supported capture controls, first journey and AR/real-time interface are unresolved; no phone/glasses/rob",
+          "context": "brief: To fill in / phone/tablet versus glasses. Device choice, supported capture controls, first journey and AR/real-time interface are unresolved; no phone/glasses/robot choice is adopted.",
+          "decision": "Owner must settle device and first journey before device implementation. The robot speculation in the concept is not a requirement.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "client"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-vendor-access-unknown",
+          "name": "Source vendors are context only; access to APIs, product value, private KPI, retailer/backroom stock or photos is not as",
+          "context": "brief: Data sources available / Retailmotus and Trax context. Source vendors are context only; access to APIs, product value, private KPI, retailer/backroom stock or photos is not assumed.",
+          "decision": "Establish lawful/authorized available sources, API permissions and data contracts first. Public synthetic fixtures grant no vendor access.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "data-source"
+            },
+            {
+              "kind": "element",
+              "id": "recognition"
+            },
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-data"
+            },
+            {
+              "kind": "connection",
+              "id": "api-recognition"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-recognition-quality-unknown",
+          "name": "Recognition quality requires labeled/held-out data, latency/cost measurement and field evidence. A deterministic double",
+          "context": "brief: Recognition quality / uncertainty. Recognition quality requires labeled/held-out data, latency/cost measurement and field evidence. A deterministic double cannot establish accuracy.",
+          "decision": "Keep uncertain matches uncertain; define evaluation criteria and gather independent evidence before claiming recognition performance or real stock counts.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "recognition"
+            },
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "client"
+            },
+            {
+              "kind": "connection",
+              "id": "api-recognition"
+            },
+            {
+              "kind": "connection",
+              "id": "client-api"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-label-formats-unknown",
+          "name": "Shelf label types and future digital labels are unresolved background, not specified parser inputs or guaranteed device",
+          "context": "concept: AR Glasses / shelf labels. Shelf label types and future digital labels are unresolved background, not specified parser inputs or guaranteed device capabilities.",
+          "decision": "Resolve label/input formats and availability without inventing camera/reader hardware, vendor models or parsing accuracy.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "client"
+            },
+            {
+              "kind": "element",
+              "id": "recognition"
+            },
+            {
+              "kind": "connection",
+              "id": "api-recognition"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-media-data-boundary",
+          "name": "Media handling, optional captured-location metadata, operator tasks and activity history need application-specific conse",
+          "context": "brief: Shared reusable capabilities / first software fixture. Media handling, optional captured-location metadata, operator tasks and activity history need application-specific consent/access and data rules.",
+          "decision": "Implement permitted capture/upload, current access, retention, review history and any optional location integration. No production privacy/access policy is established by a private resource setting.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "client"
+            },
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "media"
+            },
+            {
+              "kind": "element",
+              "id": "db"
+            },
+            {
+              "kind": "connection",
+              "id": "client-api"
+            },
+            {
+              "kind": "connection",
+              "id": "api-media"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            }
+          ],
+          "acknowledgements": []
+        },
+        {
+          "id": "studio-c4b-evaluation-boundary",
+          "name": "No full-product, deployed integration or recognition result follows from design coverage.",
+          "context": "brief: First software fixture / recognition quality. No full-product, deployed integration or recognition result follows from design coverage.",
+          "decision": "Future C4a/C4b field tests must verify reproducible foundations, integration failures and human correction independently; the concept remains explicitly limited.",
+          "consequence": "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
+          "status": "Unresolved",
+          "links": [
+            {
+              "kind": "element",
+              "id": "api"
+            },
+            {
+              "kind": "element",
+              "id": "db"
+            },
+            {
+              "kind": "element",
+              "id": "media"
+            },
+            {
+              "kind": "element",
+              "id": "recognition"
+            },
+            {
+              "kind": "connection",
+              "id": "api-db"
+            },
+            {
+              "kind": "connection",
+              "id": "api-media"
+            },
+            {
+              "kind": "connection",
+              "id": "api-recognition"
+            }
+          ],
+          "acknowledgements": []
+        }
+      ]
+    },
+    "elements": [
+      {
+        "id": "client",
+        "name": "Capture and review client",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "External capture/review boundary. Phone/tablet versus glasses is undecided; no native device or AR implementation is supplied.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "api",
+        "name": "Field review application",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Bounded software API for consented captures and human review. Product workflow and priority logic remain future custom work.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "db",
+        "name": "Review data",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Software-foundation authority for reference data/review results. Database engine/provider are unspecified by the concept.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "media",
+        "name": "Private shelf media",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Consented/reference capture bytes only. Media access/retention and upload integration are future work.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "recognition",
+        "name": "Recognition integration",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "External recognition adapter with no selected vendor, real API access or accuracy/latency claim. Uncertain matches require review.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "id": "data-source",
+        "name": "Reference data boundary",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Catalog/value/KPI inputs require permission and available sources. No Retailmotus/Trax API or backroom-data access is assumed.",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": ""
+      }
+    ],
+    "connections": [
+      {
+        "id": "client-api",
+        "kind": "depends-on",
+        "from": {
+          "element": "client"
+        },
+        "to": {
+          "element": "api"
+        },
+        "planned": {
+          "label": "Submits captures and reviews candidates",
+          "protocol": "Unspecified",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-db",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "db"
+        },
+        "planned": {
+          "label": "Persists reference and review data",
+          "protocol": "Unspecified",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-media",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "media"
+        },
+        "planned": {
+          "label": "Stores consented reference captures",
+          "protocol": "Unspecified",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-recognition",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "recognition"
+        },
+        "planned": {
+          "label": "Requests candidate product matches",
+          "protocol": "Unspecified",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "api-data",
+        "kind": "depends-on",
+        "from": {
+          "element": "api"
+        },
+        "to": {
+          "element": "data-source"
+        },
+        "planned": {
+          "label": "Ingests permitted reference data",
+          "protocol": "Unspecified",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "annotations": []
+  },
+  "layout": {
+    "schemaVersion": 1,
+    "items": {},
+    "architecture": {
+      "studio:context": {
+        "positions": {
+          "studio:context:system": {
+            "x": 320,
+            "y": 144
+          },
+          "studio:context:reviewer": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:context:capture-external": {
+            "x": 640,
+            "y": 0
+          },
+          "studio:context:recognition-external": {
+            "x": 640,
+            "y": 144
+          },
+          "studio:context:data-external": {
+            "x": 640,
+            "y": 288
+          }
+        },
+        "viewport": {
+          "x": 56,
+          "y": 196,
+          "zoom": 1
+        }
+      },
+      "studio:containers": {
+        "positions": {
+          "studio:context:reviewer": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:client": {
+            "x": 240,
+            "y": 0
+          },
+          "studio:element:api": {
+            "x": 480,
+            "y": 144
+          },
+          "studio:element:db": {
+            "x": 720,
+            "y": 0
+          },
+          "studio:element:media": {
+            "x": 720,
+            "y": 144
+          },
+          "studio:element:recognition": {
+            "x": 720,
+            "y": 288
+          },
+          "studio:element:data-source": {
+            "x": 240,
+            "y": 432
+          }
+        },
+        "viewport": {
+          "x": 48,
+          "y": 119.06756756756754,
+          "zoom": 0.9954954954954955
+        }
+      },
+      "studio:service:api": {
+        "positions": {
+          "studio:element:api": {
+            "x": 240,
+            "y": 144
+          },
+          "studio:element:client": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:data-source": {
+            "x": 480,
+            "y": 0
+          },
+          "studio:element:db": {
+            "x": 720,
+            "y": 0
+          },
+          "studio:element:media": {
+            "x": 480,
+            "y": 144
+          },
+          "studio:element:recognition": {
+            "x": 720,
+            "y": 144
+          }
+        },
+        "viewport": {
+          "x": 48,
+          "y": 229.56756756756755,
+          "zoom": 0.9954954954954955
+        }
+      }
+    }
+  },
+  "studioSources": [
+    {
+      "example": {
+        "id": "studio-grocery",
+        "version": "1.0.0"
+      },
+      "goalManifestSha256": "688b0c2a0c390e695e1271d3d2a64f6857ef77bfa779dadc841d83f548ceb8e8",
+      "status": "resolved",
+      "manifest": {
+        "schemaVersion": 1,
+        "example": {
+          "id": "studio-grocery",
+          "version": "1.0.0"
+        },
+        "sources": [
+          {
+            "id": "brief",
+            "path": "docs/examples/grocery-review.md",
+            "commit": "3b0c73b7b718c03694981ed3b0d6d5769fa2919e",
+            "sha256": "07917e59efe7f0ed3a1bafaaf17ccfad22acedf7408ee3d4b46bcd472127cd4d"
+          },
+          {
+            "id": "concept",
+            "path": "../brainstorm/AR Grocery Reviewer/README.md",
+            "commit": "6c86895a44a79856766bcc2b22b0a961a13db7b5",
+            "sha256": "c02802dfeebe6be774666033d4dda55ee6ebd5a2812939cb661d7739bdec3adc"
+          }
+        ],
+        "requirements": [
+          {
+            "requirementId": "bounded-foundation",
+            "source": {
+              "sourceId": "brief",
+              "location": "First software fixture / candidate slices"
+            },
+            "summary": "Separate capture/client, application API, data/media and external recognition/data boundaries support a bounded software fixture.",
+            "disposition": "represented-design",
+            "nodeIds": ["client", "api", "db", "media", "recognition", "data-source"],
+            "connectionIds": ["client-api", "api-db", "api-media", "api-recognition", "api-data"],
+            "remainingWork": ""
+          },
+          {
+            "requirementId": "separate-product",
+            "source": {
+              "sourceId": "brief",
+              "location": "Separate recognition and field-review reference"
+            },
+            "summary": "Grocery field review is distinct from dropshipping; shared adapter/media/task/history mechanisms do not combine their products.",
+            "disposition": "represented-design",
+            "nodeIds": ["api", "client"],
+            "connectionIds": [],
+            "remainingWork": ""
+          },
+          {
+            "requirementId": "field-goal",
+            "source": {
+              "sourceId": "concept",
+              "location": "Background / Workflow"
+            },
+            "summary": "Field visits inspect product presence/promotion and prioritize effort using product value/KPI information; current workflow details are background.",
+            "disposition": "c4b",
+            "nodeIds": ["client", "api", "db"],
+            "connectionIds": ["client-api", "api-db"],
+            "remainingWork": "Confirm the first journey and implement visit/task/review/reporting behavior with permitted data; no promised stock counts, priorities or KPI outcomes."
+          },
+          {
+            "requirementId": "first-software-fixture",
+            "source": {
+              "sourceId": "brief",
+              "location": "First software fixture"
+            },
+            "summary": "Consented/reference image and known reference data can produce candidate matches, human corrections and a recorded prioritized result.",
+            "disposition": "c4b",
+            "nodeIds": ["api", "client", "media", "db", "recognition", "data-source"],
+            "connectionIds": ["client-api", "api-media", "api-db", "api-recognition", "api-data"],
+            "remainingWork": "Future C4b must implement ingestion, human correction, uncertainty and priority calculation. Synthetic doubles exercise surrounding behavior only."
+          },
+          {
+            "requirementId": "device-unknown",
+            "source": {
+              "sourceId": "brief",
+              "location": "To fill in / phone/tablet versus glasses"
+            },
+            "summary": "Device choice, supported capture controls, first journey and AR/real-time interface are unresolved; no phone/glasses/robot choice is adopted.",
+            "disposition": "unknown",
+            "nodeIds": ["client"],
+            "connectionIds": [],
+            "remainingWork": "Owner must settle device and first journey before device implementation. The robot speculation in the concept is not a requirement."
+          },
+          {
+            "requirementId": "vendor-access-unknown",
+            "source": {
+              "sourceId": "brief",
+              "location": "Data sources available / Retailmotus and Trax context"
+            },
+            "summary": "Source vendors are context only; access to APIs, product value, private KPI, retailer/backroom stock or photos is not assumed.",
+            "disposition": "unknown",
+            "nodeIds": ["data-source", "recognition", "api"],
+            "connectionIds": ["api-data", "api-recognition"],
+            "remainingWork": "Establish lawful/authorized available sources, API permissions and data contracts first. Public synthetic fixtures grant no vendor access."
+          },
+          {
+            "requirementId": "recognition-quality-unknown",
+            "source": {
+              "sourceId": "brief",
+              "location": "Recognition quality / uncertainty"
+            },
+            "summary": "Recognition quality requires labeled/held-out data, latency/cost measurement and field evidence. A deterministic double cannot establish accuracy.",
+            "disposition": "unknown",
+            "nodeIds": ["recognition", "api", "client"],
+            "connectionIds": ["api-recognition", "client-api"],
+            "remainingWork": "Keep uncertain matches uncertain; define evaluation criteria and gather independent evidence before claiming recognition performance or real stock counts."
+          },
+          {
+            "requirementId": "label-formats-unknown",
+            "source": {
+              "sourceId": "concept",
+              "location": "AR Glasses / shelf labels"
+            },
+            "summary": "Shelf label types and future digital labels are unresolved background, not specified parser inputs or guaranteed device capabilities.",
+            "disposition": "unknown",
+            "nodeIds": ["client", "recognition"],
+            "connectionIds": ["api-recognition"],
+            "remainingWork": "Resolve label/input formats and availability without inventing camera/reader hardware, vendor models or parsing accuracy."
+          },
+          {
+            "requirementId": "media-data-boundary",
+            "source": {
+              "sourceId": "brief",
+              "location": "Shared reusable capabilities / first software fixture"
+            },
+            "summary": "Media handling, optional captured-location metadata, operator tasks and activity history need application-specific consent/access and data rules.",
+            "disposition": "c4b",
+            "nodeIds": ["client", "api", "media", "db"],
+            "connectionIds": ["client-api", "api-media", "api-db"],
+            "remainingWork": "Implement permitted capture/upload, current access, retention, review history and any optional location integration. No production privacy/access policy is established by a private resource setting."
+          },
+          {
+            "requirementId": "evaluation-boundary",
+            "source": {
+              "sourceId": "brief",
+              "location": "First software fixture / recognition quality"
+            },
+            "summary": "No full-product, deployed integration or recognition result follows from design coverage.",
+            "disposition": "fixed-template-candidate",
+            "nodeIds": ["api", "db", "media", "recognition"],
+            "connectionIds": ["api-db", "api-media", "api-recognition"],
+            "remainingWork": "Future C4a/C4b field tests must verify reproducible foundations, integration failures and human correction independently; the concept remains explicitly limited."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -6,9 +6,13 @@ import communityGoal from "./studio-examples/community.goal.json" with { type: "
 import discourseFoundationGoal from "./studio-examples/discourse-foundation.goal.json" with {
   type: "json",
 };
+import dropshippingGoal from "./studio-examples/dropshipping.goal.json" with { type: "json" };
 import enterpriseGoal from "./studio-examples/enterprise.goal.json" with { type: "json" };
+import groceryGoal from "./studio-examples/grocery.goal.json" with { type: "json" };
+import inventoryGoal from "./studio-examples/inventory.goal.json" with { type: "json" };
 import linksGoal from "./studio-examples/links.goal.json" with { type: "json" };
 import mattermostGoal from "./studio-examples/mattermost.goal.json" with { type: "json" };
+import qrwtyoriginalGoal from "./studio-examples/qrwty-original.goal.json" with { type: "json" };
 import qrwtytargetGoal from "./studio-examples/qrwty-target.goal.json" with { type: "json" };
 import socialGoal from "./studio-examples/social.goal.json" with { type: "json" };
 import streamlyGoal from "./studio-examples/streamly.goal.json" with { type: "json" };
@@ -123,6 +127,10 @@ export const studioGoalManifests: readonly StudioGoalManifest[] = freezeSource(
     discourseFoundationGoal,
     vendureFoundationGoal,
     zammadFoundationGoal,
+    qrwtyoriginalGoal,
+    dropshippingGoal,
+    inventoryGoal,
+    groceryGoal,
   ].map((manifest) => studioGoalManifestSchema.parse(manifest)),
 );
 
