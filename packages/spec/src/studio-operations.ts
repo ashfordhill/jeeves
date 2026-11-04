@@ -6,6 +6,7 @@ import {
   type OperationInput,
   operationBatchSchema,
 } from "./operations.ts";
+import { studioDefinitions } from "./studio-definitions.ts";
 import {
   type DefinitionRef,
   type StudioConnectionSettings,
@@ -14,7 +15,6 @@ import {
   type StudioOwner,
   type StudioPackage,
   type StudioSettings,
-  studioApplicationKinds,
   studioDefinitionRef,
 } from "./studio-model.ts";
 
@@ -174,16 +174,11 @@ export function buildStudioCommand(
     case "create": {
       if (!input.elements.length) throw new Error("Create at least one studio element.");
       for (const item of input.elements) {
-        const kind = studioApplicationKinds.some((value) => value === item.settings.kind)
-          ? "Application"
-          : ["cdn", "external-api"].includes(item.settings.kind)
-            ? "External system"
-            : "Data store";
         const element: ElementInput = {
           id: item.id,
           name: item.name,
           ...(item.description !== undefined && { description: item.description }),
-          classification: { kind },
+          classification: { ...studioDefinitions[item.settings.kind].classification },
           template: null,
           config: {},
           attachments: [],

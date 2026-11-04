@@ -1,0 +1,2443 @@
+{
+  "definitions": [
+    {
+      "name": "Microservice",
+      "creationName": "Microservice",
+      "description": "One independently deployed application responsibility.",
+      "libraryGroup": "Services",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "application",
+      "visual": {
+        "icon": "server",
+        "color": "api",
+        "shape": "service"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.execution",
+          "label": "Execution",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "docker",
+              "label": "Docker"
+            },
+            {
+              "value": "managed",
+              "label": "Managed"
+            }
+          ],
+          "help": "Execution intent; no deployment is started."
+        },
+        {
+          "path": "settings.language",
+          "label": "Language",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "typescript",
+              "label": "TypeScript"
+            },
+            {
+              "value": "javascript",
+              "label": "JavaScript"
+            },
+            {
+              "value": "python",
+              "label": "Python"
+            },
+            {
+              "value": "go",
+              "label": "Go"
+            },
+            {
+              "value": "java",
+              "label": "Java"
+            },
+            {
+              "value": "csharp",
+              "label": "C#"
+            },
+            {
+              "value": "rust",
+              "label": "Rust"
+            }
+          ],
+          "help": "Language intent; runtime support is reviewed in Generate."
+        },
+        {
+          "path": "settings.host",
+          "label": "Host",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare-workers",
+              "label": "Cloudflare Workers"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.execution",
+            "equals": "managed"
+          }
+        },
+        {
+          "path": "settings.exposure",
+          "label": "Exposure",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "internal",
+              "label": "Internal"
+            },
+            {
+              "value": "public",
+              "label": "Public"
+            }
+          ],
+          "help": "Network intent; this does not establish authentication or authorization."
+        }
+      ],
+      "relationships": ["calls", "uses-resource", "publish", "consume"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+      ],
+      "id": "studio-service",
+      "version": "1.0.0",
+      "kind": "service",
+      "defaults": {
+        "kind": "service",
+        "execution": "docker",
+        "language": "unspecified",
+        "exposure": "internal"
+      }
+    },
+    {
+      "name": "Browser app",
+      "creationName": "Browser app",
+      "description": "Browser assets delivered independently or by an actual application.",
+      "libraryGroup": "Services",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "browser",
+      "visual": {
+        "icon": "browser",
+        "color": "client",
+        "shape": "browser"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.delivery",
+          "label": "Delivery",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "standalone",
+              "label": "Standalone"
+            },
+            {
+              "value": "bundled",
+              "label": "Bundled"
+            }
+          ]
+        },
+        {
+          "path": "settings.provider",
+          "label": "Hosting provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare",
+              "label": "Cloudflare"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.delivery",
+            "equals": "standalone"
+          }
+        },
+        {
+          "path": "settings.servedBy",
+          "label": "Served by",
+          "group": "Connections",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "application",
+            "excludeSelf": true
+          },
+          "when": {
+            "path": "settings.delivery",
+            "equals": "bundled"
+          },
+          "help": "Select the actual serving application; a package is not a deployment."
+        }
+      ],
+      "relationships": ["calls", "served-by"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+      ],
+      "id": "studio-browser",
+      "version": "1.0.0",
+      "kind": "browser",
+      "defaults": {
+        "kind": "browser",
+        "delivery": "standalone",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Worker service",
+      "creationName": "Worker service",
+      "description": "An independently executed background application.",
+      "libraryGroup": "Services",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "worker",
+      "visual": {
+        "icon": "cpu",
+        "color": "worker",
+        "shape": "worker"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.execution",
+          "label": "Execution",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "docker",
+              "label": "Docker"
+            },
+            {
+              "value": "managed",
+              "label": "Managed"
+            }
+          ],
+          "help": "Execution intent; no deployment is started."
+        },
+        {
+          "path": "settings.language",
+          "label": "Language",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "typescript",
+              "label": "TypeScript"
+            },
+            {
+              "value": "javascript",
+              "label": "JavaScript"
+            },
+            {
+              "value": "python",
+              "label": "Python"
+            },
+            {
+              "value": "go",
+              "label": "Go"
+            },
+            {
+              "value": "java",
+              "label": "Java"
+            },
+            {
+              "value": "csharp",
+              "label": "C#"
+            },
+            {
+              "value": "rust",
+              "label": "Rust"
+            }
+          ],
+          "help": "Language intent; runtime support is reviewed in Generate."
+        },
+        {
+          "path": "settings.host",
+          "label": "Host",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare-workers",
+              "label": "Cloudflare Workers"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.execution",
+            "equals": "managed"
+          }
+        },
+        {
+          "path": "settings.concurrency",
+          "label": "Concurrency",
+          "group": "Options",
+          "control": "integer",
+          "min": 1,
+          "max": 1024,
+          "optional": true,
+          "help": "Design setting; no throughput or scaling guarantee."
+        }
+      ],
+      "relationships": ["calls", "uses-resource", "publish", "consume"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+      ],
+      "id": "studio-worker",
+      "version": "1.0.0",
+      "kind": "worker",
+      "defaults": {
+        "kind": "worker",
+        "execution": "docker",
+        "language": "unspecified"
+      }
+    },
+    {
+      "name": "Billing",
+      "creationName": "Billing",
+      "description": "One Billing service with a payment integration choice.",
+      "libraryGroup": "Presets",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "application",
+      "visual": {
+        "icon": "credit-card",
+        "color": "api",
+        "shape": "service"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.execution",
+          "label": "Execution",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "docker",
+              "label": "Docker"
+            },
+            {
+              "value": "managed",
+              "label": "Managed"
+            }
+          ],
+          "help": "Execution intent; no deployment is started."
+        },
+        {
+          "path": "settings.language",
+          "label": "Language",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "typescript",
+              "label": "TypeScript"
+            },
+            {
+              "value": "javascript",
+              "label": "JavaScript"
+            },
+            {
+              "value": "python",
+              "label": "Python"
+            },
+            {
+              "value": "go",
+              "label": "Go"
+            },
+            {
+              "value": "java",
+              "label": "Java"
+            },
+            {
+              "value": "csharp",
+              "label": "C#"
+            },
+            {
+              "value": "rust",
+              "label": "Rust"
+            }
+          ],
+          "help": "Language intent; runtime support is reviewed in Generate."
+        },
+        {
+          "path": "settings.host",
+          "label": "Host",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare-workers",
+              "label": "Cloudflare Workers"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.execution",
+            "equals": "managed"
+          }
+        },
+        {
+          "path": "settings.exposure",
+          "label": "Exposure",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "internal",
+              "label": "Internal"
+            },
+            {
+              "value": "public",
+              "label": "Public"
+            }
+          ],
+          "help": "Network intent; this does not establish authentication or authorization."
+        },
+        {
+          "path": "settings.provider",
+          "label": "Payment provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "stripe",
+              "label": "Stripe"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        }
+      ],
+      "relationships": ["calls", "uses-resource", "publish", "consume"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Payment callbacks and project-specific billing policy require C4b; no plans, trials or entitlements are supplied."
+      ],
+      "id": "studio-billing",
+      "version": "1.0.0",
+      "kind": "billing",
+      "defaults": {
+        "kind": "billing",
+        "execution": "docker",
+        "language": "unspecified",
+        "exposure": "internal",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Redirect",
+      "creationName": "Redirect",
+      "description": "One public Redirect service with identity-backed lookup dependencies.",
+      "libraryGroup": "Presets",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "application",
+      "visual": {
+        "icon": "route",
+        "color": "api",
+        "shape": "service"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.execution",
+          "label": "Execution",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "docker",
+              "label": "Docker"
+            },
+            {
+              "value": "managed",
+              "label": "Managed"
+            }
+          ],
+          "help": "Execution intent; no deployment is started."
+        },
+        {
+          "path": "settings.language",
+          "label": "Language",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "typescript",
+              "label": "TypeScript"
+            },
+            {
+              "value": "javascript",
+              "label": "JavaScript"
+            },
+            {
+              "value": "python",
+              "label": "Python"
+            },
+            {
+              "value": "go",
+              "label": "Go"
+            },
+            {
+              "value": "java",
+              "label": "Java"
+            },
+            {
+              "value": "csharp",
+              "label": "C#"
+            },
+            {
+              "value": "rust",
+              "label": "Rust"
+            }
+          ],
+          "help": "Language intent; runtime support is reviewed in Generate."
+        },
+        {
+          "path": "settings.host",
+          "label": "Host",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare-workers",
+              "label": "Cloudflare Workers"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.execution",
+            "equals": "managed"
+          }
+        },
+        {
+          "path": "settings.exposure",
+          "label": "Exposure",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "internal",
+              "label": "Internal"
+            },
+            {
+              "value": "public",
+              "label": "Public"
+            }
+          ],
+          "help": "Network intent; this does not establish authentication or authorization."
+        },
+        {
+          "path": "settings.lookupStoreConnection",
+          "label": "Lookup store",
+          "group": "Connections",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "connection",
+            "resource": "database",
+            "direction": "outgoing"
+          }
+        },
+        {
+          "path": "settings.lookupCacheConnection",
+          "label": "Lookup cache",
+          "group": "Connections",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "connection",
+            "resource": "cache",
+            "direction": "outgoing"
+          }
+        }
+      ],
+      "relationships": ["calls", "uses-resource", "publish", "consume"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Redirect, short-code and expiry behavior require an exact template or project-owned C4b implementation."
+      ],
+      "id": "studio-redirect",
+      "version": "1.0.0",
+      "kind": "redirect",
+      "defaults": {
+        "kind": "redirect",
+        "execution": "docker",
+        "language": "unspecified",
+        "exposure": "public"
+      }
+    },
+    {
+      "name": "Notifications",
+      "creationName": "Notifications",
+      "description": "One notification application with email delivery integration intent.",
+      "libraryGroup": "Presets",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "application",
+      "visual": {
+        "icon": "mail",
+        "color": "api",
+        "shape": "service"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.execution",
+          "label": "Execution",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "docker",
+              "label": "Docker"
+            },
+            {
+              "value": "managed",
+              "label": "Managed"
+            }
+          ],
+          "help": "Execution intent; no deployment is started."
+        },
+        {
+          "path": "settings.language",
+          "label": "Language",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "typescript",
+              "label": "TypeScript"
+            },
+            {
+              "value": "javascript",
+              "label": "JavaScript"
+            },
+            {
+              "value": "python",
+              "label": "Python"
+            },
+            {
+              "value": "go",
+              "label": "Go"
+            },
+            {
+              "value": "java",
+              "label": "Java"
+            },
+            {
+              "value": "csharp",
+              "label": "C#"
+            },
+            {
+              "value": "rust",
+              "label": "Rust"
+            }
+          ],
+          "help": "Language intent; runtime support is reviewed in Generate."
+        },
+        {
+          "path": "settings.host",
+          "label": "Host",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare-workers",
+              "label": "Cloudflare Workers"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.execution",
+            "equals": "managed"
+          }
+        },
+        {
+          "path": "settings.exposure",
+          "label": "Exposure",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "internal",
+              "label": "Internal"
+            },
+            {
+              "value": "public",
+              "label": "Public"
+            }
+          ],
+          "help": "Network intent; this does not establish authentication or authorization."
+        },
+        {
+          "path": "settings.provider",
+          "label": "Delivery provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "resend",
+              "label": "Resend"
+            },
+            {
+              "value": "aws-ses",
+              "label": "Amazon SES"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        }
+      ],
+      "relationships": ["calls", "uses-resource", "publish", "consume"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Sender verification, email content and recipient rules remain integration/application work."
+      ],
+      "id": "studio-notification",
+      "version": "1.0.0",
+      "kind": "notification",
+      "defaults": {
+        "kind": "notification",
+        "execution": "docker",
+        "language": "unspecified",
+        "exposure": "internal",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Identity",
+      "creationName": "Identity",
+      "description": "One application integrating an existing identity provider.",
+      "libraryGroup": "Presets",
+      "creationScopes": ["c2", "c3-package"],
+      "classification": {
+        "kind": "Application"
+      },
+      "role": "application",
+      "visual": {
+        "icon": "lock",
+        "color": "api",
+        "shape": "service"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.execution",
+          "label": "Execution",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "docker",
+              "label": "Docker"
+            },
+            {
+              "value": "managed",
+              "label": "Managed"
+            }
+          ],
+          "help": "Execution intent; no deployment is started."
+        },
+        {
+          "path": "settings.language",
+          "label": "Language",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "typescript",
+              "label": "TypeScript"
+            },
+            {
+              "value": "javascript",
+              "label": "JavaScript"
+            },
+            {
+              "value": "python",
+              "label": "Python"
+            },
+            {
+              "value": "go",
+              "label": "Go"
+            },
+            {
+              "value": "java",
+              "label": "Java"
+            },
+            {
+              "value": "csharp",
+              "label": "C#"
+            },
+            {
+              "value": "rust",
+              "label": "Rust"
+            }
+          ],
+          "help": "Language intent; runtime support is reviewed in Generate."
+        },
+        {
+          "path": "settings.host",
+          "label": "Host",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare-workers",
+              "label": "Cloudflare Workers"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ],
+          "when": {
+            "path": "settings.execution",
+            "equals": "managed"
+          }
+        },
+        {
+          "path": "settings.exposure",
+          "label": "Exposure",
+          "group": "General",
+          "control": "select",
+          "choices": [
+            {
+              "value": "internal",
+              "label": "Internal"
+            },
+            {
+              "value": "public",
+              "label": "Public"
+            }
+          ],
+          "help": "Network intent; this does not establish authentication or authorization."
+        },
+        {
+          "path": "settings.provider",
+          "label": "Identity integration",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "oidc",
+              "label": "OpenID Connect"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        }
+      ],
+      "relationships": ["calls", "uses-resource", "publish", "consume"],
+      "c4bObligations": [
+        "Application behavior and packaging require a separately implemented exact runtime template.",
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Identity integration does not supply application authorization, role or tenant policy."
+      ],
+      "id": "studio-identity",
+      "version": "1.0.0",
+      "kind": "identity",
+      "defaults": {
+        "kind": "identity",
+        "execution": "docker",
+        "language": "unspecified",
+        "exposure": "internal",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Database",
+      "creationName": "Database",
+      "description": "One logical authoritative store; engine and provider are separate choices.",
+      "libraryGroup": "Resources",
+      "creationScopes": ["c2", "c3-service", "c3-package"],
+      "classification": {
+        "kind": "Data store"
+      },
+      "role": "data",
+      "visual": {
+        "icon": "database",
+        "color": "data",
+        "shape": "cylinder"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "owner",
+          "label": "Owner",
+          "group": "General",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "owner",
+            "required": false
+          }
+        },
+        {
+          "path": "settings.engine",
+          "label": "Engine",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "postgresql",
+              "label": "PostgreSQL"
+            },
+            {
+              "value": "mysql",
+              "label": "MySQL"
+            },
+            {
+              "value": "sqlite",
+              "label": "SQLite"
+            },
+            {
+              "value": "mongodb",
+              "label": "MongoDB"
+            }
+          ]
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            },
+            {
+              "value": "self-hosted",
+              "label": "Self-hosted"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "neon",
+              "label": "Neon"
+            },
+            {
+              "value": "supabase",
+              "label": "Supabase"
+            },
+            {
+              "value": "cloudflare-d1",
+              "label": "Cloudflare D1"
+            }
+          ],
+          "compatibility": "engine"
+        }
+      ],
+      "relationships": ["uses-resource"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Data models, queries and migrations require template-owned contracts or C4b; this selection provisions no store."
+      ],
+      "id": "studio-database",
+      "version": "1.0.0",
+      "kind": "database",
+      "defaults": {
+        "kind": "database",
+        "engine": "unspecified",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Cache",
+      "creationName": "Cache",
+      "description": "A logical cache with an optional technical TTL policy.",
+      "libraryGroup": "Resources",
+      "creationScopes": ["c2", "c3-service", "c3-package"],
+      "classification": {
+        "kind": "Data store"
+      },
+      "role": "data",
+      "visual": {
+        "icon": "archive",
+        "color": "data",
+        "shape": "stack"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "owner",
+          "label": "Owner",
+          "group": "General",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "owner",
+            "required": false
+          }
+        },
+        {
+          "path": "settings.engine",
+          "label": "Engine",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "redis-compatible",
+              "label": "Redis-compatible"
+            },
+            {
+              "value": "memcached",
+              "label": "Memcached"
+            }
+          ]
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            },
+            {
+              "value": "self-hosted",
+              "label": "Self-hosted"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "upstash",
+              "label": "Upstash"
+            }
+          ],
+          "compatibility": "engine"
+        },
+        {
+          "path": "settings.ttlSeconds",
+          "label": "TTL",
+          "group": "Options",
+          "control": "integer",
+          "min": 1,
+          "max": 604800,
+          "unit": "seconds",
+          "optional": true,
+          "help": "Cache policy, not user-data retention."
+        }
+      ],
+      "relationships": ["uses-resource"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Cache integration, invalidation and source-of-truth fallback require implementation."
+      ],
+      "id": "studio-cache",
+      "version": "1.0.0",
+      "kind": "cache",
+      "defaults": {
+        "kind": "cache",
+        "engine": "unspecified",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Queue or topic",
+      "creationName": "Queue",
+      "description": "One shared logical channel, owned explicitly and shown at C3.",
+      "libraryGroup": "Resources",
+      "creationScopes": ["c3-service", "c3-package"],
+      "classification": {
+        "kind": "Data store"
+      },
+      "role": "messaging",
+      "visual": {
+        "icon": "list",
+        "color": "messaging",
+        "shape": "channel"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "owner",
+          "label": "Owner",
+          "group": "General",
+          "control": "reference",
+          "optional": false,
+          "reference": {
+            "target": "owner",
+            "required": true
+          }
+        },
+        {
+          "path": "settings.mode",
+          "label": "Mode",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "work-queue",
+              "label": "Work queue"
+            },
+            {
+              "value": "topic",
+              "label": "Topic"
+            }
+          ]
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "self-hosted",
+              "label": "Self-hosted"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            },
+            {
+              "value": "cloudflare-queues",
+              "label": "Cloudflare Queues"
+            }
+          ]
+        },
+        {
+          "path": "settings.retentionSeconds",
+          "label": "Retention",
+          "group": "Options",
+          "control": "integer",
+          "min": 60,
+          "max": 1209600,
+          "unit": "seconds",
+          "optional": true,
+          "help": "Technical channel retention; provider feasibility remains unresolved."
+        }
+      ],
+      "relationships": ["publish", "consume"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Broker product, delivery guarantees, retries, deduplication and provisioning require implementation; no exactly-once guarantee is implied."
+      ],
+      "id": "studio-queue",
+      "version": "1.0.0",
+      "kind": "queue",
+      "defaults": {
+        "kind": "queue",
+        "mode": "work-queue",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "Object storage",
+      "creationName": "Object storage",
+      "description": "A logical byte store with explicit access intent.",
+      "libraryGroup": "Resources",
+      "creationScopes": ["c2", "c3-service", "c3-package"],
+      "classification": {
+        "kind": "Data store"
+      },
+      "role": "data",
+      "visual": {
+        "icon": "archive",
+        "color": "data",
+        "shape": "stack"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "owner",
+          "label": "Owner",
+          "group": "General",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "owner",
+            "required": false
+          }
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "self-hosted",
+              "label": "Self-hosted"
+            },
+            {
+              "value": "cloudflare-r2",
+              "label": "Cloudflare R2"
+            },
+            {
+              "value": "aws-s3",
+              "label": "Amazon S3"
+            },
+            {
+              "value": "google-cloud-storage",
+              "label": "Google Cloud Storage"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        },
+        {
+          "path": "settings.access",
+          "label": "Access",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "private",
+              "label": "Private"
+            },
+            {
+              "value": "public",
+              "label": "Public"
+            }
+          ]
+        }
+      ],
+      "relationships": ["uses-resource", "origin"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Access intent does not create buckets, signing behavior or an upload workflow."
+      ],
+      "id": "studio-object-store",
+      "version": "1.0.0",
+      "kind": "object-store",
+      "defaults": {
+        "kind": "object-store",
+        "provider": "unspecified",
+        "access": "private"
+      }
+    },
+    {
+      "name": "Search index",
+      "creationName": "Search index",
+      "description": "A logical derived search index with engine and hosting intent.",
+      "libraryGroup": "Resources",
+      "creationScopes": ["c2", "c3-service", "c3-package"],
+      "classification": {
+        "kind": "Data store"
+      },
+      "role": "data",
+      "visual": {
+        "icon": "search",
+        "color": "data",
+        "shape": "cylinder"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "owner",
+          "label": "Owner",
+          "group": "General",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "owner",
+            "required": false
+          }
+        },
+        {
+          "path": "settings.engine",
+          "label": "Engine",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "opensearch",
+              "label": "OpenSearch"
+            },
+            {
+              "value": "elasticsearch",
+              "label": "Elasticsearch"
+            },
+            {
+              "value": "meilisearch",
+              "label": "Meilisearch"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            },
+            {
+              "value": "self-hosted",
+              "label": "Self-hosted"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            }
+          ],
+          "compatibility": "engine",
+          "help": "Hosting/integration intent; this is not managed engine compatibility certification."
+        }
+      ],
+      "relationships": ["uses-resource"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Index definitions, indexing, query behavior and relevance require implementation."
+      ],
+      "id": "studio-search",
+      "version": "1.0.0",
+      "kind": "search",
+      "defaults": {
+        "kind": "search",
+        "engine": "unspecified",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "CDN",
+      "creationName": "CDN",
+      "description": "External content delivery with an explicit existing origin.",
+      "libraryGroup": "Integrations",
+      "creationScopes": ["c2", "c3-service", "c3-package"],
+      "classification": {
+        "kind": "External system"
+      },
+      "role": "integration",
+      "visual": {
+        "icon": "world",
+        "color": "external",
+        "shape": "integration"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare",
+              "label": "Cloudflare"
+            },
+            {
+              "value": "aws-cloudfront",
+              "label": "Amazon CloudFront"
+            },
+            {
+              "value": "google-cloud-cdn",
+              "label": "Google Cloud CDN"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        },
+        {
+          "path": "settings.origin",
+          "label": "Origin",
+          "group": "Connections",
+          "control": "reference",
+          "optional": true,
+          "reference": {
+            "target": "origin",
+            "kinds": ["application", "object-store"]
+          }
+        }
+      ],
+      "relationships": ["origin"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Origin wiring, domains, TLS and cache rules are not provisioned."
+      ],
+      "id": "studio-cdn",
+      "version": "1.0.0",
+      "kind": "cdn",
+      "defaults": {
+        "kind": "cdn",
+        "provider": "unspecified"
+      }
+    },
+    {
+      "name": "External API",
+      "creationName": "External API",
+      "description": "An external integration boundary, named for the actual provider when known.",
+      "libraryGroup": "Integrations",
+      "creationScopes": ["c2", "c3-service", "c3-package"],
+      "classification": {
+        "kind": "External system"
+      },
+      "role": "integration",
+      "visual": {
+        "icon": "plug",
+        "color": "external",
+        "shape": "integration"
+      },
+      "fields": [
+        {
+          "path": "element.name",
+          "label": "Name",
+          "group": "General",
+          "control": "text",
+          "min": 1,
+          "max": 120
+        },
+        {
+          "path": "element.description",
+          "label": "Purpose",
+          "group": "General",
+          "control": "text",
+          "min": 0,
+          "max": 240,
+          "optional": true
+        },
+        {
+          "path": "settings.category",
+          "label": "Category",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "generic",
+              "label": "Generic"
+            },
+            {
+              "value": "payments",
+              "label": "Payments"
+            },
+            {
+              "value": "email",
+              "label": "Email"
+            },
+            {
+              "value": "identity",
+              "label": "Identity"
+            },
+            {
+              "value": "recognition",
+              "label": "Recognition"
+            },
+            {
+              "value": "workflow",
+              "label": "Workflow"
+            }
+          ]
+        },
+        {
+          "path": "settings.provider",
+          "label": "Provider",
+          "group": "Options",
+          "control": "select",
+          "choices": [
+            {
+              "value": "unspecified",
+              "label": "Unspecified"
+            },
+            {
+              "value": "cloudflare",
+              "label": "Cloudflare"
+            },
+            {
+              "value": "aws",
+              "label": "AWS"
+            },
+            {
+              "value": "google-cloud",
+              "label": "Google Cloud"
+            },
+            {
+              "value": "external",
+              "label": "External"
+            }
+          ]
+        }
+      ],
+      "relationships": ["calls"],
+      "c4bObligations": [
+        "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied.",
+        "Request/response mapping, callbacks and failure behavior remain explicit C4b integration work."
+      ],
+      "id": "studio-external-api",
+      "version": "1.0.0",
+      "kind": "external-api",
+      "defaults": {
+        "kind": "external-api",
+        "category": "generic",
+        "provider": "unspecified"
+      }
+    }
+  ],
+  "libraryGroups": ["Services", "Resources", "Integrations", "Presets", "Examples"],
+  "providers": {
+    "unspecified": {
+      "id": "unspecified",
+      "label": "Unspecified",
+      "identity": "unspecified",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Select and implement an integration when required."
+    },
+    "external": {
+      "id": "external",
+      "label": "External",
+      "identity": "external",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "self-hosted": {
+      "id": "self-hosted",
+      "label": "Self-hosted",
+      "identity": "hosting",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "aws": {
+      "id": "aws",
+      "label": "AWS",
+      "identity": "ecosystem",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "google-cloud": {
+      "id": "google-cloud",
+      "label": "Google Cloud",
+      "identity": "ecosystem",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "cloudflare": {
+      "id": "cloudflare",
+      "label": "Cloudflare",
+      "identity": "ecosystem",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "cloudflare-workers": {
+      "id": "cloudflare-workers",
+      "label": "Cloudflare Workers",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "stripe": {
+      "id": "stripe",
+      "label": "Stripe",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "resend": {
+      "id": "resend",
+      "label": "Resend",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "aws-ses": {
+      "id": "aws-ses",
+      "label": "Amazon SES",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "oidc": {
+      "id": "oidc",
+      "label": "OpenID Connect",
+      "identity": "integration",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "neon": {
+      "id": "neon",
+      "label": "Neon",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "supabase": {
+      "id": "supabase",
+      "label": "Supabase",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "cloudflare-d1": {
+      "id": "cloudflare-d1",
+      "label": "Cloudflare D1",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "upstash": {
+      "id": "upstash",
+      "label": "Upstash",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "cloudflare-queues": {
+      "id": "cloudflare-queues",
+      "label": "Cloudflare Queues",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "cloudflare-r2": {
+      "id": "cloudflare-r2",
+      "label": "Cloudflare R2",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "aws-s3": {
+      "id": "aws-s3",
+      "label": "Amazon S3",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "google-cloud-storage": {
+      "id": "google-cloud-storage",
+      "label": "Google Cloud Storage",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "aws-cloudfront": {
+      "id": "aws-cloudfront",
+      "label": "Amazon CloudFront",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    },
+    "google-cloud-cdn": {
+      "id": "google-cloud-cdn",
+      "label": "Google Cloud CDN",
+      "identity": "product",
+      "artwork": "capability-symbol",
+      "c4bObligation": "Provider adapters, credentials and product-specific integration remain C4b until an exact runtime and evidence are supplied."
+    }
+  },
+  "compatibility": {
+    "database": {
+      "unspecified": ["unspecified", "external"],
+      "postgresql": [
+        "unspecified",
+        "self-hosted",
+        "aws",
+        "google-cloud",
+        "external",
+        "neon",
+        "supabase"
+      ],
+      "mysql": ["unspecified", "self-hosted", "aws", "google-cloud", "external"],
+      "sqlite": ["unspecified", "self-hosted", "cloudflare-d1", "external"],
+      "mongodb": ["unspecified", "self-hosted", "external"]
+    },
+    "cache": {
+      "unspecified": ["unspecified", "external"],
+      "redis-compatible": [
+        "unspecified",
+        "self-hosted",
+        "aws",
+        "google-cloud",
+        "external",
+        "upstash"
+      ],
+      "memcached": ["unspecified", "self-hosted", "aws", "google-cloud", "external"]
+    },
+    "search": {
+      "unspecified": ["unspecified", "external"],
+      "opensearch": ["unspecified", "self-hosted", "aws", "google-cloud", "external"],
+      "elasticsearch": ["unspecified", "self-hosted", "aws", "google-cloud", "external"],
+      "meilisearch": ["unspecified", "self-hosted", "aws", "google-cloud", "external"],
+      "external": ["unspecified", "self-hosted", "aws", "google-cloud", "external"]
+    }
+  },
+  "packagePreset": {
+    "id": "studio-service-worker",
+    "version": "1.0.0",
+    "name": "Service and worker",
+    "creationName": "Service and worker",
+    "description": "An independent application and worker sharing one package-owned work queue.",
+    "libraryGroup": "Presets",
+    "creationScopes": ["c2"],
+    "members": ["service", "worker"],
+    "resources": ["queue"],
+    "visual": {
+      "icon": "building",
+      "color": "api",
+      "shape": "box"
+    },
+    "c4bObligations": [
+      "Application/worker behavior, broker integration and delivery guarantees require implementation. The package is a grouping, not another deployment."
+    ]
+  },
+  "packageCommand": {
+    "type": "create",
+    "system": {
+      "name": "UX03 package",
+      "description": "Owned public verification"
+    },
+    "elements": [
+      {
+        "id": "app",
+        "name": "Microservice",
+        "settings": {
+          "kind": "service",
+          "execution": "docker",
+          "language": "unspecified",
+          "exposure": "internal"
+        }
+      },
+      {
+        "id": "worker",
+        "name": "Worker service",
+        "settings": {
+          "kind": "worker",
+          "execution": "docker",
+          "language": "unspecified"
+        }
+      },
+      {
+        "id": "jobs",
+        "name": "Work queue",
+        "settings": {
+          "kind": "queue",
+          "mode": "work-queue",
+          "provider": "unspecified"
+        },
+        "owner": {
+          "kind": "package",
+          "id": "services"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "publish",
+        "from": "app",
+        "to": "jobs",
+        "kind": "depends-on",
+        "planned": {
+          "label": "Publishes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        },
+        "settings": {
+          "channelUse": "publish"
+        }
+      },
+      {
+        "id": "consume",
+        "from": "jobs",
+        "to": "worker",
+        "kind": "depends-on",
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        },
+        "settings": {
+          "channelUse": "consume"
+        }
+      }
+    ],
+    "package": {
+      "id": "services",
+      "name": "Service and worker",
+      "description": "",
+      "members": ["app", "worker"],
+      "preset": {
+        "id": "studio-service-worker",
+        "version": "1.0.0"
+      }
+    }
+  },
+  "relationshipFields": [
+    {
+      "path": "planned.label",
+      "label": "Action",
+      "group": "General",
+      "control": "text",
+      "min": 1,
+      "max": 60
+    },
+    {
+      "path": "planned.protocol",
+      "label": "Protocol",
+      "group": "General",
+      "control": "select",
+      "choices": [
+        {
+          "value": "Unspecified",
+          "label": "Unspecified"
+        },
+        {
+          "value": "HTTPS",
+          "label": "HTTPS"
+        },
+        {
+          "value": "HTTP",
+          "label": "HTTP"
+        },
+        {
+          "value": "gRPC",
+          "label": "gRPC"
+        },
+        {
+          "value": "WebSocket",
+          "label": "WebSocket"
+        },
+        {
+          "value": "SSE",
+          "label": "SSE"
+        },
+        {
+          "value": "SQL",
+          "label": "SQL"
+        },
+        {
+          "value": "Redis",
+          "label": "Redis"
+        },
+        {
+          "value": "Messaging",
+          "label": "Messaging"
+        },
+        {
+          "value": "Native binding",
+          "label": "Native binding"
+        }
+      ]
+    },
+    {
+      "path": "planned.interaction",
+      "label": "Interaction",
+      "group": "General",
+      "control": "select",
+      "choices": [
+        {
+          "value": "Request / response",
+          "label": "Request / response"
+        },
+        {
+          "value": "Asynchronous",
+          "label": "Asynchronous"
+        },
+        {
+          "value": "Streaming",
+          "label": "Streaming"
+        }
+      ]
+    },
+    {
+      "path": "planned.security",
+      "label": "Access",
+      "group": "Options",
+      "control": "select",
+      "choices": [
+        {
+          "value": "Service identity",
+          "label": "Service identity"
+        },
+        {
+          "value": "User identity",
+          "label": "User identity"
+        },
+        {
+          "value": "Public",
+          "label": "Public"
+        },
+        {
+          "value": "Private network",
+          "label": "Private network"
+        }
+      ],
+      "help": "Intent; no authorization or secret is supplied."
+    },
+    {
+      "path": "settings.timeoutMs",
+      "label": "Timeout",
+      "group": "Options",
+      "control": "integer",
+      "min": 1,
+      "max": 300000,
+      "unit": "ms",
+      "optional": true,
+      "applicability": "request-policy"
+    },
+    {
+      "path": "settings.retry.mode",
+      "label": "Retry",
+      "group": "Options",
+      "control": "select",
+      "choices": [
+        {
+          "value": "unspecified",
+          "label": "Unspecified"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        }
+      ],
+      "applicability": "request-policy",
+      "help": "Attempts are additional attempts; unsafe operations need implementation review."
+    },
+    {
+      "path": "settings.retry.attempts",
+      "label": "Attempts",
+      "group": "Options",
+      "control": "integer",
+      "min": 1,
+      "max": 10,
+      "applicability": "fixed-retry"
+    },
+    {
+      "path": "settings.retry.delayMs",
+      "label": "Delay",
+      "group": "Options",
+      "control": "integer",
+      "min": 1,
+      "max": 60000,
+      "unit": "ms",
+      "applicability": "fixed-retry"
+    },
+    {
+      "path": "settings.channelUse",
+      "label": "Channel role",
+      "group": "Options",
+      "control": "select",
+      "choices": [
+        {
+          "value": "publish",
+          "label": "Publish"
+        },
+        {
+          "value": "consume",
+          "label": "Consume"
+        }
+      ],
+      "applicability": "queue"
+    }
+  ],
+  "packageFields": [
+    {
+      "path": "package.name",
+      "label": "Name",
+      "group": "General",
+      "control": "text",
+      "min": 1,
+      "max": 120
+    },
+    {
+      "path": "package.description",
+      "label": "Purpose",
+      "group": "General",
+      "control": "text",
+      "min": 0,
+      "max": 240,
+      "optional": true
+    },
+    {
+      "path": "package.members",
+      "label": "Members",
+      "group": "Connections",
+      "control": "members",
+      "min": 2,
+      "max": 50,
+      "target": "application"
+    }
+  ],
+  "contextFields": [
+    {
+      "path": "name",
+      "label": "Name",
+      "group": "General",
+      "control": "text",
+      "min": 1,
+      "max": 120
+    },
+    {
+      "path": "description",
+      "label": "Purpose",
+      "group": "General",
+      "control": "text",
+      "min": 0,
+      "max": 240,
+      "optional": true
+    }
+  ],
+  "contextRelationshipFields": [
+    {
+      "path": "description",
+      "label": "Action",
+      "group": "General",
+      "control": "text",
+      "min": 1,
+      "max": 60
+    }
+  ]
+}

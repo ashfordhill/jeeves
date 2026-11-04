@@ -289,6 +289,24 @@ export const studioExternalApiSettingsSchema = z.strictObject({
   provider: studioExternalProviderSchema,
 });
 
+/** The catalog reuses these exact validators; it never reflects arbitrary legacy config. */
+export const studioSettingsSchemas = {
+  service: studioServiceSettingsSchema,
+  browser: studioBrowserSettingsSchema,
+  worker: studioWorkerSettingsSchema,
+  billing: studioBillingSettingsSchema,
+  redirect: studioRedirectSettingsSchema,
+  notification: studioNotificationSettingsSchema,
+  identity: studioIdentitySettingsSchema,
+  database: studioDatabaseSettingsSchema,
+  cache: studioCacheSettingsSchema,
+  queue: studioQueueSettingsSchema,
+  "object-store": studioObjectStoreSettingsSchema,
+  search: studioSearchSettingsSchema,
+  cdn: studioCdnSettingsSchema,
+  "external-api": studioExternalApiSettingsSchema,
+} as const;
+
 export const studioSettingsSchema = z.discriminatedUnion("kind", [
   studioServiceSettingsSchema,
   studioBrowserSettingsSchema,

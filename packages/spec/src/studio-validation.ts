@@ -3,17 +3,18 @@ import { containerClassification } from "./architecture-choices.ts";
 import { backendDeclarations } from "./backend-model.ts";
 import type { DesignDocument, Element } from "./design.ts";
 import { type Finding, type FindingCode, finding } from "./findings.ts";
+import { studioDefinitions } from "./studio-definitions.ts";
 import { legacyStudioKind } from "./studio-legacy.ts";
 import {
   type StudioKind,
   studioAccessSchema,
   studioActionSchema,
   studioAllowsRequestPolicies,
-  studioApplicationKinds,
   studioDefinitionStatus,
   studioModelSchema,
   studioProtocolSchema,
 } from "./studio-model.ts";
+import { resolveStudioPackagePreset } from "./studio-presets.ts";
 
 /** Package identities cannot shadow any existing graph or architecture declaration. */
 function occupiedDesignIds(design: DesignDocument): Set<string> {
@@ -94,11 +95,11 @@ export function validateStudio(design: DesignDocument): Finding[] {
           `Package member ${id} must be an application; resources are owned separately.`,
         );
     });
-    if (item.preset)
+    if (item.preset && !resolveStudioPackagePreset(item.preset))
       report(
         "NEEDS_TEMPLATE",
         [...path, "preset"],
-        `Package preset ${item.preset.id}@${item.preset.version} requires an exact local definition resolver.`,
+        `Package preset ${item.preset.id}@${item.preset.version} has no exact local definition; no version substitution is permitted.`,
       );
   });
   studio.elements.forEach((binding, index) => {
@@ -117,11 +118,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
           [...path, "element"],
           `Studio element ${element.id} must have template null, empty config/attachments and no legacy planned capability; conversion is unsupported.`,
         );
-      const expected = studioApplicationKinds.some((value) => value === binding.settings.kind)
-        ? "Application"
-        : ["cdn", "external-api"].includes(binding.settings.kind)
-          ? "External system"
-          : "Data store";
+      const expected = studioDefinitions[binding.settings.kind].classification.kind;
       if (element.classification?.kind !== expected)
         invalid(
           [...path, "element"],

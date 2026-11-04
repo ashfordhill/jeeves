@@ -1,0 +1,200 @@
+{
+  "result": "passed",
+  "startingCommit": "1989eb1a874e4474cd21e03c4314974b5721861a",
+  "startingTrackedFiles": 1736,
+  "unchangedTrackedFiles": 1730,
+  "scopedExistingChanges": [
+    {
+      "path": "CATALOG.md",
+      "beforeSha256": "d84d309a363fbd567987c64fe41404a1d962dea5ebaf8d1fc5cef544c7fc12e0",
+      "afterSha256": "6a2a362b57af0ce0df643334e47b1793710f4b613c5742eed65cf8c94f95f68f"
+    },
+    {
+      "path": "docs/handoff.md",
+      "beforeSha256": "cf19cb034b3792d45fd6556550969dbeccb804764475632dacf16b7403081ad8",
+      "afterSha256": "3f8177554fa28ce8e117ec54760106a2414beb8e36b823e6151b34f1b6e20198"
+    },
+    {
+      "path": "packages/spec/src/index.ts",
+      "beforeSha256": "6114ffa3b7124822466b7e571bee1eb911dd1946215f6d9899bc7e3ea38abaf7",
+      "afterSha256": "0f027890c347ccec105cc6f9601e35eda5d009cd98453af54200080fc1f039cf"
+    },
+    {
+      "path": "packages/spec/src/studio-model.ts",
+      "beforeSha256": "0c519092cc0247a9ecb52859692655778b1766dc571b1743b7048c64c77fe8c8",
+      "afterSha256": "faed3d23ca9d3358ad6e9d747c13da82d21b14157e62a8e5a45febd0ab7ce006"
+    },
+    {
+      "path": "packages/spec/src/studio-operations.ts",
+      "beforeSha256": "363463109f9ac3f449a81c1564dcba96f1e59b1ad25eb083a4f36a8e95d6cd87",
+      "afterSha256": "7814df0dd8b02bbc133c84ee6ab417ecce398d7dbd40d2c6ddc87a1c415971eb"
+    },
+    {
+      "path": "packages/spec/src/studio-validation.ts",
+      "beforeSha256": "703262dab3fa9e21df79727d08026f058e9198d326833b64b49539f77e92c5f7",
+      "afterSha256": "f5331675235547f2d07cc79c7afeb32010390b0c5749e35342181ab59919bac1"
+    }
+  ],
+  "feedbackPairs": [
+    {
+      "source": ".jeeves-feedback/PzufI5UjUN.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/PzufI5UjUN.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/UX-Feedback.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/UX-Feedback.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-1.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-1.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-2.md",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/JEEVES-2.md",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.excalidraw",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.excalidraw",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.svg",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/editor-1.svg",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-2.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image-2.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/archive/image.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/archive/image.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/chrome_FlmBak2gUQ.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_FlmBak2gUQ.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/chrome_PjQUjhqJA5.gif",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/chrome_PjQUjhqJA5.gif",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-1.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-1.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-2.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-2.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-3.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-3.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-4.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-4.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-5.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-5.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-6.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-6.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image-7.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image-7.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/image.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/image.png",
+      "unchanged": true
+    },
+    {
+      "source": ".jeeves-feedback/uses-tenant-product-apis.png",
+      "copy": ".docs/visual-improvements/2026-11-03-ux-review/sources/uses-tenant-product-apis.png",
+      "unchanged": true
+    }
+  ],
+  "publicFixtureFilesUnchanged": 7,
+  "frozenBenchmarkFilesUnchanged": [
+    "benchmarks/README.md",
+    "benchmarks/discourse-core/v1/README.md",
+    "benchmarks/discourse-core/v1/contracts.openapi.yaml",
+    "benchmarks/discourse-core/v1/fixtures.json",
+    "benchmarks/discourse-core/v1/fixtures.ts",
+    "benchmarks/discourse-core/v1/hello.txt",
+    "benchmarks/discourse-core/v1/hooks.contracts.json",
+    "benchmarks/discourse-core/v1/hooks.examples.json",
+    "benchmarks/discourse-core/v1/hooks.md",
+    "benchmarks/discourse-core/v1/integrity.json",
+    "benchmarks/discourse-core/v1/manifest.json",
+    "benchmarks/discourse-core/v1/requirements.json",
+    "benchmarks/discourse-core/v1/source-map.json",
+    "benchmarks/protocol/v1/README.md",
+    "benchmarks/protocol/v1/components.openapi.json",
+    "benchmarks/protocol/v1/synthetic.json",
+    "benchmarks/vendure-core/v1/README.md",
+    "benchmarks/vendure-core/v1/callbacks.contracts.json",
+    "benchmarks/vendure-core/v1/callbacks.examples.json",
+    "benchmarks/vendure-core/v1/contracts.openapi.yaml",
+    "benchmarks/vendure-core/v1/fixtures.json",
+    "benchmarks/vendure-core/v1/fixtures.ts",
+    "benchmarks/vendure-core/v1/hooks.contracts.json",
+    "benchmarks/vendure-core/v1/hooks.examples.json",
+    "benchmarks/vendure-core/v1/hooks.md",
+    "benchmarks/vendure-core/v1/integrity.json",
+    "benchmarks/vendure-core/v1/manifest.json",
+    "benchmarks/vendure-core/v1/providers.contracts.json",
+    "benchmarks/vendure-core/v1/providers.examples.json",
+    "benchmarks/vendure-core/v1/providers.md",
+    "benchmarks/vendure-core/v1/receipt.txt",
+    "benchmarks/vendure-core/v1/requirements.json",
+    "benchmarks/vendure-core/v1/source-map.json",
+    "benchmarks/zammad-core/v1/.gitattributes",
+    "benchmarks/zammad-core/v1/README.md",
+    "benchmarks/zammad-core/v1/contracts.openapi.yaml",
+    "benchmarks/zammad-core/v1/fixtures.json",
+    "benchmarks/zammad-core/v1/fixtures.ts",
+    "benchmarks/zammad-core/v1/hooks.contracts.json",
+    "benchmarks/zammad-core/v1/hooks.examples.json",
+    "benchmarks/zammad-core/v1/hooks.md",
+    "benchmarks/zammad-core/v1/inbound.eml",
+    "benchmarks/zammad-core/v1/integrity.json",
+    "benchmarks/zammad-core/v1/manifest.json",
+    "benchmarks/zammad-core/v1/private.txt",
+    "benchmarks/zammad-core/v1/requirements.json",
+    "benchmarks/zammad-core/v1/source-map.json",
+    "benchmarks/zammad-core/v1/sources.examples.json"
+  ],
+  "earlierHandoffBytesPreserved": true,
+  "handoffPrefixSha256": "cf19cb034b3792d45fd6556550969dbeccb804764475632dacf16b7403081ad8",
+  "siblingRepositoryEdits": 0,
+  "unrelatedFeedbackPreserved": true
+}

@@ -9017,3 +9017,77 @@ fixture, snapshot, source factory or benchmark changed. Unit/E2E/template suites
 including `pnpm check`, remain deferred. No new studio projection/catalog/UI or runtime outcome is
 claimed. UX02a/UX02b/UX02c are complete within their model/edit/exchange boundary. UX03 owns finite
 catalog descriptors and is assigned separately by the coordinator; this worker does not advance.
+
+## 2026-11-04 — UX03: finite catalog definitions and provider compatibility (complete)
+
+Executed UX03 only on primary main from UX02c commit
+`1989eb1a874e4474cd21e03c4314974b5721861a`, under the owner's authorized sequential fresh-worker
+batch. Read AGENTS, PLAN §1–§15, the latest handoff, studio plan/UX03 assignment, configuration
+matrix/model contract, final owner decisions, C4 guidance, current planning catalog, registry
+contracts and CATALOG. No delegation, branch/worktree, sibling edit, provider/external-agent
+execution, application generation, old factory/benchmark repair or resumed P73/backend work.
+
+Added all 14 immutable `studio-<kind>@1.0.0` definitions with exact lookup, existing strict settings
+validators, typed creation defaults, explicit field paths/controls/choices/bounds/conditions,
+capability role/icons/theme colors, classification defaults and creation scopes. Services include
+Microservice, Browser app and Worker service; named Billing/Redirect/Notifications/Identity presets
+retain actual application semantics. Resources/integrations expose only their matrix options.
+Queues are C3-only and require an explicit owner. The runtime-support property remains absent;
+no definition is registered as an executable template. CATALOG now describes this model vocabulary
+and its implementation/UI/runtime boundary without upgrading availability.
+
+Provider identities distinguish named products, generic cloud ecosystems, self-hosting, integration
+and unspecified/external intent. Provider choices use UX02's exact finite compatibility tables;
+unspecified engines expose only unspecified/external. Pure pending-edit normalization clears an
+invalidated provider, removes managed Host on Docker and removes inapplicable browser delivery
+fields. Repeating an existing variant preserves its current values. Provider changes perform no
+graph mutation or I/O. Descriptors produce only applicable nonempty General/Options/Connections
+groups; scalar settings never manufacture boxes. All optional numbers/references stay absent until
+selected. Relationship/package/context descriptors retain their single canonical typed destinations.
+The existing explicit legacy mapping and old planning definitions stay intact; unknown families
+receive the neutral capability fallback without settings, conversion or provider inference.
+
+Added `studio-service-worker@1.0.0`, a small immutable package preset. Six caller-allocated distinct
+IDs expand through the existing shared command into two real applications, one package-owned queue
+and two explicit asynchronous publish/consume connections. Settings belong to the member services,
+not the grouping. Known preset provenance now resolves exactly in validation; unknown versions keep
+a readiness gap. Creation and validation reuse the definition classification defaults. The existing
+server/compiler studio-generation guard continues to block the entire design.
+
+Evidence: `docs/evidence/studio-ux/UX03/`. One-off model observations match each schema property to
+its descriptor, cover 34 settings variants, 365 select values, 50 numeric boundary/decimal checks and
+83 engine/provider combinations. Immutable defaults, exact-version lookup, no runtime registrations,
+conditional/empty groups, hidden-field cleanup, neutral legacy fallback, atomic package expansion
+and portable round-trip pass. Serialized metadata/defaults and the complete public preset command
+are recorded. Direct API inspection records 21 successful owned saves, all 14 kinds with canonical
+name/purpose, ownership and reference fields, connection policy/channel values, reload and undo/redo.
+Provider selection preserves graph structure; an invalid combination returns 422 with state/revision
+unchanged. Provider/engine, Docker and browser transitions preserve only applicable settings.
+The sole disposable project was deleted with 204 and verified 404. All 13 pre-existing project
+semantic/layout hashes and revisions are exact throughout API and browser observations.
+
+Direct browser inspection covers existing QRWTY C2/API C3 at 1440×900 and 1280×800: four views retain
+16/22 cards and 21/39 labels. Existing saved cameras still clip content as in UX01. A temporary
+verification overlay imports the actual definitions and existing Tabler component; all 14 cards,
+icons and serialized defaults fit at both sizes and were visually inspected. It is evidence only,
+not the later product Library/forms UI. A read-only guard installed before page creation blocks all
+writes. None was attempted; no blocked request, page/HTTP/console error occurred. Two existing React
+Flow attribution warnings are recorded. Nine old factories retain their exact UX01 design/layout
+hashes; legacy v1 and unknown definition versions round-trip unchanged without substitution.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with Node PATH prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing >500 kB chunk advisory.
+- One-off model/API/compatibility/browser observations, formatting, preservation and staged Git
+  whitespace passed. All seven UX01 fixtures, 21 source/copy feedback pairs, 48 frozen benchmark
+  files and earlier handoff bytes are preserved; `.jeeves-feedback/` stays unrelated/untracked.
+
+Routine inspection corrections: use the Vite CommonJS default export for React DOM and compact the
+verification-only preview grid to fit the smaller desktop. Initial failed setup logs are preserved.
+No product/UI change was needed for those corrections. No existing test fixture, maintained suite
+or snapshot was changed; unit/E2E/template maintenance/execution and `pnpm check` remain deferred.
+No new projection, runtime, provider integration or generated application is claimed. UX03 is
+complete within its finite definition/catalog boundary; UX04a owns C1/C2/C3 projection identities.
+This worker stops after the scoped UX03 local commit and does not advance the queue.

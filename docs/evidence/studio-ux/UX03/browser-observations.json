@@ -1,0 +1,781 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "allProjectsReadOnly": true,
+  "blocked": [],
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "React Flow: It seems like you are hiding the attribution. Please only do this when you are subscribed to React Flow Pro: https://reactflow.dev/remove-attr\n%cYou can ignore this warning if you are subscribed. font-style: italic;"
+    },
+    {
+      "type": "warning",
+      "text": "React Flow: It seems like you are hiding the attribution. Please only do this when you are subscribed to React Flow Pro: https://reactflow.dev/remove-attr\n%cYou can ignore this warning if you are subscribed. font-style: italic;"
+    }
+  ],
+  "pageErrors": [],
+  "httpErrors": [],
+  "views": [
+    {
+      "level": "containers",
+      "width": 1440,
+      "height": 900,
+      "cards": 16,
+      "labels": 21
+    },
+    {
+      "level": "components",
+      "width": 1440,
+      "height": 900,
+      "cards": 22,
+      "labels": 39
+    },
+    {
+      "level": "containers",
+      "width": 1280,
+      "height": 800,
+      "cards": 16,
+      "labels": 21
+    },
+    {
+      "level": "components",
+      "width": 1280,
+      "height": 800,
+      "cards": 22,
+      "labels": 39
+    }
+  ],
+  "previews": [
+    {
+      "width": 1440,
+      "height": 900,
+      "definitions": 14,
+      "serializedDefaults": [
+        {
+          "ref": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-browser",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "browser",
+            "delivery": "standalone",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "execution": "docker",
+            "language": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-billing",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "billing",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-redirect",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "redirect",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "public"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-notification",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "notification",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-object-store",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "object-store",
+            "provider": "unspecified",
+            "access": "private"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-search",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "search",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-cdn",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cdn",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-external-api",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "external-api",
+            "category": "generic",
+            "provider": "unspecified"
+          }
+        }
+      ],
+      "databaseInitialProviders": [
+        {
+          "value": "unspecified",
+          "label": "Unspecified"
+        },
+        {
+          "value": "external",
+          "label": "External"
+        }
+      ],
+      "queueCreationScopes": ["c3-service", "c3-package"],
+      "renderedWithExistingTablerComponent": true,
+      "implementation": "Disposable browser overlay, no repository UI implementation or project write.",
+      "geometry": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "scrollHeight": 900,
+        "clientHeight": 900,
+        "cards": [
+          {
+            "kind": "service",
+            "icons": 1,
+            "x": 24,
+            "y": 89.78125,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "browser",
+            "icons": 1,
+            "x": 304.390625,
+            "y": 89.78125,
+            "width": 270.40625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "worker",
+            "icons": 1,
+            "x": 584.796875,
+            "y": 89.78125,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "billing",
+            "icons": 1,
+            "x": 865.1875,
+            "y": 89.78125,
+            "width": 270.40625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "redirect",
+            "icons": 1,
+            "x": 1145.59375,
+            "y": 89.78125,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "notification",
+            "icons": 1,
+            "x": 24,
+            "y": 277.21875,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "identity",
+            "icons": 1,
+            "x": 304.390625,
+            "y": 277.21875,
+            "width": 270.40625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "database",
+            "icons": 1,
+            "x": 584.796875,
+            "y": 277.21875,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "cache",
+            "icons": 1,
+            "x": 865.1875,
+            "y": 277.21875,
+            "width": 270.40625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "queue",
+            "icons": 1,
+            "x": 1145.59375,
+            "y": 277.21875,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "object-store",
+            "icons": 1,
+            "x": 24,
+            "y": 464.65625,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "search",
+            "icons": 1,
+            "x": 304.390625,
+            "y": 464.65625,
+            "width": 270.40625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "cdn",
+            "icons": 1,
+            "x": 584.796875,
+            "y": 464.65625,
+            "width": 270.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "external-api",
+            "icons": 1,
+            "x": 865.1875,
+            "y": 464.65625,
+            "width": 270.40625,
+            "height": 177.4375,
+            "inside": true
+          }
+        ]
+      }
+    },
+    {
+      "width": 1280,
+      "height": 800,
+      "definitions": 14,
+      "serializedDefaults": [
+        {
+          "ref": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-browser",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "browser",
+            "delivery": "standalone",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "execution": "docker",
+            "language": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-billing",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "billing",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-redirect",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "redirect",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "public"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-notification",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "notification",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "execution": "docker",
+            "language": "unspecified",
+            "exposure": "internal",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-object-store",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "object-store",
+            "provider": "unspecified",
+            "access": "private"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-search",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "search",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-cdn",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cdn",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "ref": {
+            "id": "studio-external-api",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "external-api",
+            "category": "generic",
+            "provider": "unspecified"
+          }
+        }
+      ],
+      "databaseInitialProviders": [
+        {
+          "value": "unspecified",
+          "label": "Unspecified"
+        },
+        {
+          "value": "external",
+          "label": "External"
+        }
+      ],
+      "queueCreationScopes": ["c3-service", "c3-package"],
+      "renderedWithExistingTablerComponent": true,
+      "implementation": "Disposable browser overlay, no repository UI implementation or project write.",
+      "geometry": {
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "scrollHeight": 800,
+        "clientHeight": 800,
+        "cards": [
+          {
+            "kind": "service",
+            "icons": 1,
+            "x": 24,
+            "y": 89.78125,
+            "width": 238.390625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "browser",
+            "icons": 1,
+            "x": 272.390625,
+            "y": 89.78125,
+            "width": 238.40625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "worker",
+            "icons": 1,
+            "x": 520.796875,
+            "y": 89.78125,
+            "width": 238.390625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "billing",
+            "icons": 1,
+            "x": 769.1875,
+            "y": 89.78125,
+            "width": 238.40625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "redirect",
+            "icons": 1,
+            "x": 1017.59375,
+            "y": 89.78125,
+            "width": 238.390625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "notification",
+            "icons": 1,
+            "x": 24,
+            "y": 290.21875,
+            "width": 238.390625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "identity",
+            "icons": 1,
+            "x": 272.390625,
+            "y": 290.21875,
+            "width": 238.40625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "database",
+            "icons": 1,
+            "x": 520.796875,
+            "y": 290.21875,
+            "width": 238.390625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "cache",
+            "icons": 1,
+            "x": 769.1875,
+            "y": 290.21875,
+            "width": 238.40625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "queue",
+            "icons": 1,
+            "x": 1017.59375,
+            "y": 290.21875,
+            "width": 238.390625,
+            "height": 190.4375,
+            "inside": true
+          },
+          {
+            "kind": "object-store",
+            "icons": 1,
+            "x": 24,
+            "y": 490.65625,
+            "width": 238.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "search",
+            "icons": 1,
+            "x": 272.390625,
+            "y": 490.65625,
+            "width": 238.40625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "cdn",
+            "icons": 1,
+            "x": 520.796875,
+            "y": 490.65625,
+            "width": 238.390625,
+            "height": 177.4375,
+            "inside": true
+          },
+          {
+            "kind": "external-api",
+            "icons": 1,
+            "x": 769.1875,
+            "y": 490.65625,
+            "width": 238.40625,
+            "height": 177.4375,
+            "inside": true
+          }
+        ]
+      }
+    }
+  ],
+  "liveProjects": [
+    {
+      "id": "684f5790-df6b-4447-91d1-668cf7e1cc87",
+      "revision": 1,
+      "designSha256": "58a2a60e016683038bb574baac70d49ca237912e704542e32b5bb3c271199731",
+      "layoutSha256": "8e8653d2f7055cd5419b57fcbd65d9818fd7831d5f7787aba3ad0ed67663567e",
+      "unchanged": true
+    },
+    {
+      "id": "a6eeb601-6efd-46e0-9444-f0edddad8d2e",
+      "revision": 2,
+      "designSha256": "6e4c824629ea20af40d640d7f59c4fdc7f37b6159daf238738eeb42fea066623",
+      "layoutSha256": "fc313ccc1e41842e876dc0ab3e03bc4fb3f1843ccdbeb3f35ec5f7b5befc0497",
+      "unchanged": true
+    },
+    {
+      "id": "9928f0b6-c54c-4081-b8d4-5bdff0b5875c",
+      "revision": 1,
+      "designSha256": "0aa9f53fff7f1b316919bd5a9322125b445632a691d288dc612ca052a76a120c",
+      "layoutSha256": "a6f008185a84193bc417e04f0c74d0d7ddf60ff69950b5699872a45ba1bf9f20",
+      "unchanged": true
+    },
+    {
+      "id": "b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62",
+      "revision": 1,
+      "designSha256": "b98c1bbac1dc625d45e5d7e18b596549baaef00e4fce2afafdba79ffa329e309",
+      "layoutSha256": "0115071f77600eb7b9a2ad7b68998d594ce5303130ea0497b1cda9d0b8f12150",
+      "unchanged": true
+    },
+    {
+      "id": "7dd44cfd-7fbc-4d5a-be79-41c8f58a8993",
+      "revision": 17,
+      "designSha256": "d883fe5a1a0bfedca1e3548b23694745d0a28bdb6ec559ea94927fcbd7b896aa",
+      "layoutSha256": "9f8f8c819b7b5e4fcd3d908c18435475f932ec04e774f7fde0ae4db5ce2605b0",
+      "unchanged": true
+    },
+    {
+      "id": "477e4122-f898-4678-a6b6-1787a105d655",
+      "revision": 2,
+      "designSha256": "0ccd1e0df8c6eb1bc2148fbf5de9535bfd4c6b41ca5a366420c6d23b12cc4ebf",
+      "layoutSha256": "81266f84a50d5a320d4176aea485e516e268bccad630dbdda041140747c215a4",
+      "unchanged": true
+    },
+    {
+      "id": "a538e227-b662-48da-885e-e44f41c9c137",
+      "revision": 0,
+      "designSha256": "7942cd5ef030467975c22b778f9b2b59fa48a33252fb836625f26ef844f8389a",
+      "layoutSha256": "239031eca658d457441311a8326d69b329835f62bcd4c68687e71b732b902e7c",
+      "unchanged": true
+    },
+    {
+      "id": "e8453579-5736-4d8b-a34f-4feba3971d3d",
+      "revision": 6,
+      "designSha256": "1e3967c9119e3729169643bcd5bcea7ad772d4943b1966f9688a1e4a5ea6aa03",
+      "layoutSha256": "934028ccffe4ecd6e98c8bc73fe5763e54469c902bbec629e3fac97836cbd262",
+      "unchanged": true
+    },
+    {
+      "id": "840be03e-45f7-4f15-ab8a-3154afb57bb3",
+      "revision": 1,
+      "designSha256": "76ab6b3d27b8515ef9449721f7570494c0d59a010244900a5859c07f077ddf8a",
+      "layoutSha256": "a21decc216eabd37235e00ab967c5504a36a3529aede1169ac699b2bad8246fc",
+      "unchanged": true
+    },
+    {
+      "id": "65112195-e658-4d60-b0b7-59820a9d2ad0",
+      "revision": 0,
+      "designSha256": "8c9cc34f1e893f3a0df087cae060e555392aa57e0c21b29d0e20a84e99d969bd",
+      "layoutSha256": "b1b124ef90d8d09bba12410e089f1de1261037763bf2f30e058bddc280ad8017",
+      "unchanged": true
+    },
+    {
+      "id": "4f136b41-e28b-42b2-9b4c-a11577363f71",
+      "revision": 0,
+      "designSha256": "8c9cc34f1e893f3a0df087cae060e555392aa57e0c21b29d0e20a84e99d969bd",
+      "layoutSha256": "b1b124ef90d8d09bba12410e089f1de1261037763bf2f30e058bddc280ad8017",
+      "unchanged": true
+    },
+    {
+      "id": "841c190f-ba42-4a0b-a92f-82c0d46b8c7e",
+      "revision": 1,
+      "designSha256": "c7bf5ff7915511633b1b62402e9de0a42fb02cc317d5204ceb0cf2512ec07e24",
+      "layoutSha256": "b1b124ef90d8d09bba12410e089f1de1261037763bf2f30e058bddc280ad8017",
+      "unchanged": true
+    },
+    {
+      "id": "3c57ee46-26a3-47fa-bdb4-ec2d2b54cc31",
+      "revision": 3,
+      "designSha256": "dfe015cf72e48f458f2c219646a2a5f7ed4e5487d49be4cc9d959b7719932ca2",
+      "layoutSha256": "b2bf39950d5ba31b10ef2c6bd2d26bafc49ebce97ac3ef0332bde9b648e371d1",
+      "unchanged": true
+    }
+  ],
+  "projectWrites": 0,
+  "providerCalls": 0,
+  "applicationGenerations": 0,
+  "limitation": "Catalog metadata/default preview plus existing-shell compatibility only. Studio projections and product UI are later assignments. Existing saved legacy cameras retain their previous clipped content."
+}

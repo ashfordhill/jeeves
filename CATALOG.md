@@ -10,8 +10,12 @@ retains full design/layout data; implementation handoffs include exact locally r
 or an explicit unresolved result. The [legacy display adapter](packages/spec/src/studio-legacy.ts)
 uses known identities without migrating saved documents or adding technical defaults. The
 server and application compiler reject studio bindings before generation can start; legacy
-template eligibility is unchanged. These are design-only contracts; the studio catalog, new
-authoring UI and runtime resolution remain unimplemented. The catalog below describes the existing
+template eligibility is unchanged. [UX03's finite catalog](packages/spec/src/studio-definitions.ts)
+now supplies all 14 exact design definitions, typed field descriptors, capability symbols/theme
+colors, creation scopes, defaults and provider identity/compatibility metadata. The
+[service-and-worker preset](packages/spec/src/studio-presets.ts) expands into two independent
+applications and one shared, package-owned queue. These are design-only definitions; the new
+authoring UI and runtime resolution remain unimplemented. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 
@@ -38,6 +42,32 @@ for authoring, [C4 guidance](docs/c4-modeling.md) for classification, and the
 Architecture intent, runtime/template availability and observed verification remain separate.
 New runtime/code-generation work is deferred. Existing template details stay in their own
 [documentation](docs/templates/README.md); this catalog describes reusable conceptual boundaries.
+
+## Finite studio vocabulary
+
+The implemented model catalog follows the [configuration matrix](docs/plans/studio-ux/configuration-matrix.md).
+Its creation metadata groups Microservice, Browser app and Worker service under Services;
+Database, Cache, Queue or topic, Object storage and Search index under Resources; CDN and
+External API under Integrations; and Billing, Redirect and Notifications/Identity under Presets.
+Billing, Redirect, Notifications and Identity each represent one application, with scalar provider
+or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
+The reusable Service and worker preset is a grouping of actual deployments, with no package-level
+language, provider or runtime. Examples remain the later reconstruction assignments.
+
+Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
+has no runtime-support binding. Application entries can be created at C2 or as package members;
+resources/integrations are available in relevant service/package detail scopes too. Queues require
+an owner and are created only at C3. New defaults apply only on explicit creation. Compatible
+providers come from finite engine tables; an invalidated provider resets to Unspecified when the
+engine changes. Generic AWS/Google Cloud/Cloudflare intent chooses no unnamed product. Selecting
+a provider creates no graph node, deployment, credential or API call. Missing provider artwork uses
+the capability symbol. Language, hosting and integration choices remain unverified design intent.
+
+Known old capability/template identities retain their explicit [read-only mapping](packages/spec/src/studio-legacy.ts);
+unknown families retain a neutral symbol and their original data. Old planning definitions remain
+loadable. This catalog does not alter the existing Library surface or supported runtime templates;
+later studio UI units consume its metadata. Generation still rejects studio designs, while portable
+design export remains available.
 
 ## Availability and reuse
 

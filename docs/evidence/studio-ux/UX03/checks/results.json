@@ -1,0 +1,74 @@
+{
+  "result": "passed",
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "requiredChecks": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "log": "lint.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "log": "build.log"
+    }
+  ],
+  "lintWarnings": 2797,
+  "lintInfos": 88,
+  "buildAdvisory": "Existing chunk >500 kB",
+  "model": {
+    "exitCode": 0,
+    "definitions": 14,
+    "variants": 34,
+    "selectValues": 365,
+    "numericChecks": 50,
+    "engineProviderCombinations": 83
+  },
+  "api": {
+    "exitCode": 0,
+    "saves": 21,
+    "kindsSaved": 14,
+    "invalidWrite": 422,
+    "undo": 200,
+    "redo": 200,
+    "liveProjectsUnchanged": 13,
+    "ownedProjectDeleted": true
+  },
+  "browser": {
+    "exitCode": 0,
+    "legacyViews": 4,
+    "catalogPreviews": 2,
+    "definitionsPerPreview": 14,
+    "liveProjectsUnchanged": 13,
+    "projectWrites": 0,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "httpErrors": 0,
+    "existingAttributionWarnings": 2
+  },
+  "compatibility": {
+    "exitCode": 0,
+    "oldFactoriesUnchanged": 9,
+    "legacyV1Retained": true,
+    "unknownDefinitionPreserved": true
+  },
+  "setupCorrections": [
+    "React DOM CommonJS default export in Vite browser preview",
+    "Verification-only preview grid compacted to fit smaller viewport"
+  ],
+  "deferred": [
+    "pnpm check",
+    "unit suites and maintenance",
+    "E2E suites and maintenance",
+    "template suites and maintenance"
+  ],
+  "providerCalls": 0,
+  "applicationGenerations": 0,
+  "stagedWhitespace": "Passed; see staged-whitespace.log"
+}

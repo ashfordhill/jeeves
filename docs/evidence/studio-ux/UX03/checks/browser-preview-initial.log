@@ -1,0 +1,19 @@
+{"error":"The expression evaluated to a falsy value:\n\n  assert.ok(geometry.cards.every(c=>c.icons===1&&c.inside))\n","url":"http://127.0.0.1:4300/?project=684f5790-df6b-4447-91d1-668cf7e1cc87&level=components&container=api#/draw","consoleMessages":[{"type":"warning","text":"React Flow: It seems like you are hiding the attribution. Please only do this when you are subscribed to React Flow Pro: https://reactflow.dev/remove-attr\n%cYou can ignore this warning if you are subscribed. font-style: italic;"}],"pageErrors":[],"httpErrors":[],"blocked":[]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(geometry.cards.every(c=>c.icons===1&&c.inside))
+
+    at file:///home/ash/github/jeeves/.jeeves-work/ux03/browser.mjs:40:509 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
