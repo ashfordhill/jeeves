@@ -30,6 +30,7 @@ import {
 import type { CanvasEnd, ConnectAction } from "./connect.ts";
 import { type FindingIndex, indexFindings } from "./findings.ts";
 import { templateKey } from "./flow.ts";
+import { type DraftIntent, type DraftResult, formDrafts } from "./form-drafts.ts";
 
 export type Tool =
   | { kind: "planned"; capability: string }
@@ -118,6 +119,9 @@ type DrawState = {
 
   open(projectId?: string): Promise<void>;
   edit(ops: OperationInput[]): Promise<boolean>;
+  editIntent(intent: DraftIntent): Promise<DraftResult>;
+  /** Flush valid inspector input and wait for the existing serialized design queue. */
+  flushEdits(): Promise<boolean>;
   /** `undoable` records the change as a local undo step (moves and resizes). */
   setLayoutItems(items: Record<string, LayoutItem>, options?: { undoable?: boolean }): void;
   setViewport(viewport: NonNullable<LayoutDocument["viewport"]>): void;
@@ -204,9 +208,19 @@ export function projectFromUrl(): string | undefined {
 }
 
 export const useDraw = create<DrawState>()((set, get) => {
+  const accepted = new Map<string, DesignState>();
+  let opening = 0;
   const adopt = (state: DesignState) => {
+    const previous = accepted.get(state.projectId);
+    if (previous && previous.design.revision > state.design.revision) return;
+    accepted.set(state.projectId, state);
     const loaded = get().loaded;
-    if (!loaded || loaded.project.id !== state.projectId) return;
+    if (
+      !loaded ||
+      loaded.project.id !== state.projectId ||
+      loaded.design.revision > state.design.revision
+    )
+      return;
     const layout = pruneArchitectureLayout(loaded.layout, state.design);
     const layoutChanged = JSON.stringify(layout) !== JSON.stringify(loaded.layout);
     set({
@@ -231,7 +245,8 @@ export const useDraw = create<DrawState>()((set, get) => {
     }
     if (result.reason === "conflict") {
       adopt(result.state);
-      set({ notice: { tone: "info", message: CONFLICT_MESSAGE } });
+      if (get().loaded?.project.id === result.state.projectId)
+        set({ notice: { tone: "info", message: CONFLICT_MESSAGE } });
       return false;
     }
     set({ notice: { tone: "error", message: result.errors[0]?.message ?? result.message } });
@@ -240,11 +255,13 @@ export const useDraw = create<DrawState>()((set, get) => {
 
   /** Runs design requests one at a time, each against the revision the previous one produced. */
   const chain = (run: () => Promise<boolean>): Promise<boolean> => {
+    const projectId = get().loaded?.project.id;
     const guarded = async () => {
       try {
         return await run();
       } catch (error) {
-        set({ notice: { tone: "error", message: `Change not saved: ${message(error)}` } });
+        if (get().loaded?.project.id === projectId)
+          set({ notice: { tone: "error", message: `Change not saved: ${message(error)}` } });
         return false;
       }
     };
@@ -272,7 +289,7 @@ export const useDraw = create<DrawState>()((set, get) => {
       if (!loaded) return false;
       const result = await api[direction](loaded.project.id, loaded.design.revision);
       const ok = settle(result);
-      if (ok) {
+      if (ok && get().loaded?.project.id === loaded.project.id) {
         const step: Step = { kind: "design" };
         if (direction === "undo") set({ redoSteps: [...get().redoSteps, step] });
         else set({ undoSteps: [...get().undoSteps, step] });
@@ -313,6 +330,9 @@ export const useDraw = create<DrawState>()((set, get) => {
     architectureRedo: [],
 
     async open(projectId) {
+      const previousProject = get().loaded?.project.id;
+      if (previousProject) void formDrafts.flushProject(previousProject, true);
+      const request = ++opening;
       await get().flushLayout();
       set({
         status: "loading",
@@ -326,11 +346,15 @@ export const useDraw = create<DrawState>()((set, get) => {
       });
       try {
         const project = await resolveProject(projectId);
-        const [state, layout, catalog] = await Promise.all([
+        const [received, layout, catalog] = await Promise.all([
           api.getDesign(project.id),
           api.getLayout(project.id),
           api.templates(),
         ]);
+        if (request !== opening) return;
+        const known = accepted.get(project.id);
+        const state = known && known.design.revision > received.design.revision ? known : received;
+        accepted.set(project.id, state);
         rememberProject(project.id);
         set({
           status: "ready",
@@ -349,22 +373,78 @@ export const useDraw = create<DrawState>()((set, get) => {
           },
         });
       } catch (error) {
-        set({ status: "error", error: message(error) });
+        if (request === opening) set({ status: "error", error: message(error) });
       }
     },
 
-    edit(ops) {
+    async editIntent(intent) {
+      let outcome: DraftResult = { status: "failed", message: "Change not saved" };
+      await chain(async () => {
+        try {
+          const loaded = get().loaded;
+          const current =
+            loaded?.project.id === intent.projectId
+              ? { design: loaded.design }
+              : await api.getDesign(intent.projectId);
+          const known = accepted.get(intent.projectId);
+          const design =
+            known && known.design.revision > current.design.revision
+              ? known.design
+              : current.design;
+          const ops = intent.rebuild(design);
+          if (!ops) {
+            outcome = { status: "conflict", design };
+            return false;
+          }
+          if (!ops.length) {
+            outcome = { status: "saved", design };
+            return true;
+          }
+          const result = await api.edit(intent.projectId, design.revision, ops);
+          if (result.ok || result.reason === "conflict") {
+            adopt(result.state);
+            const latest = accepted.get(intent.projectId) ?? result.state;
+            outcome = result.ok
+              ? { status: "saved", design: latest.design, written: result.state.design }
+              : { status: "conflict", design: latest.design };
+            if (result.ok && get().loaded?.project.id === intent.projectId)
+              set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
+            return result.ok;
+          }
+          outcome = { status: "failed", message: result.errors[0]?.message ?? result.message };
+        } catch (error) {
+          outcome = { status: "failed", message: `Change not saved: ${message(error)}` };
+        }
+        return false;
+      });
+      return outcome;
+    },
+
+    async flushEdits() {
+      const projectId = get().loaded?.project.id;
+      if (!projectId) return true;
+      await formDrafts.flushProject(projectId, true);
+      await editChain;
+      return !formDrafts.hasProblems(projectId);
+    },
+
+    async edit(ops) {
+      const projectId = get().loaded?.project.id;
+      if (!(await get().flushEdits())) return false;
       return chain(async () => {
         const loaded = get().loaded;
-        if (!loaded) return false;
+        if (!loaded || loaded.project.id !== projectId) return false;
         const ok = settle(await api.edit(loaded.project.id, loaded.design.revision, ops));
         // The server drops its redo chain on a new edit; local layout redo goes with it.
-        if (ok) set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
+        if (ok && get().loaded?.project.id === loaded.project.id)
+          set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
         return ok;
       });
     },
 
     async undo() {
+      const projectId = get().loaded?.project.id;
+      if (!(await get().flushEdits()) || get().loaded?.project.id !== projectId) return;
       const steps = [...get().undoSteps];
       // Design steps the server can no longer undo (e.g. undone in another tab) are stale.
       while (steps.at(-1)?.kind === "design" && !get().loaded?.history.canUndo) steps.pop();
@@ -381,6 +461,8 @@ export const useDraw = create<DrawState>()((set, get) => {
     },
 
     async redo() {
+      const projectId = get().loaded?.project.id;
+      if (!(await get().flushEdits()) || get().loaded?.project.id !== projectId) return;
       const steps = [...get().redoSteps];
       while (steps.at(-1)?.kind === "design" && !get().loaded?.history.canRedo) steps.pop();
       const top = steps.at(-1);
@@ -398,6 +480,7 @@ export const useDraw = create<DrawState>()((set, get) => {
     adoptChange(state, layout, changed) {
       const loaded = get().loaded;
       if (!loaded || loaded.project.id !== state.projectId) return;
+      if (state.design.revision < loaded.design.revision) return;
       // An older state (a canvas edit landed after the turn) must not replace a newer one.
       const newer = state.design.revision > loaded.design.revision;
       if (newer) adopt(state);
@@ -428,6 +511,7 @@ export const useDraw = create<DrawState>()((set, get) => {
     },
 
     async undoEdit(operationId) {
+      if (!(await get().flushEdits())) return false;
       if (get().loaded?.history.latestEdit !== operationId) return false;
       const steps = [...get().undoSteps];
       const marker = steps.findLastIndex((step) => step.kind === "design");
@@ -547,3 +631,5 @@ export const useDraw = create<DrawState>()((set, get) => {
     },
   };
 });
+
+formDrafts.configure((intent) => useDraw.getState().editIntent(intent));

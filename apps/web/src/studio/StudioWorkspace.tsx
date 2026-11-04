@@ -16,11 +16,13 @@ import {
   IconPointer,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
+import { formDrafts } from "../draw/form-drafts.ts";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
 import { useStudioPreferences } from "./preferences.ts";
+import { DraftFeedback, ServiceForm } from "./ServiceForm.tsx";
 import { StudioGraph } from "./StudioGraph.tsx";
 import "./studio.css";
 
@@ -77,6 +79,7 @@ function RailResize({
 }
 
 function SelectionSummary({ node, edge }: { node?: StudioViewNode; edge?: StudioRelationship }) {
+  const loaded = useDraw((state) => state.loaded);
   const [memberId, setMemberId] = useState<string>();
   const member: StudioRelationshipMember | undefined =
     edge?.members.length === 1
@@ -86,7 +89,21 @@ function SelectionSummary({ node, edge }: { node?: StudioViewNode; edge?: Studio
     return (
       <div className="studio-selection-summary">
         <h2>{node.name}</h2>
-        {node.description ? <p>{node.description}</p> : null}
+        {loaded &&
+        node.source === "studio" &&
+        node.kind === "service" &&
+        node.definitionStatus === "known" &&
+        node.refs[0] &&
+        "id" in node.refs[0] ? (
+          <ServiceForm
+            projectId={loaded.project.id}
+            id={node.refs[0].id}
+            name={node.name}
+            design={loaded.design}
+          />
+        ) : node.description ? (
+          <p>{node.description}</p>
+        ) : null}
         {node.members ? <p>{node.members.length} independent services</p> : null}
       </div>
     );
@@ -129,6 +146,10 @@ function ProjectStudio({
 }: {
   loaded: NonNullable<ReturnType<typeof useDraw.getState>["loaded"]>;
 }) {
+  useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
+  const hasDraft = formDrafts
+    .forProject(loaded.project.id)
+    .some((entry) => entry.paths.size || entry.flight);
   const undoable = useDraw(canUndo);
   const redoable = useDraw(canRedo);
   const notice = useDraw((state) => state.notice);
@@ -187,9 +208,13 @@ function ProjectStudio({
   }, [selectedNode, selectedEdge]);
 
   const navigate = (key?: string) => {
-    if (key && scopes.some((item) => item.key === key)) setScopeKey(key);
+    if (key && scopes.some((item) => item.key === key)) {
+      void formDrafts.flushProject(loaded.project.id, true);
+      setScopeKey(key);
+    }
   };
   const select = (id?: string) => {
+    if (id !== selected) void formDrafts.flushProject(loaded.project.id, true);
     setSelections((current) => ({ ...current, [scope.key]: id }));
     const node = scope.nodes.find((item) => item.id === id);
     const edge = scope.edges.find((item) => item.id === id);
@@ -200,8 +225,10 @@ function ProjectStudio({
       setPreferences((current) => ({ ...current, inspectorOpen: true }));
     }
   };
-  const toggle = (rail: "chatOpen" | "inspectorOpen") =>
+  const toggle = (rail: "chatOpen" | "inspectorOpen") => {
+    if (rail === "inspectorOpen") void formDrafts.flushProject(loaded.project.id, true);
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
+  };
   const goBack = () => navigate(scope.parentKey);
   const header = (
     <>
@@ -264,7 +291,7 @@ function ProjectStudio({
           type="button"
           title="Undo"
           aria-label="Undo"
-          disabled={!undoable}
+          disabled={!undoable && !hasDraft}
           onClick={() => void useDraw.getState().undo()}
         >
           <IconArrowBackUp size={18} />
@@ -374,6 +401,7 @@ function ProjectStudio({
             </button>
           </div>
         ) : null}
+        <DraftFeedback projectId={loaded.project.id} />
       </div>
       {inspectorOpen ? (
         <>

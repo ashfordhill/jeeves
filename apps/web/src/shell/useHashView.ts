@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useDraw } from "../draw/store.ts";
 import { type ViewId, viewFromHash } from "./views.ts";
 
 export function useHashView(): [ViewId, (next: ViewId) => void] {
@@ -11,8 +12,13 @@ export function useHashView(): [ViewId, (next: ViewId) => void] {
   }, []);
 
   const select = useCallback((next: ViewId) => {
-    window.location.hash = `/${next}`;
-    setView(next);
+    void useDraw
+      .getState()
+      .flushEdits()
+      .then(() => {
+        window.location.hash = `/${next}`;
+        setView(next);
+      });
   }, []);
 
   return [view, select];

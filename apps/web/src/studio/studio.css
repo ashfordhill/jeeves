@@ -243,3 +243,76 @@
   outline: 3px solid var(--blue);
   outline-offset: 2px;
 }
+.studio-service-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 16px 0;
+  min-width: 0;
+}
+.studio-service-form legend {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.studio-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.studio-form-field input,
+.studio-form-field textarea,
+.studio-form-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  font: inherit;
+  background: var(--paper);
+  color: var(--ink);
+}
+.studio-form-field textarea {
+  resize: vertical;
+}
+.studio-form-field [aria-invalid="true"] {
+  border-color: var(--minus);
+}
+.studio-field-error {
+  color: var(--minus);
+  font-size: 12px;
+}
+.studio-draft-feedback {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: grid;
+  gap: 6px;
+}
+.studio-draft-feedback > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 9px;
+  font-size: 12px;
+}
+.studio-draft-feedback span {
+  flex: 1;
+  min-width: 120px;
+}
+.studio-draft-feedback button {
+  border: 1px solid var(--grid-dot);
+  border-radius: 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  padding: 4px 7px;
+}

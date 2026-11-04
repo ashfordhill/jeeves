@@ -95,7 +95,10 @@ export function DrawView() {
   }, [open]);
 
   useEffect(() => {
-    const flush = () => void useDraw.getState().flushLayout();
+    const flush = () => {
+      void useDraw.getState().flushEdits();
+      void useDraw.getState().flushLayout();
+    };
     window.addEventListener("pagehide", flush);
     return () => {
       window.removeEventListener("pagehide", flush);

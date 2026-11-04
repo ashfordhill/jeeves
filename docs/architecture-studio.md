@@ -12,9 +12,15 @@ shell. It uses the same project/store and UX04 projections. Click inspects; doub
 system, a package or an expandable service to drill, then use the header breadcrumb/back. Chat
 starts open; its width/collapse and the inspector's preferences are independent per project.
 Scope cameras and widths are local browser preferences and survive return/reload without writing
-the project's design or layout. The inspector currently shows compact read-only summaries.
-Finite forms/creation, final geometry, unified Generate and studio chat tools remain later units;
-the [UX05 action mapping and evidence](evidence/studio-ux/UX05/README.md) records those limits.
+the project's design or layout. **UX06a** adds an autosaving form for exact `studio-service@1.0.0`
+objects: Name, Purpose, Execution, Language, conditional Host and Exposure. Valid text saves after
+500ms or blur; selections commit promptly. Leaving flushes valid input and discards invalid unsent
+input. Long saves show brief pending feedback; failures retain Retry/Discard, and conflicts adopt
+the fresh design with a concise indication. A browser unload can only attempt an unacknowledged
+save. Other definitions retain compact read-only summaries. The remaining finite forms/creation,
+architecture-layout history, final geometry, unified Generate and studio chat tools remain later units;
+the [UX05 action mapping](evidence/studio-ux/UX05/README.md) and
+[UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

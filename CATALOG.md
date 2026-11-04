@@ -24,7 +24,9 @@ communication from explicit roles and accounts for incomplete or ambiguous chann
 the actual connections; compatible fan-out includes branch/trunk data without saved wiring or
 shared editable settings. [UX05's opt-in shell](docs/evidence/studio-ux/UX05/README.md), selected
 with `?studio=next`, now renders those real projections with explicit depth navigation, independent
-chat/inspector rails and project-local cameras. The default interface is unchanged; finite editing,
+chat/inspector rails and project-local cameras. [UX06a](docs/evidence/studio-ux/UX06a/README.md)
+adds shared autosave and one representative microservice form, with field-level conflict checks and
+explicit failure retry/discard. The default interface is unchanged; the remaining finite forms,
 creation, routing and runtime resolution remain unimplemented. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.

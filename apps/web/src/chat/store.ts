@@ -147,6 +147,9 @@ export const useChat = create<ChatState>()((set, get) => ({
       if (current) set({ live: { ...current, ...patch(current) } });
     };
     try {
+      if (!(await draw.flushEdits())) throw new Error("Resolve the unsaved edit before sending");
+      if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
+        return;
       // The server places new elements around what's saved, so save local moves first.
       await draw.flushLayout();
       await api.chat(

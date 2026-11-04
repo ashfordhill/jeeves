@@ -6,6 +6,7 @@ import { ActionIcon, Button, Group, Loader, Modal, Text, TextInput, Tooltip } fr
 import { IconSearch, IconTrash } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { api, type Project } from "./api.ts";
+import { formDrafts } from "./form-drafts.ts";
 import { useDraw } from "./store.ts";
 
 function formatDate(iso: string) {
@@ -36,6 +37,9 @@ export function ProjectBrowser({ onClose }: { onClose: () => void }) {
     setBusy(id);
     setError(undefined);
     try {
+      await formDrafts.flushProject(id, true);
+      if (formDrafts.hasProblems(id))
+        throw new Error("Resolve the unsaved edit before deleting this project");
       await api.deleteProject(id);
       const remaining = (projects ?? []).filter((p) => p.id !== id);
       setProjects(remaining);

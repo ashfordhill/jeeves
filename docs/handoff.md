@@ -9287,3 +9287,77 @@ history. Opt-in Generate currently labels existing Runs content, with unificatio
 uses its existing profile until UX13. No placeholder creation tools or removed backend/report
 panels fill those gaps. No runtime/availability claim changes. UX05 is complete; UX06a is the next
 unit boundary. This worker stops after its scoped local UX05 commit; P73a/P73b/backend stay paused.
+
+
+## 2026-11-04 — UX06a: shared autosave and conflict handling (complete)
+
+Executed UX06a only on primary main from `cf7e70ca14feb4a4b338856eaf37512db317e04f`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan, exact UX06a/shared protocol, interaction §3, finite service definitions, C4 guidance,
+and existing draft/store adopt/settle/serialized-chain paths. No delegation, worktree/branch,
+sibling edit, backend resumption, factory/benchmark rewrite, provider/external-agent execution
+or application generation. Unrelated `.jeeves-feedback/` remains untouched.
+
+Added reusable `draw/form-drafts.ts` with project + semantic target + exact definition/version
+identity, local values, complete validation, baseline/changed paths and 500ms valid text debounce.
+Blur flushes sooner; selects coalesce dependent fields after their event. A project-bound
+`editIntent` uses the existing draw request chain and rebuilds on its latest accepted revision,
+comparing expected changed fields and preserving unrelated fields. It adds no second transport
+queue. Selection/scope/project navigation and unmount flush valid input; invalid unsent input is
+discarded silently without cancelling an in-flight save. Undo/redo, chat send and deletion flush
+first; deliberate Generate navigation waits for the queue. Browser pagehide only attempts a flush.
+
+Transport/server failures retain an explicit Retry/Discard intent. Real revision conflicts adopt
+fresh state and show “Changed elsewhere; reopen to edit” without automatic replay. Failed Retry
+compares its original field baseline. Per-project pending/errors survive in-app switching without
+attaching to the new object/project. Accepted-revision guards prevent late responses from replacing
+newer state or restoring an old selection. Follow-up input survives a delayed acknowledgement;
+reverting to the original baseline during a flight still saves, and a newer accepted peer change
+cannot silently become the baseline of an unsent follow-up. Saving appears only after 800ms of
+pending persistence; acknowledgements remain quiet with no Saved badge or repeated toast.
+
+The opt-in `studio=next` inspector now edits one representative exact `studio-service@1.0.0` form:
+Name, Purpose, Execution, Language, conditional Host and Exposure, using UX03 field descriptors and
+UX02 commands. Managed/Host changes are atomic; Docker removes the inapplicable Host. Other
+objects retain UX05 summaries. The default interface/availability remains unchanged. CATALOG and
+the current guide identify this limited implemented boundary. UX06b owns chronological
+architecture-layout history; UX07 owns remaining forms. Neither was started here.
+
+Evidence: `docs/evidence/studio-ux/UX06a/`. Final direct guarded Chromium inspection passes 22
+scenarios and 26 browser operation requests, including ordinary debounce (523ms), blur (48ms),
+rapid two-field/select edits, quick type-and-select, invalid leave, invalid input on top of a valid
+flight, delayed same-field edits/reverts, explicit network retry/discard, real 409 conflict,
+changed-field retry refusal, stale acknowledgement after a newer accepted revision, peer conflict
+with a local follow-up, actual project-menu switching with in-flight/failed intents, pending-input
+semantic Undo/Redo, acknowledged reload and Generate navigation. Four deliberately aborted real
+requests plus the deliberate 409 are the only console errors; zero page errors or blocked writes.
+Delay injection holds actual server responses, with no synthetic successful saves. Peer state
+uses real owned-project API writes and the existing `adoptChange` delivery seam; no chat/provider
+call is made. All controls inspected work by mouse. Forms fit at 1440×900 and 1280×800 without
+horizontal document overflow. The unchanged default editor also opens at both sizes, with no
+studio workspace, project writes, console warnings/errors or page errors.
+
+All 13 original projects retain exact semantic/layout hashes and revisions. Every owned disposable
+project is deleted and verified 404, including earlier inspection attempts; the final live project
+set matches the baseline. Earlier handoff bytes, 21 original/copy feedback pairs, seven UX01
+fixtures, 48 frozen benchmark files and unrelated tracked files remain exact.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1 with Node PATH prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace including new logs pass.
+
+Routine corrections wrapped a symbol-capable Zod issue path in `String`, removed an optional-chain
+warning, corrected a pending-label assertion and aligned inspection imports with Vite's actual
+versioned store module after HMR. Review added two in-flight race protections and repeated the
+checks/browser capture. Generated evidence JSON needed Biome formatting; an intermediate lint
+failure is retained with its precise formatting-only reason. Earlier raw inspection logs remain
+in the ignored workspace and bounded attempt notes are committed. No fixture typing adaptation,
+snapshot or broader test maintenance was required. Unit/E2E/template suites and `pnpm check`
+remain explicitly deferred. Existing UX05 camera placement may clip another card after opening
+the inspector; geometry/fit remains later work. Browser termination cannot guarantee completion
+of an unacknowledged request, and unsent/failed intents are not durable across page restart. No
+product blocker or scope deviation remains. UX06a is complete; this worker stops after its scoped
+local commit. P73a/P73b and the backend batch remain paused.
