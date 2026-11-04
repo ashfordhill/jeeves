@@ -11258,3 +11258,104 @@ Notes for SG08:
   on ELK label layers between columns, not at card edges.
 - Routes always leave and enter cards horizontally (`horizontalEnds`), with in-ports on the WEST
   side and out-ports on the EAST side. Handles on the other sides are free.
+
+## 2026-11-04 — SG08: handle drag-to-create and islands (complete)
+
+I ran SG08 alone on primary `main` from `d04f955`, as a fresh sequential worker (resumed once
+after a usage-limit pause; the partial edits were intact). I read AGENTS, the studio grid plan
+(§4 Creation, O3, O8), the execution units, the SG01 and SG05–SG07 handoffs, the SG01 spawn
+evidence and the automation-illustrator spawn sources (read-only). No inspector forms (SG09),
+spec, server, generation/runtime, P73a/P73b or backend batch work.
+
+What changed (all in `apps/web/src/studio/`):
+
+- **`spawn.ts`** (new): `spawnEndpoint` (the semantic end a box stands for: C1 system/context
+  node, studio element, or C3 component with its host), `choicesFor` (kinds valid for the level
+  and side, filtered through the real connection rules), `spawnOps` (one batch: new box plus its
+  one relationship) and `dropConnect`.
+  - C1: person / external system plus a context relationship (`Uses`).
+  - C2: microservice, worker, gateway, identity, notifications, browser app, database, cache,
+    object storage, search, CDN, external API (no queue, D3). Only kinds whose connection
+    `kindConnectionDefaults` accepts on that side are listed.
+  - C3 from an application or resource: database, cache, queue, object storage, search, CDN,
+    external API; a queue only with an application end. Resources and queues get that
+    application as owner.
+  - C3 from a component: every component kind the host may run (browser hosts filtered) linked
+    in-process, plus elements in the component's `targets` whose traced connection direction and
+    channel role match the side. That is a `create` (element + C2 connection, owned by the host)
+    followed by `connectComponent`, concatenated into one batch.
+  - Inbound spawns create only the new source and its connection; nothing is retargeted (the
+    reference's insert-parent rule is not copied).
+- **`actions.ts`**: `kindConnectionDefaults(source, target)` split out of `connectionDefaults`
+  (same rules), so pickers can test kinds without a design.
+- **`creation.ts`**: `baseTools` replaced by `c2Kinds`, `c3Kinds` and `islandKinds`;
+  `uniqueName`, `designNames` (now also counting component names) and `id` exported.
+- **`StudioGraph.tsx`**: `+` buttons on the west (in) and east (out) side centre of every card and
+  frame that has an endpoint, shown on hover or selection, kept at least about 22px on screen.
+  They are hidden in Hand, Connection and multi-select modes and during a row drag. Pointer down
+  starts a pull. Past 36px (`SPAWN_THRESHOLD`) a dashed line and ghost box follow the pointer, and
+  a box under the pointer is outlined. Release reports `onHandle({source, side, at, target?})`. A
+  plain click opens the picker beside the handle. Escape or pointercancel cancels. The
+  `placing`/`onPlace` click-to-place props and `data-placing` are gone.
+- **`StudioWorkspace.tsx`**: placement tool buttons, the `tool` state and its hint are removed.
+  - A `KindPicker` popover opens at the release point (components grouped separately at C3).
+  - A spawn runs through `createPlaced` (one design edit, one undo step) and then selects the new
+    line with its single member, so the inspector opens the existing autosaving connection form
+    with defaults. A new component is selected itself instead, because an in-process link has no
+    form.
+  - Dropping on a box: element and C1 pairs open the existing `ConnectionCreator`, prefilled
+    with Reverse. A pair involving a component commits `connectComponent` directly, reusing a
+    matching host↔element connection or creating it in the same batch, then selects the line.
+    Packages, legacy cards and cross-host component pairs give an error notice.
+  - **New island** toolbar button and an empty-view "Start with a first box" panel call
+    `createAt` for one unconnected box. A C3 queue is offered only with a selected owning
+    application.
+- `studio.css`: handle, pull preview, picker and empty-panel styles; cards and frames are
+  `position: relative`.
+- Studio guide: the creation bullet is rewritten for handles, the picker, drop-to-connect and New
+  island; shortcuts and Library are their own bullets.
+
+Results (evidence: `docs/evidence/studio-grid/SG08/README.md`, 46 screenshots, `capture-log.json`).
+Both sizes, real mouse:
+
+- Spawned at C1, C2 and C3 (component and resource).
+- West pickers list only valid sources.
+- Drop to connect works at C2 (prefilled Connect) and at C3 (component link).
+- New island and the empty-canvas first box work.
+- Undo and Redo of a spawn each take one step for box plus line.
+- A reload keeps everything.
+- H/V and Escape work.
+- No page errors. Owner projects untouched (`updatedAt` equal, nothing blocked or attempted).
+- All 4 disposable projects deleted (204).
+
+Checks (Node 24.21.0):
+
+- `pnpm lint`: exit 0 (2,797 warnings / 88 infos, unchanged).
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk advisory).
+- `pnpm check`, unit and E2E not run (owner-deferred). E2E tests that click placement tool
+  buttons (Microservice, Database…) then the canvas will need to use handles or New island.
+
+Deviations and known issues:
+
+- The handles sit on the port centres, so while visible they cover the first few pixels of the
+  lines there. Labels are between columns and are not covered.
+- At C2, C1 context nodes (people, the system) and package frames have no handles. People are
+  created at C1; drop onto a package gives a notice.
+- At C3 a resource card has handles, but most of its sides offer no new kind (applications are
+  created at C2). The picker then says to drop on a box to connect.
+- Spawned boxes take ELK's position. No `order` row hint is written.
+- Component picker entries all use the generic puzzle icon. The per-kind `componentVisual` in
+  `studio-view.ts` is not exported from the spec.
+- The C3 Library integration path (`add` with a selected owner → `ConnectionCreator newKind`) is
+  unchanged. Library inserts remain a non-handle way to add boxes.
+- No recording kept (6.6 MB webm, no ffmpeg to compress).
+
+Notes for SG09:
+
+- An application card at C3 without components has handles for resources only. "Add a component
+  from its C3 frame `+`" still needs a component choice on application endpoints. Add it to
+  `c3SpawnChoices` for `endpoint.type === "element"` with an application kind, creating
+  `createComponent` with no link, or with a link that traces the box's connection.
+- New components are created with `createStudioComponentSettings` defaults. A new custom
+  component has no description (a CONFIG_REQUIRED readiness gap) until the purpose field exists.

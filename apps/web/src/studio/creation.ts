@@ -34,11 +34,36 @@ export type Creation =
 export function creationScope(scope: StudioScopeProjection): StudioCreationScope | undefined {
   return scope.level === "context" ? undefined : scope.level === "containers" ? "c2" : "c3-service";
 }
-export function baseTools(scope: StudioScopeProjection): BaseCreation[] {
+/** SG08: generic C2 kinds offered by the `+` handles, New island and the empty-canvas start. */
+export const c2Kinds: readonly StudioKind[] = [
+  "service",
+  "worker",
+  "gateway",
+  "identity",
+  "notification",
+  "browser",
+  "database",
+  "cache",
+  "object-store",
+  "search",
+  "cdn",
+  "external-api",
+];
+/** C3 element kinds: resources, queues and integrations (applications are created at C2). */
+export const c3Kinds: readonly StudioKind[] = [
+  "database",
+  "cache",
+  "queue",
+  "object-store",
+  "search",
+  "cdn",
+  "external-api",
+];
+/** One unconnected box (New island, empty canvas). A C3 queue needs an owning application. */
+export function islandKinds(scope: StudioScopeProjection, owner?: string): BaseCreation[] {
   if (scope.level === "context") return ["person", "external-system"];
-  if (scope.level === "containers")
-    return ["service", "browser", "database", "cache", "external-api"];
-  return ["database", "cache", "queue"];
+  if (scope.level === "containers") return [...c2Kinds];
+  return c3Kinds.filter((kind) => kind !== "queue" || owner);
 }
 export const creationLabel = (kind: BaseCreation) =>
   kind === "person"
@@ -46,13 +71,20 @@ export const creationLabel = (kind: BaseCreation) =>
     : kind === "external-system"
       ? "External system"
       : studioDefinitions[kind].creationName;
-const uniqueName = (base: string, names: Set<string>) => {
+export const uniqueName = (base: string, names: Set<string>) => {
   let name = base;
   for (let n = 2; names.has(name); n++) name = `${base} ${n}`;
   names.add(name);
   return name;
 };
-const id = () => `studio-${crypto.randomUUID()}`;
+export const designNames = (design: DesignDocument) =>
+  new Set([
+    ...design.elements.map((item) => item.name),
+    ...(design.architecture?.nodes ?? []).map((item) => item.name),
+    ...(design.architecture?.studio?.packages ?? []).map((item) => item.name),
+    ...(design.architecture?.studio?.components ?? []).map((item) => item.name),
+  ]);
+export const id = () => `studio-${crypto.randomUUID()}`;
 
 /** IDs are allocated once; the actual command is rebuilt inside the existing serialized queue. */
 export async function createAt(
@@ -81,11 +113,7 @@ export async function createAt(
     const views = studioViews(design, studioDefinitions, loaded?.project.name ?? "System");
     const scope = studioScopes(views).find((item) => item.key === scopeKey);
     if (!scope) throw new Error("This scope changed; reopen it to add an object.");
-    const names = new Set([
-      ...design.elements.map((item) => item.name),
-      ...(design.architecture?.nodes ?? []).map((item) => item.name),
-      ...(design.architecture?.studio?.packages ?? []).map((item) => item.name),
-    ]);
+    const names = designNames(design);
     const system = { name: loaded?.project.name ?? "System", description: "" };
     let command: StudioCommand;
     let ops: OperationInput[];

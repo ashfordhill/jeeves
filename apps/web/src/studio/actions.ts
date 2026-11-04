@@ -30,6 +30,13 @@ export function connectionDefaults(
   const source = endpointKind(design, from),
     target = endpointKind(design, to);
   if (!source || !target) throw new Error("Connect finite studio objects in a studio design.");
+  return kindConnectionDefaults(source, target);
+}
+/** The same rules by kind alone, so a picker can list only kinds that can connect (SG08). */
+export function kindConnectionDefaults(
+  source: StudioKind,
+  target: StudioKind,
+): Omit<StudioConnectionCreation, "id" | "from" | "to"> {
   const publish = applicationKind(source) && target === "queue";
   const consume = source === "queue" && applicationKind(target);
   if (source === "queue" || target === "queue") {

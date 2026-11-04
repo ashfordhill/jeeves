@@ -1,0 +1,624 @@
+{
+  "owners": 4,
+  "blocked": [],
+  "writes": [
+    "POST /api/projects",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "PUT /api/projects/5423058f-419e-4cac-80f3-68786515029d/layout",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/undo",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/redo",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects/5423058f-419e-4cac-80f3-68786515029d/operations",
+    "POST /api/projects",
+    "POST /api/projects/a262671c-be20-46a0-8d17-1b0193493616/operations",
+    "POST /api/projects/a262671c-be20-46a0-8d17-1b0193493616/operations",
+    "POST /api/projects/a262671c-be20-46a0-8d17-1b0193493616/operations",
+    "POST /api/projects/a262671c-be20-46a0-8d17-1b0193493616/operations",
+    "POST /api/projects/a262671c-be20-46a0-8d17-1b0193493616/operations",
+    "POST /api/projects",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "PUT /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/layout",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/undo",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/redo",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects/54600985-390c-44a5-bb79-cde9082ff3b4/operations",
+    "POST /api/projects",
+    "POST /api/projects/1039632d-5f42-45c3-b2b2-87271776dc42/operations",
+    "POST /api/projects/1039632d-5f42-45c3-b2b2-87271776dc42/operations",
+    "POST /api/projects/1039632d-5f42-45c3-b2b2-87271776dc42/operations",
+    "POST /api/projects/1039632d-5f42-45c3-b2b2-87271776dc42/operations",
+    "POST /api/projects/1039632d-5f42-45c3-b2b2-87271776dc42/operations"
+  ],
+  "created": [
+    {
+      "id": "5423058f-419e-4cac-80f3-68786515029d",
+      "name": "SG08 disposable TinyURL 1440x900"
+    },
+    {
+      "id": "a262671c-be20-46a0-8d17-1b0193493616",
+      "name": "SG08 disposable Blank 1440x900"
+    },
+    {
+      "id": "54600985-390c-44a5-bb79-cde9082ff3b4",
+      "name": "SG08 disposable TinyURL 1280x800"
+    },
+    {
+      "id": "1039632d-5f42-45c3-b2b2-87271776dc42",
+      "name": "SG08 disposable Blank 1280x800"
+    }
+  ],
+  "deleted": {
+    "5423058f-419e-4cac-80f3-68786515029d": 204,
+    "a262671c-be20-46a0-8d17-1b0193493616": 204,
+    "54600985-390c-44a5-bb79-cde9082ff3b4": 204,
+    "1039632d-5f42-45c3-b2b2-87271776dc42": 204
+  },
+  "shots": [
+    "1440x900-tiny-C1-before.png",
+    "1440x900-tiny-C1-pulling.png",
+    "1440x900-tiny-C1-picker.png",
+    "1440x900-tiny-C1-spawned.png",
+    "1440x900-tiny-C2-pulling.png",
+    "1440x900-tiny-C2-picker.png",
+    "1440x900-tiny-C2-spawned.png",
+    "1440x900-tiny-C2-undone.png",
+    "1440x900-tiny-C2-west-picker.png",
+    "1440x900-tiny-C2-drop-hover.png",
+    "1440x900-tiny-C2-drop-form.png",
+    "1440x900-tiny-C2-dropped.png",
+    "1440x900-tiny-C3-pulling.png",
+    "1440x900-tiny-C3-picker.png",
+    "1440x900-tiny-C3-component-spawned.png",
+    "1440x900-tiny-C3-resource-spawned.png",
+    "1440x900-tiny-C3-island-picker.png",
+    "1440x900-tiny-C3-island.png",
+    "1440x900-tiny-C3-reloaded.png",
+    "1440x900-blank-C2-empty.png",
+    "1440x900-blank-C2-island.png",
+    "1440x900-blank-C2-connected.png",
+    "1440x900-blank-C3-queue.png",
+    "1280x800-tiny-C1-before.png",
+    "1280x800-tiny-C1-pulling.png",
+    "1280x800-tiny-C1-picker.png",
+    "1280x800-tiny-C1-spawned.png",
+    "1280x800-tiny-C2-pulling.png",
+    "1280x800-tiny-C2-picker.png",
+    "1280x800-tiny-C2-spawned.png",
+    "1280x800-tiny-C2-undone.png",
+    "1280x800-tiny-C2-west-picker.png",
+    "1280x800-tiny-C2-drop-hover.png",
+    "1280x800-tiny-C2-drop-form.png",
+    "1280x800-tiny-C2-dropped.png",
+    "1280x800-tiny-C3-pulling.png",
+    "1280x800-tiny-C3-picker.png",
+    "1280x800-tiny-C3-component-spawned.png",
+    "1280x800-tiny-C3-resource-spawned.png",
+    "1280x800-tiny-C3-island-picker.png",
+    "1280x800-tiny-C3-island.png",
+    "1280x800-tiny-C3-reloaded.png",
+    "1280x800-blank-C2-empty.png",
+    "1280x800-blank-C2-island.png",
+    "1280x800-blank-C2-connected.png",
+    "1280x800-blank-C3-queue.png"
+  ],
+  "errors": [],
+  "obs": {
+    "1440x900": {
+      "c1Preview": 1,
+      "c1Picker": ["External system", "Person"],
+      "c1After": {
+        "before": {
+          "boxes": 4,
+          "lines": 3
+        },
+        "after": {
+          "boxes": 5,
+          "lines": 4
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Uses"
+        }
+      },
+      "c2Preview": 1,
+      "c2Picker": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app",
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "c2After": {
+        "before": {
+          "boxes": 14,
+          "lines": 12
+        },
+        "after": {
+          "boxes": 15,
+          "lines": 13
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Reads & writes"
+        }
+      },
+      "c2Undo": {
+        "counts": {
+          "boxes": 14,
+          "lines": 12
+        },
+        "revisionBefore": 3,
+        "cacheCards": 0
+      },
+      "c2Redo": {
+        "counts": {
+          "boxes": 15,
+          "lines": 13
+        },
+        "cacheCards": 1
+      },
+      "c2WestPicker": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app"
+      ],
+      "c2EscapeClosesPicker": true,
+      "dropPreview": 1,
+      "dropDialog": {
+        "open": true,
+        "source": "Analytics worker · worker",
+        "target": "Cache · cache",
+        "action": "Reads & writes"
+      },
+      "dropAfter": {
+        "counts": {
+          "boxes": 15,
+          "lines": 14
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Reads & writes"
+        }
+      },
+      "c3ComponentPicker": [
+        "Rate limiter",
+        "Cache reader",
+        "ID generator",
+        "Redirect responder",
+        "Event publisher",
+        "Event consumer",
+        "Data access",
+        "Auth guard",
+        "External call",
+        "Custom",
+        "Cache"
+      ],
+      "c3Component": {
+        "before": {
+          "boxes": 22,
+          "lines": 19
+        },
+        "after": {
+          "boxes": 23,
+          "lines": 20
+        },
+        "inspector": {
+          "heading": "Auth guard",
+          "connectionForm": 0,
+          "action": null
+        }
+      },
+      "c3DataAccessPickerElements": ["Database"],
+      "c3Element": {
+        "after": {
+          "boxes": 24,
+          "lines": 21
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Reads & writes"
+        }
+      },
+      "c3Drop": {
+        "after": {
+          "boxes": 24,
+          "lines": 22
+        },
+        "notice": ""
+      },
+      "c3IslandKinds": [
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "c3Island": {
+        "boxes": 25,
+        "lines": 22
+      },
+      "reloadC3": {
+        "boxes": 25,
+        "lines": 22
+      },
+      "saved": {
+        "elements": [
+          "Web app",
+          "Shorten API",
+          "Redirect service",
+          "Analytics worker",
+          "CDN",
+          "Links database",
+          "Link cache",
+          "Click events",
+          "Analytics store",
+          "URL reputation API",
+          "Cache",
+          "Database",
+          "Object storage"
+        ],
+        "components": [
+          "Rate limiter",
+          "Reputation check",
+          "ID generator",
+          "Link writer",
+          "Link cache reader",
+          "Link reader",
+          "Redirect responder",
+          "Click publisher",
+          "Click consumer",
+          "Click aggregation",
+          "Aggregate writer",
+          "Auth guard"
+        ],
+        "connections": 13,
+        "componentLinks": 18,
+        "contextNodes": ["Link creator", "Visitor", "URL reputation API", "External system"]
+      },
+      "handAfterH": "true",
+      "handlesInHand": 0,
+      "selectAfterV": "true",
+      "blankEmpty": true,
+      "blankKinds": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app",
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "blankC2": {
+        "counts": {
+          "boxes": 3,
+          "lines": 1
+        },
+        "inspector": {
+          "heading": "Browser app",
+          "connectionForm": 0,
+          "action": "Browser app"
+        }
+      },
+      "blankDropAction": "Calls",
+      "blankConnected": {
+        "boxes": 3,
+        "lines": 2
+      },
+      "blankC3": {
+        "boxes": 3,
+        "lines": 2
+      },
+      "blankC3Picker": [
+        "Database",
+        "Cache",
+        "Queue",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "blankC3Queue": {
+        "counts": {
+          "boxes": 4,
+          "lines": 3
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Publishes"
+        }
+      },
+      "blankSaved": {
+        "queueOwner": {
+          "id": "studio-ebe6f305-a7fb-4562-900f-48bce6f3f5b1",
+          "kind": "element"
+        },
+        "connections": ["Reads & writes SQL", "Calls HTTPS", "Publishes Messaging"]
+      }
+    },
+    "1280x800": {
+      "c1Preview": 1,
+      "c1Picker": ["External system", "Person"],
+      "c1After": {
+        "before": {
+          "boxes": 4,
+          "lines": 3
+        },
+        "after": {
+          "boxes": 5,
+          "lines": 4
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Uses"
+        }
+      },
+      "c2Preview": 1,
+      "c2Picker": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app",
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "c2After": {
+        "before": {
+          "boxes": 14,
+          "lines": 12
+        },
+        "after": {
+          "boxes": 15,
+          "lines": 13
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Reads & writes"
+        }
+      },
+      "c2Undo": {
+        "counts": {
+          "boxes": 14,
+          "lines": 12
+        },
+        "revisionBefore": 3,
+        "cacheCards": 0
+      },
+      "c2Redo": {
+        "counts": {
+          "boxes": 15,
+          "lines": 13
+        },
+        "cacheCards": 1
+      },
+      "c2WestPicker": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app"
+      ],
+      "c2EscapeClosesPicker": true,
+      "dropPreview": 1,
+      "dropDialog": {
+        "open": true,
+        "source": "Analytics worker · worker",
+        "target": "Cache · cache",
+        "action": "Reads & writes"
+      },
+      "dropAfter": {
+        "counts": {
+          "boxes": 15,
+          "lines": 14
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Reads & writes"
+        }
+      },
+      "c3ComponentPicker": [
+        "Rate limiter",
+        "Cache reader",
+        "ID generator",
+        "Redirect responder",
+        "Event publisher",
+        "Event consumer",
+        "Data access",
+        "Auth guard",
+        "External call",
+        "Custom",
+        "Cache"
+      ],
+      "c3Component": {
+        "before": {
+          "boxes": 22,
+          "lines": 19
+        },
+        "after": {
+          "boxes": 23,
+          "lines": 20
+        },
+        "inspector": {
+          "heading": "Auth guard",
+          "connectionForm": 0,
+          "action": null
+        }
+      },
+      "c3DataAccessPickerElements": ["Database"],
+      "c3Element": {
+        "after": {
+          "boxes": 24,
+          "lines": 21
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Reads & writes"
+        }
+      },
+      "c3Drop": {
+        "after": {
+          "boxes": 24,
+          "lines": 22
+        },
+        "notice": ""
+      },
+      "c3IslandKinds": [
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "c3Island": {
+        "boxes": 25,
+        "lines": 22
+      },
+      "reloadC3": {
+        "boxes": 25,
+        "lines": 22
+      },
+      "saved": {
+        "elements": [
+          "Web app",
+          "Shorten API",
+          "Redirect service",
+          "Analytics worker",
+          "CDN",
+          "Links database",
+          "Link cache",
+          "Click events",
+          "Analytics store",
+          "URL reputation API",
+          "Cache",
+          "Database",
+          "Object storage"
+        ],
+        "components": [
+          "Rate limiter",
+          "Reputation check",
+          "ID generator",
+          "Link writer",
+          "Link cache reader",
+          "Link reader",
+          "Redirect responder",
+          "Click publisher",
+          "Click consumer",
+          "Click aggregation",
+          "Aggregate writer",
+          "Auth guard"
+        ],
+        "connections": 13,
+        "componentLinks": 18,
+        "contextNodes": ["Link creator", "Visitor", "URL reputation API", "External system"]
+      },
+      "handAfterH": "true",
+      "handlesInHand": 0,
+      "selectAfterV": "true",
+      "blankEmpty": true,
+      "blankKinds": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app",
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "blankC2": {
+        "counts": {
+          "boxes": 3,
+          "lines": 1
+        },
+        "inspector": {
+          "heading": "Browser app",
+          "connectionForm": 0,
+          "action": "Browser app"
+        }
+      },
+      "blankDropAction": "Calls",
+      "blankConnected": {
+        "boxes": 3,
+        "lines": 2
+      },
+      "blankC3": {
+        "boxes": 3,
+        "lines": 2
+      },
+      "blankC3Picker": [
+        "Database",
+        "Cache",
+        "Queue",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "blankC3Queue": {
+        "counts": {
+          "boxes": 4,
+          "lines": 3
+        },
+        "inspector": {
+          "heading": "Connection",
+          "connectionForm": 1,
+          "action": "Publishes"
+        }
+      },
+      "blankSaved": {
+        "queueOwner": {
+          "id": "studio-09d85702-9199-427b-bed9-0f7a6ed64894",
+          "kind": "element"
+        },
+        "connections": ["Reads & writes SQL", "Calls HTTPS", "Publishes Messaging"]
+      }
+    }
+  },
+  "ownerUnchanged": true
+}

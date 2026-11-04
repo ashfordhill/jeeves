@@ -24,12 +24,25 @@ existing supported legacy template/recipe designs retain their generation eligib
   package scope links and saved preferences open C3. Zoom changes text density only.
 - Every view is laid out automatically (ELK layered, left to right, on a 32px grid; frames are
   compound nodes; disconnected islands pack left to right, then top to bottom). There is no free
-  placement and no saved position; older saved positions are ignored, not rewritten. At C3, new queues and resources
-  are owned by the selected application (or a selected component's application); a queue needs one.
-- Choose a finite tool, then click blank canvas to add it; automatic layout places it (the click
-  point is not stored). **Select** cancels placement.
-  Optional shortcuts: V selects, H pans, Escape cancels; they are ignored while typing.
-  **Library** groups compatible Services, Resources, Integrations, Presets and Examples.
+  placement and no saved position; older saved positions are ignored, not rewritten.
+- New boxes come from `+` handles (SG08, 2026-11-04). Hover or select a box: the east `+` adds a
+  box it connects to, the west `+` a box that connects to it. Drag a handle out past about 36px;
+  a dashed preview follows the pointer. Release on empty canvas (or simply click the handle) to
+  open a picker of the kinds valid for that level and side: people and external systems at C1;
+  generic services (microservice, worker, gateway, identity, notifications), browser app,
+  resources, CDN and external API at C2; at C3, components of the same application (from a
+  component) and the resources, queues and integrations it can use. A C3 queue or resource
+  created from an application, or from one of its components, is owned by that application. The
+  box and its relationship are created as one undoable action, and the new line is selected with
+  its connection form open and defaults filled; correct them there. A new component (whose
+  in-process link has no form) is selected instead. Release on another box to
+  connect the two instead: element and C1 pairs open **Connect** prefilled (with Reverse); a pair
+  involving a component links them directly, adding the traced C2 connection when it is missing.
+  **New island** in the toolbar, and the first-box panel on an empty view, add one unconnected
+  box; layout packs it as a separate island. There are no placement tools or click-to-place.
+- Optional shortcuts: V selects, H pans, Escape cancels a pull or closes the picker; they are
+  ignored while typing.
+- **Library** groups compatible Services, Resources, Integrations, Presets and Examples.
   Previews require **Add**. Examples create separate projects; they never replace a live diagram.
 - Choose **Connection**, click source and target, review Action, Protocol, Interaction and Access,
   then **Connect**. Invalid choices remain correctable. A package requires actual application

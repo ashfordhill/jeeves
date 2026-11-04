@@ -22,6 +22,7 @@ import {
   IconMessageCircle,
   IconPointer,
   IconSelectAll,
+  IconSquarePlus,
   IconX,
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
@@ -35,19 +36,23 @@ import { type ConnectionDraft, commitAction, connectionDefaults } from "./action
 import { ConnectionCreator } from "./ConnectionCreator.tsx";
 import { ConnectionForm } from "./ConnectionForm.tsx";
 import { connectionSpec, type RelationshipTarget } from "./connection-drafts.ts";
-import {
-  type BaseCreation,
-  baseTools,
-  type Creation,
-  createAt,
-  creationLabel,
-} from "./creation.ts";
+import { type BaseCreation, type Creation, createAt, islandKinds } from "./creation.ts";
 import { DraftFeedback } from "./DraftFeedback.tsx";
 import { InspectorForm } from "./InspectorForm.tsx";
 import { useStudioPreferences } from "./preferences.ts";
 import { studioPaths } from "./routing.ts";
-import { StudioGraph } from "./StudioGraph.tsx";
+import { StudioGraph, type StudioHandleRelease } from "./StudioGraph.tsx";
 import { StudioLibrary } from "./StudioLibrary.tsx";
+import {
+  choicesFor,
+  dropConnect,
+  type SpawnChoice,
+  type SpawnSide,
+  spawnChoiceIcon,
+  spawnChoiceLabel,
+  spawnEndpoint,
+  spawnOps,
+} from "./spawn.ts";
 import "./studio.css";
 
 function RailResize({
@@ -282,6 +287,98 @@ function carrySelection(
   )?.id;
 }
 
+const islandChoice = (kind: BaseCreation): SpawnChoice =>
+  kind === "person" || kind === "external-system"
+    ? { type: "context", kind }
+    : { type: "element", kind };
+function KindButton({
+  choice,
+  busy,
+  onPick,
+}: {
+  choice: SpawnChoice;
+  busy: boolean;
+  onPick: () => void;
+}) {
+  return (
+    <button type="button" className="studio-kind" disabled={busy} onClick={onPick}>
+      <TemplateIcon name={spawnChoiceIcon(choice)} size={17} />
+      <span>{spawnChoiceLabel(choice)}</span>
+    </button>
+  );
+}
+/** SG08 kind picker: opened where a `+` handle was released, or by New island. */
+function KindPicker({
+  title,
+  at,
+  busy,
+  choices,
+  empty,
+  onPick,
+  onClose,
+}: {
+  title: string;
+  at?: { x: number; y: number };
+  busy: boolean;
+  choices: SpawnChoice[];
+  empty: string;
+  onPick: (choice: SpawnChoice) => void;
+  onClose: () => void;
+}) {
+  const components = choices.filter((choice) => choice.type === "component");
+  const boxes = choices.filter((choice) => choice.type !== "component");
+  const group = (label: string | undefined, list: SpawnChoice[]) =>
+    list.length ? (
+      <div className="studio-kind-group">
+        {label ? <span className="studio-kind-heading">{label}</span> : null}
+        <div className="studio-kind-list">
+          {list.map((choice) => (
+            <KindButton
+              key={`${choice.type}:${choice.kind}`}
+              choice={choice}
+              busy={busy}
+              onPick={() => onPick(choice)}
+            />
+          ))}
+        </div>
+      </div>
+    ) : null;
+  return (
+    <>
+      <div className="studio-picker-backdrop" aria-hidden="true" onPointerDown={onClose} />
+      <div
+        className="studio-picker"
+        role="dialog"
+        aria-label={title}
+        data-anchored={at ? true : undefined}
+        style={
+          at
+            ? {
+                left: `clamp(8px, ${at.x + 12}px, calc(100% - 288px))`,
+                top: `clamp(8px, ${at.y - 24}px, calc(100% - 340px))`,
+              }
+            : undefined
+        }
+      >
+        <div className="studio-picker-header">
+          <strong>{title}</strong>
+          <button type="button" aria-label="Close picker" onClick={onClose}>
+            <IconX size={15} />
+          </button>
+        </div>
+        {choices.length ? (
+          <>
+            {group(components.length ? "Component in this application" : undefined, components)}
+            {group(components.length ? "Resource or integration" : undefined, boxes)}
+          </>
+        ) : (
+          <p>{empty}</p>
+        )}
+      </div>
+    </>
+  );
+}
+
 export function StudioWorkspace() {
   const loaded = useDraw((state) => state.loaded);
   if (!loaded) return null;
@@ -334,7 +431,11 @@ function ProjectStudio({
     return id && (kind === "connection" || kind === "context") ? { kind, id } : undefined;
   });
   const [hand, setHand] = useState(false);
-  const [tool, setTool] = useState<BaseCreation>();
+  // SG08: the kind picker after a handle pull, or for a New island / first box.
+  const [picker, setPicker] = useState<
+    | { type: "spawn"; source: string; side: SpawnSide; at: { x: number; y: number } }
+    | { type: "island"; at?: { x: number; y: number } }
+  >();
   const [connector, setConnector] = useState<string>();
   const [connectionDraft, setConnectionDraft] = useState<ConnectionDraft>();
   const [connectorError, setConnectorError] = useState<string>();
@@ -441,7 +542,7 @@ function ProjectStudio({
     if (key && scopes.some((item) => item.key === key)) {
       void formDrafts.flushProject(loaded.project.id, true);
       setScopeKey(key);
-      setTool(undefined);
+      setPicker(undefined);
       setConnector(undefined);
       setConnectorError(undefined);
       setConnectionDraft(undefined);
@@ -549,11 +650,127 @@ function ProjectStudio({
       if (useDraw.getState().loaded?.project.id === loaded.project.id) {
         setPick({ scope: key, id });
         setPreferences((current) => ({ ...current, inspectorOpen: true }));
-        setTool(undefined);
         setMultiple(false);
         setGroupSelection([]);
       }
       return true;
+    } finally {
+      setCreating(false);
+    }
+  };
+  /** Select the line that carries a just-created relationship and open its connection form. */
+  const selectCreated = (key: string, relation: string) => {
+    const current = useDraw.getState().loaded;
+    if (!current || current.project.id !== loaded.project.id) return;
+    const next = studioScopes(studioViews(current.design, studioDefinitions, current.project.name));
+    const target = next.find((item) => item.key === key);
+    const carries = (edge: StudioRelationship) =>
+      edge.connectionIds.includes(relation) ||
+      edge.contextRelationshipIds.includes(relation) ||
+      edge.componentRelationshipIds.includes(relation);
+    const edge =
+      (target && studioPaths(target).find((path) => carries(path.item))?.item) ??
+      target?.edges.find(carries);
+    if (!target || !edge) return;
+    setPick({ scope: key, id: edge.id });
+    const member: RelationshipTarget | undefined = edge.connectionIds.includes(relation)
+      ? { kind: "connection", id: relation }
+      : edge.contextRelationshipIds.includes(relation)
+        ? { kind: "context", id: relation }
+        : edge.connectionIds.length === 1 && edge.connectionIds[0]
+          ? { kind: "connection", id: edge.connectionIds[0] }
+          : undefined;
+    setMemberSelection(member);
+    setPreferences((value) => ({ ...value, inspectorOpen: true }));
+  };
+  const spawnable = (id: string) =>
+    !!spawnEndpoint(
+      loaded.design,
+      scope,
+      scope.nodes.find((node) => node.id === id),
+    );
+  const handleRelease = (release: StudioHandleRelease) => {
+    const source = spawnEndpoint(
+      loaded.design,
+      scope,
+      scope.nodes.find((node) => node.id === release.source),
+    );
+    if (!source) return;
+    void formDrafts.flushProject(loaded.project.id, true);
+    if (!release.target) {
+      setPicker({ type: "spawn", source: release.source, side: release.side, at: release.at });
+      return;
+    }
+    const targetNode = scope.nodes.find((node) => node.id === release.target);
+    const target = spawnEndpoint(loaded.design, scope, targetNode);
+    try {
+      if (!target)
+        throw new Error(
+          targetNode?.kind === "package"
+            ? "Drop on an application inside the package."
+            : "That box cannot be connected here.",
+        );
+      const result = dropConnect(scope.level, source, release.side, target);
+      if (result.type === "draft") {
+        setConnectionDraft(result.draft);
+        return;
+      }
+      const key = scope.key;
+      setCreating(true);
+      void commitAction(loaded.project.id, result.rebuild)
+        .then((ok) => {
+          if (ok) selectCreated(key, result.relation);
+        })
+        .finally(() => setCreating(false));
+    } catch (e) {
+      useDraw
+        .getState()
+        .setNotice({ tone: "error", message: e instanceof Error ? e.message : String(e) });
+    }
+  };
+  /** One batch: the new box plus its relationship (one undo step), then its connection form. */
+  const spawn = async (sourceId: string, side: SpawnSide, choice: SpawnChoice) => {
+    const source = spawnEndpoint(
+      loaded.design,
+      scope,
+      scope.nodes.find((node) => node.id === sourceId),
+    );
+    if (!source || creating) return;
+    setCreating(true);
+    const key = scope.key;
+    let result: ReturnType<typeof spawnOps> | undefined;
+    try {
+      const ok = await useDraw.getState().createPlaced(loaded.project.id, (design) => {
+        result = spawnOps(design, scope.level, loaded.project.name, source, side, choice);
+        return { ops: result.ops, positions: {} };
+      });
+      setPicker(undefined);
+      // An in-process component link has no connection form: select the new component instead.
+      if (ok && result && choice.type === "component") {
+        setPick({ scope: key, id: result.node });
+        setPreferences((value) => ({ ...value, inspectorOpen: true }));
+      } else if (ok && result) selectCreated(key, result.relation);
+    } finally {
+      setCreating(false);
+    }
+  };
+  /** New island / first box: one unconnected box; automatic layout packs it as an island. */
+  const island = async (kind: BaseCreation) => {
+    if (creating) return;
+    setCreating(true);
+    const key = scope.key;
+    try {
+      const id = await createAt(
+        loaded.project.id,
+        key,
+        { type: "base", kind },
+        kind === "queue" ? c3Owner?.id : undefined,
+      );
+      setPicker(undefined);
+      if (id && useDraw.getState().loaded?.project.id === loaded.project.id) {
+        setPick({ scope: key, id });
+        setPreferences((current) => ({ ...current, inspectorOpen: true }));
+      }
     } finally {
       setCreating(false);
     }
@@ -567,7 +784,7 @@ function ProjectStudio({
   useEffect(() => {
     const cancel = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setTool(undefined);
+        setPicker(undefined);
         setConnector(undefined);
         setConnectorError(undefined);
         return;
@@ -582,7 +799,7 @@ function ProjectStudio({
       )
         return;
       setHand(key === "h");
-      setTool(undefined);
+      setPicker(undefined);
       setConnector(undefined);
       setConnectorError(undefined);
       setMultiple(false);
@@ -691,7 +908,6 @@ function ProjectStudio({
           member={selectedMember}
           selectedIds={groupSelection}
           multiple={multiple}
-          placing={!!tool && !creating}
           connecting={
             connector === undefined
               ? undefined
@@ -711,19 +927,18 @@ function ProjectStudio({
             }))
           }
           onSelect={select}
-          onPlace={() => {
-            if (tool) void add({ type: "base", kind: tool });
-          }}
+          spawnable={spawnable}
+          onHandle={handleRelease}
         />
         <div className="studio-tools" role="toolbar" aria-label="Diagram tools">
           <button
             type="button"
             title="Select"
             aria-label="Select"
-            aria-pressed={!hand && !tool && !multiple && connector === undefined}
+            aria-pressed={!hand && !multiple && connector === undefined}
             onClick={() => {
               setHand(false);
-              setTool(undefined);
+              setPicker(undefined);
               setConnector(undefined);
               setConnectorError(undefined);
               setMultiple(false);
@@ -739,7 +954,7 @@ function ProjectStudio({
             aria-pressed={hand}
             onClick={() => {
               setHand(true);
-              setTool(undefined);
+              setPicker(undefined);
               setConnector(undefined);
               setConnectorError(undefined);
               setMultiple(false);
@@ -748,35 +963,23 @@ function ProjectStudio({
           >
             <IconHandStop size={19} />
           </button>
-          {baseTools(scope).map((kind) => (
-            <button
-              type="button"
-              key={kind}
-              title={creationLabel(kind)}
-              aria-label={creationLabel(kind)}
-              aria-pressed={tool === kind}
-              disabled={creating}
-              onClick={() => {
-                setHand(false);
-                setMultiple(false);
-                setGroupSelection([]);
-                setConnector(undefined);
-                setConnectorError(undefined);
-                setTool(kind);
-              }}
-            >
-              <TemplateIcon
-                name={
-                  kind === "person"
-                    ? "user"
-                    : kind === "external-system"
-                      ? "world"
-                      : studioDefinitions[kind].visual.icon
-                }
-                size={19}
-              />
-            </button>
-          ))}
+          <button
+            type="button"
+            title="New island"
+            aria-label="New island"
+            aria-pressed={picker?.type === "island"}
+            disabled={creating}
+            onClick={() => {
+              setHand(false);
+              setMultiple(false);
+              setGroupSelection([]);
+              setConnector(undefined);
+              setConnectorError(undefined);
+              setPicker(picker?.type === "island" ? undefined : { type: "island" });
+            }}
+          >
+            <IconSquarePlus size={19} />
+          </button>
           <button
             type="button"
             title="Connection"
@@ -786,7 +989,7 @@ function ProjectStudio({
               void formDrafts.flushProject(loaded.project.id, true);
               setConnector("");
               setConnectorError(undefined);
-              setTool(undefined);
+              setPicker(undefined);
               setHand(false);
               setMultiple(false);
               setGroupSelection([]);
@@ -804,7 +1007,7 @@ function ProjectStudio({
                 setMultiple((value) => !value);
                 setGroupSelection([]);
                 setHand(false);
-                setTool(undefined);
+                setPicker(undefined);
                 setConnector(undefined);
               }}
             >
@@ -836,7 +1039,7 @@ function ProjectStudio({
             onClick={() => {
               setConnector(undefined);
               setLibrary(true);
-              setTool(undefined);
+              setPicker(undefined);
               setHand(false);
             }}
           >
@@ -889,11 +1092,58 @@ function ProjectStudio({
             }}
           />
         ) : null}
-        {tool ? (
-          <div className="studio-placement-hint" role="status">
-            Click the canvas to place {creationLabel(tool)}. Select cancels.
-          </div>
-        ) : multiple ? (
+        {picker ? (
+          <KindPicker
+            title={
+              picker.type === "island"
+                ? "New island"
+                : picker.side === "out"
+                  ? `After ${scope.nodes.find((node) => node.id === picker.source)?.name ?? "box"}`
+                  : `Before ${scope.nodes.find((node) => node.id === picker.source)?.name ?? "box"}`
+            }
+            at={picker.at}
+            busy={creating}
+            choices={
+              picker.type === "island"
+                ? islandKinds(scope, c3Owner?.id).map(islandChoice)
+                : (() => {
+                    const source = spawnEndpoint(
+                      loaded.design,
+                      scope,
+                      scope.nodes.find((node) => node.id === picker.source),
+                    );
+                    return source ? choicesFor(scope, source, picker.side) : [];
+                  })()
+            }
+            empty={
+              picker.type === "island"
+                ? "Nothing can be added here."
+                : "No new box fits on this side. Drop the handle on a box to connect them."
+            }
+            onPick={(choice) => {
+              if (picker.type === "island")
+                void island(choice.type === "component" ? "service" : choice.kind);
+              else void spawn(picker.source, picker.side, choice);
+            }}
+            onClose={() => setPicker(undefined)}
+          />
+        ) : !scope.nodes.length ? (
+          <section className="studio-empty" aria-label="Add a first box">
+            <strong>Start with a first box</strong>
+            <span>Then drag its + handles to add connected boxes.</span>
+            <div className="studio-kind-list">
+              {islandKinds(scope, c3Owner?.id).map((kind) => (
+                <KindButton
+                  key={kind}
+                  choice={islandChoice(kind)}
+                  busy={creating}
+                  onPick={() => void island(kind)}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+        {multiple ? (
           <div className="studio-placement-hint" role="status">
             Click cards to select a group. Drag any selected card to move them.
           </div>
