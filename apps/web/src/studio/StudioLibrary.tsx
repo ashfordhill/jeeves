@@ -1,12 +1,12 @@
 import { builtinRegistry } from "@jeeves/registry";
 import {
   type ArchitectureLibraryEntry,
-  architectureExample,
-  architectureExamples,
   type LibraryInsertInput,
   previewArchitectureTemplate,
   resolveStudioDefinition,
   type StudioScopeProjection,
+  studioArchitectureExample,
+  studioArchitectureExamples,
   studioDefinitions,
   studioLibraryGroups,
   studioPackagePresets,
@@ -137,7 +137,7 @@ export function StudioLibrary({
         builtinRegistry(),
       )
     : undefined;
-  const example = architectureExamples.find((item) => item.id === preview);
+  const example = studioArchitectureExamples.find((item) => item.id === preview);
   const contextKind = preview === "person" || preview === "external-system" ? preview : undefined;
   const templates = loaded.catalog.templates.filter(
     (template, index, all) => !all.slice(index + 1).some((other) => other.id === template.id),
@@ -151,7 +151,7 @@ export function StudioLibrary({
         if (!(await useDraw.getState().flushEdits()))
           throw new Error("Resolve the pending edit first.");
         await useDraw.getState().flushLayout();
-        const source = architectureExample(example.id);
+        const source = studioArchitectureExample(example.id);
         const project = await api.createProject(source.name);
         try {
           const result = await api.edit(project.id, 0, [
@@ -342,8 +342,9 @@ export function StudioLibrary({
             ) : null}
             {example ? (
               <p>
-                Creates a separate editable project from the preserved example source. These
-                examples retain their existing model and runtime limitations.
+                Creates a separate editable studio project with a pinned goal/source map and
+                explicit C4b obligations. Design only; application runtime generation is
+                unsupported.
               </p>
             ) : null}
             {runtime ? (
@@ -410,7 +411,7 @@ export function StudioLibrary({
                     ))
                 : null}
               {active === "Examples"
-                ? architectureExamples
+                ? studioArchitectureExamples
                     .filter((item) => matches(`${item.name} ${item.description}`))
                     .map((item) => (
                       <button type="button" key={item.id} onClick={() => setPreview(item.id)}>

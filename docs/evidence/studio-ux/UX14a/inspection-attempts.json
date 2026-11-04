@@ -1,0 +1,22 @@
+{
+  "finalResult": "passed",
+  "notes": [
+    {
+      "observation": "The initial raw canonical Enterprise hash preceded strict normalization of two source journey summaries.",
+      "resolution": "Normalized each static manifest through the production schema and pinned the production canonical hash; all final source/hash/roundtrip checks pass."
+    },
+    {
+      "observation": "A Tidy exploration produced an overly wide whole-system arrangement for Streamly.",
+      "resolution": "Kept fresh grid placements and authored per-scope cameras from read-only node/path bounds; no shared routing/layout code changed."
+    },
+    {
+      "observation": "One measurement driver double-click did not open its expected scope.",
+      "resolution": "Used the existing mouse select then C3 button for the read-only measurement pass. Both final main runs exercise double-click scope navigation successfully."
+    },
+    {
+      "observation": "One rerun started during a local source-watcher restart and received connection refused before creating a project.",
+      "resolution": "Waited for the real health endpoint and reran the complete guarded browser observations successfully."
+    }
+  ],
+  "deferred": "Unit/E2E/template suites and maintenance, snapshots, pnpm check, live model/provider execution and generated-application verification."
+}

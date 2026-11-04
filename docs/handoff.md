@@ -10245,3 +10245,76 @@ No runtime/catalog availability or reusable conceptual boundary changed. No UX13
 remains. UX13 is complete and this worker stops after its scoped local commit. UX14a and later
 examples/default rollout are separate assignments; studio stays opt-in until UX15 and P73a/P73b/
 backend work remains paused.
+
+## UX14a — Fresh Mattermost, Enterprise and Streamly studio studies (2026-11-04)
+
+Completed exact UX14a on primary `main` from `152fc84ab94d791fdece31d5a4ead55f51905ee6`, in the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+the studio plan/shared protocol, model/configuration/coverage contracts, final decisions, C4
+modeling guidance and E01–E03's actual briefs/reference/factories. No later example unit, default
+rollout, sibling repository, live project migration or paused backend/runtime work was started.
+
+Added `studioArchitectureExamples` with three distinct `1.0.0` factories under
+`packages/spec/src/studio-examples/`, strict static goal manifests and fresh scope layouts.
+Mattermost retains one modular Go server, its bundled browser, same-codebase separate job process,
+SQL-polled jobs, shared database/files and external email/push. No internal-library service or
+broker is invented. Its AWS/Kubernetes/HA source boundaries remain pinned source, with no new
+Kubernetes editor. Enterprise retains two browsers, one Orders API, independent worker, owned/
+shared data and external identity/payment/email. Network exposure is not authorization; tenant,
+order/payment and audit behavior stays explicit future work. Streamly retains independent playback,
+platform and media/activity processing, private original/rendition storage, cache/search/CDN and two
+C3 channels. Consumption uses explicit delivery direction with exact source dependency direction
+recorded in the map. AWS CloudFront is an optional provider identity, not provisioning. Kotlin and
+FFmpeg remain source choices with finite language Unspecified; Mattermost SMTP keeps Unspecified
+finite transport and its actual source integration requirement.
+
+Only these three reviewed studies appear in the opt-in studio Library's Examples category.
+Historical factories/chooser/default remain unchanged. The 183 requirement rows map every original
+container/connection and component, scenario, dataset and objective to finite design, future fixed
+foundation, C4b work or an explicit unknown. The source registry is deeply frozen, exact versions
+and canonical SHA-256 manifests are pinned by studio origin, and portable source/handoff exports
+include the exact resolved data. There are 95 typed unresolved source-linked decisions and future
+implementation-owner assignments. Generate now lists them under C4b with source/object details on
+demand and named links back to actual diagram objects. CATALOG and a new studio-study guide record
+the conceptual boundaries without upgrading runtime availability.
+
+Evidence: `docs/evidence/studio-ux/UX14a/`. Production-function observations verify all source
+hashes/graph refs, exact original factory outputs, atomic insertion, every requirement map, frozen
+registry, portable round-trips, rejected tampering and unresolved unknown versions/hash mismatch.
+Final direct Chromium inspection has 76 records at 1440×900 and 1280×800: mouse Library creation,
+C1/C2 and all 13 useful C3 scopes, three configuration saves per study per size, acknowledged
+reload, actual source downloads, handoff/source equality, named C4b links and unchanged navigation/
+review semantics. Streamly's one shared job queue is re-inspected from its independent consumer.
+All six direct starts return 422 `STUDIO_DESIGN_ONLY` with no generation record; verification remains
+unrecorded. No model/provider/agent or generated-application execution occurred.
+
+Initial layout exploration found a wide automatic arrangement and clipped outer grid paths. Kept
+fresh grid positions with source-specific initial cameras from read-only node/path measurements,
+without changing shared routing/layout behavior. Dense overviews remain compact and long names
+truncate under existing zoom rules; full names/settings and useful C3 dependencies remain available.
+Final representative C1/C2/C3, settings, shared-queue and Generate screenshots were visually
+inspected. A separate guarded read-only browser pass confirms the old editor remains default at
+both sizes. Routine notes cover strict summary normalization before hashing, one measurement-driver
+scope gesture correction and one transient watcher restart before a complete clean rerun.
+
+Final main browser inspection has 36 real HTTP writes, zero page/console errors, external requests
+or blocked/unowned writes. Guards precede page creation and allow only exact-owned disposable
+routes. All 13 original projects retain exact metadata, semantic/layout hashes and revisions; all
+32 attempted disposables are deleted and verified 404. All unrelated tracked files, 42 feedback
+files/21 original-copy pairs, seven public fixtures, 48 frozen benchmark files, old factories/briefs
+and the previous handoff prefix remain exact.
+
+Required checks used Node 24.21.0 / pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces, existing source/test types and scripts.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- One-off goal/schema/API/portable observations and both direct browser profiles: pass.
+- Scoped formatting, preservation and staged whitespace including new logs: pass.
+
+Unit/E2E/template suites, snapshots, their maintenance and `pnpm check` remain explicitly deferred;
+no fixture typing adaptation was needed. No runtime support, application correctness, provider
+integration, delivery/capacity guarantee or benchmark score is claimed. Later C4a/C4b implementation
+and verification need a separate task. No UX14a product blocker remains. UX14a is complete and this
+worker stops after its scoped local commit. UX14b and later examples/default rollout remain later;
+P73a/P73b and the backend batch stay paused.

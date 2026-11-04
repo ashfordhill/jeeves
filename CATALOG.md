@@ -90,7 +90,19 @@ External API under Integrations; and Billing, Redirect and Notifications/Identit
 Billing, Redirect, Notifications and Identity each represent one application, with scalar provider
 or lookup settings. A plain service can take a domain name without acquiring business-rule controls.
 The reusable Service and worker preset is a grouping of actual deployments, with no package-level
-language, provider or runtime. Examples remain the later reconstruction assignments.
+language, provider or runtime. The first three reviewed studio studies are available through the
+opt-in studio Library; the remaining reconstruction assignments and default rollout stay later.
+
+### Reviewed studio studies
+
+[Mattermost, Enterprise and Streamly](docs/examples/studio-studies.md) have separate versioned
+finite factories and pinned goal manifests. Mattermost retains one modular server and its separate
+job process; Enterprise retains its domain API and independent worker; Streamly separates playback
+and heavy processing with C3 queues, shared resources and optional CDN provider identity. Internal
+libraries and business responsibilities remain source-linked C4b work. These studies select no
+executable runtime template, provision no provider and supply no passing application evidence.
+Original studies, deployment declarations and benchmark inputs remain unchanged. See the
+[studio registry](packages/spec/src/studio-examples/index.ts) and [UX14a evidence](docs/evidence/studio-ux/UX14a/README.md).
 
 Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
 has no runtime-support binding. Application entries can be created at C2 or as package members;

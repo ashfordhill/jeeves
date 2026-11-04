@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "items": {},
+  "architecture": {
+    "studio:context": {
+      "positions": {
+        "studio:context:system": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:creator": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:context:external-cdn": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:context:external-email": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:context:external-identity": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:context:reviewer": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:context:viewer": {
+          "x": 480,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 59.18987341772152,
+        "y": 285.0632911392405,
+        "zoom": 0.9324894514767933
+      }
+    },
+    "studio:containers": {
+      "positions": {
+        "studio:context:creator": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:reviewer": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:context:viewer": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:activity": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:api": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:element:cache": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:cdn": {
+          "x": 480,
+          "y": 144
+        },
+        "studio:element:console": {
+          "x": 720,
+          "y": 144
+        },
+        "studio:element:db": {
+          "x": 0,
+          "y": 288
+        },
+        "studio:element:email": {
+          "x": 240,
+          "y": 288
+        },
+        "studio:element:identity": {
+          "x": 480,
+          "y": 288
+        },
+        "studio:element:media": {
+          "x": 720,
+          "y": 288
+        },
+        "studio:element:originals": {
+          "x": 0,
+          "y": 432
+        },
+        "studio:element:playback": {
+          "x": 240,
+          "y": 432
+        },
+        "studio:element:processor": {
+          "x": 480,
+          "y": 432
+        },
+        "studio:element:search": {
+          "x": 720,
+          "y": 432
+        },
+        "studio:element:web": {
+          "x": 0,
+          "y": 576
+        }
+      },
+      "viewport": {
+        "x": 185.05900568114282,
+        "y": 216.3170083032088,
+        "zoom": 0.6515833211941392
+      }
+    },
+    "studio:service:activity": {
+      "positions": {
+        "studio:element:activity": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:cache": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:cdn": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:email": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:element:events": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:search": {
+          "x": 480,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 59.78666666666667,
+        "y": 269.5466666666667,
+        "zoom": 0.9822222222222222
+      }
+    },
+    "studio:service:api": {
+      "positions": {
+        "studio:element:api": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:console": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:events": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:identity": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:element:jobs": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:originals": {
+          "x": 480,
+          "y": 144
+        },
+        "studio:element:processor": {
+          "x": 720,
+          "y": 144
+        },
+        "studio:element:search": {
+          "x": 0,
+          "y": 288
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 288
+        }
+      },
+      "viewport": {
+        "x": 59.05,
+        "y": 225.16250000000002,
+        "zoom": 0.9208333333333333
+      }
+    },
+    "studio:service:console": {
+      "positions": {
+        "studio:element:api": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:console": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:identity": {
+          "x": 480,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 172,
+        "y": 334,
+        "zoom": 1
+      }
+    },
+    "studio:service:playback": {
+      "positions": {
+        "studio:element:cache": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:playback": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:web": {
+          "x": 720,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 59.05,
+        "y": 346.7125,
+        "zoom": 0.9208333333333333
+      }
+    },
+    "studio:service:processor": {
+      "positions": {
+        "studio:element:api": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:jobs": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:media": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:originals": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:processor": {
+          "x": 0,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 59.78666666666667,
+        "y": 263.6533333333333,
+        "zoom": 0.9822222222222222
+      }
+    },
+    "studio:service:web": {
+      "positions": {
+        "studio:element:api": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:cdn": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:identity": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:originals": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:playback": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 59.78666666666667,
+        "y": 269.5466666666667,
+        "zoom": 0.9822222222222222
+      }
+    }
+  }
+}

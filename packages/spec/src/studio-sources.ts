@@ -2,6 +2,9 @@
 import { z } from "zod";
 import { contractCanonical } from "./architecture-contracts.ts";
 import { idSchema } from "./ids.ts";
+import enterpriseGoal from "./studio-examples/enterprise.goal.json" with { type: "json" };
+import mattermostGoal from "./studio-examples/mattermost.goal.json" with { type: "json" };
+import streamlyGoal from "./studio-examples/streamly.goal.json" with { type: "json" };
 import { definitionRefSchema, type StudioModel } from "./studio-model.ts";
 
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
@@ -87,8 +90,19 @@ export const studioSourceSchema = z.discriminatedUnion("status", [
 ]);
 export type StudioSource = z.infer<typeof studioSourceSchema>;
 
-/** Later reconstructed examples register their immutable manifests here; no examples added in UX02. */
-export const studioGoalManifests: readonly StudioGoalManifest[] = [];
+/** Exact local source corpus; later example batches register only after their assigned review. */
+function freezeSource<T>(value: T): T {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(freezeSource);
+    Object.freeze(value);
+  }
+  return value;
+}
+export const studioGoalManifests: readonly StudioGoalManifest[] = freezeSource(
+  [mattermostGoal, enterpriseGoal, streamlyGoal].map((manifest) =>
+    studioGoalManifestSchema.parse(manifest),
+  ),
+);
 
 export async function studioGoalManifestHash(manifest: StudioGoalManifest): Promise<string> {
   const bytes = new TextEncoder().encode(

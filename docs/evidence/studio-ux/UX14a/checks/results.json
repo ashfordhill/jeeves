@@ -1,0 +1,69 @@
+{
+  "result": "passed",
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "pathPrefix": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "warnings": 2797,
+      "infos": 88,
+      "errors": 0,
+      "log": "lint.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "scope": "Full workspaces, existing source/test types and scripts",
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "advisory": "Existing large-chunk warning",
+      "log": "build.log"
+    },
+    {
+      "command": "One-off production goal/schema/API/portable inspection",
+      "exitCode": 0,
+      "requirementRows": 183,
+      "log": "goal-map.log"
+    },
+    {
+      "command": "Direct guarded Chromium inspection at 1440x900 and 1280x800",
+      "exitCode": 0,
+      "records": 76,
+      "realBrowserWrites": 36,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "externalRequests": 0,
+      "unownedWrites": 0,
+      "log": "browser.log"
+    },
+    {
+      "command": "Read-only legacy default inspection at both desktop sizes",
+      "exitCode": 0,
+      "log": "default.log"
+    },
+    {
+      "command": "Original project/file/feedback/frozen-source preservation",
+      "exitCode": 0,
+      "originalProjectsExact": 13,
+      "ownedProjectsDeletedVerified404": 32,
+      "log": "preservation.log"
+    },
+    {
+      "command": "Scoped formatting and staged whitespace including new logs",
+      "exitCode": 0
+    }
+  ],
+  "deferred": [
+    "Unit/E2E/template suites and maintenance",
+    "Snapshots",
+    "pnpm check",
+    "Live model/provider/agent execution",
+    "Application generation and runtime/benchmark verification"
+  ],
+  "fixtureTypingAdaptation": false
+}

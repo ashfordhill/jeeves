@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "items": {},
+  "architecture": {
+    "studio:context": {
+      "positions": {
+        "studio:context:system": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:admin": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:context:email-context": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:context:member": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:context:push-context": {
+          "x": 0,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 59.94594594594595,
+        "y": 274.36486486486484,
+        "zoom": 0.9954954954954955
+      }
+    },
+    "studio:containers": {
+      "positions": {
+        "studio:context:admin": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:context:member": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:db": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:email": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:files": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:element:jobs": {
+          "x": 240,
+          "y": 144
+        },
+        "studio:element:push": {
+          "x": 480,
+          "y": 144
+        },
+        "studio:element:server": {
+          "x": 720,
+          "y": 144
+        },
+        "studio:element:web": {
+          "x": 0,
+          "y": 288
+        }
+      },
+      "viewport": {
+        "x": 59.05,
+        "y": 241.7375,
+        "zoom": 0.9208333333333333
+      }
+    },
+    "studio:service:jobs": {
+      "positions": {
+        "studio:element:db": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:files": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:jobs": {
+          "x": 480,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 142,
+        "y": 340,
+        "zoom": 1
+      }
+    },
+    "studio:service:server": {
+      "positions": {
+        "studio:element:db": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:email": {
+          "x": 240,
+          "y": 0
+        },
+        "studio:element:files": {
+          "x": 480,
+          "y": 0
+        },
+        "studio:element:push": {
+          "x": 720,
+          "y": 0
+        },
+        "studio:element:server": {
+          "x": 0,
+          "y": 144
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 144
+        }
+      },
+      "viewport": {
+        "x": 59.78666666666667,
+        "y": 263.6533333333333,
+        "zoom": 0.9822222222222222
+      }
+    },
+    "studio:service:web": {
+      "positions": {
+        "studio:element:server": {
+          "x": 0,
+          "y": 0
+        },
+        "studio:element:web": {
+          "x": 240,
+          "y": 0
+        }
+      },
+      "viewport": {
+        "x": 262,
+        "y": 334,
+        "zoom": 1
+      }
+    }
+  }
+}

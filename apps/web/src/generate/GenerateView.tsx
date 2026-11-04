@@ -463,6 +463,9 @@ function Review({
     definition: resolveStudioDefinition(binding.definition),
     element: design.elements.find((item) => item.id === binding.element),
   }));
+  const sourceWork = (snapshot.intent.decisions ?? []).filter(
+    (item) => item.id.startsWith("studio-c4b-") && item.status === "Unresolved",
+  );
   return (
     <div className="generate-review-grid" data-review-project={project.id}>
       <section>
@@ -568,6 +571,35 @@ function Review({
           Project behavior and integration extensions need implementation and acceptance evidence.
           These boundaries are expected; drawing them does not implement them.
         </p>
+        {sourceWork.length ? (
+          <details>
+            <summary>{sourceWork.length} source-linked C4b obligations</summary>
+            <ul>
+              {sourceWork.map((item) => (
+                <li key={item.id}>
+                  <strong>{item.name}</strong>
+                  <p>{item.decision}</p>
+                  <details>
+                    <summary>Source and affected objects</summary>
+                    <small>{item.context}</small>
+                    {item.links
+                      .filter((ref) => ref.kind === "element")
+                      .map((ref) => (
+                        <span key={ref.id}>
+                          {" · "}
+                          {link(
+                            ref.id,
+                            design.elements.find((element) => element.id === ref.id)?.name ??
+                              ref.id,
+                          )}
+                        </span>
+                      ))}
+                  </details>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
         {definitions.length ? (
           <details>
             <summary>{definitions.length} studio foundation boundaries</summary>

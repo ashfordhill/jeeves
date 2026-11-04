@@ -1,0 +1,156 @@
+{
+  "owned": [
+    {
+      "id": "0edaa8d7-57e1-4d4d-a903-9d44570660c5",
+      "name": "UX14a owned layout streamly 1793798942079",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:29:02.142Z",
+      "updatedAt": "2026-11-04T13:29:02.142Z"
+    },
+    {
+      "id": "e7e43b19-03fc-47b4-94d0-242c06d663c0",
+      "name": "UX14a owned layout mattermost 1793798942079",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:29:09.677Z",
+      "updatedAt": "2026-11-04T13:29:09.677Z"
+    },
+    {
+      "id": "a22272ff-b296-407b-aec1-b8d71b9d4683",
+      "name": "UX14a owned layout enterprise 1793798942079",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:29:13.711Z",
+      "updatedAt": "2026-11-04T13:29:13.711Z"
+    }
+  ],
+  "allDeletedVerified404": true,
+  "records": [
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:service:activity",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:service:console",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:service:playback",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:service:processor",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-video-platform",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-mattermost-reference",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-mattermost-reference",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-mattermost-reference",
+      "scope": "studio:service:jobs",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-mattermost-reference",
+      "scope": "studio:service:server",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-mattermost-reference",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-enterprise-web",
+      "scope": "studio:containers",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-enterprise-web",
+      "scope": "studio:context",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-enterprise-web",
+      "scope": "studio:service:api",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-enterprise-web",
+      "scope": "studio:service:backoffice",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-enterprise-web",
+      "scope": "studio:service:web",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    },
+    {
+      "example": "studio-enterprise-web",
+      "scope": "studio:service:worker",
+      "semanticRevision": 1,
+      "layoutOnly": true
+    }
+  ],
+  "blocked": [],
+  "pageErrors": []
+}

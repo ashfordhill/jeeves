@@ -1,0 +1,630 @@
+{
+  "schemaVersion": 1,
+  "example": {
+    "id": "studio-enterprise-web",
+    "version": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "brief",
+      "path": "docs/reference/enterprise-architecture.md",
+      "commit": "152fc84ab94d791fdece31d5a4ead55f51905ee6",
+      "sha256": "59617c125564a4554b68939058bf9e157ad4af5e9de6afc827c554708de5ff0f"
+    },
+    {
+      "id": "factory",
+      "path": "packages/spec/src/enterprise-web-example.ts",
+      "commit": "152fc84ab94d791fdece31d5a4ead55f51905ee6",
+      "sha256": "8145bc7ce4d16e44bef181a6b81ce5ffebf6c0e785853dcf36956f9d2b6c9d3a"
+    }
+  ],
+  "requirements": [
+    {
+      "requirementId": "foundation",
+      "source": {
+        "sourceId": "brief",
+        "location": "Architecture scope and limits"
+      },
+      "summary": "Finite technical settings represent architecture intent; they select no executable runtime template.",
+      "disposition": "fixed-template-candidate",
+      "nodeIds": [
+        "web",
+        "backoffice",
+        "api",
+        "worker",
+        "queue",
+        "db",
+        "cache",
+        "storage",
+        "identity",
+        "billing",
+        "email"
+      ],
+      "connectionIds": [],
+      "remainingWork": "A separately approved C4a runtime/template task must implement and verify compatible foundations. All current studio generation remains unsupported."
+    },
+    {
+      "requirementId": "boundary-web",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container web"
+      },
+      "summary": "Customer web app: Lets customers browse the catalog, check out and follow their orders.",
+      "disposition": "represented-design",
+      "nodeIds": ["web"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-backoffice",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container backoffice"
+      },
+      "summary": "Back-office console: Lets operations and finance staff fulfil orders, manage the catalog and reconcile payments.",
+      "disposition": "represented-design",
+      "nodeIds": ["backoffice"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container api"
+      },
+      "summary": "Orders API: Owns customers, catalog, orders and payment state behind one authorized HTTP contract.",
+      "disposition": "represented-design",
+      "nodeIds": ["api"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-worker",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container worker"
+      },
+      "summary": "Order worker: Captures payments, sends notifications and reconciles settlements outside interactive requests.",
+      "disposition": "represented-design",
+      "nodeIds": ["worker"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-queue",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container queue"
+      },
+      "summary": "Order jobs: Buffers fulfilment, payment and notification work for the worker.",
+      "disposition": "represented-design",
+      "nodeIds": ["queue"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container db"
+      },
+      "summary": "Primary database: Stores authoritative customers, catalog, orders, payments and audit records.",
+      "disposition": "represented-design",
+      "nodeIds": ["db"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-cache",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container cache"
+      },
+      "summary": "Application cache: Caches catalog reads and session lookups with bounded freshness and source fallback.",
+      "disposition": "represented-design",
+      "nodeIds": ["cache"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-storage",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container storage"
+      },
+      "summary": "Document storage: Keeps invoices, export files and product images behind signed URLs.",
+      "disposition": "represented-design",
+      "nodeIds": ["storage"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container identity"
+      },
+      "summary": "Identity provider: Authenticates customers and staff and issues verified identities; staff use enterprise SSO.",
+      "disposition": "represented-design",
+      "nodeIds": ["identity"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-billing",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container billing"
+      },
+      "summary": "Payment provider: Authorizes, captures and refunds card payments and sends signed payment events.",
+      "disposition": "represented-design",
+      "nodeIds": ["billing"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "boundary-email",
+      "source": {
+        "sourceId": "factory",
+        "location": "Container email"
+      },
+      "summary": "E-mail delivery provider: Delivers transactional order messages without owning customer accounts.",
+      "disposition": "represented-design",
+      "nodeIds": ["email"],
+      "connectionIds": [],
+      "remainingWork": "Design boundary only; implementation, integration and verification remain later."
+    },
+    {
+      "requirementId": "relationship-web-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection web-api"
+      },
+      "summary": "Browses catalog, places and tracks orders; source protocol HTTPS/JSON; Request / response; User identity",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "api"],
+      "connectionIds": ["web-api"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-backoffice-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection backoffice-api"
+      },
+      "summary": "Fulfils orders and manages catalog; source protocol HTTPS/JSON; Request / response; User identity",
+      "disposition": "represented-design",
+      "nodeIds": ["backoffice", "api"],
+      "connectionIds": ["backoffice-api"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-web-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection web-identity"
+      },
+      "summary": "Signs customers in; source protocol OIDC/HTTPS; Request / response; User identity",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "identity"],
+      "connectionIds": ["web-identity"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-backoffice-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection backoffice-identity"
+      },
+      "summary": "Signs staff in with SSO; source protocol OIDC/HTTPS; Request / response; User identity",
+      "disposition": "represented-design",
+      "nodeIds": ["backoffice", "identity"],
+      "connectionIds": ["backoffice-identity"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-api-identity",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-identity"
+      },
+      "summary": "Validates access tokens; source protocol OIDC/HTTPS; Request / response; Service identity",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "identity"],
+      "connectionIds": ["api-identity"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-api-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-db"
+      },
+      "summary": "Reads and writes orders, catalog and customers; source protocol SQL; Request / response; Private network",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "db"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-api-cache",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-cache"
+      },
+      "summary": "Caches catalog and session lookups; source protocol RESP/TLS; Request / response; Private network",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "cache"],
+      "connectionIds": ["api-cache"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-api-storage",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-storage"
+      },
+      "summary": "Stores invoices and product images; source protocol HTTPS/S3; Request / response; Service identity",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "storage"],
+      "connectionIds": ["api-storage"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-api-queue",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection api-queue"
+      },
+      "summary": "Enqueues order work; source protocol AMQP/TLS; Asynchronous; Private network",
+      "disposition": "represented-design",
+      "nodeIds": ["api", "queue"],
+      "connectionIds": ["api-queue"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-queue-worker",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection queue-worker"
+      },
+      "summary": "Delivers order jobs; source protocol AMQP/TLS; Asynchronous; Private network",
+      "disposition": "represented-design",
+      "nodeIds": ["queue", "worker"],
+      "connectionIds": ["queue-worker"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-worker-db",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection worker-db"
+      },
+      "summary": "Reads and writes order and payment state; source protocol SQL; Request / response; Private network",
+      "disposition": "represented-design",
+      "nodeIds": ["worker", "db"],
+      "connectionIds": ["worker-db"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-worker-billing",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection worker-billing"
+      },
+      "summary": "Captures and refunds payments; source protocol HTTPS/JSON; Request / response; Service identity",
+      "disposition": "represented-design",
+      "nodeIds": ["worker", "billing"],
+      "connectionIds": ["worker-billing"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-billing-api",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection billing-api"
+      },
+      "summary": "Delivers signed payment events; source protocol HTTPS/JSON; Asynchronous; Service identity",
+      "disposition": "represented-design",
+      "nodeIds": ["billing", "api"],
+      "connectionIds": ["billing-api"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "relationship-worker-email",
+      "source": {
+        "sourceId": "factory",
+        "location": "Connection worker-email"
+      },
+      "summary": "Sends order confirmations and updates; source protocol HTTPS; Request / response; Service identity",
+      "disposition": "represented-design",
+      "nodeIds": ["worker", "email"],
+      "connectionIds": ["worker-email"],
+      "remainingWork": "No runtime wiring or guarantee is supplied."
+    },
+    {
+      "requirementId": "behavior-auth",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component auth"
+      },
+      "summary": "Authentication & authorization: Validates identities from the identity provider and enforces customer and staff permissions.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-identity", "api-cache"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-customers",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component customers"
+      },
+      "summary": "Customers & accounts: Owns customer profiles, addresses and account preferences.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-catalog",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component catalog"
+      },
+      "summary": "Product catalog: Owns products, prices and availability; serves cached catalog reads.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db", "api-cache", "api-storage"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-orders",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component orders"
+      },
+      "summary": "Order management: Creates orders, tracks their lifecycle and hands asynchronous work to the queue.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db", "api-queue"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-payments",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component payments"
+      },
+      "summary": "Payment events: Verifies signed payment events from the provider and applies outcomes to orders.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["billing-api", "api-db"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-documents",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component documents"
+      },
+      "summary": "Invoices & documents: Renders invoices and exports and stores them for signed download.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-storage"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-audit",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component audit"
+      },
+      "summary": "Audit log: Records who changed orders, catalog and customer data, and when.",
+      "disposition": "c4b",
+      "nodeIds": ["api"],
+      "connectionIds": ["api-db"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-fulfilment",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component fulfilment"
+      },
+      "summary": "Order fulfilment jobs: Consumes order jobs idempotently and advances order state.",
+      "disposition": "c4b",
+      "nodeIds": ["worker"],
+      "connectionIds": ["queue-worker", "worker-db"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-capture",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component capture"
+      },
+      "summary": "Payment capture: Captures and refunds payments with the provider and records the result.",
+      "disposition": "c4b",
+      "nodeIds": ["worker"],
+      "connectionIds": ["worker-billing", "worker-db"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-notify",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component notify"
+      },
+      "summary": "Order notifications: Sends confirmation, shipping and refund messages according to customer preferences.",
+      "disposition": "c4b",
+      "nodeIds": ["worker"],
+      "connectionIds": ["worker-email"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-reconcile",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component reconcile"
+      },
+      "summary": "Settlement reconciliation: Compares provider settlements with recorded payments every night and flags mismatches.",
+      "disposition": "c4b",
+      "nodeIds": ["worker"],
+      "connectionIds": ["worker-billing", "worker-db"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-shell",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component shell"
+      },
+      "summary": "App shell & routing: Hosts navigation, layout and route-level loading for every customer screen.",
+      "disposition": "c4b",
+      "nodeIds": ["web"],
+      "connectionIds": [],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-session",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component session"
+      },
+      "summary": "Customer session: Signs customers in through the identity provider and keeps access tokens fresh.",
+      "disposition": "c4b",
+      "nodeIds": ["web"],
+      "connectionIds": ["web-identity"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-shop",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component shop"
+      },
+      "summary": "Catalog & checkout screens: Presents products, the basket and checkout.",
+      "disposition": "c4b",
+      "nodeIds": ["web"],
+      "connectionIds": [],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-account",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component account"
+      },
+      "summary": "Orders & account screens: Shows order history, tracking and profile settings.",
+      "disposition": "c4b",
+      "nodeIds": ["web"],
+      "connectionIds": [],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-client",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component client"
+      },
+      "summary": "Orders API client: Maps the Orders API contract to typed calls with consistent error handling.",
+      "disposition": "c4b",
+      "nodeIds": ["web"],
+      "connectionIds": ["web-api"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-staff-session",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component staff-session"
+      },
+      "summary": "Staff session (SSO): Signs staff in through enterprise SSO and exposes their roles to the screens.",
+      "disposition": "c4b",
+      "nodeIds": ["backoffice"],
+      "connectionIds": ["backoffice-identity"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-staff-screens",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component staff-screens"
+      },
+      "summary": "Fulfilment & catalog screens: Order queues, fulfilment actions, catalog editing and payment reconciliation views.",
+      "disposition": "c4b",
+      "nodeIds": ["backoffice"],
+      "connectionIds": [],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "behavior-staff-client",
+      "source": {
+        "sourceId": "factory",
+        "location": "Component staff-client"
+      },
+      "summary": "Orders API client: Calls staff operations on the Orders API with the signed-in staff identity.",
+      "disposition": "c4b",
+      "nodeIds": ["backoffice"],
+      "connectionIds": ["backoffice-api"],
+      "remainingWork": "Implement the pinned source responsibility and its contracts/configuration inside its existing application. Reuse appropriate libraries; no new service or business form is implied."
+    },
+    {
+      "requirementId": "journey-place-order",
+      "source": {
+        "sourceId": "factory",
+        "location": "Scenario place-order (including alternatives/outcomes)"
+      },
+      "summary": "Customer places an order:",
+      "disposition": "c4b",
+      "nodeIds": ["web", "api", "db", "queue", "worker", "billing", "email"],
+      "connectionIds": [
+        "web-api",
+        "api-db",
+        "api-queue",
+        "queue-worker",
+        "worker-billing",
+        "worker-email"
+      ],
+      "remainingWork": "Implement and verify every pinned main/alternative step, failure outcome and invariant. Authored expectations and recovery proposals are not passing runtime evidence."
+    },
+    {
+      "requirementId": "journey-payment-event",
+      "source": {
+        "sourceId": "factory",
+        "location": "Scenario payment-event (including alternatives/outcomes)"
+      },
+      "summary": "Provider reports a payment outcome:",
+      "disposition": "c4b",
+      "nodeIds": ["api", "db", "queue", "billing"],
+      "connectionIds": ["billing-api", "api-db", "api-queue"],
+      "remainingWork": "Implement and verify every pinned main/alternative step, failure outcome and invariant. Authored expectations and recovery proposals are not passing runtime evidence."
+    },
+    {
+      "requirementId": "tenancy-and-authorization",
+      "source": {
+        "sourceId": "factory",
+        "location": "system, authorization components and order scenarios"
+      },
+      "summary": "Organization tenancy, customer/staff roles, audit and provider token checks are application policies; private network intent does not authorize a caller.",
+      "disposition": "c4b",
+      "nodeIds": ["api", "worker", "db", "identity", "backoffice"],
+      "connectionIds": [],
+      "remainingWork": "Implement and verify tenant isolation and customer/staff access through requests, jobs and data access. No policy/role/schema editor or enterprise certification is supplied."
+    },
+    {
+      "requirementId": "context-actors",
+      "source": {
+        "sourceId": "factory",
+        "location": "C1 nodes and context relationships"
+      },
+      "summary": "C1 actors: Customer, Operations staff, Finance team. External provider identities link to their existing C2 boundaries; context lines do not generate network wiring.",
+      "disposition": "represented-design",
+      "nodeIds": ["web", "backoffice"],
+      "connectionIds": [],
+      "remainingWork": "Browser experiences and provider integration require later implementation; actor/context coverage is architecture intent."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "scenario": "legacy editor remains default",
+      "originalProjectReadOnly": "684f5790-df6b-4447-91d1-668cf7e1cc87"
+    },
+    {
+      "width": 1280,
+      "scenario": "legacy editor remains default",
+      "originalProjectReadOnly": "684f5790-df6b-4447-91d1-668cf7e1cc87"
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "consoleMessages": [],
+  "guardsBeforePage": true,
+  "noWrites": true
+}
