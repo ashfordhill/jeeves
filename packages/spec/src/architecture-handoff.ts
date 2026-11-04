@@ -12,6 +12,7 @@ import { handoffScopeSchema } from "./architecture-handoff-model.ts";
 import type { ArchitectureLibraryEntry } from "./architecture-library.ts";
 import { describeArchitecturePattern } from "./architecture-patterns.ts";
 import { reviewArchitecture } from "./architecture-review.ts";
+import { architectureReviewReferences } from "./architecture-review-model.ts";
 import { type ArchitectureProvision, architectureViews } from "./architecture-view.ts";
 import { backendCapabilityDescriptorSchema } from "./backend-implementation-model.ts";
 import { implementationKey } from "./backend-implementations.ts";
@@ -28,6 +29,11 @@ import type { TemplateLookup } from "./manifest.ts";
 import { plannedCapability } from "./planned-capabilities.ts";
 import { connectionPresentation } from "./relationship-display.ts";
 import { scenarioPaths, scenarioReview } from "./scenarios.ts";
+import {
+  resolveStudioSources,
+  type StudioGoalManifest,
+  studioSourceSchema,
+} from "./studio-sources.ts";
 import { validateDesign } from "./validate.ts";
 
 const json = z.json();
@@ -97,6 +103,7 @@ export const architectureHandoffSchema = z
     designFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
     scope: handoffScopeSchema.optional(),
     provenance: json.optional(),
+    studioSources: z.array(studioSourceSchema).max(1).optional(),
     status: z.enum(["Needs review", "Blocked", "Stale", "Ready for implementation review"]),
     limitation: z.string(),
     containers: z.array(
@@ -296,6 +303,7 @@ export async function buildArchitectureHandoff(input: {
   provision?: ArchitectureProvision;
   library?: ArchitectureLibraryEntry[];
   origin?: { sourceProjectId: string; sourceRevision: number; recipeMode: string };
+  studioSourceRegistry?: readonly StudioGoalManifest[];
 }): Promise<ArchitectureHandoff> {
   const { design, project, lookup, provision } = input;
   const a =
@@ -320,6 +328,15 @@ export async function buildArchitectureHandoff(input: {
       ...(assignment && { owner: assignment.owner, blocks: assignment.blocks }),
     });
   };
+  const studioSources = await resolveStudioSources(a.studio?.origin, input.studioSourceRegistry);
+  for (const source of studioSources ?? [])
+    if (source.status !== "resolved")
+      open(
+        "scope",
+        `studio-source:${source.example.id}@${source.example.version}`,
+        `Studio goal source is ${source.status}; no source or version was substituted.`,
+        true,
+      );
   for (const f of validateDesign(design, lookup).filter(isStructural))
     open(
       "structure",
@@ -441,6 +458,17 @@ export async function buildArchitectureHandoff(input: {
         available: false,
         boundary: e.planned,
         behavior: [plannedCapability(e.planned)?.description ?? "Definition unavailable"],
+      });
+    const binding = a.studio?.elements.find((binding) => binding.element === e.id);
+    if (binding)
+      coverage.push({
+        id: e.id,
+        name: e.name,
+        category: "planned",
+        version: binding.definition.version,
+        available: false,
+        boundary: `${binding.definition.id}@${binding.definition.version}`,
+        behavior: ["Studio design intent only; no executable runtime resolver."],
       });
   }
   for (const c of a.components ?? [])
@@ -591,12 +619,32 @@ export async function buildArchitectureHandoff(input: {
   const required =
     a.interfaces?.filter((i) => i.direction === "required" && i.necessity === "required") ?? [];
   const blocked = openItems.some((i) => i.critical);
-  const stale = !!scope?.review && scope.review.fingerprint !== fingerprint;
+  const refs = architectureReviewReferences(design);
+  const staleSourceDecisions =
+    a.studio &&
+    a.decisions?.some(
+      (decision) =>
+        decision.id.startsWith("studio-c4b-") &&
+        decision.status === "Unresolved" &&
+        decision.links.some(
+          (link) => !refs.some((ref) => ref.kind === link.kind && ref.id === link.id),
+        ),
+    );
+  if (staleSourceDecisions)
+    open(
+      "scope",
+      "studio-source-links",
+      "Source-linked objects were removed. Unresolved C4b decisions retain their original source links; review is stale.",
+      true,
+    );
+  const stale =
+    (!!scope?.review && scope.review.fingerprint !== fingerprint) || staleSourceDecisions;
   return architectureHandoffSchema.parse({
     schema: "jeeves.architecture-handoff",
     schemaVersion: 1,
     project: { id: project.id, name: project.name, revision: design.revision },
     designFingerprint: fingerprint,
+    ...(studioSources && { studioSources }),
     scope,
     provenance: sanitizeHandoff({
       ...(input.origin && { target: input.origin }),
@@ -746,6 +794,15 @@ export function handoffMarkdown(snapshot: ArchitectureHandoff) {
         `| ${mdEscape(r.id)} | ${r.category} | ${r.version ?? "—"} | ${r.available ? "yes" : "no"} | ${mdEscape(r.boundary)} | ${mdEscape(r.behavior.join("; "))} |`,
     ),
   ]);
+  if (s.studioSources?.length)
+    section(
+      "studio-sources",
+      "Studio goal provenance",
+      s.studioSources.map(
+        (source) =>
+          `- ${mdEscape(source.example.id)}@${source.example.version}: ${source.status}; SHA-256 ${source.goalManifestSha256}. Exact resolved manifest is in [JSON](./architecture-handoff.json). Seed provenance does not establish satisfaction after edits.`,
+      ),
+    );
   section("responsibilities", "C2 and C3 responsibilities", [
     ...s.containers.map(
       (c) =>

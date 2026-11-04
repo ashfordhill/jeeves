@@ -45,6 +45,7 @@ export const reviewReferenceSchema = z.strictObject({
   kind: z.enum([
     "system",
     "element",
+    "package",
     "component",
     "external-system",
     "connection",
@@ -96,6 +97,7 @@ export function architectureReviewReferences(
   return [
     { kind: "system", id: "system", name: m?.system.name ?? "System" },
     ...group("element", design.elements),
+    ...group("package", m?.studio?.packages),
     ...group("connection", design.connections),
     ...group("component", m?.components),
     ...group("component-relationship", m?.componentRelationships),
@@ -145,7 +147,10 @@ export function validateArchitectureReview(design: DesignDocument): Finding[] {
       if ("links" in item) {
         const references = architectureReviewReferences(design);
         for (const link of item.links)
-          if (!references.some((r) => r.kind === link.kind && r.id === link.id))
+          if (
+            !references.some((r) => r.kind === link.kind && r.id === link.id) &&
+            !(m.studio && item.id.startsWith("studio-c4b-") && item.status === "Unresolved")
+          )
             invalid(`linked ${link.kind} ${link.id} was removed; update the decision first.`);
       } else {
         for (const key of ["binding", "fallback", "update"] as const)

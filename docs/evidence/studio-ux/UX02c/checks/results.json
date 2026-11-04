@@ -1,0 +1,70 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "pathPrefix": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "log": "lint-complete.log",
+      "warnings": 2797,
+      "infos": 88,
+      "errors": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": "typecheck-complete.log",
+      "scope": "all workspaces and scripts including existing source/test types"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "log": "build-complete.log",
+      "advisory": "Existing chunks greater than 500 kB"
+    },
+    {
+      "command": "pnpm --filter @jeeves/server exec tsx ../../.jeeves-work/ux02c-inspect.ts",
+      "exitCode": 0,
+      "log": "model-inspection.log",
+      "observations": 5
+    },
+    {
+      "command": "pnpm --filter @jeeves/server exec tsx ../../.jeeves-work/ux02c-api.ts",
+      "exitCode": 0,
+      "log": "api-inspection.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/server exec tsx ../../.jeeves-work/ux02c-final-observe.ts",
+      "exitCode": 0,
+      "log": "compatibility-inspection.log"
+    },
+    {
+      "command": "node .jeeves-work/ux02c-browser.mjs",
+      "exitCode": 0,
+      "log": "browser-inspection.log"
+    }
+  ],
+  "earlierAttempts": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 1,
+      "log": "lint.log",
+      "resolution": "Formatted new observation JSON; lint-complete.log passes with unchanged warning counts."
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 1,
+      "log": "typecheck-final.log",
+      "resolution": "Implemented package handling in production review-reference lookup; typecheck-complete.log passes."
+    }
+  ],
+  "deferred": [
+    "pnpm check",
+    "unit suites and maintenance",
+    "E2E suites and maintenance",
+    "template suites",
+    "snapshot repair"
+  ],
+  "modelBoundary": "Full finite catalog, projected views, authoring UI and new runtimes are later units/tasks."
+}

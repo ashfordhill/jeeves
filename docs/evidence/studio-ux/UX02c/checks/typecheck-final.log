@@ -1,0 +1,32 @@
+$ pnpm -r --no-bail typecheck && tsc -p scripts/tsconfig.json
+packages/analytics typecheck$ tsc -p .
+packages/http-pool typecheck$ tsc -p .
+packages/providers typecheck$ tsc -p .
+packages/product-ui typecheck$ tsc -p .
+packages/analytics typecheck: Done
+packages/qr-artwork typecheck$ tsc -p .
+packages/http-pool typecheck: Done
+templates/http-service/runtime typecheck$ tsc -p .
+packages/providers typecheck: Done
+templates/postgres/runtime typecheck$ tsc -p .
+packages/product-ui typecheck: Done
+templates/web-app/runtime typecheck$ tsc -p .
+packages/qr-artwork typecheck: Done
+packages/spec typecheck$ tsc -p .
+templates/web-app/runtime typecheck: Done
+templates/postgres/runtime typecheck: Done
+templates/http-service/runtime typecheck: Done
+templates/rest-api-client/runtime typecheck$ tsc -p .
+templates/rest-api-server/runtime typecheck$ tsc -p .
+templates/rest-api-server/runtime typecheck: Done
+templates/rest-api-client/runtime typecheck: Done
+packages/spec typecheck: src/architecture-review.ts(87,19): error TS7053: Element implicitly has an 'any' type because expression of type '"binding" | "component" | "component-relationship" | "connection" | "contract" | "dataset" | "element" | "external-system" | "interface" | "objective" | "package" | "requirement"' can't be used to index type '{ element: { id: string; name: string; classification?: { kind?: "Application" | "Data store" | "Deployment infrastructure" | "External system" | "Unspecified" | undefined; ownership?: "External responsibility" | ... 2 more ... | undefined; operation?: "Externally operated" | ... 2 more ... | undefined; } | undefine...'.
+packages/spec typecheck:   Property 'package' does not exist on type '{ element: { id: string; name: string; classification?: { kind?: "Application" | "Data store" | "Deployment infrastructure" | "External system" | "Unspecified" | undefined; ownership?: "External responsibility" | ... 2 more ... | undefined; operation?: "Externally operated" | ... 2 more ... | undefined; } | undefine...'.
+packages/spec typecheck: src/architecture-review.ts(88,8): error TS7006: Parameter 'v' implicitly has an 'any' type.
+packages/spec typecheck: Failed
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_FAIL
+
+  × "pnpm recursive run" failed in 1 packages
+
+[ELIFECYCLE] Command failed with exit code 1.

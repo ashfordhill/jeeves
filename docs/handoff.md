@@ -8941,3 +8941,79 @@ UX02b is complete within the atomic editing/generation guard boundary. UX02c own
 portable preservation and legacy display adaptation; UX03 owns full definition descriptors. New
 studio forms/toolbar/chat integration and runtime availability remain later work. This worker stops
 after the scoped UX02b local commit and does not advance the queue.
+
+## 2026-11-04 — UX02c: studio copy, portable preservation and legacy adapter (complete)
+
+Executed UX02c only on primary main from UX02b commit
+`2d8b0f965f0675c8572acac603ed449f20348ec4` under the owner's sequential fresh-worker batch
+contract. No delegation, branch/worktree, provider/agent execution, application generation,
+runtime/catalog registration, historical factory/benchmark repair or sibling edit. P73a/P73b and
+the backend batch remain paused. This worker stops after its scoped local commit.
+
+Added exported studio reference mapping for every package/member/resource owner, frontend serving,
+CDN origin, Redirect lookup and connection binding reference. Immutable definition refs/origin stay
+unchanged. Existing Library selection/extraction/preview/apply now supports studio packages and
+owned resources, exact dependency records and explicit reuse mappings. An unresolved external
+mapping rejects even with one candidate; compatible explicit reuse keeps destination settings and
+ownership. Insertion retains the destination seed origin and applicable source/C4b descriptions.
+Package IDs join fragment/collision/review-reference enumeration. C4b source decision IDs preserve
+their reserved prefix through local normalization and repeated insertion.
+
+Added strict full design/layout portable exchange helpers, retaining backend data, annotations and
+old focused/deployment views. Existing bounded implementation handoff now includes exact studio
+settings/design-only coverage and optional typed studioSources. The strict goal-manifest schema,
+local exact-version resolver and canonical SHA-256 checks expose unavailable/hash-mismatched
+sources without fetch or latest substitution. Resolved portable imports verify identity/hash.
+The registry intentionally has no reconstructed examples until their later assignments. Relative
+source paths are documentation references only. Full project exchange UI adoption is later work;
+existing handoff API/UI already consumes the extended handoff builder.
+
+Added studio layout key pruning and studio-aware target comparisons. Target workspaces retain
+their existing identity-preserving copy/baseline semantics; reusable insertion creates disjoint
+internal IDs. Added a pure read-only legacy display adapter using explicit known capability/template
+IDs. Unknown families use a generic symbol, missing technical values remain absent, real component
+IDs are summarized, and the edit allowlist is canonical name/description plus context action text.
+No saved document is converted/defaulted on read. New unresolved studio-c4b decisions preserve
+historical links after explicit target deletion and mark implementation review Stale; old backend
+and legacy reference validation is unchanged. Package/owned-resource refs also affect review lookup.
+
+Evidence: `docs/evidence/studio-ux/UX02c/`. Five grouped model observations prove two independent
+copies of two services, shared queue, lookup connections, package owner, bundled browser and CDN;
+each copy has 13 disjoint board/package IDs and remapped architecture declarations. An explicitly
+reused API retains its ID. A separate worker composition reuses one existing shared queue while
+retaining its destination owner. Missing mappings and exact-definition mismatches reject. All 14
+settings kinds round-trip with the rich Discourse backend, old note and focused layout. Portable
+handoff retains studio/backend/source data; wrong hashes, unknown versions and tampered resolved
+manifests are explicit. Source decisions survive removal and become Stale. Layout pruning retains
+only live studio identities and preserves old views. Legacy v1 stays v1 with studio absent; unknown
+9.9.9 definition refs are preserved and unsupported. All nine old factories emit unchanged UX01
+semantic/layout hashes. Combined UX02 evidence links the UX02a schema and UX02b editing/history/
+generation guard observations without rerunning deferred suites.
+
+Direct API observations prove owned target copy/reload preserves settings/origin/annotations/layouts,
+reports target studio edits and never changes its source. Two layout-only saves preserve semantic
+revisions/hashes; the legacy design gains no studio metadata. All three disposable projects were
+deleted with 204 and verified 404. Direct browser inspection covers existing QRWTY C2/API C3 at
+1440×900 and 1280×800 and browser-imported remapping/portable/legacy helpers. Four views retain
+16/22 cards and 21/39 labels. Existing saved cameras still extend outside view. A strict guard
+installed before page creation allowed only reads; no write was attempted, and there were no
+console warnings/errors, page errors or HTTP errors. All 13 pre-existing projects retain their
+semantic/layout hashes and revisions in both API and browser observations.
+
+Required checks, Node 24.21.0 / pnpm 12.16.1 with the Node path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings / 88 infos, no errors.
+- `pnpm typecheck`: exit 0 across all workspaces/scripts, including existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing >500 kB chunk advisory.
+- One-off model/API/compatibility/browser observations and preservation/formatting/staged whitespace:
+  passed with the bounded results above. All seven UX01 fixtures, 21 source/copy feedback pairs,
+  48 frozen benchmark files and earlier handoff bytes are preserved. CATALOG describes these
+  implemented model helpers without changing runtime availability. `.jeeves-feedback/` is untouched.
+
+Routine corrections: early inspection fixture field names/working directory, one transient dev-server
+watch restart refusal, and new JSON formatting were corrected. Adding the package reference kind
+exposed a missing production review lookup case; implementing that case fixed typecheck. No old test
+fixture, snapshot, source factory or benchmark changed. Unit/E2E/template suites and maintenance,
+including `pnpm check`, remain deferred. No new studio projection/catalog/UI or runtime outcome is
+claimed. UX02a/UX02b/UX02c are complete within their model/edit/exchange boundary. UX03 owns finite
+catalog descriptors and is assigned separately by the coordinator; this worker does not advance.

@@ -70,6 +70,19 @@ export function pruneArchitectureLayout(
 ): LayoutDocument {
   if (!layout.architecture) return layout;
   const alive = (key: string): boolean => {
+    // Studio identities are canonical references, not another graph. Preserve old view keys below.
+    if (key.startsWith("studio:")) {
+      const [, kind, id] = key.split(":");
+      if (kind === "system") return !!design.architecture;
+      if (kind === "package")
+        return !!design.architecture?.studio?.packages.some((item) => item.id === id);
+      if (kind === "element" || kind === "service" || kind === "resource")
+        return design.elements.some((item) => item.id === id);
+      if (kind === "context")
+        return id === "system" || !!design.architecture?.nodes.some((item) => item.id === id);
+      if (kind === "connection") return design.connections.some((item) => item.id === id);
+      return false;
+    }
     if (key.startsWith("deployment:")) {
       const [, environment, id, replica] = key.split(":");
       const env = design.architecture?.deployments?.find((e) => e.id === environment);
@@ -111,6 +124,16 @@ export function pruneArchitectureLayout(
   };
   const architecture = Object.fromEntries(
     Object.entries(layout.architecture).flatMap(([key, view]) => {
+      if (
+        key.startsWith("studio:service:") &&
+        !design.elements.some((item) => item.id === key.slice(15))
+      )
+        return [];
+      if (
+        key.startsWith("studio:package:") &&
+        !design.architecture?.studio?.packages.some((item) => item.id === key.slice(15))
+      )
+        return [];
       if (
         key.startsWith("deployment:") &&
         !design.architecture?.deployments?.some((e) => e.id === key.slice(11))

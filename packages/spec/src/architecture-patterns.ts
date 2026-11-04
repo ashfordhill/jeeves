@@ -21,6 +21,7 @@ import {
   type Connection,
   connectionSchema,
   type DesignDocument,
+  designIds,
   type Element,
   elementSchema,
 } from "./design.ts";
@@ -28,6 +29,8 @@ import { idSchema, versionSchema } from "./ids.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import type { OperationInput } from "./operations.ts";
 import { componentHostRole, plannedCapability } from "./planned-capabilities.ts";
+import { definitionRefSchema, studioSettingsSchema } from "./studio-model.ts";
+import { mapStudioModel, mapStudioSettings } from "./studio-references.ts";
 
 const roleSchema = z.strictObject({
   id: idSchema,
@@ -43,6 +46,10 @@ const roleSchema = z.strictObject({
   hostRoles: z.array(z.enum(["frontend", "service", "worker", "database", "external"])),
   storeKind: z.literal("relational-records").optional(),
   create: elementSchema.optional(),
+  /** Required studio dependencies bind exact settings without adopting source ownership. */
+  studio: z
+    .strictObject({ definition: definitionRefSchema, settings: studioSettingsSchema })
+    .optional(),
 });
 export const architectureFragmentSchema = z.strictObject({
   formatVersion: z.literal(1),
@@ -791,6 +798,7 @@ export function mappedArchitecture(
   const a = fragment.architecture;
   return {
     ...a,
+    ...(a.studio ? { studio: mapStudioModel(a.studio, ids) } : {}),
     ...(a.backend ? { backend: mapBackendModel(a.backend, ids) } : {}),
     nodes: a.nodes.map((n) => ({
       ...n,
@@ -962,9 +970,7 @@ export const fragmentCollections = [
 function occupiedIds(design: DesignDocument): Set<string> {
   return new Set([
     "system",
-    ...design.elements.flatMap((e) => [e.id, ...e.attachments.map((a) => a.id)]),
-    ...design.connections.map((c) => c.id),
-    ...design.annotations.map((a) => a.id),
+    ...Array.from(designIds(design), (item) => item.id),
     ...backendDeclarations(design.architecture?.backend).map((v) => v.id),
     ...["nodes", "relationships", "patternInstances", ...fragmentCollections].flatMap((key) =>
       (
@@ -979,6 +985,7 @@ export function fragmentIds(fragment: ArchitectureFragment) {
     ...new Set([
       ...fragment.roles.map((r) => r.id),
       ...fragment.connections.map((c) => c.id),
+      ...(fragment.architecture.studio?.packages.map((item) => item.id) ?? []),
       ...backendDeclarations(fragment.architecture.backend).map((v) => v.id),
       ...fragmentCollections.flatMap(
         (key) => fragment.architecture[key]?.map((item) => item.id) ?? [],
@@ -998,6 +1005,34 @@ function sourceMatches(
   const ids = instance.identities;
   if (fragmentIds(fragment).some((id) => !ids[id])) return false;
   const expected = mappedArchitecture(fragment, ids);
+  if (expected.studio) {
+    const actual = design.architecture?.studio;
+    if (!actual) return false;
+    for (const binding of expected.studio.elements)
+      if (
+        !contains(
+          actual.elements.find((item) => item.element === binding.element),
+          binding,
+        )
+      )
+        return false;
+    for (const item of expected.studio.packages)
+      if (
+        !contains(
+          actual.packages.find((value) => value.id === item.id),
+          semantic(item),
+        )
+      )
+        return false;
+    for (const binding of expected.studio.connections)
+      if (
+        !contains(
+          actual.connections.find((item) => item.connection === binding.connection),
+          binding,
+        )
+      )
+        return false;
+  }
   for (const key of backendCollections)
     for (const item of expected.backend?.[key] ?? []) {
       const actual = design.architecture?.backend?.[key]?.find(
@@ -1018,6 +1053,18 @@ function sourceMatches(
     }
     const element = design.elements.find((e) => e.id === ids[role.id]);
     if (!element || !hostMatches(element, role, lookup)) return false;
+    if (role.studio) {
+      const actual = design.architecture?.studio?.elements.find(
+        (binding) => binding.element === element.id,
+      );
+      if (
+        !actual ||
+        contractCanonical(actual.definition) !== contractCanonical(role.studio.definition) ||
+        contractCanonical(actual.settings) !==
+          contractCanonical(mapStudioSettings(role.studio.settings, ids))
+      )
+        return false;
+    }
     if (
       role.kind === "boundary" &&
       role.create &&
@@ -1232,7 +1279,12 @@ export function previewArchitecturePattern(
   const used = occupiedIds(design);
   if (used.has(req.instanceId)) result.errors.push("Choose a fresh pattern instance identity.");
   const ids: Record<string, string> = Object.fromEntries(
-    fragmentIds(fragment).map((id) => [id, `${req.instanceId}-${id}`]),
+    fragmentIds(fragment).map((id) => [
+      id,
+      id.startsWith("studio-c4b-")
+        ? `studio-c4b-${req.instanceId}-${id.slice(11)}`
+        : `${req.instanceId}-${id}`,
+    ]),
   );
   const reused = new Set<string>();
   const contracts = new Map<string, string>();
@@ -1283,7 +1335,21 @@ export function previewArchitecturePattern(
           });
       }
     } else if (role.kind === "host") {
-      for (const e of design.elements.filter((e) => hostMatches(e, role, lookup)))
+      const studioBinding =
+        role.studio ??
+        fragment.architecture.studio?.elements.find((binding) => binding.element === role.id);
+      for (const e of design.elements.filter((e) => {
+        if (!hostMatches(e, role, lookup)) return false;
+        if (!studioBinding) return true;
+        const actual = design.architecture?.studio?.elements.find(
+          (binding) => binding.element === e.id,
+        );
+        return (
+          !!actual &&
+          contractCanonical(actual.definition) === contractCanonical(studioBinding.definition) &&
+          actual.settings.kind === studioBinding.settings.kind
+        );
+      }))
         candidates.push({
           id: e.id,
           name: e.name,
@@ -1310,9 +1376,12 @@ export function previewArchitecturePattern(
     const choice =
       req.roles[role.id] ??
       (role.kind === "host" || role.required
-        ? candidates.length === 1
-          ? { mode: "reuse" as const, id: candidates[0]!.id }
-          : { mode: "unfilled" as const }
+        ? role.studio ||
+          fragment.architecture.studio?.elements.some((binding) => binding.element === role.id)
+          ? { mode: "unfilled" as const }
+          : candidates.length === 1
+            ? { mode: "reuse" as const, id: candidates[0]!.id }
+            : { mode: "unfilled" as const }
         : { mode: "create" as const });
     result.roles.push({
       id: role.id,
@@ -1429,6 +1498,36 @@ export function previewArchitecturePattern(
     }
   }
   // Resolve connection IDs after explicit relationship selection.
+  for (const binding of fragment.architecture.studio?.elements ?? []) {
+    if (!reused.has(binding.element)) continue;
+    const actual = design.architecture?.studio?.elements.find(
+      (item) => item.element === ids[binding.element],
+    );
+    if (
+      !actual ||
+      contractCanonical(actual.definition) !== contractCanonical(binding.definition) ||
+      contractCanonical(actual.settings) !==
+        contractCanonical(mapStudioSettings(binding.settings, ids))
+    )
+      result.errors.push(
+        `Studio dependency ${binding.element}: explicit reuse requires its exact definition and settings; existing ownership is retained.`,
+      );
+  }
+  for (const role of fragment.roles.filter((role) => role.studio && reused.has(role.id))) {
+    if (!role.studio) continue;
+    const actual = design.architecture?.studio?.elements.find(
+      (binding) => binding.element === ids[role.id],
+    );
+    if (
+      !actual ||
+      contractCanonical(actual.definition) !== contractCanonical(role.studio.definition) ||
+      contractCanonical(actual.settings) !==
+        contractCanonical(mapStudioSettings(role.studio.settings, ids))
+    )
+      result.errors.push(
+        `Studio dependency ${role.id}: explicit reuse requires exact settings; existing ownership is retained.`,
+      );
+  }
   for (const local of fragmentIds(fragment).filter((id) => !reused.has(id))) {
     if (!idSchema.safeParse(ids[local]).success || used.has(ids[local]!))
       result.errors.push(`Expanded identity ${ids[local]} is invalid or already used.`);
@@ -1442,6 +1541,27 @@ export function previewArchitecturePattern(
     },
   );
   const expanded = mappedArchitecture(fragment, ids);
+  if (expanded.studio) {
+    architecture.studio ??= { version: 1, elements: [], packages: [], connections: [] };
+    // Keep destination provenance and all reused settings/owners; insertion never adopts a seed origin.
+    architecture.studio.elements.push(
+      ...expanded.studio.elements.filter(
+        (binding) => !reused.has(Object.keys(ids).find((id) => ids[id] === binding.element) ?? ""),
+      ),
+    );
+    architecture.studio.packages.push(...expanded.studio.packages);
+    for (const binding of expanded.studio.connections) {
+      const actual = architecture.studio.connections.find(
+        (item) => item.connection === binding.connection,
+      );
+      if (actual && contractCanonical(actual.settings) !== contractCanonical(binding.settings))
+        result.errors.push(
+          `Studio relationship ${binding.connection}: settings conflict with the explicitly reused relationship.`,
+        );
+      else if (!actual) architecture.studio.connections.push(binding);
+    }
+    if (result.errors.length) return result;
+  }
   if (expanded.backend) {
     architecture.backend ??= { schemaVersion: 1, entities: [], aggregates: [] };
     for (const key of backendCollections) {

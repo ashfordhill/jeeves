@@ -76,6 +76,7 @@ export function targetChanges(baseline: DesignDocument, target: DesignDocument):
   for (const key of ["elements", "connections", "annotations"] as const)
     identities(key, a[key], b[key]);
   compare("architecture/system", a.architecture?.system, b.architecture?.system);
+  compare("architecture/studio", a.architecture?.studio, b.architecture?.studio);
   compare(
     "architecture/backend/schemaVersion",
     a.architecture?.backend?.schemaVersion,

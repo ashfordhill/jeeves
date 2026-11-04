@@ -64,6 +64,7 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
     seen.add(key);
     const group = {
       element: design.elements,
+      package: m.studio?.packages,
       connection: design.connections,
       component: m.components,
       "component-relationship": m.componentRelationships,
@@ -101,6 +102,9 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
                 template: e.template,
                 planned: e.planned,
                 classification: e.classification,
+                ...(m.studio?.elements.some((binding) => binding.element === e.id) && {
+                  studio: m.studio.elements.find((binding) => binding.element === e.id),
+                }),
               };
             })()
           : r.kind === "component" && value
@@ -108,7 +112,16 @@ function relevantInputs(design: DesignDocument, references: ReviewReference[]): 
             : value,
     });
     if (!value) return;
-    if (r.kind === "binding") {
+    if (r.kind === "package") {
+      for (const member of m.studio?.packages.find((item) => item.id === r.id)?.members ?? [])
+        visit(ref("element", member));
+      for (const binding of m.studio?.elements ?? [])
+        if (binding.owner?.kind === "package" && binding.owner.id === r.id)
+          visit(ref("element", binding.element));
+    } else if (r.kind === "connection" && m.studio) {
+      const studio = m.studio.connections.find((binding) => binding.connection === r.id);
+      if (studio) values.push({ studio });
+    } else if (r.kind === "binding") {
       const b = value as RelationshipBinding;
       visit(ref("interface", b.provided));
       visit(ref("interface", b.required));

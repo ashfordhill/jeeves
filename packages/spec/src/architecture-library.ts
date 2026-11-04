@@ -19,14 +19,16 @@ import { idSchema, versionSchema } from "./ids.ts";
 import type { TemplateLookup } from "./manifest.ts";
 import { componentHostRole, plannedCapability } from "./planned-capabilities.ts";
 import { scenarioPaths } from "./scenarios.ts";
+import { mapStudioSettings, studioSettingReferences } from "./studio-references.ts";
 
 export const architectureSelectionSchema = z
   .strictObject({
     elements: z.array(idSchema).max(20).default([]),
     components: z.array(idSchema).max(20).default([]),
+    packages: z.array(idSchema).max(20).default([]),
   })
   .refine(
-    (s) => s.elements.length + s.components.length > 0,
+    (s) => s.elements.length + s.components.length + s.packages.length > 0,
     "Select at least one container or component.",
   );
 export const libraryMetadataSchema = z.strictObject({
@@ -108,6 +110,35 @@ export function extractArchitectureTemplate(
     design.architecture ??
     architectureSchema.parse({ system: { name: "System", description: "" } });
   const copiedElements = new Set(selection.elements);
+  const copiedPackages = new Set(selection.packages);
+  const studio = a.studio;
+  for (const id of copiedPackages) {
+    const item = studio?.packages.find((item) => item.id === id);
+    if (!item) throw new Error(`Selected package ${id} no longer exists.`);
+    for (const member of item.members) copiedElements.add(member);
+  }
+  // Complete selected packages and their owned resources; never persist a partial package.
+  let copiedCount = -1;
+  while (copiedCount !== copiedElements.size + copiedPackages.size) {
+    copiedCount = copiedElements.size + copiedPackages.size;
+    for (const item of studio?.packages ?? [])
+      if (item.members.every((id) => copiedElements.has(id))) copiedPackages.add(item.id);
+    for (const binding of studio?.elements ?? []) {
+      if (
+        binding.owner &&
+        (binding.owner.kind === "package" ? copiedPackages : copiedElements).has(binding.owner.id)
+      )
+        copiedElements.add(binding.element);
+      if (copiedElements.has(binding.element) && binding.owner?.kind === "package") {
+        const ownerId = binding.owner.id;
+        const item = studio?.packages.find((item) => item.id === ownerId);
+        if (!item)
+          throw new Error(`Resource ${binding.element} has unresolved package owner ${ownerId}.`);
+        copiedPackages.add(item.id);
+        for (const member of item.members) copiedElements.add(member);
+      }
+    }
+  }
   const copiedComponents = new Set([
     ...selection.components,
     ...(a.components ?? []).filter((c) => copiedElements.has(c.element)).map((c) => c.id),
@@ -118,7 +149,7 @@ export function extractArchitectureTemplate(
   for (const id of copiedComponents)
     if (!a.components?.some((c) => c.id === id))
       throw new Error(`Selected component ${id} no longer exists.`);
-  const keep = new Set([...copiedElements, ...copiedComponents]);
+  const keep = new Set([...copiedElements, ...copiedComponents, ...copiedPackages]);
   for (const c of a.components ?? [])
     if (copiedComponents.has(c.id)) for (const id of c.usesConnections) keep.add(id);
   for (const c of design.connections)
@@ -136,6 +167,17 @@ export function extractArchitectureTemplate(
   while (previous !== keep.size) {
     previous = keep.size;
     collectBackendDependencies(a.backend, keep);
+    for (const binding of studio?.elements ?? [])
+      if (keep.has(binding.element)) {
+        for (const id of studioSettingReferences(binding.settings)) keep.add(id);
+        // Reused resource bindings retain their destination owner instead of adopting source ownership.
+        if (copiedElements.has(binding.element) && binding.owner) keep.add(binding.owner.id);
+      }
+    for (const item of studio?.packages ?? [])
+      if (copiedPackages.has(item.id)) for (const id of item.members) keep.add(id);
+    for (const decision of a.decisions ?? [])
+      if (decision.id.startsWith("studio-c4b-") && decision.links.some((link) => keep.has(link.id)))
+        keep.add(decision.id);
     for (const b of a.bindings ?? [])
       if (
         keep.has(b.id) ||
@@ -222,21 +264,25 @@ export function extractArchitectureTemplate(
   };
   // The artifact holds new planned boundaries, never executable templates, attachments or notes.
   for (const e of design.elements.filter((e) => keep.has(e.id))) {
+    const binding = studio?.elements.find((binding) => binding.element === e.id);
     const family = plannedFamily(e);
     const classification = containerClassification(e).kind;
-    if (!family || ["Deployment infrastructure", "Unspecified"].includes(classification))
+    if (
+      (!family && !binding) ||
+      ["Deployment infrastructure", "Unspecified"].includes(classification)
+    )
       throw new Error(`Choose an explicit portable planned family for ${e.name} before saving it.`);
     const create = elementSchema.parse({
       id: e.id,
       name: e.name,
+      ...(binding && e.description !== undefined ? { description: e.description } : {}),
       template: null,
-      planned: family,
-      config: portableConfig(family, e.config),
+      ...(!binding && { planned: family, config: portableConfig(family, e.config) }),
       ...(e.classification ? { classification: e.classification } : {}),
     });
     const copied =
       copiedElements.has(e.id) &&
-      containerClassification(e).ownership !== "External responsibility";
+      (binding || containerClassification(e).ownership !== "External responsibility");
     fragment.roles.push({
       id: e.id,
       name: e.name,
@@ -246,14 +292,33 @@ export function extractArchitectureTemplate(
       kind: copied ? "boundary" : "host",
       ownership: containerClassification(e).ownership,
       classification: classification as "Application" | "Data store" | "External system",
-      hostRoles: [componentHostRole(e, lookup) as "service"],
+      hostRoles: binding ? [] : [componentHostRole(e, lookup) as "service"],
       required: !copied,
       create,
+      ...(binding &&
+        !copied && {
+          studio: {
+            definition: structuredClone(binding.definition),
+            settings: structuredClone(binding.settings),
+          },
+        }),
       ...(classification === "Data store" && family === "relational-store"
         ? { storeKind: "relational-records" }
         : {}),
     });
   }
+  if (studio)
+    fragment.architecture.studio = {
+      version: 1,
+      // Seed origin describes the source project, not a combined destination composition.
+      elements: structuredClone(
+        studio.elements.filter((binding) => copiedElements.has(binding.element)),
+      ),
+      packages: structuredClone(studio.packages.filter((item) => copiedPackages.has(item.id))),
+      connections: structuredClone(
+        studio.connections.filter((binding) => keep.has(binding.connection)),
+      ),
+    };
   for (const c of a.components?.filter((c) => keep.has(c.id)) ?? []) {
     if (copiedComponents.has(c.id) && (c.members.length || c.usesResources.length))
       throw new Error(
@@ -409,7 +474,12 @@ export function extractArchitectureTemplate(
       role: r.id,
       description: "Extend through explicit contracts while preserving the published invariants.",
     }));
-  const ids = Object.fromEntries(fragmentIds(fragment).map((id, i) => [id, `r${i + 1}`]));
+  const ids = Object.fromEntries(
+    fragmentIds(fragment).map((id, i) => [
+      id,
+      `${id.startsWith("studio-c4b-") ? "studio-c4b-" : ""}r${i + 1}`,
+    ]),
+  );
   const portable: ArchitectureFragment = {
     ...fragment,
     roles: fragment.roles.map((r) => ({
@@ -417,6 +487,9 @@ export function extractArchitectureTemplate(
       id: ids[r.id]!,
       ...(r.host ? { host: ids[r.host]! } : {}),
       ...(r.create ? { create: { ...r.create, id: ids[r.id]! } } : {}),
+      ...(r.studio
+        ? { studio: { ...r.studio, settings: mapStudioSettings(r.studio.settings, ids) } }
+        : {}),
     })),
     architecture: mappedArchitecture(fragment, ids),
     connections: fragment.connections.map((c) => ({

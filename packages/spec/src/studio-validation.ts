@@ -3,6 +3,7 @@ import { containerClassification } from "./architecture-choices.ts";
 import { backendDeclarations } from "./backend-model.ts";
 import type { DesignDocument, Element } from "./design.ts";
 import { type Finding, type FindingCode, finding } from "./findings.ts";
+import { legacyStudioKind } from "./studio-legacy.ts";
 import {
   type StudioKind,
   studioAccessSchema,
@@ -70,19 +71,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
     const binding = bindings.get(id);
     if (binding) return binding.settings.kind;
     const element = elements.get(id);
-    // Exact historical families only; an arbitrary Data store is not assumed to be a database.
-    if (element?.template?.id === "postgres") return "database";
-    const legacy: Record<string, StudioKind> = {
-      "relational-store": "database",
-      "document-store": "database",
-      "analytics-store": "database",
-      "distributed-cache": "cache",
-      "job-queue": "queue",
-      "event-stream": "queue",
-      "object-storage": "object-store",
-      "search-index": "search",
-    };
-    return element?.planned ? legacy[element.planned] : undefined;
+    return element ? legacyStudioKind(element) : undefined;
   };
   const occupied = occupiedDesignIds(design);
   studio.packages.forEach((item, index) => {

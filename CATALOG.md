@@ -4,6 +4,11 @@
 finite service/resource settings, exact definition references, package membership and logical
 resource ownership over existing graph identities. [UX02b's atomic commands](packages/spec/src/studio-operations.ts)
 now preserve those settings through explicit edits, deletion cleanup and existing history. The
+UX02c [reference remapper](packages/spec/src/studio-references.ts) and reusable Library insertion
+preserve studio settings with explicit dependency reuse. [Portable project exchange](packages/spec/src/studio-portable.ts)
+retains full design/layout data; implementation handoffs include exact locally resolved goal sources
+or an explicit unresolved result. The [legacy display adapter](packages/spec/src/studio-legacy.ts)
+uses known identities without migrating saved documents or adding technical defaults. The
 server and application compiler reject studio bindings before generation can start; legacy
 template eligibility is unchanged. These are design-only contracts; the studio catalog, new
 authoring UI and runtime resolution remain unimplemented. The catalog below describes the existing
