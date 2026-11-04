@@ -1,0 +1,131 @@
+{
+  "status": "Review sources; no implementation approval implied",
+  "files": [
+    {
+      "source": ".jeeves-feedback/PzufI5UjUN.gif",
+      "copy": "sources/PzufI5UjUN.gif",
+      "bytes": 2443509,
+      "sha256": "2bf0fdb80bd600c017a69479b259850bdc4d2381ebf2c59346c27d0eb45652ec"
+    },
+    {
+      "source": ".jeeves-feedback/UX-Feedback.md",
+      "copy": "sources/UX-Feedback.md",
+      "bytes": 6279,
+      "sha256": "8cf88d7957c1b0b19f4e94cb7c6c03b3705fd72f3582f3ea584d7f01e4894654"
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-1.md",
+      "copy": "sources/archive/JEEVES-1.md",
+      "bytes": 4070,
+      "sha256": "4d9ae5d516e3849283522cc042f6ede1a5c4599088d5b30b2f06d541559ca8ea"
+    },
+    {
+      "source": ".jeeves-feedback/archive/JEEVES-2.md",
+      "copy": "sources/archive/JEEVES-2.md",
+      "bytes": 2427,
+      "sha256": "17d5d244256b64a7d2024dfdda8a4010f0e912c8cd8a93ce20feb374123d51d1"
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.excalidraw",
+      "copy": "sources/archive/editor-1.excalidraw",
+      "bytes": 27592,
+      "sha256": "a2e6bdf1f8cbb60210ef53e692d595d5199a72fb5a220ab113a1d8ef444645d6"
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.png",
+      "copy": "sources/archive/editor-1.png",
+      "bytes": 101101,
+      "sha256": "de84ee3837011018e6e32a948dfbc30d8596a2aefa51e1a30f03df41fb840e00"
+    },
+    {
+      "source": ".jeeves-feedback/archive/editor-1.svg",
+      "copy": "sources/archive/editor-1.svg",
+      "bytes": 34315,
+      "sha256": "535bb2a91391676735c7ec39cb1fb3a53440a3ae4e416c6802d23bbf3b10c979"
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-1.png",
+      "copy": "sources/archive/image-1.png",
+      "bytes": 509981,
+      "sha256": "5ff8c3aa9a489819444d4fd7dc39e27e48e50ada70c9766dff5070b0ae0da570"
+    },
+    {
+      "source": ".jeeves-feedback/archive/image-2.png",
+      "copy": "sources/archive/image-2.png",
+      "bytes": 454377,
+      "sha256": "02407aa8c9107dace1a7c1a2790469518e6e8f0bb28e1f04f758830dddedb79a"
+    },
+    {
+      "source": ".jeeves-feedback/archive/image.png",
+      "copy": "sources/archive/image.png",
+      "bytes": 262190,
+      "sha256": "85213caec2f6e687a0ff78dce2cc551bbca47bdd45f26e748fdd3aa2201433ef"
+    },
+    {
+      "source": ".jeeves-feedback/chrome_FlmBak2gUQ.gif",
+      "copy": "sources/chrome_FlmBak2gUQ.gif",
+      "bytes": 1838972,
+      "sha256": "b492fb40e26f888c1736936dac607450fea784333a267abe7156c9ab772065fe"
+    },
+    {
+      "source": ".jeeves-feedback/chrome_PjQUjhqJA5.gif",
+      "copy": "sources/chrome_PjQUjhqJA5.gif",
+      "bytes": 554198,
+      "sha256": "ad72d2ca03dd538c36918c1d84207b480c337b2ab519eaba00e6347410799914"
+    },
+    {
+      "source": ".jeeves-feedback/image-1.png",
+      "copy": "sources/image-1.png",
+      "bytes": 103982,
+      "sha256": "bb933ee460b82e8c0fd39b78072e3697d25178be7ee6dd0d8213c96b4f4266da"
+    },
+    {
+      "source": ".jeeves-feedback/image-2.png",
+      "copy": "sources/image-2.png",
+      "bytes": 168002,
+      "sha256": "a6c546b86dc98ad5d5075783747a27fc4086df568dacc2d4d32b1dce4d8a0bd4"
+    },
+    {
+      "source": ".jeeves-feedback/image-3.png",
+      "copy": "sources/image-3.png",
+      "bytes": 650302,
+      "sha256": "a36339ef0e418a1b3b3c683cfa36eccc1f8846852dad8909628f7f0d1c801d1c"
+    },
+    {
+      "source": ".jeeves-feedback/image-4.png",
+      "copy": "sources/image-4.png",
+      "bytes": 70172,
+      "sha256": "f9173fa138a80605ee4f265bf2612af8ceebf934d3c0184694c01015374f43b2"
+    },
+    {
+      "source": ".jeeves-feedback/image-5.png",
+      "copy": "sources/image-5.png",
+      "bytes": 216888,
+      "sha256": "4ccc6f80744c000a0239638ad10ab7a5ec2aa33b42b252ea48c95b74ebd0da70"
+    },
+    {
+      "source": ".jeeves-feedback/image-6.png",
+      "copy": "sources/image-6.png",
+      "bytes": 200902,
+      "sha256": "7d3f8fcb9a39adf42bf338e04e098ee6f61a8bd3ca71c34f765c848639ad284f"
+    },
+    {
+      "source": ".jeeves-feedback/image-7.png",
+      "copy": "sources/image-7.png",
+      "bytes": 13071,
+      "sha256": "fd7df906af2ebc9e3871dda9d2a861302439b171e25c483f1db6093439905931"
+    },
+    {
+      "source": ".jeeves-feedback/image.png",
+      "copy": "sources/image.png",
+      "bytes": 356736,
+      "sha256": "f53d114175b02eeedaa1ec2c3b7dc6fd03c917510385af423f1065c5cd87dc61"
+    },
+    {
+      "source": ".jeeves-feedback/uses-tenant-product-apis.png",
+      "copy": "sources/uses-tenant-product-apis.png",
+      "bytes": 356736,
+      "sha256": "f53d114175b02eeedaa1ec2c3b7dc6fd03c917510385af423f1065c5cd87dc61"
+    }
+  ]
+}

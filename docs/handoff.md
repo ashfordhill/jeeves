@@ -8563,3 +8563,47 @@ acceptance. Full `pnpm check` and deferred UI suites were not run. The active lo
 available for the user's UX review. The checkpoint intentionally preserves unfinished design work;
 finish/review its semantics and acceptance before claiming P73a complete. No runtime generation,
 push or publication. **Batch paused for UX; do not automatically resume P73a/P73b or start P74.**
+
+
+## 2026-11-03 — UX feedback review and questions (planning discussion only)
+
+Reviewed the user's `.jeeves-feedback/` at `f5eabbbd38b1ac8bf76b47f7377691fb0b245d05` on
+primary `main`. The user explicitly requested review, questions and a discussion before the
+build plan. No application implementation or architecture migration was performed. The paused
+backend batch and incomplete P73a remain paused/incomplete; this review does not resume them.
+
+Recorded the documentation trail requested in the feedback under
+`.docs/visual-improvements/2026-11-03-ux-review/`: a source-linked review, 42 unanswered product
+questions, 21 byte-for-byte original feedback/artifact copies and their SHA-256 manifest, plus
+read-only inspection evidence. The parent README indexes the record. Windows Zone.Identifier
+metadata was excluded; the duplicate source image and original Markdown markup were preserved.
+
+Coverage includes the current and archived feedback, all distinct supplied screenshots, the
+editor sketch, and twelve sampled frames spanning each of the three GIFs, with selected larger
+frames inspected for text. Read repository/studio/C4 guidance, relevant current UI/model code,
+prior feedback resolutions, automation-pitch visual/layout/drag documentation and current layout
+engine, and primary C4/microservice data guidance. No code was copied from automation-pitch.
+
+Read-only Chromium inspection of the existing QRWTY target at semantic revision1 confirms the
+long selected-component interface report and the separate Custom domains configuration dialog.
+The browser context blocked every non-read method; none was attempted. No save, chat/provider,
+generation, project/layout mutation or new project was performed, and the browser was closed.
+The target uses the earlier architecture model without `architecture.backend`; its planned
+family settings must not be presented as existing runtime implementation switches.
+
+Findings distinguish repeated arrow-label panels from services; visual grouping from service
+splitting; database ownership from physical hosting; practical configuration from report detail;
+and camera Fit from layout reset. Source inspection identifies all-edge label collision handling
+as a candidate contributor to drag instability, not a verified complete root cause. No fix or
+performance result is claimed. All proposed solutions/defaults remain unapproved.
+
+Validation: the 21 copied sources match originals and manifest hashes; 35 local documentation
+links resolve; question IDs Q01–Q42 are unique and sequential. Documentation-only whitespace,
+staged-source byte preservation and original handoff-prefix preservation are checked before
+the local review commit. Application lint/typecheck/build/unit/E2E suites were not run because
+no application source changed. User's deferred UI-test profile remains in force for later UX work.
+
+Next: discuss the questions and record explicit answers, then write the detailed bounded build
+plan for Sol6.1 xhigh. Do not interpret an unanswered question, candidate destination, recommendation
+or archived request as an approved implementation requirement. No new package IDs were allocated;
+the later plan must avoid collisions with the existing backend execution queue.
