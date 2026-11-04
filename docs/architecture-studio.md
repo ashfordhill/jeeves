@@ -67,9 +67,20 @@ Selection adds a halo and keeps unrelated cards/edges at full opacity. Full name
 in the inspector and source; low zoom omits relationship labels, and higher zoom adds bounded
 purpose/provider/protocol text without changing world geometry.
 
-Compatible relationships can share a trunk. Each directed branch retains its canonical members;
-clicking a multi-member line opens a chooser before editing one actual relationship. Opposite
-arrows and cycles remain distinct. Crowded labels may disappear while their selectable lines remain.
+Each ordered pair of boxes has at most one line. Every relationship between the same two boxes in
+the same direction merges into it, and its label shows the count (`3 calls`, `2 messages`, with
+the protocol when they share one). Clicking a merged line or its label opens the inspector's
+chooser, where you pick the one actual relationship to edit. Opposite directions stay two one-way
+lines, and cycles stay distinct.
+
+A line label is short: the verb phrase plus the protocol, about 24 characters (`reads links · SQL`,
+`publishes · Messaging`). Long phrases shed a second verb, a trailing "on/for/…" phrase, then middle
+words. Labels over about 96px stack the verb above the line and the protocol below it. The full
+text stays in the inspector, the line's hover tooltip and the diagram export. In-process links
+between components inside one service frame have no label, and layout reserves no label room for
+them. Layout reserves room for every other label, so labels never overlap boxes. Lines stay 2px
+wide on screen (3px selected) at every zoom, and arrowheads keep their screen size. Every line
+leaves and enters its box horizontally.
 
 Positions are derived, never stored. The only stored layout input is an optional row order per
 view: drag a card (or a frame, with its contents) up or down inside its column and release it past
@@ -77,8 +88,8 @@ a neighbour's centre to move it to that row. That saves one undoable layout acti
 its own row changes nothing. Horizontal movement is ignored. **Fit** frames the whole view
 without saving anything; the camera is remembered per view in browser preferences only, and a
 remembered camera that no longer shows the diagram is refitted. Very large graphs can need
-pan/zoom; fitting the whole graph does not promise readable labels at every scale (labels hide
-below 55% zoom).
+pan/zoom. Fitting the whole graph does not promise readable labels at every scale: labels hide
+below 45% zoom, and near that zoom they are small enough that you need to zoom in to read them.
 
 ## Options, reuse and limits
 

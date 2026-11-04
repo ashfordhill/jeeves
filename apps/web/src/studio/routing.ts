@@ -1,4 +1,7 @@
-/** Derived paths only: no saved connections, positions, or invented trunk settings. Geometry is ELK's (layout.ts). */
+/**
+ * Derived paths only: no saved connections or positions. One drawn line per ordered box pair
+ * (SG07); geometry is ELK's (layout.ts).
+ */
 import type { StudioRelationship, StudioScopeProjection } from "@jeeves/spec";
 import type { Point } from "./creation.ts";
 import { boundedStudioText } from "./text.ts";
@@ -7,8 +10,6 @@ export interface StudioPath {
   id: string;
   item: StudioRelationship;
   edgeIds: string[];
-  trunk?: string;
-  branchIds?: string[];
 }
 export interface RouteBox extends Point {
   width: number;
@@ -17,19 +18,15 @@ export interface RouteBox extends Point {
 export interface StudioRoute {
   points: Point[];
   path: string;
-  junction?: Point;
   label?: RouteBox & { short: string; detail: string };
 }
 export type StudioGeometry = Record<string, StudioRoute>;
 
-/** Capture once per gesture. Trunks own their source; branches own their target. */
+/** Capture once per gesture: the paths touching each box. */
 export function studioIncidentPaths(paths: StudioPath[]): Map<string, string[]> {
   const result = new Map<string, string[]>();
   for (const path of paths) {
-    for (const id of [
-      ...(!path.trunk ? [path.item.from] : []),
-      ...(!path.branchIds ? [path.item.to] : []),
-    ]) {
+    for (const id of new Set([path.item.from, path.item.to])) {
       const ids = result.get(id) ?? [];
       ids.push(path.id);
       result.set(id, ids);
@@ -71,145 +68,142 @@ export function movedStudioGeometry(
       const anchor = points[index];
       if (!anchor) return;
       const next = { x: anchor.x + point.x - old.x, y: anchor.y + point.y - old.y };
-      // Retain the captured middle (including the shared bus/junction) exactly.
+      // Retain the captured middle exactly.
       const elbow = { x: first ? next.x + 12 : next.x - 12, y: next.y };
       const join = { x: elbow.x, y: anchor.y };
       if (first) points.splice(0, 1, next, elbow, join, anchor);
       else points.splice(index, 1, anchor, join, elbow, next);
     };
-    if (!path.trunk) moveAnchor(path.item.from, true);
-    if (!path.branchIds) moveAnchor(path.item.to, false);
+    moveAnchor(path.item.from, true);
+    moveAnchor(path.item.to, false);
     result[id] = { ...route, points, path: routePath(points) };
   }
   return result;
 }
-const compare = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id, "en");
-const unique = <T extends string>(values: T[]) => [...new Set(values)].sort();
 
-function relationship(
-  id: string,
-  edges: StudioRelationship[],
-  memberIds: string[],
-): StudioRelationship {
-  const members = [...new Map(edges.flatMap((e) => e.members).map((m) => [m.id, m])).values()]
-    .filter((m) => memberIds.includes(m.id))
-    .sort(compare);
-  const first = edges[0];
-  if (!first) throw new Error("A visible path requires its original relationship.");
-  const item = { ...first, id, members };
-  // Retain every provenance field, including queued legs and exact contract/binding refs.
-  const fields = [
-    "sourceRefs",
-    "targetRefs",
-    "connectionIds",
-    "queueIds",
-    "contextRelationshipIds",
-    "componentRelationshipIds",
-    "componentIds",
-    "bindingIds",
-    "interfaceIds",
-    "contractRefs",
-    "capabilityRefs",
-  ] as const;
-  for (const key of fields) {
-    const values = members.flatMap((m) => m[key] as unknown[]);
-    Object.assign(item, {
-      [key]: [...new Map(values.map((v) => [JSON.stringify(v), v])).values()],
-    });
-  }
-  item.actions = unique(members.map((m) => m.action));
-  item.protocols = unique(members.flatMap((m) => m.protocols));
-  item.interactions = unique(members.flatMap((m) => m.interactions));
-  return item;
-}
-
-/** Consume UX04b's exact protocol/interaction groups, including subsets of mixed aggregates. */
+/**
+ * One line per ordered box pair (plan §4, O4). The projection already merges every member between
+ * the same two boxes in the same direction into one edge; opposite directions stay two edges.
+ */
 export function studioPaths(scope: StudioScopeProjection): StudioPath[] {
-  const paths: StudioPath[] = [];
-  const used = new Map<string, Set<string>>();
-  for (const trunk of [...scope.trunks].sort(compare)) {
-    const edges = scope.edges
-      .filter((e) => trunk.branches.some((b) => b.edgeId === e.id))
-      .sort(compare);
-    const memberIds = trunk.branches.flatMap((b) => b.memberIds);
-    const branchIds: string[] = [];
-    for (const branch of [...trunk.branches].sort((a, b) =>
-      a.edgeId.localeCompare(b.edgeId, "en"),
-    )) {
-      const edge = edges.find((e) => e.id === branch.edgeId);
-      if (!edge) continue;
-      const id = `${edge.id}:branch:${branch.memberIds.join("|")}`;
-      branchIds.push(id);
-      paths.push({
-        id,
-        item: relationship(id, [edge], branch.memberIds),
-        edgeIds: [edge.id],
-        trunk: trunk.id,
-      });
-      const ids = used.get(edge.id) ?? new Set<string>();
-      for (const memberId of branch.memberIds) ids.add(memberId);
-      used.set(edge.id, ids);
-    }
-    paths.push({
-      id: trunk.id,
-      item: relationship(trunk.id, edges, memberIds),
-      edgeIds: edges.map((e) => e.id),
-      branchIds,
-    });
-  }
-  for (const edge of [...scope.edges].sort(compare)) {
-    const remaining = edge.members.filter((m) => !used.get(edge.id)?.has(m.id));
-    if (!remaining.length) continue;
-    const id = used.has(edge.id)
-      ? `${edge.id}:branch:${remaining.map((m) => m.id).join("|")}`
-      : edge.id;
-    paths.push({
-      id,
-      item: relationship(
-        id,
-        [edge],
-        remaining.map((m) => m.id),
-      ),
-      edgeIds: [edge.id],
-    });
-  }
-  return paths.sort(compare);
+  return [...scope.edges]
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    .map((edge) => ({ id: edge.id, item: edge, edgeIds: [edge.id] }));
 }
 
-export function studioRelationshipLabel(item: StudioRelationship, detailed: boolean): string {
-  const action = item.actions.join(" / ");
-  const protocol = boundedStudioText(
-    item.protocols.filter((p) => p !== "In process" && p !== "Unspecified").join(" / "),
-    18,
+/** About 24 characters: verb plus protocol (plan §4, O8). */
+export const STUDIO_SHORT_LABEL = 24;
+const hidden = new Set(["In process", "Unspecified", "Undecided"]);
+const preposition = new Set([
+  "at",
+  "by",
+  "for",
+  "from",
+  "in",
+  "into",
+  "on",
+  "over",
+  "per",
+  "to",
+  "via",
+  "with",
+]);
+
+const protocolText = (item: StudioRelationship) =>
+  item.protocols.filter((p) => !hidden.has(p)).join(" / ");
+
+/** Lower-case the leading verb unless it is an acronym ("SQL", "API"). */
+const verbCase = (words: string[]) =>
+  words.map((word, index) =>
+    index === 0 && !/^[A-Z0-9]{2,}/.test(word)
+      ? word.charAt(0).toLowerCase() + word.slice(1)
+      : word,
   );
-  return detailed && protocol
-    ? `${boundedStudioText(action, 53 - Array.from(protocol).length)} · ${protocol}`
-    : boundedStudioText(action, detailed ? 56 : 36);
+
+/** Links inside one frame that never leave the process need no label room (SG07). */
+export function studioInProcess(item: StudioRelationship) {
+  return item.members.every(
+    (member) => member.protocols.length > 0 && member.protocols.every((p) => p === "In process"),
+  );
+}
+
+/** How many separate relationships a merged line carries, in words: "3 calls". */
+export function studioMergedCount(item: StudioRelationship) {
+  const count = item.members.length;
+  const noun = item.members.every((m) => m.kind === "context")
+    ? "relationships"
+    : item.members.every(
+          (m) => m.interactions.length && m.interactions.every((i) => i === "Asynchronous"),
+        )
+      ? "messages"
+      : "calls";
+  return `${count} ${noun}`;
 }
 
 /**
- * One label per drawn relationship: the first end path of each original edge carries the combined
- * text of its siblings (a shared trunk's branches), as before SG06.
+ * The short line label. A single relationship keeps as many leading words of its action as fit
+ * with its protocol ("reads links · SQL", then "reads · SQL"); a merged line shows its count
+ * ("3 calls · SQL"). The full text stays in the inspector and the export.
  */
+export function studioShortLabel(item: StudioRelationship, limit = STUDIO_SHORT_LABEL): string {
+  const protocol = protocolText(item);
+  const suffix = (text: string) => (protocol ? `${text} · ${protocol}` : text);
+  if (item.members.length > 1) {
+    const merged = suffix(studioMergedCount(item));
+    return Array.from(merged).length <= limit ? merged : studioMergedCount(item);
+  }
+  const words = verbCase(
+    (item.actions[0] ?? "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean),
+  );
+  if (!words.length) return boundedStudioText(protocol, limit);
+  const fits = (list: string[]) => Array.from(suffix(list.join(" "))).length <= limit;
+  // Shorten while keeping intent: drop a coordinated second verb ("creates and lists links"
+  // → "creates links"), then a trailing prepositional phrase ("reads links on miss" → "reads
+  // links"), then middle words ("checks destination reputation" → "checks reputation"), and
+  // finally keep the verb alone ("publishes · Messaging").
+  const candidates: string[][] = [words];
+  let current = words;
+  if (current[1]?.toLowerCase() === "and" && current.length > 3) {
+    current = [current[0] as string, ...current.slice(3)];
+    candidates.push(current);
+  }
+  const cut = current.findIndex((word, index) => index > 0 && preposition.has(word.toLowerCase()));
+  if (cut > 1) {
+    current = current.slice(0, cut);
+    candidates.push(current);
+  }
+  if (current.length > 2) candidates.push([current[0] as string, current.at(-1) as string]);
+  const verb = words[0] as string;
+  candidates.push([verb]);
+  const chosen = candidates.find(fits);
+  if (chosen) return suffix(chosen.join(" "));
+  // A long protocol yields to the verb; the verb alone is never cut below a readable word.
+  return protocol && Array.from(verb).length + 3 < limit
+    ? `${verb} · ${boundedStudioText(protocol, limit - Array.from(verb).length - 3)}`
+    : boundedStudioText(verb, limit);
+}
+
+/** The zoomed-in label: full action text and protocol, bounded only to keep one line. */
+export function studioDetailLabel(item: StudioRelationship): string {
+  const action = item.actions.join(" / ");
+  const protocol = boundedStudioText(protocolText(item), 18);
+  const text = item.members.length > 1 ? `${studioMergedCount(item)}: ${action}` : action;
+  return protocol
+    ? `${boundedStudioText(text, 53 - Array.from(protocol).length)} · ${protocol}`
+    : boundedStudioText(text, 56);
+}
+
+/** One label per drawn line; in-process links inside a frame are left unlabelled. */
 export function studioPathLabels(
   paths: StudioPath[],
-): Record<string, { short: string; detail: string }> {
-  const ends = paths.filter((path) => !path.branchIds);
-  const result: Record<string, { short: string; detail: string }> = {};
-  const labeled = new Set<string>();
-  for (const path of ends) {
-    const edgeId = path.edgeIds[0];
-    if (!edgeId || labeled.has(edgeId)) continue;
-    labeled.add(edgeId);
-    const siblings = ends.filter((sibling) => sibling.edgeIds.includes(edgeId));
-    const item = relationship(
-      edgeId,
-      siblings.map((sibling) => sibling.item),
-      siblings.flatMap((sibling) => sibling.item.members.map((member) => member.id)),
-    );
+): Record<string, { short: string; detail: string; merged: boolean }> {
+  const result: Record<string, { short: string; detail: string; merged: boolean }> = {};
+  for (const path of paths) {
+    if (studioInProcess(path.item)) continue;
     result[path.id] = {
-      short: studioRelationshipLabel(item, false),
-      detail: studioRelationshipLabel(item, true),
+      short: studioShortLabel(path.item),
+      detail: studioDetailLabel(path.item),
+      merged: path.item.members.length > 1,
     };
   }
   return result;

@@ -12,7 +12,12 @@ export const STUDIO_GRID = 32;
 /** Frame padding: sides/bottom, and the header strip that holds the frame's name. */
 export const STUDIO_FRAME_PAD = 32;
 export const STUDIO_FRAME_HEADER = 64;
+/** One label line; a stacked label (verb above the line, protocol below) adds one more. */
 const LABEL_HEIGHT = 18;
+const LABEL_LINE = 15;
+/** Label texts may hold a line break: the short label stacks its verb over its protocol. */
+export const studioLabelHeight = (text: string) =>
+  LABEL_HEIGHT + LABEL_LINE * (text.split("\n").length - 1);
 const ISLAND_GAP = 64;
 
 export interface StudioLayoutNode {
@@ -24,9 +29,10 @@ export interface StudioLayoutNode {
   frame?: true;
 }
 export interface StudioLayoutLabel {
+  /** A line break stacks the label: verb phrase above the line, protocol below (SG07). */
   short: string;
   detail: string;
-  /** Measured pixel widths of both texts at the studio font. */
+  /** Measured pixel widths of both texts (their widest line) at the studio font. */
   shortWidth: number;
   detailWidth: number;
 }
@@ -154,6 +160,27 @@ function orthogonal(points: Point[]): Point[] {
   });
 }
 
+/**
+ * Every line leaves and enters its box horizontally (SG07), so the arrowhead points into the box
+ * and no line runs along a box edge: a vertical first or last run moves 16px away from the port.
+ */
+function horizontalEnds(points: Point[]): Point[] {
+  let result = points;
+  const end = result.at(-1),
+    before = result.at(-2);
+  if (end && before && before.x === end.x && before.y !== end.y && result.length >= 2) {
+    const x = end.x - 16;
+    result = [...result.slice(0, -2), { x, y: before.y }, { x, y: end.y }, end];
+  }
+  const start = result[0],
+    next = result[1];
+  if (start && next && next.x === start.x && next.y !== start.y) {
+    const x = start.x + 16;
+    result = [start, { x, y: start.y }, { x, y: next.y }, ...result.slice(2)];
+  }
+  return orthogonal(result);
+}
+
 type Shape = { x: number; y: number; width: number; height: number };
 const bounds = (boxes: Shape[]) => {
   const x = Math.min(...boxes.map((b) => b.x)),
@@ -219,7 +246,7 @@ async function layoutIsland(
   };
   const isFrame = (id: string) => nodes.some((node) => node.parent === id) || !!byId.get(id)?.frame;
   const ends = input.paths.filter(
-    (path) => !path.branchIds && members.has(path.item.from) && members.has(path.item.to),
+    (path) => members.has(path.item.from) && members.has(path.item.to),
   );
   const edges: ElkExtendedEdge[] = ends
     .filter((path) => path.item.from !== path.item.to)
@@ -235,7 +262,7 @@ async function layoutIsland(
               id: `${path.id}__label`,
               text: label.short,
               width: Math.ceil(label.shortWidth) + 4,
-              height: LABEL_HEIGHT,
+              height: studioLabelHeight(label.short),
               layoutOptions: { "elk.edgeLabels.inline": "true" },
             },
           ],
@@ -338,7 +365,7 @@ async function layoutIsland(
       };
       first.y = inside(from, first.y);
       last.y = inside(to, last.y);
-      points = orthogonal([first, ...bends, last]);
+      points = horizontalEnds(orthogonal([first, ...bends, last]));
     }
     const route: StudioRoute = { points, path: routePath(points) };
     const label = input.labels[path.id];
@@ -348,7 +375,7 @@ async function layoutIsland(
       const centre = elkLabel
         ? {
             x: (elkLabel.x ?? 0) + (elkLabel.width ?? 0) / 2,
-            y: (elkLabel.y ?? 0) + LABEL_HEIGHT / 2,
+            y: (elkLabel.y ?? 0) + studioLabelHeight(label.short) / 2,
           }
         : undefined;
       const horizontal = points
@@ -368,27 +395,20 @@ async function layoutIsland(
         const x = centre && spans(a, b, centre.x) ? centre.x : (a.x + b.x) / 2;
         route.label = {
           x: Math.round(x - width / 2),
-          y: a.y - LABEL_HEIGHT / 2,
+          y: a.y - studioLabelHeight(label.short) / 2,
           width,
-          height: LABEL_HEIGHT,
+          height: studioLabelHeight(label.short),
           short: label.short,
           // Zoomed-in detail replaces the short text only where ELK reserved room for it.
-          detail: label.detailWidth <= label.shortWidth ? label.detail : label.short,
+          detail:
+            label.detailWidth <= label.shortWidth &&
+            studioLabelHeight(label.detail) <= studioLabelHeight(label.short)
+              ? label.detail
+              : label.short,
         };
       }
     }
     routes[path.id] = route;
-  }
-  // A shared trunk runs from its source port to where its branches separate.
-  for (const path of input.paths.filter((p) => p.branchIds)) {
-    const branches = (path.branchIds ?? []).flatMap((id) => (routes[id] ? [routes[id]] : []));
-    const start = branches[0]?.points[0];
-    if (!start) continue;
-    const x = Math.min(...branches.map((route) => route.points[1]?.x ?? start.x));
-    const junction = { x, y: start.y };
-    const points = [start, junction];
-    routes[path.id] = { points, path: routePath(points) };
-    for (const id of path.branchIds ?? []) if (routes[id]) routes[id] = { ...routes[id], junction };
   }
   // Columns: same frame, horizontally overlapping boxes.
   const columns: string[][] = [];
@@ -469,7 +489,6 @@ export async function layoutStudio(input: StudioLayoutInput, elk: ELK): Promise<
         points,
         path: routePath(points),
         ...(route.label && { label: { ...route.label, ...move(route.label) } }),
-        ...(route.junction && { junction: move(route.junction) }),
       };
     }
     result.columns.push(...item.island.columns);

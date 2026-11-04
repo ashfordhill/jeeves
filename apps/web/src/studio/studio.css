@@ -296,8 +296,17 @@
 .studio-component-summary dd {
   margin: 0;
 }
+/* SG07: lines keep 2px (3px selected) on screen at every zoom; the head is screen-sized too. */
+.studio-graph .react-flow__edge-path,
+.studio-graph .react-flow__edge-interaction,
+.studio-crossing-gap {
+  vector-effect: non-scaling-stroke;
+}
+.studio-arrow {
+  stroke: none;
+}
 .studio-relation-text {
-  pointer-events: none;
+  cursor: pointer;
   fill: var(--ink);
   font-size: 12px;
   stroke: var(--cream);
@@ -305,13 +314,18 @@
   stroke-linejoin: round;
   paint-order: stroke fill;
 }
+.studio-relation-plate {
+  fill: var(--cream);
+  pointer-events: none;
+}
+.studio-relation-text[data-merged] {
+  font-weight: 700;
+  text-decoration: underline dotted;
+}
 .studio-crossing-gap {
   fill: none;
   stroke: var(--cream);
-  stroke-width: 7px;
-  pointer-events: none;
-}
-.studio-junction {
+  stroke-width: 6px;
   pointer-events: none;
 }
 .studio-tools {

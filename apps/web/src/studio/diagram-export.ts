@@ -64,10 +64,7 @@ export async function captureStudioDiagram() {
       if (!text || getComputedStyle(text).display === "none") return;
       const box = text.getBBox();
       return box.width && box.height
-        ? {
-            label: { x: box.x, y: box.y, width: box.width, height: box.height },
-            description: text.textContent ?? "",
-          }
+        ? { x: box.x, y: box.y, width: box.width, height: box.height }
         : undefined;
     };
     const geometry = {
@@ -75,42 +72,13 @@ export async function captureStudioDiagram() {
       title: captured.title,
       // Compact source cards have no exported availability badge or implementation claim.
       nodes: captured.nodes.map((node) => ({ ...node, support: "" })),
-      edges: paths
-        .filter((path) => !path.branchIds)
-        .map((path) => {
-          const edge = byId.get(path.id);
-          if (!edge) throw new Error("A selected relationship has no captured path.");
-          const trunk = path.trunk && byId.get(path.trunk);
-          const trunkPath = paths.find((item) => item.id === path.trunk);
-          const label =
-            visibleLabel(path.id) ??
-            (trunkPath?.branchIds?.[0] === path.id ? visibleLabel(trunkPath.id) : undefined);
-          return {
-            ...edge,
-            // Each real branch keeps its arrow; the shared segment is never a new relationship.
-            ...(trunk && {
-              path: `${trunk.path} ${edge.path.replace(/^M/i, "L")}`,
-              ...(trunk.bounds &&
-                edge.bounds && {
-                  bounds: {
-                    x: Math.min(trunk.bounds.x, edge.bounds.x),
-                    y: Math.min(trunk.bounds.y, edge.bounds.y),
-                    width:
-                      Math.max(
-                        trunk.bounds.x + trunk.bounds.width,
-                        edge.bounds.x + edge.bounds.width,
-                      ) - Math.min(trunk.bounds.x, edge.bounds.x),
-                    height:
-                      Math.max(
-                        trunk.bounds.y + trunk.bounds.height,
-                        edge.bounds.y + edge.bounds.height,
-                      ) - Math.min(trunk.bounds.y, edge.bounds.y),
-                  },
-                }),
-            }),
-            ...(label && { ...label, protocol: undefined }),
-          };
-        }),
+      edges: paths.map((path) => {
+        const edge = byId.get(path.id);
+        if (!edge) throw new Error("A selected relationship has no captured path.");
+        // The drawn label is short (SG07); the export keeps the full description and protocol.
+        const label = visibleLabel(path.id);
+        return { ...edge, ...(label && { label }) };
+      }),
       groups: captured.groups,
     };
     const diagram = handoffDiagramSchema.parse({

@@ -11148,3 +11148,113 @@ Notes for SG07:
 - Streamly C2/C3 still shows dense parallel bundles and some long buses.
 - SG08: `createAt` has no point. New boxes are islands until connected. `layout.columns` and the
   `order` hint are the only stored layout input; a spawn can append to `order` to choose a row.
+
+## 2026-11-04 — SG07: merged lines and short labels (complete)
+
+I ran SG07 alone on primary `main` from `1fe97e3`, as a fresh sequential worker. Before starting I
+read AGENTS, the studio grid plan (§4 Lines, O4, O8), the execution units, the SG01, SG05 and SG06
+handoffs, the SG06 evidence and the studio sources. This unit did not touch creation gestures
+(SG08), inspector forms (SG09), the spec, the server, generation/runtime, P73a/P73b or the backend
+batch.
+
+What changed (all in `apps/web/src/studio/`):
+
+- **One line per ordered box pair.**
+  - `routing.ts` `studioPaths` now returns one path per projected edge. The spec already merges
+    every member between two boxes in one direction into `studio:relationship:<from>><to>`, and
+    opposite directions are separate edges.
+  - Trunk and branch splitting, the junction dot and the trunk geometry in `layout.ts`,
+    `use-settle.ts` and `diagram-export.ts` are gone. The spec still computes `scope.trunks`; the
+    web no longer reads them.
+  - ELK's `mergeEdges` and the single in-port and out-port per card still bundle lines visually at
+    the ports.
+- **Count label.** A merged line's label reads `N calls`, `N messages` (all asynchronous) or
+  `N relationships` (all context). The shared protocol is appended when there is one, for example
+  `2 calls · HTTPS`. It is drawn bold with a dotted underline.
+  - Labels now take pointer events, so clicking a label selects its line like clicking the line.
+  - Selecting a multi-member line opens the existing inspector chooser ("Select a connection").
+    That chooser is unchanged.
+- **Short labels.** `studioShortLabel` keeps the verb phrase plus the protocol, at most 24
+  characters, with the verb lower-cased. To fit, it first drops a coordinated second verb, then a
+  trailing prepositional phrase, then middle words, and finally keeps the verb alone:
+  - "Creates and lists links" becomes `creates links · HTTPS`.
+  - "Reads links on miss" becomes `reads links · SQL`.
+  - "Publishes clicks" becomes `publishes · Messaging`.
+  - `In process`, `Unspecified` and `Undecided` are never shown as protocols.
+  - `studioDetailLabel` (zoom ≥ 1.1) is the bounded full text. It replaces the short label only
+    where the reserved box fits it.
+  - The full text stays in the inspector, an SVG `<title>` tooltip and the export:
+    `diagram-export.ts` now keeps each edge's full description and protocol and takes only the
+    label box from the screen.
+- **Stacked labels.** In `use-layout.ts`, a one-line label wider than 96px becomes two lines: the
+  verb above the line, the protocol below. ELK reserves the widest line and 18 + 15px of height
+  (`studioLabelHeight` in `layout.ts`). This roughly halves the label layers' width.
+  - One-line labels get a cream plate, so the line no longer shows through word gaps.
+  - Merged labels are measured bold.
+- **In-process links** (every member `In process`, meaning component → component inside one
+  frame) get no label and no ELK label space. They show only a tooltip.
+- **Strokes.** Lines, interaction paths and crossing gaps use `vector-effect: non-scaling-stroke`,
+  so they are 2px (3px selected) on screen at every zoom.
+  - The React Flow marker is replaced by a screen-space arrowhead (11×10px). The head shrinks only
+    where the final straight run is shorter.
+  - New `horizontalEnds` in `layout.ts`: a route whose first or last run would be vertical (running
+    along a box edge, which also rotated the head) gets a 16px horizontal stub at the port.
+- **Label threshold** lowered from 0.55 to 0.45 (`STUDIO_LABEL_ZOOM`).
+- Docs: the studio guide's "Reading a dense design" section describes the new line and label
+  rules.
+
+Results (evidence: `docs/evidence/studio-grid/SG07/README.md`):
+
+- **TinyURL fit zoom**, chat collapsed, SG06 → SG07:
+  - 1440×900: C1 1.00 → 1.00, C2 0.763 → **0.853**, C3 0.453 → **0.544**.
+  - 1280×800: C1 1.00 → 1.00, C2 0.675 → **0.755**, C3 0.401 → **0.481**.
+- At Fit, labels now show on C3 at both sizes (11 labels, 6 unlabelled in-process links), but at
+  only about 6.5px and 5.8px on screen.
+- No label overlaps a box or another label in any captured view.
+- The merged `2 calls · HTTPS` line opens the chooser with both members, and picking one opens its
+  form.
+- **Streamly** (owner, read-only, every non-GET request aborted, none attempted): C2 0.572 → 0.624,
+  C3 0.620 → 0.608. It has three merged lines at C2.
+- Owner revisions and `updatedAt` are unchanged. Both disposable projects were deleted (204).
+
+Checks (Node 24.21.0):
+
+- `pnpm lint`: exit 0 (2,797 warnings and 88 infos, unchanged).
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk advisory).
+- `pnpm check`, unit and E2E suites were not run (owner-deferred). E2E tests that look for
+  `data-path-kind="trunk"`/`"branch"` or React Flow arrow markers would need updating.
+
+Deviations and known issues:
+
+- **C3 at 1440×900 is 0.544, just under 0.55.** Without any labels it would be about 0.67, so
+  label layers still cost about 700 world px before stacking.
+  - ELK's `centerLabelPlacementStrategy` variants made no difference.
+  - A 64px stacking threshold gained nothing.
+  - The remaining levers are outside this unit: narrower component cards (192 → 160 would add
+    about 0.04), a vertical wrap of the long chain (SG06 rejected ELK wrapping for frames), or a
+    16px fit margin.
+- **Labels at C3 Fit are too small to read.** They are 6–7px on screen; you need to zoom in to
+  read them. Screen-constant text would need viewport-dependent layout, which would break
+  determinism, so I did not do it.
+- **Stacked labels** are a presentation deviation from the plan's one-line `verb · protocol` form.
+  The text is the same, on two lines.
+- **TinyURL's only merged line** is a connection plus its C1 context relationship bound to the
+  same container: "Checks destinations" and "Checks destination reputation". That is real model
+  duplication, and the chooser shows both.
+- A queued C2 line reads `queued · Messaging`, because the spec member action is "Queued
+  communication".
+- **Dev servers.** I used a temporary Vite on 4302 and stopped it. At the end of the session
+  nothing was listening on 4300. I did not start, stop or signal that server; my only kills
+  targeted the 4302 process. I had not checked 4300 at the start, so I cannot say when it went
+  down. The API on 4310 is still running.
+
+Notes for SG08:
+
+- Paths are now exactly `scope.edges` (id `studio:relationship:<from>><to>`). Once the user
+  connects two boxes that already share a line, the new connection joins that line's members, and
+  the count label and chooser update automatically.
+- Labels are clickable and select their line. A `+` handle must not sit over a label: labels lie
+  on ELK label layers between columns, not at card edges.
+- Routes always leave and enter cards horizontally (`horizontalEnds`), with in-ports on the WEST
+  side and out-ports on the EAST side. Handles on the other sides are free.

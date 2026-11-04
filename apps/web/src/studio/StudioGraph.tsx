@@ -10,7 +10,6 @@ import {
   type Edge,
   type EdgeProps,
   Handle,
-  MarkerType,
   type Node,
   type NodeProps,
   Position,
@@ -33,7 +32,9 @@ import {
   movedStudioGeometry,
   type StudioPath,
   type StudioRoute,
+  studioDetailLabel,
   studioIncidentPaths,
+  studioMergedCount,
   studioPaths,
 } from "./routing.ts";
 import { useStudioLayout } from "./use-layout.ts";
@@ -107,43 +108,75 @@ function StudioCard({ data, selected }: NodeProps<Card>) {
 const nodeTypes = { studio: StudioCard, frame: StudioFrame };
 
 type Relation = Edge<{ path: StudioPath; route: StudioRoute }, "studio">;
+/** Labels are drawn from this zoom up; below it the diagram shows lines and boxes only. */
+export const STUDIO_LABEL_ZOOM = 0.45;
+/** Screen-space arrowhead: lines use a non-scaling stroke, so the head keeps its size too. */
+function StudioArrow({ points, zoom, color }: { points: Point[]; zoom: number; color?: string }) {
+  const tip = points.at(-1),
+    before = points.at(-2);
+  if (!tip || !before) return null;
+  const angle = (Math.atan2(tip.y - before.y, tip.x - before.x) * 180) / Math.PI;
+  // 11px on screen, but never longer than the final straight run (short in-frame stubs).
+  const run = Math.hypot(tip.x - before.x, tip.y - before.y);
+  const scale = Math.min(1 / zoom, run / 12);
+  return (
+    <path
+      className="studio-arrow"
+      d="M0,0 L-11,-5 L-11,5 Z"
+      transform={`translate(${tip.x},${tip.y}) rotate(${angle}) scale(${scale})`}
+      style={{ fill: color }}
+    />
+  );
+}
 function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
   const { zoom } = useViewport();
   if (!data) return null;
   const { route, path } = data;
-  const label = zoom >= 1.1 ? route.label?.detail : route.label?.short;
+  const box = route.label;
+  const label = zoom >= 1.1 ? box?.detail : box?.short;
+  const merged = path.item.members.length > 1;
+  const stroke = props.style?.stroke;
   return (
     <g
-      data-path-kind={path.branchIds ? "trunk" : path.trunk ? "branch" : "relationship"}
+      data-path-kind="relationship"
+      data-merged={merged ? path.item.members.length : undefined}
       data-members={path.item.members.map((m) => m.id).join("|")}
       data-connections={path.item.connectionIds.join("|")}
       data-original-edges={path.edgeIds.join("|")}
     >
+      <title>{studioDetailLabel(path.item)}</title>
       <path d={route.path} className="studio-crossing-gap" />
-      <BaseEdge
-        id={props.id}
-        path={route.path}
-        markerEnd={path.branchIds ? undefined : props.markerEnd}
-        style={props.style}
-        interactionWidth={12}
-      />
-      {route.junction ? (
-        <circle
-          className="studio-junction"
-          cx={route.junction.x}
-          cy={route.junction.y}
-          r={3}
-          style={{ fill: props.style?.stroke }}
+      <BaseEdge id={props.id} path={route.path} style={props.style} interactionWidth={14} />
+      <StudioArrow points={route.points} zoom={zoom} color={stroke} />
+      {zoom >= STUDIO_LABEL_ZOOM && label && box && !label.includes("\n") ? (
+        // A one-line label sits on its line; the plate keeps the line out of the word gaps.
+        <rect
+          className="studio-relation-plate"
+          x={box.x}
+          y={box.y + 1}
+          width={box.width}
+          height={box.height - 2}
+          rx={3}
         />
       ) : null}
-      {zoom >= 0.55 && label && route.label ? (
+      {zoom >= STUDIO_LABEL_ZOOM && label && box ? (
         <text
-          x={route.label.x + route.label.width / 2}
-          y={route.label.y + 13}
+          x={box.x + box.width / 2}
+          y={box.y + 13}
           textAnchor="middle"
           className="studio-relation-text"
+          data-merged={merged || undefined}
         >
-          {label}
+          {label.split("\n").map((line, index) => (
+            <tspan
+              key={index ? "protocol" : "verb"}
+              x={box.x + box.width / 2}
+              dy={index ? 15 : 0}
+              data-line={index ? "protocol" : undefined}
+            >
+              {line}
+            </tspan>
+          ))}
         </text>
       ) : null}
     </g>
@@ -328,17 +361,13 @@ export function StudioGraph({
             target: path.item.to,
             data: { path, route },
             selected,
-            zIndex: path.branchIds ? 1 : 2,
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: selected ? "var(--blue)" : "var(--ink-soft)",
-            },
+            zIndex: 2,
             style: {
               stroke: selected ? "var(--blue)" : "var(--ink-soft)",
               strokeWidth: selected ? 3 : 2,
             },
-            interactionWidth: 12,
-            ariaLabel: `Inspect ${path.branchIds ? "shared paths" : "relationship"}: ${path.item.actions.join(" / ")}${path.item.protocols.length ? `; ${path.item.protocols.join(" / ")}` : ""}`,
+            interactionWidth: 14,
+            ariaLabel: `Inspect ${path.item.members.length > 1 ? `${studioMergedCount(path.item)}` : "relationship"}: ${path.item.actions.join(" / ")}${path.item.protocols.length ? `; ${path.item.protocols.join(" / ")}` : ""}`,
           },
         ];
       }),

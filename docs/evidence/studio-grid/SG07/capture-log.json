@@ -1,0 +1,374 @@
+{
+  "owners": [
+    "a6eeb601-6efd-46e0-9444-f0edddad8d2e",
+    "9928f0b6-c54c-4081-b8d4-5bdff0b5875c",
+    "684f5790-df6b-4447-91d1-668cf7e1cc87",
+    "b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62"
+  ],
+  "blocked": [],
+  "writes": [
+    "POST /api/projects",
+    "POST /api/projects/5dfab14c-6577-4a7a-9967-1e6b057cecab/operations",
+    "PUT /api/projects/5dfab14c-6577-4a7a-9967-1e6b057cecab/layout",
+    "POST /api/projects",
+    "POST /api/projects/5e433a2a-e5b7-46b5-a417-40dc0112d0b0/operations",
+    "PUT /api/projects/5e433a2a-e5b7-46b5-a417-40dc0112d0b0/layout"
+  ],
+  "created": ["5e433a2a-e5b7-46b5-a417-40dc0112d0b0", "5dfab14c-6577-4a7a-9967-1e6b057cecab"],
+  "deleted": {
+    "5e433a2a-e5b7-46b5-a417-40dc0112d0b0": 204,
+    "5dfab14c-6577-4a7a-9967-1e6b057cecab": 204
+  },
+  "shots": [
+    "1440x900-C1-fit.png",
+    "1440x900-C2-fit.png",
+    "1440x900-C3-fit.png",
+    "1440x900-C3-fit-closeup.png",
+    "1440x900-C2-merged-chooser.png",
+    "1440x900-C2-merged-member.png",
+    "1440x900-C3-zoomed.png",
+    "1280x800-C1-fit.png",
+    "1280x800-C2-fit.png",
+    "1280x800-C3-fit.png",
+    "1280x800-C3-fit-closeup.png",
+    "1280x800-C2-merged-chooser.png",
+    "1280x800-C2-merged-member.png",
+    "1280x800-C3-zoomed.png",
+    "1440x900-streamly-C1-fit.png",
+    "1440x900-streamly-C2-fit.png",
+    "1440x900-streamly-C3-fit.png"
+  ],
+  "errors": [],
+  "obs": {
+    "1440x900": {
+      "fitZoom": {
+        "C1": 1,
+        "C2": 0.852941,
+        "C3": 0.54375
+      },
+      "fit": {
+        "C1": {
+          "lines": 3,
+          "merged": [],
+          "labelsShown": 3,
+          "labels": ["shortens links", "checks reputation", "follows a short link"],
+          "labelScreenFontPx": 12,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        },
+        "C2": {
+          "lines": 11,
+          "merged": ["2 | 2 calls · HTTPS"],
+          "labelsShown": 11,
+          "labels": [
+            "shortens links",
+            "follows a short link",
+            "writes aggregates / SQL",
+            "forwards misses / HTTPS",
+            "queued / Messaging",
+            "reads hot links / Redis",
+            "reads links · SQL",
+            "counts requests / Redis",
+            "writes links · SQL",
+            "2 calls · HTTPS",
+            "creates links / HTTPS"
+          ],
+          "labelScreenFontPx": 10.2,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        },
+        "C3": {
+          "lines": 17,
+          "merged": [],
+          "labelsShown": 11,
+          "labels": [
+            "writes aggregates / SQL",
+            "reads hot links / Redis",
+            "publishes / Messaging",
+            "reads links · SQL",
+            "writes links · SQL",
+            "writes links · SQL",
+            "counts requests / Redis",
+            "checks · HTTPS",
+            "forwards misses / HTTPS",
+            "delivers / Messaging",
+            "creates links / HTTPS"
+          ],
+          "labelScreenFontPx": 6.5,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        }
+      },
+      "mergedLabel": "2 calls · HTTPS",
+      "chooserVisible": true,
+      "chooserOptions": [
+        "Shorten API → URL reputation APIChecks destinations · HTTPS",
+        "Checks destination reputationChecks destination reputation"
+      ],
+      "selectedStroke": "3px",
+      "memberFormOpen": 2,
+      "zoomedC3": {
+        "zoom": 2,
+        "lines": 17,
+        "merged": [],
+        "labelsShown": 11,
+        "labels": [
+          "writes aggregates / SQL",
+          "reads hot links / Redis",
+          "publishes / Messaging",
+          "reads links · SQL",
+          "writes links · SQL",
+          "writes links · SQL",
+          "counts requests / Redis",
+          "checks · HTTPS",
+          "forwards misses / HTTPS",
+          "delivers / Messaging",
+          "creates links / HTTPS"
+        ],
+        "labelScreenFontPx": 24,
+        "labelOverBox": 0,
+        "labelOverLabel": 0,
+        "strokeWidth": "2px",
+        "vectorEffect": "non-scaling-stroke",
+        "arrowPx": [11, 10]
+      }
+    },
+    "1280x800": {
+      "fitZoom": {
+        "C1": 1,
+        "C2": 0.754902,
+        "C3": 0.48125
+      },
+      "fit": {
+        "C1": {
+          "lines": 3,
+          "merged": [],
+          "labelsShown": 3,
+          "labels": ["shortens links", "checks reputation", "follows a short link"],
+          "labelScreenFontPx": 12,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        },
+        "C2": {
+          "lines": 11,
+          "merged": ["2 | 2 calls · HTTPS"],
+          "labelsShown": 11,
+          "labels": [
+            "shortens links",
+            "follows a short link",
+            "writes aggregates / SQL",
+            "forwards misses / HTTPS",
+            "queued / Messaging",
+            "reads hot links / Redis",
+            "reads links · SQL",
+            "counts requests / Redis",
+            "writes links · SQL",
+            "2 calls · HTTPS",
+            "creates links / HTTPS"
+          ],
+          "labelScreenFontPx": 9.1,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        },
+        "C3": {
+          "lines": 17,
+          "merged": [],
+          "labelsShown": 11,
+          "labels": [
+            "writes aggregates / SQL",
+            "reads hot links / Redis",
+            "publishes / Messaging",
+            "reads links · SQL",
+            "writes links · SQL",
+            "writes links · SQL",
+            "counts requests / Redis",
+            "checks · HTTPS",
+            "forwards misses / HTTPS",
+            "delivers / Messaging",
+            "creates links / HTTPS"
+          ],
+          "labelScreenFontPx": 5.8,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        }
+      },
+      "mergedLabel": "2 calls · HTTPS",
+      "chooserVisible": true,
+      "chooserOptions": [
+        "Shorten API → URL reputation APIChecks destinations · HTTPS",
+        "Checks destination reputationChecks destination reputation"
+      ],
+      "selectedStroke": "3px",
+      "memberFormOpen": 2,
+      "zoomedC3": {
+        "zoom": 1.82116,
+        "lines": 17,
+        "merged": [],
+        "labelsShown": 11,
+        "labels": [
+          "writes aggregates / SQL",
+          "reads hot links / Redis",
+          "publishes / Messaging",
+          "reads links · SQL",
+          "writes links · SQL",
+          "writes links · SQL",
+          "counts requests / Redis",
+          "checks · HTTPS",
+          "forwards misses / HTTPS",
+          "delivers / Messaging",
+          "creates links / HTTPS"
+        ],
+        "labelScreenFontPx": 21.9,
+        "labelOverBox": 0,
+        "labelOverLabel": 0,
+        "strokeWidth": "2px",
+        "vectorEffect": "non-scaling-stroke",
+        "arrowPx": [11, 10]
+      }
+    },
+    "streamly": {
+      "name": "Streamly · video platform",
+      "fitZoom": {
+        "C1": 1,
+        "C2": 0.624486,
+        "C3": 0.608487
+      },
+      "fit": {
+        "C1": {
+          "lines": 6,
+          "merged": [],
+          "labelsShown": 6,
+          "labels": [
+            "uploads channel video",
+            "reviews content",
+            "delivers media",
+            "sends updates",
+            "authenticates staff",
+            "discovers video"
+          ],
+          "labelScreenFontPx": 12,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        },
+        "C2": {
+          "lines": 27,
+          "merged": ["2 | 2 calls / HTTPS/JSON", "2 | 2 calls / HTTPS/JWKS", "2 | 2 calls"],
+          "labelsShown": 27,
+          "labels": [
+            "uploads channel video",
+            "reviews content",
+            "discovers video",
+            "invalidates / Redis RESP",
+            "purges / HTTPS purge API",
+            "rebuilds / SQL read",
+            "2 calls / HTTPS/JSON",
+            "updates / HTTPS/JSON",
+            "queued · Kafka",
+            "commits / PostgreSQL tr…",
+            "2 calls / HTTPS/JWKS",
+            "verifies / HTTPS object…",
+            "queued · AMQP",
+            "queries / HTTPS/JSON",
+            "fetches / HTTPS object …",
+            "reviews / HTTPS/JSON",
+            "authenticates / HTTPS/O…",
+            "reads / Redis RESP",
+            "loads · SQL read",
+            "records / HTTPS/JSON",
+            "writes / HTTPS object A…",
+            "reads / HTTPS object API",
+            "browses / HTTPS/JSON",
+            "2 calls",
+            "authenticates / HTTPS/O…",
+            "uploads / HTTPS multipa…",
+            "requests / HTTPS/JSON"
+          ],
+          "labelScreenFontPx": 7.5,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [9, 8]
+        },
+        "C3": {
+          "lines": 26,
+          "merged": [],
+          "labelsShown": 26,
+          "labels": [
+            "invalidates / Redis RESP",
+            "purges / HTTPS purge API",
+            "rebuilds / SQL read",
+            "sends / HTTPS/JSON",
+            "consumes changes / Kafka",
+            "updates / HTTPS/JSON",
+            "commits / PostgreSQL tr…",
+            "publishes · Kafka",
+            "retrieves / HTTPS/JWKS",
+            "publishes / AMQP",
+            "verifies / HTTPS object…",
+            "queries / HTTPS/JSON",
+            "fetches / HTTPS object …",
+            "reviews / HTTPS/JSON",
+            "authenticates / HTTPS/O…",
+            "reads / Redis RESP",
+            "loads · SQL read",
+            "records / HTTPS/JSON",
+            "consumes work / AMQP",
+            "writes / HTTPS object A…",
+            "reads / HTTPS object API",
+            "browses / HTTPS/JSON",
+            "streams · HTTPS / HLS/D…",
+            "authenticates / HTTPS/O…",
+            "uploads / HTTPS multipa…",
+            "requests / HTTPS/JSON"
+          ],
+          "labelScreenFontPx": 7.3,
+          "labelOverBox": 0,
+          "labelOverLabel": 0,
+          "strokeWidth": "2px",
+          "vectorEffect": "non-scaling-stroke",
+          "arrowPx": [11, 10]
+        }
+      }
+    }
+  },
+  "ownersUnchanged": [
+    {
+      "id": "a6eeb601-6efd-46e0-9444-f0edddad8d2e",
+      "same": true
+    },
+    {
+      "id": "9928f0b6-c54c-4081-b8d4-5bdff0b5875c",
+      "same": true
+    },
+    {
+      "id": "684f5790-df6b-4447-91d1-668cf7e1cc87",
+      "same": true
+    },
+    {
+      "id": "b78f8fa0-f0a1-4c0c-8aa8-554de5b3eb62",
+      "same": true
+    }
+  ]
+}

@@ -22,7 +22,6 @@ function route(a: StudioRoute, b: StudioRoute, t: number): StudioRoute {
     points,
     path: points.map((p, i) => `${i ? "L" : "M"}${p.x},${p.y}`).join(" "),
     ...(a.label && b.label && { label: { ...b.label, ...point(a.label, b.label, t) } }),
-    ...(a.junction && b.junction && { junction: point(a.junction, b.junction, t) }),
   };
 }
 
