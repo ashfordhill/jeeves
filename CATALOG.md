@@ -1,5 +1,10 @@
 # Jeeves architecture catalog
 
+**Planned cleanup:** the [studio UX specification](docs/build-plan-studio-ux.md) introduces a finite
+service/resource/provider vocabulary, configurable C3 detail and service packages. It is not yet
+implemented and changes no runtime availability. The catalog below describes the existing offering;
+its older UI entry points must not override the new plan during UX implementation.
+
 Choose the boundaries and responsibilities your system needs. C1 describes a product, C2 its
 applications/stores, and C3 the cohesive responsibilities within an application. A design can
 be useful before its runtime templates exist.

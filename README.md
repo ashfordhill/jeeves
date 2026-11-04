@@ -2,7 +2,11 @@
 
 Jeeves is a web-application architecture studio intended to help Software Engineers design & generate software using [C4 modeling](https://www.visual-paradigm.com/guide/what-is-the-c4-model-a-comprehensive-guide-to-visualizing-software-architecture/)-inspired diagramming. This is intended to provide a balance between human design and AI-generated code, reducing the amount of non-deterministic code generation for better maintability.
 
-- Targets TypeScript code generation
+- Existing generator templates target TypeScript. The studio direction supports different service languages; additional runtimes remain future work.
+
+The [November studio build plan](docs/build-plan-studio-ux.md) specifies the next UI and configuration
+cleanup, following the [resolved feedback](.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
+It preserves the C4(a)/C4(b) boundary below. The plan is not implemented yet.
 
 <p align="center"><img src=".docs/c4-flow.svg" width="600"/></p>
 
@@ -49,7 +53,7 @@ Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
 
 - Configurable options within C2 and C3 components to indicate expected load at certain bottlenecks (keep design MVP level, enterprise level or flexible enough to change later on?)
 
-- Deployment target configurations (cloud or local, containerization, Kubernetes)
+- Docker-oriented execution intent and provider choices; Kubernetes/Helm are outside the current studio scope
 
 ## AI methods
 

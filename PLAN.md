@@ -352,6 +352,10 @@ AGENTS.md              Points build agents to §15 (created in S1)
 
 ## 15. Build sections
 
+For the November 2026 UX cleanup, the [studio plan](docs/build-plan-studio-ux.md) and its
+[25 exact assignments](docs/plans/studio-ux/execution-units.md) govern the requested work.
+Execute one assigned unit, not an automatic sequence. The backend batch remains paused.
+
 The sections below record the original build sequence; the current next-work order and architectural review checkpoints are in [docs/improvements.md](docs/improvements.md#ordered-delivery-and-review-checkpoints). S13 is partial and S14 is deferred behind the qrwty proving workflow. Each section is one agent's job, sized for a clean context. Run them **in order, one at a time**. Do not start a section until the previous one's "Done when" checks pass.
 
 ### How to work a section
@@ -359,7 +363,7 @@ The sections below record the original build sequence; the current next-work ord
 1. Read `AGENTS.md`, this file's §1–§14 (skim the parts unrelated to your section), your section below, and the latest entries in `docs/handoff.md`.
 2. Read only the docs and code your section lists. Don't refactor earlier sections' work unless your section requires it; note problems in the handoff instead.
 3. Build what's listed. Stay inside "Not in this section".
-4. Make every "Done when" check pass. Run `pnpm check` (lint, type check, unit tests) and any e2e tests the section names, and include the real output in the handoff.
+4. Make every "Done when" check pass and follow the task's explicit verification profile. Normally run `pnpm check` (lint, type check, unit tests) and named e2e tests. For the current UX cleanup, the owner defers unit/E2E maintenance and execution: use lint, typecheck, a web production build and direct browser inspection instead. Include real outcomes in the handoff.
 5. Append a `docs/handoff.md` entry: section, date, what was built, commands run and their results, deviations from the plan and why, known issues, and what the next section should know.
 6. Create a local Git commit for the completed section or improvement package after its checks and handoff. Use its ID in the title, keep subsequent packages in separate commits, and preserve unrelated working-tree changes. Local commits have standing user authorization; do not ask for permission.
 7. If the plan is wrong or ambiguous in a way that blocks you, stop and say so in the handoff and to the user rather than guessing at product decisions.

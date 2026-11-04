@@ -1,6 +1,14 @@
 # Deterministic application behavior and the qrwty proof
 
-**Latest planning (2026-11-01):** the [backend benchmark roadmap](build-plan-backend-benchmarks.md)
+**Current priority (2026-11-03):** the [studio UX build plan](build-plan-studio-ux.md) follows the
+[resolved feedback](../.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md) and has
+[25 bounded assignments](plans/studio-ux/execution-units.md). It is specified, not implemented.
+When requested, start with UX01 and execute one exact unit at a time. P73a is checkpointed
+incomplete; P73a/P73b and the backend batch remain paused. Do not start P74 or resume runtime
+work from the historical sequence below. The UX specification supersedes conflicting older UI
+preferences; actual template availability and benchmark evidence remain unchanged.
+
+**Earlier planning record (2026-11-01):** the [backend benchmark roadmap](build-plan-backend-benchmarks.md)
 specifies future Discourse, Vendure and Zammad core foundations. Its P58–P110 delivery packages
 are divided into [79 sequential agent assignments](plans/backend-benchmarks/execution-units.md).
 The planning task implemented none. [P58's baseline](evidence/p58/README.md) and
@@ -14,7 +22,7 @@ and [P61d Zammad contracts/fixtures](../benchmarks/zammad-core/v1/README.md)
 are complete, including parent P61’s combined independent contract gate.
 [P62a/P62b contract types, transport and portable schemas](contract-types.md) are complete,
 including parent P62. [P63a/P63b entities, aggregates, bounded queries and legacy adapter](backend-data.md) are complete,
-including parent P63. [P64 finite access policies and trusted context](backend-access.md) and [P65 command/lifecycle semantics](backend-behavior.md) are complete. [P66a exact effects/hooks/recovery](backend-effects.md) is complete; [P66b/P66c typed mechanism/commerce settings and combined P66 acceptance](backend-capability-configs.md) are complete, including parent P66; [P67a/P67b component Data/type/query/access authoring and combined acceptance](architecture-studio.md) are complete, including parent P67; [P68a/P68b/P68c command/lifecycle/effect/hook/settings authoring and combined acceptance](architecture-studio.md) are complete, including parent P68; [P69 exact implementation support](backend-implementations.md) is complete; **P70a is next unstarted**;
+including parent P63. [P64 finite access policies and trusted context](backend-access.md) and [P65 command/lifecycle semantics](backend-behavior.md) are complete. [P66a exact effects/hooks/recovery](backend-effects.md) is complete; [P66b/P66c typed mechanism/commerce settings and combined P66 acceptance](backend-capability-configs.md) are complete, including parent P66; [P67a/P67b component Data/type/query/access authoring and combined acceptance](architecture-studio.md) are complete, including parent P67; [P68a/P68b/P68c command/lifecycle/effect/hook/settings authoring and combined acceptance](architecture-studio.md) are complete, including parent P68; [P69 exact implementation support](backend-implementations.md) is complete; subsequent work completed P70a through P72b; see the handoff for those results and the incomplete P73a checkpoint;
 all three applications remain absent/not run with zero observed implementation points.
 For the authorized P59–P61d and P62a–P73b batches, lint/types and focused offline backend semantic/compatibility
 tests replace full `pnpm check`; UI unit/E2E execution and maintenance remain deferred.

@@ -1,5 +1,9 @@
 # Owner answers and remaining decisions — round 1
 
+**Historical discussion stage:** R01–R07 are now resolved in [final decisions](DECISIONS-FINAL.md).
+The [studio build plan](../../../docs/build-plan-studio-ux.md) incorporates those answers. References
+to open questions below describe this earlier stage, not new implementation permission gates.
+
 Recorded after the owner's responses to [Q01–Q42](QUESTIONS.md), following the review at
 `1565f85`. **Discussion record, not an implementation plan or permission to resume the backend
 batch.** No implementation is performed by recording these decisions.

@@ -1,7 +1,8 @@
 # UX discussion questions — 3 November 2026
 
-**Historical first questionnaire.** The [owner's first answers and remaining follow-ups](DECISIONS-ROUND-1.md)
-now record the current discussion state. At initial publication all answers were pending.
+**Historical first questionnaire.** [First answers](DECISIONS-ROUND-1.md) and
+[final decisions](DECISIONS-FINAL.md) now resolve this scope; the
+[build plan](../../../docs/build-plan-studio-ux.md) follows them. At initial publication all answers were pending.
 This is not a build plan. See the [review and source inventory](REVIEW.md)
 for what was inspected and why these questions exist. Options below explain tradeoffs; their order
 does not select a default. A recommendation is identified as such. “Undecided” is a valid answer,

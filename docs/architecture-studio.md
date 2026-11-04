@@ -1,5 +1,12 @@
 # C2/C3 architecture studio
 
+**Version note (2026-11-03):** this page documents the implemented interface before the cleanup.
+The [new studio plan](build-plan-studio-ux.md) and [owner decisions](../.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md)
+specify its replacement. Explorer, focused views, detailed business editors, explicit Save/Cancel,
+deployment controls and the older toolbar described below are not requirements for that replacement.
+Update this guide to the new behavior only as it is implemented; no implementation is claimed by
+the planning update.
+
 The studio designs software architecture before implementation. C1 states the system purpose;
 C2 contains logical applications, stores and external systems; C3 contains responsibilities
 inside one application. A queue is a logical channel, and an endpoint is an interface operation.

@@ -8643,3 +8643,56 @@ Next: resolve the seven follow-ups and then write the bounded build plan. Revise
 and UX guidance deliberately as part of that planning; do not let historical preferences restore
 rejected UI. No implementation assignments, package IDs, project conversions, provider calls,
 worktrees, delegation or pushes. P73a/P73b remain paused; do not resume the backend batch.
+
+
+## 2026-11-03 — UX direction resolved and detailed studio build plan written
+
+Continued the planning task from `b1592aa` on primary `main`. Recorded the owner's R01–R07
+answers in `.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md` and linked the
+historical questionnaire/first answers to that final record. Read the README's actual C4 flow
+image and C4a/C4b text, the dropshipping frozen GOAL/build plan/scaffold handoff, QRWTY's README,
+current example factories and relevant source/operation/history/export code. Rechecked primary
+C4/Docker/provider documentation for the narrow technical distinctions and provider identities.
+No sibling repository or application state was changed.
+
+The owner accepts service/package distinction, C3 queues, explicit depth navigation without an
+extra map, the proposed drag/connect behavior and delegated valid-edit autosave details. API/data
+schema/business authoring stays outside the normal studio. Provider controls stay small; custom
+provider/application integrations can be C4b stubs. Docker is the default for new managed-by-Jeeves
+services, with real browser/managed/external boundaries preserved in reference designs. This is
+not permission to split dropshipping's documented single Worker into fictitious microservices.
+Predictable versioned foundations are a valid goal; neither template labels nor Docker alone are
+verification evidence.
+
+Wrote `docs/build-plan-studio-ux.md` and five detailed contracts under `docs/plans/studio-ux/`:
+model/identity and compatibility rules; a finite field/provider/visibility matrix; interaction,
+autosave/history/layout/Generate rules; 14 example/reference coverage rows; and 25 bounded sequential
+assignments. Includes exact source seams, dependencies, done checks, exclusions, evidence rules and
+a copyable one-unit assignment. New namespace UX01–UX15 has mandatory child splits and no collision
+with the backend P queue. Every unit is unstarted. Runtime templates/generation remain a separate
+task; new studio definitions cannot silently fall through to an incompatible legacy generator.
+
+The plan preserves original graph identities, typed old declarations and frozen source fixtures;
+adds finite new design metadata rather than overlapping editable legacy configuration; distinguishes
+packages from deployments and queue resources from workers; and rebuilds examples from source goals
+in separate fixtures/projects. All nine current examples plus five documented/partial references
+are accounted for. Inventory/grocery unknowns remain explicit; the small future Zammad UX reference
+cannot count as finishing P73a/P73b or improving benchmark implementation scores.
+
+Updated AGENTS, PLAN section 15, modeling guidance, roadmap priority, README/catalog/studio version
+notes and the visual-improvement index so older Save/Cancel/focused-view/Deployment/business-editor
+requirements do not override the resolved UX. Existing implemented catalog availability is unchanged.
+The plan specifies lint/typecheck/web-production-build/direct-browser verification for later code
+units, with the owner's unit/E2E maintenance/execution deferral preserved.
+
+Validation: authored local documentation links resolve; all 21 feedback copies still match original
+bytes, sizes and SHA-256 hashes; the queue has exactly 25 unique ordered unit headings; coverage has
+E01–E14; earlier handoff bytes are preserved. Scoped whitespace/staging checks precede the local
+planning commit. This was documentation-only, so application lint/typecheck/build/unit/E2E suites
+were not run; no new UI/runtime verification is claimed.
+
+Next executable unit when requested: UX01 only. This planning task does not start implementation,
+resume the paused backend batch, complete P73a/P73b, start P74, generate application code, mutate
+live projects, call providers for integration, push, delegate or create a worktree. Later runtime
+language priorities, generator deployment and real generated-build field tests remain explicit
+future questions rather than inferred answers.
