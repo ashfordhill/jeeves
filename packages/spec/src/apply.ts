@@ -193,6 +193,17 @@ function applyOne(
       else design.architecture = op.architecture;
       return;
     }
+    case "updateArchitectureSystem": {
+      if (!design.architecture)
+        throw new OpError(
+          finding("INVALID_OPERATION", "Create an architecture system before updating its text.", {
+            op: index,
+          }),
+        );
+      if (op.name !== undefined) design.architecture.system.name = op.name;
+      if (op.description !== undefined) design.architecture.system.description = op.description;
+      return;
+    }
     case "setStudio": {
       if (!design.architecture)
         throw new OpError(

@@ -1,6 +1,8 @@
 /** Shared studio commands build one batch against the caller's latest accepted revision. */
-import { type ArchitectureInput, architectureSchema } from "./architecture.ts";
-import type { Connection, DesignDocument, ElementInput } from "./design.ts";
+import { z } from "zod";
+import { architectureSchema } from "./architecture.ts";
+import { connectionSchema, type DesignDocument, type ElementInput } from "./design.ts";
+import { idSchema } from "./ids.ts";
 import {
   type OperationBatchInput,
   type OperationInput,
@@ -8,85 +10,112 @@ import {
 } from "./operations.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import {
-  type DefinitionRef,
-  type StudioConnectionSettings,
+  definitionRefSchema,
   type StudioElementBinding,
   type StudioModel,
-  type StudioOwner,
   type StudioPackage,
-  type StudioSettings,
+  studioAccessSchema,
+  studioActionSchema,
+  studioConnectionSettingsSchema,
   studioDefinitionRef,
+  studioInteractionSchema,
+  studioLimits,
+  studioOwnerSchema,
+  studioPackageSchema,
+  studioProtocolSchema,
+  studioSettingsSchema,
 } from "./studio-model.ts";
 
-export type StudioElementCreation = {
-  id: string;
-  name: string;
-  description?: string;
-  settings: StudioSettings;
-  definition?: DefinitionRef;
-  owner?: StudioOwner;
-};
-
-export type StudioConnectionCreation = {
-  id: string;
-  from: string;
-  to: string;
-  kind: Connection["kind"];
-  planned: NonNullable<Connection["planned"]>;
-  settings: StudioConnectionSettings;
-};
-
+const studioName = z.string().trim().min(1).max(studioLimits.name);
+const studioDescription = z.string().trim().max(studioLimits.description);
+const studioSystemSchema = z.strictObject({
+  name: studioName,
+  description: studioDescription.optional(),
+});
+export const studioElementCreationSchema = z.strictObject({
+  id: idSchema,
+  name: studioName,
+  description: studioDescription.optional(),
+  settings: studioSettingsSchema,
+  definition: definitionRefSchema.optional(),
+  owner: studioOwnerSchema.optional(),
+});
+export type StudioElementCreation = z.infer<typeof studioElementCreationSchema>;
+const studioPlannedConnectionSchema = z.strictObject({
+  label: studioActionSchema,
+  protocol: studioProtocolSchema,
+  interaction: studioInteractionSchema,
+  security: studioAccessSchema,
+});
+export const studioConnectionCreationSchema = z.strictObject({
+  id: idSchema,
+  from: idSchema,
+  to: idSchema,
+  kind: connectionSchema.shape.kind,
+  planned: studioPlannedConnectionSchema,
+  settings: studioConnectionSettingsSchema,
+});
+export type StudioConnectionCreation = z.infer<typeof studioConnectionCreationSchema>;
 /** An owner change is always explicit, including when dissolving a package. */
-export type StudioOwnerReassignment = { resource: string; owner: StudioOwner | null };
-
-export type StudioCommand =
-  | {
-      type: "create";
-      elements: StudioElementCreation[];
-      connections?: StudioConnectionCreation[];
-      package?: StudioPackage;
-      /** Required only for the first creation in a document without architecture. */
-      system?: ArchitectureInput["system"];
-    }
-  | {
-      type: "edit";
-      element: string;
-      name?: string;
-      description?: string;
-      /** Complete union value: changing kind/execution must discard inapplicable fields. */
-      settings?: StudioSettings;
-      owner?: StudioOwner | null;
-    }
-  | {
-      type: "connect";
-      connection: StudioConnectionCreation;
-      /** Select the newly created real dependency in the same atomic action. */
-      lookup?: { element: string; resource: "database" | "cache" };
-    }
-  | {
-      type: "editConnection";
-      connection: string;
-      planned?: Partial<NonNullable<Connection["planned"]>>;
-      /** Complete policy value; omitted numbers/references are removed. */
-      settings?: StudioConnectionSettings;
-    }
-  | { type: "group"; package: StudioPackage }
-  | {
-      type: "removeMembers";
-      package: string;
-      members: string[];
-      reassignOwners?: StudioOwnerReassignment[];
-    }
-  | { type: "ungroup"; package: string; reassignOwners?: StudioOwnerReassignment[] }
-  | {
-      type: "delete";
-      elements?: string[];
-      connections?: string[];
-      package?: string;
-      /** The UI confirms delete-members separately. Omission means ungroup. */
-      packageAction?: "ungroup" | "delete-members";
-      reassignOwners?: StudioOwnerReassignment[];
-    };
+const studioOwnerReassignmentSchema = z.strictObject({
+  resource: idSchema,
+  owner: studioOwnerSchema.nullable(),
+});
+export type StudioOwnerReassignment = z.infer<typeof studioOwnerReassignmentSchema>;
+const reassignOwners = z.array(studioOwnerReassignmentSchema).max(studioLimits.elements).optional();
+/** The same strict, finite command inputs serve manual editing and assistant tools. */
+export const studioCommandSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal("create"),
+    elements: z.array(studioElementCreationSchema).min(1).max(studioLimits.elements),
+    connections: z.array(studioConnectionCreationSchema).max(studioLimits.connections).optional(),
+    package: studioPackageSchema.optional(),
+    system: studioSystemSchema.optional(),
+  }),
+  z.strictObject({
+    type: z.literal("edit"),
+    element: idSchema,
+    name: studioName.optional(),
+    description: studioDescription.optional(),
+    settings: studioSettingsSchema.optional(),
+    owner: studioOwnerSchema.nullable().optional(),
+  }),
+  z.strictObject({
+    type: z.literal("editSystem"),
+    name: studioName.optional(),
+    description: studioDescription.optional(),
+  }),
+  z.strictObject({
+    type: z.literal("connect"),
+    connection: studioConnectionCreationSchema,
+    lookup: z
+      .strictObject({ element: idSchema, resource: z.enum(["database", "cache"]) })
+      .optional(),
+  }),
+  z.strictObject({
+    type: z.literal("editConnection"),
+    connection: idSchema,
+    planned: studioPlannedConnectionSchema.partial().optional(),
+    settings: studioConnectionSettingsSchema.optional(),
+  }),
+  z.strictObject({ type: z.literal("group"), package: studioPackageSchema }),
+  z.strictObject({
+    type: z.literal("removeMembers"),
+    package: idSchema,
+    members: z.array(idSchema).min(1).max(studioLimits.members.max),
+    reassignOwners,
+  }),
+  z.strictObject({ type: z.literal("ungroup"), package: idSchema, reassignOwners }),
+  z.strictObject({
+    type: z.literal("delete"),
+    elements: z.array(idSchema).max(studioLimits.elements).optional(),
+    connections: z.array(idSchema).max(studioLimits.connections).optional(),
+    package: idSchema.optional(),
+    packageAction: z.enum(["ungroup", "delete-members"]).optional(),
+    reassignOwners,
+  }),
+]);
+export type StudioCommand = z.infer<typeof studioCommandSchema>;
 
 /**
  * Called only by explicit destructive operations, on an already detached draft. Never cascade
@@ -131,7 +160,49 @@ export function buildStudioCommand(
   command: StudioCommand,
 ): OperationBatchInput {
   const draft = structuredClone(design);
-  const input = structuredClone(command);
+  const input = studioCommandSchema.parse(command);
+  if (input.type === "editSystem") {
+    if (draft.architecture)
+      return operationBatchSchema.parse({
+        baseRevision: design.revision,
+        ops: [
+          {
+            op: "updateArchitectureSystem",
+            ...(input.name !== undefined && { name: input.name }),
+            ...(input.description !== undefined && { description: input.description }),
+          },
+        ],
+      });
+    const architecture = structuredClone(
+      draft.architecture ?? architectureSchema.parse({ system: { name: input.name ?? "System" } }),
+    );
+    if (input.name !== undefined) architecture.system.name = input.name;
+    if (input.description !== undefined) architecture.system.description = input.description;
+    return operationBatchSchema.parse({
+      baseRevision: design.revision,
+      ops: [{ op: "setArchitecture", architecture }],
+    });
+  }
+  if (
+    input.type === "edit" &&
+    !draft.architecture?.studio?.elements.some((item) => item.element === input.element)
+  ) {
+    if (input.settings !== undefined || input.owner !== undefined)
+      throw new Error(
+        "Legacy objects have no editable studio settings. Only their name and purpose can change.",
+      );
+    return operationBatchSchema.parse({
+      baseRevision: design.revision,
+      ops: [
+        {
+          op: "updateElement",
+          id: input.element,
+          ...(input.name !== undefined && { name: input.name }),
+          ...(input.description !== undefined && { description: input.description }),
+        },
+      ],
+    });
+  }
   const ops: OperationInput[] = [];
   if (!draft.architecture) {
     if (input.type !== "create" || !input.system)
@@ -164,7 +235,7 @@ export function buildStudioCommand(
     }
   };
   const connect = (item: StudioConnectionCreation) => {
-    const connection: Connection = {
+    const connection: z.infer<typeof connectionSchema> = {
       id: item.id,
       kind: item.kind,
       from: { element: item.from },

@@ -1,0 +1,36 @@
+{
+  "owned": [
+    {
+      "id": "e46f80a1-de96-4df3-ae8f-561decdd5492",
+      "name": "UX13 owned studio 1440 1793797542657",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:05:42.728Z",
+      "updatedAt": "2026-11-04T13:05:42.728Z"
+    },
+    {
+      "id": "00c76419-af64-48bd-8a81-34dd8002d608",
+      "name": "UX13 owned studio 1280 1793797542657",
+      "target": null,
+      "revision": 0,
+      "outputDir": null,
+      "gitStrategy": "branch-per-task",
+      "maxRetries": 2,
+      "createdAt": "2026-11-04T13:05:49.151Z",
+      "updatedAt": "2026-11-04T13:05:49.151Z"
+    }
+  ],
+  "deleted": [
+    {
+      "id": "e46f80a1-de96-4df3-ae8f-561decdd5492",
+      "verified404": true
+    },
+    {
+      "id": "00c76419-af64-48bd-8a81-34dd8002d608",
+      "verified404": true
+    }
+  ]
+}

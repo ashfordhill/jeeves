@@ -45,6 +45,7 @@ import {
 import { z } from "zod";
 import type { ArchitectureLibrary } from "../architecture/library.ts";
 import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
+import { runStudioTool, studioToolDefinitions } from "./studio.ts";
 
 const argsSchemas = {
   listTemplates: z.strictObject({}),
@@ -163,7 +164,8 @@ const descriptions: Record<ToolName, string> = {
     "Ask the person a question with clickable choices. Use only when the answer changes the design materially. End your turn after calling it.",
 };
 
-export function toolDefinitions(): ToolDefinition[] {
+export function toolDefinitions(profile?: "studio"): ToolDefinition[] {
+  if (profile === "studio") return studioToolDefinitions();
   return (Object.keys(argsSchemas) as ToolName[]).map((name) => ({
     name,
     description: descriptions[name],
@@ -224,6 +226,7 @@ export class Workspace {
     public working: DesignDocument = base,
     private readonly projectName = "Application",
     private readonly library?: ArchitectureLibrary,
+    public readonly profile?: "studio",
   ) {}
 
   /** Starts over from a newer committed design, dropping pending edits. */
@@ -241,12 +244,15 @@ export class Workspace {
 
   /** Runs one tool call and returns its JSON result for the model. */
   run(name: string, rawArgs: string): string {
-    const result = this.dispatch(name, rawArgs);
+    const result =
+      this.profile === "studio"
+        ? runStudioTool(this, this.registry, name, rawArgs)
+        : this.dispatch(name, rawArgs);
     return JSON.stringify(result);
   }
 
   private dispatch(name: string, rawArgs: string): unknown {
-    if (!(name in argsSchemas)) {
+    if (!Object.hasOwn(argsSchemas, name)) {
       this.log(name, false, `Unknown tool ${name}`);
       return { ok: false, error: `There is no tool named "${name}".` };
     }

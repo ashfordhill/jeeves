@@ -44,6 +44,7 @@ export type LiveTurn = {
 
 type ChatState = {
   projectId?: string;
+  profile?: "studio";
   status: "idle" | "loading" | "ready" | "error";
   turns: ChatTurn[];
   live?: LiveTurn;
@@ -52,7 +53,7 @@ type ChatState = {
   /** Problem sending (not a failed turn, which is shown in the turn itself). */
   error?: string;
 
-  load(projectId: string): Promise<void>;
+  load(projectId: string, profile?: "studio"): Promise<void>;
   setDraft(draft: string): void;
   attach(files: readonly File[]): Promise<void>;
   unstage(key: number): void;
@@ -72,7 +73,8 @@ export const useChat = create<ChatState>()((set, get) => ({
   draft: "",
   staged: [],
 
-  async load(projectId) {
+  async load(projectId, profile) {
+    set({ profile });
     if (get().projectId === projectId && get().status !== "error") return;
     set({ projectId, status: "loading", turns: [], live: undefined, staged: [], error: undefined });
     try {
@@ -125,7 +127,7 @@ export const useChat = create<ChatState>()((set, get) => ({
   },
 
   async send(text) {
-    const { projectId, live, staged } = get();
+    const { projectId, live, staged, profile } = get();
     const body = (text ?? get().draft).trim();
     if (!projectId || live || !body) return;
     if (staged.some((s) => s.status === "uploading")) return;
@@ -152,9 +154,19 @@ export const useChat = create<ChatState>()((set, get) => ({
         return;
       // The server places new elements around what's saved, so save local moves first.
       await draw.flushLayout();
+      if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
+        return;
       await api.chat(
         projectId,
-        { message: body, fileIds: files.map((f) => f.id), selection },
+        {
+          message: body,
+          fileIds: files.map((f) => f.id),
+          selection,
+          ...(profile === "studio" && {
+            profile: "studio",
+            baseRevision: useDraw.getState().loaded?.design.revision,
+          }),
+        },
         (event) => {
           if (get().projectId !== projectId) return;
           switch (event.type) {
@@ -179,6 +191,7 @@ export const useChat = create<ChatState>()((set, get) => ({
         set({ live: undefined, turns: await api.chatTurns(projectId) });
       }
     } catch (error) {
+      if (get().projectId !== projectId) return;
       set({
         live: undefined,
         error: `Message not sent: ${message(error)}`,

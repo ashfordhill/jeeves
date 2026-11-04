@@ -19,7 +19,11 @@ export const applicationKind = (kind?: string) =>
   studioApplicationKinds.some((item) => item === kind);
 
 /** Finite studio endpoints only. Packages never stand in for running applications. */
-export function connectionDefaults(design: DesignDocument, from: string, to: string) {
+export function connectionDefaults(
+  design: DesignDocument,
+  from: string,
+  to: string,
+): Omit<StudioConnectionCreation, "id" | "from" | "to"> {
   if (
     !design.elements.some((item) => item.id === from) ||
     !design.elements.some((item) => item.id === to)

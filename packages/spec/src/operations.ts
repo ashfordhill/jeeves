@@ -20,6 +20,12 @@ import { studioModelSchema } from "./studio-model.ts";
  */
 export const operationSchema = z.discriminatedUnion("op", [
   z.strictObject({ op: z.literal("setArchitecture"), architecture: architectureSchema.nullable() }),
+  /** Canonical system text only; never reparses/replaces preserved architecture declarations. */
+  z.strictObject({
+    op: z.literal("updateArchitectureSystem"),
+    name: architectureSchema.shape.system.shape.name.optional(),
+    description: architectureSchema.shape.system.shape.description.optional(),
+  }),
   /** Replaces only studio intent; all other architecture declarations are retained. */
   z.strictObject({ op: z.literal("setStudio"), studio: studioModelSchema.nullable() }),
   z.strictObject({ op: z.literal("setRecipe"), recipe: recipeBindingSchema.nullable() }),

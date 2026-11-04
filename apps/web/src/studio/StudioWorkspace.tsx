@@ -647,7 +647,7 @@ function ProjectStudio({
                 <IconX size={17} />
               </button>
             </div>
-            <ChatPanel />
+            <ChatPanel profile="studio" />
           </aside>
           <RailResize
             side="chat"

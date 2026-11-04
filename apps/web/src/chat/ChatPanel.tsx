@@ -189,6 +189,32 @@ function UserMessage({ message, files }: { message: string; files: FileInfo[] })
   );
 }
 
+function Usage({ usage }: { usage: ChatTurn["usage"] }) {
+  if (
+    !usage?.known ||
+    ![usage.inputTokens, usage.outputTokens].every(
+      (value) => Number.isSafeInteger(value) && value >= 0,
+    )
+  )
+    return null;
+  return (
+    <p className="chat-hint" role="note" aria-label="Model token usage">
+      {usage.inputTokens.toLocaleString()} input tokens
+      {usage.cachedInputTokens !== undefined &&
+      Number.isSafeInteger(usage.cachedInputTokens) &&
+      usage.cachedInputTokens >= 0 &&
+      usage.cachedInputTokens <= usage.inputTokens
+        ? ` (${usage.cachedInputTokens.toLocaleString()} cached)`
+        : ""}
+      {" · "}
+      {usage.outputTokens.toLocaleString()} output tokens
+      {usage.costUsd !== undefined && Number.isFinite(usage.costUsd) && usage.costUsd >= 0
+        ? ` · $${usage.costUsd.toLocaleString(undefined, { maximumSignificantDigits: 6 })} USD reported`
+        : ""}
+    </p>
+  );
+}
+
 function TurnView({ turn, latest }: { turn: ChatTurn; latest: boolean }) {
   return (
     <li className="chat-turn">
@@ -202,6 +228,7 @@ function TurnView({ turn, latest }: { turn: ChatTurn; latest: boolean }) {
           </p>
         ) : null}
         <ChangedItems ids={turn.changed} />
+        <Usage usage={turn.usage} />
         {turn.question ? <QuestionCard question={turn.question} active={latest} /> : null}
         {turn.operationId !== null ? (
           <div className="chat-turn-actions">
@@ -313,7 +340,7 @@ function Composer() {
   );
 }
 
-export function ChatPanel() {
+export function ChatPanel({ profile }: { profile?: "studio" }) {
   const projectId = useDraw((s) => s.loaded?.project.id);
   const load = useChat((s) => s.load);
   const status = useChat((s) => s.status);
@@ -324,8 +351,8 @@ export function ChatPanel() {
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (projectId) void load(projectId);
-  }, [projectId, load]);
+    if (projectId) void load(projectId, profile);
+  }, [projectId, profile, load]);
 
   // Keep the newest message in view as turns arrive and replies stream.
   const liveLength = live ? live.reply.length + live.activity.length : -1;

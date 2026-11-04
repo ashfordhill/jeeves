@@ -2,7 +2,8 @@
  * The design chat loop (PLAN §7). A turn calls the model with the §7 tools until it stops asking
  * for them (or asks the person something), then commits every edit as one `source: "chat"`
  * operation, so the turn is one undo step. If the design moved meanwhile, the edits are replayed
- * on the newer design; if they no longer fit, the model is told and redoes them after re-reading.
+ * on the newer design; if they no longer fit, the model re-reads them. The studio profile instead
+ * stops on a revision conflict so it cannot overwrite an intervening inspector edit.
  */
 import {
   CALLER_NOTE_PREFIX,
@@ -35,6 +36,7 @@ import type { DesignService, DesignState } from "../design/service.ts";
 import { INSTRUCTIONS, turnContext } from "./context.ts";
 import { type AcceptedType, checkFile, fileParts } from "./files.ts";
 import { placeNewItems } from "./place.ts";
+import { STUDIO_INSTRUCTIONS, studioTurnContext } from "./studio.ts";
 import { toolDefinitions, Workspace } from "./tools.ts";
 
 /** Picks the provider and model for a role, or says why there is none. */
@@ -72,7 +74,13 @@ export type ChatEvent =
   | { type: "activity"; activity: ChatActivity }
   | { type: "done"; turn: ChatTurn; state: DesignState; layout: LayoutDocument };
 
-export type ChatInput = { message: string; fileIds: string[]; selection: string[] };
+export type ChatInput = {
+  message: string;
+  fileIds: string[];
+  selection: string[];
+  profile?: "studio";
+  baseRevision?: number;
+};
 
 export type StartResult =
   | { ok: true; run: (emit: (event: ChatEvent) => void) => Promise<ChatTurn> }
@@ -139,6 +147,15 @@ export class ChatService {
   async start(projectId: string, input: ChatInput): Promise<StartResult> {
     const state = await this.design.getDesign(projectId);
     if (!state) return { ok: false, status: 404, code: "NOT_FOUND", message: "Project not found." };
+    if (input.profile === "studio" && input.baseRevision !== state.design.revision) {
+      return {
+        ok: false,
+        status: 409,
+        code: "REVISION_CONFLICT",
+        message:
+          "The design changed before the studio message started. Reload and inspect the current design before sending again.",
+      };
+    }
     if (this.running.has(projectId)) {
       return {
         ok: false,
@@ -202,8 +219,16 @@ export class ChatService {
       initial.design,
       project?.name,
       this.library,
+      input.profile,
     );
     const usage: ChatUsage = { inputTokens: 0, outputTokens: 0, known: true };
+    let receivedUsage = false;
+    let awaitingResponse = false;
+    let responseRounds = 0;
+    let cachedRounds = 0;
+    let costRounds = 0;
+    let cachedInputTokens = 0;
+    let costUsd = 0;
     let reply = "";
     let operationId: number | null = null;
     let changed: string[] = [];
@@ -226,7 +251,10 @@ export class ChatService {
           content: [
             {
               type: "text",
-              text: turnContext(this.registry, initial.design, initial.findings, input.selection),
+              text:
+                input.profile === "studio"
+                  ? studioTurnContext(initial.design, initial.findings, input.selection)
+                  : turnContext(this.registry, initial.design, initial.findings, input.selection),
             },
           ],
         },
@@ -239,7 +267,7 @@ export class ChatService {
           ],
         },
       ];
-      const tools = toolDefinitions();
+      const tools = toolDefinitions(input.profile);
       let redos = 0;
       for (let round = 0; ; round++) {
         if (round >= MAX_ROUNDS) {
@@ -248,8 +276,14 @@ export class ChatService {
           );
         }
         let separated = false;
+        awaitingResponse = true;
         const response = await source.provider.respond(
-          { model: source.model, instructions: INSTRUCTIONS, items, tools },
+          {
+            model: source.model,
+            instructions: input.profile === "studio" ? STUDIO_INSTRUCTIONS : INSTRUCTIONS,
+            items,
+            tools,
+          },
           {
             onEvent: (event) => {
               if (reply && !separated) {
@@ -262,13 +296,32 @@ export class ChatService {
             },
           },
         );
+        awaitingResponse = false;
         // Providers that don't stream still return the text.
         if (!separated && response.text) {
           const delta = `${reply ? "\n\n" : ""}${response.text}`;
           reply += delta;
           emit({ type: "text", delta });
         }
+        responseRounds++;
+        if (
+          response.usage?.cachedInputTokens !== undefined &&
+          Number.isSafeInteger(response.usage.cachedInputTokens) &&
+          response.usage.cachedInputTokens >= 0
+        ) {
+          cachedRounds++;
+          cachedInputTokens += response.usage.cachedInputTokens;
+        }
+        if (
+          response.usage?.costUsd !== undefined &&
+          Number.isFinite(response.usage.costUsd) &&
+          response.usage.costUsd >= 0
+        ) {
+          costRounds++;
+          costUsd += response.usage.costUsd;
+        }
         if (response.usage) {
+          receivedUsage = true;
           usage.inputTokens += response.usage.inputTokens;
           usage.outputTokens += response.usage.outputTokens;
         } else {
@@ -302,6 +355,10 @@ export class ChatService {
           changed = committed.changed;
           break;
         }
+        if (input.profile === "studio")
+          throw new TurnError(
+            `Studio edits were not saved: ${committed.message} Inspect the current design before sending again.`,
+          );
         if (redos >= MAX_REDOS)
           throw new TurnError(`The edits couldn't be applied: ${committed.message}`);
         redos++;
@@ -318,6 +375,11 @@ export class ChatService {
         });
       }
     } catch (caught) {
+      if (awaitingResponse) {
+        usage.known = false;
+        cachedRounds = -1;
+        costRounds = -1;
+      }
       error =
         caught instanceof TurnError || caught instanceof ProviderError
           ? caught.message
@@ -338,7 +400,13 @@ export class ChatService {
         operationId,
         changed,
         activity: workspace.activity,
-        usage,
+        usage: receivedUsage
+          ? {
+              ...usage,
+              ...(cachedRounds === responseRounds && { cachedInputTokens }),
+              ...(costRounds === responseRounds && { costUsd }),
+            }
+          : null,
         model,
         error,
         finishedAt: new Date(),
@@ -405,6 +473,11 @@ export class ChatService {
       }
       if (result.reason === "conflict") {
         const current = result.state.design;
+        if (workspace.profile === "studio") {
+          workspace.log("commit", false, "Studio revision conflict; nothing saved");
+          workspace.reset(current);
+          return { ok: false, message: "The design changed while the assistant was working." };
+        }
         if (workspace.deploymentRevisionBound) {
           workspace.reset(current);
           return {

@@ -145,7 +145,13 @@ export type ChatQuestion = {
 /** One line of "what the agent did" in a turn, e.g. a tool call and its outcome. */
 export type ChatActivity = { tool: string; ok: boolean; summary: string };
 
-export type ChatUsage = { inputTokens: number; outputTokens: number; known: boolean };
+export type ChatUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  known: boolean;
+  cachedInputTokens?: number;
+  costUsd?: number;
+};
 
 /**
  * One chat turn: the person's message and the agent's reply. A turn's design edits are one

@@ -158,7 +158,8 @@ export function inspectorSpec(
         }),
       };
       if (ref.kind === "element") {
-        if (!binding) return [{ op: "updateElement", id: ref.id, ...text }];
+        if (!binding)
+          return buildStudioCommand(current, { type: "edit", element: ref.id, ...text }).ops;
         return buildStudioCommand(current, {
           type: "edit",
           element: ref.id,
@@ -174,15 +175,18 @@ export function inspectorSpec(
         if (!pkg) throw new Error("Package no longer exists");
         return buildStudioCommand(current, { type: "group", package: { ...pkg, ...text } }).ops;
       }
+      if (ref.kind === "system")
+        return buildStudioCommand(current, {
+          type: "editSystem",
+          ...(!current.architecture && { name: label }),
+          ...text,
+        }).ops;
       const architecture = structuredClone(
         current.architecture ?? architectureSchema.parse({ system: { name: label } }),
       );
-      if (ref.kind === "system") Object.assign(architecture.system, text);
-      else {
-        const node = architecture.nodes.find((item) => item.id === ref.id);
-        if (!node) throw new Error("Context object no longer exists");
-        Object.assign(node, text);
-      }
+      const node = architecture.nodes.find((item) => item.id === ref.id);
+      if (!node) throw new Error("Context object no longer exists");
+      Object.assign(node, text);
       return [{ op: "setArchitecture", architecture }];
     },
   };

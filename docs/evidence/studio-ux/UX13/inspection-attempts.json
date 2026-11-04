@@ -1,0 +1,13 @@
+{
+  "notes": [
+    "Initial formatting caught an invalid ARIA label on a paragraph and unused type imports; corrected before final checks.",
+    "Tightening shared connection schemas required an explicit finite return type on the existing connection-default helper. No runtime defaults changed.",
+    "Initial browser driver used Back instead of the existing Back to parent scope accessible name; corrected. Owned fixtures were deleted.",
+    "A rich raw legacy fixture exposed unrelated contract-prose trimming through setArchitecture during a goal edit. Added narrow updateArchitectureSystem and used it in the shared command/manual system inspector path. Direct production-function and real browser/API observations then preserve all old declarations exactly, including whitespace.",
+    "The new operation extends an exhaustive test-only map. Minimal typing/deferred-marker adaptation keeps full typecheck valid; its new unit case is explicitly todo. No unit/E2E/template suite or snapshot maintenance/execution occurred.",
+    "An attempted overlap of two one-off browser drivers replaced the temporary helper owned-ID allowlist and produced one HTTP 403 on an owned chat request; the guard refused it. Final drivers ran sequentially and pass. All attempted fixtures were cleaned.",
+    "Optional default-editor chat-opening probes encountered the old collapsed handle/outline overlap. The unchanged default editor was verified read-only without forcing that action; studio chat was fully inspected by mouse. No legacy UI redesign was attempted.",
+    "Final main browser run: 32 records, 36 real HTTP writes; two console errors exactly match intentional inspector HTTP 409 responses. Final supplementary run: six records, eight real writes; zero console errors/warnings. Both have zero page errors, external requests or blocked/unowned writes."
+  ],
+  "remainingEvaluation": "Conversation quality with a live model and real project briefs remains later work. Scripted replies are contract observations, never live-model success."
+}

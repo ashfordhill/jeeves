@@ -10159,3 +10159,89 @@ semantics in source. No new generated application or live-provider success is cl
 blocker remains. UX12 is complete; this worker stops after its scoped local commit. UX13 and later
 examples/default rollout are separate assignments. Studio remains opt-in until UX15; P73a/P73b and
 the backend batch remain paused.
+
+## 2026-11-04 — UX13: finite studio assistant and truthful existing usage (complete)
+
+Executed UX13 only on primary main from `4b3cf1f1b617c7ce11d78bb4df5938de86f386d6`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan/shared protocol/exact assignment, model/configuration/interaction contracts, final
+decisions, C4 guidance and current definitions/commands/chat/service/store seams. This worker did
+not delegate, create a branch/worktree, resume backend work or change sibling repositories.
+Unrelated `.jeeves-feedback/` remains untouched.
+
+Only the opt-in studio passes the studio editing profile and its accepted revision to chat.
+Its finite catalog/design context and six tools expose definition list/detail, bounded getDesign,
+shared commands, validation and focused questions. Dispatch refuses all other legacy tools even
+when called anyway, including raw operations/architecture replacement, backend contracts, pattern/
+library/study expansion and target creation. Strict command inputs exclude routes, schemas,
+entities, policy/lifecycle/effect/business config and invented custom modules. Requested behavior
+stays in goal context and explicit C4b implementation/integration obligations. Provider intent
+selects no runtime/template and creates no implementation promise. Legacy low-level tools remain
+available outside this profile.
+
+The same strict schema/builder, semantic validation and operation/history transport serve manual
+edits and chat. Multiple commands/tools in an accepted turn commit as one chat history edit.
+Pending valid inspector/layout work finishes before the studio request captures its revision.
+A newer accepted manual revision stops a prepared studio turn without replay or overwrite; an
+inspector draft conflicting with accepted chat follows existing Changed elsewhere feedback.
+Legacy text edits cannot silently convert an object or rewrite its backend configuration.
+
+A rich historical fixture exposed full setArchitecture parsing trimming unrelated contract prose
+during system-goal editing. Added narrow updateArchitectureSystem and the shared/manual text path.
+It updates only system name/purpose and preserves all other architecture declarations exactly,
+including raw prose whitespace. No stored model field or conceptual catalog boundary changed.
+Minimal typing/deferred-marker adaptation in the existing exhaustive operation-case map was
+required for full typecheck; its new unit case is explicitly todo, not represented as tested.
+
+Chat displays only complete returned input/output token totals. Available cached tokens are a
+subset of input; USD cost is shown only when actually reported for every response. Missing,
+partial or failed-response usage is omitted. No pricing estimate, context capacity percentage or
+new billing/observability surface was invented.
+
+Evidence: `docs/evidence/studio-ux/UX13/`. Final direct Chromium inspection at 1440×900 and
+1280×800 contains 32 main records: initial four-element graph, provider change, shared C3 queue,
+package membership/ownership, manual-then-chat edits, atomic rejection of business/raw tools,
+one durable history edit per accepted turn, mouse Undo/Redo/reload, stale start, missing/partial/
+failed usage and correctly summed counters. A held model response lets a real inspector save
+invalidate prepared chat without an operation. A held inspector request receives a real 409
+after chat changes that same field; the accepted chat value survives.
+
+Six supplementary observations exercise real studio chat and mouse goal editing on exact-owned
+rich legacy fixtures that deliberately retain raw historical factory prose. Entire architecture
+declarations survive the name edit; narrow goal editing, Undo/Redo/reload preserve everything else.
+The unchanged legacy editor remains default/read-only at both sizes. Production-function
+inspection checks all 14 definitions, strict JSON tool schemas, every unavailable legacy/prototype
+tool, finite context, rich preservation, compatibility outside the profile and seven invalid
+provider/definition/business batches. Representative usage, queue, package, rejection, conflict,
+legacy-goal and default screenshots were visually inspected.
+
+Only local model transport/replies/costs were scripted. The actual ChatService, HTTP, operations,
+database, history and browser store ran; successful writes were real API responses. No live paid
+model/provider, external coding-agent or generated application call occurred. Guards precede
+every page and allow only exact owned disposable routes. Final main/supplementary runs have
+36/eight real HTTP writes, zero page errors, external requests or blocked/unowned writes.
+The main run's two console errors exactly match deliberate inspector HTTP 409s; supplementary
+has none. Transport summaries record the finite tools and saved revisions.
+
+All 13 original projects retain exact metadata, semantic/layout hashes and revisions, matching UX12.
+The original set is exact; all 16 attempted owned fixtures are deleted/verified 404. Earlier handoff
+bytes, 42 feedback files/21 original-copy pairs, seven public fixtures, 48 frozen benchmark files,
+old factories and unrelated tracked files remain exact. Attempt notes record corrected driver
+accessible names, a temporary helper-allowlist overlap rejected with 403 and final sequential passes.
+An optional old-default chat-opening probe encountered the unchanged handle/outline overlap;
+default compatibility was verified read-only without forcing it. No legacy UI redesign was added.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1, Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, zero errors.
+- Full `pnpm typecheck`: exit 0 across workspaces, existing source/test types and scripts.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser/tool observations, scoped formatting, preservation and whitespace including new
+  evidence/logs: pass. Check logs normalize trailing whitespace only.
+
+Unit/E2E/template suites, snapshots and `pnpm check` remain explicitly deferred. Live-model
+conversation quality, real-provider pricing and generated/C4b behavior remain unevaluated.
+No runtime/catalog availability or reusable conceptual boundary changed. No UX13 product blocker
+remains. UX13 is complete and this worker stops after its scoped local commit. UX14a and later
+examples/default rollout are separate assignments; studio stays opt-in until UX15 and P73a/P73b/
+backend work remains paused.

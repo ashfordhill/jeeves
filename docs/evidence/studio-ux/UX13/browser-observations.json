@@ -1,0 +1,2044 @@
+{
+  "records": [
+    {
+      "width": 1440,
+      "scenario": "initial",
+      "beforeRevision": 0,
+      "afterRevision": 1,
+      "oneHistoryEdit": true,
+      "operationId": 5529,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.003,
+        "inputTokens": 300,
+        "outputTokens": 60,
+        "cachedInputTokens": 120
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "listStudioDefinitions",
+          "summary": "Listed finite studio definitions"
+        },
+        {
+          "ok": true,
+          "tool": "describeStudioDefinition",
+          "summary": "Read studio billing settings"
+        },
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        },
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 1 studio command"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 7 changes as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "mouse one-turn undo/redo/reload",
+      "restoredAllFourElementsAndConnection": true
+    },
+    {
+      "width": 1440,
+      "scenario": "provider",
+      "beforeRevision": 3,
+      "afterRevision": 4,
+      "oneHistoryEdit": true,
+      "operationId": 5532,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 1 studio command"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 1 change as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "queue",
+      "beforeRevision": 4,
+      "afterRevision": 5,
+      "oneHistoryEdit": true,
+      "operationId": 5533,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 1 studio command"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 4 changes as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "package",
+      "beforeRevision": 5,
+      "afterRevision": 6,
+      "oneHistoryEdit": true,
+      "operationId": 5534,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 2 studio commands"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 2 changes as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "pending manual then chat",
+      "manualBase": 6,
+      "chatBase": 7,
+      "finalRevision": 8,
+      "preservedName": true,
+      "language": "python"
+    },
+    {
+      "width": 1440,
+      "scenario": "reject",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": false,
+          "tool": "applyOperations",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "getArchitectureContracts",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "applyArchitecturePattern",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "createTargetWorkspace",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "setArchitecture",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio arguments refused; nothing changed"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio arguments refused; nothing changed"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio edit refused; nothing prepared for this call"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio base revision mismatch; nothing prepared"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "unknown",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": null,
+      "activity": []
+    },
+    {
+      "width": 1440,
+      "scenario": "partial",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": {
+        "known": false,
+        "inputTokens": 100,
+        "outputTokens": 20
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "failed-first",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "failed",
+      "usage": null,
+      "activity": []
+    },
+    {
+      "width": 1440,
+      "scenario": "failed-later",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "failed",
+      "usage": {
+        "known": false,
+        "inputTokens": 100,
+        "outputTokens": 20
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "cost-missing",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "inputTokens": 150,
+        "outputTokens": 30
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "scenario": "prepared chat conflicts with accepted inspector edit",
+      "chatOperation": null,
+      "failed": "Studio edits were not saved: The design changed while the assistant was working. Inspect the current design before sending again.",
+      "manualNamePreserved": true,
+      "revision": 9
+    },
+    {
+      "width": 1440,
+      "scenario": "pending inspector draft conflicts with accepted chat",
+      "actualOperationStatus": 409,
+      "preservedChatName": true,
+      "oneChatHistoryEdit": true
+    },
+    {
+      "width": 1440,
+      "scenario": "stale start rejected before turn",
+      "status": 409,
+      "noTurnCreated": true
+    },
+    {
+      "width": 1440,
+      "scenario": "durable history mappings",
+      "turns": [
+        {
+          "id": 165,
+          "status": "done",
+          "operationId": 5529
+        },
+        {
+          "id": 166,
+          "status": "done",
+          "operationId": 5532
+        },
+        {
+          "id": 167,
+          "status": "done",
+          "operationId": 5533
+        },
+        {
+          "id": 168,
+          "status": "done",
+          "operationId": 5534
+        },
+        {
+          "id": 169,
+          "status": "done",
+          "operationId": 5536
+        },
+        {
+          "id": 170,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 171,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 172,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 173,
+          "status": "failed",
+          "operationId": null
+        },
+        {
+          "id": 174,
+          "status": "failed",
+          "operationId": null
+        },
+        {
+          "id": 175,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 176,
+          "status": "failed",
+          "operationId": null
+        },
+        {
+          "id": 177,
+          "status": "done",
+          "operationId": 5538
+        }
+      ],
+      "operations": [
+        {
+          "id": 5529,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 0,
+          "revision": 1,
+          "target_id": null
+        },
+        {
+          "id": 5530,
+          "kind": "undo",
+          "source": "canvas",
+          "state": null,
+          "base_revision": 1,
+          "revision": 2,
+          "target_id": 5529
+        },
+        {
+          "id": 5531,
+          "kind": "redo",
+          "source": "canvas",
+          "state": null,
+          "base_revision": 2,
+          "revision": 3,
+          "target_id": 5529
+        },
+        {
+          "id": 5532,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 3,
+          "revision": 4,
+          "target_id": null
+        },
+        {
+          "id": 5533,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 4,
+          "revision": 5,
+          "target_id": null
+        },
+        {
+          "id": 5534,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 5,
+          "revision": 6,
+          "target_id": null
+        },
+        {
+          "id": 5535,
+          "kind": "edit",
+          "source": "canvas",
+          "state": "applied",
+          "base_revision": 6,
+          "revision": 7,
+          "target_id": null
+        },
+        {
+          "id": 5536,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 7,
+          "revision": 8,
+          "target_id": null
+        },
+        {
+          "id": 5537,
+          "kind": "edit",
+          "source": "canvas",
+          "state": "applied",
+          "base_revision": 8,
+          "revision": 9,
+          "target_id": null
+        },
+        {
+          "id": 5538,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 9,
+          "revision": 10,
+          "target_id": null
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "initial",
+      "beforeRevision": 0,
+      "afterRevision": 1,
+      "oneHistoryEdit": true,
+      "operationId": 5539,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.003,
+        "inputTokens": 300,
+        "outputTokens": 60,
+        "cachedInputTokens": 120
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "listStudioDefinitions",
+          "summary": "Listed finite studio definitions"
+        },
+        {
+          "ok": true,
+          "tool": "describeStudioDefinition",
+          "summary": "Read studio billing settings"
+        },
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        },
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 1 studio command"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 7 changes as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "mouse one-turn undo/redo/reload",
+      "restoredAllFourElementsAndConnection": true
+    },
+    {
+      "width": 1280,
+      "scenario": "provider",
+      "beforeRevision": 3,
+      "afterRevision": 4,
+      "oneHistoryEdit": true,
+      "operationId": 5542,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 1 studio command"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 1 change as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "queue",
+      "beforeRevision": 4,
+      "afterRevision": 5,
+      "oneHistoryEdit": true,
+      "operationId": 5543,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 1 studio command"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 4 changes as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "package",
+      "beforeRevision": 5,
+      "afterRevision": 6,
+      "oneHistoryEdit": true,
+      "operationId": 5544,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "applyStudioCommands",
+          "summary": "Prepared 2 studio commands"
+        },
+        {
+          "ok": true,
+          "tool": "commit",
+          "summary": "Applied 2 changes as one undo step"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "pending manual then chat",
+      "manualBase": 6,
+      "chatBase": 7,
+      "finalRevision": 8,
+      "preservedName": true,
+      "language": "python"
+    },
+    {
+      "width": 1280,
+      "scenario": "reject",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "costUsd": 0.002,
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 80
+      },
+      "activity": [
+        {
+          "ok": false,
+          "tool": "applyOperations",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "getArchitectureContracts",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "applyArchitecturePattern",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "createTargetWorkspace",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "setArchitecture",
+          "summary": "Tool unavailable in studio profile"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio arguments refused; nothing changed"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio arguments refused; nothing changed"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio edit refused; nothing prepared for this call"
+        },
+        {
+          "ok": false,
+          "tool": "applyStudioCommands",
+          "summary": "Studio base revision mismatch; nothing prepared"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "unknown",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": null,
+      "activity": []
+    },
+    {
+      "width": 1280,
+      "scenario": "partial",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": {
+        "known": false,
+        "inputTokens": 100,
+        "outputTokens": 20
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "failed-first",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "failed",
+      "usage": null,
+      "activity": []
+    },
+    {
+      "width": 1280,
+      "scenario": "failed-later",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "failed",
+      "usage": {
+        "known": false,
+        "inputTokens": 100,
+        "outputTokens": 20
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "cost-missing",
+      "beforeRevision": 8,
+      "afterRevision": 8,
+      "oneHistoryEdit": false,
+      "operationId": null,
+      "status": "done",
+      "usage": {
+        "known": true,
+        "inputTokens": 150,
+        "outputTokens": 30
+      },
+      "activity": [
+        {
+          "ok": true,
+          "tool": "getDesign",
+          "summary": "Read finite studio design"
+        }
+      ]
+    },
+    {
+      "width": 1280,
+      "scenario": "prepared chat conflicts with accepted inspector edit",
+      "chatOperation": null,
+      "failed": "Studio edits were not saved: The design changed while the assistant was working. Inspect the current design before sending again.",
+      "manualNamePreserved": true,
+      "revision": 9
+    },
+    {
+      "width": 1280,
+      "scenario": "pending inspector draft conflicts with accepted chat",
+      "actualOperationStatus": 409,
+      "preservedChatName": true,
+      "oneChatHistoryEdit": true
+    },
+    {
+      "width": 1280,
+      "scenario": "stale start rejected before turn",
+      "status": 409,
+      "noTurnCreated": true
+    },
+    {
+      "width": 1280,
+      "scenario": "durable history mappings",
+      "turns": [
+        {
+          "id": 178,
+          "status": "done",
+          "operationId": 5539
+        },
+        {
+          "id": 179,
+          "status": "done",
+          "operationId": 5542
+        },
+        {
+          "id": 180,
+          "status": "done",
+          "operationId": 5543
+        },
+        {
+          "id": 181,
+          "status": "done",
+          "operationId": 5544
+        },
+        {
+          "id": 182,
+          "status": "done",
+          "operationId": 5546
+        },
+        {
+          "id": 183,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 184,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 185,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 186,
+          "status": "failed",
+          "operationId": null
+        },
+        {
+          "id": 187,
+          "status": "failed",
+          "operationId": null
+        },
+        {
+          "id": 188,
+          "status": "done",
+          "operationId": null
+        },
+        {
+          "id": 189,
+          "status": "failed",
+          "operationId": null
+        },
+        {
+          "id": 190,
+          "status": "done",
+          "operationId": 5548
+        }
+      ],
+      "operations": [
+        {
+          "id": 5539,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 0,
+          "revision": 1,
+          "target_id": null
+        },
+        {
+          "id": 5540,
+          "kind": "undo",
+          "source": "canvas",
+          "state": null,
+          "base_revision": 1,
+          "revision": 2,
+          "target_id": 5539
+        },
+        {
+          "id": 5541,
+          "kind": "redo",
+          "source": "canvas",
+          "state": null,
+          "base_revision": 2,
+          "revision": 3,
+          "target_id": 5539
+        },
+        {
+          "id": 5542,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 3,
+          "revision": 4,
+          "target_id": null
+        },
+        {
+          "id": 5543,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 4,
+          "revision": 5,
+          "target_id": null
+        },
+        {
+          "id": 5544,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 5,
+          "revision": 6,
+          "target_id": null
+        },
+        {
+          "id": 5545,
+          "kind": "edit",
+          "source": "canvas",
+          "state": "applied",
+          "base_revision": 6,
+          "revision": 7,
+          "target_id": null
+        },
+        {
+          "id": 5546,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 7,
+          "revision": 8,
+          "target_id": null
+        },
+        {
+          "id": 5547,
+          "kind": "edit",
+          "source": "canvas",
+          "state": "applied",
+          "base_revision": 8,
+          "revision": 9,
+          "target_id": null
+        },
+        {
+          "id": 5548,
+          "kind": "edit",
+          "source": "chat",
+          "state": "applied",
+          "base_revision": 9,
+          "revision": 10,
+          "target_id": null
+        }
+      ]
+    }
+  ],
+  "writes": [
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "initial 1440 1793797542657",
+        "fileIds": [],
+        "selection": [],
+        "profile": "studio",
+        "baseRevision": 0
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/redo",
+      "status": 200,
+      "body": {
+        "baseRevision": 2,
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "provider 1440 1793797542657",
+        "fileIds": [],
+        "selection": [],
+        "profile": "studio",
+        "baseRevision": 3
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "queue 1440 1793797542657",
+        "fileIds": [],
+        "selection": [],
+        "profile": "studio",
+        "baseRevision": 4
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "package 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 5
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 6,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "api",
+            "name": "Manual dispatch 1440"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "api",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "billing",
+                  "definition": {
+                    "id": "studio-billing",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "billing",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "provider": "stripe",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "worker",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "postgresql",
+                    "provider": "self-hosted"
+                  },
+                  "owner": {
+                    "kind": "element",
+                    "id": "api"
+                  }
+                },
+                {
+                  "element": "jobs",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployments",
+                  "members": ["api", "worker"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "api-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "publish",
+                  "settings": {
+                    "channelUse": "publish"
+                  }
+                },
+                {
+                  "connection": "consume",
+                  "settings": {
+                    "channelUse": "consume"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "manual 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 7
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "reject 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "unknown 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "partial 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "failed-first 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "failed-later 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "cost-missing 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 8,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "api",
+            "name": "Manual wins 1440"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "api",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "python",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "billing",
+                  "definition": {
+                    "id": "studio-billing",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "billing",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "provider": "stripe",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "worker",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "postgresql",
+                    "provider": "self-hosted"
+                  },
+                  "owner": {
+                    "kind": "element",
+                    "id": "api"
+                  }
+                },
+                {
+                  "element": "jobs",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployments",
+                  "members": ["api", "worker"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "api-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "publish",
+                  "settings": {
+                    "channelUse": "publish"
+                  }
+                },
+                {
+                  "connection": "consume",
+                  "settings": {
+                    "channelUse": "consume"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "conflict 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/chat",
+      "status": 200,
+      "body": {
+        "message": "draft 1440 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 9
+      }
+    },
+    {
+      "width": 1440,
+      "path": "/api/projects/e46f80a1-de96-4df3-ae8f-561decdd5492/operations",
+      "status": 409,
+      "body": {
+        "baseRevision": 9,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "api",
+            "name": "Pending inspector must not overwrite"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "api",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "python",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "billing",
+                  "definition": {
+                    "id": "studio-billing",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "billing",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "provider": "stripe",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "worker",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "postgresql",
+                    "provider": "self-hosted"
+                  },
+                  "owner": {
+                    "kind": "element",
+                    "id": "api"
+                  }
+                },
+                {
+                  "element": "jobs",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployments",
+                  "members": ["api", "worker"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "api-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "publish",
+                  "settings": {
+                    "channelUse": "publish"
+                  }
+                },
+                {
+                  "connection": "consume",
+                  "settings": {
+                    "channelUse": "consume"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "initial 1280 1793797542657",
+        "fileIds": [],
+        "selection": [],
+        "profile": "studio",
+        "baseRevision": 0
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/redo",
+      "status": 200,
+      "body": {
+        "baseRevision": 2,
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "provider 1280 1793797542657",
+        "fileIds": [],
+        "selection": [],
+        "profile": "studio",
+        "baseRevision": 3
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "queue 1280 1793797542657",
+        "fileIds": [],
+        "selection": [],
+        "profile": "studio",
+        "baseRevision": 4
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "package 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 5
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 6,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "api",
+            "name": "Manual dispatch 1280"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "api",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "billing",
+                  "definition": {
+                    "id": "studio-billing",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "billing",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "provider": "stripe",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "worker",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "postgresql",
+                    "provider": "self-hosted"
+                  },
+                  "owner": {
+                    "kind": "element",
+                    "id": "api"
+                  }
+                },
+                {
+                  "element": "jobs",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployments",
+                  "members": ["api", "worker"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "api-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "publish",
+                  "settings": {
+                    "channelUse": "publish"
+                  }
+                },
+                {
+                  "connection": "consume",
+                  "settings": {
+                    "channelUse": "consume"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "manual 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 7
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "reject 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "unknown 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "partial 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "failed-first 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "failed-later 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "cost-missing 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 8,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "api",
+            "name": "Manual wins 1280"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "api",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "python",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "billing",
+                  "definition": {
+                    "id": "studio-billing",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "billing",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "provider": "stripe",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "worker",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "postgresql",
+                    "provider": "self-hosted"
+                  },
+                  "owner": {
+                    "kind": "element",
+                    "id": "api"
+                  }
+                },
+                {
+                  "element": "jobs",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployments",
+                  "members": ["api", "worker"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "api-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "publish",
+                  "settings": {
+                    "channelUse": "publish"
+                  }
+                },
+                {
+                  "connection": "consume",
+                  "settings": {
+                    "channelUse": "consume"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "conflict 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 8
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/chat",
+      "status": 200,
+      "body": {
+        "message": "draft 1280 1793797542657",
+        "fileIds": [],
+        "selection": ["api"],
+        "profile": "studio",
+        "baseRevision": 9
+      }
+    },
+    {
+      "width": 1280,
+      "path": "/api/projects/00c76419-af64-48bd-8a81-34dd8002d608/operations",
+      "status": 409,
+      "body": {
+        "baseRevision": 9,
+        "ops": [
+          {
+            "op": "updateElement",
+            "id": "api",
+            "name": "Pending inspector must not overwrite"
+          },
+          {
+            "op": "setStudio",
+            "studio": {
+              "version": 1,
+              "elements": [
+                {
+                  "element": "api",
+                  "definition": {
+                    "id": "studio-service",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "service",
+                    "language": "python",
+                    "exposure": "internal",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "billing",
+                  "definition": {
+                    "id": "studio-billing",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "billing",
+                    "language": "unspecified",
+                    "exposure": "internal",
+                    "provider": "stripe",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "worker",
+                  "definition": {
+                    "id": "studio-worker",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "worker",
+                    "language": "unspecified",
+                    "execution": "docker"
+                  }
+                },
+                {
+                  "element": "db",
+                  "definition": {
+                    "id": "studio-database",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "database",
+                    "engine": "postgresql",
+                    "provider": "self-hosted"
+                  },
+                  "owner": {
+                    "kind": "element",
+                    "id": "api"
+                  }
+                },
+                {
+                  "element": "jobs",
+                  "definition": {
+                    "id": "studio-queue",
+                    "version": "1.0.0"
+                  },
+                  "settings": {
+                    "kind": "queue",
+                    "mode": "work-queue",
+                    "provider": "unspecified"
+                  },
+                  "owner": {
+                    "kind": "package",
+                    "id": "dispatch"
+                  }
+                }
+              ],
+              "packages": [
+                {
+                  "id": "dispatch",
+                  "name": "Dispatch package",
+                  "description": "Two independent deployments",
+                  "members": ["api", "worker"]
+                }
+              ],
+              "connections": [
+                {
+                  "connection": "api-db",
+                  "settings": {}
+                },
+                {
+                  "connection": "publish",
+                  "settings": {
+                    "channelUse": "publish"
+                  }
+                },
+                {
+                  "connection": "consume",
+                  "settings": {
+                    "channelUse": "consume"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "source": "canvas"
+      }
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "consoleMessages": [
+    {
+      "width": 1440,
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "width": 1280,
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ],
+  "allGuardsBeforePage": true,
+  "noLiveModel": true,
+  "result": "passed"
+}

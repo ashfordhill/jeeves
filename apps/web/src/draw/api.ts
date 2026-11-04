@@ -73,7 +73,13 @@ export type ChatTurn = {
   operationId: number | null;
   changed: string[];
   activity: ChatActivity[];
-  usage: { inputTokens: number; outputTokens: number; known: boolean } | null;
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+    known: boolean;
+    cachedInputTokens?: number;
+    costUsd?: number;
+  } | null;
   model: string | null;
   error: string | null;
   createdAt: string;
@@ -579,7 +585,13 @@ export const api = {
   /** Sends a chat message; `onEvent` gets each streamed event, ending with `done`. */
   chat: async (
     id: string,
-    body: { message: string; fileIds: string[]; selection: string[] },
+    body: {
+      message: string;
+      fileIds: string[];
+      selection: string[];
+      profile?: "studio";
+      baseRevision?: number;
+    },
     onEvent: (event: ChatEvent) => void,
   ) => {
     const res = await fetch(`/api/projects/${id}/chat`, {

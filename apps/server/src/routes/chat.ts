@@ -7,6 +7,8 @@ import { notFound } from "./projects.ts";
 const projectParams = z.object({ id: z.uuid() });
 const fileParams = z.object({ id: z.uuid(), fileId: z.uuid() });
 const chatBody = z.strictObject({
+  profile: z.literal("studio").optional(),
+  baseRevision: z.int().nonnegative().optional(),
   message: z.string().trim().min(1).max(20_000),
   fileIds: z.array(z.uuid()).max(10).default([]),
   selection: z.array(z.string().max(63)).max(200).default([]),
