@@ -1,0 +1,72 @@
+{
+  "inspectionType": "One-off direct guarded browser inspection, not a maintained suite",
+  "attempts": [
+    {
+      "attempt": 1,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 0,
+      "note": "Inspection loader required Node TypeScript transform support; no project was created."
+    },
+    {
+      "attempt": 2,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 0,
+      "note": "Synthetic fixture used incorrect relationship machine enums; corrected before any project creation."
+    },
+    {
+      "attempt": 3,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 0,
+      "note": "Synthetic legacy capability config used a disallowed key; rejected atomically, disposable deleted."
+    },
+    {
+      "attempt": 4,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 0,
+      "note": "Tab-count assertion included application-shell tabs; scoped assertions to the inspector."
+    },
+    {
+      "attempt": 5,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 6,
+      "note": "Inspection settle helper used navigation flush, correctly discarding invalid drafts; changed helper to non-navigation flush."
+    },
+    {
+      "attempt": 6,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 14,
+      "note": "Expected C1 purpose retained a trailing space; corrected expectation to the canonical trimmed value."
+    },
+    {
+      "attempt": 7,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 6,
+      "note": "Additional incomplete-number check demonstrated React change-event omission for a lone minus sign."
+    },
+    {
+      "attempt": 8,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 6,
+      "note": "Incomplete-number handler needed native input-event delivery; corrected to onInput with validity.badInput."
+    },
+    {
+      "attempt": 9,
+      "outcome": "stopped and corrected",
+      "scenariosCompleted": 17,
+      "note": "Long-name fixture contained 117 normalized characters; corrected it to exactly 120."
+    },
+    {
+      "attempt": 10,
+      "outcome": "passed",
+      "scenariosCompleted": 20,
+      "note": "All 20 scenarios passed; visual review then added real protocols to parallel dependency navigation buttons."
+    }
+  ],
+  "finalRun": "browser-observations.json",
+  "rawLogs": "Ignored .jeeves-work/ux07a/",
+  "scopedCompileCorrections": [
+    "Initial descriptor-choice inferred type was widened in the rendering consumer without changing schemas.",
+    "Initial conditional tabpanel ARIA syntax was made explicit; no suppression added."
+  ],
+  "unitE2ETemplateSuites": "Deferred by owner; not run."
+}

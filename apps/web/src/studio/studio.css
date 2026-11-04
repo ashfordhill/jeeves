@@ -243,17 +243,6 @@
   outline: 3px solid var(--blue);
   outline-offset: 2px;
 }
-.studio-service-form fieldset {
-  border: 0;
-  padding: 0;
-  margin: 16px 0;
-  min-width: 0;
-}
-.studio-service-form legend {
-  font-size: 12px;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
 .studio-form-field {
   display: flex;
   flex-direction: column;
@@ -315,4 +304,57 @@
   font: inherit;
   cursor: pointer;
   padding: 4px 7px;
+}
+.studio-inspector-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0 16px;
+  border-bottom: 1px solid var(--grid-dot);
+}
+.studio-inspector-tabs button {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 3px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.studio-inspector-tabs button[aria-selected="true"] {
+  border-bottom-color: var(--blue);
+  font-weight: 800;
+}
+.studio-inspector-form {
+  margin-top: 16px;
+}
+.studio-member-list,
+.studio-dependencies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.studio-member-list h3 {
+  margin: 8px 0;
+  font-size: 13px;
+}
+.studio-member-list button,
+.studio-dependencies button {
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.studio-dependencies span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
 }

@@ -17,16 +17,25 @@ objects: Name, Purpose, Execution, Language, conditional Host and Exposure. Vali
 500ms or blur; selections commit promptly. Leaving flushes valid input and discards invalid unsent
 input. Long saves show brief pending feedback; failures retain Retry/Discard, and conflicts adopt
 the fresh design with a concise indication. A browser unload can only attempt an unacknowledged
-save. Other definitions retain compact read-only summaries. **UX06b** unifies semantic and
+save. **UX06b** unifies semantic and
 architecture-layout history behind the header Undo/Redo pair. Valid pending input finishes before
 Undo; failed saves add no step. In-app project switching preserves each project's local order;
 browser reload resets local layout history while durable semantic history remains on the server.
 A move/group/Tidy commit is one scope snapshot; only Tidy restores its changed camera. Pan/zoom,
-selection and no-op saves add no step. The remaining finite forms/creation, drag/Tidy gestures,
+selection and no-op saves add no step. **UX07a** extends shared autosave to all seven exact
+application definitions, C1 names/purpose, package names/purpose and safe legacy canonical text.
+Only nonempty General/Options/Connections sections appear; one section needs no tab strip.
+Managed execution reveals Host, and browser delivery uses standalone hosting or an actual serving
+application. Conditional changes remove inapplicable fields atomically. Package members keep
+independent language/execution settings and can be inspected from their member list. Redirect
+shortcuts select existing real store/cache connections; clearing a shortcut preserves its connection.
+No business/backend editor is reachable from these forms. Resources/relationship forms, membership
+actions and dependency creation remain their later assigned units. The remaining creation, drag/Tidy gestures,
 final geometry, unified Generate and studio chat tools remain later units; the
 [UX05 action mapping](evidence/studio-ux/UX05/README.md),
 [UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
-[UX06b history evidence](evidence/studio-ux/UX06b/README.md) record those limits.
+[UX06b history evidence](evidence/studio-ux/UX06b/README.md) and
+[UX07a inspector evidence](evidence/studio-ux/UX07a/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

@@ -9441,3 +9441,87 @@ Local architecture history is intentionally not durable across browser restart. 
 can only attempt an unacknowledged save, as in UX06a. No product blocker or scope deviation remains.
 UX06 is complete with UX06a; UX07a is the next unit boundary and is not started here. This worker
 stops after its scoped local UX06b commit; P73a/P73b and the backend batch remain paused.
+
+
+## 2026-11-04 — UX07a: compact application, package and C1 inspectors (complete)
+
+Executed UX07a only on primary main from `f8927e4aea9a89d9b3ae44670b0aab6451ee8709`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan, exact UX07a/shared protocol, configuration §§1–2/5, interaction §§3/4, final decisions,
+C4/model guidance and existing editor/catalog/draft paths. No delegation, branch/worktree, sibling
+edit, backend resumption, provider/external-agent execution or application generation. Original
+source/factories, frozen benchmarks and unrelated `.jeeves-feedback/` remain preserved.
+
+Replaced the representative service form with descriptor-driven compact inspectors for all seven
+exact application definitions: service, browser, worker, Billing, Redirect, Notifications and
+Identity. The UX06 controller remains the only autosave mechanism. General/Options/Connections
+sections appear only with content; one section has no tab strip. Shared canonical drafts also
+cover C1 system/person/external names/purpose, package names/purpose and mapped/unmapped legacy
+element text. An empty document can save C1 text without acquiring studio metadata. Unknown
+studio definitions remain unresolved/read-only; no schema reflection or arbitrary JSON is exposed.
+
+Managed execution reveals Host and switching to Docker removes it atomically. Browser delivery
+uses standalone provider or actual serving-application reference, including package members;
+branch changes remove inapplicable values in the same pending edit. Browser has no Execution or
+Language control and makes no Docker claim. Provider choices update settings only and Billing
+remains one C2 card. Worker concurrency rejects out-of-range/decimal/incomplete input and clears
+to an absent value. A native numeric-input edge case needed onInput/badInput handling so a lone
+minus sign remains invalid/unsent rather than being treated as deliberate clearing.
+
+Redirect store/cache shortcuts select existing real outgoing connections, display resource/action/
+protocol and preserve the relationship when cleared. Multiple connections stay distinct; dependency
+buttons also display their actual protocols and navigate to the actual projected relationship.
+Package members are individually inspectable with independent languages/execution; no package-wide
+settings are invented. No Data/Access/Behavior/Effects/hooks/backend business editor is reachable.
+Legacy edits retain unrelated configuration, notes and all rich architecture declarations. These
+forms rebuild each scoped edit against the current accepted document through the existing queue.
+
+The exact execution queue keeps resource/individual-connection forms in UX07b, base creation in
+UX08a, and dependency creation/member removal/Ungroup in UX08b. Those later actions are not
+implemented early: this unit selects existing Redirect dependencies and lists/navigates existing
+package members. Existing layout/edge geometry remains later work. `studio=next` stays opt-in until
+UX15. CATALOG and the current studio guide describe this implemented boundary without promoting
+any design definition to runtime/template availability.
+
+Evidence: `docs/evidence/studio-ux/UX07a/`. Final guarded direct Chromium inspection passes 20
+scenarios and 92 acknowledged browser mutation requests. Every application matrix row and both
+execution/delivery branches have save/reload observations. Captures include all preset provider
+choices, browser standalone hosting choices and served-by/clear behavior, worker optional numeric
+bounds/decimal/incomplete/clear, Redirect multiple real connections/shortcut clear/navigation,
+package member language independence, C1/empty documents, invalid abandoned names/purpose and
+exact typed portable export/import. Empty/single/multiple section states and 120-character names
+fit at 1440×900 and 1280×800 without horizontal document overflow. Screenshots were inspected
+visually; source values, acknowledged network writes and reload assertions supply the save proof.
+
+A disposable rich Discourse copy preserves its entire document apart from exactly four edited
+API/C1 name/purpose fields and revision. Its backend hash remains
+`c3b312d8f806f8ed4a708bd1d5849170c6568e321f1f9f5060e39b5b2502e5a2` before/after.
+No studio metadata is added to that legacy copy. The final studio inspection has zero console
+warnings/errors, page errors or blocked/unowned writes. Guard installation precedes page creation;
+no successful acknowledgement is fabricated. Default legacy editing also opens read-only at both
+desktop sizes with zero writes/warnings/errors. All 13 original projects retain exact design/layout
+hashes and semantic revisions. Every owned disposable, including earlier attempts, is deleted and
+verified 404; the final project set matches the baseline.
+
+Earlier handoff bytes, 21 original/copy feedback pairs, seven public fixtures, 48 frozen benchmark
+files and unrelated tracked source remain exact. Required checks use Node 24.21.0 / pnpm 12.16.1
+with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace including logs pass.
+
+Routine compile/inspection corrections are recorded in the evidence attempt notes: inferred catalog
+choice typing, explicit tabpanel ARIA, fixture relationship enums/config, inspector-only tab counts,
+non-navigation inspection flush, canonical whitespace and exact long-name fixture length. Native
+numeric input and parallel dependency labels were corrected and the full final inspection repeated.
+Raw exploratory scripts/logs stay in the ignored workspace; this is not a new maintained test suite.
+No existing fixture typing adaptation, snapshot or broader test maintenance was needed. Unit/E2E/
+template suites and `pnpm check` remain explicitly deferred. Check logs normalize trailing whitespace
+only. Existing UX05 placement can clip a remote card after opening/resizing the inspector; geometry
+and fit remain later units. Browser termination still cannot guarantee an unacknowledged save.
+
+No product blocker or scope deviation remains. UX07a is complete; UX07b is the next unit boundary
+and is not started here. This worker stops after its scoped local UX07a commit. P73a/P73b and the
+backend batch remain paused.

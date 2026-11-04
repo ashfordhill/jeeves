@@ -21,8 +21,9 @@ import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { formDrafts } from "../draw/form-drafts.ts";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
+import { DraftFeedback } from "./DraftFeedback.tsx";
+import { InspectorForm } from "./InspectorForm.tsx";
 import { useStudioPreferences } from "./preferences.ts";
-import { DraftFeedback, ServiceForm } from "./ServiceForm.tsx";
 import { StudioGraph } from "./StudioGraph.tsx";
 import "./studio.css";
 
@@ -78,7 +79,17 @@ function RailResize({
   );
 }
 
-function SelectionSummary({ node, edge }: { node?: StudioViewNode; edge?: StudioRelationship }) {
+function SelectionSummary({
+  node,
+  edge,
+  onElement,
+  onConnection,
+}: {
+  node?: StudioViewNode;
+  edge?: StudioRelationship;
+  onElement: (id: string) => void;
+  onConnection: (id: string) => void;
+}) {
   const loaded = useDraw((state) => state.loaded);
   const [memberId, setMemberId] = useState<string>();
   const member: StudioRelationshipMember | undefined =
@@ -89,22 +100,15 @@ function SelectionSummary({ node, edge }: { node?: StudioViewNode; edge?: Studio
     return (
       <div className="studio-selection-summary">
         <h2>{node.name}</h2>
-        {loaded &&
-        node.source === "studio" &&
-        node.kind === "service" &&
-        node.definitionStatus === "known" &&
-        node.refs[0] &&
-        "id" in node.refs[0] ? (
-          <ServiceForm
+        {loaded ? (
+          <InspectorForm
             projectId={loaded.project.id}
-            id={node.refs[0].id}
-            name={node.name}
+            node={node}
             design={loaded.design}
+            onElement={onElement}
+            onConnection={onConnection}
           />
-        ) : node.description ? (
-          <p>{node.description}</p>
         ) : null}
-        {node.members ? <p>{node.members.length} independent services</p> : null}
       </div>
     );
   if (!edge) return null;
@@ -178,7 +182,7 @@ function ProjectStudio({
   const selectedNode = scope.nodes.find((node) => node.id === selected);
   const selectedEdge = scope.edges.find((edge) => edge.id === selected);
   // Unknown and purely source-only legacy relationships select without opening an empty inspector.
-  const inspectNode = selectedNode?.kind !== "generic" ? selectedNode : undefined;
+  const inspectNode = selectedNode;
   const inspectEdge = selectedEdge?.members.some(
     (member) => member.connectionIds.length || member.contextRelationshipIds.length,
   )
@@ -432,7 +436,35 @@ function ProjectStudio({
                 <IconX size={17} />
               </button>
             </div>
-            <SelectionSummary key={selected} node={inspectNode} edge={inspectEdge} />
+            <SelectionSummary
+              key={selected}
+              node={inspectNode}
+              edge={inspectEdge}
+              onElement={(id) => {
+                const target = [scope, ...scopes].find((item) =>
+                  item.nodes.some((node) =>
+                    node.refs.some((ref) => ref.kind === "element" && ref.id === id),
+                  ),
+                );
+                const node = target?.nodes.find((node) =>
+                  node.refs.some((ref) => ref.kind === "element" && ref.id === id),
+                );
+                if (target && node) {
+                  navigate(target.key);
+                  setSelections((current) => ({ ...current, [target.key]: node.id }));
+                }
+              }}
+              onConnection={(id) => {
+                const target = [scope, ...scopes].find((item) =>
+                  item.edges.some((edge) => edge.connectionIds.includes(id)),
+                );
+                const edge = target?.edges.find((edge) => edge.connectionIds.includes(id));
+                if (target && edge) {
+                  navigate(target.key);
+                  setSelections((current) => ({ ...current, [target.key]: edge.id }));
+                }
+              }}
+            />
           </aside>
         </>
       ) : null}

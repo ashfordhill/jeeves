@@ -29,8 +29,12 @@ adds shared autosave and one representative microservice form, with field-level 
 explicit failure retry/discard. [UX06b](docs/evidence/studio-ux/UX06b/README.md) adds one chronological
 history for acknowledged semantic edits and architecture-layout scope snapshots, coordinated with
 pending forms and in-app project switching. Cameras remain outside history; drag/Tidy gestures
-remain later geometry work. The legacy editor remains the default; the remaining finite forms,
-creation, routing and runtime resolution remain unimplemented. The historical catalog below describes the existing
+remain later geometry work. [UX07a](docs/evidence/studio-ux/UX07a/README.md) now supplies compact
+autosaving inspectors for all seven exact application definitions, C1 canonical text and packages,
+plus safe canonical legacy edits. Provider/execution choices and existing dependency references
+remain typed settings; package members keep independent settings. The legacy editor remains the
+default. Resource/relationship forms, creation/membership actions, routing and runtime resolution
+remain later work. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

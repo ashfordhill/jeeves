@@ -1,0 +1,260 @@
+{
+  "elements": [
+    {
+      "id": "service",
+      "name": "Microservice saved",
+      "description": "Saved service purpose"
+    },
+    {
+      "id": "browser",
+      "name": "Browser delivery saved",
+      "description": "Browser assets purpose"
+    },
+    {
+      "id": "worker",
+      "name": "Worker service saved",
+      "description": "Saved worker purpose"
+    },
+    {
+      "id": "billing",
+      "name": "Billing long name long name long name long name long name long name long name long name long name long name long name lZ",
+      "description": "A purpose retained in full. A purpose retained in full. A purpose retained in full. A purpose retained in full. A purpose retained in full. A purpose retained in full. A purpose retained in full. A purpose retained in full."
+    },
+    {
+      "id": "redirect",
+      "name": "Redirect saved",
+      "description": "Saved redirect purpose"
+    },
+    {
+      "id": "notification",
+      "name": "Notifications saved",
+      "description": "Saved notification purpose"
+    },
+    {
+      "id": "identity",
+      "name": "Identity saved",
+      "description": "Saved identity purpose"
+    },
+    {
+      "id": "database",
+      "name": "Database inspection",
+      "description": "Public finite inspector fixture"
+    },
+    {
+      "id": "cache",
+      "name": "Cache inspection",
+      "description": "Public finite inspector fixture"
+    },
+    {
+      "id": "member-service",
+      "name": "Microservice inspection",
+      "description": "Public finite inspector fixture"
+    },
+    {
+      "id": "member-worker",
+      "name": "Worker service inspection",
+      "description": "Public finite inspector fixture"
+    },
+    {
+      "id": "legacy-safe",
+      "name": "legacy-safe preserved",
+      "description": "Safe legacy-safe purpose"
+    },
+    {
+      "id": "neutral-safe",
+      "name": "neutral-safe preserved",
+      "description": "Safe neutral-safe purpose"
+    }
+  ],
+  "studio": {
+    "version": 1,
+    "elements": [
+      {
+        "element": "service",
+        "settings": {
+          "kind": "service",
+          "exposure": "public",
+          "language": "go",
+          "execution": "docker"
+        },
+        "definition": {
+          "id": "studio-service",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "browser",
+        "settings": {
+          "kind": "browser",
+          "delivery": "standalone",
+          "provider": "unspecified"
+        },
+        "definition": {
+          "id": "studio-browser",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "worker",
+        "settings": {
+          "host": "unspecified",
+          "kind": "worker",
+          "language": "python",
+          "execution": "managed"
+        },
+        "definition": {
+          "id": "studio-worker",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "billing",
+        "settings": {
+          "kind": "billing",
+          "exposure": "public",
+          "language": "java",
+          "provider": "unspecified",
+          "execution": "docker"
+        },
+        "definition": {
+          "id": "studio-billing",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "redirect",
+        "settings": {
+          "kind": "redirect",
+          "exposure": "public",
+          "language": "rust",
+          "execution": "docker",
+          "lookupStoreConnection": "lookup-store-a"
+        },
+        "definition": {
+          "id": "studio-redirect",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "notification",
+        "settings": {
+          "kind": "notification",
+          "exposure": "public",
+          "language": "csharp",
+          "provider": "unspecified",
+          "execution": "docker"
+        },
+        "definition": {
+          "id": "studio-notification",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "identity",
+        "settings": {
+          "kind": "identity",
+          "exposure": "public",
+          "language": "javascript",
+          "provider": "unspecified",
+          "execution": "docker"
+        },
+        "definition": {
+          "id": "studio-identity",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "database",
+        "settings": {
+          "kind": "database",
+          "engine": "unspecified",
+          "provider": "unspecified"
+        },
+        "definition": {
+          "id": "studio-database",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "cache",
+        "settings": {
+          "kind": "cache",
+          "engine": "unspecified",
+          "provider": "unspecified"
+        },
+        "definition": {
+          "id": "studio-cache",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "member-service",
+        "settings": {
+          "kind": "service",
+          "exposure": "internal",
+          "language": "go",
+          "execution": "docker"
+        },
+        "definition": {
+          "id": "studio-service",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "element": "member-worker",
+        "settings": {
+          "kind": "worker",
+          "language": "python",
+          "execution": "docker"
+        },
+        "definition": {
+          "id": "studio-worker",
+          "version": "1.0.0"
+        }
+      }
+    ],
+    "packages": [
+      {
+        "id": "package",
+        "name": "Package with independent languages",
+        "members": ["member-service", "member-worker"],
+        "description": "Members are separate deployable services"
+      }
+    ],
+    "connections": [
+      {
+        "settings": {},
+        "connection": "lookup-store-a"
+      },
+      {
+        "settings": {},
+        "connection": "lookup-store-b"
+      },
+      {
+        "settings": {},
+        "connection": "lookup-cache"
+      }
+    ]
+  },
+  "c1": {
+    "system": {
+      "name": "Saved system system",
+      "description": "Purpose for system"
+    },
+    "nodes": [
+      {
+        "id": "person",
+        "kind": "person",
+        "name": "Saved context person",
+        "description": "Purpose for context person"
+      },
+      {
+        "id": "external",
+        "kind": "external-system",
+        "name": "Saved context external",
+        "description": "Purpose for context external"
+      }
+    ]
+  },
+  "portableRoundTripExact": true
+}

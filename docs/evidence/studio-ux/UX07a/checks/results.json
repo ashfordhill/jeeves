@@ -1,0 +1,53 @@
+{
+  "result": "passed",
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "nodePathPrepended": "/home/ash/.nvm/versions/node/v24.21.0/bin",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "log": "lint.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "log": "build.log"
+    }
+  ],
+  "lint": {
+    "warnings": 2797,
+    "infos": 88,
+    "errors": 0,
+    "comparison": "Unchanged baseline"
+  },
+  "buildAdvisory": "Existing large-chunk advisory",
+  "browser": {
+    "result": "passed",
+    "scenarios": 20,
+    "acknowledgedBrowserWrites": 92,
+    "desktopSizes": ["1440x900", "1280x800"],
+    "consoleWarningsOrErrors": 0,
+    "pageErrors": 0,
+    "blockedOrUnownedWrites": 0
+  },
+  "defaultBrowser": {
+    "desktopSizes": 2,
+    "writes": 0,
+    "warningsOrErrors": 0
+  },
+  "deferredByOwner": [
+    "pnpm check",
+    "unit suites",
+    "E2E suites",
+    "template suites",
+    "suite maintenance and snapshots"
+  ],
+  "existingFixtureTypingChanges": false,
+  "logNormalization": "Trailing whitespace only"
+}
