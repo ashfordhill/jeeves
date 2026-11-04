@@ -11,7 +11,10 @@ export const architectureLayoutViewSchema = z.strictObject({
   name: z.string().trim().min(1).max(120).optional(),
   members: z.array(viewIdentity).max(200).optional(),
   includeDependencies: z.boolean().optional(),
+  /** Legacy free positions. The studio derives coordinates (SG06) and ignores these. */
   positions: z.record(viewIdentity, pointSchema).default({}),
+  /** Studio row-order hint (SG06): node identities in preferred top-to-bottom order. */
+  order: z.array(viewIdentity).max(1000).optional(),
   viewport: cameraSchema.optional(),
   down: z.boolean().optional(),
 });
@@ -81,6 +84,8 @@ export function pruneArchitectureLayout(
       if (kind === "context")
         return id === "system" || !!design.architecture?.nodes.some((item) => item.id === id);
       if (kind === "connection") return design.connections.some((item) => item.id === id);
+      if (kind === "component")
+        return !!design.architecture?.studio?.components?.some((item) => item.id === id);
       return false;
     }
     if (key.startsWith("deployment:")) {
@@ -150,6 +155,7 @@ export function pruneArchitectureLayout(
           {
             ...view,
             ...(view.members && { members: view.members.filter(alive) }),
+            ...(view.order && { order: view.order.filter(alive) }),
             positions: Object.fromEntries(
               Object.entries(view.positions).filter(([id]) => alive(id)),
             ),

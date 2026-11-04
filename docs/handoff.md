@@ -11024,3 +11024,127 @@ Notes for SG06:
 - Fitted C3 for TinyURL is wide (≈0.3 zoom at 1440×900 with chat open; labels hidden below 0.55).
 - `tinyurl.layout.json` still holds the old detail keys; they are ignored and can go with saved
   positions. `createAt`/`commitAction` still compute placements for all three scopes.
+
+## 2026-11-04 — SG06: automatic ELK grid layout (complete)
+
+I ran SG06 alone on primary `main` from `0e175ca`, as a fresh sequential worker. Before starting I
+read AGENTS, the studio grid plan (O2/O3/O8), the execution units, the SG01 and SG05 handoffs and
+evidence, the automation-illustrator ELK sources (read-only) and the studio sources. This unit did
+not touch line styling or merging, label text, creation gestures, generation/runtime, P73a/P73b or
+the backend batch.
+
+What changed:
+
+- **`apps/web/src/studio/layout.ts`** is rewritten as a pure ELK engine, `layoutStudio(input, elk)`.
+  - Options follow plan §4 and the reference: `layered` RIGHT, ORTHOGONAL routing, `mergeEdges`,
+    NETWORK_SIMPLEX layering, BRANDES_KOEPF BALANCED node placement, LAYER_SWEEP crossing
+    minimisation, thoroughness 10, seed 1, and fixed zero-size WEST/EAST ports on every card.
+  - Frames are compound nodes with `hierarchyHandling: INCLUDE_CHILDREN` and ROOT coordinates.
+    Their padding is 64 at the top (header) and 32 on the other sides. Edges to a frame attach to
+    the frame itself.
+  - Labels go to ELK as inline edge labels, sized from the measured short text plus 4px and 18px
+    tall, so ELK reserves room for them.
+  - Snapping: card port centres and frame corners land on the 32px grid, and card x positions are
+    multiples of 32. Rounding is monotone, so the 32-multiple gaps ELK left survive. Interior bends
+    land on a 16px grid, and ends re-attach to the snapped ports.
+  - Islands are found with union-find over top-level boxes and laid out separately. They are shelf
+    packed left to right, then top to bottom, with a 64px gap and a target row width of
+    max(widest island, √(area × 1.6)).
+  - Each shared trunk is derived from its branches' common start and junction.
+  - Output: nodes, routes (ELK sections, replacing the custom router and its fallback lanes) and
+    columns.
+  - Also in this file: `studioFit` (24px margin) and `studioCameraShows`.
+- **Worker.** `layout.worker.ts` replaces `routing.worker.ts`. The studio worker runs the whole
+  layout, and ELK runs in a nested worker loaded from `elkjs/lib/elk-worker.min.js?url`.
+  `elk.bundled.js` cannot run inside a worker: it hijacks `self.onmessage`.
+  - `layout-client.ts` replaces `routing-client.ts`. It is the same coalescing, cached,
+    abortable, 15s-timeout client.
+  - `use-layout.ts` replaces `use-routing.ts`. It measures label widths with the loaded font and
+    keeps the last valid layout while a new one runs.
+- **`routing.ts`.** The obstacle router, fallback geometry and label placement are removed.
+  `studioPaths`, `movedStudioGeometry` (used for the drag rubber band) and the new
+  `studioPathLabels` (one label per original edge, siblings combined) remain.
+- **`StudioGraph.tsx`.**
+  - Removed: Tidy and fit, free drag, the 24px landing preview, saved positions, `pending`/`fixed`
+    state, server camera writes on `onMoveEnd`, and the `automatic` special cases.
+  - Positions come only from the layout. The camera is remembered per view in browser preferences
+    only. A remembered camera that no longer shows the diagram is refitted. A **Fit** button frames
+    the view without saving.
+  - Row reorder: dragging a card (or a frame, which carries its contents) moves only vertically
+    inside its column. Dropping it past a neighbour's centre saves one undoable
+    `setArchitectureView(scope, {...view, positions: {}, order})`. `order` lists every box in its
+    current row order, with the dragged box moved. The dropped position is held until the next
+    layout lands.
+  - `measured` dimensions are kept again. Without them, edges disappear when the node list changes.
+- **Card sizes** are 32-multiples: applications 192×96; people, resources, CDN and external systems
+  160×96; components 192×64.
+- **Creation.** `createAt` (which no longer takes a point) and `commitAction` store no positions.
+  The tool click adds the box and layout places it. `createPlaced` and redo write no layout when
+  there are no positions. The Workspace `center`/`onCenter` code is gone.
+- **Spec.** `architectureLayoutViewSchema` gains an optional `order` (at most 1,000 identities),
+  which `pruneArchitectureLayout` filters. Component node keys (`studio:component:*`) now count as
+  alive. Old documents load unchanged, and their positions and viewport are ignored. The study
+  factory no longer takes an initial layout, so a new study's layout is
+  `{schemaVersion: 1, items: {}}`. `tinyurl.layout.json` is deleted, and the studies doc and the
+  studio guide are updated.
+
+Results (evidence: `docs/evidence/studio-grid/SG06/README.md`):
+
+- **TinyURL fit zoom**, chat collapsed:
+  - 1440×900: C1 1.00, C2 **0.763**, C3 **0.453**.
+  - 1280×800: C1 1.00, C2 0.675, C3 0.401.
+- **No layout writes** on open, select, tab switch, pan, zoom or Fit, at both sizes.
+- **Reorder by mouse**: one PUT. Undo and Redo work and persist across a reload. The saved
+  `positions` are `{}`.
+- Layouts are **deterministic** across browser contexts.
+- **Streamly** (owner project, read-only, every non-GET request aborted, none attempted): C2 0.572,
+  C3 0.620.
+- Owner revisions and `updatedAt` are unchanged. The disposable projects were deleted (204).
+
+Checks (Node 24.21.0):
+
+- `pnpm lint`: exit 0 (2,797 warnings and 88 infos, unchanged).
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk advisory).
+- `pnpm check`, unit and E2E suites were not run (owner-deferred). Some E2E tests probably still
+  use Tidy, free drag or saved positions. They were not updated.
+
+Deviations and decisions:
+
+- **Between-layer spacing** is nodeNode 32 and edgeNode 16 instead of 64 and 32. Every labelled
+  relationship adds an ELK label layer, and the between-layer gap applies on both sides of it. The
+  result is about 32 + label + 32 between boxes. With 64 and 32, C2 fitted at about 0.57.
+  `spacing.edgeNode` is 24 (the reference uses 16), so a line keeps clearance after snapping moves
+  a card.
+- **Row-order hints.** ELK 0.12's `considerModelOrder` and `forceNodeModelOrder` crash on compound
+  graphs (a TypeError inside ELK, reproduced). The hint therefore uses
+  `crossingMinimization.semiInteractive` with per-node `elk.position` ordinals. It reproduces the
+  current order exactly, and a moved box takes its new row.
+- **Wrapping** (`wrapping.strategy` MULTI_EDGE) was tried for C3. It wraps inside frames and draws
+  wrap lines across the whole view, so it was rejected.
+- **Detail labels.** A zoomed-in detail label replaces the short one only when it fits the width
+  ELK reserved.
+- **Dev server.** The 4300 Vite instance stopped seeing `packages/spec` changes after a
+  `git stash` round-trip in this session, and it still serves the old `study.ts`. Project creation
+  on 4300 therefore fails ("Unrecognized keys packages…") until that server is restarted. Killing
+  it was not permitted, so evidence ran on a temporary Vite on 4302 from the same checkout, which I
+  stopped afterwards. **The owner or the coordinator must restart `pnpm --filter @jeeves/web dev`.**
+  The API (tsx watch) reloaded normally.
+
+Notes for SG07:
+
+- **C3 is width-bound.** It is a chain of about nine columns, and every labelled link adds a label
+  layer. Zoom 0.45 is below the 0.55 label threshold, so labels are hidden at Fit. To reach 0.55:
+  - Use shorter labels (verb · protocol, ≤24 characters). Measured: C2 gains about 6% from a
+    24-character cap.
+  - Do not reserve a label layer for in-process component links inside frames (no label, or a
+    count chip only).
+  - Merge parallel lines, so fewer label layers.
+  - Consider a lower label-visibility threshold.
+- Labels sit centred on the line (the text has a cream halo). The label box is `route.label`, and
+  `StudioRelation` rendering is unchanged.
+- Merged ports come from `mergeEdges` plus one in-port and one out-port per card. SG07's
+  one-line-per-pair merge can feed ELK one edge per pair with a count label.
+- Streamly C2/C3 still shows dense parallel bundles and some long buses.
+- SG08: `createAt` has no point. New boxes are islands until connected. `layout.columns` and the
+  `order` hint are the only stored layout input; a spawn can append to `order` to choose a row.

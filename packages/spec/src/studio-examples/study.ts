@@ -7,7 +7,6 @@ import { studioDefinitions } from "../studio-definitions.ts";
 import { type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
 import type { StudioConnectionCreation, StudioElementCreation } from "../studio-operations.ts";
 import { studioGoalManifests } from "../studio-sources.ts";
-import { studioScopes, studioViews } from "../studio-view.ts";
 
 export type StudioStudy = {
   id: string;
@@ -22,7 +21,6 @@ export function createStudioStudy(
   elements: StudioElementCreation[],
   connections: StudioConnectionCreation[],
   context: Pick<Architecture, "system" | "nodes" | "relationships">,
-  initialLayout?: unknown,
   /** SG04: optional group frames and C3 components, stored exactly as given. */
   parts: {
     packages?: StudioPackage[];
@@ -108,26 +106,7 @@ export function createStudioStudy(
       },
     }),
   });
-  const views = studioViews(design, studioDefinitions, study.name);
-  // Fresh deterministic scope layouts; no old focused-view keys or source geometry is reused.
-  const layout = layoutSchema.parse(
-    initialLayout ?? {
-      schemaVersion: 1,
-      items: {},
-      architecture: Object.fromEntries(
-        studioScopes(views).map((view) => [
-          view.key,
-          {
-            positions: Object.fromEntries(
-              view.nodes.map((node, i) => [
-                node.id,
-                { x: (i % 4) * 240, y: Math.floor(i / 4) * 144 },
-              ]),
-            ),
-          },
-        ]),
-      ),
-    },
-  );
+  // SG06: studio coordinates are derived by automatic layout; a study stores no positions.
+  const layout = layoutSchema.parse({ schemaVersion: 1, items: {} });
   return { name: study.name, design, layout };
 }

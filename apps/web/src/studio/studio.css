@@ -130,17 +130,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: move;
+  cursor: ns-resize;
 }
-.studio-landing {
-  position: absolute;
-  box-sizing: border-box;
-  border: 1.5px solid var(--blue);
-  border-radius: 12px;
-  pointer-events: none;
-  z-index: 0;
-}
-.studio-tidy {
+.studio-fit {
   position: absolute;
   right: 12px;
   top: 12px;
@@ -153,7 +145,7 @@
   font: inherit;
   cursor: pointer;
 }
-.studio-tidy:disabled {
+.studio-fit:disabled {
   cursor: default;
 }
 .studio-routing-error {
@@ -242,9 +234,6 @@
 .studio-frame .react-flow__handle {
   opacity: 0;
   pointer-events: none;
-}
-.studio-graph[data-automatic] .studio-card {
-  cursor: pointer;
 }
 .studio-card[data-kind="component"] {
   border-width: 1.5px;

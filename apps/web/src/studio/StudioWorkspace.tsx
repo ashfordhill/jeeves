@@ -24,7 +24,7 @@ import {
   IconSelectAll,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
@@ -41,7 +41,6 @@ import {
   type Creation,
   createAt,
   creationLabel,
-  type Point,
 } from "./creation.ts";
 import { DraftFeedback } from "./DraftFeedback.tsx";
 import { InspectorForm } from "./InspectorForm.tsx";
@@ -346,7 +345,6 @@ function ProjectStudio({
   const [grouping, setGrouping] = useState(false);
   const [groupName, setGroupName] = useState("Service package");
   const [groupError, setGroupError] = useState<string>();
-  const center = useRef<Point>({ x: 0, y: 168 });
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const selected = useMemo(
     () =>
@@ -530,7 +528,7 @@ function ProjectStudio({
     if (rail === "inspectorOpen") void formDrafts.flushProject(loaded.project.id, true);
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
   };
-  const add = async (creation: Creation, point = center.current) => {
+  const add = async (creation: Creation) => {
     if (creating) return false;
     if (
       creation.type === "base" &&
@@ -546,7 +544,7 @@ function ProjectStudio({
     setCreating(true);
     const key = scope.key;
     try {
-      const id = await createAt(loaded.project.id, key, creation, point, c3Owner?.id);
+      const id = await createAt(loaded.project.id, key, creation, c3Owner?.id);
       if (!id) return false;
       if (useDraw.getState().loaded?.project.id === loaded.project.id) {
         setPick({ scope: key, id });
@@ -713,11 +711,8 @@ function ProjectStudio({
             }))
           }
           onSelect={select}
-          onCenter={(point) => {
-            center.current = point;
-          }}
-          onPlace={(point) => {
-            if (tool) void add({ type: "base", kind: tool }, point);
+          onPlace={() => {
+            if (tool) void add({ type: "base", kind: tool });
           }}
         />
         <div className="studio-tools" role="toolbar" aria-label="Diagram tools">

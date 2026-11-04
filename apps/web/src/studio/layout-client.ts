@@ -1,21 +1,11 @@
-import type { RouteBox, StudioGeometry, StudioPath } from "./routing.ts";
+import type { StudioLayout, StudioLayoutInput } from "./layout.ts";
 
-export interface StudioRoutingInput {
-  scope: string;
-  sizingVersion: 1;
-  paths: StudioPath[];
-  nodes: Record<string, RouteBox>;
-  widths: Record<string, number>;
-  fixed?: StudioGeometry;
-  /** Child → frame node IDs (SG05), so paths may enter their own frame. */
-  parents?: Record<string, string>;
-}
-const cache = new Map<string, StudioGeometry>();
-type Job = { promise: Promise<StudioGeometry>; cancel: () => void; users: number };
+const cache = new Map<string, StudioLayout>();
+type Job = { promise: Promise<StudioLayout>; cancel: () => void; users: number };
 const running = new Map<string, Job>();
 
-/** Exact scope/topology/sizing/position keys coalesce work; zoom and selection never enter here. */
-export async function routeStudio(input: StudioRoutingInput, signal: AbortSignal) {
+/** Exact scope/topology/sizing/order keys coalesce work; zoom and selection never enter here. */
+export async function layoutStudioInWorker(input: StudioLayoutInput, signal: AbortSignal) {
   signal.throwIfAborted();
   const key = JSON.stringify(input);
   const cached = cache.get(key);
@@ -26,20 +16,20 @@ export async function routeStudio(input: StudioRoutingInput, signal: AbortSignal
   }
   let job = running.get(key);
   if (!job) {
-    const worker = new Worker(new URL("./routing.worker.ts", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./layout.worker.ts", import.meta.url), { type: "module" });
     let cancel = () => {};
-    const promise = new Promise<StudioGeometry>((resolve, reject) => {
+    const promise = new Promise<StudioLayout>((resolve, reject) => {
       const fail = (message: string) => reject(new Error(message));
-      cancel = () => reject(new DOMException("Studio routing superseded.", "AbortError"));
-      worker.addEventListener("error", () => fail("Diagram routing could not run."));
+      cancel = () => reject(new DOMException("Studio layout superseded.", "AbortError"));
+      worker.addEventListener("error", () => fail("Diagram layout could not run."));
       worker.addEventListener("messageerror", () =>
-        fail("Diagram routing returned unreadable data."),
+        fail("Diagram layout returned unreadable data."),
       );
       worker.addEventListener(
         "message",
-        ({ data }: MessageEvent<{ geometry?: StudioGeometry; error?: string }>) => {
-          if (data.error || !data.geometry) fail("Diagram routing could not finish.");
-          else resolve(data.geometry);
+        ({ data }: MessageEvent<{ layout?: StudioLayout; error?: string }>) => {
+          if (data.error || !data.layout) fail("Diagram layout could not finish.");
+          else resolve(data.layout);
         },
       );
       worker.postMessage(input);
@@ -65,7 +55,7 @@ export async function routeStudio(input: StudioRoutingInput, signal: AbortSignal
   }
   const active = job;
   active.users++;
-  return new Promise<StudioGeometry>((resolve, reject) => {
+  return new Promise<StudioLayout>((resolve, reject) => {
     let finished = false;
     const finish = () => {
       if (finished) return false;

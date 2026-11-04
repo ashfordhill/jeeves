@@ -6,12 +6,8 @@ import {
   type StudioConnectionCreation,
   type StudioKind,
   studioApplicationKinds,
-  studioDefinitions,
-  studioScopes,
-  studioViews,
 } from "@jeeves/spec";
 import { useDraw } from "../draw/store.ts";
-import { initialPosition, landing } from "./creation.ts";
 
 export function endpointKind(design: DesignDocument, id: string): StudioKind | undefined {
   return design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
@@ -86,7 +82,7 @@ export type ConnectionDraft = {
   newKind?: StudioKind;
 };
 
-/** Rebuild inside the existing mutation queue; new reference cards land without moving old cards. */
+/** Rebuild inside the existing mutation queue; automatic layout places new reference cards. */
 export function commitAction(
   projectId: string,
   rebuild: (design: DesignDocument) => OperationInput[],
@@ -97,28 +93,8 @@ export function commitAction(
       baseRevision: design.revision,
     });
     if (!result.ok) throw new Error(result.errors[0]?.message ?? "This action is invalid.");
-    const loaded = useDraw.getState().loaded;
-    const old = studioViews(design, studioDefinitions, loaded?.project.name ?? "System");
-    const next = studioViews(result.design, studioDefinitions, loaded?.project.name ?? "System");
-    const positions: Record<string, Record<string, { x: number; y: number }>> = {};
-    for (const scope of studioScopes(next)) {
-      const previous = studioScopes(old).find((item) => item.key === scope.key);
-      const fresh = scope.nodes.filter(
-        (node) => !previous?.nodes.some((item) => item.id === node.id),
-      );
-      if (!fresh.length) continue;
-      const saved = loaded?.layout.architecture?.[scope.key]?.positions;
-      const current = Object.fromEntries(
-        (previous?.nodes ?? []).map((node, i) => [node.id, saved?.[node.id] ?? initialPosition(i)]),
-      );
-      for (const node of fresh)
-        current[node.id] = landing(
-          initialPosition(scope.nodes.indexOf(node)),
-          Object.values(current),
-        );
-      positions[scope.key] = current;
-    }
-    return { ops, positions };
+    // SG06: automatic layout places new reference cards; no position is stored.
+    return { ops, positions: {} };
   });
 }
 export function connectionCreation(

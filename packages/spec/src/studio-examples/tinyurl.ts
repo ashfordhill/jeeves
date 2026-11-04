@@ -7,7 +7,6 @@
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
 import type { StudioConnectionCreation } from "../studio-operations.ts";
 import { createStudioStudy } from "./study.ts";
-import initialLayout from "./tinyurl.layout.json" with { type: "json" };
 
 export const TINYURL_STUDIO_EXAMPLE = {
   id: "studio-tinyurl",
@@ -467,7 +466,6 @@ export function tinyurlStudioExample() {
         },
       ],
     },
-    initialLayout,
     {
       packages: [
         {

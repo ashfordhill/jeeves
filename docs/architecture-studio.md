@@ -22,10 +22,12 @@ existing supported legacy template/recipe designs retain their generation eligib
   their inspector arrives). The selection carries across tabs by identity; a component maps to its
   application at C1/C2. There is no double-click drill, breadcrumb or back. Old per-service or
   package scope links and saved preferences open C3. Zoom changes text density only.
-- Framed views (C2 with packages, C3 with components) are arranged automatically and cannot be
-  dragged; older saved positions are ignored there, not rewritten. At C3, new queues and resources
+- Every view is laid out automatically (ELK layered, left to right, on a 32px grid; frames are
+  compound nodes; disconnected islands pack left to right, then top to bottom). There is no free
+  placement and no saved position; older saved positions are ignored, not rewritten. At C3, new queues and resources
   are owned by the selected application (or a selected component's application); a queue needs one.
-- Choose a finite tool, then click blank canvas to place it. **Select** cancels placement.
+- Choose a finite tool, then click blank canvas to add it; automatic layout places it (the click
+  point is not stored). **Select** cancels placement.
   Optional shortcuts: V selects, H pans, Escape cancels; they are ignored while typing.
   **Library** groups compatible Services, Resources, Integrations, Presets and Examples.
   Previews require **Add**. Examples create separate projects; they never replace a live diagram.
@@ -55,8 +57,8 @@ A rejected write stays visible with Retry/Discard; a conflict adopts the fresh d
 unacknowledged write; an unload flush is an attempt, not a durability guarantee.
 
 The header **Undo/Redo** pair follows chronological semantic and layout actions. Each accepted
-inspector batch, creation, connection, grouping, move or Tidy is one action. Selection and camera
-changes add none. Local layout history resets on browser reload; server semantic history remains.
+inspector batch, creation, connection, grouping or row reorder is one action. Opening, selecting,
+switching tabs, panning, zooming and **Fit** add none and write no layout. Local layout history resets on browser reload; server semantic history remains.
 
 ## Reading a dense design
 
@@ -69,13 +71,14 @@ Compatible relationships can share a trunk. Each directed branch retains its can
 clicking a multi-member line opens a chooser before editing one actual relationship. Opposite
 arrows and cycles remain distinct. Crowded labels may disappear while their selectable lines remain.
 
-Drag the whole card to preview a free 24-unit grid landing; mouse multi-selection moves a group
-without changing its relative offsets. Movement changes layout only. Unrelated geometry remains
-captured during drag; incident paths settle once after an acknowledged drop. **Tidy and fit**
-arranges only the current scope and records positions/camera as one undoable action. Wheel/pan
-remain available. Very large cyclic graphs can need pan/zoom and scoped inspection; fitting the
-whole graph does not promise readable text at every scale. Temporary incident paths may cross
-other geometry during movement. Existing manual overlaps are preserved until deliberately moved.
+Positions are derived, never stored. The only stored layout input is an optional row order per
+view: drag a card (or a frame, with its contents) up or down inside its column and release it past
+a neighbour's centre to move it to that row. That saves one undoable layout action; dropping in
+its own row changes nothing. Horizontal movement is ignored. **Fit** frames the whole view
+without saving anything; the camera is remembered per view in browser preferences only, and a
+remembered camera that no longer shows the diagram is refitted. Very large graphs can need
+pan/zoom; fitting the whole graph does not promise readable labels at every scale (labels hide
+below 55% zoom).
 
 ## Options, reuse and limits
 

@@ -450,7 +450,12 @@ export const useDraw = create<DrawState>()((set, get) => {
         const result = await api[direction](projectId, loaded.design.revision);
         if (!settle(result)) return false;
         const step = steps.at(-1)?.kind === "design" ? steps.pop() : undefined;
-        if (direction === "redo" && step?.kind === "design" && step.creationPositions) {
+        if (
+          direction === "redo" &&
+          step?.kind === "design" &&
+          step.creationPositions &&
+          Object.keys(step.creationPositions).length
+        ) {
           const current = get().loaded;
           if (current?.project.id === projectId) {
             let layout = current.layout;
@@ -612,6 +617,8 @@ export const useDraw = create<DrawState>()((set, get) => {
         const result = await api.edit(projectId, loaded.design.revision, ops);
         if (!settle(result) || !result.ok) return false;
         record(projectId, { kind: "design", creationPositions: positions });
+        // Studio positions are derived (SG06): creations store none and write no layout.
+        if (!Object.keys(positions).length) return true;
         const current = get().loaded;
         if (current?.project.id === projectId) {
           let layout = current.layout;

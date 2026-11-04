@@ -19,18 +19,18 @@ import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 
 export { boundedStudioText } from "./text.ts";
 
-/** World dimensions belong to the role, never the camera, name or support status. */
+/** World dimensions belong to the role, never the camera, name or support status. Every size is a
+ * multiple of the 32px layout grid (SG06). */
 export function studioCardSize(node: StudioViewNode) {
-  if (node.kind === "component") return { width: 192, height: 72 };
+  if (node.kind === "component") return { width: 192, height: 64 };
   return {
     width:
-      node.kind === "person"
-        ? 144
-        : studioResourceKinds.some((kind) => kind === node.kind) ||
-            node.kind === "cdn" ||
-            node.kind === "external-api"
-          ? 168
-          : 216,
+      node.kind === "person" ||
+      studioResourceKinds.some((kind) => kind === node.kind) ||
+      node.kind === "cdn" ||
+      node.kind === "external-api"
+        ? 160
+        : 192,
     height: 96,
   };
 }

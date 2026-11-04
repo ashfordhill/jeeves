@@ -18,7 +18,6 @@ import {
   type ReactFlowInstance,
   useViewport,
   type Viewport,
-  ViewportPortal,
 } from "@xyflow/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDraw } from "../draw/store.ts";
@@ -28,18 +27,16 @@ import {
   studioCardDetails,
   studioCardSize,
 } from "./card-appearance.tsx";
-import { initialPosition, type Point } from "./creation.ts";
-import { arrangeStudio, studioFit, studioFrames, studioLanding } from "./layout.ts";
+import type { Point } from "./creation.ts";
+import { type StudioLayoutNode, studioCameraShows, studioFit } from "./layout.ts";
 import {
   movedStudioGeometry,
-  type StudioGeometry,
   type StudioPath,
   type StudioRoute,
   studioIncidentPaths,
   studioPaths,
 } from "./routing.ts";
-import { routeStudio } from "./routing-client.ts";
-import { useStudioRouting } from "./use-routing.ts";
+import { useStudioLayout } from "./use-layout.ts";
 import { useStudioSettle } from "./use-settle.ts";
 
 type Card = Node<{ item: StudioViewNode }, "studio" | "frame">;
@@ -154,7 +151,10 @@ function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
 }
 const edgeTypes = { studio: StudioRelation };
 
-/** Captured transient movement, grid preview and one acknowledged scope-layout history step. */
+/**
+ * Automatic ELK layout (SG06). Positions are derived; dragging a box up or down inside its column
+ * changes only its row, saved as one undoable row-order hint. Nothing else writes layout.
+ */
 export function StudioGraph({
   scope,
   selection,
@@ -168,7 +168,6 @@ export function StudioGraph({
   onCamera,
   onSelect,
   onPlace,
-  onCenter,
 }: {
   scope: StudioScopeProjection;
   selection?: string;
@@ -181,139 +180,77 @@ export function StudioGraph({
   camera?: Viewport;
   onCamera: (camera: Viewport) => void;
   onSelect: (id?: string) => void;
-  onPlace: (point: Point) => void;
-  onCenter: (point: Point) => void;
+  onPlace: () => void;
 }) {
   const container = useRef<HTMLElement>(null);
   const saved = useDraw((state) => state.loaded?.layout.architecture?.[scope.key]);
-  const projectId = useDraw((state) => state.loaded?.project.id);
-  const [pending, setPending] = useState<Record<string, Point>>();
-  const [busy, setBusy] = useState(false);
-  const action = useRef(0);
-  const tidyController = useRef<AbortController | undefined>(undefined);
-  useEffect(
-    () => () => {
-      action.current++;
-      tidyController.current?.abort();
-    },
-    [],
-  );
   const [flow, setFlow] = useState<ReactFlowInstance<Card, Relation>>();
-  const viewport = saved?.viewport;
-  const appliedCamera = useRef(JSON.stringify(viewport));
-  useEffect(() => {
-    const next = JSON.stringify(viewport);
-    if (!flow || appliedCamera.current === next) return;
-    appliedCamera.current = next;
-    if (viewport) void flow.setViewport(viewport);
-  }, [flow, viewport]);
-  const arranged = useMemo(() => arrangeStudio(scope), [scope]);
-  const parents = useMemo(() => studioFrames(scope), [scope]);
-  const frames = useMemo(() => new Set(Object.values(parents)), [parents]);
-  // Framed scopes are arranged automatically (SG05; SG06 replaces this with ELK). Saved positions
-  // from older collapsed-package or per-service layouts are ignored there, never rewritten.
-  const automatic = frames.size > 0;
-  const boxes = useMemo(
+  const ids = useMemo(() => new Set(scope.nodes.map((node) => node.id)), [scope.nodes]);
+  const frames = useMemo(
     () =>
-      Object.fromEntries(
-        scope.nodes.map((item, index) => {
-          const box = arranged[item.id];
-          return [
-            item.id,
-            {
-              ...((automatic ? undefined : saved?.positions[item.id]) ??
-                box ??
-                initialPosition(index)),
-              ...(frames.has(item.id) && box
-                ? { width: box.width, height: box.height }
-                : studioCardSize(item)),
-            },
-          ];
-        }),
+      new Set(
+        scope.nodes.flatMap((node) =>
+          node.frame || scope.nodes.some((child) => child.parent === node.id) ? [node.id] : [],
+        ),
       ),
-    [scope.nodes, saved?.positions, arranged, automatic, frames],
+    [scope.nodes],
   );
-  const settledBoxes = useMemo(
+  const layoutNodes = useMemo(
     () =>
-      pending
-        ? Object.fromEntries(
-            Object.entries(boxes).map(([id, box]) => [id, { ...box, ...pending[id] }]),
-          )
-        : boxes,
-    [boxes, pending],
+      [...scope.nodes]
+        .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+        .map(
+          (node): StudioLayoutNode => ({
+            id: node.id,
+            ...studioCardSize(node),
+            ...(node.parent && ids.has(node.parent) && { parent: node.parent }),
+            ...(frames.has(node.id) && { frame: true as const }),
+          }),
+        ),
+    [scope.nodes, ids, frames],
   );
+  const order = useMemo(() => saved?.order ?? [], [saved?.order]);
   const paths = useMemo(() => studioPaths(scope), [scope]);
   const pathMap = useMemo(() => new Map(paths.map((path) => [path.id, path])), [paths]);
   const incident = useMemo(() => studioIncidentPaths(paths), [paths]);
-  const [dragging, setDragging] = useState<Record<string, Point>>();
-  const preview = useMemo(
-    () => (dragging ? studioLanding(boxes, dragging) : undefined),
-    [boxes, dragging],
-  );
-  const [fixed, setFixed] = useState<{
-    paths: StudioPath[];
-    geometry: StudioGeometry;
-    boxes: string;
-  }>();
-  const latestPaths = useRef(paths);
-  latestPaths.current = paths;
-  const [measured, setMeasured] = useState<Record<string, { width: number; height: number }>>({});
-  const snapshot = useRef<
-    | { routes: StudioGeometry; nodes: typeof boxes; paths: StudioPath[]; generation: number }
-    | undefined
-  >(undefined);
-  const routing = useStudioRouting(
-    scope.key,
-    paths,
-    settledBoxes,
-    !!dragging,
-    fixed?.paths === paths && fixed.boxes === JSON.stringify(settledBoxes)
-      ? fixed.geometry
-      : undefined,
-    parents,
-  );
+  const studio = useStudioLayout(scope.key, layoutNodes, paths, order);
+  const layout = studio.layout;
+  const boxes = useMemo(() => layout?.nodes ?? {}, [layout]);
+  // A vertical drag inside the column; released positions are held until the new layout lands.
+  const [dragging, setDragging] = useState<{ id: string; positions: Record<string, Point> }>();
+  const [held, setHeld] = useState<{ layout: unknown; positions: Record<string, Point> }>();
+  // Layouts are cached by input, so an undo can bring the pre-drop object back: drop the hold
+  // as soon as any other layout is shown.
+  useEffect(() => {
+    if (held && held.layout !== layout) setHeld(undefined);
+  }, [held, layout]);
+  const shownHeld = held && held.layout === layout ? held.positions : undefined;
+  const moving = dragging?.positions ?? shownHeld;
   const targetGeometry = useMemo(
     () =>
-      dragging && snapshot.current
-        ? movedStudioGeometry(
-            snapshot.current.routes,
-            pathMap,
-            snapshot.current.nodes,
-            dragging,
-            incident,
-          )
-        : routing.geometry,
-    [dragging, routing.geometry, pathMap, incident],
+      moving && layout
+        ? movedStudioGeometry(layout.routes, pathMap, boxes, moving, incident)
+        : (layout?.routes ?? {}),
+    [moving, layout, boxes, pathMap, incident],
   );
   const targetNodes = useMemo(
     () =>
-      dragging
+      moving
         ? Object.fromEntries(
-            Object.entries(boxes).map(([id, box]) => [id, { ...box, ...dragging[id] }]),
+            Object.entries(boxes).map(([id, box]) => [id, { ...box, ...moving[id] }]),
           )
-        : settledBoxes,
-    [boxes, dragging, settledBoxes],
+        : boxes,
+    [boxes, moving],
   );
   const target = useMemo(
     () => ({ nodes: targetNodes, routes: targetGeometry }),
     [targetNodes, targetGeometry],
   );
-  const frame = useStudioSettle(target, !!dragging);
+  const frame = useStudioSettle(target, !!moving);
   const geometry = frame.routes;
-  useEffect(() => {
-    // An accepted delete/edit or external layout supersedes the gesture, never the other way around.
-    if (
-      snapshot.current &&
-      (snapshot.current.nodes !== boxes || snapshot.current.paths !== paths)
-    ) {
-      snapshot.current = undefined;
-      setDragging(undefined);
-    }
-  }, [boxes, paths]);
   useEffect(() => {
     const cancel = (event: Event) => {
       if (event.type === "keydown" && (event as KeyboardEvent).key !== "Escape") return;
-      snapshot.current = undefined;
       setDragging(undefined);
     };
     window.addEventListener("pointercancel", cancel);
@@ -325,160 +262,153 @@ export function StudioGraph({
       window.removeEventListener("keydown", cancel);
     };
   }, []);
+  // Camera: a remembered local camera that still shows the diagram, otherwise fit. Never saved
+  // to the project layout.
+  const [fitted, setFitted] = useState(false);
+  // Controlled nodes keep React Flow's measurements, or edges hide when the node list changes.
+  const [measured, setMeasured] = useState<Record<string, { width: number; height: number }>>({});
+  const fit = () => {
+    const bounds = container.current?.getBoundingClientRect();
+    if (!flow || !bounds || !layout) return;
+    const next = studioFit(layout.nodes, layout.routes, bounds.width, bounds.height);
+    void flow.setViewport(next);
+    onCamera(next);
+  };
+  useEffect(() => {
+    if (fitted || !flow || !layout) return;
+    const bounds = container.current?.getBoundingClientRect();
+    if (!bounds) return;
+    setFitted(true);
+    if (camera && studioCameraShows(camera, layout.nodes, bounds.width, bounds.height))
+      void flow.setViewport(camera);
+    else void flow.setViewport(studioFit(layout.nodes, layout.routes, bounds.width, bounds.height));
+  }, [fitted, flow, layout, camera]);
   const nodes = useMemo(
     () =>
-      scope.nodes.map((item, index): Card => {
-        const size = {
-          width: boxes[item.id]?.width ?? studioCardSize(item).width,
-          height: boxes[item.id]?.height ?? studioCardSize(item).height,
-        };
-        return {
-          id: item.id,
-          type: frames.has(item.id) ? "frame" : "studio",
-          position: frame.nodes[item.id] ?? initialPosition(index),
-          data: { item },
-          selected:
-            (multiple ? selectedIds?.includes(item.id) : selection === item.id) ||
-            connecting === item.id,
-          ariaLabel: `Inspect ${item.name}`,
-          // Frames sit beneath relationships; cards sit above them.
-          zIndex: frames.has(item.id) ? 0 : 3,
-          ...(automatic && { draggable: false }),
-          ...size,
-          measured: measured[item.id],
-          style: size,
-        };
+      scope.nodes.flatMap((item): Card[] => {
+        const box = frame.nodes[item.id];
+        if (!box) return [];
+        const size = { width: box.width, height: box.height };
+        return [
+          {
+            id: item.id,
+            type: frames.has(item.id) ? "frame" : "studio",
+            position: { x: box.x, y: box.y },
+            data: { item },
+            selected:
+              (multiple ? selectedIds?.includes(item.id) : selection === item.id) ||
+              connecting === item.id,
+            ariaLabel: `Inspect ${item.name}`,
+            // Frames sit beneath relationships; cards sit above them.
+            zIndex: frames.has(item.id) ? 0 : dragging?.positions[item.id] ? 4 : 3,
+            ...size,
+            measured: measured[item.id],
+            style: size,
+          },
+        ];
       }),
-    [
-      scope,
-      selection,
-      selectedIds,
-      multiple,
-      frame.nodes,
-      connecting,
-      measured,
-      boxes,
-      frames,
-      automatic,
-    ],
+    [scope, selection, selectedIds, multiple, frame.nodes, connecting, frames, dragging, measured],
   );
-  const tidy = async () => {
-    if (!flow || !container.current || busy || dragging || !projectId || !routing.ready) return;
-    snapshot.current = undefined;
-    routing.invalidate();
-    const generation = ++action.current;
-    const abort = new AbortController();
-    tidyController.current = abort;
-    setBusy(true);
-    try {
-      if (
-        !(await useDraw.getState().flushEdits()) ||
-        useDraw.getState().loaded?.project.id !== projectId
-      )
-        return;
-      const routes = await routeStudio(
-        { ...routing.input, nodes: arranged, fixed: undefined },
-        abort.signal,
-      );
-      if (action.current !== generation || abort.signal.aborted || latestPaths.current !== paths)
-        return;
-      const bounds = container.current.getBoundingClientRect();
-      const viewport = studioFit(arranged, routes, bounds.width, bounds.height);
-      // Empty overrides mean deterministic automatic placement. Other scope records stay intact.
-      const current = useDraw.getState().loaded?.layout.architecture?.[scope.key];
-      if (
-        await useDraw
-          .getState()
-          .setArchitectureView(
-            scope.key,
-            { ...current, positions: {}, viewport },
-            true,
-            flow.getViewport(),
-          )
-      ) {
-        setFixed(undefined);
-        onCamera(viewport);
-      }
-    } catch {
-      if (!abort.signal.aborted)
-        useDraw.getState().setNotice({
-          tone: "error",
-          message: "Tidy could not finish. Existing layout is retained; try again.",
-        });
-    } finally {
-      if (action.current === generation) setBusy(false);
-    }
-  };
   const edges = useMemo(
     () =>
-      paths.map((path): Relation => {
+      paths.flatMap((path): Relation[] => {
+        const route = geometry[path.id];
+        if (!route) return [];
         const selected = member
           ? (member.kind === "connection"
               ? path.item.connectionIds
               : path.item.contextRelationshipIds
             ).includes(member.id)
           : selection === path.id || path.edgeIds.includes(selection ?? "");
-        return {
-          id: path.id,
-          type: "studio",
-          source: path.item.from,
-          target: path.item.to,
-          data: { path, route: geometry[path.id] as StudioRoute },
-          selected,
-          zIndex: path.branchIds ? 1 : 2,
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: selected ? "var(--blue)" : "var(--ink-soft)",
+        return [
+          {
+            id: path.id,
+            type: "studio",
+            source: path.item.from,
+            target: path.item.to,
+            data: { path, route },
+            selected,
+            zIndex: path.branchIds ? 1 : 2,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: selected ? "var(--blue)" : "var(--ink-soft)",
+            },
+            style: {
+              stroke: selected ? "var(--blue)" : "var(--ink-soft)",
+              strokeWidth: selected ? 3 : 2,
+            },
+            interactionWidth: 12,
+            ariaLabel: `Inspect ${path.branchIds ? "shared paths" : "relationship"}: ${path.item.actions.join(" / ")}${path.item.protocols.length ? `; ${path.item.protocols.join(" / ")}` : ""}`,
           },
-          style: {
-            stroke: selected ? "var(--blue)" : "var(--ink-soft)",
-            strokeWidth: selected ? 3 : 2,
-          },
-          interactionWidth: 12,
-          ariaLabel: `Inspect ${path.branchIds ? "shared paths" : "relationship"}: ${path.item.actions.join(" / ")}${path.item.protocols.length ? `; ${path.item.protocols.join(" / ")}` : ""}`,
-        };
+        ];
       }),
     [paths, geometry, selection, member],
   );
+  /** The node and, for a frame, everything drawn inside it, moved vertically by `dy`. */
+  const carried = (id: string, dy: number): Record<string, Point> => {
+    const result: Record<string, Point> = {};
+    const add = (nodeId: string) => {
+      const box = boxes[nodeId];
+      if (box) result[nodeId] = { x: box.x, y: box.y + dy };
+      for (const child of scope.nodes) if (child.parent === nodeId) add(child.id);
+    };
+    add(id);
+    return result;
+  };
+  const drop = (id: string, y: number) => {
+    const column = layout?.columns.find((list) => list.includes(id));
+    const box = boxes[id];
+    setDragging(undefined);
+    if (!layout || !column || !box || column.length < 2) return;
+    const siblings = column.filter((other) => other !== id);
+    const centre = y + box.height / 2;
+    const index = siblings.filter((other) => {
+      const o = boxes[other] as { y: number; height: number };
+      return o.y + o.height / 2 < centre;
+    }).length;
+    if (index === column.indexOf(id)) return;
+    // The hint lists every box in its current row order, with this one moved.
+    const rows = Object.keys(layout.nodes)
+      .filter((other) => other !== id)
+      .sort(
+        (a, b) =>
+          (layout.nodes[a]?.y ?? 0) - (layout.nodes[b]?.y ?? 0) ||
+          (layout.nodes[a]?.x ?? 0) - (layout.nodes[b]?.x ?? 0) ||
+          (a < b ? -1 : a > b ? 1 : 0),
+      );
+    const anchor = siblings[index];
+    const at = anchor
+      ? rows.indexOf(anchor)
+      : rows.indexOf(siblings[siblings.length - 1] as string) + 1;
+    rows.splice(at, 0, id);
+    setHeld({ layout, positions: carried(id, y - box.y) });
+    const view = useDraw.getState().loaded?.layout.architecture?.[scope.key];
+    void useDraw
+      .getState()
+      .setArchitectureView(scope.key, { ...view, positions: {}, order: rows }, true)
+      .then((ok) => {
+        if (!ok) setHeld(undefined);
+      });
+  };
   return (
     <section
       className="studio-graph"
       ref={container}
       data-placing={placing || undefined}
       aria-label={`${scope.level === "context" ? "C1" : scope.level === "containers" ? "C2" : "C3"} ${scope.name}`}
-      data-automatic={automatic || undefined}
+      aria-busy={!layout || undefined}
       data-scope={scope.key}
+      data-layout={studio.current ? "ready" : "pending"}
       data-dragging={!!dragging}
-      onPointerDownCapture={(event) => {
-        if (automatic || busy || hand || placing || connecting !== undefined || event.button !== 0)
-          return;
-        const target = event.target as HTMLElement;
-        if (
-          !target.closest(".react-flow__node") ||
-          target.closest("button, input, select, textarea")
-        )
-          return;
-        snapshot.current = {
-          routes: routing.geometry,
-          nodes: boxes,
-          paths,
-          generation: routing.generation,
-        };
-      }}
     >
       <ReactFlow
-        onInit={(instance) => {
-          setFlow(instance);
-          // Framed scopes fit their deterministic arrangement explicitly, frames included.
-          const bounds = container.current?.getBoundingClientRect();
-          if (automatic && !camera && !viewport && bounds)
-            void instance.setViewport(studioFit(boxes, {}, bounds.width, bounds.height));
-        }}
+        onInit={setFlow}
+        style={fitted ? undefined : { visibility: "hidden" }}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        nodesDraggable={!busy && !hand && !placing && connecting === undefined}
+        nodesDraggable={!hand && !placing && connecting === undefined && studio.current}
         nodeDragThreshold={5}
         autoPanOnNodeDrag={false}
         selectNodesOnDrag={false}
@@ -486,15 +416,13 @@ export function StudioGraph({
         elementsSelectable={!hand}
         elevateEdgesOnSelect={false}
         // A selected frame must stay beneath its components and relationships.
-        elevateNodesOnSelect={!automatic}
+        elevateNodesOnSelect={false}
         panOnDrag={hand ? true : [1, 2]}
         zoomOnDoubleClick={false}
         deleteKeyCode={null}
         minZoom={0.1}
         maxZoom={2}
-        defaultViewport={viewport ?? camera}
-        fitView={!automatic && !camera && !viewport}
-        fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
+        {...(camera && { defaultViewport: camera })}
         onNodesChange={(changes) => {
           const dimensions = changes.filter(
             (change) => change.type === "dimensions" && change.dimensions,
@@ -508,88 +436,20 @@ export function StudioGraph({
               return next;
             });
         }}
-        onNodeDragStart={(_, _node, moving) => {
-          routing.invalidate();
-          snapshot.current ??= {
-            routes: routing.geometry,
-            nodes: boxes,
-            paths,
-            generation: routing.generation,
-          };
-          setDragging(Object.fromEntries(moving.map((node) => [node.id, node.position])));
+        onNodeDragStart={(_, node) => {
+          const box = boxes[node.id];
+          if (box) setDragging({ id: node.id, positions: carried(node.id, 0) });
         }}
-        onNodeDrag={(_, _node, moving) => {
-          if (snapshot.current)
-            setDragging(Object.fromEntries(moving.map((node) => [node.id, node.position])));
+        onNodeDrag={(_, node) => {
+          const box = boxes[node.id];
+          if (box && dragging?.id === node.id)
+            setDragging({ id: node.id, positions: carried(node.id, node.position.y - box.y) });
         }}
-        onNodeDragStop={() => {
-          const captured = snapshot.current;
-          if (!captured || !preview || !flow || !dragging) return;
-          const changed = Object.keys(preview).filter(
-            (id) => preview[id]?.x !== boxes[id]?.x || preview[id]?.y !== boxes[id]?.y,
-          );
-          snapshot.current = undefined;
-          setDragging(undefined);
-          if (!changed.length) return;
-          const positions = Object.fromEntries(
-            Object.entries(boxes).map(([id, box]) => [id, preview[id] ?? { x: box.x, y: box.y }]),
-          );
-          // Settle a shared bus and its branches together; every unrelated route stays captured.
-          const affected = new Set(changed.flatMap((id) => incident.get(id) ?? []));
-          for (const path of paths)
-            if (affected.has(path.id) || (path.trunk && affected.has(path.trunk))) {
-              if (path.trunk) affected.add(path.trunk);
-              path.branchIds?.forEach((id) => {
-                affected.add(id);
-              });
-            }
-          for (const path of paths)
-            if (path.trunk && affected.has(path.trunk)) affected.add(path.id);
-          setFixed({
-            paths,
-            boxes: JSON.stringify(
-              Object.fromEntries(
-                Object.entries(boxes).map(([id, box]) => [id, { ...box, ...positions[id] }]),
-              ),
-            ),
-            geometry: Object.fromEntries(
-              Object.entries(captured.routes).filter(([id]) => !affected.has(id)),
-            ),
-          });
-          setPending(positions);
-          setBusy(true);
-          const beforeCamera = flow.getViewport();
-          void useDraw
-            .getState()
-            .setArchitectureView(
-              scope.key,
-              { ...saved, positions, viewport: beforeCamera },
-              true,
-              beforeCamera,
-            )
-            .finally(() => {
-              setPending(undefined);
-              setBusy(false);
-            });
+        onNodeDragStop={(_, node) => {
+          if (dragging?.id === node.id) drop(node.id, node.position.y);
         }}
-        onMoveEnd={(event, next) => {
-          onCamera(next);
-          if (event && !busy && !dragging) {
-            const view = useDraw.getState().loaded?.layout.architecture?.[scope.key];
-            void useDraw.getState().setArchitectureView(scope.key, {
-              ...view,
-              positions: view?.positions ?? {},
-              viewport: next,
-            });
-          }
-          const bounds = container.current?.getBoundingClientRect();
-          if (flow && bounds)
-            onCenter(
-              flow.screenToFlowPosition({
-                x: bounds.x + bounds.width / 2 - 108,
-                y: bounds.y + bounds.height / 2 - 48,
-              }),
-            );
+        onMoveEnd={(_, next) => {
+          if (fitted) onCamera(next);
         }}
         onNodeClick={(_, node) => {
           if (!hand && !placing) onSelect(node.id);
@@ -597,43 +457,21 @@ export function StudioGraph({
         onEdgeClick={(_, edge) => {
           if (!hand && !placing) onSelect(edge.id);
         }}
-        onPaneClick={(event) => {
-          if (placing && flow)
-            onPlace(flow.screenToFlowPosition({ x: event.clientX, y: event.clientY }));
+        onPaneClick={() => {
+          if (placing) onPlace();
           else if (!hand && connecting === undefined) onSelect();
         }}
       >
-        <Background gap={24} color="var(--grid-dot)" />
-        {preview ? (
-          <ViewportPortal>
-            {Object.entries(preview).map(([id, point]) => (
-              <div
-                key={id}
-                className="studio-landing"
-                data-landing={id}
-                style={{
-                  transform: `translate(${point.x}px, ${point.y}px)`,
-                  width: boxes[id]?.width,
-                  height: boxes[id]?.height,
-                }}
-              />
-            ))}
-          </ViewportPortal>
-        ) : null}
+        <Background gap={32} color="var(--grid-dot)" />
       </ReactFlow>
-      <button
-        className="studio-tidy"
-        type="button"
-        disabled={busy || !!dragging || !routing.ready || !scope.nodes.length}
-        onClick={() => void tidy()}
-      >
-        Tidy and fit
+      <button className="studio-fit" type="button" disabled={!layout || !!dragging} onClick={fit}>
+        Fit
       </button>
-      {routing.error ? (
+      {studio.error ? (
         <div className="studio-routing-error" role="alert">
-          {routing.error}{" "}
-          <button type="button" onClick={routing.retry}>
-            Retry routing
+          {studio.error}{" "}
+          <button type="button" onClick={studio.retry}>
+            Retry layout
           </button>
         </div>
       ) : null}

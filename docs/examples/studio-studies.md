@@ -26,7 +26,7 @@ entry expires.
 
 Sources: the [factory](../../packages/spec/src/studio-examples/tinyurl.ts), its
 [goal manifest](../../packages/spec/src/studio-examples/tinyurl.goal.json) (pinned to the plan
-file's SHA-256) and [layout](../../packages/spec/src/studio-examples/tinyurl.layout.json).
+file's SHA-256). The study stores no layout: the studio derives every position (SG06).
 `architecture.studio.origin` records `studio-tinyurl@1.0.0` and the manifest hash. Its
 [blueprint](../studio-blueprint.md) contains every service, resource, external, the group and
 all eleven components, with nothing omitted.

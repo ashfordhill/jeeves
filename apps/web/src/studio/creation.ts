@@ -22,7 +22,6 @@ import {
   studioViews,
 } from "@jeeves/spec";
 import { useDraw } from "../draw/store.ts";
-import { arrangeStudio, studioLanding } from "./layout.ts";
 
 export type Point = { x: number; y: number };
 export type BaseCreation = StudioKind | "person" | "external-system";
@@ -47,24 +46,6 @@ export const creationLabel = (kind: BaseCreation) =>
     : kind === "external-system"
       ? "External system"
       : studioDefinitions[kind].creationName;
-export const initialPosition = (index: number): Point => ({
-  x: (index % 3) * 288,
-  y: Math.floor(index / 3) * 168,
-});
-
-/** Nearest free 24-unit grid cell, conservatively reserving the largest 216×96 role. */
-export function landing(point: Point, obstacles: Point[]): Point {
-  const moving = "new";
-  return studioLanding(
-    {
-      ...Object.fromEntries(
-        obstacles.map((p, i) => [`obstacle:${i}`, { ...p, width: 216, height: 96 }]),
-      ),
-      [moving]: { ...point, width: 216, height: 96 },
-    },
-    { [moving]: point },
-  )[moving] as Point;
-}
 const uniqueName = (base: string, names: Set<string>) => {
   let name = base;
   for (let n = 2; names.has(name); n++) name = `${base} ${n}`;
@@ -78,7 +59,6 @@ export async function createAt(
   projectId: string,
   scopeKey: string,
   creation: Creation,
-  point: Point,
   /** C3 only: the application that owns a new resource or queue. */
   owner?: string,
 ): Promise<string | undefined> {
@@ -234,32 +214,8 @@ export async function createAt(
       if (!first) throw new Error("This composition adds no visible object in this scope.");
       selected = first.id;
     }
-    const placements: Record<string, Record<string, Point>> = {};
-    for (const target of studioScopes(next)) {
-      const previous = studioScopes(views).find((item) => item.key === target.key);
-      const fresh = target.nodes.filter(
-        (node) => !previous?.nodes.some((old) => old.id === node.id),
-      );
-      if (!fresh.length) continue;
-      const saved = loaded?.layout.architecture?.[target.key]?.positions;
-      const automatic = previous ? arrangeStudio(previous) : {};
-      const positions = Object.fromEntries(
-        (previous?.nodes ?? []).map((node, index) => [
-          node.id,
-          saved?.[node.id] ?? automatic[node.id] ?? initialPosition(index),
-        ]),
-      );
-      fresh.sort((a, b) =>
-        a.id === selected ? -1 : b.id === selected ? 1 : a.id.localeCompare(b.id),
-      );
-      for (const node of fresh)
-        positions[node.id] = landing(
-          target.key === scopeKey ? point : initialPosition(target.nodes.indexOf(node)),
-          Object.values(positions),
-        );
-      placements[target.key] = positions;
-    }
-    return { ops, positions: placements };
+    // SG06: the new box is appended and automatic layout places it; no position is stored.
+    return { ops, positions: {} };
   });
   return ok ? selected : undefined;
 }
