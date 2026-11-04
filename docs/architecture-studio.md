@@ -46,15 +46,31 @@ accepted object, opens its inspector and uses one semantic undo step; rejected b
 partial graph or position. Library selects existing objects by ID for inspection and exposes
 existing runtime-template details within Presets. Compatible published studio compositions keep
 exact version/hash references and require explicit existing-dependency IDs before insertion. New
-integrations are placed at C2; creating their C3 relationships remains UX08b. Examples create separate projects from preserved
-sources. Connector, dependency creation and membership removal remain UX08b. The remaining drag/Tidy gestures,
+integrations can be placed at C2. Examples create separate projects from preserved sources.
+**UX08b** adds Connection: click source, then compatible target, review Action/Protocol/Interaction/
+Access and Connect. Queue publish is application → queue; consume is queue → application. Invalid
+endpoints/drafts explain the problem and remain correctable; Select or Cancel dismisses them.
+C1 connections have only an action. Package cards require choosing their actual member endpoints.
+Connections offers exact existing service/resource reuse; queue helpers explicitly Publish or Consume.
+Redirect selection creates its real store/cache relationship and shortcut in one batch, reuses a
+single existing connection, and requires an explicit choice when several exist. Disconnect clears
+its dependent shortcut atomically. C3 Library integrations review a new dependency before saving the
+integration and relationship together. No resource is reused merely because its name matches.
+Package General includes Add/Remove member, Ungroup and separately confirmed Delete members.
+Ungroup preserves applications/resources/connections. Losing a package or application owner requires
+an explicit owner choice for each resource; queues require a replacement application/package.
+Delete members preserves shared resources and other consumers. Optional CDN origins/browser serving
+references and Redirect shortcuts clear when their referenced target is explicitly deleted.
+Each accepted action is one semantic history step; cancel/rejection leaves no partial graph.
+The remaining drag/Tidy gestures,
 final geometry, unified Generate and studio chat tools remain later units; the
 [UX05 action mapping](evidence/studio-ux/UX05/README.md),
 [UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
 [UX06b history evidence](evidence/studio-ux/UX06b/README.md) and
 [UX07a inspector evidence](evidence/studio-ux/UX07a/README.md) and
 [UX07b resource/connection evidence](evidence/studio-ux/UX07b/README.md) and
-[UX08a creation evidence](evidence/studio-ux/UX08a/README.md) record those limits.
+[UX08a creation evidence](evidence/studio-ux/UX08a/README.md) and
+[UX08b connection/membership evidence](evidence/studio-ux/UX08b/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

@@ -1,4 +1,5 @@
 import {
+  buildStudioCommand,
   type StudioRelationship,
   type StudioViewNode,
   studioApplicationKinds,
@@ -9,6 +10,7 @@ import {
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
+  IconArrowUpRight,
   IconBoxMultiple,
   IconChevronLeft,
   IconHandStop,
@@ -26,6 +28,8 @@ import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { formDrafts } from "../draw/form-drafts.ts";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { type ConnectionDraft, commitAction, connectionDefaults } from "./actions.ts";
+import { ConnectionCreator } from "./ConnectionCreator.tsx";
 import { ConnectionForm } from "./ConnectionForm.tsx";
 import { connectionSpec, type RelationshipTarget } from "./connection-drafts.ts";
 import {
@@ -100,11 +104,13 @@ function SelectionSummary({
   edge,
   onElement,
   onConnection,
+  onCreate,
 }: {
   node?: StudioViewNode;
   edge?: StudioRelationship;
   onElement: (id: string) => void;
   onConnection: (id: string) => void;
+  onCreate: (draft: ConnectionDraft) => void;
 }) {
   const loaded = useDraw((state) => state.loaded);
   const [memberId, setMemberId] = useState<string>();
@@ -142,6 +148,7 @@ function SelectionSummary({
             design={loaded.design}
             onElement={onElement}
             onConnection={onConnection}
+            onCreate={onCreate}
           />
         ) : null}
       </div>
@@ -197,12 +204,38 @@ function SelectionSummary({
         </fieldset>
       ) : null}
       {member && loaded ? (
-        <ConnectionForm
-          key={`${member.kind}:${member.id}`}
-          projectId={loaded.project.id}
-          target={member}
-          design={loaded.design}
-        />
+        <>
+          <ConnectionForm
+            key={`${member.kind}:${member.id}`}
+            projectId={loaded.project.id}
+            target={member}
+            design={loaded.design}
+          />
+          {member.kind === "context" ||
+          loaded.design.architecture?.studio?.connections.some(
+            (item) => item.connection === member.id,
+          ) ? (
+            <button
+              type="button"
+              className="studio-action"
+              onClick={() =>
+                void commitAction(loaded.project.id, (current) => {
+                  if (member.kind === "connection")
+                    return buildStudioCommand(current, { type: "delete", connections: [member.id] })
+                      .ops;
+                  if (!current.architecture) throw new Error("Connection no longer exists.");
+                  const architecture = structuredClone(current.architecture);
+                  architecture.relationships = architecture.relationships.filter(
+                    (item) => item.id !== member.id,
+                  );
+                  return [{ op: "setArchitecture", architecture }];
+                })
+              }
+            >
+              Disconnect
+            </button>
+          ) : null}
+        </>
       ) : null}
     </div>
   );
@@ -247,6 +280,9 @@ function ProjectStudio({
   const [selections, setSelections] = useState<Record<string, string | undefined>>({});
   const [hand, setHand] = useState(false);
   const [tool, setTool] = useState<BaseCreation>();
+  const [connector, setConnector] = useState<string>();
+  const [connectionDraft, setConnectionDraft] = useState<ConnectionDraft>();
+  const [connectorError, setConnectorError] = useState<string>();
   const [library, setLibrary] = useState(false);
   const [creating, setCreating] = useState(false);
   const [multiple, setMultiple] = useState(false);
@@ -304,12 +340,54 @@ function ProjectStudio({
       void formDrafts.flushProject(loaded.project.id, true);
       setScopeKey(key);
       setTool(undefined);
+      setConnector(undefined);
+      setConnectorError(undefined);
+      setConnectionDraft(undefined);
       setMultiple(false);
       setGroupSelection([]);
       setLibrary(false);
     }
   };
   const select = (id?: string) => {
+    if (connector !== undefined) {
+      const node = scope.nodes.find((item) => item.id === id);
+      const ref = node?.refs[0];
+      if (!ref) return;
+      const endpoint =
+        ref.kind === "system"
+          ? "system"
+          : ref.kind === "context" || ref.kind === "element"
+            ? ref.id
+            : undefined;
+      if (!endpoint) {
+        setConnectorError("Open the package and choose an actual application endpoint.");
+        return;
+      }
+      if (!connector) {
+        if (
+          scope.level !== "context" &&
+          ![...studioApplicationKinds, "queue", "cdn", "external-api"].some(
+            (kind) => kind === node?.kind,
+          )
+        ) {
+          setConnectorError("Choose an application, queue or integration as the source.");
+          return;
+        }
+        setConnector(endpoint);
+        setConnectorError(undefined);
+        return;
+      }
+      try {
+        if (scope.level === "context") {
+          if (connector === endpoint) throw new Error("Select two different context objects.");
+        } else connectionDefaults(loaded.design, connector, endpoint);
+        setConnectionDraft({ from: connector, to: endpoint, context: scope.level === "context" });
+        setConnectorError(undefined);
+      } catch (e) {
+        setConnectorError(e instanceof Error ? e.message : String(e));
+      }
+      return;
+    }
     if (multiple && id) {
       setGroupSelection((current) =>
         current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
@@ -338,6 +416,19 @@ function ProjectStudio({
   const goBack = () => navigate(scope.parentKey);
   const add = async (creation: Creation, point = center.current) => {
     if (creating) return false;
+    if (
+      creation.type === "base" &&
+      scope.level === "detail" &&
+      creation.kind !== "person" &&
+      creation.kind !== "external-system" &&
+      studioDefinitions[creation.kind].role === "integration"
+    ) {
+      setConnectionDraft({
+        newKind: creation.kind,
+        ...(scope.scope.kind === "element" ? { from: scope.scope.id } : {}),
+      });
+      return true;
+    }
     setCreating(true);
     const key = scope.key;
     try {
@@ -363,7 +454,11 @@ function ProjectStudio({
   });
   useEffect(() => {
     const cancel = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setTool(undefined);
+      if (event.key === "Escape") {
+        setTool(undefined);
+        setConnector(undefined);
+        setConnectorError(undefined);
+      }
     };
     window.addEventListener("keydown", cancel);
     return () => window.removeEventListener("keydown", cancel);
@@ -498,6 +593,16 @@ function ProjectStudio({
           selection={selected}
           selectedIds={groupSelection}
           placing={!!tool && !creating}
+          connecting={
+            connector === undefined
+              ? undefined
+              : (scope.nodes.find((node) =>
+                  node.refs.some(
+                    (ref) =>
+                      (ref.kind === "system" ? "system" : "id" in ref ? ref.id : "") === connector,
+                  ),
+                )?.id ?? "")
+          }
           hand={hand}
           camera={preferences.cameras[scope.key]}
           onCamera={(camera) =>
@@ -520,10 +625,12 @@ function ProjectStudio({
             type="button"
             title="Select"
             aria-label="Select"
-            aria-pressed={!hand && !tool && !multiple}
+            aria-pressed={!hand && !tool && !multiple && connector === undefined}
             onClick={() => {
               setHand(false);
               setTool(undefined);
+              setConnector(undefined);
+              setConnectorError(undefined);
               setMultiple(false);
               setGroupSelection([]);
             }}
@@ -538,6 +645,8 @@ function ProjectStudio({
             onClick={() => {
               setHand(true);
               setTool(undefined);
+              setConnector(undefined);
+              setConnectorError(undefined);
               setMultiple(false);
               setGroupSelection([]);
             }}
@@ -556,6 +665,8 @@ function ProjectStudio({
                 setHand(false);
                 setMultiple(false);
                 setGroupSelection([]);
+                setConnector(undefined);
+                setConnectorError(undefined);
                 setTool(kind);
               }}
             >
@@ -571,6 +682,23 @@ function ProjectStudio({
               />
             </button>
           ))}
+          <button
+            type="button"
+            title="Connection"
+            aria-label="Connection"
+            aria-pressed={connector !== undefined}
+            onClick={() => {
+              void formDrafts.flushProject(loaded.project.id, true);
+              setConnector("");
+              setConnectorError(undefined);
+              setTool(undefined);
+              setHand(false);
+              setMultiple(false);
+              setGroupSelection([]);
+            }}
+          >
+            <IconArrowUpRight size={19} />
+          </button>
           {scope.level === "containers" ? (
             <button
               type="button"
@@ -582,6 +710,7 @@ function ProjectStudio({
                 setGroupSelection([]);
                 setHand(false);
                 setTool(undefined);
+                setConnector(undefined);
               }}
             >
               <IconSelectAll size={19} />
@@ -610,6 +739,7 @@ function ProjectStudio({
             aria-label="Library"
             disabled={creating}
             onClick={() => {
+              setConnector(undefined);
               setLibrary(true);
               setTool(undefined);
               setHand(false);
@@ -618,6 +748,52 @@ function ProjectStudio({
             <IconLibrary size={19} />
           </button>
         </div>
+        {connector !== undefined ? (
+          <div className="studio-placement-hint" role={connectorError ? "alert" : "status"}>
+            {connectorError ??
+              (connector
+                ? "Click a compatible target. Select cancels."
+                : "Click the source. Select cancels.")}
+          </div>
+        ) : null}
+        {connectionDraft ? (
+          <ConnectionCreator
+            key={JSON.stringify(connectionDraft)}
+            draft={connectionDraft}
+            projectId={loaded.project.id}
+            design={loaded.design}
+            scope={scope}
+            onClose={() => {
+              setConnectionDraft(undefined);
+              setConnector(undefined);
+              setConnectorError(undefined);
+            }}
+            onConnected={(id) => {
+              setConnectionDraft(undefined);
+              setConnector(undefined);
+              setConnectorError(undefined);
+              const current = useDraw.getState().loaded;
+              if (!current || current.project.id !== loaded.project.id) return;
+              const next = studioViews(current.design, studioDefinitions, current.project.name);
+              const target = [next.context, next.containers, ...next.details].find(
+                (item) =>
+                  item.key === scope.key &&
+                  item.edges.some(
+                    (edge) =>
+                      edge.connectionIds.includes(id) || edge.contextRelationshipIds.includes(id),
+                  ),
+              );
+              const edge = target?.edges.find(
+                (edge) =>
+                  edge.connectionIds.includes(id) || edge.contextRelationshipIds.includes(id),
+              );
+              if (edge && target) {
+                setSelections((value) => ({ ...value, [target.key]: edge.id }));
+                setPreferences((value) => ({ ...value, inspectorOpen: true }));
+              }
+            }}
+          />
+        ) : null}
         {tool ? (
           <div className="studio-placement-hint" role="status">
             Click the canvas to place {creationLabel(tool)}. Select cancels.
@@ -633,6 +809,12 @@ function ProjectStudio({
             busy={creating}
             onAdd={add}
             onClose={() => setLibrary(false)}
+            onUseExisting={(id) =>
+              setConnectionDraft({
+                ...(scope.scope.kind === "element" ? { from: scope.scope.id } : {}),
+                to: id,
+              })
+            }
             onExisting={(id) => {
               const target = [scope, ...scopes].find((item) =>
                 item.nodes.some((node) =>
@@ -745,6 +927,7 @@ function ProjectStudio({
               key={selected}
               node={inspectNode}
               edge={inspectEdge}
+              onCreate={setConnectionDraft}
               onElement={(id) => {
                 const target = [scope, ...scopes].find((item) =>
                   item.nodes.some((node) =>

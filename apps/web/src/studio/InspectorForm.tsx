@@ -1,4 +1,5 @@
 import {
+  buildStudioCommand,
   containerClassification,
   type DesignDocument,
   legacyStudioKind,
@@ -12,7 +13,10 @@ import {
 } from "@jeeves/spec";
 import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
 import { type DraftValues, formDrafts } from "../draw/form-drafts.ts";
+import { applicationKind, type ConnectionDraft, commitAction, endpointKind } from "./actions.ts";
+import { DependencyActions } from "./DependencyActions.tsx";
 import { draftSettings, inspectorSpec, originChoices, ownerChoices } from "./inspector-drafts.ts";
+import { MembershipActions } from "./MembershipActions.tsx";
 
 const canonical = studioDefinitions.service.fields.filter((field) => field.control === "text");
 
@@ -48,12 +52,14 @@ export function InspectorForm({
   design,
   onElement,
   onConnection,
+  onCreate,
 }: {
   projectId: string;
   node: StudioViewNode;
   design: DesignDocument;
   onElement: (id: string) => void;
   onConnection: (id: string) => void;
+  onCreate: (draft: ConnectionDraft) => void;
 }) {
   const ref = node.refs[0];
   const spec = useMemo(
@@ -68,6 +74,7 @@ export function InspectorForm({
       node={node}
       onElement={onElement}
       onConnection={onConnection}
+      onCreate={onCreate}
     />
   );
 }
@@ -78,12 +85,14 @@ function TargetForm({
   node,
   onElement,
   onConnection,
+  onCreate,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
   node: StudioViewNode;
   onElement: (id: string) => void;
   onConnection: (id: string) => void;
+  onCreate: (draft: ConnectionDraft) => void;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
@@ -104,7 +113,8 @@ function TargetForm({
   const connections = design.connections.filter(
     (item) => ids.includes(item.from.element) || ids.includes(item.to.element),
   );
-  if (connections.length && !groups.some((group) => group.group === "Connections"))
+  const canConnect = ref?.kind === "element" && applicationKind(endpointKind(design, ref.id));
+  if ((connections.length || canConnect) && !groups.some((group) => group.group === "Connections"))
     groups.push({ group: "Connections", fields: [] });
   const active = groups.some((group) => group.group === selectedTab) ? selectedTab : "General";
   const current = groups.find((group) => group.group === active) ?? { fields: canonical };
@@ -273,15 +283,22 @@ function TargetForm({
             </div>
           );
         })}
-        {active === "General" && memberIds.length ? (
-          <div className="studio-member-list">
-            <h3>Members</h3>
-            {memberIds.map((id) => (
-              <button type="button" key={id} onClick={() => onElement(id)}>
-                {design.elements.find((item) => item.id === id)?.name}
-              </button>
-            ))}
-          </div>
+        {active === "General" && ref ? (
+          <MembershipActions
+            projectId={spec.projectId}
+            design={design}
+            target={ref}
+            onElement={onElement}
+          />
+        ) : null}
+        {active === "Connections" ? (
+          <DependencyActions
+            projectId={spec.projectId}
+            design={design}
+            node={node}
+            onCreate={onCreate}
+            onConnection={onConnection}
+          />
         ) : null}
         {active === "Connections" && connections.length ? (
           <div className="studio-dependencies">
@@ -292,13 +309,33 @@ function TargetForm({
               const to = design.elements.find((element) => element.id === item.to.element)?.name;
               const protocol = item.planned?.protocol ?? item.protocol;
               return (
-                <button type="button" key={item.id} onClick={() => onConnection(item.id)}>
-                  {from} → {to}
-                  <span>
-                    {item.planned?.label ?? item.label ?? "Uses"}
-                    {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
-                  </span>
-                </button>
+                <div className="studio-dependency-row" key={item.id}>
+                  <button type="button" onClick={() => onConnection(item.id)}>
+                    {from} → {to}
+                    <span>
+                      {item.planned?.label ?? item.label ?? "Uses"}
+                      {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
+                    </span>
+                  </button>
+                  {design.architecture?.studio?.connections.some(
+                    (binding) => binding.connection === item.id,
+                  ) ? (
+                    <button
+                      type="button"
+                      aria-label={`Disconnect ${from} to ${to}`}
+                      onClick={() =>
+                        void commitAction(
+                          spec.projectId,
+                          (current) =>
+                            buildStudioCommand(current, { type: "delete", connections: [item.id] })
+                              .ops,
+                        )
+                      }
+                    >
+                      Disconnect
+                    </button>
+                  ) : null}
+                </div>
               );
             })}
           </div>

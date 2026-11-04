@@ -24,12 +24,14 @@ export function StudioLibrary({
   busy,
   onAdd,
   onExisting,
+  onUseExisting,
   onClose,
 }: {
   scope: StudioScopeProjection;
   busy: boolean;
   onAdd: (creation: Creation) => Promise<boolean>;
   onExisting: (id: string) => void;
+  onUseExisting: (id: string) => void;
   onClose: () => void;
 }) {
   const loaded = useDraw((state) => state.loaded);
@@ -99,12 +101,7 @@ export function StudioLibrary({
     ),
   );
   const definitions = Object.values(studioDefinitions).filter(
-    (entry) =>
-      target &&
-      entry.creationScopes.includes(target) &&
-      // An unowned integration needs an explicit relationship to appear in detail. UX08b owns
-      // that creation flow; this unit offers existing identities and new C2 integrations.
-      (scope.level !== "detail" || entry.role !== "integration"),
+    (entry) => target && entry.creationScopes.includes(target),
   );
   const presets = studioPackagePresets.filter(
     (entry) => target === "c2" && entry.creationScopes.includes(target),
@@ -482,6 +479,17 @@ export function StudioLibrary({
                       })}
                   </select>
                 </label>
+                {existing && scope.level === "detail" ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onUseExisting(existing);
+                      onClose();
+                    }}
+                  >
+                    Use existing dependency
+                  </button>
+                ) : null}
                 {existing ? (
                   <button
                     type="button"

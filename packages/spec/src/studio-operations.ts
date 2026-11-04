@@ -57,7 +57,12 @@ export type StudioCommand =
       settings?: StudioSettings;
       owner?: StudioOwner | null;
     }
-  | { type: "connect"; connection: StudioConnectionCreation }
+  | {
+      type: "connect";
+      connection: StudioConnectionCreation;
+      /** Select the newly created real dependency in the same atomic action. */
+      lookup?: { element: string; resource: "database" | "cache" };
+    }
   | {
       type: "editConnection";
       connection: string;
@@ -217,6 +222,13 @@ export function buildStudioCommand(
     }
     case "connect":
       connect(input.connection);
+      if (input.lookup) {
+        const item = binding(input.lookup.element);
+        if (item.settings.kind !== "redirect") throw new Error("Select a Redirect application.");
+        item.settings[
+          input.lookup.resource === "database" ? "lookupStoreConnection" : "lookupCacheConnection"
+        ] = input.connection.id;
+      }
       break;
     case "editConnection": {
       const connection = draft.connections.find((item) => item.id === input.connection);

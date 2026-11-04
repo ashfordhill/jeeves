@@ -1,0 +1,48 @@
+{
+  "result": "passed",
+  "routineCorrections": [
+    "Node inspection setup uses installed tsx loader because the spec has TypeScript parameter properties; baseline eval was moved to an ESM file.",
+    "Initial synthetic bundled-browser fixture omitted provider entirely, as required by its strict union, instead of retaining an undefined key.",
+    "An initial C2 inspection expected a package-internal database to be visible; the corrected pass uses a visible incompatible source, then reuses the real database through its picker.",
+    "Creation selects received explicit accessible labels; an initial exact label selector included wrapped option text.",
+    "The Redirect inspection consumes its actual Connections tab; there is no Options tab for this definition.",
+    "The C1 edge crossing an unrelated card is hit at a visible path segment; no geometry rewrite or forced click was used.",
+    "Initial full lint found only three newly written evidence JSON files awaiting formatting. Final evidence is formatted and lint repeated.",
+    "Final bounded review corrected the non-Redirect multiple-connection explanation and clears its old problem when the resource changes."
+  ],
+  "completedPasses": [
+    {
+      "script": "browser.mjs",
+      "log": "browser-final.log",
+      "scenarios": 28,
+      "mutationResponses": 110,
+      "sha256": "407edd203fc9f4d706919bbf359807fccf8ba9897c574ca7f8a36d28f86befe2"
+    },
+    {
+      "script": "supplement.mjs",
+      "log": "supplement-attempt2.log",
+      "scenarios": 8,
+      "mutationResponses": 32,
+      "sha256": "5353e3f0bc11eee59053187d81b8fa8c10034c47068c9b3784d85a01a5e33d35"
+    },
+    {
+      "script": "choice.mjs",
+      "log": "choice.log",
+      "scenarios": 2,
+      "mutationResponses": 0,
+      "sha256": "5623e79d6ea2ea3aa42a2d13e178b5ffc72c51fa0d41d0d2fc049a5c9651c93b"
+    },
+    {
+      "script": "default-browser.mjs",
+      "log": "default-browser.log",
+      "desktopSizes": 2,
+      "mutationResponses": 0,
+      "sha256": "cabb8853d9b8b9aa693a60c078a1d124e0974b5ac83fc3460176e4e07eabb004"
+    }
+  ],
+  "rawScriptsAndExploratoryLogs": "ignored .jeeves-work/ux08b/",
+  "allOriginalProjectsAndFinalSetCheckedSeparately": true,
+  "scopeExpansion": false,
+  "fixtureTypingChanges": false,
+  "suitesDeferred": ["unit", "E2E", "template", "pnpm check"]
+}

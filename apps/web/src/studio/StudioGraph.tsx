@@ -34,6 +34,7 @@ export function StudioGraph({
   selection,
   selectedIds,
   placing,
+  connecting,
   hand,
   camera,
   onCamera,
@@ -46,6 +47,7 @@ export function StudioGraph({
   selection?: string;
   selectedIds?: string[];
   placing: boolean;
+  connecting?: string;
   hand: boolean;
   camera?: Viewport;
   onCamera: (camera: Viewport) => void;
@@ -73,13 +75,14 @@ export function StudioGraph({
           type: "studio",
           position: saved?.positions[item.id] ?? initialPosition(index),
           data: { item },
-          selected: selection === item.id || selectedIds?.includes(item.id),
+          selected:
+            selection === item.id || selectedIds?.includes(item.id) || connecting === item.id,
           ariaLabel: `Inspect ${item.name}`,
           width: 216,
           height: 96,
         }),
       ),
-    [scope, selection, selectedIds, saved?.positions],
+    [scope, selection, selectedIds, saved?.positions, connecting],
   );
   const edges = useMemo(
     () =>
@@ -137,7 +140,7 @@ export function StudioGraph({
           if (!hand && !placing) onSelect(node.id);
         }}
         onNodeDoubleClick={(_, node) => {
-          if (!hand && !placing) onOpen(node.data.item.drillKey);
+          if (!hand && !placing && connecting === undefined) onOpen(node.data.item.drillKey);
         }}
         onEdgeClick={(_, edge) => {
           if (!hand && !placing) onSelect(edge.id);
@@ -145,7 +148,7 @@ export function StudioGraph({
         onPaneClick={(event) => {
           if (placing && flow)
             onPlace(flow.screenToFlowPosition({ x: event.clientX, y: event.clientY }));
-          else if (!hand) onSelect();
+          else if (!hand && connecting === undefined) onSelect();
         }}
       >
         <Background gap={24} color="var(--grid-dot)" />

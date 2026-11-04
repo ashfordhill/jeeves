@@ -1,0 +1,584 @@
+{
+  "design": {
+    "elements": [
+      {
+        "id": "api",
+        "name": "Primary API",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "worker",
+        "name": "Worker",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "consumer",
+        "name": "Other consumer",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "redirect",
+        "name": "Redirect",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "browser",
+        "name": "Browser",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Application"
+        }
+      },
+      {
+        "id": "db",
+        "name": "Shared database",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "cache",
+        "name": "Cache",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "queue",
+        "name": "Shared queue",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "objects",
+        "name": "Object storage",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "Data store"
+        }
+      },
+      {
+        "id": "cdn",
+        "name": "CDN",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "External system"
+        }
+      },
+      {
+        "id": "studio-d0614ad7-e9c7-4f4c-802c-023a83de0aa8",
+        "name": "External API",
+        "notes": "",
+        "config": {},
+        "template": null,
+        "attachments": [],
+        "classification": {
+          "kind": "External system"
+        }
+      }
+    ],
+    "revision": 32,
+    "annotations": [],
+    "connections": [
+      {
+        "id": "studio-e9483726-cdaa-441c-a0ec-955021c5f3cc",
+        "to": {
+          "element": "consumer"
+        },
+        "from": {
+          "element": "redirect"
+        },
+        "kind": "calls",
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTP",
+          "security": "Private network",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "studio-f6f75ad0-314b-4f78-ba2b-73f28ce785b6",
+        "to": {
+          "element": "db"
+        },
+        "from": {
+          "element": "redirect"
+        },
+        "kind": "uses-database",
+        "planned": {
+          "label": "Reads & writes",
+          "protocol": "SQL",
+          "security": "Service identity",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "studio-83c05800-ee1b-4f1e-92ca-8ef09e684fc4",
+        "to": {
+          "element": "queue"
+        },
+        "from": {
+          "element": "api"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Publishes",
+          "protocol": "Messaging",
+          "security": "Service identity",
+          "interaction": "Asynchronous"
+        }
+      },
+      {
+        "id": "studio-d2c3e7a7-b783-445b-ab29-2c3060749b90",
+        "to": {
+          "element": "worker"
+        },
+        "from": {
+          "element": "queue"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "security": "Service identity",
+          "interaction": "Asynchronous"
+        }
+      },
+      {
+        "id": "studio-e5c929a4-5db5-47d6-9b84-907d349d775a",
+        "to": {
+          "element": "consumer"
+        },
+        "from": {
+          "element": "queue"
+        },
+        "kind": "depends-on",
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "security": "Service identity",
+          "interaction": "Asynchronous"
+        }
+      },
+      {
+        "id": "studio-89930ab2-9b75-464a-bb2e-0d77680479b6",
+        "to": {
+          "element": "cache"
+        },
+        "from": {
+          "element": "redirect"
+        },
+        "kind": "uses-database",
+        "planned": {
+          "label": "Uses cache",
+          "protocol": "Redis",
+          "security": "Service identity",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "studio-5f344979-538c-4663-bf13-bc5ec3497587",
+        "to": {
+          "element": "db"
+        },
+        "from": {
+          "element": "redirect"
+        },
+        "kind": "uses-database",
+        "planned": {
+          "label": "Reads & writes",
+          "protocol": "Native binding",
+          "security": "Service identity",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "studio-c394d191-b8f5-4209-b09a-e58cadbe6aef",
+        "to": {
+          "element": "studio-d0614ad7-e9c7-4f4c-802c-023a83de0aa8"
+        },
+        "from": {
+          "element": "api"
+        },
+        "kind": "calls",
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "security": "Service identity",
+          "interaction": "Request / response"
+        }
+      },
+      {
+        "id": "studio-2778af33-6f39-4466-9156-0ae9f1add648",
+        "to": {
+          "element": "cache"
+        },
+        "from": {
+          "element": "worker"
+        },
+        "kind": "uses-database",
+        "planned": {
+          "label": "Reads & writes",
+          "protocol": "Redis",
+          "security": "Service identity",
+          "interaction": "Request / response"
+        }
+      }
+    ],
+    "architecture": {
+      "nodes": [
+        {
+          "id": "person",
+          "kind": "person",
+          "name": "Person",
+          "description": ""
+        },
+        {
+          "id": "external",
+          "kind": "external-system",
+          "name": "External system",
+          "description": ""
+        }
+      ],
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "api",
+            "settings": {
+              "kind": "service",
+              "exposure": "internal",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "worker",
+            "settings": {
+              "kind": "worker",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "consumer",
+            "settings": {
+              "kind": "service",
+              "exposure": "internal",
+              "language": "unspecified",
+              "execution": "docker"
+            },
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "redirect",
+            "settings": {
+              "kind": "redirect",
+              "exposure": "public",
+              "language": "unspecified",
+              "execution": "docker",
+              "lookupStoreConnection": "studio-f6f75ad0-314b-4f78-ba2b-73f28ce785b6"
+            },
+            "definition": {
+              "id": "studio-redirect",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "browser",
+            "settings": {
+              "kind": "browser",
+              "delivery": "bundled",
+              "servedBy": "api"
+            },
+            "definition": {
+              "id": "studio-browser",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "package",
+              "kind": "package"
+            },
+            "element": "db",
+            "settings": {
+              "kind": "database",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "api",
+              "kind": "element"
+            },
+            "element": "cache",
+            "settings": {
+              "kind": "cache",
+              "engine": "unspecified",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "owner": {
+              "id": "package",
+              "kind": "package"
+            },
+            "element": "queue",
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "objects",
+            "settings": {
+              "kind": "object-store",
+              "access": "private",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-object-store",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "cdn",
+            "settings": {
+              "kind": "cdn",
+              "origin": "objects",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-cdn",
+              "version": "1.0.0"
+            }
+          },
+          {
+            "element": "studio-d0614ad7-e9c7-4f4c-802c-023a83de0aa8",
+            "settings": {
+              "kind": "external-api",
+              "category": "generic",
+              "provider": "unspecified"
+            },
+            "definition": {
+              "id": "studio-external-api",
+              "version": "1.0.0"
+            }
+          }
+        ],
+        "packages": [
+          {
+            "id": "package",
+            "name": "Service package",
+            "members": ["api", "worker"],
+            "description": "Two independent applications"
+          }
+        ],
+        "connections": [
+          {
+            "settings": {},
+            "connection": "studio-e9483726-cdaa-441c-a0ec-955021c5f3cc"
+          },
+          {
+            "settings": {},
+            "connection": "studio-f6f75ad0-314b-4f78-ba2b-73f28ce785b6"
+          },
+          {
+            "settings": {
+              "channelUse": "publish"
+            },
+            "connection": "studio-83c05800-ee1b-4f1e-92ca-8ef09e684fc4"
+          },
+          {
+            "settings": {
+              "channelUse": "consume"
+            },
+            "connection": "studio-d2c3e7a7-b783-445b-ab29-2c3060749b90"
+          },
+          {
+            "settings": {
+              "channelUse": "consume"
+            },
+            "connection": "studio-e5c929a4-5db5-47d6-9b84-907d349d775a"
+          },
+          {
+            "settings": {},
+            "connection": "studio-89930ab2-9b75-464a-bb2e-0d77680479b6"
+          },
+          {
+            "settings": {},
+            "connection": "studio-5f344979-538c-4663-bf13-bc5ec3497587"
+          },
+          {
+            "settings": {},
+            "connection": "studio-c394d191-b8f5-4209-b09a-e58cadbe6aef"
+          },
+          {
+            "settings": {},
+            "connection": "studio-2778af33-6f39-4466-9156-0ae9f1add648"
+          }
+        ]
+      },
+      "system": {
+        "name": "UX08b synthetic fixture",
+        "description": ""
+      },
+      "relationships": []
+    },
+    "schemaVersion": 2
+  },
+  "layout": {
+    "items": {},
+    "architecture": {
+      "studio:containers": {
+        "positions": {
+          "studio:element:db": {
+            "x": 288,
+            "y": 288
+          },
+          "studio:element:cdn": {
+            "x": 576,
+            "y": 0
+          },
+          "studio:element:cache": {
+            "x": 288,
+            "y": 0
+          },
+          "studio:element:browser": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:objects": {
+            "x": 576,
+            "y": 168
+          },
+          "studio:element:consumer": {
+            "x": 0,
+            "y": 168
+          },
+          "studio:element:redirect": {
+            "x": 576,
+            "y": 168
+          },
+          "studio:element:studio-d0614ad7-e9c7-4f4c-802c-023a83de0aa8": {
+            "x": 288,
+            "y": 408
+          }
+        }
+      },
+      "studio:service:consumer": {
+        "positions": {
+          "studio:element:cache": {
+            "x": 0,
+            "y": -120
+          },
+          "studio:element:queue": {
+            "x": 288,
+            "y": -120
+          },
+          "studio:element:consumer": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:redirect": {
+            "x": 288,
+            "y": 0
+          }
+        }
+      },
+      "studio:service:redirect": {
+        "positions": {
+          "studio:element:db": {
+            "x": 288,
+            "y": -120
+          },
+          "studio:element:cache": {
+            "x": 0,
+            "y": -120
+          },
+          "studio:element:consumer": {
+            "x": 0,
+            "y": 0
+          },
+          "studio:element:redirect": {
+            "x": 288,
+            "y": 0
+          }
+        }
+      }
+    },
+    "schemaVersion": 1
+  }
+}

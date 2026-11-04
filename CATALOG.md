@@ -42,7 +42,11 @@ finite Library with compact previews, compatible saved compositions and current 
 details, explicit package grouping
 and the service/worker package preset. New package applications join atomically; detail resources
 receive explicit owners. Existing dependencies are selected by identity without duplication.
-Connection creation, dependency/membership actions, routing and runtime resolution remain later work. The historical catalog below describes the existing
+[UX08b](docs/evidence/studio-ux/UX08b/README.md) adds click-source/click-target connections,
+explicit queue roles/direction, exact existing-resource reuse and atomic Redirect dependency shortcuts.
+Packages expose Add/Remove member, safe Ungroup and separately confirmed Delete members; resources
+need explicit replacement owners when their owner disappears. Connections and optional references
+clean up together. Routing, movement and runtime resolution remain later work. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

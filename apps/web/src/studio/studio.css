@@ -444,3 +444,45 @@
   display: block;
   margin-top: 3px;
 }
+
+.studio-membership,
+.studio-dependency-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.studio-membership h3 {
+  font-size: 13px;
+  margin: 4px 0;
+}
+.studio-membership button,
+.studio-dependency-actions button,
+.studio-action {
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  padding: 8px;
+  font: inherit;
+  font-size: 13px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+.studio-member-row,
+.studio-dependency-row {
+  display: flex;
+  gap: 5px;
+}
+.studio-member-row > button:first-child,
+.studio-dependency-row > button:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.studio-danger {
+  color: var(--minus) !important;
+}
+.studio-membership button:disabled,
+.studio-dependency-actions button:disabled,
+.studio-library-footer button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

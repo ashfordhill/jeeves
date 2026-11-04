@@ -1,0 +1,28 @@
+[
+  {
+    "id": "6f8ee534-b172-4204-9b9f-64aa42ac2905",
+    "name": "UX08b owned 1440",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T10:34:41.864Z",
+    "updatedAt": "2026-11-04T10:34:41.864Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "361d1627-feca-4e5b-973b-ab411bd865bf",
+    "name": "UX08b owned 1280",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T10:34:56.250Z",
+    "updatedAt": "2026-11-04T10:34:56.250Z",
+    "deleted": true,
+    "verified404": true
+  }
+]

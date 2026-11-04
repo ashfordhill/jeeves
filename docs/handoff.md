@@ -9687,3 +9687,86 @@ units. Semantic and layout persistence are separate, and browser termination can
 unacknowledged save. No product blocker remains. UX08a is complete; UX08b is the next exact unit
 boundary and is not started here. This worker stops after its scoped local commit. P73a/P73b and
 the backend batch remain paused.
+
+## 2026-11-04 — UX08b: explicit connections, shared dependencies and membership actions (complete)
+
+Executed UX08b only on primary main from `1da4753e72a8ff0b7aa3febe27610b8234105a58`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan and exact assignment/shared protocol, interaction §2, model §6/resource/reference rules,
+configuration matrix, C4 guidance and final owner decisions. Consumed actual UX07/UX08a forms,
+Library/palette, shared commands and serialized/history paths. No delegation, branch/worktree,
+sibling edit, backend resumption, provider/external-agent execution or application generation.
+Original feedback, old factories, frozen benchmarks and unrelated `.jeeves-feedback/` are preserved.
+
+Added the floating Connection tool: source click, compatible target click, compact Action/Protocol/
+Interaction/Access review and Connect. Incompatible endpoints explain the problem without creating
+an edge; drafts remain correctable or dismissible. Blank canvas creates no dangling connection.
+Source/target selectors and explicit Reverse direction retain mouse operation. Queue publication
+requires application → queue and consumption queue → application, with explicit role/Asynchronous
+validation. C1 connects actual context identities with only an action. Packages require actual
+application endpoints. Connection selection opens the existing individual inspector; Disconnect
+removes the real relationship and its dependent policy/shortcut in one action.
+
+New dependency controls reuse actual existing service/resource IDs, preserve one shared resource
+and its owner, and offer explicit Publish/Consume actions for queues. A Redirect resource shortcut
+creates its real dependency and selected setting together through the shared connect command's
+optional lookup. A single existing dependency is reused; multiple connections require selecting the
+actual one. Clearing a shortcut preserves its connection. C3 Library can reuse an existing dependency
+or review a new integration and relationship before adding both atomically; cancel leaves no orphan.
+Actions rebuild against the accepted design in the existing serialized queue and validate before
+submission. Newly appearing reference cards receive initial free grid positions without repacking
+existing cards. No default rollout, later routing/geometry or runtime behavior is implemented.
+
+Package General now offers Add/Remove member, safe Ungroup and separately confirmed Delete members.
+The reviewed dialogs name their targets and use the existing destructive Delete/Keep convention.
+Losing a package/application owner requires explicit owner selections; queues require replacement
+application/package owners and optional owners can be cleared deliberately. Removing the last
+necessary member dissolves its package. Ungroup preserves all children/resources/connections.
+Delete members preserves shared resources and other consumers while cleaning connections, browser
+serving/CDN origin references and Redirect shortcuts through existing deletion semantics. Accepted
+actions are one semantic history step; rejected/cancelled actions leave no partial model/layout.
+
+Evidence: `docs/evidence/studio-ux/UX08b/`. Direct guarded Chromium inspection passes 28 main
+scenarios/110 mutation responses and eight C1/queue/plain-package scenarios/32 responses across
+1440×900 and 1280×800. A further two member-choice observations have zero writes. All successful
+mutations use the real API. Six deliberately altered owned outgoing requests reach the real server:
+wrong channel role, duplicate connection binding and dangling target each reject atomically at both
+sizes with 422 and unchanged revision/model. The same dialogs then commit corrected drafts.
+Observed HTTP/DB/publish/consume creation, inspect/undo/reload, exact shared queue/cache reuse,
+Redirect shortcut clear/disconnect cleanup, multiple-connection choice, C3 integration cancel/add,
+package add/remove/dissolution/owner reassignment, plain and owned-resource Ungroup, separate Delete
+members/Keep, preserved other consumer, optional reference cleanup, redo and portable exchange.
+The card gesture crossing a relationship changes no semantics; this scaffold still disables dragging,
+so actual drag/grid/Tidy implementation remains UX11. Screenshots were visually inspected; required
+controls remain reachable at both sizes without document overflow. A read-only default-editor pass
+at both sizes records the unchanged legacy workspace with zero writes/warnings/errors.
+
+Guards precede page creation and restrict mutations to exact owned disposables. Final browser passes
+have zero page errors, external requests or blocked/unowned writes; the six intentional refusals
+produce only expected browser 422 resource errors. Successful-pass disposables are deleted and
+verified 404. All 13 original projects keep exact semantic/layout hashes/revisions and the final
+project set matches the baseline. Earlier handoff bytes, 21 original/copy feedback pairs, seven public
+fixtures, 48 frozen benchmark files and unrelated tracked source stay exact.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace, including
+  new evidence/check logs: pass. Check logs normalize trailing whitespace only.
+
+Routine inspection notes are recorded: strict synthetic bundled-browser fixture setup, existing
+package-internal visibility, explicit select accessibility labels, actual Redirect Connections tab,
+visible C1 edge hit selection and evidence JSON formatting before final lint. Final bounded review
+also corrected the non-Redirect multiple-connection explanation and clears a stale target problem.
+No dependency, existing fixture typing change, snapshot or broader test maintenance was needed.
+Unit/E2E/template suites and `pnpm check` remain explicitly deferred.
+
+Existing edge routes can cross unrelated cards and cameras can clip remote cards after panel changes;
+compact symbols/trunks/routing and movement/Tidy remain later units. The C1 edge was selected through
+a visible segment with the mouse, without forcing a click through another card. Browser termination
+cannot guarantee an unacknowledged save; local layout history does not become reload-persistent.
+No product blocker remains. UX08b is complete with UX08a; UX09 is the next exact unit boundary and
+is not started here. This worker stops after its scoped local commit. Studio remains opt-in until
+UX15; P73a/P73b and the backend batch remain paused.

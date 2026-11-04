@@ -1,0 +1,1291 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "records": [
+    {
+      "viewport": 1440,
+      "scenario": "existing queue picker explicit Consume action preserves shared owner",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "scenario": "existing queue Publish action, explicit reverse direction, cancel has no semantic effect",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "scenario": "C1 connector action only, inspect/undo/redo/reload/disconnect exact real context identity",
+      "passed": true
+    },
+    {
+      "viewport": 1440,
+      "scenario": "package endpoint rejected, plain Ungroup needs no owner configuration and preserves members/relations",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "existing queue picker explicit Consume action preserves shared owner",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "existing queue Publish action, explicit reverse direction, cancel has no semantic effect",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "C1 connector action only, inspect/undo/redo/reload/disconnect exact real context identity",
+      "passed": true
+    },
+    {
+      "viewport": 1280,
+      "scenario": "package endpoint rejected, plain Ungroup needs no owner configuration and preserves members/relations",
+      "passed": true
+    }
+  ],
+  "requests": [
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "ops": [
+          {
+            "op": "connect",
+            "connection": {
+              "id": "studio-1e0985dc-08a1-4c13-9205-0b6dd2070a8b",
+              "kind": "depends-on",
+              "from": {
+                "element": "queue"
+              },
+              "to": {
+                "element": "api"
+              },
+              "planned": {
+                "label": "Consumes",
+                "protocol": "Messaging",
+                "interaction": "Asynchronous",
+                "security": "Service identity"
+              }
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "975159dae81080c246c4bdfb879ea1045a920004c12b7684ea12499054e84528",
+            "connections": [
+              {
+                "connection": "studio-1e0985dc-08a1-4c13-9205-0b6dd2070a8b",
+                "settings": {
+                  "channelUse": "consume"
+                }
+              }
+            ],
+            "packages": [
+              {
+                "id": "package",
+                "name": "Service package",
+                "description": "Two independent applications",
+                "members": ["api", "worker"]
+              }
+            ],
+            "redirects": [
+              {
+                "element": "redirect",
+                "definition": {
+                  "id": "studio-redirect",
+                  "version": "1.0.0"
+                },
+                "settings": {
+                  "kind": "redirect",
+                  "language": "unspecified",
+                  "exposure": "public",
+                  "execution": "docker"
+                }
+              }
+            ]
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "PUT",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 2,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 3,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "e7509144a02deb9c5796970c6e3d7f44d25028f93977b737f38551c4bd756bc0"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "PUT",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:containers": {
+            "positions": {
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 4,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/redo",
+      "status": 200,
+      "body": {
+        "baseRevision": 5,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "PUT",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:containers": {
+            "positions": {
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 6,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "a02b65f36dac06ec0182941733577c4bc7035f2f21b4cea32b17ffa219ab0685"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "PUT",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              },
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              }
+            }
+          },
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 7,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 8,
+        "ops": [
+          {
+            "op": "setStudio",
+            "sha256": "1d572631c15ed76dacdab268683291d79559aa5ecee2c9af0c156d9cc23ebf1b",
+            "connections": [],
+            "packages": [
+              {
+                "id": "package",
+                "name": "Service package",
+                "description": "Two independent applications",
+                "members": ["api", "worker"]
+              },
+              {
+                "id": "studio-6ec3403a-1c9c-43ab-a26c-119c4a90f4d5",
+                "name": "Plain package",
+                "description": "",
+                "members": ["consumer", "redirect"]
+              }
+            ],
+            "redirects": [
+              {
+                "element": "redirect",
+                "definition": {
+                  "id": "studio-redirect",
+                  "version": "1.0.0"
+                },
+                "settings": {
+                  "kind": "redirect",
+                  "language": "unspecified",
+                  "exposure": "public",
+                  "execution": "docker"
+                }
+              }
+            ]
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "PUT",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              },
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:package:studio-6ec3403a-1c9c-43ab-a26c-119c4a90f4d5": {
+                "x": 288,
+                "y": 288
+              }
+            }
+          },
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-6ec3403a-1c9c-43ab-a26c-119c4a90f4d5": {
+            "positions": {
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:redirect": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 9,
+        "ops": [
+          {
+            "op": "setStudio",
+            "sha256": "24cd55911a74d8bcfa033676736251dae5ac4f19dde648060493b077932617df",
+            "connections": [],
+            "packages": [
+              {
+                "id": "package",
+                "name": "Service package",
+                "description": "Two independent applications",
+                "members": ["api", "worker"]
+              }
+            ],
+            "redirects": [
+              {
+                "element": "redirect",
+                "definition": {
+                  "id": "studio-redirect",
+                  "version": "1.0.0"
+                },
+                "settings": {
+                  "kind": "redirect",
+                  "language": "unspecified",
+                  "exposure": "public",
+                  "execution": "docker"
+                }
+              }
+            ]
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "PUT",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              },
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:consumer": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 288,
+                "y": 408
+              }
+            }
+          },
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1440,
+      "method": "POST",
+      "path": "/api/projects/6f8ee534-b172-4204-9b9f-64aa42ac2905/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 10,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 1,
+        "ops": [
+          {
+            "op": "connect",
+            "connection": {
+              "id": "studio-6f3f5063-e906-4f60-b006-1391f5f51e51",
+              "kind": "depends-on",
+              "from": {
+                "element": "queue"
+              },
+              "to": {
+                "element": "api"
+              },
+              "planned": {
+                "label": "Consumes",
+                "protocol": "Messaging",
+                "interaction": "Asynchronous",
+                "security": "Service identity"
+              }
+            }
+          },
+          {
+            "op": "setStudio",
+            "sha256": "db492a43fa83521aae94c79ffeeb89ebfcbcd2ffc94aa3e9415aad005729da4c",
+            "connections": [
+              {
+                "connection": "studio-6f3f5063-e906-4f60-b006-1391f5f51e51",
+                "settings": {
+                  "channelUse": "consume"
+                }
+              }
+            ],
+            "packages": [
+              {
+                "id": "package",
+                "name": "Service package",
+                "description": "Two independent applications",
+                "members": ["api", "worker"]
+              }
+            ],
+            "redirects": [
+              {
+                "element": "redirect",
+                "definition": {
+                  "id": "studio-redirect",
+                  "version": "1.0.0"
+                },
+                "settings": {
+                  "kind": "redirect",
+                  "language": "unspecified",
+                  "exposure": "public",
+                  "execution": "docker"
+                }
+              }
+            ]
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "PUT",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "schemaVersion": 1,
+        "architecture": {
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 2,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 3,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "6745c36d275714fc9a465fb53a72eefbca812427f2f9200c559895f9fae00173"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "PUT",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:containers": {
+            "positions": {
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 4,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/redo",
+      "status": 200,
+      "body": {
+        "baseRevision": 5,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "PUT",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:containers": {
+            "positions": {
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 6,
+        "ops": [
+          {
+            "op": "setArchitecture",
+            "sha256": "a02b65f36dac06ec0182941733577c4bc7035f2f21b4cea32b17ffa219ab0685"
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "PUT",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              },
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              }
+            }
+          },
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 7,
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 8,
+        "ops": [
+          {
+            "op": "setStudio",
+            "sha256": "cf002a16532571176fa4a08ebdfb0c84447646373049cf75ebbf58335579b919",
+            "connections": [],
+            "packages": [
+              {
+                "id": "package",
+                "name": "Service package",
+                "description": "Two independent applications",
+                "members": ["api", "worker"]
+              },
+              {
+                "id": "studio-583306a9-de09-4376-941b-35eeffdddda5",
+                "name": "Plain package",
+                "description": "",
+                "members": ["consumer", "redirect"]
+              }
+            ],
+            "redirects": [
+              {
+                "element": "redirect",
+                "definition": {
+                  "id": "studio-redirect",
+                  "version": "1.0.0"
+                },
+                "settings": {
+                  "kind": "redirect",
+                  "language": "unspecified",
+                  "exposure": "public",
+                  "execution": "docker"
+                }
+              }
+            ]
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "PUT",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              },
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:package:studio-583306a9-de09-4376-941b-35eeffdddda5": {
+                "x": 288,
+                "y": 288
+              }
+            }
+          },
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          },
+          "studio:package:studio-583306a9-de09-4376-941b-35eeffdddda5": {
+            "positions": {
+              "studio:element:consumer": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:redirect": {
+                "x": 288,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/operations",
+      "status": 200,
+      "body": {
+        "baseRevision": 9,
+        "ops": [
+          {
+            "op": "setStudio",
+            "sha256": "24cd55911a74d8bcfa033676736251dae5ac4f19dde648060493b077932617df",
+            "connections": [],
+            "packages": [
+              {
+                "id": "package",
+                "name": "Service package",
+                "description": "Two independent applications",
+                "members": ["api", "worker"]
+              }
+            ],
+            "redirects": [
+              {
+                "element": "redirect",
+                "definition": {
+                  "id": "studio-redirect",
+                  "version": "1.0.0"
+                },
+                "settings": {
+                  "kind": "redirect",
+                  "language": "unspecified",
+                  "exposure": "public",
+                  "execution": "docker"
+                }
+              }
+            ]
+          }
+        ],
+        "source": "canvas"
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "PUT",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/layout",
+      "status": 200,
+      "body": {
+        "items": {},
+        "architecture": {
+          "studio:containers": {
+            "positions": {
+              "studio:element:cdn": {
+                "x": 576,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:context:person": {
+                "x": 0,
+                "y": -120
+              },
+              "studio:context:system": {
+                "x": 288,
+                "y": -120
+              },
+              "studio:element:browser": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:objects": {
+                "x": 288,
+                "y": 168
+              },
+              "studio:package:package": {
+                "x": 0,
+                "y": 336
+              },
+              "studio:element:consumer": {
+                "x": 576,
+                "y": 168
+              },
+              "studio:element:redirect": {
+                "x": 288,
+                "y": 408
+              }
+            }
+          },
+          "studio:service:api": {
+            "positions": {
+              "studio:element:api": {
+                "x": 0,
+                "y": 0
+              },
+              "studio:element:cache": {
+                "x": 288,
+                "y": 0
+              },
+              "studio:element:queue": {
+                "x": 576,
+                "y": 0
+              }
+            }
+          }
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "viewport": 1280,
+      "method": "POST",
+      "path": "/api/projects/361d1627-feca-4e5b-973b-ab411bd865bf/undo",
+      "status": 200,
+      "body": {
+        "baseRevision": 10,
+        "source": "canvas"
+      }
+    }
+  ],
+  "blocked": [],
+  "external": [],
+  "pageErrors": [],
+  "console": [],
+  "originalProjectsUnchanged": 13,
+  "providersExecuted": 0,
+  "generations": 0
+}
