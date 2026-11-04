@@ -87,8 +87,8 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
   const loaded = useDraw((state) => state.loaded)!;
   const notice = useDraw((state) => state.notice);
   const boardSelection = useDraw((state) => state.selection);
-  const layoutUndoable = useDraw((state) => state.architectureUndo.length > 0);
-  const layoutRedoable = useDraw((state) => state.architectureRedo.length > 0);
+  const layoutUndoable = useDraw(canUndo);
+  const layoutRedoable = useDraw(canRedo);
   const tool = useDraw((state) => state.tool.kind);
   const undoable = useDraw(canUndo),
     redoable = useDraw(canRedo);
@@ -436,13 +436,13 @@ function EditorWorkspace({ board }: { board: ReactNode }) {
                 disabled={!layoutUndoable}
                 onClick={() => useDraw.getState().undoArchitectureLayout()}
               >
-                Undo layout
+                Undo last action
               </Menu.Item>
               <Menu.Item
                 disabled={!layoutRedoable}
                 onClick={() => useDraw.getState().redoArchitectureLayout()}
               >
-                Redo layout
+                Redo last action
               </Menu.Item>
               <Menu.Item onClick={() => setInspectorOpen(!inspectorOpen)}>
                 {inspectorOpen ? "Hide inspector" : "Show inspector"}

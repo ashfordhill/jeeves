@@ -1,0 +1,28 @@
+[
+  {
+    "id": "4dd95f1b-69ce-4fbc-a1f0-677fb9c2af7f",
+    "name": "UX06b owned history A",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T08:37:50.862Z",
+    "updatedAt": "2026-11-04T08:37:50.862Z",
+    "deleted": true,
+    "verified404": true
+  },
+  {
+    "id": "19dc2a3a-7351-4a1a-88f1-1815a7424d22",
+    "name": "UX06b owned history B",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T08:37:50.904Z",
+    "updatedAt": "2026-11-04T08:37:50.904Z",
+    "deleted": true,
+    "verified404": true
+  }
+]

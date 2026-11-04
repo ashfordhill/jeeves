@@ -149,7 +149,12 @@ function ProjectStudio({
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const hasDraft = formDrafts
     .forProject(loaded.project.id)
-    .some((entry) => entry.paths.size || entry.flight);
+    .some(
+      (entry) =>
+        entry.flight || (entry.paths.size && !entry.problem && !Object.keys(entry.errors).length),
+    );
+  const historyBusy = useDraw((state) => state.historyBusy);
+  const failed = formDrafts.hasProblems(loaded.project.id);
   const undoable = useDraw(canUndo);
   const redoable = useDraw(canRedo);
   const notice = useDraw((state) => state.notice);
@@ -291,7 +296,7 @@ function ProjectStudio({
           type="button"
           title="Undo"
           aria-label="Undo"
-          disabled={!undoable && !hasDraft}
+          disabled={historyBusy || failed || (!undoable && !hasDraft)}
           onClick={() => void useDraw.getState().undo()}
         >
           <IconArrowBackUp size={18} />
@@ -300,7 +305,7 @@ function ProjectStudio({
           type="button"
           title="Redo"
           aria-label="Redo"
-          disabled={!redoable}
+          disabled={historyBusy || failed || !redoable || hasDraft}
           onClick={() => void useDraw.getState().redo()}
         >
           <IconArrowForwardUp size={18} />

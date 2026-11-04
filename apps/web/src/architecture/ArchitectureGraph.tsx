@@ -30,7 +30,7 @@ import {
   type Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDraw } from "../draw/store.ts";
+import { canRedo, canUndo, useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import {
   type ArchitectureGeometry,
@@ -310,8 +310,8 @@ function DiagramOptions({
   onReset: () => void;
 }) {
   const { fitView } = useReactFlow();
-  const undoable = useDraw((state) => state.architectureUndo.length > 0);
-  const redoable = useDraw((state) => state.architectureRedo.length > 0);
+  const undoable = useDraw(canUndo);
+  const redoable = useDraw(canRedo);
   const edge = projection.edges.find((edge) => edge.id === selected);
   const selectedNodes = edge
     ? [{ id: edge.from }, { id: edge.to }]
@@ -388,13 +388,13 @@ function DiagramOptions({
               disabled={!undoable}
               onClick={() => useDraw.getState().undoArchitectureLayout()}
             >
-              Undo layout
+              Undo last action
             </Menu.Item>
             <Menu.Item
               disabled={!redoable}
               onClick={() => useDraw.getState().redoArchitectureLayout()}
             >
-              Redo layout
+              Redo last action
             </Menu.Item>
             <Menu.Item onClick={onReset}>Auto-arrange diagram</Menu.Item>
             <ScenarioMenuItems />

@@ -1,0 +1,43 @@
+{
+  "rawLogs": ".jeeves-work/ux06b/ (ignored)",
+  "attempts": [
+    {
+      "capture": "attempt1",
+      "result": "failed",
+      "reason": "Redo selector incorrectly disabled a local design-only redo marker after pending-edit Undo. Corrected before final."
+    },
+    {
+      "capture": "attempt2",
+      "result": "same failure with state capture",
+      "reason": "Confirmed server canRedo=true and one local design redo marker; no pending/failed draft. Corrected selector."
+    },
+    {
+      "capture": "attempt3",
+      "result": "passed",
+      "scenarios": 17,
+      "browserMutationRequests": 49
+    },
+    {
+      "capture": "attempt4",
+      "result": "passed",
+      "scenarios": 21,
+      "browserMutationRequests": 67
+    },
+    {
+      "capture": "final",
+      "result": "passed",
+      "scenarios": 21,
+      "browserMutationRequests": 67,
+      "note": "Final source includes immutable snapshots and JSON key-order no-op comparison."
+    }
+  ],
+  "earlierOwnedProjectIdsDeletedAndVerified404": [
+    "19dc2a3a-7351-4a1a-88f1-1815a7424d22",
+    "4dd95f1b-69ce-4fbc-a1f0-677fb9c2af7f",
+    "88ee00ef-bb2f-4f94-b274-acdcf85cb67c",
+    "988787f0-e32c-49d1-a389-88ba9fd7d7cb"
+  ],
+  "allFinalOwnedProjectsDeleted": true,
+  "scopedCompileCorrection": "Narrowed optional restored viewport view before spreading its required positions.",
+  "toolingCorrection": "Used python3 because python is not installed."
+}

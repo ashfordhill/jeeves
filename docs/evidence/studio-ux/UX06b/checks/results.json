@@ -1,0 +1,42 @@
+{
+  "node": "24.21.0",
+  "pnpm": "12.16.1",
+  "environment": "PATH=/home/ash/.nvm/versions/node/v24.21.0/bin:$PATH",
+  "commands": [
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "warnings": 2797,
+      "infos": 88,
+      "errors": 0,
+      "comparison": "Unchanged baseline diagnostics",
+      "log": "lint.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "scope": "All workspaces and scripts, including existing source/test types",
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm --filter @jeeves/web build",
+      "exitCode": 0,
+      "advisory": "Existing chunks larger than 500 kB",
+      "log": "build.log"
+    }
+  ],
+  "directBrowser": {
+    "result": "passed",
+    "scenarios": 21,
+    "browserMutationRequests": 67,
+    "desktopSizes": ["1440x900", "1280x800"],
+    "defaultEditor": "passed at both desktop sizes, read-only guard, zero warnings/errors/writes",
+    "pageErrors": 0,
+    "blockedWrites": 0,
+    "expectedConsoleErrors": "Three deliberately aborted real requests and one real 409"
+  },
+  "unitE2ETemplateSuites": "Explicitly deferred by owner; not run or maintained",
+  "pnpmCheck": "Not run under the UX verification exception",
+  "fixtureTypingAdaptations": 0,
+  "logNormalization": "Trailing whitespace removed only; command outcomes/diagnostics preserved"
+}

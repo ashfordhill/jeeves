@@ -26,7 +26,10 @@ shared editable settings. [UX05's opt-in shell](docs/evidence/studio-ux/UX05/REA
 with `?studio=next`, now renders those real projections with explicit depth navigation, independent
 chat/inspector rails and project-local cameras. [UX06a](docs/evidence/studio-ux/UX06a/README.md)
 adds shared autosave and one representative microservice form, with field-level conflict checks and
-explicit failure retry/discard. The default interface is unchanged; the remaining finite forms,
+explicit failure retry/discard. [UX06b](docs/evidence/studio-ux/UX06b/README.md) adds one chronological
+history for acknowledged semantic edits and architecture-layout scope snapshots, coordinated with
+pending forms and in-app project switching. Cameras remain outside history; drag/Tidy gestures
+remain later geometry work. The legacy editor remains the default; the remaining finite forms,
 creation, routing and runtime resolution remain unimplemented. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.

@@ -7,9 +7,11 @@ import {
   type NodeProps,
   Position,
   ReactFlow,
+  type ReactFlowInstance,
   type Viewport,
 } from "@xyflow/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 
 type Card = Node<{ item: StudioViewNode }, "studio">;
@@ -43,13 +45,26 @@ export function StudioGraph({
   onSelect: (id?: string) => void;
   onOpen: (key?: string) => void;
 }) {
+  const saved = useDraw((state) => state.loaded?.layout.architecture?.[scope.key]);
+  const [flow, setFlow] = useState<ReactFlowInstance<Card>>();
+  const viewport = saved?.viewport;
+  const appliedCamera = useRef(JSON.stringify(viewport));
+  useEffect(() => {
+    const next = JSON.stringify(viewport);
+    if (!flow || appliedCamera.current === next) return;
+    appliedCamera.current = next;
+    if (viewport) void flow.setViewport(viewport);
+  }, [flow, viewport]);
   const nodes = useMemo(
     () =>
       scope.nodes.map(
         (item, index): Card => ({
           id: item.id,
           type: "studio",
-          position: { x: (index % 3) * 288, y: Math.floor(index / 3) * 168 },
+          position: saved?.positions[item.id] ?? {
+            x: (index % 3) * 288,
+            y: Math.floor(index / 3) * 168,
+          },
           data: { item },
           selected: selection === item.id,
           ariaLabel: `Inspect ${item.name}`,
@@ -57,7 +72,7 @@ export function StudioGraph({
           height: 96,
         }),
       ),
-    [scope, selection],
+    [scope, selection, saved?.positions],
   );
   const edges = useMemo(
     () =>
@@ -83,6 +98,7 @@ export function StudioGraph({
       data-scope={scope.key}
     >
       <ReactFlow
+        onInit={setFlow}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
@@ -94,8 +110,8 @@ export function StudioGraph({
         deleteKeyCode={null}
         minZoom={0.1}
         maxZoom={2}
-        defaultViewport={camera}
-        fitView={!camera}
+        defaultViewport={camera ?? viewport}
+        fitView={!camera && !viewport}
         fitViewOptions={{ padding: 0.18, maxZoom: 1 }}
         onMoveEnd={(_, next) => onCamera(next)}
         onNodeClick={(_, node) => {

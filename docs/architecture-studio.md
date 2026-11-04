@@ -17,10 +17,16 @@ objects: Name, Purpose, Execution, Language, conditional Host and Exposure. Vali
 500ms or blur; selections commit promptly. Leaving flushes valid input and discards invalid unsent
 input. Long saves show brief pending feedback; failures retain Retry/Discard, and conflicts adopt
 the fresh design with a concise indication. A browser unload can only attempt an unacknowledged
-save. Other definitions retain compact read-only summaries. The remaining finite forms/creation,
-architecture-layout history, final geometry, unified Generate and studio chat tools remain later units;
-the [UX05 action mapping](evidence/studio-ux/UX05/README.md) and
-[UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) record those limits.
+save. Other definitions retain compact read-only summaries. **UX06b** unifies semantic and
+architecture-layout history behind the header Undo/Redo pair. Valid pending input finishes before
+Undo; failed saves add no step. In-app project switching preserves each project's local order;
+browser reload resets local layout history while durable semantic history remains on the server.
+A move/group/Tidy commit is one scope snapshot; only Tidy restores its changed camera. Pan/zoom,
+selection and no-op saves add no step. The remaining finite forms/creation, drag/Tidy gestures,
+final geometry, unified Generate and studio chat tools remain later units; the
+[UX05 action mapping](evidence/studio-ux/UX05/README.md),
+[UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
+[UX06b history evidence](evidence/studio-ux/UX06b/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

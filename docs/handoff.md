@@ -9361,3 +9361,83 @@ the inspector; geometry/fit remains later work. Browser termination cannot guara
 of an unacknowledged request, and unsent/failed intents are not durable across page restart. No
 product blocker or scope deviation remains. UX06a is complete; this worker stops after its scoped
 local commit. P73a/P73b and the backend batch remain paused.
+
+
+## 2026-11-04 — UX06b: chronological semantic and architecture-layout history (complete)
+
+Executed UX06b only on primary main from `db5a855ad0c5898a4be40c8993d3559522f0d54a`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authorization,
+studio plan, exact UX06b/shared protocol, interaction §3, model/history contracts, final decisions,
+C4 guidance and existing Step/semantic/layout paths. No delegation, branch/worktree, sibling edit,
+backend resumption, provider/external-agent execution or application generation. Unrelated
+`.jeeves-feedback/`, old designs/factories and frozen benchmark inputs remain preserved.
+
+Extended the existing Step union with architecture scope before/after snapshots. The architecture
+layout PUT and its undo/redo now use the existing serialized design request chain. History advances
+only after acknowledgement; failed architecture/semantic history requests retain their marker.
+Pending valid forms, including a same-field follow-up during an in-flight save, finish before
+history chooses its newest completed action. One scope/group/Tidy commit is one step. Camera-only
+writes, selection, pointer movement and no-op JSON (including reordered object keys) add none.
+
+History is retained per project across in-app switches, including late form/layout acknowledgements.
+A new semantic/layout edit clears redo, with a client barrier preventing fallback to a server redo
+branch retired by a local layout edit. The server's semantic history contract and API are unchanged.
+Dead scope/card references are pruned before restore without ghost coordinates. Layout responses
+preserve camera updates in other scopes; ordinary moves retain later camera changes while a Tidy
+snapshot restores the camera it changed. The old layout methods are compatibility aliases and
+retained menus now say Undo/Redo last action; no independent architecture undo stack remains.
+Per-turn Undo cannot skip a later layout action and still works from server history after reload.
+
+The opt-in graph consumes saved scope positions/camera changes so undo is visible. It keeps the
+UX05 placement scaffold and project-local manual cameras; drag/grid preview, Tidy toolbar and
+automatic layout remain UX11. This unit inspects move/group/Tidy snapshots through the real browser
+`setArchitectureView` commit seam without implementing those later gestures or toolbar. The header
+has one visible mouse Undo/Redo pair with pending/failure/busy enabled-state coordination. Remaining
+finite forms are UX07; `studio=next` remains opt-in and default rollout remains UX15. CATALOG and
+the current studio guide describe this implemented boundary without a runtime/availability claim.
+
+Evidence: `docs/evidence/studio-ux/UX06b/`. Final direct guarded Chromium inspection passes 21
+scenarios and 67 real browser mutation requests. Edit→move→edit→Tidy, then four Undo and four Redo
+actions restore exact values/coordinates/cameras in order, one request per action; layout never
+changes semantic revision and each semantic undo/redo makes a new revision. Mouse pan/zoom and
+selection consume no step/request. Pending edit Undo flushes first; held form/layout acknowledgements
+block early history requests. Failed form, server Undo and layout PUT add no phantom step. Camera
+writes preserve redo; new semantic/layout branches retire it. Group placement is one PUT/step.
+A delayed edit, same-field follow-up and layout commit persist as operations→operations→layout
+without deadlock. Original-project form/layout history survives real header-menu project switches.
+
+One actual owned-project API edit delivered through the existing chat-adoption seam adds one step;
+no provider is invoked. Per-turn Undo respects newer layout. A real 409 adopts peer deletion;
+Undo skips the dead scope without a write and restores no deleted card. Reload retains acknowledged
+coordinates, resets local layout history and retains durable semantic history/per-turn fallback.
+Both 1440×900 and 1280×800 fit without horizontal document overflow. Default legacy editor loads
+read-only at both sizes with no studio workspace, writes, warnings/errors or page errors.
+Three deliberate aborted requests and the deliberate 409 are the only final studio console errors;
+there are zero page errors or blocked/unowned writes. Guards precede page creation; delayed saves
+hold real server responses and never fabricate successful acknowledgements.
+
+All 13 original projects retain exact design/layout hashes and semantic revisions; final project
+set matches the baseline. Owned disposables from all attempts are deleted and verified 404.
+Earlier handoff bytes, 21 original/copy feedback pairs, seven public fixtures, 48 frozen benchmark
+files and unrelated tracked source remain exact. Required checks use Node 24.21.0 / pnpm 12.16.1
+with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos and no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace including logs pass.
+
+Routine corrections: a scoped TypeScript narrowing error was fixed before the full compile; the
+first two browser attempts exposed/confirmed a design-only Redo enabled-state bug, then passed
+17 scenarios after correction. Review added per-turn reload fallback, cross-scope camera response
+protection, immutable snapshots and JSON key-order no-op equality; final inspection passes all 21
+scenarios. Earlier attempt notes and raw ignored logs are retained. No fixture typing adaptation,
+snapshot or broader test maintenance was needed. Unit/E2E/template suites and `pnpm check` remain
+explicitly deferred. The existing focused-view test in `draw/store.test.ts` still asserts independent
+architecture history; that assertion is superseded by UX06b and its maintenance remains deferred.
+Captured check logs normalize trailing whitespace only.
+
+Local architecture history is intentionally not durable across browser restart. Browser unload
+can only attempt an unacknowledged save, as in UX06a. No product blocker or scope deviation remains.
+UX06 is complete with UX06a; UX07a is the next unit boundary and is not started here. This worker
+stops after its scoped local UX06b commit; P73a/P73b and the backend batch remain paused.

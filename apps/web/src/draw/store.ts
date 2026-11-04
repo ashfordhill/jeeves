@@ -1,11 +1,10 @@
 /**
  * Draw view state. The server owns the design: every semantic change is posted as an operation
- * batch and the store adopts whatever design the server answers with. Layout is local-first and
- * saved with a debounced PUT, so dragging never touches the semantic revision.
+ * batch and the store adopts whatever design the server answers with. Board layout is local-first;
+ * architecture actions enter history after their separate layout PUT is acknowledged.
  *
- * Undo and redo cover both: design steps go to the server's history (`POST /undo`, `/redo`), and
- * moves and resizes are undone locally (PLAN §6). One local stack orders them, so Ctrl+Z undoes
- * whichever happened last.
+ * One chronological stack orders server design history, board moves and architecture scope
+ * snapshots. All persistence shares the request chain, and layout never changes semantic revision.
  */
 import type { TemplateDescription } from "@jeeves/registry";
 import type {
@@ -16,7 +15,7 @@ import type {
   LayoutItem,
   OperationInput,
 } from "@jeeves/spec";
-import { pruneArchitectureLayout } from "@jeeves/spec";
+import { pruneArchitectureLayout, pruneLayout } from "@jeeves/spec";
 import { create } from "zustand";
 import { createExampleProject, DEFAULT_EXAMPLE_ID } from "../architecture/create-example.ts";
 import {
@@ -55,7 +54,7 @@ export type RailTab = "inspector" | "findings" | "chat";
 
 /**
  * One undoable step. `design` marks a server-side edit made here; the server's history holds the
- * actual snapshots. `layout` holds the items a move or resize changed, before and after.
+ * actual snapshots. `layout` holds board item changes; `architecture` holds a scope snapshot.
  */
 type Step =
   | { kind: "design" }
@@ -63,7 +62,27 @@ type Step =
       kind: "layout";
       before: Record<string, LayoutItem | undefined>;
       after: Record<string, LayoutItem>;
+    }
+  | {
+      kind: "architecture";
+      key: string;
+      before?: ArchitectureLayoutView;
+      after?: ArchitectureLayoutView;
     };
+
+type LocalHistory = { undoSteps: Step[]; redoSteps: Step[]; redoBlocked: boolean };
+const emptyHistory = (): LocalHistory => ({ undoSteps: [], redoSteps: [], redoBlocked: false });
+/** JSON object key order is not an edit (Postgres can reorder saved layout keys). */
+function same(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const entries = Object.entries(a).filter(([, value]) => value !== undefined);
+  return (
+    entries.length === Object.values(b).filter((value) => value !== undefined).length &&
+    entries.every(([key, value]) => same(value, (b as Record<string, unknown>)[key]))
+  );
+}
 
 export const LAYOUT_SAVE_DELAY_MS = 400;
 const PROJECT_KEY = "jeeves.project";
@@ -99,23 +118,17 @@ type DrawState = {
   architectureSelection?: string[];
   undoSteps: Step[];
   redoSteps: Step[];
-  architectureUndo: {
-    key: string;
-    before?: ArchitectureLayoutView;
-    after?: ArchitectureLayoutView;
-  }[];
-  architectureRedo: {
-    key: string;
-    before?: ArchitectureLayoutView;
-    after?: ArchitectureLayoutView;
-  }[];
+  /** A new local edit also retires a server redo branch, without a semantic write. */
+  redoBlocked: boolean;
+  historyBusy: boolean;
   setArchitectureView(
     key: string,
     view: ArchitectureLayoutView | undefined,
     undoable?: boolean,
-  ): void;
-  undoArchitectureLayout(): void;
-  redoArchitectureLayout(): void;
+  ): Promise<boolean>;
+  /** Compatibility aliases for old callers; both use the chronological history. */
+  undoArchitectureLayout(): Promise<void>;
+  redoArchitectureLayout(): Promise<void>;
 
   open(projectId?: string): Promise<void>;
   edit(ops: OperationInput[]): Promise<boolean>;
@@ -148,11 +161,14 @@ type DrawState = {
 
 /** Whether the undo / redo buttons have anything to do. */
 export function canUndo(s: DrawState): boolean {
-  return s.undoSteps.at(-1)?.kind === "layout" || !!s.loaded?.history.canUndo;
+  return s.undoSteps.some((step) => step.kind !== "design") || !!s.loaded?.history.canUndo;
 }
 
 export function canRedo(s: DrawState): boolean {
-  return s.redoSteps.at(-1)?.kind === "layout" || !!s.loaded?.history.canRedo;
+  return (
+    s.redoSteps.some((step) => step.kind !== "design" || !!s.loaded?.history.canRedo) ||
+    (!s.redoBlocked && !!s.loaded?.history.canRedo)
+  );
 }
 
 let editChain: Promise<unknown> = Promise.resolve();
@@ -209,6 +225,21 @@ export function projectFromUrl(): string | undefined {
 
 export const useDraw = create<DrawState>()((set, get) => {
   const accepted = new Map<string, DesignState>();
+  // In-app project switches retain local order, including writes acknowledged after leaving.
+  // A browser reload starts fresh; the server still owns durable semantic history.
+  const histories = new Map<string, LocalHistory>();
+  const history = (projectId: string) => histories.get(projectId) ?? emptyHistory();
+  const setHistory = (projectId: string, next: LocalHistory) => {
+    histories.set(projectId, next);
+    if (get().loaded?.project.id === projectId) set(next);
+  };
+  const record = (projectId: string, step: Step) => {
+    setHistory(projectId, {
+      undoSteps: [...history(projectId).undoSteps, structuredClone(step)],
+      redoSteps: [],
+      redoBlocked: true,
+    });
+  };
   let opening = 0;
   const adopt = (state: DesignState) => {
     const previous = accepted.get(state.projectId);
@@ -270,52 +301,159 @@ export const useDraw = create<DrawState>()((set, get) => {
     return next;
   };
 
-  const applyLayout = (items: Record<string, LayoutItem | undefined>) => {
-    const loaded = get().loaded;
-    if (!loaded) return;
-    const next = { ...loaded.layout.items };
-    for (const [id, item] of Object.entries(items)) {
-      if (item) next[id] = item;
-      else delete next[id];
-    }
-    set({ loaded: { ...loaded, layout: { ...loaded.layout, items: next } } });
-    scheduleLayoutSave();
-  };
-
-  /** Server undo or redo; on success the opposite stack gets a design step. */
-  const serverStep = (direction: "undo" | "redo") =>
-    chain(async () => {
-      const loaded = get().loaded;
-      if (!loaded) return false;
-      const result = await api[direction](loaded.project.id, loaded.design.revision);
-      const ok = settle(result);
-      if (ok && get().loaded?.project.id === loaded.project.id) {
-        const step: Step = { kind: "design" };
-        if (direction === "undo") set({ redoSteps: [...get().redoSteps, step] });
-        else set({ undoSteps: [...get().undoSteps, step] });
-        set({ notice: undefined });
-      }
-      return ok;
-    });
-
+  /** Every layout PUT shares the design request chain; a late camera save cannot overtake a move. */
   const saveLayout = async () => {
-    const loaded = get().loaded;
-    if (!loaded || !get().layoutDirty) return;
-    set({ layoutDirty: false });
-    try {
-      await api.putLayout(loaded.project.id, loaded.layout);
-    } catch (error) {
-      set({
-        layoutDirty: true,
-        notice: { tone: "error", message: `Layout not saved: ${message(error)}` },
-      });
-    }
+    const projectId = get().loaded?.project.id;
+    if (!projectId || !get().layoutDirty) return;
+    await chain(async () => {
+      const loaded = get().loaded;
+      if (!loaded || loaded.project.id !== projectId || !get().layoutDirty) return true;
+      set({ layoutDirty: false });
+      try {
+        await api.putLayout(projectId, loaded.layout);
+        return true;
+      } catch (error) {
+        if (get().loaded?.project.id === projectId)
+          set({
+            layoutDirty: true,
+            notice: { tone: "error", message: `Layout not saved: ${message(error)}` },
+          });
+        return false;
+      }
+    });
   };
 
   const scheduleLayoutSave = () => {
     set({ layoutDirty: true });
     clearTimeout(layoutTimer);
     layoutTimer = setTimeout(() => void saveLayout(), LAYOUT_SAVE_DELAY_MS);
+  };
+
+  const viewAt = (layout: LayoutDocument, key: string, view?: ArchitectureLayoutView) => {
+    const architecture = { ...layout.architecture };
+    if (view) architecture[key] = view;
+    else delete architecture[key];
+    return { ...layout, architecture };
+  };
+  const liveView = (loaded: Loaded, key: string, view?: ArchitectureLayoutView) => {
+    const pruned = pruneArchitectureLayout(viewAt(loaded.layout, key, view), loaded.design)
+      .architecture?.[key];
+    // An empty placement has the same effect as no override. Dead cards never become ghosts.
+    return pruned &&
+      (Object.keys(pruned.positions).length ||
+        Object.keys(pruned).some((field) => field !== "positions"))
+      ? pruned
+      : undefined;
+  };
+  const restoreLayout = async (
+    loaded: Loaded,
+    step: Exclude<Step, { kind: "design" }>,
+    direction: "undo" | "redo",
+  ) => {
+    let layout: LayoutDocument;
+    if (step.kind === "architecture") {
+      const before = liveView(loaded, step.key, step.before);
+      const after = liveView(loaded, step.key, step.after);
+      if (same(before, after)) return false;
+      const target = direction === "undo" ? before : after;
+      const viewport = loaded.layout.architecture?.[step.key]?.viewport;
+      // Only an action that changed its camera (Tidy) restores one. Ordinary moves leave
+      // subsequent manual pan/zoom alone, even when their position override is removed.
+      const restored =
+        same(step.before?.viewport, step.after?.viewport) && viewport
+          ? { positions: {}, ...target, viewport }
+          : target;
+      layout = viewAt(loaded.layout, step.key, restored);
+      if (same(layout, loaded.layout)) return false;
+    } else {
+      const items = { ...loaded.layout.items };
+      for (const [id, item] of Object.entries(direction === "undo" ? step.before : step.after)) {
+        if (item) items[id] = item;
+        else delete items[id];
+      }
+      layout = pruneLayout({ ...loaded.layout, items }, loaded.design);
+      if (same(layout, loaded.layout)) return false;
+    }
+    await api.putLayout(loaded.project.id, layout);
+    const current = get().loaded;
+    if (current?.project.id === loaded.project.id) {
+      if (step.kind === "architecture") {
+        let restored = layout.architecture?.[step.key];
+        const latest = current.layout.architecture?.[step.key];
+        if (restored && latest?.viewport !== loaded.layout.architecture?.[step.key]?.viewport)
+          restored = { ...restored, viewport: latest?.viewport };
+        layout = viewAt(current.layout, step.key, restored);
+      } else {
+        const items = { ...current.layout.items };
+        for (const id of Object.keys({ ...step.before, ...step.after })) {
+          const item = layout.items[id];
+          if (item) items[id] = item;
+          else delete items[id];
+        }
+        layout = { ...current.layout, items };
+      }
+      set({ loaded: { ...current, layout: pruneArchitectureLayout(layout, current.design) } });
+    }
+    return true;
+  };
+
+  const historyStep = async (direction: "undo" | "redo", operationId?: number) => {
+    const projectId = get().loaded?.project.id;
+    if (!projectId || get().historyBusy) return false;
+    set({ historyBusy: true });
+    try {
+      if (!(await get().flushEdits()) || get().loaded?.project.id !== projectId) return false;
+      return await chain(async () => {
+        const loaded = get().loaded;
+        if (!loaded || loaded.project.id !== projectId) return false;
+        const local = history(projectId);
+        const source = direction === "undo" ? "undoSteps" : "redoSteps";
+        const destination = direction === "undo" ? "redoSteps" : "undoSteps";
+        const steps = [...local[source]];
+        if (
+          operationId !== undefined &&
+          (loaded.history.latestEdit !== operationId ||
+            (steps.length > 0 && steps.at(-1)?.kind !== "design"))
+        )
+          return false;
+        while (steps.length) {
+          const top = steps.at(-1) as Step;
+          if (top.kind === "design") {
+            if (loaded.history[direction === "undo" ? "canUndo" : "canRedo"]) break;
+            steps.pop();
+          } else {
+            // Dead/no-op targets are retired without a request or a phantom undo step.
+            const restored = await restoreLayout(loaded, top, direction);
+            steps.pop();
+            setHistory(projectId, {
+              ...local,
+              [source]: steps,
+              [destination]: restored ? [...local[destination], top] : local[destination],
+            });
+            if (restored) return true;
+          }
+        }
+        if (
+          !loaded.history[direction === "undo" ? "canUndo" : "canRedo"] ||
+          (direction === "redo" && !steps.length && local.redoBlocked)
+        ) {
+          setHistory(projectId, { ...history(projectId), [source]: steps });
+          return false;
+        }
+        const result = await api[direction](projectId, loaded.design.revision);
+        if (!settle(result)) return false;
+        if (steps.at(-1)?.kind === "design") steps.pop();
+        setHistory(projectId, {
+          ...history(projectId),
+          [source]: steps,
+          [destination]: [...history(projectId)[destination], { kind: "design" }],
+        });
+        if (get().loaded?.project.id === projectId) set({ notice: undefined });
+        return true;
+      });
+    } finally {
+      set({ historyBusy: false });
+    }
   };
 
   return {
@@ -326,8 +464,8 @@ export const useDraw = create<DrawState>()((set, get) => {
     railTab: "inspector",
     undoSteps: [],
     redoSteps: [],
-    architectureUndo: [],
-    architectureRedo: [],
+    redoBlocked: false,
+    historyBusy: false,
 
     async open(projectId) {
       const previousProject = get().loaded?.project.id;
@@ -359,8 +497,7 @@ export const useDraw = create<DrawState>()((set, get) => {
         set({
           status: "ready",
           layoutDirty: false,
-          architectureUndo: [],
-          architectureRedo: [],
+          ...history(project.id),
           loaded: {
             project,
             design: state.design,
@@ -407,8 +544,7 @@ export const useDraw = create<DrawState>()((set, get) => {
             outcome = result.ok
               ? { status: "saved", design: latest.design, written: result.state.design }
               : { status: "conflict", design: latest.design };
-            if (result.ok && get().loaded?.project.id === intent.projectId)
-              set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
+            if (result.ok) record(intent.projectId, { kind: "design" });
             return result.ok;
           }
           outcome = { status: "failed", message: result.errors[0]?.message ?? result.message };
@@ -436,50 +572,29 @@ export const useDraw = create<DrawState>()((set, get) => {
         if (!loaded || loaded.project.id !== projectId) return false;
         const ok = settle(await api.edit(loaded.project.id, loaded.design.revision, ops));
         // The server drops its redo chain on a new edit; local layout redo goes with it.
-        if (ok && get().loaded?.project.id === loaded.project.id)
-          set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
+        if (ok) record(loaded.project.id, { kind: "design" });
         return ok;
       });
     },
 
     async undo() {
-      const projectId = get().loaded?.project.id;
-      if (!(await get().flushEdits()) || get().loaded?.project.id !== projectId) return;
-      const steps = [...get().undoSteps];
-      // Design steps the server can no longer undo (e.g. undone in another tab) are stale.
-      while (steps.at(-1)?.kind === "design" && !get().loaded?.history.canUndo) steps.pop();
-      const top = steps.at(-1);
-      if (top?.kind === "layout") {
-        steps.pop();
-        set({ undoSteps: steps, redoSteps: [...get().redoSteps, top] });
-        applyLayout(top.before);
-        return;
-      }
-      if (top) steps.pop();
-      set({ undoSteps: steps });
-      if (get().loaded?.history.canUndo) await serverStep("undo");
+      await historyStep("undo");
     },
 
     async redo() {
-      const projectId = get().loaded?.project.id;
-      if (!(await get().flushEdits()) || get().loaded?.project.id !== projectId) return;
-      const steps = [...get().redoSteps];
-      while (steps.at(-1)?.kind === "design" && !get().loaded?.history.canRedo) steps.pop();
-      const top = steps.at(-1);
-      if (top?.kind === "layout") {
-        steps.pop();
-        set({ redoSteps: steps, undoSteps: [...get().undoSteps, top] });
-        applyLayout(top.after);
-        return;
-      }
-      if (top) steps.pop();
-      set({ redoSteps: steps });
-      if (get().loaded?.history.canRedo) await serverStep("redo");
+      await historyStep("redo");
     },
 
     adoptChange(state, layout, changed) {
       const loaded = get().loaded;
-      if (!loaded || loaded.project.id !== state.projectId) return;
+      if (!loaded || loaded.project.id !== state.projectId) {
+        const previous = accepted.get(state.projectId);
+        if (!previous || state.design.revision > previous.design.revision) {
+          adopt(state);
+          record(state.projectId, { kind: "design" });
+        }
+        return;
+      }
       if (state.design.revision < loaded.design.revision) return;
       // An older state (a canvas edit landed after the turn) must not replace a newer one.
       const newer = state.design.revision > loaded.design.revision;
@@ -497,7 +612,7 @@ export const useDraw = create<DrawState>()((set, get) => {
           },
         });
       }
-      if (newer) set({ undoSteps: [...get().undoSteps, { kind: "design" }], redoSteps: [] });
+      if (newer) record(state.projectId, { kind: "design" });
       const connections = new Set(state.design.connections.map((c) => c.id));
       if (changed.length > 0) {
         get().focus(
@@ -511,54 +626,69 @@ export const useDraw = create<DrawState>()((set, get) => {
     },
 
     async undoEdit(operationId) {
-      if (!(await get().flushEdits())) return false;
-      if (get().loaded?.history.latestEdit !== operationId) return false;
-      const steps = [...get().undoSteps];
-      const marker = steps.findLastIndex((step) => step.kind === "design");
-      if (marker >= 0) steps.splice(marker, 1);
-      set({ undoSteps: steps });
-      return serverStep("undo");
+      return historyStep("undo", operationId);
     },
 
     setArchitectureView(key, view, undoable = false) {
-      const loaded = get().loaded;
-      if (!loaded) return;
-      const before = loaded.layout.architecture?.[key];
-      const architecture = { ...loaded.layout.architecture };
-      if (view) architecture[key] = view;
-      else delete architecture[key];
-      const layout = pruneArchitectureLayout({ ...loaded.layout, architecture }, loaded.design);
-      if (JSON.stringify(layout) === JSON.stringify(loaded.layout)) return;
-      if (undoable)
-        set({
-          architectureUndo: [...get().architectureUndo, { key, before, after: view }],
-          architectureRedo: [],
+      const source = get().loaded;
+      if (!source) return Promise.resolve(false);
+      if (!undoable) {
+        const layout = pruneArchitectureLayout(viewAt(source.layout, key, view), source.design);
+        if (same(layout, source.layout)) return Promise.resolve(true);
+        set({ loaded: { ...source, layout } });
+        scheduleLayoutSave();
+        return Promise.resolve(true);
+      }
+      // Flush synchronously into the shared chain before queuing this gesture. A failed form
+      // cannot consume a history entry or make a later move overtake its successful retry.
+      const flushed = get().flushEdits();
+      return flushed.then((ok) => {
+        if (!ok) return false;
+        return chain(async () => {
+          const current = get().loaded;
+          const design = accepted.get(source.project.id)?.design ?? source.design;
+          const layout =
+            current?.project.id === source.project.id
+              ? current.layout
+              : await api.getLayout(source.project.id);
+          const before = layout.architecture?.[key];
+          const next = pruneArchitectureLayout(viewAt(layout, key, view), design);
+          if (same(layout, next)) return true;
+          try {
+            await api.putLayout(source.project.id, next);
+          } catch (error) {
+            if (get().loaded?.project.id === source.project.id)
+              set({ notice: { tone: "error", message: `Layout not saved: ${message(error)}` } });
+            return false;
+          }
+          const latest = get().loaded;
+          if (latest?.project.id === source.project.id) {
+            // Non-history camera writes may have happened while the server was acknowledging.
+            const camera = latest.layout.architecture?.[key]?.viewport;
+            const savedCamera = layout.architecture?.[key]?.viewport;
+            const committed = next.architecture?.[key];
+            const saved = viewAt(
+              latest.layout,
+              key,
+              camera !== savedCamera && committed ? { ...committed, viewport: camera } : committed,
+            );
+            set({ loaded: { ...latest, layout: pruneArchitectureLayout(saved, latest.design) } });
+          }
+          record(source.project.id, {
+            kind: "architecture",
+            key,
+            before,
+            after: next.architecture?.[key],
+          });
+          return true;
         });
-      set({
-        loaded: {
-          ...loaded,
-          layout,
-        },
-      });
-      scheduleLayoutSave();
-    },
-    undoArchitectureLayout() {
-      const step = get().architectureUndo.at(-1);
-      if (!step) return;
-      get().setArchitectureView(step.key, step.before);
-      set({
-        architectureUndo: get().architectureUndo.slice(0, -1),
-        architectureRedo: [...get().architectureRedo, step],
       });
     },
-    redoArchitectureLayout() {
-      const step = get().architectureRedo.at(-1);
-      if (!step) return;
-      get().setArchitectureView(step.key, step.after);
-      set({
-        architectureRedo: get().architectureRedo.slice(0, -1),
-        architectureUndo: [...get().architectureUndo, step],
-      });
+    async undoArchitectureLayout() {
+      await get().undo();
+    },
+    async redoArchitectureLayout() {
+      await get().redo();
     },
 
     setLayoutItems(items, options) {
@@ -568,10 +698,8 @@ export const useDraw = create<DrawState>()((set, get) => {
         const before = Object.fromEntries(
           Object.keys(items).map((id) => [id, loaded.layout.items[id]]),
         );
-        set({
-          undoSteps: [...get().undoSteps, { kind: "layout", before, after: items }],
-          redoSteps: [],
-        });
+        if (Object.entries(items).some(([id, item]) => !same(item, before[id])))
+          record(loaded.project.id, { kind: "layout", before, after: items });
       }
       set({
         loaded: {
