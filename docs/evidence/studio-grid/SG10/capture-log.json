@@ -1,0 +1,321 @@
+{
+  "owners": 4,
+  "blocked": [],
+  "writes": [
+    "POST /api/projects",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/operations",
+    "PUT /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/layout",
+    "PUT /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/layout",
+    "PUT /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/layout",
+    "PUT /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/layout",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/operations",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/undo",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/redo",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/operations",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/operations",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/undo",
+    "POST /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/redo",
+    "POST /api/projects",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/operations",
+    "PUT /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/layout",
+    "PUT /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/layout",
+    "PUT /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/layout",
+    "PUT /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/layout",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/operations",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/undo",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/redo",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/operations",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/operations",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/undo",
+    "POST /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/redo"
+  ],
+  "created": [
+    {
+      "id": "0569c36d-734b-41a5-8281-20b49b8c9ac2",
+      "name": "SG10 disposable TinyURL 1440x900"
+    },
+    {
+      "id": "9e417cbc-de1b-41b0-b8c8-16dd61761376",
+      "name": "SG10 disposable TinyURL 1280x800"
+    }
+  ],
+  "deleted": {
+    "0569c36d-734b-41a5-8281-20b49b8c9ac2": 204,
+    "9e417cbc-de1b-41b0-b8c8-16dd61761376": 204
+  },
+  "shots": [
+    "1440x900-final-C1-fit.png",
+    "1440x900-final-C2-fit.png",
+    "1440x900-final-C3-fit.png",
+    "1440x900-walk-merged-chooser.png",
+    "1440x900-walk-reordered.png",
+    "1440x900-walk-spawned.png",
+    "1440x900-walk-drop-form.png",
+    "1440x900-walk-component-autosaved.png",
+    "1440x900-walk-reloaded-C2.png",
+    "1280x800-final-C1-fit.png",
+    "1280x800-final-C2-fit.png",
+    "1280x800-final-C3-fit.png"
+  ],
+  "errors": [],
+  "obs": {
+    "1440x900": {
+      "fitZoom": {
+        "C1": 1,
+        "C2": 0.852941,
+        "C3": 0.54375
+      },
+      "fitCounts": {
+        "C1": {
+          "boxes": 4,
+          "lines": 3
+        },
+        "C2": {
+          "boxes": 12,
+          "lines": 11
+        },
+        "C3": {
+          "boxes": 21,
+          "lines": 17
+        }
+      },
+      "writesOnOpenTabsFit": [],
+      "selectC2": "Redirect service",
+      "carriedToC3": "Redirect service",
+      "carriedBackToC2": "Redirect service",
+      "backOrBreadcrumb": {
+        "back": [],
+        "breadcrumb": 0,
+        "tabs": ["C1", "C2", "C3"]
+      },
+      "mergedLabel": "2 calls · HTTPS",
+      "chooserOptions": [
+        "Shorten API → URL reputation APIChecks destinations · HTTPS",
+        "Checks destination reputationChecks destination reputation"
+      ],
+      "chooserMemberForm": 1,
+      "reorderBefore": [262, 590],
+      "reorderWrites": ["PUT /api/projects/0569c36d-734b-41a5-8281-20b49b8c9ac2/layout"],
+      "reorderAfter": [344, 235],
+      "reorderUndo": [262, 590],
+      "reorderRedo": [344, 235],
+      "spawnPreview": 1,
+      "spawnPicker": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app",
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "spawnAfter": {
+        "boxes": 13,
+        "lines": 12
+      },
+      "spawnInspector": 1,
+      "spawnUndo": {
+        "boxes": 12,
+        "lines": 11
+      },
+      "spawnRedo": {
+        "boxes": 13,
+        "lines": 12
+      },
+      "c2Before": {
+        "boxes": 12,
+        "lines": 11
+      },
+      "dropPreview": 1,
+      "dropDialog": {
+        "open": true,
+        "source": "Analytics worker · worker",
+        "target": "Search index · search"
+      },
+      "dropAfter": {
+        "boxes": 13,
+        "lines": 13
+      },
+      "componentHeading": "Link writer",
+      "poolSaved": 32,
+      "poolUndo": 20,
+      "poolRedo": 32,
+      "reloadC2": {
+        "boxes": 13,
+        "lines": 13
+      },
+      "reloadOrder": [349, 269],
+      "reloadSearch": 1,
+      "reloadPool": "32",
+      "savedLayout": {
+        "positions": {},
+        "orderHead": [
+          "studio:element:links-db",
+          "studio:element:link-cache",
+          "studio:package:link-platform",
+          "studio:context:link-creator"
+        ]
+      },
+      "blueprint": {
+        "status": 200,
+        "cacheControl": "no-store",
+        "version": 1,
+        "services": [
+          "Analytics worker (3 components)",
+          "Redirect service (4 components)",
+          "Shorten API (4 components)",
+          "Web app (0 components)"
+        ],
+        "resources": [
+          "Analytics store",
+          "CDN",
+          "Click events",
+          "Link cache",
+          "Links database",
+          "Search index"
+        ],
+        "externals": ["URL reputation API"],
+        "connections": 12,
+        "componentLinks": 15,
+        "linkWriterPool": 32,
+        "omitted": 0,
+        "hasLayoutKeys": []
+      }
+    },
+    "1280x800": {
+      "fitZoom": {
+        "C1": 1,
+        "C2": 0.754902,
+        "C3": 0.48125
+      },
+      "fitCounts": {
+        "C1": {
+          "boxes": 4,
+          "lines": 3
+        },
+        "C2": {
+          "boxes": 12,
+          "lines": 11
+        },
+        "C3": {
+          "boxes": 21,
+          "lines": 17
+        }
+      },
+      "writesOnOpenTabsFit": [],
+      "selectC2": "Redirect service",
+      "carriedToC3": "Redirect service",
+      "carriedBackToC2": "Redirect service",
+      "backOrBreadcrumb": {
+        "back": [],
+        "breadcrumb": 0,
+        "tabs": ["C1", "C2", "C3"]
+      },
+      "mergedLabel": "2 calls · HTTPS",
+      "chooserOptions": [
+        "Shorten API → URL reputation APIChecks destinations · HTTPS",
+        "Checks destination reputationChecks destination reputation"
+      ],
+      "chooserMemberForm": 1,
+      "reorderBefore": [235, 525],
+      "reorderWrites": ["PUT /api/projects/9e417cbc-de1b-41b0-b8c8-16dd61761376/layout"],
+      "reorderAfter": [308, 211],
+      "reorderUndo": [235, 525],
+      "reorderRedo": [308, 211],
+      "spawnPreview": 1,
+      "spawnPicker": [
+        "Microservice",
+        "Worker service",
+        "Gateway",
+        "Identity",
+        "Notifications",
+        "Browser app",
+        "Database",
+        "Cache",
+        "Object storage",
+        "Search index",
+        "CDN",
+        "External API"
+      ],
+      "spawnAfter": {
+        "boxes": 13,
+        "lines": 12
+      },
+      "spawnInspector": 1,
+      "spawnUndo": {
+        "boxes": 12,
+        "lines": 11
+      },
+      "spawnRedo": {
+        "boxes": 13,
+        "lines": 12
+      },
+      "c2Before": {
+        "boxes": 12,
+        "lines": 11
+      },
+      "dropPreview": 1,
+      "dropDialog": {
+        "open": true,
+        "source": "Analytics worker · worker",
+        "target": "Search index · search"
+      },
+      "dropAfter": {
+        "boxes": 13,
+        "lines": 13
+      },
+      "componentHeading": "Link writer",
+      "poolSaved": 32,
+      "poolUndo": 20,
+      "poolRedo": 32,
+      "reloadC2": {
+        "boxes": 13,
+        "lines": 13
+      },
+      "reloadOrder": [316, 247],
+      "reloadSearch": 1,
+      "reloadPool": "32",
+      "savedLayout": {
+        "positions": {},
+        "orderHead": [
+          "studio:element:links-db",
+          "studio:element:link-cache",
+          "studio:package:link-platform",
+          "studio:context:link-creator"
+        ]
+      },
+      "blueprint": {
+        "status": 200,
+        "cacheControl": "no-store",
+        "version": 1,
+        "services": [
+          "Analytics worker (3 components)",
+          "Redirect service (4 components)",
+          "Shorten API (4 components)",
+          "Web app (0 components)"
+        ],
+        "resources": [
+          "Analytics store",
+          "CDN",
+          "Click events",
+          "Link cache",
+          "Links database",
+          "Search index"
+        ],
+        "externals": ["URL reputation API"],
+        "connections": 12,
+        "componentLinks": 15,
+        "linkWriterPool": 32,
+        "omitted": 0,
+        "hasLayoutKeys": []
+      }
+    }
+  },
+  "ownerUnchanged": true,
+  "projectCountRestored": true
+}

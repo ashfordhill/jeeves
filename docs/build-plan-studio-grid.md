@@ -1,6 +1,7 @@
 # Studio grid, C3 components and TinyURL build plan
 
-**Status: proposed 2026-11-04. Not started. No unit is authorized until the owner assigns one.**
+**Status: complete 2026-11-04 (SG01–SG10).** Combined acceptance, known limits and owner follow-ups:
+[SG10 acceptance record](evidence/studio-grid/SG10/README.md). No further unit is authorized.
 Execution queue: [studio-grid execution units](plans/studio-grid/execution-units.md).
 
 This plan follows the completed [studio UX plan](build-plan-studio-ux.md). Where the two conflict,

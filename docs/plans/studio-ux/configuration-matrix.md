@@ -184,7 +184,7 @@ the typed source value. A field that cannot pass that check must not ship as a d
 ## 7. Studio grid additions (SG02)
 
 Added by [studio grid plan](../../build-plan-studio-grid.md) §5 (the explicit plan change this
-allowlist requires). Model and commands only; the inspector exposure follows in SG09. All new
+allowlist requires). SG02 added the model and commands; SG09 added the inspector forms. All new
 fields are optional, absent means unspecified, and no default is filled on read, so existing
 version-1 studio documents read unchanged. Source: `studio-model.ts`, `studio-components.ts`.
 

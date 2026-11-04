@@ -1,15 +1,19 @@
 # Jeeves architecture catalog
 
-The finite C2/C3 studio is the default interface following [UX15's combined review](docs/evidence/studio-ux/UX15/README.md).
-It supplies fourteen exact design definitions, logical resource ownership, independent service
-packages, C3 queues, typed provider intent and one source-preserving graph. Read the
+The finite C2/C3 studio is the default interface following [UX15's combined review](docs/evidence/studio-ux/UX15/README.md)
+and the completed [studio grid plan](docs/build-plan-studio-grid.md)
+([SG10 acceptance](docs/evidence/studio-grid/SG10/README.md)).
+It supplies fifteen exact design definitions (one per studio kind, including Gateway), ten C3
+component kinds, logical resource ownership, independent service packages drawn as open group
+frames, C3 queues, typed provider and performance intent, a read-only blueprint and one
+source-preserving graph. Read the
 [studio guide](docs/architecture-studio.md) for current navigation and
 [C4 guidance](docs/c4-modeling.md) for classification. No URL flag or legacy editing mode is required.
 
 | Design task | Current entry point |
 | --- | --- |
-| Add an application, store or external integration | Scope-aware toolbar or Library Services/Resources/Integrations |
-| Inspect settings or meaningful dependencies | Click a card; double-click an expandable service/package for C3 |
+| Add an application, store, external integration or C3 component | A box's `+` handle (drag out or click), New island, or Library Services/Resources/Integrations |
+| Inspect settings or meaningful dependencies | Click a card, frame or line on the C1/C2/C3 tabs; a merged line opens a chooser |
 | Connect actual boundaries or shared resources | Connection tool or inspector Connections; explicit identity reuse |
 | Group independently deployed services | Select multiple C2 cards → Group as package |
 | Reuse a finite composition | Library Presets; Saved architecture templates manages its local lifecycle |
@@ -67,15 +71,15 @@ provisions no provider and supplies no passing application evidence. See the
 [SG04 evidence](docs/evidence/studio-grid/SG04/README.md).
 
 Every definition is pinned at `studio-<kind>@1.0.0`, uses the existing strict settings schema and
-has no runtime-support binding. Application entries can be created at C2 or as package members;
-resources/integrations are available in relevant service/package detail scopes too. Queues require
-an owner and are created only at C3. New defaults apply only on explicit creation. Compatible
+has no runtime-support binding. Application entries are created at C2 (from a `+` handle,
+New island or the Library); resources and integrations at C2 or, owned by an application, at C3.
+Queues require an owner and are created only at C3. New defaults apply only on explicit creation. Compatible
 providers come from finite engine tables; an invalidated provider resets to Unspecified when the
 engine changes. Generic AWS/Google Cloud/Cloudflare intent chooses no unnamed product. Selecting
 a provider creates no graph node, deployment, credential or API call. Missing provider artwork uses
 the capability symbol. Language, hosting and integration choices remain unverified design intent.
 
-### C3 components and performance intent (model only)
+### C3 components and performance intent (design only)
 
 The [studio grid plan](docs/build-plan-studio-grid.md) §5 adds a finite C3
 [component catalog](packages/spec/src/studio-components.ts): rate limiter, cache reader, ID
@@ -86,7 +90,9 @@ applications gain optional replicas, autoscaling signal, request timeout and con
 databases, caches, queues and CDNs gain optional replica, partitioning, topology/eviction and
 redirect-caching intent. The vocabulary names typical third-party products (Redis, PostgreSQL,
 Kafka) but no component has a template; it is design-only and generation remains rejected.
-Inspector and canvas use is planned for later SG units. Details:
+Components are drawn inside their application's frame on the C3 tab, added from `+` handles and
+edited in the component inspector (SG05–SG09). Library fragment copy and pattern insertion do not
+carry components yet. Details:
 [configuration matrix §7](docs/plans/studio-ux/configuration-matrix.md#7-studio-grid-additions-sg02).
 
 A **Gateway** service kind (`studio-gateway@1.0.0`) records a public entry point with routing

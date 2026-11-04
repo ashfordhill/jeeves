@@ -7,7 +7,9 @@ Read this before changing architecture authoring, catalog entries, connections o
 The [studio UX plan](build-plan-studio-ux.md) and
 [resolved owner decisions](../.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md)
 govern the implemented default studio. [UX15 acceptance](evidence/studio-ux/UX15/README.md)
-records the combined design checks. New runtime/template work remains separate.
+records the combined design checks, and the completed [studio grid plan](build-plan-studio-grid.md)
+([SG10 acceptance](evidence/studio-grid/SG10/README.md)) supersedes its canvas and C3 rules.
+New runtime/template work remains separate.
 The standard C4 definitions below remain useful for understanding boundaries; they must not be used
 to override the owner's deliberate product choices:
 
@@ -27,7 +29,13 @@ to override the owner's deliberate product choices:
 - No normal route/schema/entity/business-policy/lifecycle/effect editors. Preserve existing data;
   future fixed template behavior is C4a, and project-specific additions/integration stubs are C4b,
   using the [README's terminology](../README.md). Neither is proven by drawing it.
-- Use compact autosaving forms, explicit depth navigation, no named focused views/Explorer,
+- C3 components come only from the finite component catalog (rate limiter, cache reader, ID
+  generator, redirect responder, event publisher/consumer, data access, auth guard, external call,
+  custom). Project-specific logic is a `custom` component with a one-line purpose: its future C4b
+  stub. A component is not a nested microservice.
+- Layout is derived (ELK); authors choose only row order within a column. Parallel relationships
+  between one ordered pair are one counted line; the full action text stays in the inspector.
+- Use compact autosaving forms, C1/C2/C3 tabs, no named focused views/Explorer,
   no fading/dashed status boxes and one Generate destination. Kubernetes/Helm and provider setup
   wizards are outside the current scope.
 

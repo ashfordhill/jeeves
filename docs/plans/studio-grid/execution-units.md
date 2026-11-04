@@ -1,7 +1,7 @@
 # Studio grid execution units
 
 Read the [parent plan](../../build-plan-studio-grid.md) first. Ten sequential units, SG01–SG10.
-Proposed 2026-11-04; none is started. Execute only the unit the owner assigns, one at a time,
+Proposed 2026-11-04; all ten are complete ([SG10 acceptance](../../evidence/studio-grid/SG10/README.md)). Execute only the unit the owner assigns, one at a time,
 on primary `main`, then append `docs/handoff.md` and commit as `SGnn: <change>`.
 
 ```text

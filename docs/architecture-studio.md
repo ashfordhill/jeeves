@@ -4,6 +4,9 @@ The finite studio is the default interface as of UX15 (2026-11-04). No URL flag 
 The [combined acceptance record](evidence/studio-ux/UX15/README.md) covers the 25-unit
 [studio plan](build-plan-studio-ux.md), including the preserved
 [owner decisions](../.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
+The [studio grid plan](build-plan-studio-grid.md) (SG01–SG10) is complete; its
+[SG10 acceptance record](evidence/studio-grid/SG10/README.md) supersedes the UX plan's canvas,
+navigation and creation rules and lists known limits and owner follow-ups.
 This is design/configuration capability. Studio definitions have no application runtime resolver;
 existing supported legacy template/recipe designs retain their generation eligibility.
 
@@ -144,6 +147,12 @@ change semantic revision or migrate templates. Old annotations, focused views, s
 backend declarations and deployment records remain in lossless source export and Generate details.
 The old Explorer, focused-view selector, freeform board, deep business/API/schema editors and duplicate
 Generate drawer are absent from normal navigation.
+
+Known limits (SG10): at Fit, TinyURL's C3 is about 0.54 zoom at 1440×900 (0.48 at 1280×800), so
+its labels are only a few pixels tall; zoom in to read them. Labels wider than about 96px stack on
+two lines. Library fragment copy and pattern insertion do not carry C3 components. People, the C1
+system and package frames have no `+` handles at C2, and a spawned box takes ELK's row (no order
+hint is written). Remove component has no confirmation (it is undoable).
 
 The [TinyURL study](examples/studio-studies.md) is the only study (SG04); it keeps an exact source
 manifest and explicit future implementation obligations. The fourteen earlier studies were

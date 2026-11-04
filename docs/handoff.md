@@ -11439,3 +11439,71 @@ Notes for SG10:
 - `studioPerformanceFields` are still outside `definition.fields`; the web merges them. Moving
   them into definitions would be a spec choice, not needed for behaviour.
 - No unit or E2E test referenced the removed read-only component summary.
+
+## 2026-11-04 — SG10: combined acceptance and documentation (complete)
+
+I ran SG10 alone on primary `main` from `211ac91`, as a fresh sequential worker. Before starting I
+read AGENTS, the studio grid plan, the execution units, every SG01–SG09 handoff and evidence
+README, and the docs listed for reconciliation. This unit did not touch product code, the spec,
+the server, generation/runtime, P73a/P73b or the backend batch.
+
+Evidence: `docs/evidence/studio-grid/SG10/README.md` (acceptance record), `capture.mjs`,
+`compare.mjs`, `capture-log.json`, `blueprint-after-walkthrough.json` and 14 screenshots.
+
+- **Final screenshots and comparison.** Final TinyURL C1/C2/C3 at Fit, at 1440×900 and 1280×800.
+  Two half-scale comparison sheets set the SG01 Mattermost/Streamly baseline beside the final.
+- **Fit zoom.** SG06 → SG07 → final at 1440×900: C2 0.763 → 0.853 → 0.853 and C3 0.453 → 0.544
+  → 0.544. At 1280×800: C2 0.675 → 0.755 → 0.755 and C3 0.401 → 0.481 → 0.481.
+- **Mouse walkthrough.** Both sizes gave identical outcomes:
+  - Tabs only, with no back button or breadcrumb, and selection carried by identity.
+  - No write on open, tab switch or Fit.
+  - The merged `2 calls · HTTPS` line opens the chooser, and picking a member opens its form.
+  - A row reorder makes one layout PUT; undo, redo and reload all keep it right.
+  - A `+` spawn adds Search index with its line in one undo step.
+  - A drop on a box opens Connect prefilled.
+  - A component edit (Link writer pool size) autosaves, with undo and redo.
+  - A reload keeps everything.
+  - The blueprint GET returns 200, `no-store`, `blueprint: 1`, the edits and no layout keys.
+  - No page errors.
+- **Project safety.** Owner projects are untouched: no request blocked or attempted, and their
+  `updatedAt`/revision are equal. Both disposable projects were deleted (204).
+- **Verdict.** O1–O7 and O9 met (O3 with deviations), O8 partly met (stacked labels, small C3
+  labels at Fit). Plan §3, §5, §6 and §7 met, §4 partly met, §8 met in product. D1–D3 took their
+  defaults.
+- **Docs updated:**
+  - Plan status complete, with the acceptance link, and the execution-units status line.
+  - AGENTS marks the plan complete.
+  - README studio paragraph rewritten (no palette, double-click or Tidy).
+  - CATALOG opening corrected to fifteen definitions (verified: one per `studioKinds` entry,
+    including Gateway) plus ten component kinds; task-table rows; creation scopes; the component
+    section is no longer "planned".
+  - C4 guidance gets the component catalog and derived-layout rules and loses "explicit depth
+    navigation".
+  - Studio guide gets the completion pointer and a known-limits paragraph.
+  - Configuration matrix §7 provenance sentence.
+  - Historical evidence and earlier handoff entries are unchanged.
+
+Checks (Node 24.21.0):
+
+- `pnpm lint`: exit 0 (2,797 warnings and 88 infos, unchanged). The capture helper was renamed
+  from `fit` so Biome's noFocusedTests rule does not flag it.
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk advisory).
+- `pnpm check`, unit and E2E suites were not run (owner-deferred).
+
+Owner follow-ups (details in the acceptance record):
+
+1. C3 fit 0.544 and about 6px labels at Fit.
+2. Stacked two-line labels.
+3. TinyURL's merged reputation line comes from a duplicated C1 context relationship.
+4. Library copy and pattern insertion drop components.
+5. People, system and package frames have no `+` handles.
+6. No row hint is written for spawned boxes.
+7. E2E tests that use Tidy, free drag, saved positions, placement tools, drill, trunk markers or
+   React Flow markers need updating (deferred).
+8. The blueprint additive-versioning rule needs confirming.
+9. The owner's Mattermost project has a stray Microservice card and a disconnected Team member.
+10. The smaller items listed in the record.
+
+Dev servers: I started a temporary Vite on 4302 and stopped exactly that process. I started
+nothing on 4300, and the API on 4310 was reused and left running.

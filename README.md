@@ -6,10 +6,16 @@ Jeeves is a web-application architecture studio intended to help Software Engine
 
 The [November studio milestone](docs/evidence/studio-ux/UX15/README.md) is implemented and is the
 default interface, following the [resolved feedback](.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
-Use the scope-aware palette or Library to create finite applications/resources, configure provider
-intent, share C3 queues and group independent services. Click to inspect, double-click useful detail,
-and use Tidy and fit and chronological Undo/Redo. The [studio guide](docs/architecture-studio.md)
-explains autosave, source-preserving legacy compatibility and the TinyURL study.
+The [studio grid plan](docs/build-plan-studio-grid.md) is complete
+([SG10 acceptance](docs/evidence/studio-grid/SG10/README.md)): C1, C2 and C3 are equal tabs, with C3
+showing the whole system as service frames containing finite components. Layout is automatic (ELK on
+a 32px grid); you only choose a box's row by dragging it within its column. Drag a box's `+` handle
+to create a connected box, drop it on another box to connect them, or use New island. Parallel
+relationships merge into one counted line with a short label. Configure provider and performance
+intent in the inspector, and use chronological Undo/Redo. `GET /projects/:id/blueprint` is the
+read-only [code-generation boundary](docs/studio-blueprint.md). The
+[studio guide](docs/architecture-studio.md) explains autosave, source-preserving legacy
+compatibility and the TinyURL study.
 
 Generate is the single Review/Activity/Outputs destination. Studio definitions remain **design-only**;
 application generation is blocked until an exact runtime resolver exists. Existing supported legacy
