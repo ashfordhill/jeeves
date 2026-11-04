@@ -1,0 +1,85 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "result": "inspection/setup correction",
+      "note": "Native Node strip-only loader could not parse an existing TypeScript parameter property; used the existing tsx loader.",
+      "passedRecordedScenarios": 0,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt1.log",
+      "error": null
+    },
+    {
+      "attempt": 2,
+      "result": "inspection/setup correction",
+      "note": "Public legacy fixture endpoints needed an existing planned application capability before connecting.",
+      "passedRecordedScenarios": 0,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt2.log",
+      "error": "{\"path\":\"/projects/a7696c29-f1ac-45b2-a5a2-3db115f54b6b/operations\",\"status\":422,\"data\":{\"code\":\"INVALID_OPERATION\",\"message\":\"\\\"Legacy source A\\\" needs a template before it can connect.\",\"errors\":[{\"code\":\"PORT_INCOMPATIBLE\",\"severity\":\"error\",\"message\":\"\\\"Legacy source A\\\" needs a template before it can connect.\",\"target\":{\"connection\":\"legacy-relation\"}}]}}"
+    },
+    {
+      "attempt": 3,
+      "result": "inspection/setup correction",
+      "note": "Inspection assumed General while the same resource correctly retained its Options tab; explicitly selected General.",
+      "passedRecordedScenarios": 11,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt3.log",
+      "error": "The expression evaluated to a falsy value:"
+    },
+    {
+      "attempt": 4,
+      "result": "inspection/setup correction",
+      "note": "A package-owned disconnected resource correctly moved into package C3; followed its real scope for reload.",
+      "passedRecordedScenarios": 12,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt4.log",
+      "error": "locator.click: Timeout 30000ms exceeded."
+    },
+    {
+      "attempt": 5,
+      "result": "inspection/setup correction",
+      "note": "SVG group bounding-box center overlapped a card; clicked an exposed point on the actual edge hit stroke.",
+      "passedRecordedScenarios": 22,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt5.log",
+      "error": "locator.click: Timeout 30000ms exceeded."
+    },
+    {
+      "attempt": 6,
+      "result": "inspection/setup correction",
+      "note": "Fixture schema trims canonical legacy labels; compared against the canonical trimmed value.",
+      "passedRecordedScenarios": 28,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt6.log",
+      "error": "Expected values to be strictly equal:"
+    },
+    {
+      "attempt": 7,
+      "result": "inspection/setup correction",
+      "note": "Quick navigation reached the expected aggregate chooser; selected its actual HTTP member before awaiting a form.",
+      "passedRecordedScenarios": 32,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt7.log",
+      "error": "locator.waitFor: Timeout 30000ms exceeded."
+    },
+    {
+      "attempt": 8,
+      "result": "passed",
+      "note": "Passed final autosave, desktop and export suffix; combines acknowledged earlier resource/connection observations on unchanged product source.",
+      "passedRecordedScenarios": 36,
+      "rawLog": ".jeeves-work/ux07b/browser-attempt8.log",
+      "error": null
+    }
+  ],
+  "combinedObservationMethod": "Passed browser observations retained across harness corrections. Their acknowledged requests recreate the next owned disposable fixture through the real API; replay is fixture setup, not reported as another browser save. No successful response is fabricated.",
+  "scrollInspection": {
+    "result": "passed",
+    "scenarios": 2,
+    "browserWrites": 2
+  },
+  "ownedProjectsAllDeletedAndVerified404": 9,
+  "providerExecutions": 0,
+  "applicationGenerations": 0,
+  "sourceOrTestFixtureChangesForTheseCorrections": 0,
+  "primaryBrowserAttemptsUseSameProductSource": true,
+  "finalReview": {
+    "result": "passed",
+    "scenarios": 4,
+    "browserWrites": 2,
+    "changes": "Added read-only endpoint names for single relationships and rendered the existing additional-attempts Retry help. Final targeted browser captures and full typecheck/build pass."
+  }
+}

@@ -32,9 +32,12 @@ pending forms and in-app project switching. Cameras remain outside history; drag
 remain later geometry work. [UX07a](docs/evidence/studio-ux/UX07a/README.md) now supplies compact
 autosaving inspectors for all seven exact application definitions, C1 canonical text and packages,
 plus safe canonical legacy edits. Provider/execution choices and existing dependency references
-remain typed settings; package members keep independent settings. The legacy editor remains the
-default. Resource/relationship forms, creation/membership actions, routing and runtime resolution
-remain later work. The historical catalog below describes the existing
+remain typed settings; package members keep independent settings. [UX07b](docs/evidence/studio-ux/UX07b/README.md) adds all seven resource/integration forms,
+compatible provider and logical owner/origin selectors, shared C3 queue settings and individual
+connection policies. Aggregate selection first chooses a real connection; settings never bulk-edit
+a trunk. Timeout/retry appear only for eligible request/response protocols and clear atomically
+when inapplicable. Uneditable legacy relationships only highlight. The legacy editor remains the
+default. Creation/membership actions, routing and runtime resolution remain later work. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

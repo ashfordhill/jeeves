@@ -1,14 +1,48 @@
 import {
   architectureSchema,
   buildStudioCommand,
+  containerClassification,
   type DesignDocument,
+  legacyStudioKind,
   resolveStudioDefinition,
+  type StudioOwner,
   type StudioSemanticRef,
-  studioApplicationKinds,
   studioLimits,
+  studioResourceKinds,
   studioSettingsSchema,
 } from "@jeeves/spec";
 import type { DraftErrors, DraftSpec, DraftValues } from "../draw/form-drafts.ts";
+
+export function ownerChoices(design: DesignDocument) {
+  return [
+    ...design.elements
+      .filter((item) => containerClassification(item).kind === "Application")
+      .map((item) => ({ value: `element:${item.id}`, label: `${item.name} · Application` })),
+    ...(design.architecture?.studio?.packages ?? []).map((item) => ({
+      value: `package:${item.id}`,
+      label: `${item.name} · Package`,
+    })),
+  ];
+}
+export function originChoices(design: DesignDocument) {
+  return design.elements
+    .filter(
+      (item) =>
+        containerClassification(item).kind === "Application" ||
+        (design.architecture?.studio?.elements.find((binding) => binding.element === item.id)
+          ?.settings.kind ?? legacyStudioKind(item)) === "object-store",
+    )
+    .map((item) => ({
+      value: item.id,
+      label: `${item.name} · ${containerClassification(item).kind === "Application" ? "Application" : "Object storage"}`,
+    }));
+}
+function ownerValue(value: unknown): StudioOwner | null {
+  if (typeof value !== "string") return null;
+  const [kind, id] = value.split(":");
+  if ((kind !== "element" && kind !== "package") || !id) throw new Error("Select an owner");
+  return { kind, id };
+}
 
 export function draftSettings(values: DraftValues) {
   return Object.fromEntries(
@@ -18,7 +52,7 @@ export function draftSettings(values: DraftValues) {
   );
 }
 
-/** Only the explicit studio application allowlist or legacy canonical text is editable here. */
+/** Exact studio definitions or safe legacy canonical text, never reflected backend fields. */
 export function inspectorSpec(
   projectId: string,
   ref: StudioSemanticRef,
@@ -29,12 +63,7 @@ export function inspectorSpec(
     ref.kind === "element"
       ? design.architecture?.studio?.elements.find((item) => item.element === ref.id)
       : undefined;
-  if (
-    binding &&
-    (!resolveStudioDefinition(binding.definition) ||
-      !studioApplicationKinds.some((kind) => kind === binding.settings.kind))
-  )
-    return;
+  if (binding && !resolveStudioDefinition(binding.definition)) return;
   const definition = binding
     ? `${binding.definition.id}@${binding.definition.version}`
     : `canonical-${ref.kind}@1`;
@@ -64,6 +93,11 @@ export function inspectorSpec(
     return {
       "element.name": object.name,
       "element.description": object.description ?? "",
+      ...(binding && {
+        owner: currentBinding?.owner
+          ? `${currentBinding.owner.kind}:${currentBinding.owner.id}`
+          : undefined,
+      }),
       ...Object.fromEntries(
         Object.entries(currentBinding?.settings ?? {}).map(([path, value]) => [
           `settings.${path}`,
@@ -98,6 +132,21 @@ export function inspectorSpec(
         if (!parsed.success)
           for (const issue of parsed.error.issues)
             errors[`settings.${String(issue.path[0])}`] = issue.message;
+        if (studioResourceKinds.some((kind) => kind === binding.settings.kind)) {
+          const owner = values.owner;
+          if (owner === undefined) {
+            if (binding.settings.kind === "queue") errors.owner = "Select an owner";
+          } else if (
+            typeof owner !== "string" ||
+            !ownerChoices(design).some((item) => item.value === owner)
+          )
+            errors.owner = "Select an application or package";
+        }
+        if (
+          values["settings.origin"] !== undefined &&
+          !originChoices(design).some((item) => item.value === values["settings.origin"])
+        )
+          errors["settings.origin"] = "Select an application or object store";
       }
       return errors;
     },
@@ -114,6 +163,7 @@ export function inspectorSpec(
           type: "edit",
           element: ref.id,
           ...text,
+          ...(paths.includes("owner") && { owner: ownerValue(values.owner) }),
           ...(paths.some((path) => path.startsWith("settings.")) && {
             settings: studioSettingsSchema.parse(draftSettings(values)),
           }),

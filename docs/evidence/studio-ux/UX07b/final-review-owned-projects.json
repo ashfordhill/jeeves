@@ -1,0 +1,15 @@
+[
+  {
+    "id": "c95750fe-6b8d-4cf4-8f20-3d50d0ecfff4",
+    "name": "UX07b owned finite resource and connection forms",
+    "target": null,
+    "revision": 0,
+    "outputDir": null,
+    "gitStrategy": "branch-per-task",
+    "maxRetries": 2,
+    "createdAt": "2026-11-04T09:27:46.681Z",
+    "updatedAt": "2026-11-04T09:27:46.681Z",
+    "deleted": true,
+    "verified404": true
+  }
+]

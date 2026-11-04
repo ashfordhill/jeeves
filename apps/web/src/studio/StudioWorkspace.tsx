@@ -1,6 +1,5 @@
 import {
   type StudioRelationship,
-  type StudioRelationshipMember,
   type StudioViewNode,
   studioDefinitions,
   studioViewKeys,
@@ -21,6 +20,8 @@ import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { formDrafts } from "../draw/form-drafts.ts";
 import { canRedo, canUndo, useDraw } from "../draw/store.ts";
+import { ConnectionForm } from "./ConnectionForm.tsx";
+import { connectionSpec, type RelationshipTarget } from "./connection-drafts.ts";
 import { DraftFeedback } from "./DraftFeedback.tsx";
 import { InspectorForm } from "./InspectorForm.tsx";
 import { useStudioPreferences } from "./preferences.ts";
@@ -92,10 +93,29 @@ function SelectionSummary({
 }) {
   const loaded = useDraw((state) => state.loaded);
   const [memberId, setMemberId] = useState<string>();
-  const member: StudioRelationshipMember | undefined =
-    edge?.members.length === 1
-      ? edge.members[0]
-      : edge?.members.find((item) => item.id === memberId);
+  const targets: RelationshipTarget[] = edge
+    ? [
+        ...[...new Set(edge.connectionIds)].map((id) => ({ kind: "connection" as const, id })),
+        ...[...new Set(edge.contextRelationshipIds)].map((id) => ({
+          kind: "context" as const,
+          id,
+        })),
+      ]
+    : [];
+  const member =
+    targets.length === 1
+      ? targets[0]
+      : targets.find((item) => `${item.kind}:${item.id}` === memberId);
+  const single = targets.length === 1 ? targets[0] : undefined;
+  const relation =
+    single &&
+    (single.kind === "connection"
+      ? loaded?.design.connections.find((item) => item.id === single.id)
+      : loaded?.design.architecture?.relationships.find((item) => item.id === single.id));
+  const endpointName = (id: string) =>
+    loaded?.design.elements.find((item) => item.id === id)?.name ??
+    loaded?.design.architecture?.nodes.find((item) => item.id === id)?.name ??
+    (id === "system" ? loaded?.design.architecture?.system.name : undefined);
   if (node)
     return (
       <div className="studio-selection-summary">
@@ -115,25 +135,59 @@ function SelectionSummary({
   return (
     <div className="studio-selection-summary">
       <h2>Connection</h2>
-      {edge.members.length > 1 ? (
+      {relation ? (
+        <p>
+          {endpointName(typeof relation.from === "string" ? relation.from : relation.from.element)}{" "}
+          → {endpointName(typeof relation.to === "string" ? relation.to : relation.to.element)}
+        </p>
+      ) : null}
+      {targets.length > 1 ? (
         <fieldset className="studio-members" aria-label="Connection members">
-          {edge.members.map((item, index) => (
-            <button
-              type="button"
-              key={item.id}
-              aria-pressed={member?.id === item.id}
-              onClick={() => setMemberId(item.id)}
-            >
-              {item.action || "Connection"} · {item.protocols.join(" / ") || `Member ${index + 1}`}
-            </button>
-          ))}
+          <legend>Select a connection</legend>
+          {targets.map((item) => {
+            const connection = loaded?.design.connections.find(
+              (connection) => connection.id === item.id,
+            );
+            const context = loaded?.design.architecture?.relationships.find(
+              (relation) => relation.id === item.id,
+            );
+            const name = (id?: string) =>
+              loaded?.design.elements.find((element) => element.id === id)?.name ?? id;
+            const action =
+              connection?.planned?.label ??
+              connection?.label ??
+              context?.description ??
+              "Connection";
+            const protocol = connection?.planned?.protocol ?? connection?.protocol;
+            return (
+              <button
+                type="button"
+                key={`${item.kind}:${item.id}`}
+                aria-pressed={member?.id === item.id && member.kind === item.kind}
+                onClick={() => {
+                  if (loaded) void formDrafts.flushProject(loaded.project.id, true);
+                  setMemberId(`${item.kind}:${item.id}`);
+                }}
+              >
+                {connection
+                  ? `${name(connection.from.element)} → ${name(connection.to.element)}`
+                  : action}
+                <span>
+                  {action}
+                  {protocol ? ` · ${protocol}` : ""}
+                </span>
+              </button>
+            );
+          })}
         </fieldset>
       ) : null}
-      {member ? (
-        <>
-          <p>{member.action}</p>
-          {member.protocols.length ? <p>{member.protocols.join(" / ")}</p> : null}
-        </>
+      {member && loaded ? (
+        <ConnectionForm
+          key={`${member.kind}:${member.id}`}
+          projectId={loaded.project.id}
+          target={member}
+          design={loaded.design}
+        />
       ) : null}
     </div>
   );
@@ -183,11 +237,16 @@ function ProjectStudio({
   const selectedEdge = scope.edges.find((edge) => edge.id === selected);
   // Unknown and purely source-only legacy relationships select without opening an empty inspector.
   const inspectNode = selectedNode;
-  const inspectEdge = selectedEdge?.members.some(
-    (member) => member.connectionIds.length || member.contextRelationshipIds.length,
-  )
-    ? selectedEdge
-    : undefined;
+  const inspectEdge =
+    selectedEdge &&
+    (selectedEdge.contextRelationshipIds.some((id) =>
+      connectionSpec(loaded.project.id, { kind: "context", id }, loaded.design),
+    ) ||
+      selectedEdge.connectionIds.some((id) =>
+        connectionSpec(loaded.project.id, { kind: "connection", id }, loaded.design),
+      ))
+      ? selectedEdge
+      : undefined;
   const inspectable = !!(inspectNode || inspectEdge);
   const inspectorOpen = preferences.inspectorOpen && inspectable;
   const expandable =
@@ -229,7 +288,12 @@ function ProjectStudio({
     const edge = scope.edges.find((item) => item.id === id);
     if (
       (node && node.kind !== "generic") ||
-      edge?.members.some((item) => item.connectionIds.length || item.contextRelationshipIds.length)
+      edge?.contextRelationshipIds.some((id) =>
+        connectionSpec(loaded.project.id, { kind: "context", id }, loaded.design),
+      ) ||
+      edge?.connectionIds.some((id) =>
+        connectionSpec(loaded.project.id, { kind: "connection", id }, loaded.design),
+      )
     ) {
       setPreferences((current) => ({ ...current, inspectorOpen: true }));
     }

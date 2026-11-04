@@ -9525,3 +9525,79 @@ and fit remain later units. Browser termination still cannot guarantee an unackn
 No product blocker or scope deviation remains. UX07a is complete; UX07b is the next unit boundary
 and is not started here. This worker stops after its scoped local UX07a commit. P73a/P73b and the
 backend batch remain paused.
+
+
+## 2026-11-04 — UX07b: resource and individual connection inspectors (complete)
+
+Executed UX07b only on primary main from `cb1698ac812036aa2350512fa05889fe00ad673f`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan, exact UX07b/shared protocol, configuration §§3–4, model ownership/projection rules,
+interaction contracts, final decisions, C4 guidance and existing descriptors/drafts/aggregate paths.
+No delegation, branch/worktree, sibling edit, backend resumption, provider/external-agent execution
+or application generation. Unrelated `.jeeves-feedback/` remains untouched.
+
+Extended the existing descriptor-driven inspector to all seven exact resource/integration kinds:
+database, cache, queue, object storage, search, CDN and external API. The UX06 controller remains
+the only autosave mechanism. Logical owner selectors name actual applications/packages; queues
+require an owner. CDN origin selects an existing application/object store, including package members.
+Engine changes reset incompatible providers in the same pending edit. Optional numeric values
+validate complete drafts and clear to absence. Cache TTL and technical queue storage retention
+remain separate from business retention. Provider selection changes settings only.
+
+Added target-keyed individual connection drafts for canonical planned action/protocol/interaction/
+access and strict studio technical settings. Timeout/retry appear only for HTTP/HTTPS/gRPC request/
+response; changing protocol/interaction removes newly inapplicable policies atomically. Fixed retry
+requires both bounded numbers; attempts count additional attempts. Queue channel roles validate real
+endpoint direction and require asynchronous interaction. C1 relationships have action only. Legacy
+relationships without an editable studio binding only highlight, preserving unknown protocols and
+long actions. A multi-connection aggregate first requires selecting one actual connection; queued
+summaries expose both real channel legs. No trunk-wide or implicit bulk edit exists.
+
+Evidence: `docs/evidence/studio-ux/UX07b/`. Main guarded direct Chromium inspection passes 36
+scenarios and 187 acknowledged browser writes. It covers every resource canonical field and enum,
+all database/cache/search provider compatibility rows with save/reload, incompatible provider reset,
+invalid injected provider/owner, optional owner/package/member choices and clear values, numeric
+bounds/decimals/incomplete input/extrema/clear, CDN compatible origins, shared queue settings from
+two service C3 scopes, required ownership, C2 queued-leg selection, mixed SQL/HTTPS member selection,
+all connection protocol/interaction/access choices, action bounds, timeout/retry ranges and cleanup,
+quick resource-to-connection navigation, context-only action and unknown legacy preservation.
+Accepted typed source values survive exact portable export/reimport with structural validation.
+The combined UX07 field coverage enumerates every exact definition/relationship descriptor and
+links application/package/C1 observations to UX07a. Creation/membership actions remain UX08.
+
+Both 1440×900 and 1280×800 fit without horizontal document overflow. Two supplementary mouse-wheel
+observations and two browser writes confirm the full retry form, including Delay, is reachable at
+both sizes. Screenshots were visually inspected. Studio and unchanged default-editor inspections
+have zero console warnings/errors, page errors, blocked/unowned writes or external requests. Guards
+precede page creation. Passed observations were retained across inspection-harness corrections;
+real acknowledged requests rebuilt later owned disposable fixtures through the real API. Those
+fixture replays are not counted as additional browser saves, and no successful response was fabricated.
+
+All 13 original projects retain exact design/layout hashes and revisions; the final project set
+matches the baseline. Nine owned disposables across every attempt are deleted and verified 404.
+Earlier handoff bytes, 21 original/copy feedback pairs, seven public fixtures, 48 frozen benchmark
+files and unrelated tracked source remain exact. CATALOG/current guide describe the implemented
+opt-in boundary without changing runtime/template availability. Required checks use Node 24.21.0 /
+pnpm 12.16.1 with the Node bin path prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos and no errors.
+- Full `pnpm typecheck`: exit 0 across workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace including logs pass.
+
+Routine implementation/inspection corrections: removed new non-null lint warnings before checks;
+used the existing tsx loader for existing parameter-property syntax; corrected the public legacy
+fixture's planned endpoints, retained tab assumptions, package-private resource scope navigation,
+edge hit-point selection, canonical label trimming and aggregate-chooser expectations. The primary
+browser attempts used identical product source. Final review added read-only endpoints for single
+relationships and the existing additional-attempts Retry explanation; four targeted browser
+observations/two writes and repeated full typecheck/build pass. Bounded attempt notes are committed; raw exploratory
+scripts/logs remain in the ignored workspace. No existing fixture typing adaptation, dependency,
+snapshot or broader test maintenance was needed. Unit/E2E/template suites and `pnpm check` remain
+explicitly deferred. Check logs normalize trailing whitespace only.
+
+Current UX05 geometry can still clip a remote card after inspector changes; routing/movement/fit
+remain later units. Owner changes can correctly move a private resource into package C3. Browser
+termination cannot guarantee an unacknowledged save, as in UX06. There is no remaining product
+blocker or scope deviation. UX07 is complete with UX07a. UX08a is the next unit boundary and is not
+started here. This worker stops after its scoped local UX07b commit; P73a/P73b/backend remain paused.

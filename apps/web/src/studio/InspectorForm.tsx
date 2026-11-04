@@ -8,10 +8,11 @@ import {
   type StudioViewNode,
   studioDefinitions,
   studioFieldGroups,
+  studioProviderChoices,
 } from "@jeeves/spec";
 import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
 import { type DraftValues, formDrafts } from "../draw/form-drafts.ts";
-import { draftSettings, inspectorSpec } from "./inspector-drafts.ts";
+import { draftSettings, inspectorSpec, originChoices, ownerChoices } from "./inspector-drafts.ts";
 
 const canonical = studioDefinitions.service.fields.filter((field) => field.control === "text");
 
@@ -23,6 +24,15 @@ function selectChange(
   value: string,
 ) {
   const changes: DraftValues = { [path]: value };
+  if (path === "settings.engine") {
+    const settings = { ...draftSettings(values), engine: value } as StudioSettings;
+    if (
+      !studioProviderChoices(settings).some(
+        (choice) => choice.value === values["settings.provider"],
+      )
+    )
+      changes["settings.provider"] = "unspecified";
+  }
   for (const field of fields) {
     if (!("when" in field) || field.when?.path !== path) continue;
     if (value !== field.when.equals) changes[field.path] = undefined;
@@ -105,6 +115,8 @@ function TargetForm({
   );
   const optionsFor = (field: ReturnType<typeof studioFieldGroups>[number]["fields"][number]) => {
     if (field.control !== "reference") return [];
+    if (field.reference.target === "owner") return ownerChoices(design);
+    if (field.reference.target === "origin") return originChoices(design);
     if (field.reference.target === "application")
       return applications.map((item) => ({ value: item.id, label: item.name }));
     if (field.reference.target !== "connection" || ref?.kind !== "element") return [];
@@ -257,6 +269,7 @@ function TargetForm({
                   {error}
                 </span>
               ) : null}
+              {"unit" in field && field.unit ? <small>{field.unit}</small> : null}
             </div>
           );
         })}

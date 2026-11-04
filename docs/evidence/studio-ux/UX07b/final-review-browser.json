@@ -1,0 +1,32 @@
+{
+  "result": "passed",
+  "guardInstalledBeforePage": true,
+  "fixtureReplayedIntoOwnedDisposableOnly": true,
+  "records": [
+    {
+      "scenario": "single context relationship shows actual endpoint names",
+      "generalOnly": true
+    },
+    {
+      "scenario": "single queue relationship shows actual endpoint names",
+      "sameCanonicalConnection": true
+    },
+    {
+      "scenario": "mouse scroll reaches complete retry Delay input",
+      "width": 1440,
+      "height": 900,
+      "delayFullyInsideInspector": true
+    },
+    {
+      "scenario": "mouse scroll reaches complete retry Delay input",
+      "width": 1280,
+      "height": 800,
+      "delayFullyInsideInspector": true
+    }
+  ],
+  "browserWrites": 2,
+  "console": [],
+  "pageErrors": [],
+  "blocked": [],
+  "external": []
+}

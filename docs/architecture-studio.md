@@ -29,13 +29,20 @@ Managed execution reveals Host, and browser delivery uses standalone hosting or 
 application. Conditional changes remove inapplicable fields atomically. Package members keep
 independent language/execution settings and can be inspected from their member list. Redirect
 shortcuts select existing real store/cache connections; clearing a shortcut preserves its connection.
-No business/backend editor is reachable from these forms. Resources/relationship forms, membership
-actions and dependency creation remain their later assigned units. The remaining creation, drag/Tidy gestures,
+**UX07b** adds compact database/cache/queue/object storage/search/CDN/external API forms,
+compatible engine/provider choices, logical owners and existing CDN origins. Queues remain C3-only
+and every referencing scope edits the same resource. Optional numeric values stay empty when
+unspecified. Individual connections expose Action, Protocol, Interaction, Access and applicable
+timeout/retry/channel role; an aggregate first requires choosing one real connection. Changing
+protocol/interaction removes newly inapplicable policies atomically. Bare C1 relationships edit only
+their action; uneditable legacy relationships highlight without an empty form. No business/backend
+editor is reachable from these forms. Membership actions and dependency creation remain UX08. The remaining creation, drag/Tidy gestures,
 final geometry, unified Generate and studio chat tools remain later units; the
 [UX05 action mapping](evidence/studio-ux/UX05/README.md),
 [UX06a autosave evidence](evidence/studio-ux/UX06a/README.md) and
 [UX06b history evidence](evidence/studio-ux/UX06b/README.md) and
-[UX07a inspector evidence](evidence/studio-ux/UX07a/README.md) record those limits.
+[UX07a inspector evidence](evidence/studio-ux/UX07a/README.md) and
+[UX07b resource/connection evidence](evidence/studio-ux/UX07b/README.md) record those limits.
 Normal navigation still uses the interface documented below until UX15.
 
 The studio designs software architecture before implementation. C1 states the system purpose;

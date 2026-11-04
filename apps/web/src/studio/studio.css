@@ -358,3 +358,12 @@
   margin-top: 3px;
   font-size: 12px;
 }
+
+.studio-members legend {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.studio-members span {
+  display: block;
+  margin-top: 3px;
+}
