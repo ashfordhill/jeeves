@@ -7,6 +7,16 @@ deployment controls and the older toolbar described below are not requirements f
 Update this guide to the new behavior only as it is implemented; no implementation is claimed by
 the planning update.
 
+**UX05 opt-in (2026-11-04):** add `studio=next` to the project URL to inspect the new navigation
+shell. It uses the same project/store and UX04 projections. Click inspects; double-click the C1
+system, a package or an expandable service to drill, then use the header breadcrumb/back. Chat
+starts open; its width/collapse and the inspector's preferences are independent per project.
+Scope cameras and widths are local browser preferences and survive return/reload without writing
+the project's design or layout. The inspector currently shows compact read-only summaries.
+Finite forms/creation, final geometry, unified Generate and studio chat tools remain later units;
+the [UX05 action mapping and evidence](evidence/studio-ux/UX05/README.md) records those limits.
+Normal navigation still uses the interface documented below until UX15.
+
 The studio designs software architecture before implementation. C1 states the system purpose;
 C2 contains logical applications, stores and external systems; C3 contains responsibilities
 inside one application. A queue is a logical channel, and an endpoint is an interface operation.

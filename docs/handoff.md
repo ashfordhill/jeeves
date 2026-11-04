@@ -9226,3 +9226,64 @@ Unit/E2E/template suites, snapshots, their maintenance and `pnpm check` remain e
 No product blocker or scope deviation remains. UX04 is complete with UX04a; UX05 is the next unit's
 opt-in shell boundary, not started here. P73a/P73b and the backend batch remain paused. Stop after
 this scoped local UX04b commit.
+
+
+## 2026-11-04 — UX05: opt-in shell and explicit depth navigation (complete)
+
+Executed UX05 only on primary main from `de562556c0c6dac5758ef6ab1271de6c93388573`, under the
+owner's sequential fresh-worker batch. Read AGENTS, PLAN §§1–15, latest handoff/batch authority,
+studio plan, exact UX05/shared protocol, interaction §§1–2, UX01 action inventory, UX04 node/edge
+contracts, resolved decisions and C4 guidance. No delegation, branch/worktree, sibling edit,
+backend resumption, provider/external-agent execution or application generation. Unrelated
+`.jeeves-feedback/` and all legacy data remain preserved.
+
+Added the temporary `studio=next` URL route using the existing App/store/project selector/chat.
+The normal default is unchanged. The same slim application header contains C1/C2, contextual C3,
+short breadcrumb/back, one semantic Undo/Redo pair and independent panel toggles. The new graph
+consumes actual UX04 `studioViews` nodes/scopes/edges. Click inspects; double-click drills only
+real useful scopes, including C1 system→C2, package→package C3 and member→service C3. There is no
+flat parent dropdown, map/Explorer, named view, structural zoom, empty C3, second legacy toolbar,
+ellipsis, Review/Patterns/Data/Saved/Deployment action or deep editor in the new surface.
+
+Chat opens at 300px by default; inspector starts closed and opens for eligible selection at 320px.
+Mouse resize, separate scrolling/collapse, active scope and validated cameras are project-local
+browser preferences. Navigation and camera changes write neither semantic design nor saved layout.
+Unknown/source-only items select without an empty inspector. Compact read-only summaries and exact
+aggregate-member selection precede later forms. CATALOG and the current guide identify the opt-in
+boundary. Evidence and the complete UX01 destination comparison are under
+`docs/evidence/studio-ux/UX05/`.
+
+Direct guarded Chromium inspection at 1440×900 and 1280×800 passes mouse C1→C2→package/service C3
+and back; distinct C1/C2/package camera restoration, pan/wheel without depth changes, C3 reload,
+Generate/Design return, independent panels, both width resizes to 340px, reload and real header
+project switching. A single Billing service has no C3 and C1 people never acquire children.
+Projected fixture counts are one package card, five package C3 cards/four edges and three service
+C3 cards. Long names fit with no header overlap or horizontal document overflow. The guarded
+original project/default load retains Runs/Editor actions. All 13 original design/layout hashes
+and revisions are exact; zero writes/blocked requests, page/console warnings/errors or HTTP errors.
+Owned public package/single-service disposable projects are deleted 204 and verified 404; earlier
+inspection attempts also cleaned their owned projects. Guard installation predates page creation.
+
+Required checks use Node 24.21.0 / pnpm 12.16.1 with Node PATH prepended:
+
+- `pnpm lint`: exit 0; unchanged 2,797 warnings/88 infos, no errors.
+- `pnpm typecheck`: exit 0 across all workspaces/scripts and existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing large-chunk advisory.
+- Direct browser inspection, scoped formatting, preservation and staged whitespace including logs pass.
+
+Initial routine fixes removed an unused import, used semantic accessible containers and constrained
+long project names. Browser setup corrected an empty-body JSON cleanup header and access to
+localStorage before navigating away from about:blank. The initial broad UX01 source comparison
+included predecessor changes; immutable feedback/benchmark hashes and exact unit-entry tracked
+hashes pass. Early logs remain. No test fixture typing,
+snapshot or broader suite maintenance was needed. Unit/E2E/template suites and `pnpm check` remain
+deferred. Earlier handoff bytes, 21 original/copy feedback pairs, seven UX01 fixtures, 48 frozen
+benchmark files and unrelated tracked source remain exact.
+
+Transitional controls are explicit: current inspector summaries are read-only; Select/Hand work
+but finite forms/creation/Library remain UX06–UX08; the graph has initial grid placement/ordinary
+edges pending UX09–UX11 routing/trunks/drag/Tidy; semantic Undo/Redo awaits UX06b architecture-layout
+history. Opt-in Generate currently labels existing Runs content, with unification in UX12; chat
+uses its existing profile until UX13. No placeholder creation tools or removed backend/report
+panels fill those gaps. No runtime/availability claim changes. UX05 is complete; UX06a is the next
+unit boundary. This worker stops after its scoped local UX05 commit; P73a/P73b/backend stay paused.

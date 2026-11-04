@@ -1,0 +1,1 @@
+git diff --cached --check: exit 0; no whitespace errors, including newly staged logs.

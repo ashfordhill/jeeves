@@ -22,8 +22,10 @@ does not invent a Docker deployment. [UX04b's relationship projection](packages/
 now groups repeated directed dependencies, preserves all protocol/contract members, derives queued
 communication from explicit roles and accounts for incomplete or ambiguous channels. C3 retains
 the actual connections; compatible fan-out includes branch/trunk data without saved wiring or
-shared editable settings. The new authoring UI, routing and runtime resolution remain
-unimplemented. The historical catalog below describes the existing
+shared editable settings. [UX05's opt-in shell](docs/evidence/studio-ux/UX05/README.md), selected
+with `?studio=next`, now renders those real projections with explicit depth navigation, independent
+chat/inspector rails and project-local cameras. The default interface is unchanged; finite editing,
+creation, routing and runtime resolution remain unimplemented. The historical catalog below describes the existing
 offering; its older UI entry points must not override the
 [studio UX specification](docs/build-plan-studio-ux.md) during implementation.
 

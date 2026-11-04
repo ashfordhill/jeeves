@@ -8,6 +8,8 @@ import { ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
 import { useEffect } from "react";
 import { ArchitectureWorkspace } from "../architecture/ArchitectureWorkspace.tsx";
+import { isNextStudio } from "../studio/route.ts";
+import { StudioWorkspace } from "../studio/StudioWorkspace.tsx";
 import { Canvas } from "./Canvas.tsx";
 import "./draw.css";
 import { projectFromUrl, useDraw } from "./store.ts";
@@ -121,16 +123,20 @@ export function DrawView() {
   }
   return (
     <ReactFlowProvider key={projectId}>
-      <ArchitectureWorkspace
-        key={projectId}
-        board={
-          <div className="draw-main">
-            <Canvas />
-            <PendingHint />
-            <NoticeStrip />
-          </div>
-        }
-      />
+      {isNextStudio() ? (
+        <StudioWorkspace key={projectId} />
+      ) : (
+        <ArchitectureWorkspace
+          key={projectId}
+          board={
+            <div className="draw-main">
+              <Canvas />
+              <PendingHint />
+              <NoticeStrip />
+            </div>
+          }
+        />
+      )}
     </ReactFlowProvider>
   );
 }

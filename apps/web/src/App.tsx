@@ -14,6 +14,7 @@ import { useHashView } from "./shell/useHashView.ts";
 import { useServerHealth } from "./shell/useServerHealth.ts";
 import { ViewTabs } from "./shell/ViewTabs.tsx";
 import type { ViewId } from "./shell/views.ts";
+import { isNextStudio } from "./studio/route.ts";
 import { mantineTheme } from "./theme/mantineTheme.ts";
 
 function ViewBody({ view }: { view: ViewId }) {
@@ -28,15 +29,17 @@ function ViewBody({ view }: { view: ViewId }) {
 }
 
 export function App() {
+  const nextStudio = isNextStudio();
   const [view, setView] = useHashView();
   const [scheme, setScheme] = useColorScheme();
   const health = useServerHealth();
 
   return (
     <MantineProvider theme={mantineTheme} forceColorScheme={scheme}>
-      <header className="app-header chrome-bar">
+      <header className={`app-header chrome-bar${nextStudio ? " studio-app-header" : ""}`}>
         <span className="app-brand">Jeeves</span>
-        <ViewTabs view={view} onSelect={setView} />
+        <ViewTabs view={view} onSelect={setView} studio={nextStudio} />
+        {nextStudio && view === "draw" ? <div id="studio-header-controls" /> : null}
         <span className="app-header-end">
           <ProjectMenu />
         </span>

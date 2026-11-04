@@ -5,7 +5,15 @@
 import type { KeyboardEvent } from "react";
 import { VIEWS, type ViewId } from "./views.ts";
 
-export function ViewTabs({ view, onSelect }: { view: ViewId; onSelect: (next: ViewId) => void }) {
+export function ViewTabs({
+  view,
+  onSelect,
+  studio = false,
+}: {
+  view: ViewId;
+  onSelect: (next: ViewId) => void;
+  studio?: boolean;
+}) {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     const i = VIEWS.findIndex((v) => v.id === view);
@@ -34,7 +42,7 @@ export function ViewTabs({ view, onSelect }: { view: ViewId; onSelect: (next: Vi
               className={`view-switch-btn${on ? " is-on" : ""}`}
               onClick={() => onSelect(v.id)}
             >
-              {v.label}
+              {studio && v.id === "runs" ? "Generate" : v.label}
             </button>
           );
         })}

@@ -1,0 +1,4 @@
+Error: /projects/a63802a0-0542-4ac7-9e1f-3630b8a2ed3b 400 {"statusCode":400,"code":"FST_ERR_CTP_EMPTY_JSON_BODY","error":"Bad Request","message":"Body cannot be empty when content-type is set to 'application/json'"}
+    at req (/tmp/ux05-browser.cjs:6:183)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async /tmp/ux05-browser.cjs:61:82
