@@ -179,3 +179,50 @@ remain recognizable without color. Exact colors inherit the app's existing acces
 Every field listed above needs a recorded check: applicable type shows it, irrelevant type does
 not, change persists, reload restores the same value, invalid input is rejected, and exports contain
 the typed source value. A field that cannot pass that check must not ship as a decorative control.
+
+## 7. Studio grid additions (SG02)
+
+Added by [studio grid plan](../../build-plan-studio-grid.md) §5 (the explicit plan change this
+allowlist requires). Model and commands only; the inspector exposure follows in SG09. All new
+fields are optional, absent means unspecified, and no default is filled on read, so existing
+version-1 studio documents read unchanged. Source: `studio-model.ts`, `studio-components.ts`.
+
+| Where | New optional fields |
+| --- | --- |
+| service, billing, redirect, notification, identity | `minReplicas` 0–1000, `maxReplicas` 1–1000, `autoscaleOn` cpu/requests-per-second/queue-lag, `requestTimeoutMs` 1–300000, `concurrencyLimit` 1–100000 |
+| worker | replicas and `autoscaleOn` as above; its existing `concurrency` remains its limit; no request timeout |
+| database | `readReplicas` 0–15, `partitionKey` (one column name) |
+| cache | `topology` standalone/cluster, `eviction` lru/lfu/ttl/none |
+| queue | `partitions` 1–1024 |
+| cdn | `cacheRedirects` disabled/enabled |
+
+Minimum replicas may not exceed maximum; `autoscaleOn` needs a maximum above the minimum.
+Descriptors are `studioPerformanceFields`, kept outside `definition.fields` until SG09.
+
+**Components** are `architecture.studio.components[]` (`id`, `host`, `name`, optional
+`description`, `settings`) and `architecture.studio.componentConnections[]` (`id`, `from`,
+`to: {kind: component, id} | {kind: element, id, via}`, optional `label`). Settings:
+
+| Kind | Settings (creation default first) |
+| --- | --- |
+| `rate-limiter` | `algorithm` token-bucket/sliding-window; `limit?`; `windowSeconds?`; `key` ip/api-key/user; `store` memory/redis |
+| `cache-reader` | `pattern` cache-aside/read-through; `l1MaxEntries?` (absent = no L1); `l1TtlSeconds?` (needs L1 size); `l2TtlSeconds?`; `negativeTtlSeconds?` (absent = off); `stampede` none/single-flight |
+| `id-generator` | `strategy` db-sequence/redis-counter/range-allocation/snowflake/random; `blockSize?` (range allocation only); `encoding` base62/base58/base36/decimal; `minLength?` |
+| `redirect-responder` | `status` 302/301/307; `edgeMaxAgeSeconds?` |
+| `event-publisher` | `batchSize?`; `lingerMs?`; `outbox` disabled/enabled |
+| `event-consumer` | `concurrency?`; `batchSize?`; `retryLimit?`; `deadLetterQueue?` (a queue other than the source) |
+| `data-access` | `poolSize?`; `readRouting` primary/replica; `statementTimeoutMs?` |
+| `auth-guard` | `credential` jwt/api-key/session |
+| `external-call` | `circuitBreaker` disabled/enabled. Timeout/retry stay on the traced connection (§4). |
+| `custom` | none; its `description` is the stub purpose |
+
+Structural rules (batch rejected): the host is a studio-bound application (browser apps host only
+auth guard, external call and custom); a component-to-component link stays inside one host; an
+element link names an allowed target kind and a `via` connection joining host and target directly;
+publisher/consumer queue links trace a publish/consume connection; identities are unique across the
+design. Readiness gaps (`CONFIG_REQUIRED`, saved): a required dependency is missing (cache reader →
+cache, data access → database, publisher → queue, consumer → queue, Redis rate limiter → cache,
+sequence/range ID → database, Redis counter → cache, outbox → database, external call → target),
+replica read routing without a replicated database, and a custom component without a purpose.
+Deleting a host removes its components; deleting a traced connection or target removes the links.
+

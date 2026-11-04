@@ -5,7 +5,13 @@ export function studioGenerationSupport(
   design: DesignDocument,
 ): { supported: true } | { supported: false; code: "STUDIO_DESIGN_ONLY"; message: string } {
   const studio = design.architecture?.studio;
-  if (!studio || (!studio.elements.length && !studio.connections.length && !studio.packages.length))
+  if (
+    !studio ||
+    (!studio.elements.length &&
+      !studio.connections.length &&
+      !studio.packages.length &&
+      !studio.components?.length)
+  )
     return { supported: true };
   return {
     supported: false,

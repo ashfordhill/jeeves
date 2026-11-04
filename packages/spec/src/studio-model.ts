@@ -2,6 +2,11 @@
 import { z } from "zod";
 import { idSchema, versionSchema } from "./ids.ts";
 import { relationshipInteractionSchema } from "./relationship-display.ts";
+import {
+  studioComponentConnectionSchema,
+  studioComponentLimits,
+  studioComponentSchema,
+} from "./studio-components.ts";
 
 export const studioLimits = {
   elements: 500,
@@ -17,6 +22,12 @@ export const studioLimits = {
   timeoutMs: { min: 1, max: 300000 },
   attempts: { min: 1, max: 10 },
   delayMs: { min: 1, max: 60000 },
+  replicas: { min: 0, max: 1000 },
+  requestTimeoutMs: { min: 1, max: 300000 },
+  concurrencyLimit: { min: 1, max: 100000 },
+  readReplicas: { min: 0, max: 15 },
+  partitionKey: 63,
+  partitions: { min: 1, max: 1024 },
 } as const;
 const boundedInteger = ({ min, max }: { min: number; max: number }) => z.int().min(min).max(max);
 
@@ -105,38 +116,88 @@ export const studioNotificationProviderSchema = z.enum([
 ]);
 export const studioIdentityProviderSchema = z.enum(["unspecified", "oidc", "external"]);
 
+/** SG02 scaling signal. Queue lag only makes sense for an application that consumes a queue. */
+export const studioAutoscaleSignalSchema = z.enum(["cpu", "requests-per-second", "queue-lag"]);
+/**
+ * SG02 performance intent, optional on every common application kind (absent = unspecified).
+ * Workers keep their existing `concurrency` as their concurrency limit and have no request timeout.
+ */
+const scalingFields = {
+  minReplicas: boundedInteger(studioLimits.replicas).optional(),
+  maxReplicas: boundedInteger({ ...studioLimits.replicas, min: 1 }).optional(),
+  autoscaleOn: studioAutoscaleSignalSchema.optional(),
+};
+const requestFields = {
+  requestTimeoutMs: boundedInteger(studioLimits.requestTimeoutMs).optional(),
+  concurrencyLimit: boundedInteger(studioLimits.concurrencyLimit).optional(),
+};
+type Scaling = { minReplicas?: number; maxReplicas?: number; autoscaleOn?: string };
+function checkScaling(value: Scaling, ctx: z.RefinementCtx) {
+  if (
+    value.minReplicas !== undefined &&
+    value.maxReplicas !== undefined &&
+    value.minReplicas > value.maxReplicas
+  )
+    ctx.addIssue({
+      code: "custom",
+      path: ["maxReplicas"],
+      message: "Maximum replicas must be at least the minimum.",
+    });
+  if (
+    value.autoscaleOn !== undefined &&
+    (value.maxReplicas === undefined || value.maxReplicas <= (value.minReplicas ?? 1))
+  )
+    ctx.addIssue({
+      code: "custom",
+      path: ["autoscaleOn"],
+      message: "Autoscaling needs a maximum replica count above the minimum (default 1).",
+    });
+}
 function applicationSettings<K extends StudioKind, S extends z.ZodRawShape>(kind: K, fields: S) {
   const common = { kind: z.literal(kind), language: studioLanguageSchema, ...fields };
-  return z.discriminatedUnion("execution", [
-    z.strictObject({ ...common, execution: z.literal(studioExecutionSchema.enum.docker) }),
-    z.strictObject({
-      ...common,
-      execution: z.literal(studioExecutionSchema.enum.managed),
-      host: studioHostSchema,
-    }),
-  ]);
+  return z
+    .discriminatedUnion("execution", [
+      z.strictObject({ ...common, execution: z.literal(studioExecutionSchema.enum.docker) }),
+      z.strictObject({
+        ...common,
+        execution: z.literal(studioExecutionSchema.enum.managed),
+        host: studioHostSchema,
+      }),
+    ])
+    .superRefine((value, ctx) => checkScaling(value as Scaling, ctx));
 }
 export const studioServiceSettingsSchema = applicationSettings("service", {
   exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
 });
 export const studioWorkerSettingsSchema = applicationSettings("worker", {
   concurrency: boundedInteger(studioLimits.concurrency).optional(),
+  ...scalingFields,
 });
 export const studioBillingSettingsSchema = applicationSettings("billing", {
   exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
   provider: studioBillingProviderSchema,
 });
 export const studioRedirectSettingsSchema = applicationSettings("redirect", {
   exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
   lookupStoreConnection: idSchema.optional(),
   lookupCacheConnection: idSchema.optional(),
 });
 export const studioNotificationSettingsSchema = applicationSettings("notification", {
   exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
   provider: studioNotificationProviderSchema,
 });
 export const studioIdentitySettingsSchema = applicationSettings("identity", {
   exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
   provider: studioIdentityProviderSchema,
 });
 export const studioBrowserSettingsSchema = z.discriminatedUnion("delivery", [
@@ -223,12 +284,23 @@ export const studioExternalCategorySchema = z.enum([
   "workflow",
 ]);
 export const studioExternalProviderSchema = studioBrowserProviderSchema;
+/** SG02 resource performance intent; every field is optional and absent means unspecified. */
+export const studioCacheTopologySchema = z.enum(["standalone", "cluster"]);
+export const studioCacheEvictionSchema = z.enum(["lru", "lfu", "ttl", "none"]);
+export const studioCdnRedirectCachingSchema = z.enum(["disabled", "enabled"]);
+/** A single column/attribute name; no table, entity or schema editor. */
+export const studioPartitionKeySchema = z
+  .string()
+  .max(studioLimits.partitionKey)
+  .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, "Use one column name: letters, digits and underscores");
 
 export const studioDatabaseSettingsSchema = z
   .strictObject({
     kind: z.literal("database"),
     engine: studioDatabaseEngineSchema,
     provider: studioDatabaseProviderSchema,
+    readReplicas: boundedInteger(studioLimits.readReplicas).optional(),
+    partitionKey: studioPartitionKeySchema.optional(),
   })
   .superRefine((value, ctx) => {
     if (!studioDatabaseProviders[value.engine].some((provider) => provider === value.provider))
@@ -244,6 +316,8 @@ export const studioCacheSettingsSchema = z
     engine: studioCacheEngineSchema,
     provider: studioCacheProviderSchema,
     ttlSeconds: boundedInteger(studioLimits.ttlSeconds).optional(),
+    topology: studioCacheTopologySchema.optional(),
+    eviction: studioCacheEvictionSchema.optional(),
   })
   .superRefine((value, ctx) => {
     if (!studioCacheProviders[value.engine].some((provider) => provider === value.provider))
@@ -258,6 +332,7 @@ export const studioQueueSettingsSchema = z.strictObject({
   mode: studioQueueModeSchema,
   provider: studioQueueProviderSchema,
   retentionSeconds: boundedInteger(studioLimits.retentionSeconds).optional(),
+  partitions: boundedInteger(studioLimits.partitions).optional(),
 });
 export const studioObjectStoreSettingsSchema = z.strictObject({
   kind: z.literal("object-store"),
@@ -282,6 +357,7 @@ export const studioCdnSettingsSchema = z.strictObject({
   kind: z.literal("cdn"),
   provider: studioCdnProviderSchema,
   origin: idSchema.optional(),
+  cacheRedirects: studioCdnRedirectCachingSchema.optional(),
 });
 export const studioExternalApiSettingsSchema = z.strictObject({
   kind: z.literal("external-api"),
@@ -454,6 +530,12 @@ export const studioModelSchema = z
     elements: z.array(studioElementBindingSchema).max(studioLimits.elements),
     packages: z.array(studioPackageSchema).max(studioLimits.packages),
     connections: z.array(studioConnectionBindingSchema).max(studioLimits.connections),
+    /** SG02, optional so version-1 documents without components read unchanged. */
+    components: z.array(studioComponentSchema).max(studioComponentLimits.components).optional(),
+    componentConnections: z
+      .array(studioComponentConnectionSchema)
+      .max(studioComponentLimits.componentConnections)
+      .optional(),
   })
   .superRefine((value, ctx) => {
     const unique = (items: string[], collection: string, field: string) => {
@@ -481,6 +563,16 @@ export const studioModelSchema = z
     unique(
       value.packages.map((item) => item.id),
       "packages",
+      "id",
+    );
+    unique(
+      (value.components ?? []).map((item) => item.id),
+      "components",
+      "id",
+    );
+    unique(
+      (value.componentConnections ?? []).map((item) => item.id),
+      "componentConnections",
       "id",
     );
     const members = new Set<string>();

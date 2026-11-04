@@ -11,11 +11,15 @@ import {
   createStudioSettings,
   studioAccessSchema,
   studioAllowsRequestPolicies,
+  studioAutoscaleSignalSchema,
   studioBillingProviderSchema,
   studioBrowserProviderSchema,
   studioCacheEngineSchema,
+  studioCacheEvictionSchema,
   studioCacheProviders,
+  studioCacheTopologySchema,
   studioCdnProviderSchema,
+  studioCdnRedirectCachingSchema,
   studioChannelUseSchema,
   studioDatabaseEngineSchema,
   studioDatabaseProviders,
@@ -759,6 +763,114 @@ export const studioDefinitions = Object.freeze({
       "Request/response mapping, callbacks and failure behavior remain explicit C4b integration work.",
     ],
   }),
+});
+
+/**
+ * SG02 performance descriptors. Deliberately not merged into `definition.fields` yet, so the
+ * current inspector renders unchanged; the component/performance inspector unit (SG09) adopts them.
+ * Every field is optional: an empty input means unspecified and is never filled on read.
+ */
+export type StudioPerformanceField = FieldBase & {
+  path: `settings.${string}`;
+  group: "Options";
+  optional: true;
+} & (
+    | { control: "integer"; min: number; max: number; unit?: string }
+    | { control: "select"; choices: readonly StudioChoice[] }
+    | { control: "text"; min: number; max: number }
+  );
+const perfInteger = (
+  key: string,
+  label: string,
+  range: { min: number; max: number },
+  unit?: string,
+  help?: string,
+): StudioPerformanceField => ({
+  path: `settings.${key}`,
+  label,
+  group: "Options",
+  optional: true,
+  control: "integer",
+  ...range,
+  ...(unit && { unit }),
+  ...(help && { help }),
+});
+const perfSelect = (
+  key: string,
+  label: string,
+  values: readonly string[],
+  names: Readonly<Record<string, string>>,
+  help?: string,
+): StudioPerformanceField => ({
+  path: `settings.${key}`,
+  label,
+  group: "Options",
+  optional: true,
+  control: "select",
+  choices: values.map((value) => ({ value, label: names[value] ?? labels[value] ?? value })),
+  ...(help && { help }),
+});
+const scalingPerformance = [
+  perfInteger("minReplicas", "Minimum replicas", studioLimits.replicas),
+  perfInteger("maxReplicas", "Maximum replicas", { ...studioLimits.replicas, min: 1 }),
+  perfSelect(
+    "autoscaleOn",
+    "Autoscale on",
+    studioAutoscaleSignalSchema.options,
+    { cpu: "CPU", "requests-per-second": "Requests per second", "queue-lag": "Queue lag" },
+    "Needs a maximum above the minimum. Design intent; no autoscaler is provisioned.",
+  ),
+];
+const requestPerformance = [
+  perfInteger("requestTimeoutMs", "Request timeout", studioLimits.requestTimeoutMs, "ms"),
+  perfInteger("concurrencyLimit", "Concurrency limit", studioLimits.concurrencyLimit, "requests"),
+];
+const servicePerformance = freeze([...scalingPerformance, ...requestPerformance]);
+export const studioPerformanceFields: Readonly<
+  Record<StudioKind, readonly StudioPerformanceField[]>
+> = freeze({
+  service: servicePerformance,
+  browser: [],
+  worker: scalingPerformance,
+  billing: servicePerformance,
+  redirect: servicePerformance,
+  notification: servicePerformance,
+  identity: servicePerformance,
+  database: [
+    perfInteger("readReplicas", "Read replicas", studioLimits.readReplicas),
+    {
+      path: "settings.partitionKey",
+      label: "Partition key",
+      group: "Options",
+      optional: true,
+      control: "text",
+      min: 1,
+      max: studioLimits.partitionKey,
+      help: "One column name; no table or schema editor.",
+    },
+  ],
+  cache: [
+    perfSelect("topology", "Topology", studioCacheTopologySchema.options, {
+      standalone: "Standalone",
+      cluster: "Cluster",
+    }),
+    perfSelect("eviction", "Eviction", studioCacheEvictionSchema.options, {
+      lru: "Least recently used",
+      lfu: "Least frequently used",
+      ttl: "Shortest TTL first",
+      none: "No eviction",
+    }),
+  ],
+  queue: [perfInteger("partitions", "Partitions or shards", studioLimits.partitions)],
+  "object-store": [],
+  search: [],
+  cdn: [
+    perfSelect("cacheRedirects", "Cache redirects", studioCdnRedirectCachingSchema.options, {
+      disabled: "Disabled",
+      enabled: "Enabled",
+    }),
+  ],
+  "external-api": [],
 });
 
 /** Exact local resolution only. No latest substitution and no template-registry registration. */

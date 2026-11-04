@@ -56,5 +56,27 @@ export function mapStudioModel(
       ...structuredClone(binding),
       connection: ref(binding.connection),
     })),
+    ...(studio.components && {
+      components: studio.components.map((item) => ({
+        ...structuredClone(item),
+        id: ref(item.id),
+        host: ref(item.host),
+        settings:
+          item.settings.kind === "event-consumer" && item.settings.deadLetterQueue
+            ? { ...item.settings, deadLetterQueue: ref(item.settings.deadLetterQueue) }
+            : structuredClone(item.settings),
+      })),
+    }),
+    ...(studio.componentConnections && {
+      componentConnections: studio.componentConnections.map((link) => ({
+        ...structuredClone(link),
+        id: ref(link.id),
+        from: ref(link.from),
+        to:
+          link.to.kind === "component"
+            ? { kind: "component" as const, id: ref(link.to.id) }
+            : { kind: "element" as const, id: ref(link.to.id), via: ref(link.to.via) },
+      })),
+    }),
   };
 }

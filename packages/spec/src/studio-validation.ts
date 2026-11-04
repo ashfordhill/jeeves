@@ -3,6 +3,11 @@ import { containerClassification } from "./architecture-choices.ts";
 import { backendDeclarations } from "./backend-model.ts";
 import type { DesignDocument, Element } from "./design.ts";
 import { type Finding, type FindingCode, finding } from "./findings.ts";
+import {
+  type StudioComponentTargetKind,
+  studioComponentDefinitions,
+  studioComponentRequirements,
+} from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import { legacyStudioKind } from "./studio-legacy.ts";
 import {
@@ -282,11 +287,223 @@ export function validateStudio(design: DesignDocument): Finding[] {
           );
     }
   });
-  if (studio.elements.length || studio.connections.length || studio.packages.length)
+  validateStudioComponents(design, report, kind, application);
+  if (
+    studio.elements.length ||
+    studio.connections.length ||
+    studio.packages.length ||
+    studio.components?.length
+  )
     report(
       "NEEDS_TEMPLATE",
       [],
       "Studio settings and packages are design intent; application generation has no studio runtime resolver.",
     );
   return findings;
+}
+
+type Report = (code: FindingCode, path: (string | number)[], message: string) => void;
+
+/**
+ * SG02 component rules. Structure (host, targets, traced C2 connection, channel role, identity)
+ * is an error; a missing dependency that settings call for is a readiness gap (CONFIG_REQUIRED).
+ */
+function validateStudioComponents(
+  design: DesignDocument,
+  report: Report,
+  kind: (id: string) => StudioKind | undefined,
+  application: (element: Element | undefined) => boolean,
+) {
+  const studio = design.architecture?.studio;
+  if (!studio) return;
+  const components = studio.components ?? [];
+  const links = studio.componentConnections ?? [];
+  if (!components.length && !links.length) return;
+  const elements = new Map(design.elements.map((element) => [element.id, element]));
+  const bindings = new Map(studio.elements.map((binding) => [binding.element, binding]));
+  const connections = new Map(design.connections.map((item) => [item.id, item]));
+  const byId = new Map(components.map((item) => [item.id, item]));
+  const occupied = occupiedDesignIds(design);
+  for (const item of studio.packages) occupied.add(item.id);
+  const targetKind = (id: string): StudioComponentTargetKind | undefined => {
+    const value = kind(id);
+    if (value === "identity") return "identity";
+    if (
+      value === "database" ||
+      value === "cache" ||
+      value === "queue" ||
+      value === "search" ||
+      value === "object-store" ||
+      value === "cdn" ||
+      value === "external-api"
+    )
+      return value;
+    return application(elements.get(id)) ? "application" : undefined;
+  };
+  components.forEach((item, index) => {
+    const path = ["components", index];
+    if (occupied.has(item.id))
+      report(
+        "DUPLICATE_ID",
+        [...path, "id"],
+        `Component identity ${item.id} collides with an existing design identity.`,
+      );
+    const host = bindings.get(item.host);
+    if (!elements.has(item.host))
+      report("UNKNOWN_REFERENCE", [...path, "host"], `Component host ${item.host} does not exist.`);
+    else if (!host || !application(elements.get(item.host)))
+      report(
+        "CONFIG_INVALID",
+        [...path, "host"],
+        "A component host must be a studio application element, not a resource, external system, package or legacy object.",
+      );
+    else if (
+      host.settings.kind === "browser" &&
+      !studioComponentDefinitions[item.settings.kind].browserHost
+    )
+      report(
+        "CONFIG_INVALID",
+        [...path, "host"],
+        `A ${studioComponentDefinitions[item.settings.kind].name} cannot run inside a browser app.`,
+      );
+    if (item.settings.kind === "event-consumer" && item.settings.deadLetterQueue) {
+      const queue = item.settings.deadLetterQueue;
+      if (!elements.has(queue))
+        report(
+          "UNKNOWN_REFERENCE",
+          [...path, "settings", "deadLetterQueue"],
+          `Dead-letter queue ${queue} does not exist.`,
+        );
+      else if (kind(queue) !== "queue")
+        report(
+          "CONFIG_INVALID",
+          [...path, "settings", "deadLetterQueue"],
+          "A dead-letter queue must be a queue element.",
+        );
+    }
+    if (item.settings.kind === "custom" && !item.description?.trim())
+      report(
+        "CONFIG_REQUIRED",
+        [...path, "description"],
+        "A custom component needs a one-line purpose for its generated stub.",
+      );
+  });
+  const seen = new Set<string>();
+  links.forEach((link, index) => {
+    const path = ["componentConnections", index];
+    if (occupied.has(link.id) || byId.has(link.id))
+      report(
+        "DUPLICATE_ID",
+        [...path, "id"],
+        `Component connection identity ${link.id} collides with an existing design identity.`,
+      );
+    const from = byId.get(link.from);
+    if (!from) {
+      report("UNKNOWN_REFERENCE", [...path, "from"], `Component ${link.from} does not exist.`);
+      return;
+    }
+    const key = `${link.from}>${link.to.kind}:${link.to.id}${link.to.kind === "element" ? `>${link.to.via}` : ""}`;
+    if (seen.has(key))
+      report("DUPLICATE_CONNECTION", path, "This component connection already exists.");
+    seen.add(key);
+    if (link.to.kind === "component") {
+      const target = byId.get(link.to.id);
+      if (!target)
+        report(
+          "UNKNOWN_REFERENCE",
+          [...path, "to", "id"],
+          `Component ${link.to.id} does not exist.`,
+        );
+      else if (target.id === from.id || target.host !== from.host)
+        report(
+          "CONFIG_INVALID",
+          [...path, "to", "id"],
+          "A component may connect only to another component in the same application; cross-service use traces a C2 connection.",
+        );
+      return;
+    }
+    const definition = studioComponentDefinitions[from.settings.kind];
+    const target = link.to.id;
+    const via = connections.get(link.to.via);
+    if (!elements.has(target)) {
+      report("UNKNOWN_REFERENCE", [...path, "to", "id"], `Element ${target} does not exist.`);
+      return;
+    }
+    const resolved = targetKind(target);
+    if (target === from.host || !resolved || !definition.targets.includes(resolved))
+      report(
+        "CONFIG_INVALID",
+        [...path, "to", "id"],
+        `A ${definition.name} cannot use ${resolved ?? "that element"}; allowed: ${definition.targets.join(", ") || "none"}.`,
+      );
+    if (!via) {
+      report(
+        "UNKNOWN_REFERENCE",
+        [...path, "to", "via"],
+        `Traced C2 connection ${link.to.via} does not exist.`,
+      );
+      return;
+    }
+    const ends = [via.from.element, via.to.element];
+    if (
+      !ends.includes(from.host) ||
+      !ends.includes(target) ||
+      via.from.attachment ||
+      via.to.attachment
+    ) {
+      report(
+        "CONFIG_INVALID",
+        [...path, "to", "via"],
+        `Connection ${via.id} must join the host ${from.host} and ${target} directly.`,
+      );
+      return;
+    }
+    if (resolved === "queue") {
+      const role = studio.connections.find((item) => item.connection === via.id)?.settings
+        .channelUse;
+      if (definition.channelUse && role !== definition.channelUse)
+        report(
+          "CONFIG_INVALID",
+          [...path, "to", "via"],
+          `A ${definition.name} must trace a ${definition.channelUse} connection.`,
+        );
+    }
+  });
+  components.forEach((item, index) => {
+    const used = new Set(
+      links.flatMap((link) =>
+        link.from === item.id && link.to.kind === "element" ? [targetKind(link.to.id)] : [],
+      ),
+    );
+    for (const requirement of studioComponentRequirements(item.settings))
+      if (!requirement.kinds.some((value) => used.has(value)))
+        report("CONFIG_REQUIRED", ["components", index], requirement.reason);
+    if (item.settings.kind === "event-consumer" && item.settings.deadLetterQueue)
+      if (
+        links.some(
+          (link) =>
+            link.from === item.id &&
+            link.to.kind === "element" &&
+            link.to.id === (item.settings as { deadLetterQueue?: string }).deadLetterQueue,
+        )
+      )
+        report(
+          "CONFIG_INVALID",
+          ["components", index, "settings", "deadLetterQueue"],
+          "The dead-letter queue must differ from the source queue.",
+        );
+    if (item.settings.kind === "data-access" && item.settings.readRouting === "replica") {
+      const replicas = links.some((link) => {
+        if (link.from !== item.id || link.to.kind !== "element") return false;
+        const settings = bindings.get(link.to.id)?.settings;
+        return settings?.kind === "database" && (settings.readReplicas ?? 0) > 0;
+      });
+      if (!replicas)
+        report(
+          "CONFIG_REQUIRED",
+          ["components", index, "settings", "readRouting"],
+          "Replica read routing needs a connected database with at least one read replica.",
+        );
+    }
+  });
 }

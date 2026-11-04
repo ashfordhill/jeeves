@@ -1,0 +1,128 @@
+{
+  "studies": {
+    "studio-mattermost-reference": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 18,
+      "generation": false
+    },
+    "studio-enterprise-web": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 26,
+      "generation": false
+    },
+    "studio-video-platform": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 43,
+      "generation": false
+    },
+    "studio-qrwty-target": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 35,
+      "generation": false
+    },
+    "studio-link-platform": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 33,
+      "generation": false
+    },
+    "studio-community": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 34,
+      "generation": false
+    },
+    "studio-social": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 33,
+      "generation": false
+    },
+    "studio-discourse-foundation": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 16,
+      "generation": false
+    },
+    "studio-vendure-foundation": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 20,
+      "generation": false
+    },
+    "studio-zammad-foundation": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 18,
+      "generation": false
+    },
+    "studio-qrwty-original": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 6,
+      "generation": false
+    },
+    "studio-dropshipping": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 24,
+      "generation": false
+    },
+    "studio-inventory": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 15,
+      "generation": false
+    },
+    "studio-grocery": {
+      "roundTripIdentical": true,
+      "semanticallyIdentical": true,
+      "studioFindings": ["NEEDS_TEMPLATE:architecture.studio"],
+      "designFindings": 12,
+      "generation": false
+    }
+  },
+  "ownerProjects": {
+    "Streamly · video platform": {
+      "parses": true,
+      "roundTripSemanticallyIdentical": true,
+      "firstDiff": null,
+      "studioFindings": 0
+    },
+    "Mattermost · backend design review": {
+      "parses": true,
+      "roundTripSemanticallyIdentical": true,
+      "firstDiff": null,
+      "studioFindings": 1
+    },
+    "QRWTY target architecture": {
+      "parses": true,
+      "roundTripSemanticallyIdentical": true,
+      "firstDiff": null,
+      "studioFindings": 0
+    },
+    "Mattermost · architecture reference": {
+      "parses": true,
+      "roundTripSemanticallyIdentical": true,
+      "firstDiff": null,
+      "studioFindings": 0
+    }
+  }
+}

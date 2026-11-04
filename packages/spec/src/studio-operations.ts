@@ -8,6 +8,13 @@ import {
   type OperationInput,
   operationBatchSchema,
 } from "./operations.ts";
+import {
+  type StudioComponent,
+  studioComponentConnectionSchema,
+  studioComponentLimits,
+  studioComponentSchema,
+  studioComponentSettingsSchema,
+} from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import {
   definitionRefSchema,
@@ -63,6 +70,15 @@ const studioOwnerReassignmentSchema = z.strictObject({
 });
 export type StudioOwnerReassignment = z.infer<typeof studioOwnerReassignmentSchema>;
 const reassignOwners = z.array(studioOwnerReassignmentSchema).max(studioLimits.elements).optional();
+/**
+ * A component link, optionally creating the C2 connection it traces in the same batch. When
+ * `connection` is given, `link.to` must be an element target whose `via` is that new connection.
+ */
+const studioComponentLinkCreationSchema = z.strictObject({
+  link: studioComponentConnectionSchema,
+  connection: studioConnectionCreationSchema.optional(),
+});
+export type StudioComponentLinkCreation = z.infer<typeof studioComponentLinkCreationSchema>;
 /** The same strict, finite command inputs serve manual editing and assistant tools. */
 export const studioCommandSchema = z.discriminatedUnion("type", [
   z.strictObject({
@@ -107,6 +123,36 @@ export const studioCommandSchema = z.discriminatedUnion("type", [
   }),
   z.strictObject({ type: z.literal("ungroup"), package: idSchema, reassignOwners }),
   z.strictObject({
+    type: z.literal("createComponent"),
+    component: studioComponentSchema,
+    links: z
+      .array(studioComponentLinkCreationSchema)
+      .max(studioComponentLimits.componentConnections)
+      .optional(),
+  }),
+  z.strictObject({
+    type: z.literal("editComponent"),
+    component: idSchema,
+    name: studioComponentSchema.shape.name.optional(),
+    description: studioComponentSchema.shape.description,
+    settings: studioComponentSettingsSchema.optional(),
+  }),
+  z.strictObject({
+    type: z.literal("connectComponent"),
+    links: z
+      .array(studioComponentLinkCreationSchema)
+      .min(1)
+      .max(studioComponentLimits.componentConnections),
+  }),
+  z.strictObject({
+    type: z.literal("disconnectComponent"),
+    links: z.array(idSchema).min(1).max(studioComponentLimits.componentConnections),
+  }),
+  z.strictObject({
+    type: z.literal("removeComponent"),
+    components: z.array(idSchema).min(1).max(studioComponentLimits.components),
+  }),
+  z.strictObject({
     type: z.literal("delete"),
     elements: z.array(idSchema).max(studioLimits.elements).optional(),
     connections: z.array(idSchema).max(studioLimits.connections).optional(),
@@ -136,6 +182,27 @@ export function pruneStudioAfterDelete(
     const members = item.members.filter((id) => !removed.has(id));
     return members.length < 2 ? [] : [{ ...item, members }];
   });
+  // A host's components are its own internals and go with it; links that traced a removed
+  // connection or reached a removed element are dropped. Other services' data is untouched.
+  if (studio.components) {
+    studio.components = studio.components.filter((item) => !removed.has(item.host));
+    const kept = new Set(studio.components.map((item) => item.id));
+    for (const item of studio.components)
+      if (
+        item.settings.kind === "event-consumer" &&
+        item.settings.deadLetterQueue &&
+        removed.has(item.settings.deadLetterQueue)
+      )
+        delete item.settings.deadLetterQueue;
+    if (studio.componentConnections)
+      studio.componentConnections = studio.componentConnections.filter(
+        (link) =>
+          kept.has(link.from) &&
+          (link.to.kind === "component"
+            ? kept.has(link.to.id)
+            : !removed.has(link.to.id) && !connections.has(link.to.via)),
+      );
+  }
   for (const binding of studio.elements) {
     const settings = binding.settings;
     if (settings.kind === "browser" && settings.delivery === "bundled") {
@@ -222,6 +289,12 @@ export function buildStudioCommand(
     if (!item) throw new Error(`Element ${id} has no editable studio binding.`);
     return item;
   };
+  const bindings = new Set(studio.elements.map((item) => item.element));
+  const component = (id: string): StudioComponent => {
+    const item = studio.components?.find((candidate) => candidate.id === id);
+    if (!item) throw new Error(`Component ${id} does not exist.`);
+    return item;
+  };
   const group = (id: string): StudioPackage => {
     const item = studio.packages.find((candidate) => candidate.id === id);
     if (!item) throw new Error(`Package ${id} does not exist.`);
@@ -245,6 +318,14 @@ export function buildStudioCommand(
     ops.push({ op: "connect", connection });
     draft.connections.push(connection);
     studio.connections.push({ connection: item.id, settings: item.settings });
+  };
+  const link = (item: StudioComponentLinkCreation) => {
+    if (item.connection) {
+      if (item.link.to.kind !== "element" || item.link.to.via !== item.connection.id)
+        throw new Error("A new traced connection must be the component link's via connection.");
+      connect(item.connection);
+    }
+    studio.componentConnections = [...(studio.componentConnections ?? []), item.link];
   };
   switch (input.type) {
     case "create": {
@@ -332,6 +413,46 @@ export function buildStudioCommand(
       studio.packages = studio.packages.filter((item) => item.id !== input.package);
       reassign(input.reassignOwners);
       break;
+    case "createComponent": {
+      if (!bindings.has(input.component.host))
+        throw new Error(`Element ${input.component.host} has no editable studio binding.`);
+      studio.components = [...(studio.components ?? []), input.component];
+      for (const item of input.links ?? []) link(item);
+      break;
+    }
+    case "editComponent": {
+      const item = component(input.component);
+      if (input.name !== undefined) item.name = input.name;
+      if (input.description !== undefined) item.description = input.description;
+      if (input.settings) {
+        if (input.settings.kind !== item.settings.kind)
+          throw new Error("A component's kind cannot change; remove it and add another.");
+        item.settings = input.settings;
+      }
+      break;
+    }
+    case "connectComponent":
+      for (const item of input.links) link(item);
+      break;
+    case "disconnectComponent": {
+      const ids = new Set(input.links);
+      const current = studio.componentConnections ?? [];
+      for (const id of ids)
+        if (!current.some((item) => item.id === id))
+          throw new Error(`Component connection ${id} does not exist.`);
+      // The traced C2 connection stays; removing it is an explicit separate delete.
+      studio.componentConnections = current.filter((item) => !ids.has(item.id));
+      break;
+    }
+    case "removeComponent": {
+      const ids = new Set(input.components);
+      for (const id of ids) component(id);
+      studio.components = (studio.components ?? []).filter((item) => !ids.has(item.id));
+      studio.componentConnections = (studio.componentConnections ?? []).filter(
+        (item) => !ids.has(item.from) && !(item.to.kind === "component" && ids.has(item.to.id)),
+      );
+      break;
+    }
     case "delete": {
       const elements = new Set(input.elements ?? []);
       if (input.package) {

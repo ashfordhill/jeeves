@@ -88,6 +88,20 @@ engine changes. Generic AWS/Google Cloud/Cloudflare intent chooses no unnamed pr
 a provider creates no graph node, deployment, credential or API call. Missing provider artwork uses
 the capability symbol. Language, hosting and integration choices remain unverified design intent.
 
+### C3 components and performance intent (model only)
+
+The [studio grid plan](docs/build-plan-studio-grid.md) §5 adds a finite C3
+[component catalog](packages/spec/src/studio-components.ts): rate limiter, cache reader, ID
+generator, redirect responder, event publisher, event consumer, data access, auth guard,
+external call and custom. Each component lives inside exactly one studio application and uses
+other elements only through an existing C2 connection, so C3 never contradicts C2. Common
+applications gain optional replicas, autoscaling signal, request timeout and concurrency limit;
+databases, caches, queues and CDNs gain optional replica, partitioning, topology/eviction and
+redirect-caching intent. The vocabulary names typical third-party products (Redis, PostgreSQL,
+Kafka) but no component has a template; it is design-only and generation remains rejected.
+Inspector and canvas use is planned for later SG units. Details:
+[configuration matrix §7](docs/plans/studio-ux/configuration-matrix.md#7-studio-grid-additions-sg02).
+
 Known old capability/template identities retain their explicit [read-only mapping](packages/spec/src/studio-legacy.ts);
 unknown families retain a neutral symbol and their original data. Old planning definitions remain
 loadable. The default studio consumes this metadata while preserving supported runtime templates. Generation still rejects studio designs, while portable

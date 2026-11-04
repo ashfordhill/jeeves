@@ -10747,3 +10747,75 @@ Notes for later units:
 - SG08: do not copy the reference's inbound "retarget all incoming edges" insert-parent rule.
 - The live Mattermost project contains a stray unconnected "Microservice" card and a disconnected
   "Team member" (owner data; left untouched).
+
+## 2026-11-04 — SG02: component catalog and performance settings, model only (complete)
+
+Executed SG02 only on primary `main` from `1b650df`, as a fresh sequential worker. Read AGENTS,
+the studio grid plan (O1–O9; D1–D3 defaults), the execution units, SG01's handoff, the C4
+guidance, the studio model contract and configuration matrix. No UI, server, generation/runtime,
+P73a/P73b or backend batch work changed.
+
+What changed (`packages/spec`):
+
+- New `studio-components.ts`: ten C3 component kinds from plan §5 as strict Zod settings unions
+  (`rate-limiter`, `cache-reader`, `id-generator`, `redirect-responder`, `event-publisher`,
+  `event-consumer`, `data-access`, `auth-guard`, `external-call`, `custom`), creation defaults,
+  a frozen catalog (`studioComponentDefinitions`: name, third-party, allowed target kinds, channel
+  role, browser hosting, field descriptors) and `studioComponentRequirements` (readiness).
+- `studio-model.ts`: optional `components[]` and `componentConnections[]` on studio version 1
+  (still version 1, so old documents read unchanged). A component has `id`, `host`, `name`,
+  `description?`, `settings`. A link is `from` component → `{component, id}` (same host) or
+  `{element, id, via}`, where `via` is an existing C2 connection joining host and target.
+  Optional performance fields: replicas min/max, `autoscaleOn`, `requestTimeoutMs`,
+  `concurrencyLimit` on common applications (worker: replicas/autoscale only); database
+  `readReplicas`/`partitionKey`, cache `topology`/`eviction`, queue `partitions`, CDN
+  `cacheRedirects`.
+- `studio-validation.ts`: component host/target/trace/channel-role/identity rules (structural)
+  and missing-dependency/purpose gaps (`CONFIG_REQUIRED`, saved).
+- `studio-operations.ts`: commands `createComponent` (optionally with links, each optionally
+  creating its traced C2 connection), `editComponent`, `connectComponent`, `disconnectComponent`,
+  `removeComponent`. `pruneStudioAfterDelete` removes a deleted host's components and links that
+  traced a removed connection or reached a removed element.
+- `studio-references.ts` remaps components; `studio-support.ts` and the design-only finding count
+  components; `studio-definitions.ts` exports `studioPerformanceFields` descriptors; index exports.
+- Docs: configuration matrix §7 and a CATALOG paragraph. Evidence:
+  `docs/evidence/studio-grid/SG02/README.md`.
+
+Observations (scratch script `observe.mts`, run with tsx): all 14 studies and the 4 owner projects
+(read-only GET) parse semantically unchanged, with studio findings identical to HEAD; a
+TinyURL-shaped command sequence round-trips; 9 structural rejections leave the design unchanged;
+11 schema rejections; remap and removal behave as listed in the README.
+
+Checks (Node 24.21.0): `pnpm lint` exit 0 (2,797 warnings / 88 infos, unchanged); `pnpm typecheck`
+exit 0; `pnpm --filter @jeeves/web build` exit 0 (existing chunk advisory). Unit/E2E suites and
+`pnpm check` were not run (owner-deferred). No browser screenshots: there is no UI change and the
+TinyURL study comes in SG04. No projects were created or deleted; the dev servers I found running
+were left running.
+
+Deviations and decisions:
+
+- External-call timeout/retry stay on the traced C2 connection binding, following the single
+  destination rule (model contract §2). The component holds only `circuitBreaker`. SG09 should
+  show the traced connection's timeout/retry in the external-call form.
+- Plan "target/source queue", "target external system" and "identity provider" settings are
+  expressed by the component's link (with `via`), not duplicated as settings. The dead-letter
+  queue is a settings reference because it is not a traced dependency.
+- Workers keep their existing `concurrency` as their concurrency limit and get no request timeout.
+  Browser apps get no performance settings.
+- Components carry no definition ref; the studio version covers them. O5's "gateway" application
+  kind is not added; TinyURL (§7) does not need it.
+- `studioPerformanceFields` are kept outside `definition.fields`, so the current inspector
+  renders exactly as before. The inspector already preserves unknown settings keys on edit.
+
+Notes for SG03 (blueprint):
+
+- Components are `architecture.studio.components`; their dependencies are
+  `componentConnections`. An element link's `via` gives the resolved C2 connection, including its
+  protocol, interaction, channel use and timeout/retry. The C3 arrow direction is the `via`
+  connection's direction (queue → consumer for consumers).
+- `studioComponentRequirements` and `studioComponentDefinitions[kind].thirdParty` are useful
+  blueprint metadata. Readiness gaps are `CONFIG_REQUIRED` at `architecture.studio.components.N`.
+
+Known gaps for later units: library fragment copy (`architecture-library.ts`) and pattern
+insertion do not carry components yet. The studio projection (`studio-view.ts`) ignores
+components until SG05. Nothing creates components in the UI until SG08/SG09.
