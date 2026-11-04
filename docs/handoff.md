@@ -8714,3 +8714,75 @@ Starting HEAD: feff820. Only unrelated .jeeves-feedback/ is untracked. Preserve 
 feedback. Follow the plan's lint/typecheck/web-build/direct-browser profile; unit/E2E suites remain
 deferred. Backend P73a/P73b remain paused. The authorization does not expand into new application
 runtimes, provider execution, external deployment or changes to sibling repositories.
+
+
+## 2026-11-03 — UX01: baseline, action inventory and public inspection fixtures (complete)
+
+Executed UX01 only on primary main from feff820 under the owner's sequential fresh-worker UX
+batch authorization. No delegation, branch/worktree, UI/model/runtime implementation, provider task,
+generation job, benchmark repair or sibling repository edit. P73a/P73b/backend work remains paused;
+P73a is still the incomplete three-helper-module/policy checkpoint, not a registered Zammad design.
+
+Evidence uses consistent uppercase unit path `docs/evidence/studio-ux/UX01/`. Added:
+
+- Finite action/destination inventory for shell/project controls, all workspace and diagram actions,
+  old freeform toolbar, dynamic catalog/scenario/deployment menus, Library lifecycle, inspectors,
+  source/API/deep editors, chat/settings and existing Generate/Runs. A source audit enumerates all
+  47 actual non-test Menu.Item/CheckboxItem sites. Removed surfaces have explicit dispositions;
+  supported presets, project lifecycle, portable handoff and execution controls retain destinations.
+- Complete E01–E14 source inventory: nine shipped examples and five additional references. Captured
+  raw source/factory/helper/brief hashes, unchanged emitted factory design/layout hashes, all 48
+  frozen benchmark file hashes, and all 21 original/copy feedback pairs. Sibling goal references
+  are qualified for later reconstruction; no sibling content was copied or changed in UX01.
+- Seven small public input files covering six acceptance cases: single service/provider with no
+  children, real API/worker package with independent languages, one shared queue/two consumers,
+  shared/owned databases and distinct caches, 24-node/47-edge dense synthetic graph, and supported
+  plus rich legacy preservation. The rich case is a compact exact-factory materialization descriptor
+  with additive synthetic note/focused-layout data, avoiding a 1.6 MB duplicate backend design.
+  IDs/provenance/raw and semantic before hashes are tracked. Five future studio inputs intentionally
+  await UX02a's parser; neither templates nor new examples are registered as runnable.
+- Actual C2/API-C3 screenshots at 1440×900 and 1280×800 plus menu capture. Preserved saved cameras
+  mean content extends outside the viewport; this is the current baseline, not a fitted redesign.
+  All non-read requests were blocked before loading the existing project. No writes were attempted;
+  no page/console-warning/console-error/HTTP errors were observed in that read-only context.
+- Owned public-factory copy drag recording, before/mid/after screenshots, 12 sampled geometry frames,
+  worker counters, network save results, semantic before/after hashes and cleanup. All 22 card IDs
+  and 39 edge paths/labels remained present; only one card moved, four incident paths and two
+  incident labels changed, no extra worker/postMessage appeared. The original GIF's disappearance
+  was not reproduced here. All-edge label reservation/re-routing remains a source-backed candidate,
+  not an established flicker root cause. Selection fading is visible and distinct. No fix attempted.
+
+Mutation inspection used only owned disposable projects. Browser guard allowed PUT layout solely
+for the exact owned ID and blocked every other non-read route. Three layout saves returned 200;
+semantic revision 1 and initialized semantic hash stayed unchanged. Both disposable capture IDs
+were deleted with 204 and verified 404. All 13 pre-existing projects' semantic and layout hashes
+match before/after. No live user diagram was rewritten. The first loader's Node strip-only import
+failed before creating a project; installed tsx resolved it. A successful capture was repeated once
+because comparing normalized API output directly with the raw factory was not a valid semantic
+before/after measurement; the final record uses initialized API hashes on both sides.
+
+Required checks with Node 24.21.0 / pnpm 12.16.1 (Node path prepended):
+
+- `pnpm lint`: final exit 0, unchanged 2,797 warnings / 88 infos, no errors.
+- `pnpm typecheck`: exit 0 across all workspaces/scripts, including existing source/test types.
+- `pnpm --filter @jeeves/web build`: exit 0; existing >500 kB chunk-size advisory retained.
+- Direct installed-Playwright browser inspection at both desktop sizes and the owned drag: passed
+  with the bounded observations above. One-off fixture structural/reference/schema/JSON round-trip
+  inspection passed; current strict schema accepts both materialized legacy inputs and intentionally
+  rejects the five not-yet-supported studio inputs. No maintained test suite was introduced.
+- Raw hash comparison: all feedback originals/copies, frozen ledgers and old factories/helpers
+  unchanged. Scoped formatting and Git whitespace checks pass; earlier handoff bytes retained.
+
+Baseline hygiene deviation, confined to tooling/evidence: initial lint exited 1 with three already
+present errors: immutable editor-1.svg lacked a title in original `.jeeves-feedback/archive/` and
+preserved review `sources/archive/`; derived review `inspection/browser-observations.json` lacked
+its final newline. Excluded only the original feedback directory and that exact immutable review
+sources directory from Biome, and appended the derived JSON newline. No original/source artifact
+was edited and no application warning was suppressed. Initial/final logs and exact paths are in
+UX01 checks/results.json. The raw before/after manifest records that sole derived-file delta.
+
+Unit/E2E/template suites, snapshots and `pnpm check` remain explicitly deferred. No application
+runtime or generation outcome is claimed. UX01 is complete as a baseline; future parser/UI behavior,
+C4b example reconstruction maps and true flicker diagnosis remain their assigned later work.
+Next queue boundary is UX02a only, assigned by the coordinator to another fresh worker. This worker
+stops after the scoped local UX01 commit and does not start the next assignment.

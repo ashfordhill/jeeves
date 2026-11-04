@@ -1,0 +1,274 @@
+{
+  "fixtureVersion": 1,
+  "id": "ux01-package",
+  "provenance": {
+    "kind": "synthetic",
+    "source": "docs/plans/studio-ux/example-coverage.md \u00a73",
+    "authoringUnit": "UX01",
+    "runtimeStatus": "design-only; future input, not yet parseable by current strict designSchema"
+  },
+  "design": {
+    "schemaVersion": 2,
+    "revision": 0,
+    "elements": [
+      {
+        "id": "package-api",
+        "name": "API",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "package-worker",
+        "name": "Worker",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "package-queue",
+        "name": "Work queue",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Data store",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "package-cache",
+        "name": "Cache",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Data store",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "package-db",
+        "name": "Data",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Data store",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "package-link-1",
+        "kind": "depends-on",
+        "from": {
+          "element": "package-api"
+        },
+        "to": {
+          "element": "package-queue"
+        },
+        "planned": {
+          "label": "Publishes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "package-link-2",
+        "kind": "depends-on",
+        "from": {
+          "element": "package-queue"
+        },
+        "to": {
+          "element": "package-worker"
+        },
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "package-link-3",
+        "kind": "depends-on",
+        "from": {
+          "element": "package-api"
+        },
+        "to": {
+          "element": "package-cache"
+        },
+        "planned": {
+          "label": "Uses",
+          "protocol": "Redis",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "package-link-4",
+        "kind": "uses-database",
+        "from": {
+          "element": "package-worker"
+        },
+        "to": {
+          "element": "package-db"
+        },
+        "planned": {
+          "label": "Reads & writes",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "annotations": [],
+    "architecture": {
+      "system": {
+        "name": "UX01 package",
+        "description": "Design-only public acceptance input."
+      },
+      "nodes": [],
+      "relationships": [],
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "package-api",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "typescript",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "package-worker",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "execution": "docker",
+              "language": "go"
+            }
+          },
+          {
+            "element": "package-queue",
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "self-hosted",
+              "retentionSeconds": 3600
+            },
+            "owner": {
+              "kind": "package",
+              "id": "processing-package"
+            }
+          },
+          {
+            "element": "package-cache",
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "cache",
+              "engine": "redis-compatible",
+              "provider": "self-hosted",
+              "ttlSeconds": 300
+            },
+            "owner": {
+              "kind": "package",
+              "id": "processing-package"
+            }
+          },
+          {
+            "element": "package-db",
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "database",
+              "engine": "postgresql",
+              "provider": "self-hosted"
+            },
+            "owner": {
+              "kind": "package",
+              "id": "processing-package"
+            }
+          }
+        ],
+        "packages": [
+          {
+            "id": "processing-package",
+            "name": "Processing",
+            "description": "Two independent applications; no package runtime.",
+            "members": [
+              "package-api",
+              "package-worker"
+            ]
+          }
+        ],
+        "connections": [
+          {
+            "connection": "package-link-1",
+            "settings": {
+              "channelUse": "publish"
+            }
+          },
+          {
+            "connection": "package-link-2",
+            "settings": {
+              "channelUse": "consume"
+            }
+          },
+          {
+            "connection": "package-link-3",
+            "settings": {}
+          },
+          {
+            "connection": "package-link-4",
+            "settings": {}
+          }
+        ]
+      }
+    }
+  }
+}

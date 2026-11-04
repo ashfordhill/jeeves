@@ -1,0 +1,211 @@
+{
+  "fixtureVersion": 1,
+  "id": "ux01-shared-channel",
+  "provenance": {
+    "kind": "synthetic",
+    "source": "docs/plans/studio-ux/example-coverage.md §3",
+    "authoringUnit": "UX01",
+    "runtimeStatus": "design-only; future input, not yet parseable by current strict designSchema"
+  },
+  "design": {
+    "schemaVersion": 2,
+    "revision": 0,
+    "elements": [
+      {
+        "id": "channel-producer",
+        "name": "Producer",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "channel-one",
+        "name": "Consumer one",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "channel-two",
+        "name": "Consumer two",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "shared-queue",
+        "name": "Shared channel",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Data store",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "shared-channel-link-1",
+        "kind": "depends-on",
+        "from": {
+          "element": "channel-producer"
+        },
+        "to": {
+          "element": "shared-queue"
+        },
+        "planned": {
+          "label": "Publishes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "shared-channel-link-2",
+        "kind": "depends-on",
+        "from": {
+          "element": "shared-queue"
+        },
+        "to": {
+          "element": "channel-one"
+        },
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "shared-channel-link-3",
+        "kind": "depends-on",
+        "from": {
+          "element": "shared-queue"
+        },
+        "to": {
+          "element": "channel-two"
+        },
+        "planned": {
+          "label": "Consumes",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "annotations": [],
+    "architecture": {
+      "system": {
+        "name": "UX01 shared-channel",
+        "description": "Design-only public acceptance input."
+      },
+      "nodes": [],
+      "relationships": [],
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "channel-producer",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "channel-one",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "execution": "docker",
+              "language": "unspecified"
+            }
+          },
+          {
+            "element": "channel-two",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "execution": "docker",
+              "language": "unspecified"
+            }
+          },
+          {
+            "element": "shared-queue",
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "queue",
+              "mode": "work-queue",
+              "provider": "self-hosted",
+              "retentionSeconds": 3600
+            },
+            "owner": {
+              "kind": "element",
+              "id": "channel-producer"
+            }
+          }
+        ],
+        "packages": [],
+        "connections": [
+          {
+            "connection": "shared-channel-link-1",
+            "settings": {
+              "channelUse": "publish"
+            }
+          },
+          {
+            "connection": "shared-channel-link-2",
+            "settings": {
+              "channelUse": "consume"
+            }
+          },
+          {
+            "connection": "shared-channel-link-3",
+            "settings": {
+              "channelUse": "consume"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

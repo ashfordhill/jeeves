@@ -1,0 +1,89 @@
+{
+  "kind": "one-off structural/schema/round-trip observation, no maintained test suite",
+  "inspections": [
+    {
+      "id": "ux01-dense-graph",
+      "elements": 24,
+      "connections": 47,
+      "studioPackages": 0,
+      "currentDesignSchemaAccepts": false,
+      "expectedCurrentParserRejection": true,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "785c5df85d3cd138183f4822de0637f24ade24db563d8ef0a25808ee3e06ef62",
+      "richMaterializationHashMatches": false,
+      "layoutSchemaAccepts": null
+    },
+    {
+      "id": "ux01-legacy-rich",
+      "elements": 6,
+      "connections": 7,
+      "studioPackages": 0,
+      "currentDesignSchemaAccepts": true,
+      "expectedCurrentParserRejection": false,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "ee238588f32a20dda4a6aed35ef39281478ef089b244e46eaafb0dbca2ac04a0",
+      "richMaterializationHashMatches": true,
+      "layoutSchemaAccepts": true
+    },
+    {
+      "id": "ux01-legacy-supported",
+      "elements": 3,
+      "connections": 2,
+      "studioPackages": 0,
+      "currentDesignSchemaAccepts": true,
+      "expectedCurrentParserRejection": false,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "4d96d628b752603a438f4dc24d88207fbdf849da94f2ee3de633eb9be6e03e7a",
+      "richMaterializationHashMatches": false,
+      "layoutSchemaAccepts": true
+    },
+    {
+      "id": "ux01-package",
+      "elements": 5,
+      "connections": 4,
+      "studioPackages": 1,
+      "currentDesignSchemaAccepts": false,
+      "expectedCurrentParserRejection": true,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "177bdbb23bd875e7ef26a0ebd5a21b1b08ec660eb592ff9441f66a2593c5fb88",
+      "richMaterializationHashMatches": false,
+      "layoutSchemaAccepts": null
+    },
+    {
+      "id": "ux01-shared-channel",
+      "elements": 4,
+      "connections": 3,
+      "studioPackages": 0,
+      "currentDesignSchemaAccepts": false,
+      "expectedCurrentParserRejection": true,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "ce9c26100e30ea0a43d1f0ff29cb5792c35e489d94749873089676cb05cdf236",
+      "richMaterializationHashMatches": false,
+      "layoutSchemaAccepts": null
+    },
+    {
+      "id": "ux01-shared-data",
+      "elements": 6,
+      "connections": 5,
+      "studioPackages": 0,
+      "currentDesignSchemaAccepts": false,
+      "expectedCurrentParserRejection": true,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "c28d65204c058d638fe4bc1f748564092dfc8d5582dbc3767e68fa2a1e9d38a8",
+      "richMaterializationHashMatches": false,
+      "layoutSchemaAccepts": null
+    },
+    {
+      "id": "ux01-single-service",
+      "elements": 1,
+      "connections": 0,
+      "studioPackages": 0,
+      "currentDesignSchemaAccepts": false,
+      "expectedCurrentParserRejection": true,
+      "endpointIdsResolve": true,
+      "roundTripSemanticSha256": "347619cb16b310bbf9b4e6a43d02cb517bc1d504ab6c568a6c8210797ae8cdf1",
+      "richMaterializationHashMatches": false,
+      "layoutSchemaAccepts": null
+    }
+  ]
+}

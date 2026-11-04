@@ -1,0 +1,18 @@
+{
+  "id": "282a6ab0-d399-490c-8ed9-4c8ebaee3619",
+  "source": "unchanged architectureExample(\"qrwty-target\")",
+  "created": true,
+  "deleteStatus": 204,
+  "deleted": true,
+  "postCleanupStatus": 404,
+  "priorDisposableAttempts": [
+    {
+      "id": "30ee00a6-5852-40f0-ad40-49664c2e1b62",
+      "deleted": true,
+      "deleteStatus": 204,
+      "postCleanupStatus": 404,
+      "purpose": "Initial successful drag capture. Repeated once to capture initialized semantic hash before the gesture; initial public-factory comparison was affected by API normalization."
+    }
+  ],
+  "setupRetry": "Two initial read-only passes ended before project creation because Node strip-only could not load a TypeScript parameter property. Retried using installed tsx; no projects created by those passes."
+}

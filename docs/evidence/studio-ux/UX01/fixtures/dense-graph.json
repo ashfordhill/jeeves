@@ -1,0 +1,1623 @@
+{
+  "fixtureVersion": 1,
+  "id": "ux01-dense-graph",
+  "provenance": {
+    "kind": "synthetic",
+    "source": "docs/plans/studio-ux/example-coverage.md §3",
+    "authoringUnit": "UX01",
+    "runtimeStatus": "design-only; future input, not yet parseable by current strict designSchema"
+  },
+  "design": {
+    "schemaVersion": 2,
+    "revision": 0,
+    "elements": [
+      {
+        "id": "dense-01",
+        "name": "A deliberately long synthetic service name for desktop truncation inspection",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-02",
+        "name": "Service 2",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-03",
+        "name": "Service 3",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-04",
+        "name": "Service 4",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-05",
+        "name": "Service 5",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-06",
+        "name": "Service 6",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-07",
+        "name": "Service 7",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-08",
+        "name": "Service 8",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-09",
+        "name": "Service 9",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-10",
+        "name": "Service 10",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-11",
+        "name": "Service 11",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-12",
+        "name": "Service 12",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-13",
+        "name": "Service 13",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-14",
+        "name": "Service 14",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-15",
+        "name": "Service 15",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-16",
+        "name": "Service 16",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-17",
+        "name": "Service 17",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-18",
+        "name": "Service 18",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-19",
+        "name": "Service 19",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-20",
+        "name": "Service 20",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-21",
+        "name": "Service 21",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-22",
+        "name": "Service 22",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-23",
+        "name": "Service 23",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      },
+      {
+        "id": "dense-24",
+        "name": "Service 24",
+        "template": null,
+        "config": {},
+        "attachments": [],
+        "notes": "",
+        "description": "Synthetic public UX inspection data.",
+        "classification": {
+          "kind": "Application",
+          "ownership": "System responsibility",
+          "operation": "Self operated"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "dense-graph-link-1",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-02"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-2",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-03"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-3",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-04"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-4",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-05"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-5",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-06"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-6",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-07"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-7",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-08"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-8",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-09"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-9",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-10"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-10",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-11"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-11",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-12"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-12",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-13"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-13",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-14"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-14",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-15"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-15",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-16"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-16",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-17"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-17",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-18"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-18",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-19"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-19",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-20"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-20",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-21"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-21",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-22"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-22",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-23"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-23",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-01"
+        },
+        "to": {
+          "element": "dense-24"
+        },
+        "planned": {
+          "label": "Calls shared application responsibility",
+          "protocol": "WebSocket",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-24",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-02"
+        },
+        "to": {
+          "element": "dense-03"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-25",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-03"
+        },
+        "to": {
+          "element": "dense-04"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-26",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-04"
+        },
+        "to": {
+          "element": "dense-05"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-27",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-05"
+        },
+        "to": {
+          "element": "dense-06"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-28",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-06"
+        },
+        "to": {
+          "element": "dense-07"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-29",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-07"
+        },
+        "to": {
+          "element": "dense-08"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-30",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-08"
+        },
+        "to": {
+          "element": "dense-09"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-31",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-09"
+        },
+        "to": {
+          "element": "dense-10"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-32",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-10"
+        },
+        "to": {
+          "element": "dense-11"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-33",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-11"
+        },
+        "to": {
+          "element": "dense-12"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-34",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-12"
+        },
+        "to": {
+          "element": "dense-13"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-35",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-13"
+        },
+        "to": {
+          "element": "dense-14"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-36",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-14"
+        },
+        "to": {
+          "element": "dense-15"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-37",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-15"
+        },
+        "to": {
+          "element": "dense-16"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-38",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-16"
+        },
+        "to": {
+          "element": "dense-17"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-39",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-17"
+        },
+        "to": {
+          "element": "dense-18"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-40",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-18"
+        },
+        "to": {
+          "element": "dense-19"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-41",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-19"
+        },
+        "to": {
+          "element": "dense-20"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-42",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-20"
+        },
+        "to": {
+          "element": "dense-21"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-43",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-21"
+        },
+        "to": {
+          "element": "dense-22"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-44",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-22"
+        },
+        "to": {
+          "element": "dense-23"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-45",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-23"
+        },
+        "to": {
+          "element": "dense-24"
+        },
+        "planned": {
+          "label": "Calls",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-46",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-24"
+        },
+        "to": {
+          "element": "dense-01"
+        },
+        "planned": {
+          "label": "Returns completion",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "dense-graph-link-47",
+        "kind": "depends-on",
+        "from": {
+          "element": "dense-02"
+        },
+        "to": {
+          "element": "dense-01"
+        },
+        "planned": {
+          "label": "Replies",
+          "protocol": "gRPC",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    ],
+    "annotations": [],
+    "architecture": {
+      "system": {
+        "name": "UX01 dense-graph",
+        "description": "Design-only public acceptance input."
+      },
+      "nodes": [],
+      "relationships": [],
+      "studio": {
+        "version": 1,
+        "elements": [
+          {
+            "element": "dense-01",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-02",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-03",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-04",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-05",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-06",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-07",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-08",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-09",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-10",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-11",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-12",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-13",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-14",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-15",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-16",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-17",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-18",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-19",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-20",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-21",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-22",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-23",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          },
+          {
+            "element": "dense-24",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "execution": "docker",
+              "language": "unspecified",
+              "exposure": "internal"
+            }
+          }
+        ],
+        "packages": [],
+        "connections": [
+          {
+            "connection": "dense-graph-link-1",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-2",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-3",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-4",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-5",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-6",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-7",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-8",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-9",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-10",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-11",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-12",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-13",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-14",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-15",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-16",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-17",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-18",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-19",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-20",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-21",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-22",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-23",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-24",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-25",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-26",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-27",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-28",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-29",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-30",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-31",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-32",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-33",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-34",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-35",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-36",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-37",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-38",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-39",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-40",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-41",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-42",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-43",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-44",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-45",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-46",
+            "settings": {}
+          },
+          {
+            "connection": "dense-graph-link-47",
+            "settings": {}
+          }
+        ]
+      }
+    }
+  }
+}
