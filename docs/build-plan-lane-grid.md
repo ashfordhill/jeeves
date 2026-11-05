@@ -3,7 +3,7 @@
 **Status: complete (2026-11-05).** All thirteen units,
 [LG01–LG13](plans/lane-grid/execution-units.md), are done; each one's record, and LG13's
 acceptance of the decisions below, are in the [handoff](handoff.md). What exists now is described
-in the [studio guide](studio.md) and [PLAN](../PLAN.md).
+in the [studio guide](studio.md) and [PLAN](../PLAN.md). Follow-ups: [polish units PL01–PL02](plans/lane-grid/polish-units.md).
 
 This plan replaces the studio canvas (C1/C2/C3 tabs, ELK compound layout, merged lines, row-order
 drag, Library) with a locked lane grid ported from automation-illustrator
