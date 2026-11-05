@@ -52,16 +52,22 @@ describe("buildStudioCommand", () => {
     expect(() =>
       buildStudioCommand(emptyDesign(), { type: "create", elements: [service] }),
     ).toThrow(/architecture system/);
-    const { ops, design } = run(emptyDesign(), {
+    const batch = buildStudioCommand(emptyDesign(), {
       type: "create",
       system: { name: "Shortener" },
       elements: [service],
     });
-    expect(ops).toEqual(["setArchitecture", "addElement", "setStudio"]);
-    expect(design.architecture?.system.name).toBe("Shortener");
-    expect(studio(design).elements).toEqual([
-      expect.objectContaining({ element: "links", settings: createStudioSettings("service") }),
-    ]);
+    expect(batch.ops.map((op) => op.op)).toEqual(["setArchitecture", "addElement", "setStudio"]);
+    expect(batch.ops[2]).toMatchObject({
+      studio: {
+        elements: [{ element: "links", settings: createStudioSettings("service") }],
+      },
+    });
+    // A box no lane reaches is an island, which the lane rules refuse (addTile starts a lane).
+    expect(applyOperations(emptyDesign(), batch.ops)).toMatchObject({
+      ok: false,
+      errors: [{ code: "LANE_INVALID" }],
+    });
   });
 
   it("creates boxes, their connections and a package in one batch", () => {
@@ -71,7 +77,10 @@ describe("buildStudioCommand", () => {
         { id: "admin", name: "Admin API", settings: createStudioSettings("service") },
         { id: "audit-db", name: "Audit DB", settings: createStudioSettings("database") },
       ],
-      connections: [sql("admin-audit", "admin", "audit-db")],
+      connections: [
+        call("shorten-admin", "shorten-api", "admin"),
+        sql("admin-audit", "admin", "audit-db"),
+      ],
       package: {
         id: "link-platform",
         name: "Link platform",
@@ -110,6 +119,7 @@ describe("buildStudioCommand", () => {
     const base = run(tinyurl(), {
       type: "create",
       elements: [{ id: "replica", name: "Replica", settings: createStudioSettings("database") }],
+      connections: [sql("analytics-replica", "analytics", "replica")],
     }).design;
     const connected = run(base, {
       type: "connect",
@@ -128,17 +138,17 @@ describe("buildStudioCommand", () => {
 
     const edited = run(connected, {
       type: "editConnection",
-      connection: "web-shorten",
-      planned: { label: "Creates links" },
+      connection: "shorten-reputation",
+      planned: { label: "Screens links" },
       settings: { timeoutMs: 500 },
     });
     expect(edited.ops).toEqual(["updatePlannedConnection", "setStudio"]);
-    expect(edited.design.connections.find((c) => c.id === "web-shorten")?.planned).toMatchObject({
-      label: "Creates links",
-      protocol: "HTTPS",
-    });
     expect(
-      studio(edited.design).connections.find((b) => b.connection === "web-shorten")?.settings,
+      edited.design.connections.find((c) => c.id === "shorten-reputation")?.planned,
+    ).toMatchObject({ label: "Screens links", protocol: "HTTPS" });
+    expect(
+      studio(edited.design).connections.find((b) => b.connection === "shorten-reputation")
+        ?.settings,
     ).toEqual({ timeoutMs: 500 });
     // The same settings on a SQL relationship are refused.
     expect(
@@ -154,34 +164,32 @@ describe("buildStudioCommand", () => {
   });
 
   it("groups, removes members (dissolving below two) and ungroups", () => {
+    const grouped = run(tinyurl(), {
+      type: "group",
+      package: {
+        id: "link-platform",
+        name: "Link platform",
+        description: "",
+        members: ["shorten-api", "redirect"],
+      },
+    }).design;
+    expect(studio(grouped).packages.map((p) => p.id)).toEqual(["link-platform"]);
     expect(
       studio(
-        run(tinyurl(), { type: "removeMembers", package: "link-platform", members: ["redirect"] })
+        run(grouped, { type: "removeMembers", package: "link-platform", members: ["redirect"] })
           .design,
       ).packages,
     ).toEqual([]);
     expect(() =>
-      buildStudioCommand(tinyurl(), {
+      buildStudioCommand(grouped, {
         type: "removeMembers",
         package: "link-platform",
         members: ["analytics"],
       }),
     ).toThrow(/only members/);
-    const grouped = run(tinyurl(), {
-      type: "group",
-      package: {
-        id: "backoffice",
-        name: "Back office",
-        description: "",
-        members: ["analytics", "web"],
-      },
-    }).design;
-    expect(studio(grouped).packages.map((p) => p.id)).toEqual(["link-platform", "backoffice"]);
     expect(
-      studio(run(grouped, { type: "ungroup", package: "backoffice" }).design).packages.map(
-        (p) => p.id,
-      ),
-    ).toEqual(["link-platform"]);
+      studio(run(grouped, { type: "ungroup", package: "link-platform" }).design).packages,
+    ).toEqual([]);
   });
 
   it("adds, edits, links and removes components", () => {
@@ -243,19 +251,27 @@ describe("buildStudioCommand", () => {
   });
 
   it("deletes a package with its members in one batch", () => {
-    const { ops, design } = run(tinyurl(), {
+    const grouped = run(tinyurl(), {
+      type: "group",
+      package: {
+        id: "click-path",
+        name: "Click path",
+        description: "",
+        members: ["redirect", "analytics"],
+      },
+    }).design;
+    const { ops, design } = run(grouped, {
       type: "delete",
-      package: "link-platform",
+      package: "click-path",
       packageAction: "delete-members",
-      elements: ["links-db", "link-cache", "click-events"],
+      elements: ["link-cache", "click-events", "analytics-store"],
     });
     expect(ops.filter((op) => op === "removeElement")).toHaveLength(5);
     expect(design.elements.map((e) => e.id).sort()).toEqual([
-      "analytics",
-      "analytics-store",
       "cdn",
+      "links-db",
       "reputation",
-      "web",
+      "shorten-api",
     ]);
     expect(studio(design).packages).toEqual([]);
   });

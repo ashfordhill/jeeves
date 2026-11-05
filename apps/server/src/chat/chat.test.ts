@@ -5,7 +5,7 @@ import {
   type ModelRequest,
   type Script,
 } from "@jeeves/providers";
-import { createStudioSettings, type DesignDocument } from "@jeeves/spec";
+import type { DesignDocument } from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
@@ -132,8 +132,12 @@ describe("design chat", () => {
 
   it("commits a turn's studio commands as one chat edit and one undo step", async () => {
     const service = (id: string, name: string) => ({
-      type: "create",
-      elements: [{ id, name, settings: createStudioSettings("service") }],
+      type: "addTile",
+      from: { lane: "upload" },
+      side: "after",
+      link: "sync",
+      tile: { id, name, kind: "service" },
+      linkId: `upload-${id}`,
     });
     const h = harness([
       {

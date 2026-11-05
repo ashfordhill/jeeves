@@ -21,15 +21,22 @@ describe("studioViews", () => {
     expect(
       [context, containers, components].map((s) => [s.key, s.nodes.length, s.edges.length]),
     ).toEqual([
-      ["studio:context", 4, 3],
-      ["studio:containers", 12, 11],
-      ["studio:components", 21, 17],
+      ["studio:context", 1, 0],
+      ["studio:containers", 8, 8],
+      ["studio:components", 20, 16],
     ]);
     expect(context.nodes.map((n) => n.id)).toContain("studio:context:system");
   });
 
   it("draws a package as a C2 frame around its members and hides queues behind their flows", () => {
-    const { containers } = views();
+    const design = tinyurl();
+    design.architecture?.studio?.packages.push({
+      id: "link-platform",
+      name: "Link platform",
+      description: "",
+      members: ["shorten-api", "redirect"],
+    });
+    const { containers } = views(design);
     const frame = containers.nodes.find((n) => n.id === "studio:package:link-platform");
     expect(frame?.frame).toBe(true);
     expect(containers.nodes.filter((n) => n.parent === frame?.id).map((n) => n.id)).toEqual([
@@ -42,7 +49,15 @@ describe("studioViews", () => {
   });
 
   it("merges every relationship between the same two boxes into one line", () => {
-    const { containers } = views();
+    const design = tinyurl();
+    const check = design.connections.find((item) => item.id === "shorten-reputation");
+    if (!check) throw new Error("TinyURL checks destinations.");
+    design.connections.push({
+      ...check,
+      id: "shorten-reputation-report",
+      planned: { ...check.planned, label: "Reports abuse" },
+    });
+    const { containers } = views(design);
     const merged = edge(containers, "element:shorten-api", "element:reputation");
     expect(merged?.members).toHaveLength(2);
     const pairs = containers.edges.map((e) => `${e.from}>${e.to}`);
@@ -74,13 +89,12 @@ describe("designBlueprint", () => {
     expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
     expect(design).toEqual(before);
     expect(blueprint).toMatchObject({ blueprint: 1, revision: design.revision, findings: [] });
-    expect(blueprint.services.map((s) => s.id)).toEqual([
-      "analytics",
-      "redirect",
-      "shorten-api",
-      "web",
+    expect(blueprint.services.map((s) => s.id)).toEqual(["analytics", "redirect", "shorten-api"]);
+    expect(blueprint.entries).toEqual([
+      { lane: "download", element: "cdn" },
+      { lane: "upload", element: "shorten-api" },
     ]);
-    expect(blueprint.connections).toHaveLength(10);
+    expect(blueprint.connections).toHaveLength(9);
     expect(blueprint.componentLinks).toHaveLength(15);
     expect(blueprint.omitted).toEqual([]);
 
@@ -111,10 +125,9 @@ describe("pruneLayout", () => {
       architecture: {
         "studio:containers": {
           order: [
-            "studio:element:web",
+            "studio:element:cdn",
             "studio:element:reputation",
-            "studio:package:link-platform",
-            "studio:context:visitor",
+            "studio:element:redirect",
             "studio:component:shorten-data",
           ],
           viewport,
@@ -122,12 +135,7 @@ describe("pruneLayout", () => {
       },
     };
     expect(pruneLayout(layout, result.design).architecture?.["studio:containers"]).toEqual({
-      order: [
-        "studio:element:web",
-        "studio:package:link-platform",
-        "studio:context:visitor",
-        "studio:component:shorten-data",
-      ],
+      order: ["studio:element:cdn", "studio:element:redirect", "studio:component:shorten-data"],
       viewport,
     });
   });

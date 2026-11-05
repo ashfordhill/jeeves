@@ -10,7 +10,6 @@ test("serves the read-only blueprint", async ({ page, tinyurl: id }) => {
     "analytics",
     "redirect",
     "shorten-api",
-    "web",
   ]);
 });
 

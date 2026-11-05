@@ -3,28 +3,30 @@
  * read-heavy, low-latency URL shortener: about 100 reads per write, cache-aside with an
  * in-process L1 plus Redis and single-flight, range-allocated base62 IDs, 302 redirects with a
  * short edge max-age, and batched asynchronous click tracking. Design intent only.
+ *
+ * In lanes: the user downloads through the CDN (Redirect service, its cache and database, and
+ * the asynchronous click path) and uploads through the Shorten API (the same database and cache,
+ * and the URL reputation API).
  */
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
+import type { StudioEntry } from "../studio-model.ts";
 import type { StudioConnectionCreation } from "../studio-operations.ts";
 import { createStudioStudy } from "./study.ts";
 
 export const TINYURL_STUDIO_EXAMPLE = {
   id: "studio-tinyurl",
-  version: "1.0.0",
+  version: "2.0.0",
   name: "TinyURL · studio study",
   description:
     "A read-heavy URL shortener: cache-aside redirects behind a CDN, range-allocated short codes and asynchronous click analytics.",
   goalManifestSha256: "4a808cc6cd4557815b283543a896ee22dbaa56370c909da81144f0fe5b2a6d33",
 } as const;
 
-const https = (
-  label: string,
-  security: StudioConnectionCreation["planned"]["security"] = "Service identity",
-): StudioConnectionCreation["planned"] => ({
+const https = (label: string): StudioConnectionCreation["planned"] => ({
   label,
   protocol: "HTTPS",
   interaction: "Request / response",
-  security,
+  security: "Service identity",
 });
 const call = (label: string, protocol: "SQL" | "Redis"): StudioConnectionCreation["planned"] => ({
   label,
@@ -209,16 +211,16 @@ const componentConnections: StudioComponentConnection[] = [
   uses("analytics-data-writes", "analytics-data", "analytics-store", "analytics-write"),
 ];
 
+/** The user follows short links through the CDN and creates them through the Shorten API. */
+const entries: StudioEntry[] = [
+  { id: "download-cdn", lane: "download", element: "cdn" },
+  { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
+];
+
 export function tinyurlStudioExample() {
   return createStudioStudy(
     TINYURL_STUDIO_EXAMPLE,
     [
-      {
-        id: "web",
-        name: "Web app",
-        description: "Browser client where link creators shorten, list and manage their links.",
-        settings: { kind: "browser", delivery: "standalone", provider: "unspecified" },
-      },
       {
         id: "shorten-api",
         name: "Shorten API",
@@ -335,14 +337,6 @@ export function tinyurlStudioExample() {
     ],
     [
       {
-        id: "web-shorten",
-        from: "web",
-        to: "shorten-api",
-        kind: "calls",
-        planned: https("Creates and lists links", "User identity"),
-        settings: { timeoutMs: 3000, retry: { mode: "none" } },
-      },
-      {
         id: "cdn-redirect",
         from: "cdn",
         to: "redirect",
@@ -421,60 +415,9 @@ export function tinyurlStudioExample() {
         description:
           "Shortens long URLs and redirects visitors quickly, with asynchronous click analytics.",
       },
-      nodes: [
-        {
-          id: "link-creator",
-          kind: "person",
-          name: "Link creator",
-          description: "Shortens URLs and manages their links.",
-        },
-        {
-          id: "visitor",
-          kind: "person",
-          name: "Visitor",
-          description: "Follows a short link.",
-        },
-        {
-          id: "url-reputation",
-          kind: "external-system",
-          name: "URL reputation API",
-          description: "Classifies destinations as safe or malicious.",
-          container: "reputation",
-        },
-      ],
-      relationships: [
-        {
-          id: "link-creator-system",
-          from: "link-creator",
-          to: "system",
-          description: "Shortens and manages links",
-          container: "web",
-        },
-        {
-          id: "visitor-system",
-          from: "visitor",
-          to: "system",
-          description: "Follows a short link",
-          container: "cdn",
-        },
-        {
-          id: "system-reputation",
-          from: "system",
-          to: "url-reputation",
-          description: "Checks destination reputation",
-          container: "shorten-api",
-        },
-      ],
     },
     {
-      packages: [
-        {
-          id: "link-platform",
-          name: "Link platform",
-          description: "The public link services: creation and the hot redirect path.",
-          members: ["shorten-api", "redirect"],
-        },
-      ],
+      entries,
       components,
       componentConnections,
     },

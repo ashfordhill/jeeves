@@ -96,13 +96,17 @@ describe("studio + spawn", () => {
       true,
     );
     // Packages carry no handles.
-    expect(
-      spawnEndpoint(
-        design,
-        views.containers,
-        node(views.containers, "studio:package:link-platform"),
-      ),
-    ).toBeUndefined();
+    const grouped = structuredClone(design);
+    grouped.architecture?.studio?.packages.push({
+      id: "link-platform",
+      name: "Link platform",
+      description: "",
+      members: ["shorten-api", "redirect"],
+    });
+    const { containers } = studioViews(grouped, studioDefinitions, "TinyURL");
+    const frame = node(containers, "studio:package:link-platform");
+    expect(frame?.frame).toBe(true);
+    expect(spawnEndpoint(grouped, containers, frame)).toBeUndefined();
   });
 
   it("creates the new box and its one relationship in a single valid batch", () => {

@@ -78,8 +78,9 @@ line, as is every link that continues after one).
 | `database`, `cache`, `object-store`, `search` → anything | no (end tiles) | no |
 
 Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane. A tile is entered
-at most once. A broken rule is a `LANE_INVALID` finding (`laneFindings`); validation does not
-enforce the lane rules yet, because the TinyURL study has no entries yet.
+at most once. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
+these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
+C1 people, external systems and relationships are not tiles and are not checked.
 
 Lane commands ([`studio-lane-commands.ts`](packages/spec/src/studio-lane-commands.ts)) edit a
 design that keeps these rules, and refuse in plain words with tile names ("Link cache can't link
@@ -95,7 +96,8 @@ to Geo lookup. A cache can't link onward."):
 
 A **package** groups two or more independent applications into an open frame at C2; it has no
 language, provider or runtime. The **Service and worker** preset (Library → Presets) creates a
-service, a worker and a package-owned work queue in one step.
+service, a worker and a package-owned work queue in one step; nothing links to the service, so the
+lane rules refuse it.
 
 ## Components (C3)
 
@@ -150,6 +152,7 @@ The design chat uses one provider and model chosen in Settings
 
 ## Study
 
-**TinyURL** (`studio-tinyurl@1.0.0`) is the one study: a read-heavy URL shortener with a CDN,
+**TinyURL** (`studio-tinyurl@2.0.0`) is the one study: a read-heavy URL shortener with a CDN,
 cache-aside redirects, range-allocated IDs and asynchronous click analytics, using eleven
-components. It is described in the [studio guide](docs/studio.md#the-tinyurl-study).
+components. The user downloads through the CDN and uploads through the Shorten API: nine tiles
+and eleven links. It is described in the [studio guide](docs/studio.md#the-tinyurl-study).

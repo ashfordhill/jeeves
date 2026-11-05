@@ -16,19 +16,8 @@ const applied = (result: ReturnType<typeof applyOperations>) => {
   if (!result.ok) throw new Error(JSON.stringify(result.errors));
   return result.design;
 };
-/** TinyURL as plan §4 draws it: no Web app; the user enters at the CDN and the Shorten API. */
-function tinyurlInLanes(): DesignDocument {
-  const base = studioArchitectureExample("studio-tinyurl").design;
-  const design = applied(
-    applyOperations(base, buildStudioCommand(base, { type: "delete", elements: ["web"] }).ops),
-  );
-  const studio = structuredClone(studioOf(design));
-  studio.entries = [
-    { id: "download-cdn", lane: "download", element: "cdn" },
-    { id: "upload-shorten", lane: "upload", element: "shorten-api" },
-  ];
-  return applied(applyOperations(design, [{ op: "setStudio", studio }]));
-}
+/** The TinyURL study: the user enters at the CDN (download) and the Shorten API (upload). */
+const tinyurl = (): DesignDocument => studioArchitectureExample("studio-tinyurl").design;
 /** Builds the command and applies its batch; the result keeps every lane rule. */
 function run(design: DesignDocument, command: StudioCommand) {
   const batch = buildStudioCommand(design, command);
@@ -56,7 +45,7 @@ const tile = (id: string, name: string, kind: StudioModel["elements"][0]["settin
 
 describe("addTile", () => {
   it("adds after a tile, before a tile and from a lane, with owners and link defaults", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     const queue = run(design, {
       type: "addTile",
       from: { tile: "shorten-api" },
@@ -88,7 +77,7 @@ describe("addTile", () => {
     }).design;
     expect(studioOf(gateway).entries).toEqual([
       { id: "download-cdn", lane: "download", element: "cdn" },
-      { id: "upload-shorten", lane: "upload", element: "edge" },
+      { id: "upload-shorten-api", lane: "upload", element: "edge" },
     ]);
     expect(connection(gateway, "edge-shorten")).toMatchObject({ kind: "calls" });
 
@@ -140,7 +129,7 @@ describe("addTile", () => {
   });
 
   it("refuses in plain words with tile names", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     const add = (command: Partial<Extract<StudioCommand, { type: "addTile" }>>) =>
       refusal(design, {
         type: "addTile",
@@ -207,7 +196,7 @@ describe("addTile", () => {
 
 describe("linkTiles", () => {
   it("merges into a tile and refuses a loop, a second link and a second lane", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     const merged = run(design, {
       type: "linkTiles",
       from: { tile: "analytics" },
@@ -257,12 +246,12 @@ describe("linkTiles", () => {
 
 describe("removeTile and removeLink", () => {
   it("restitch: removing the CDN moves the download entry to Redirect", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     const removed = run(design, { type: "removeTile", tile: "cdn" });
     expect(removed.ops).toEqual(["removeElement", "setStudio"]);
     expect(studioOf(removed.design).entries).toEqual([
       { id: "download-redirect", lane: "download", element: "redirect" },
-      { id: "upload-shorten", lane: "upload", element: "shorten-api" },
+      { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
     ]);
     expect(connection(removed.design, "cdn-redirect")).toBeUndefined();
 
@@ -278,13 +267,13 @@ describe("removeTile and removeLink", () => {
 
     const unlinked = run(design, { type: "removeLink", link: "shorten-cache" }).design;
     expect(connection(unlinked, "shorten-cache")).toBeUndefined();
-    expect(refusal(design, { type: "removeLink", link: "upload-shorten" })).toBe(
+    expect(refusal(design, { type: "removeLink", link: "upload-shorten-api" })).toBe(
       "Removing the upload entry to Shorten API would cut off Shorten API and URL reputation API.",
     );
   });
 
   it("names every stranded tile, and needs them in alsoRemove", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     const strands = ["click-events", "analytics", "analytics-store"];
     expect(planRemoveTile(design, "redirect")).toEqual({ ok: true, value: { strands } });
     expect(refusal(design, { type: "removeTile", tile: "redirect" })).toBe(
@@ -316,7 +305,7 @@ describe("removeTile and removeLink", () => {
 
 describe("changeKind", () => {
   it("switches within the tile type with fresh settings, and refuses a kind that breaks a link", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     const switched = run(design, { type: "changeKind", element: "redirect", kind: "service" });
     expect(switched.ops).toEqual(["setStudio"]);
     expect(binding(switched.design, "redirect")).toMatchObject({
@@ -341,7 +330,7 @@ describe("changeKind", () => {
 
 describe("lane choices", () => {
   it("offer only valid tile types: after a queue, async only, and a Service is a worker", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     expect(laneChoices(design, { tile: "click-events" }, "after", "sync")).toEqual([]);
     expect(laneChoices(design, { tile: "click-events" }, "after", "async")).toEqual([
       { type: "service", kind: "worker" },

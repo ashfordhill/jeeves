@@ -8,6 +8,7 @@ import {
   studioComponentRequirements,
 } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
+import { laneFindings } from "./studio-lanes.ts";
 import {
   type StudioKind,
   studioAccessSchema,
@@ -178,7 +179,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
       }
     }
   });
-  // Which kinds may be entries, and how many, are lane rules (`laneFindings`).
+  // Which kinds may be entries, and how many, are lane rules (`laneFindings`, below).
   studio.entries?.forEach((entry, index) => {
     if (!elements.has(entry.element))
       missing(
@@ -250,6 +251,8 @@ export function validateStudio(design: DesignDocument): Finding[] {
     }
   });
   validateStudioComponents(design, report, kind, application);
+  // Lane rules: every tile hangs off the actor, no cycles, the link table and the caps.
+  findings.push(...laneFindings(design));
   return findings;
 }
 

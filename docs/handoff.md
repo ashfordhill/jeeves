@@ -527,3 +527,87 @@ Notes for LG09–LG12:
 - `planRemoveTile` gives the strands for the confirmation; send them as `alsoRemove`.
 - Inserting before a tile resets the moved connections' labels and settings to the defaults and
   drops module links that traced them (readiness gaps, not errors).
+
+## 2026-11-04 — LG06: TinyURL in lanes, lane rules enforced, pre-lane projects deleted (complete)
+
+Study (`studio-examples/tinyurl.ts`, now `studio-tinyurl@2.0.0`; nothing pinned `1.0.0`): the Web
+app element and its `web-shorten` connection, every C1 node and relationship (Link creator,
+Visitor and `url-reputation`, the C1 mirror of the URL reputation API element) and the Link
+platform package are gone; `system` stays. New entries `download-cdn` (download → CDN) and
+`upload-shorten-api` (upload → Shorten API), named like LG05's `lane-target` restitches. The
+nine elements, nine connections, eleven modules and fifteen module links are unchanged.
+`createStudioStudy` takes `entries`, and C1 nodes and relationships are optional. Lane graph:
+10 nodes, 11 edges, 3 dashed. No cap was hit or raised.
+
+Validation: `validateStudio` ends with `laneFindings(design)`, so `applyOperations` rejects any
+batch that leaves a lane rule broken, from the canvas, chat or the API. One refinement in
+`laneFindings`: an element with no studio settings is no longer also reported as unreachable
+(`applyOperations` returns studio errors first, which hid validateDesign's clearer
+`CONFIG_INVALID` "has no studio settings").
+
+On the old canvas (accepted by the plan): New island, the first-box panel, Library Add and the
+Service and worker preset at C2/C3 are refused with the notice "Change not saved: Microservice
+can't be reached from the user; every tile hangs off a lane." So is a west `+` that makes a box
+nothing reaches; east `+` spawns that keep the rules still work, and C1 people and external
+systems are still added. A Blank architecture project can't get its first box on the old canvas.
+Chat could only start one with `addTile` (its schema lists it; the instructions don't until LG12).
+The `create` command still builds the island batch; apply refuses it.
+
+Tests: both `tinyurlInLanes()` fixtures are now the study itself (`upload-shorten` became
+`upload-shorten-api`). Tests that used the Web app, `web-shorten`, the package, C1 people or
+`create` islands now use live IDs, build their own package, link new boxes to an existing tile,
+or start from the upload lane with `addTile` (`serviceOps` in `apps/web/src/test-api.ts`,
+`service()` in `projects.test.ts`, the chat test's commands). New assertions: removing the CDN
+with no other download entry is rejected (4 × `LANE_INVALID`); removing Redirect also strands the
+click path; a `create` first box is refused while `addTile` starts a design through chat. The web
+studio test's "packages carry no handles" check now builds a package (it would have passed
+vacuously).
+
+Deleted (owner decision L12, one-time exception): through the owner's running API on 4310 (the
+`jeeves` database), `GET /projects` listed one project, "TinyURL · studio study"
+`7d19609c-7824-484e-b184-f34b2ccdf01a` (revision 1); `DELETE /projects/7d19609c-…` returned 204.
+Nothing else in `jeeves` or `~/.jeeves/` was touched, and the owner's 4300/4310 servers were left
+running (tsx watch had already reloaded the API with this unit's code). `jeeves_e2e` (2
+auto-created projects) was dropped with `docker compose exec -T postgres psql -U jeeves -d
+postgres -c "DROP DATABASE jeeves_e2e"`; the E2E server recreated it. Fresh-install check: a
+fresh headless browser on 4300 created "TinyURL · studio study"
+`41bbd268-9244-47cc-be63-66c5e61d116c` in `jeeves` (9 elements, entries download → `cdn` and
+upload → `shorten-api`, origin `studio-tinyurl@2.0.0`, no C1 nodes, no packages; blueprint with
+3 services, no findings, nothing omitted; no page errors). It is the owner's default project now
+and was left in place, at revision 1.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 188 files, all type checks, 20 test files / 122 tests passed).
+- `pnpm test:e2e`: first run 4 passed, 1 failed: `spawn` released its drag on Link cache (the C2
+  layout moved), which opened Connect instead of the picker. The release point moved to
+  handle +170/−200 (empty canvas above Link cache); the next run passed 5/5. Level counts are now
+  C1 1/0, C2 8/8, C3 20/16; the blueprint services are `analytics, redirect, shorten-api`; spawn
+  expects 9 boxes and 9 lines.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser: on the owner's 4300 (read-only after the auto-create), TinyURL renders at C1 (1 node),
+  C2 (8, 8 lines) and C3 (20, 16); Fit zoom at 1440×900 is C2 0.89 with chat open, C3 0.43 open
+  and 0.55 closed. On my own servers (4311/4301 against `jeeves_e2e`, stopped afterwards): a new
+  study made through the project menu by mouse, then New island → Microservice gave the error
+  notice above, the revision stayed 1 and the box count 8; no page errors; that project was
+  deleted.
+
+Docs: the studio guide (TinyURL section in lanes, the lane rules under Creating and connecting,
+New island and Library refusals, C3 fit zoom, Limits), the blueprint doc (new Example section
+with the TinyURL head, entries and two connections), CATALOG (lane rules enforced, the preset is
+refused, study `2.0.0`), studio settings (entries, preset), PLAN (validation includes the lane
+rules).
+
+Notes for LG07:
+
+- `laneGraph(tinyurl)` nodes in order: `@actor`, `cdn`, `redirect`, `link-cache`, `links-db`,
+  `click-events`, `analytics`, `analytics-store`, `shorten-api`, `reputation`. Edges: the two
+  entries, then each node's connections; dashed: `redirect-clicks`, `click-events-analytics`,
+  `analytics-write`. That is the canvas spec's 10 tiles, 11 lines, 3 dashed.
+- Every project in `jeeves` and `jeeves_e2e` is lane-valid now, and every accepted edit keeps it
+  so. Expect most old-canvas creation paths to be refused until the lane canvas replaces them;
+  inspector edits, renames, module edits and chat renames work as before.
+- `jeeves_e2e` holds one auto-created lane-form TinyURL from the first E2E run; the E2E helpers
+  still create their own project per test.
+- The study's C1 is just the system and the canvas will not show C1, so nothing on the lane
+  canvas needs C1 context. Packages remain in the format; the study has none.

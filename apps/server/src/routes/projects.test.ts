@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   buildStudioCommand,
-  createStudioSettings,
   type DesignDocument,
   emptyDesign,
   type OperationInput,
@@ -27,12 +26,16 @@ function tinyurlOps(): OperationInput[] {
   ];
 }
 
-/** The ops that add one service to `design`, through the studio command builder. */
+/** The ops that add one service to `design` from the upload lane, through the command builder. */
 function service(design: DesignDocument, id: string): OperationInput[] {
   return buildStudioCommand(design, {
-    type: "create",
+    type: "addTile",
     system: { name: "System" },
-    elements: [{ id, name: id, settings: createStudioSettings("service") }],
+    from: { lane: "upload" },
+    side: "after",
+    link: "sync",
+    tile: { id, name: id, kind: "service" },
+    linkId: `upload-${id}`,
   }).ops;
 }
 
@@ -177,7 +180,8 @@ describe("operations", () => {
     expect(blueprint.statusCode).toBe(200);
     expect(blueprint.headers["cache-control"]).toBe("no-store");
     expect(blueprint.json()).toMatchObject({ blueprint: 1, revision: 1, findings: [] });
-    expect(blueprint.json().services).toHaveLength(4);
+    expect(blueprint.json().services).toHaveLength(3);
+    expect(blueprint.json().entries).toHaveLength(2);
   });
 
   it("returns 409 with the current design for a stale baseRevision", async () => {
@@ -295,7 +299,7 @@ describe("layout", () => {
     await client.edit(id, 0, tinyurlOps());
     const layout = {
       schemaVersion: 1,
-      architecture: { "studio:containers": { order: ["studio:element:web"] } },
+      architecture: { "studio:containers": { order: ["studio:element:cdn"] } },
     };
     expect((await client.call("PUT", `/projects/${id}/layout`, layout)).status).toBe(200);
     expect((await client.call("GET", `/projects/${id}/layout`)).body.layout).toEqual(layout);

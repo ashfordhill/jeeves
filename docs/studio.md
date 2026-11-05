@@ -42,9 +42,15 @@ undoable layout action; horizontal movement is ignored.
 
 **Fit** frames the view without saving anything. The camera is remembered per view in browser
 preferences, and a remembered camera that no longer shows the diagram is refitted. Labels hide
-below 45% zoom. TinyURL's C3 fits at about 0.54 zoom at 1440×900, so zoom in to read it.
+below 45% zoom. TinyURL's C3 fits at about 0.55 zoom at 1440×900 with the chat rail closed, so
+zoom in to read it.
 
 ## Creating and connecting
+
+Every box must hang off the user through a lane, with no cycles, links the
+[link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a box and 3 entries
+per lane. An edit that breaks one of these rules is refused with a notice and changes nothing,
+whether it comes from the canvas, chat or the API.
 
 - **`+` handles.** Hover or select a box: the east `+` adds a box it connects to, the west `+` a
   box that connects to it. Drag past about 36px (a dashed preview follows) and release on empty
@@ -56,11 +62,14 @@ below 45% zoom. TinyURL's C3 fits at about 0.54 zoom at 1440×900, so zoom in to
 - **Release on another box** to connect the two. Element and C1 pairs open **Connect** prefilled
   (with Reverse). A pair involving a component links them directly, adding the traced C2
   connection when it is missing.
-- **New island** in the toolbar, and the first-box panel on an empty view, add one unconnected box.
+- **New island** in the toolbar, and the first-box panel on an empty view, offer one unconnected
+  box. At C2 and C3 the lane rules refuse it ("… can't be reached from the user; every tile hangs
+  off a lane."); C1 people and external systems are not lane tiles and are still added.
 - **Connection** in the toolbar: click source and target, review Action, Protocol, Interaction and
   Access, then **Connect**. Resources are reused by explicit identity, never by matching name.
 - **Library** groups Services, Resources, Integrations, Presets (C2 only) and Examples, filtered to
-  what the current level accepts. Previews need **Add**. Examples create a separate project.
+  what the current level accepts. Previews need **Add**. Like New island, an added box or preset
+  is unconnected, so the lane rules refuse it. Examples create a separate project.
 - **Group as package**: select several C2 applications. The package inspector has Add/Remove
   member, Ungroup and a separately confirmed Delete members. Removing an owner requires explicit
   resource reassignment.
@@ -118,24 +127,40 @@ chosen in **Settings**. Chat and the inspector collapse and resize independently
 
 ## The TinyURL study
 
-The single study, `studio-tinyurl@1.0.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
-is a read-heavy, low-latency URL shortener: about 100 reads per write.
+The single study, `studio-tinyurl@2.0.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
+is a read-heavy, low-latency URL shortener: about 100 reads per write. It is laid out in lanes
+from the user:
+
+- **Download** (following a short link): the user enters at the CDN, which forwards misses to the
+  Redirect service. Redirect reads the Link cache and the Links database, and publishes clicks
+  asynchronously: Click events → Analytics worker → Analytics store.
+- **Upload** (creating a link): the user enters at the Shorten API, which writes the Links
+  database, counts requests in the Link cache and checks destinations with the URL reputation
+  API.
+
+The Links database and the Link cache are reached from both lanes. In all: the user and nine
+tiles, and eleven links (two lane entries and nine connections), three of which are asynchronous or
+follow an asynchronous link (the click path). The study has no C1 people or relationships and no
+package.
 
 | Level | Content |
 | --- | --- |
-| C1 | Link creator and Visitor use the TinyURL system, which checks destinations with an external URL reputation API. |
-| C2 | Web app, Shorten API, Redirect service, Analytics worker, CDN, Links database (PostgreSQL, two read replicas, partitioned by `short_code`), Link cache (Redis cluster, LRU), Analytics store (ClickHouse) and the URL reputation API. A **Link platform** package holds Shorten API and Redirect service. |
+| C1 | The TinyURL system. |
+| C2 | Shorten API, Redirect service, Analytics worker, CDN, Links database (PostgreSQL, two read replicas, partitioned by `short_code`), Link cache (Redis cluster, LRU), Analytics store (ClickHouse) and the URL reputation API. |
 | C3 | Shorten API: rate limiter (token bucket, 100/min per API key, Redis), reputation check (external call with a circuit breaker), ID generator (range allocation in blocks of 1,000, base62, at least 7 characters) and link writer. Redirect service: link cache reader (cache-aside, in-process L1 plus Redis, negative caching, single-flight), replica link reader, redirect responder (302, 60-second edge max-age) and batched click publisher. Analytics worker: click consumer (batches of 1,000, bounded retries), custom aggregation and aggregate writer. The Click events topic is shown at C3 only. |
 
 The CDN caches redirects briefly, the Redirect service scales on requests per second and clicks
 leave the request path through the queue. A 302 rather than a 301 keeps every click reaching
-analytics once the edge entry expires. The study stores no layout. Its blueprint contains every
-service, resource, external, the package and all eleven components, with nothing omitted and no
-findings.
+analytics once the edge entry expires. The study stores no layout. Its
+[blueprint](studio-blueprint.md#example) has both entries, three services, five resources, one
+external, nine connections and all eleven components, with nothing omitted and no findings.
 
 ## Limits
 
 - Library fragments and presets do not carry C3 components.
+- On this canvas a box can only be added next to one the user already reaches, so a **Blank
+  architecture** project cannot get its first box here; the first tile must start a lane
+  (`addTile`), which the canvas does not offer yet.
 - People, the C1 system and package frames have no `+` handles at C2. A spawned box takes ELK's
   row; no order hint is written.
 - Remove component has no confirmation (it is undoable).

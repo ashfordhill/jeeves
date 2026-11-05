@@ -1,10 +1,10 @@
 /** Static study assembly over the same finite definitions and semantic identities as the editor. */
-import { type Architecture, architectureSchema } from "../architecture.ts";
+import { type ArchitectureInput, architectureSchema } from "../architecture.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "../design.ts";
 import { type LayoutDocument, layoutSchema } from "../layout.ts";
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
 import { studioDefinitions } from "../studio-definitions.ts";
-import { type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
+import { type StudioEntry, type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
 import type { StudioConnectionCreation, StudioElementCreation } from "../studio-operations.ts";
 
 export type StudioStudy = {
@@ -19,9 +19,11 @@ export function createStudioStudy(
   study: StudioStudy,
   elements: StudioElementCreation[],
   connections: StudioConnectionCreation[],
-  context: Pick<Architecture, "system" | "nodes" | "relationships">,
-  /** Optional group frames and C3 components, stored exactly as given. */
+  /** The system, plus any C1 people, external systems and relationships. */
+  context: Pick<ArchitectureInput, "system" | "nodes" | "relationships">,
+  /** Optional lane entries, group frames and modules (C3 components), stored exactly as given. */
   parts: {
+    entries?: StudioEntry[];
     packages?: StudioPackage[];
     components?: StudioComponent[];
     componentConnections?: StudioComponentConnection[];
@@ -65,6 +67,7 @@ export function createStudioStudy(
         ...(parts.componentConnections?.length && {
           componentConnections: parts.componentConnections,
         }),
+        ...(parts.entries?.length && { entries: parts.entries }),
       },
     }),
   });

@@ -53,7 +53,7 @@ describe("applyOperations", () => {
   });
 
   it("refuses a stale baseRevision", () => {
-    const result = applyOperations(tinyurl(), [{ op: "removeElement", id: "web" }], {
+    const result = applyOperations(tinyurl(), [{ op: "removeElement", id: "cdn" }], {
       baseRevision: 7,
     });
     expect(result).toMatchObject({ ok: false, errors: [{ code: "REVISION_CONFLICT" }] });
@@ -96,7 +96,7 @@ describe("applyOperations", () => {
 
   it("addElement refuses taken IDs and elements without studio settings", () => {
     expect(
-      codes(rejected(tinyurl(), [{ op: "addElement", element: { id: "web", name: "Again" } }])),
+      codes(rejected(tinyurl(), [{ op: "addElement", element: { id: "cdn", name: "Again" } }])),
     ).toEqual(["DUPLICATE_ID"]);
     expect(
       codes(rejected(tinyurl(), [{ op: "addElement", element: { id: "loose", name: "Loose" } }])),
@@ -111,16 +111,29 @@ describe("applyOperations", () => {
 
   it("removeElement never cascades resource ownership", () => {
     // Redirect owns the link cache and the click queue; they must be removed or reassigned too.
+    // Removing it also cuts the click path off from the user.
     expect(codes(rejected(tinyurl(), [{ op: "removeElement", id: "redirect" }]))).toEqual([
       "UNKNOWN_REFERENCE",
       "UNKNOWN_REFERENCE",
+      "LANE_INVALID",
+      "LANE_INVALID",
+      "LANE_INVALID",
     ]);
   });
 
   it("removeElement takes its connections, bindings, components and links with it", () => {
-    const next = accepted(tinyurl(), [
+    const design = tinyurl();
+    design.architecture?.studio?.packages.push({
+      id: "link-platform",
+      name: "Link platform",
+      description: "",
+      members: ["shorten-api", "redirect"],
+    });
+    const next = accepted(design, [
       { op: "removeElement", id: "link-cache" },
       { op: "removeElement", id: "click-events" },
+      { op: "removeElement", id: "analytics-store" },
+      { op: "removeElement", id: "analytics" },
       { op: "removeElement", id: "redirect" },
     ]);
     const studio = next.architecture?.studio;
@@ -147,10 +160,10 @@ describe("applyOperations", () => {
         planned: { label: "Calls" },
       },
     });
-    expect(codes(rejected(tinyurl(), [connection("web-shorten", "web", "redirect")]))).toEqual([
-      "DUPLICATE_ID",
-    ]);
-    expect(codes(rejected(tinyurl(), [connection("c1", "web", "ghost")]))).toContain(
+    expect(
+      codes(rejected(tinyurl(), [connection("cdn-redirect", "shorten-api", "redirect")])),
+    ).toEqual(["DUPLICATE_ID"]);
+    expect(codes(rejected(tinyurl(), [connection("c1", "shorten-api", "ghost")]))).toContain(
       "UNKNOWN_REFERENCE",
     );
     expect(codes(rejected(tinyurl(), [connection("c2", "redirect", "redirect")]))).toContain(
@@ -160,10 +173,10 @@ describe("applyOperations", () => {
 
   it("updatePlannedConnection changes only the given fields of an existing connection", () => {
     const next = accepted(tinyurl(), [
-      { op: "updatePlannedConnection", id: "web-shorten", label: "Creates links" },
+      { op: "updatePlannedConnection", id: "shorten-reputation", label: "Screens links" },
     ]);
-    expect(next.connections.find((c) => c.id === "web-shorten")?.planned).toMatchObject({
-      label: "Creates links",
+    expect(next.connections.find((c) => c.id === "shorten-reputation")?.planned).toMatchObject({
+      label: "Screens links",
       protocol: "HTTPS",
     });
     expect(
@@ -192,7 +205,7 @@ describe("validateDesign", () => {
     const design = tinyurl();
     const first = design.connections[0];
     if (!first) throw new Error("TinyURL has connections.");
-    design.elements.push({ id: "web", name: "Copy" }, { id: "loose", name: "Loose" });
+    design.elements.push({ id: "cdn", name: "Copy" }, { id: "loose", name: "Loose" });
     design.connections.push(
       { ...first, id: "dangling", to: { element: "ghost" } },
       { ...first, id: "loop", to: first.from },
@@ -200,7 +213,7 @@ describe("validateDesign", () => {
     const findings = validateDesign(design).map((f) => [f.code, f.target]);
     expect(findings).toEqual(
       expect.arrayContaining([
-        ["DUPLICATE_ID", { element: "web" }],
+        ["DUPLICATE_ID", { element: "cdn" }],
         ["CONFIG_INVALID", { element: "loose" }],
         ["UNKNOWN_REFERENCE", { connection: "dangling" }],
         ["CONFIG_INVALID", { connection: "loop" }],

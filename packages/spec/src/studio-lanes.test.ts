@@ -9,7 +9,6 @@ import { studioArchitectureExample } from "./studio-examples/index.ts";
 import { LANE_ACTOR, laneFindings, laneGraph, laneRules } from "./studio-lanes.ts";
 import { type StudioLinkMode, studioEntryKinds, studioLinkDefaults } from "./studio-links.ts";
 import { type StudioKind, type StudioModel, studioKinds } from "./studio-model.ts";
-import { buildStudioCommand } from "./studio-operations.ts";
 import { defaultKind, studioTileDefinitions, studioTileTypes, tileTypeOf } from "./studio-tiles.ts";
 import { validateDesign } from "./validate.ts";
 
@@ -40,19 +39,8 @@ const connection = (id: string, from: string, to: string): DesignDocument["conne
   },
 });
 
-/** TinyURL as plan §4 draws it: no Web app; the user enters at the CDN and the Shorten API. */
-function tinyurlInLanes(): DesignDocument {
-  const base = studioArchitectureExample("studio-tinyurl").design;
-  const design = applied(
-    applyOperations(base, buildStudioCommand(base, { type: "delete", elements: ["web"] }).ops),
-  );
-  const studio = structuredClone(studioOf(design));
-  studio.entries = [
-    { id: "download-cdn", lane: "download", element: "cdn" },
-    { id: "upload-shorten", lane: "upload", element: "shorten-api" },
-  ];
-  return applied(applyOperations(design, [{ op: "setStudio", studio }]));
-}
+/** The TinyURL study: the user enters at the CDN (download) and the Shorten API (upload). */
+const tinyurl = (): DesignDocument => studioArchitectureExample("studio-tinyurl").design;
 const messages = (design: DesignDocument) =>
   laneFindings(design).map((item) => {
     expect(item.code).toBe("LANE_INVALID");
@@ -162,7 +150,7 @@ describe("tile types and entries", () => {
   });
 
   it("are part of the model: unique IDs, live references, removed with their tile, in the blueprint", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     expect(validateDesign(design).filter(isStructural)).toEqual([]);
 
     const clash = edit(design, (draft) => {
@@ -171,16 +159,30 @@ describe("tile types and entries", () => {
     });
     expect(validateDesign(clash).map((item) => item.code)).toContain("DUPLICATE_ID");
     const dangling = structuredClone(studioOf(design));
-    dangling.entries = [{ id: "download-x", lane: "download", element: "nowhere" }];
+    dangling.entries?.push({ id: "download-x", lane: "download", element: "nowhere" });
     expect(applyOperations(design, [{ op: "setStudio", studio: dangling }])).toMatchObject({
       ok: false,
       errors: [{ code: "UNKNOWN_REFERENCE" }],
     });
 
-    const withoutCdn = applied(applyOperations(design, [{ op: "removeElement", id: "cdn" }]));
+    // Redirect also starts the download lane, so removing the CDN strands nothing.
+    const twoDoors = edit(design, (draft) => {
+      studioOf(draft).entries?.push({
+        id: "download-redirect",
+        lane: "download",
+        element: "redirect",
+      });
+    });
+    const withoutCdn = applied(applyOperations(twoDoors, [{ op: "removeElement", id: "cdn" }]));
     expect(studioOf(withoutCdn).entries).toEqual([
-      { id: "upload-shorten", lane: "upload", element: "shorten-api" },
+      { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
+      { id: "download-redirect", lane: "download", element: "redirect" },
     ]);
+    // Validation enforces the lane rules: a batch that strands tiles is rejected.
+    const stranding = applyOperations(design, [{ op: "removeElement", id: "cdn" }]);
+    expect(stranding.ok ? [] : stranding.errors.map((item) => item.code)).toEqual(
+      Array(4).fill("LANE_INVALID"),
+    );
 
     const blueprint = designBlueprint(
       edit(design, (draft) => studioOf(draft).entries?.reverse()),
@@ -197,7 +199,7 @@ describe("tile types and entries", () => {
 
 describe("laneGraph", () => {
   it("orders download before upload and dashes async links and what follows them", () => {
-    const graph = laneGraph(tinyurlInLanes());
+    const graph = laneGraph(tinyurl());
     expect(graph.nodes.map((node) => node.id)).toEqual([
       LANE_ACTOR,
       "cdn",
@@ -223,7 +225,7 @@ describe("laneGraph", () => {
         lane: "download",
       },
       {
-        id: "upload-shorten",
+        id: "upload-shorten-api",
         source: LANE_ACTOR,
         target: "shorten-api",
         async: false,
@@ -243,7 +245,7 @@ describe("laneGraph", () => {
 
     // Once the worker is also reached by a request, what follows it is solid again.
     const merged = laneGraph(
-      edit(tinyurlInLanes(), (draft) => {
+      edit(tinyurl(), (draft) => {
         draft.connections.push(connection("redirect-analytics", "redirect", "analytics"));
       }),
     );
@@ -256,7 +258,7 @@ describe("laneGraph", () => {
 
 describe("laneFindings", () => {
   it("reports unreachable tiles, cycles, refused links and entries, and both caps", () => {
-    const design = tinyurlInLanes();
+    const design = tinyurl();
     expect(laneFindings(design)).toEqual([]);
 
     const noUpload = edit(design, (draft) => {
@@ -306,7 +308,7 @@ describe("laneFindings", () => {
 
 describe("laneRules", () => {
   it("drive board edits, checking a tile an edit adds against the link table", () => {
-    const graph = laneGraph(tinyurlInLanes());
+    const graph = laneGraph(tinyurl());
     const kinds = new Map(graph.nodes.map((node) => [node.id, node.kind]));
     const rules = (added: StudioKind) => laneRules((id) => (id === "new" ? added : kinds.get(id)));
     expect(addAfter(graph, "redirect", { id: "new" }, { id: "to-new" }, rules("search")).ok).toBe(

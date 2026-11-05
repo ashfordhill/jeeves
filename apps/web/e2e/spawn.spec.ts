@@ -10,7 +10,8 @@ test("drags a + handle to create a connected box in one step", async ({ page, ti
   if (!handle) throw new Error("No + handle.");
   await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
   await page.mouse.down();
-  await page.mouse.move(handle.x + 170, handle.y - 120, { steps: 12 });
+  // Up and to the right of the handle is empty canvas, above the Link cache.
+  await page.mouse.move(handle.x + 170, handle.y - 200, { steps: 12 });
   await page.mouse.up();
 
   const picker = page.locator(".studio-picker");
@@ -18,8 +19,8 @@ test("drags a + handle to create a connected box in one step", async ({ page, ti
   await picker.locator(".studio-kind", { hasText: "Search index" }).first().click();
   await expect(picker).toHaveCount(0);
   await ready(page);
-  await expect(boxes(page)).toHaveCount(13);
-  await expect(lines(page)).toHaveCount(12);
+  await expect(boxes(page)).toHaveCount(9);
+  await expect(lines(page)).toHaveCount(9);
 
   const saved = await design(page, id);
   expect(saved.revision).toBe(2);

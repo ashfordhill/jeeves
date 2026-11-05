@@ -11,6 +11,22 @@ const addCache = (baseRevision: number) => ({
     {
       type: "create",
       elements: [{ id: "edge-cache", name: "Edge cache", settings: createStudioSettings("cache") }],
+      // Every tile hangs off a lane: the cache is reached through the Redirect service.
+      connections: [
+        {
+          id: "redirect-edge-cache",
+          from: "redirect",
+          to: "edge-cache",
+          kind: "uses-database",
+          planned: {
+            label: "Reads",
+            protocol: "Redis",
+            interaction: "Request / response",
+            security: "Service identity",
+          },
+          settings: {},
+        },
+      ],
     },
   ],
 });
@@ -38,7 +54,7 @@ describe("studio chat tools", () => {
     );
     const design = run(workspace, "getDesign");
     expect(design.baseRevision).toBe(3);
-    expect(design.elements).toHaveLength(10);
+    expect(design.elements).toHaveLength(9);
     expect(design.findings).toEqual([]);
   });
 
@@ -51,7 +67,7 @@ describe("studio chat tools", () => {
     });
     expect(workspace.working.elements.map((e) => e.id)).toContain("edge-cache");
     expect(base.elements.map((e) => e.id)).not.toContain("edge-cache");
-    expect(workspace.pending.map((op) => op.op)).toEqual(["addElement", "setStudio"]);
+    expect(workspace.pending.map((op) => op.op)).toEqual(["addElement", "connect", "setStudio"]);
     // A second call builds on the working copy, still against the saved base revision.
     expect(
       run(workspace, "applyStudioCommands", {
@@ -59,7 +75,7 @@ describe("studio chat tools", () => {
         commands: [{ type: "edit", element: "edge-cache", name: "CDN cache" }],
       }).ok,
     ).toBe(true);
-    expect(workspace.pending).toHaveLength(4);
+    expect(workspace.pending).toHaveLength(5);
   });
 
   it("changes nothing for a refused call", () => {
@@ -88,13 +104,26 @@ describe("studio chat tools", () => {
 
   it("starts a design from nothing when the command names the system", () => {
     const workspace = new Workspace(emptyDesign());
+    const island = {
+      type: "create",
+      system: { name: "Shortener" },
+      elements: [{ id: "api", name: "API", settings: createStudioSettings("service") }],
+    };
+    // A first box that no lane reaches is an island; the first tile starts a lane instead.
+    expect(run(workspace, "applyStudioCommands", { baseRevision: 0, commands: [island] }).ok).toBe(
+      false,
+    );
     const result = run(workspace, "applyStudioCommands", {
       baseRevision: 0,
       commands: [
         {
-          type: "create",
+          type: "addTile",
           system: { name: "Shortener" },
-          elements: [{ id: "api", name: "API", settings: createStudioSettings("service") }],
+          from: { lane: "upload" },
+          side: "after",
+          link: "sync",
+          tile: { id: "api", name: "API", kind: "service" },
+          linkId: "upload-api",
         },
       ],
     });

@@ -130,9 +130,10 @@ export function laneRules(kindOf: (id: string) => StudioKind | undefined): LaneR
 
 /**
  * `LANE_INVALID` findings: a tile the actor cannot reach, a cycle, a link or entry the link table
- * refuses, a pair linked twice, or a broken cap (`laneLimits`). Missing references, duplicate IDs
- * and self-links are reported by the existing validation. A design without a studio model has no
- * lanes and no findings.
+ * refuses, a pair linked twice, or a broken cap (`laneLimits`). Missing references, duplicate IDs,
+ * self-links and elements without studio settings are reported by the existing validation. A
+ * design without a studio model has no lanes and no findings. `validateStudio` includes these, so
+ * a batch that breaks a lane rule is rejected.
  */
 export function laneFindings(design: DesignDocument): Finding[] {
   const studio = design.architecture?.studio;
@@ -202,7 +203,8 @@ export function laneFindings(design: DesignDocument): Finding[] {
           });
         break;
       case "unreachable":
-        if (node)
+        // An element without studio settings is not a tile; validateDesign reports it.
+        if (node && kinds.get(node))
           report(`${name(node)} can't be reached from the user; every tile hangs off a lane.`, {
             element: node,
           });

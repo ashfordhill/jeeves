@@ -5,7 +5,6 @@
 import {
   applyOperations,
   buildStudioCommand,
-  createStudioSettings,
   type DesignDocument,
   emptyDesign,
   emptyLayout,
@@ -16,12 +15,16 @@ import {
 
 export const TEST_PROJECT = "00000000-0000-4000-8000-000000000001";
 
-/** The ops that add one studio service to `design`. */
+/** The ops that add one studio service to `design`, entered from the upload lane. */
 export function serviceOps(design: DesignDocument, id: string, name = id): OperationInput[] {
   return buildStudioCommand(design, {
-    type: "create",
+    type: "addTile",
     system: { name: "System" },
-    elements: [{ id, name, settings: createStudioSettings("service") }],
+    from: { lane: "upload" },
+    side: "after",
+    link: "sync",
+    tile: { id, name, kind: "service" },
+    linkId: `upload-${id}`,
   }).ops;
 }
 

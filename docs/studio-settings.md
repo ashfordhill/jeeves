@@ -58,7 +58,8 @@ Connections. Clearing it removes the setting, not the connection; deleting the c
 the shortcut in the same operation.
 
 A **package** has name, purpose and members only: no language, provider or runtime. The **Service
-and worker** preset creates a service, a worker and a package-owned work queue as one batch.
+and worker** preset creates a service, a worker and a package-owned work queue as one batch, which
+the lane rules refuse while nothing links to the service.
 
 ### Performance intent
 
@@ -127,8 +128,9 @@ the same edit. A C1 relationship has only its action and endpoints.
 
 `architecture.studio.entries[]` (`id`, `lane` download / upload, `element`) records the tiles the
 user reaches directly. An entry has no settings and no form. Its ID shares the design's ID space,
-its element must exist, and removing the element removes the entry. Which kinds may be entries is
-in the [catalog](../CATALOG.md#lanes-and-links).
+its element must exist, and removing the element removes the entry. Every tile must be reachable
+from the user through an entry; which kinds may be entries, and the other lane rules validation
+enforces, are in the [catalog](../CATALOG.md#lanes-and-links).
 
 ## Components
 

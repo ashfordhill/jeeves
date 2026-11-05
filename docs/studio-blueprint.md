@@ -41,6 +41,54 @@ history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 It leaves out layout, presentation, history and UI state. People are not included; they are not
 generated.
 
+## Example
+
+The [TinyURL study](studio.md#the-tinyurl-study) at revision 1 has two entries, three services
+(`analytics`, `redirect`, `shorten-api`) holding eleven components, five resources
+(`analytics-store`, `cdn`, `click-events`, `link-cache`, `links-db`), one external
+(`reputation`), no groups, nine connections, fifteen component links, and empty `omitted` and
+`findings`. Its head, and two of its connections (a request and a publish):
+
+```json
+{
+  "blueprint": 1,
+  "revision": 1,
+  "system": {
+    "name": "TinyURL",
+    "description": "Shortens long URLs and redirects visitors quickly, with asynchronous click analytics."
+  },
+  "entries": [
+    { "lane": "download", "element": "cdn" },
+    { "lane": "upload", "element": "shorten-api" }
+  ],
+  "connections": [
+    {
+      "id": "cdn-redirect",
+      "source": "design",
+      "from": { "kind": "resource", "id": "cdn" },
+      "to": { "kind": "service", "id": "redirect" },
+      "action": "Forwards cache misses",
+      "protocol": "HTTPS",
+      "interaction": "Request / response",
+      "access": "Service identity",
+      "timeoutMs": 500,
+      "retry": { "mode": "fixed", "attempts": 1, "delayMs": 50 }
+    },
+    {
+      "id": "redirect-clicks",
+      "source": "design",
+      "from": { "kind": "service", "id": "redirect" },
+      "to": { "kind": "resource", "id": "click-events" },
+      "action": "Publishes clicks",
+      "protocol": "Messaging",
+      "interaction": "Asynchronous",
+      "access": "Service identity",
+      "channelUse": "publish"
+    }
+  ]
+}
+```
+
 ## Boundaries
 
 - **Intent, not availability.** Settings and `thirdParty` names are design intent. The blueprint

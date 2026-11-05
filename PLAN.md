@@ -44,7 +44,7 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`) and one package preset (`studio-presets.ts`). The only
-study is TinyURL (`studio-examples/`).
+study is TinyURL in lanes (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
 reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-view.ts` and
@@ -55,7 +55,8 @@ The lane model: `studio-tiles.ts` groups kinds into seven tile types; `studio-li
 link table (which kinds link, sync or async, and the connection each link gets) with the caps;
 `studio-lanes.ts` projects a design into the board graph (`laneGraph`: the `@actor` root, lane
 order, async and dashed links) and checks it with `@jeeves/board/graph` (`laneRules` for
-`checkGraph` and the board edits; `laneFindings`, `LANE_INVALID`, not yet part of validation). The spec imports only `@jeeves/board/graph`, never
+`checkGraph` and the board edits; `laneFindings`, `LANE_INVALID`, which `validateStudio` includes,
+so a batch that breaks a lane rule is rejected). The spec imports only `@jeeves/board/graph`, never
 the board's React root (Biome enforces this).
 
 ## Operations and history
