@@ -2,13 +2,13 @@ import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createFakeProvider } from "@jeeves/providers";
-import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
   architectureProofOperations,
   type DesignDocument,
   designSchema,
   extractArchitectureTemplate,
+  noTemplates,
   previewArchitecturePattern,
   previewArchitectureTemplate,
 } from "@jeeves/spec";
@@ -118,7 +118,7 @@ it("P56 publishes portable tenant and delivery selections from QR composition st
     inventory.architecture!.components!.some((c) => c.name.includes("Tenant access checks")),
   ).toBe(true);
 });
-const registry = builtinRegistry();
+const registry = noTemplates;
 function source() {
   const base = designSchema.parse({
     schemaVersion: 2,
@@ -216,7 +216,7 @@ describe("server-owned local architecture catalog", () => {
     };
     const mouse = previewArchitectureTemplate(design, entry, req, registry);
     expect(mouse.errors).toEqual([]);
-    const workspace = new Workspace(registry, design, design, "Target", library);
+    const workspace = new Workspace(design, design, "Target", library);
     const run = (name: string, args: object) =>
       JSON.parse(workspace.run(name, JSON.stringify(args)));
     expect(run("listArchitectureLibrary", { query: "Durable" }).entries[0].availability).toBe(

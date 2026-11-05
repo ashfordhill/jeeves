@@ -18,11 +18,10 @@ describe("draw store", () => {
     vi.unstubAllGlobals();
   });
 
-  it("loads the project, design, layout, and templates and puts the project in the URL", () => {
+  it("loads the project, design and layout and puts the project in the URL", () => {
     const { status, loaded } = useDraw.getState();
     expect(status).toBe("ready");
     expect(loaded?.project.id).toBe(TEST_PROJECT);
-    expect(loaded?.templates.get("http-service@0.1.0")?.displayName).toBe("HTTP service");
     expect(new URL(window.location.href).searchParams.get("project")).toBe(TEST_PROJECT);
   });
 
@@ -168,13 +167,7 @@ describe("draw store", () => {
     expect(useDraw.getState().notice?.message).toMatch(/changed somewhere else/);
   });
 
-  it("indexes findings by card and keeps selection and focus requests", async () => {
-    await useDraw
-      .getState()
-      .edit([{ op: "addElement", element: { id: "web", name: "Web", template: ref("web-app") } }]);
-    const index = useDraw.getState().loaded?.findingIndex;
-    expect(index?.byNode.get("web")?.map((f) => f.code)).toEqual(["CONFIG_REQUIRED"]);
-
+  it("keeps selection and focus requests", () => {
     useDraw.getState().focus({ nodes: ["web"] }, { zoom: true });
     const { selection, focusRequest } = useDraw.getState();
     expect(selection).toEqual({ nodes: ["web"], edges: [] });

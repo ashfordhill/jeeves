@@ -19,9 +19,11 @@ describe("App shell", () => {
     expect(screen.getByRole("tab", { name: "Draw" }).getAttribute("aria-selected")).toBe("true");
     expect(await screen.findByRole("toolbar", { name: "Drawing tools" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Project: Test design" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("tab", { name: "Runs" }));
-    expect(screen.getByRole("tab", { name: "Runs" }).getAttribute("aria-selected")).toBe("true");
-    expect(window.location.hash).toBe("#/runs");
+    fireEvent.click(screen.getByRole("tab", { name: "Settings" }));
+    expect(screen.getByRole("tab", { name: "Settings" }).getAttribute("aria-selected")).toBe(
+      "true",
+    );
+    expect(window.location.hash).toBe("#/settings");
     expect(await screen.findByText("Server healthy")).toBeTruthy();
   });
 });

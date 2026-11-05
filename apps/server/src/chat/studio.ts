@@ -1,12 +1,12 @@
 /** Finite studio vocabulary. Legacy backend authoring is never routed through this profile. */
 import type { ToolDefinition } from "@jeeves/providers";
-import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
   buildStudioCommand,
   type DesignDocument,
   type Finding,
   legacyStudioDisplay,
+  noTemplates,
   resolveStudioDefinition,
   resolveStudioPackagePreset,
   studioCommandSchema,
@@ -111,12 +111,7 @@ export function studioTurnContext(
 ) {
   return `[Jeeves] Studio context.\nCatalog (finite, design only):\n${JSON.stringify(studioCatalogSummary())}\nCurrent design:\n${JSON.stringify(studioDesignSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}`;
 }
-export function runStudioTool(
-  workspace: Workspace,
-  registry: Registry,
-  name: string,
-  raw: string,
-): unknown {
+export function runStudioTool(workspace: Workspace, name: string, raw: string): unknown {
   if (!Object.hasOwn(schemas, name)) {
     workspace.log(name, false, "Tool unavailable in studio profile");
     return {
@@ -162,12 +157,12 @@ export function runStudioTool(
     case "getDesign":
       workspace.log(tool, true, "Read finite studio design");
       return {
-        ...studioDesignSummary(workspace.working, validateDesign(workspace.working, registry)),
+        ...studioDesignSummary(workspace.working, validateDesign(workspace.working, noTemplates)),
         baseRevision: workspace.base.revision,
       };
     case "validateDesign":
       workspace.log(tool, true, "Checked studio design readiness");
-      return { findings: validateDesign(workspace.working, registry) };
+      return { findings: validateDesign(workspace.working, noTemplates) };
     case "askUser":
       workspace.question = parsed.data as z.infer<typeof schemas.askUser>;
       workspace.log(tool, true, "Asked a question");
@@ -196,7 +191,7 @@ export function runStudioTool(
           if (pkg?.preset && !resolveStudioPackagePreset(pkg.preset))
             throw new Error("Choose a known studio package preset.");
           const batch = buildStudioCommand(working, command);
-          const result = applyOperations(working, batch.ops, registry);
+          const result = applyOperations(working, batch.ops, noTemplates);
           if (!result.ok) {
             workspace.log(tool, false, "Studio edit refused; nothing prepared for this call");
             return { ok: false, errors: result.errors, note: "Nothing changed for this call." };
@@ -222,7 +217,7 @@ export function runStudioTool(
       return {
         ok: true,
         commands: commands.length,
-        findings: validateDesign(working, registry),
+        findings: validateDesign(working, noTemplates),
         note: "Prepared for one atomic turn commit, not saved yet.",
       };
     }

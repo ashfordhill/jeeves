@@ -1,7 +1,7 @@
-import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
   type DesignDocument,
+  noTemplates,
   type OperationInput,
   type StudioConnectionCreation,
   type StudioKind,
@@ -96,7 +96,7 @@ export function commitAction(
 ) {
   return useDraw.getState().createPlaced(projectId, (design) => {
     const ops = rebuild(design);
-    const result = applyOperations(design, ops, builtinRegistry(), {
+    const result = applyOperations(design, ops, noTemplates, {
       baseRevision: design.revision,
     });
     if (!result.ok) throw new Error(result.errors[0]?.message ?? "This action is invalid.");

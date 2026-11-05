@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
-import { builtinRegistry } from "@jeeves/registry";
-import { applyOperations, designSchema } from "@jeeves/spec";
+import { applyOperations, designSchema, noTemplates } from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { Workspace } from "./tools.ts";
 
-const registry = builtinRegistry();
+const registry = noTemplates;
 const design = () =>
   designSchema.parse(
     JSON.parse(
@@ -13,7 +12,7 @@ const design = () =>
   );
 it("chat requests an exact human subtype review and cannot approve it itself", () => {
   const before = design();
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const result = JSON.parse(
     workspace.run(
       "reviewSubtype",
@@ -40,7 +39,7 @@ it("chat requests an exact human subtype review and cannot approve it itself", (
 });
 it("chat resource config edits use the same validation as manual attachment edits", () => {
   const before = design();
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const attachment = before.elements[0]!.attachments[0]!;
   const config = structuredClone(attachment.config);
   const op = { op: "updateAttachment" as const, id: attachment.id, config };
@@ -55,7 +54,7 @@ it("chat resource config edits use the same validation as manual attachment edit
 
 it("chat routes same-template review to a compatible upgrade without an unusable discard confirmation", () => {
   const before = design();
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const result = JSON.parse(
     workspace.run(
       "reviewSubtype",
@@ -89,7 +88,7 @@ it("exposes all planned options with exact defaults, schemas and compatible host
   const { componentCompatible, emptyDesign, plannedCapabilities, plannedConfigSchema } =
     await import("@jeeves/spec");
   const { z } = await import("zod");
-  const workspace = new Workspace(registry, emptyDesign());
+  const workspace = new Workspace(emptyDesign());
   const list = (scope?: string) =>
     JSON.parse(workspace.run("listPlannedCapabilities", JSON.stringify({ scope }))).capabilities;
   expect(list().map((entry: { id: string }) => entry.id)).toEqual(
@@ -125,7 +124,7 @@ it("exposes all planned options with exact defaults, schemas and compatible host
 
 it("rejects invented planning IDs/options and incompatible C3 atomically, then accepts an honest placeholder", async () => {
   const { emptyDesign } = await import("@jeeves/spec");
-  const workspace = new Workspace(registry, emptyDesign());
+  const workspace = new Workspace(emptyDesign());
   const add = {
     op: "addElement",
     element: {
@@ -183,7 +182,7 @@ it("rejects invented planning IDs/options and incompatible C3 atomically, then a
 
 it("chat exposes architectural kinds and saves independent P46 choices through shared operations", async () => {
   const { emptyDesign } = await import("@jeeves/spec");
-  const workspace = new Workspace(registry, emptyDesign());
+  const workspace = new Workspace(emptyDesign());
   const list = JSON.parse(workspace.run("listPlannedCapabilities", "{}")).capabilities;
   expect(list.find((e: { id: string }) => e.id === "job-queue").architectureKind).toBe(
     "Data store",
@@ -212,7 +211,7 @@ it("chat exposes architectural kinds and saves independent P46 choices through s
 it("chat discovers authoritative sources and edits reusable exact versions through shared operations", async () => {
   const { architectureContractReview, architectureSchema } = await import("@jeeves/spec");
   const before = design();
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const discovery = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
   const source = discovery.sources.find((item: { kind: string }) => item.kind === "api");
   expect(source.source.element).toBe("links");
@@ -265,7 +264,7 @@ it("chat discovers authoritative sources and edits reusable exact versions throu
 
 it("contract source references survive multiple tool edits committed as one chat undo step", () => {
   const before = design();
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   expect(
     JSON.parse(
       workspace.run(
@@ -314,7 +313,7 @@ it("chat discovers relationship policies and saves review conflicts through the 
       ),
     ),
   );
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const discovery = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
   expect(discovery.bindings).toHaveLength(8);
   expect(discovery.datasets).toHaveLength(1);
@@ -353,7 +352,7 @@ it("previews and applies architecture patterns through shared expansion without 
       ),
     ),
   );
-  const workspace = new Workspace(registry, base);
+  const workspace = new Workspace(base);
   const run = (tool: string, args = {}) => JSON.parse(workspace.run(tool, JSON.stringify(args)));
   expect(run("listArchitecturePatterns").patterns).toHaveLength(4);
   expect(run("describeArchitecturePattern", { id: "asynchronous-work-delivery" }).ok).toBe(false);
@@ -406,7 +405,7 @@ it("several pattern applications keep saved-base provenance and one pending tran
       ),
     ),
   );
-  const workspace = new Workspace(registry, base);
+  const workspace = new Workspace(base);
   for (const [instanceId, pattern] of [
     ["tenant", "tenant-workspace-access"],
     ["lookup", "cached-public-lookup"],
@@ -449,7 +448,7 @@ it("chat review shares the mouse report and saves scoped decisions through the s
   );
   const r = before.architecture!.reviewRequirements!.find((r) => r.kind === "cache")!;
   if (r.kind === "cache") delete r.update;
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const report = JSON.parse(workspace.run("getArchitectureReview", "{}"));
   expect(report.findings).toEqual(reviewArchitecture(before).findings);
   const f = report.findings[0];
@@ -478,7 +477,7 @@ it("chat review shares the mouse report and saves scoped decisions through the s
 
 it("previews sourced editable annotations with the same semantics as mouse and bounds target creation to a separate turn", () => {
   const before = design();
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const draft = JSON.parse(workspace.run("getArchitectureAnnotationDraft", "{}"));
   expect(draft.architecture.components.length).toBeGreaterThan(0);
   const op = { op: "setArchitecture" as const, architecture: draft.architecture };
@@ -487,25 +486,6 @@ it("previews sourced editable annotations with the same semantics as mouse and b
   expect(mouse.ok).toBe(true);
   if (mouse.ok) expect(workspace.working).toEqual(mouse.design);
   expect(workspace.annotationRevisionBound).toBe(true);
-  expect(
-    JSON.parse(
-      workspace.run(
-        "createTargetWorkspace",
-        JSON.stringify({ name: "Target", baseRevision: before.revision }),
-      ),
-    ).ok,
-  ).toBe(false);
-  const copy = new Workspace(registry, before);
-  expect(
-    JSON.parse(
-      copy.run(
-        "createTargetWorkspace",
-        JSON.stringify({ name: "Target", baseRevision: before.revision }),
-      ),
-    ).prepared,
-  ).toBe(true);
-  expect(JSON.parse(copy.run("applyOperations", JSON.stringify({ ops: [op] }))).ok).toBe(false);
-  expect(copy.pending).toEqual([]);
 });
 
 it("uses the same deployment validators as mouse authoring and binds edits to their saved revision", () => {
@@ -519,7 +499,7 @@ it("uses the same deployment validators as mouse authoring and binds edits to th
   );
   const before = structuredClone(planned);
   delete before.architecture!.deployments;
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const op = { op: "setArchitecture" as const, architecture: planned.architecture! };
   const mouse = applyOperations(before, [op], registry);
   expect(mouse.ok).toBe(true);
@@ -546,7 +526,7 @@ it("shares scenario validators with mouse authoring and reports expectation fres
   );
   const before = structuredClone(full);
   delete before.architecture!.scenarios;
-  const workspace = new Workspace(registry, before);
+  const workspace = new Workspace(before);
   const ops = [{ op: "setArchitecture" as const, architecture: full.architecture! }];
   expect(JSON.parse(workspace.run("applyOperations", JSON.stringify({ ops }))).ok).toBe(true);
   expect(workspace.scenarioRevisionBound).toBe(true);

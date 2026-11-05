@@ -13,7 +13,7 @@ import { and, eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
-import { designRevisions, generations, projects, runs, tasks } from "../db/schema.ts";
+import { designRevisions, projects } from "../db/schema.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 
 const fixture = (name: string): unknown =>
@@ -96,261 +96,6 @@ afterAll(async () => {
 });
 
 describe("projects", () => {
-  it("reads saved API contracts without mutation and follows edits and undo", async () => {
-    const id = await client.createProject("P38 contracts");
-    const design = designSchema.parse(fixture("generated-workspace.json"));
-    await client.edit(id, 0, [
-      ...design.elements.map((element) => ({ op: "addElement", element })),
-      ...design.connections.map((connection) => ({ op: "connect", connection })),
-    ]);
-    const before = await client.design(id);
-    const response = await app.inject({ method: "GET", url: `/projects/${id}/api-preview` });
-    expect(response.statusCode).toBe(200);
-    expect(response.headers["cache-control"]).toBe("no-store");
-    expect(response.json()).toMatchObject({
-      revision: 1,
-      apis: [{ name: "Inventory API", operations: expect.any(Array) }],
-    });
-    expect(response.json().apis[0].operations).toHaveLength(12);
-    expect(await client.design(id)).toEqual(before);
-    await client.edit(id, 1, [{ op: "updateElement", id: "inventory", name: "Warehouse service" }]);
-    expect((await client.call("GET", `/projects/${id}/api-preview`)).body).toMatchObject({
-      revision: 2,
-      apis: [{ document: { info: { title: "Warehouse service" } } }],
-    });
-    await client.undo(id, 2);
-    expect((await client.call("GET", `/projects/${id}/api-preview`)).body).toMatchObject({
-      revision: 3,
-      apis: [{ document: { info: { title: "Inventory API" } } }],
-    });
-    expect(
-      (await client.call("GET", "/projects/00000000-0000-4000-8000-000000000000/api-preview"))
-        .status,
-    ).toBe(404);
-    const empty = await client.createProject("P38 empty");
-    expect((await client.call("GET", `/projects/${empty}/api-preview`)).body).toEqual({
-      revision: 0,
-      apis: [],
-    });
-  });
-  it("projects the latest evidence only, keeps projects isolated and excludes logs/provider payloads", async () => {
-    const id = await client.createProject("Evidence one"),
-      other = await client.createProject("Evidence two");
-    await client.call("PATCH", `/projects/${id}`, { outputDir: "/tmp/evidence-one" });
-    const initial = (await client.call("GET", `/projects/${id}/architecture`)).body.evidence;
-    expect(initial).toMatchObject({
-      projectId: id,
-      revision: 0,
-      generation: null,
-      run: null,
-      outputDir: "/tmp/evidence-one",
-    });
-    const input = {
-      projectId: id,
-      revision: 0,
-      outputDir: "/tmp/evidence-one",
-      baseline: true,
-      status: "succeeded" as const,
-      steps: [],
-      checks: [],
-      log: [{ step: "generate" as const, line: "PRIVATE-FIXTURE-LOG" }],
-    };
-    await db.insert(generations).values(input);
-    const [latest] = await db
-      .insert(generations)
-      .values({
-        ...input,
-        status: "failed",
-        checks: [
-          {
-            subject: "api",
-            template: "rest",
-            id: "failed",
-            title: "Failed contract",
-            status: "failed",
-            durationMs: 2,
-            error: "Reviewed fixture failure",
-          },
-        ],
-      })
-      .returning();
-    await db.insert(generations).values({ ...input, projectId: other, status: "running" });
-    const [run] = await db
-      .insert(runs)
-      .values({
-        projectId: id,
-        status: "planned",
-        outputDir: "/tmp/evidence-one",
-        designRevision: 0,
-      })
-      .returning();
-    await db.insert(tasks).values({
-      runId: run!.id,
-      position: 0,
-      key: "domain",
-      element: "api",
-      title: "Domain work",
-      description: "Private implementation description",
-      acceptance: [],
-      ownedPaths: [],
-      dependsOn: [],
-      source: "seed",
-      status: "pending",
-    });
-    const before = await client.design(id);
-    const projected = (await client.call("GET", `/projects/${id}/architecture`)).body.evidence;
-    expect(projected.generation).toMatchObject({
-      id: latest!.id,
-      status: "failed",
-      omittedChecks: 0,
-      checks: [{ status: "failed", reason: "Reviewed fixture failure" }],
-    });
-    expect(projected.run).toMatchObject({
-      id: run!.id,
-      revision: 0,
-      status: "planned",
-      tasks: { pending: 1 },
-    });
-    expect(JSON.stringify(projected)).not.toContain("PRIVATE-FIXTURE-LOG");
-    expect(JSON.stringify(projected)).not.toContain("Private implementation description");
-    expect(await client.design(id)).toEqual(before);
-    expect(
-      (await client.call("GET", `/projects/${other}/architecture`)).body.evidence.generation.status,
-    ).toBe("running");
-    await db.insert(generations).values({
-      ...input,
-      baseline: false,
-      checks: Array.from({ length: 205 }, (_, index) => ({
-        subject: "api",
-        template: "rest",
-        id: String(index),
-        title: "Bounded check",
-        status: "passed" as const,
-        durationMs: 0,
-      })),
-    });
-    const bounded = (await client.call("GET", `/projects/${id}/architecture`)).body.evidence
-      .generation;
-    expect(bounded).toMatchObject({ baseline: false, omittedChecks: 5 });
-    expect(bounded.checks).toHaveLength(200);
-  });
-
-  it("creates an independent editable starter with C4 context and refuses unknown versions atomically", async () => {
-    const original = await client.createProject("Keep the original");
-    const before = (await client.call("GET", "/projects")).body.projects.length;
-    const catalog = (await client.call("GET", "/starters")).body.starters;
-    expect(catalog[0]).toMatchObject({
-      id: "resource-workspace",
-      version: "0.1.0",
-      maturity: "experimental",
-    });
-    expect(
-      (
-        await client.call("POST", "/projects/from-starter", {
-          name: "Unknown",
-          starter: { id: "resource-workspace", version: "9.0.0" },
-        })
-      ).status,
-    ).toBe(422);
-    expect((await client.call("GET", "/projects")).body.projects).toHaveLength(before);
-    const created = await client.call("POST", "/projects/from-starter", {
-      name: "Fieldwork starter",
-      starter: { id: "resource-workspace", version: "0.1.0" },
-      config: { preset: "paper", pageSize: 25, tagline: "Our private records" },
-    });
-    expect(created.status).toBe(201);
-    const id = created.body.project.id,
-      state = await client.design(id);
-    expect(state.findings).toEqual([]);
-    expect(state.design.recipe).toBeUndefined();
-    expect(state.design.startedFrom?.manifestSha256).toBe(catalog[0].manifestSha256);
-    expect(state.design.architecture?.nodes[0]?.name).toBe("Workspace member");
-    const web = state.design.elements.find((element) => element.id === "inventory-web")!;
-    expect(web.config).toMatchObject({ title: "Fieldwork starter", hostPort: expect.any(Number) });
-    expect(
-      web.attachments.find((attachment) => attachment.id === "inventory-workspace")!.config,
-    ).toMatchObject({ preset: "paper", pageSize: 25 });
-    const service = state.design.elements[0]!,
-      attachment = service.attachments[0]!;
-    const config = structuredClone(attachment.config);
-    (config.model as { resources: { fields: { name: string }[] }[] }).resources[0]!
-      .fields[0]!.name = "displayName";
-    const edit = await client.edit(id, 0, [{ op: "updateAttachment", id: attachment.id, config }]);
-    expect(edit.status).toBe(200);
-    expect(edit.body.design.startedFrom).toEqual(state.design.startedFrom);
-    expect((await client.design(original)).design.elements).toEqual([]);
-  });
-
-  it("reads architecture without mutation and keeps added project work visible beside a recipe", async () => {
-    const created = await client.call("POST", "/projects/from-recipe", {
-      name: "Architecture proof",
-      recipe: { id: "qr-studio", version: "0.1.0" },
-    });
-    const id = created.body.project.id;
-    const before = await client.design(id);
-    const architecture = await client.call("GET", `/projects/${id}/architecture`);
-    expect(architecture.status).toBe(200);
-    expect(architecture.body.views.provision.id).toBe("qr-studio");
-    expect(architecture.body.views.context.nodes).toHaveLength(4);
-    expect(await client.design(id)).toEqual(before);
-    const intent = structuredClone(before.design.architecture!);
-    intent.system.description = "Explicit architecture responsibility";
-    await client.edit(id, 0, [
-      { op: "setArchitecture", architecture: intent },
-      { op: "setNotes", id: "qrwty-web", notes: "Add project-specific inventory integration." },
-    ]);
-    const changed = (await client.call("GET", `/projects/${id}/architecture`)).body;
-    expect(changed.revision).toBe(1);
-    expect(changed.views.context.description).toBe(intent.system.description);
-    expect(
-      changed.views.components.find((view: { container: string }) => view.container === "qrwty-web")
-        .nodes,
-    ).toContainEqual(
-      expect.objectContaining({ name: "Additional product work", support: "extension" }),
-    );
-    await client.undo(id, 1);
-    expect((await client.design(id)).design.architecture).toEqual(before.design.architecture);
-    expect(
-      (await client.call("GET", "/projects/00000000-0000-4000-8000-000000000000/architecture"))
-        .status,
-    ).toBe(404);
-  });
-  it("creates a separate recipe project, rejects invalid configuration, and restores recipe edits with undo", async () => {
-    const old = await client.createProject("Keep this project");
-    const catalog = await client.call("GET", "/recipes");
-    expect(catalog.body.recipes[0]).toMatchObject({ id: "qr-studio", maturity: "experimental" });
-    const input = {
-      name: "Recipe proof",
-      recipe: { id: "qr-studio", version: "0.1.0" },
-      config: { tagline: "Made without a model", analyticsDays: 7 },
-    };
-    expect(
-      (
-        await client.call("POST", "/projects/from-recipe", {
-          ...input,
-          config: { analyticsDays: 365 },
-        })
-      ).status,
-    ).toBe(422);
-    const created = await client.call("POST", "/projects/from-recipe", input);
-    expect(created.status).toBe(201);
-    const id = created.body.project.id;
-    const state = await client.design(id);
-    expect(state.design.elements).toHaveLength(3);
-    expect(state.design.recipe?.config).toEqual(input.config);
-    expect(state.findings).toEqual([]);
-    expect((await client.design(old)).design.elements).toHaveLength(0);
-    expect(
-      Object.keys((await client.call("GET", `/projects/${id}/layout`)).body.layout.items),
-    ).toHaveLength(3);
-    await client.edit(id, 0, [
-      {
-        op: "setRecipe",
-        recipe: { ...input.recipe, config: { ...input.config, tagline: "Changed" } },
-      },
-    ]);
-    expect((await client.undo(id, 1)).body.design.recipe.config.tagline).toBe(input.config.tagline);
-  });
   it("converts legacy endpoints on read but records v2 only on a semantic save", async () => {
     const id = await client.createProject("Legacy conversion");
     const legacy = { ...linkShortener, revision: 1 };
@@ -384,6 +129,7 @@ describe("projects", () => {
       revision: 3,
     });
   });
+
   it("creates, lists, renames, and deletes a project", async () => {
     const id = await client.createProject("Draft");
     expect((await client.call("GET", "/projects")).body.projects).toContainEqual(
@@ -395,13 +141,8 @@ describe("projects", () => {
     expect(renamed.body.project).toMatchObject({ id, name: "Shorty" });
     expect((await client.call("GET", `/projects/${id}`)).body.project.name).toBe("Shorty");
 
-    const located = await client.call("PATCH", `/projects/${id}`, {
-      outputDir: "/tmp/shorty",
-    });
-    expect(located.body.project).toMatchObject({ name: "Shorty", outputDir: "/tmp/shorty" });
     expect((await client.call("PATCH", `/projects/${id}`, {})).body.project).toMatchObject({
       name: "Shorty",
-      outputDir: "/tmp/shorty",
     });
 
     expect((await client.call("DELETE", `/projects/${id}`)).status).toBe(204);

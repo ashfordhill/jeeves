@@ -1,10 +1,10 @@
-import type { Registry } from "@jeeves/registry";
 import {
   architectureSelectionSchema,
   extractArchitectureTemplate,
   idSchema,
   libraryInsertSchema,
   libraryMetadataSchema,
+  noTemplates,
   previewArchitectureTemplate,
   versionSchema,
 } from "@jeeves/spec";
@@ -17,8 +17,7 @@ const params = z.strictObject({ id: idSchema, version: versionSchema });
 export const architectureLibraryRoutes: FastifyPluginAsyncZod<{
   library: ArchitectureLibrary;
   design: DesignService;
-  registry: Registry;
-}> = async (app, { library, design, registry }) => {
+}> = async (app, { library, design }) => {
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof LibraryError)
       return reply.code(error.status).send({ message: error.message });
@@ -66,7 +65,7 @@ export const architectureLibraryRoutes: FastifyPluginAsyncZod<{
           current.design,
           req.body.selection,
           req.body,
-          registry,
+          noTemplates,
         );
         return reply
           .code(201)
@@ -118,7 +117,7 @@ export const architectureLibraryRoutes: FastifyPluginAsyncZod<{
           current.design,
           library.get(req.body.id, req.body.version),
           req.body,
-          registry,
+          noTemplates,
         );
       } catch (error) {
         if (error instanceof LibraryError || error instanceof z.ZodError) throw error;

@@ -1,7 +1,7 @@
-import { builtinRegistry } from "@jeeves/registry";
 import {
   type ArchitectureLibraryEntry,
   type LibraryInsertInput,
+  noTemplates,
   previewArchitectureTemplate,
   resolveStudioDefinition,
   type StudioScopeProjection,
@@ -14,7 +14,6 @@ import {
   studioViews,
 } from "@jeeves/spec";
 import { useCallback, useEffect, useState } from "react";
-import { ProductConfiguration } from "../architecture/ArchitectureEditors.tsx";
 import { ArchitectureLibrary } from "../architecture/ArchitectureLibrary.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api } from "../draw/api.ts";
@@ -48,7 +47,6 @@ export function StudioLibrary({
   const [error, setError] = useState<string>();
   const [creating, setCreating] = useState(false);
   const [manage, setManage] = useState(false);
-  const [product, setProduct] = useState(false);
   const [saved, setSaved] = useState<ArchitectureLibraryEntry[]>([]);
   const [libraryProblem, setLibraryProblem] = useState(false);
   const [roles, setRoles] = useState<LibraryInsertInput["roles"]>({});
@@ -142,15 +140,11 @@ export function StudioLibrary({
           baseRevision: loaded.design.revision,
           roles,
         },
-        builtinRegistry(),
+        noTemplates,
       )
     : undefined;
   const example = studioArchitectureExamples.find((item) => item.id === preview);
   const contextKind = preview === "person" || preview === "external-system" ? preview : undefined;
-  const templates = loaded.catalog.templates.filter(
-    (template, index, all) => !all.slice(index + 1).some((other) => other.id === template.id),
-  );
-  const runtime = templates.find((item) => `runtime:${item.id}` === preview);
   const add = async () => {
     setError(undefined);
     if (example) {
@@ -229,8 +223,6 @@ export function StudioLibrary({
         }}
       />
     );
-  if (product)
-    return <ProductConfiguration design={loaded.design} onClose={() => setProduct(false)} />;
   return (
     <ConfigurationDialog
       title="Library"
@@ -292,7 +284,6 @@ export function StudioLibrary({
                 definition?.name ??
                 preset?.name ??
                 example?.name ??
-                runtime?.displayName ??
                 (contextKind && creationLabel(contextKind))}
             </h3>
             <p>
@@ -300,7 +291,6 @@ export function StudioLibrary({
                 definition?.description ??
                 preset?.description ??
                 example?.description ??
-                runtime?.description ??
                 "A context identity; no runtime is created."}
             </p>
             {preset ? (
@@ -314,8 +304,7 @@ export function StudioLibrary({
                 <p>
                   Saved composition · {composition.id}@{composition.version}. Adds{" "}
                   {compositionPreview.additions.filter((item) => item.kind === "container").length}{" "}
-                  applications/resources in one edit. Design only; runtime support is reviewed in
-                  Generate.
+                  applications/resources in one edit. Design only.
                 </p>
                 {compositionPreview.roles
                   .filter((role) => !role.create)
@@ -358,8 +347,7 @@ export function StudioLibrary({
                     ? `Owned by ${owner.name}.`
                     : "Unowned. Select an application first to make it the owner."
                   : "Added at C2."}{" "}
-                Select the new object to configure it. Runtime support and C4b work are reviewed in
-                Generate.
+                Select the new object to configure it.
               </p>
             ) : null}
             {example ? (
@@ -367,13 +355,6 @@ export function StudioLibrary({
                 Creates a separate editable studio project with a pinned goal/source map and
                 explicit C4b obligations. Design only; application runtime generation is
                 unsupported.
-              </p>
-            ) : null}
-            {runtime ? (
-              <p>
-                Existing {runtime.kind} template · {runtime.id}@{runtime.version}. Availability
-                describes this template, independently of studio definitions and observed
-                application verification. Existing designs remain accessible in Generate.
               </p>
             ) : null}
           </section>
@@ -458,41 +439,7 @@ export function StudioLibrary({
                 >
                   Saved architecture templates
                 </button>
-                {loaded.design.recipe?.id === "qr-studio" &&
-                loaded.design.elements.some((item) => item.id === "qrwty-web") ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void useDraw
-                        .getState()
-                        .flushEdits()
-                        .then((ok) => {
-                          if (ok) setProduct(true);
-                        })
-                    }
-                  >
-                    Product configuration
-                  </button>
-                ) : null}
               </div>
-            ) : null}
-            {active === "Presets" && target === "c2" ? (
-              <details>
-                <summary>Existing runtime templates</summary>
-                <div className="studio-library-list">
-                  {templates
-                    .filter((item) => matches(`${item.displayName} ${item.id}`))
-                    .map((item) => (
-                      <button
-                        type="button"
-                        key={item.id}
-                        onClick={() => setPreview(`runtime:${item.id}`)}
-                      >
-                        {item.displayName} · {item.version}
-                      </button>
-                    ))}
-                </div>
-              </details>
             ) : null}
             {libraryProblem && active === "Presets" && target === "c2" ? (
               <p>

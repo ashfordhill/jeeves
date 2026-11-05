@@ -1,21 +1,20 @@
 /**
- * In-memory stand-in for the design API, for unit tests: one project, the builtin registry,
+ * In-memory stand-in for the design API, for unit tests: one project,
  * operations applied with the real `applyOperations`, and the server's linear undo/redo.
  */
-import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
   type DesignDocument,
   emptyDesign,
   emptyLayout,
   type LayoutDocument,
+  noTemplates,
   validateDesign,
 } from "@jeeves/spec";
 
 export const TEST_PROJECT = "00000000-0000-4000-8000-000000000001";
 
 export function fakeApi() {
-  const registry = builtinRegistry();
   const state = {
     design: emptyDesign() as DesignDocument,
     layout: emptyLayout() as LayoutDocument,
@@ -34,7 +33,7 @@ export function fakeApi() {
   const designState = () => ({
     projectId: TEST_PROJECT,
     design: state.design,
-    findings: validateDesign(state.design, registry),
+    findings: validateDesign(state.design, noTemplates),
     history: {
       canUndo: state.done.length > 0,
       canRedo: state.undone.length > 0,
@@ -69,7 +68,7 @@ export function fakeApi() {
       if (body.baseRevision !== state.design.revision) {
         return json({ code: "REVISION_CONFLICT", message: "stale", ...designState() }, 409);
       }
-      const result = applyOperations(state.design, body.ops, registry);
+      const result = applyOperations(state.design, body.ops, noTemplates);
       if (!result.ok) {
         return json({ code: "INVALID_OPERATION", message: "invalid", errors: result.errors }, 422);
       }
@@ -89,15 +88,6 @@ export function fakeApi() {
       const snapshot = undo ? step.before : step.after;
       state.design = { ...snapshot, revision: state.design.revision + 1 };
       return json({ ...designState(), operationId: state.design.revision });
-    }
-    if (path === "/templates") {
-      return json({
-        templates: registry.list().map((m) => registry.describe(m)),
-        palette: registry.palette().map(({ group, templates }) => ({
-          group,
-          templates: templates.map(({ id, version }) => ({ id, version })),
-        })),
-      });
     }
     return json({ code: "NOT_FOUND", message: `No route ${method} ${path}` }, 404);
   };

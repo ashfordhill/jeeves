@@ -720,17 +720,12 @@
 .studio-inspector-form {
   margin-top: 16px;
 }
-.studio-member-list,
 .studio-dependencies {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.studio-member-list h3 {
-  margin: 8px 0;
-  font-size: 13px;
-}
-.studio-member-list button,
+
 .studio-dependencies button {
   border: 1px solid var(--grid-dot);
   border-radius: 6px;

@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { policyDesignPreview } from "../../../apps/web/src/architecture/policy-preview.ts";
 import { applyOperations } from "./apply.ts";
 import { contractCanonical } from "./architecture-contracts.ts";
 import { architectureExample, architectureExamples } from "./architecture-examples.ts";
@@ -283,55 +282,6 @@ it("requires current shop membership and exact owner/staff/seller/publication co
   expect(projection?.fields.map((f) => f.field)).not.toEqual(
     expect.arrayContaining(["cost", "allocated", "on-hand"]),
   );
-});
-it("models optional published variant parents without granting access for absent or unknown facts", () => {
-  const d = fixture(),
-    p = policy(d);
-  const preview = (facts: Record<string, "true" | "false" | "unknown">) =>
-    policyDesignPreview(p, {
-      context: "true",
-      current: "true",
-      site: "bytes",
-      action: "bytes",
-      projection: "read",
-      facts,
-    });
-  expect(
-    preview({ "product-published": "true", "product-asset": "true", "variant-published": "false" })
-      .verdict,
-  ).toBe("allow");
-  expect(
-    preview({ "product-published": "true", "product-asset": "false", "variant-published": "false" })
-      .verdict,
-  ).toBe("deny");
-  expect(
-    preview({ "product-published": "false", "product-asset": "true", "variant-published": "true" })
-      .verdict,
-  ).toBe("deny");
-  expect(
-    preview({
-      "product-published": "true",
-      "product-asset": "unknown",
-      "variant-published": "unknown",
-    }).verdict,
-  ).toBe("undetermined");
-  for (const [field, value] of [
-    ["id", null],
-    ["size", null],
-    ["variant-id", "unrestricted"],
-  ]) {
-    const bad = fixture(),
-      c = need(policy(bad).clauses.find((c) => c.id === "product-asset"));
-    if (c.kind !== "visibility") throw Error("visibility");
-    c.field = String(field);
-    c.value = value ?? null;
-    expect(validateBackendPolicies(bad).some(isStructural)).toBe(true);
-  }
-  const bad = fixture(),
-    c = need(policy(bad).clauses.find((c) => c.id === "variant-published"));
-  if (c.kind !== "visibility") throw Error("visibility");
-  c.via = "unknown";
-  expect(validateBackendPolicies(bad).some(isStructural)).toBe(true);
 });
 it("rejects mismatched body-owned Content-Type and arbitrary Content-Length while retaining frozen literals", () => {
   for (const header of ["content-type", "content-length"]) {

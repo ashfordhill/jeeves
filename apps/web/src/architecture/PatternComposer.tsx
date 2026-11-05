@@ -1,10 +1,10 @@
 import "./architecture-library.css";
-import { builtinRegistry } from "@jeeves/registry";
 import {
   type ArchitectureLibraryEntry,
   architecturePatterns,
   contractCanonical,
   libraryOptionChoices,
+  noTemplates,
   type PatternRequest,
   patternConfigSchema,
   previewArchitecturePattern,
@@ -76,8 +76,8 @@ export function PatternComposer({
     : undefined;
   const preview =
     saved && libraryRequest
-      ? previewArchitectureTemplate(base, saved, libraryRequest, builtinRegistry())
-      : previewArchitecturePattern(base, request, builtinRegistry());
+      ? previewArchitectureTemplate(base, saved, libraryRequest, noTemplates)
+      : previewArchitecturePattern(base, request, noTemplates);
   const config = <K extends keyof PatternRequest["config"]>(
     key: K,
     value: PatternRequest["config"][K],

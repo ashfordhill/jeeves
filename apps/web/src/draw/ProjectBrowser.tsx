@@ -94,10 +94,7 @@ export function ProjectBrowser({ onClose }: { onClose: () => void }) {
                   }}
                 >
                   <strong>{project.name}</strong>
-                  <small>
-                    {project.target ? "Planning target · " : ""}
-                    {formatDate(project.updatedAt)}
-                  </small>
+                  <small>{formatDate(project.updatedAt)}</small>
                 </button>
                 {confirming === project.id ? (
                   <Group gap="xs" wrap="nowrap">

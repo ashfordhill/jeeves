@@ -15,17 +15,12 @@ RUN --mount=type=cache,id=jeeves-pnpm,target=/pnpm/store \
     pnpm --filter @jeeves/server... install --prod --frozen-lockfile --store-dir /pnpm/store
 
 FROM base AS runtime
-RUN apk add --no-cache bash ca-certificates font-dejavu git nginx \
+RUN apk add --no-cache bash ca-certificates font-dejavu nginx \
     postgresql17 postgresql17-client su-exec tini
 
-# Keep workspace paths intact: templates load their scaffolds and release artifacts by URL.
 COPY --from=production-dependencies /app/node_modules ./node_modules
 COPY --from=production-dependencies /app/apps/server ./apps/server
 COPY --from=production-dependencies /app/packages ./packages
-COPY --from=production-dependencies /app/templates ./templates
-COPY --from=production-dependencies /app/artifacts ./artifacts
-COPY --from=production-dependencies /app/starters ./starters
-COPY --from=production-dependencies /app/recipes ./recipes
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY patches ./patches
 COPY --from=build /app/apps/web/dist ./apps/web/dist
@@ -34,7 +29,6 @@ COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/jeeves
 
 ENV NODE_ENV=production \
     JEEVES_HOME=/data/settings \
-    JEEVES_PROJECTS_DIR=/data/projects \
     JEEVES_SERVER_PORT=4310 \
     PGDATA=/data/postgres
 VOLUME ["/data"]

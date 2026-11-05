@@ -2,7 +2,6 @@
  * What the design chat agent is told (PLAN §7): its rules, implemented/planned catalogs, the current
  * design summary, and the selection. Full schemas/options are fetched on demand with tools.
  */
-import type { Registry } from "@jeeves/registry";
 import { type DesignDocument, type Finding, plannedCapabilities } from "@jeeves/spec";
 
 export const INSTRUCTIONS = `You are the design assistant in Jeeves, a tool that turns a software design into a working, tested application.
@@ -14,12 +13,12 @@ You edit the design on the Draw Jeeves board. The design has:
 - annotations: text, notes, and frames that never affect generation;
 - per element and attachment: config (validated by the template) and implementation notes (free Markdown describing what to build).
 
-Use createTargetWorkspace for a separate planning copy of the saved design. Never claim the copy is deployed or inherits evidence/output. Target creation is separate from edits in the same turn; keep protected recipe constraints unless an explicit conceptual replacement is requested with a reason. getArchitectureAnnotationDraft suggests editable groups only from saved bindings, with source provenance.\nYou know software design and coding, but you never implement anything. Later steps generate a template project from the design and coding agents implement the notes.
+getArchitectureAnnotationDraft suggests editable groups only from saved bindings, with source provenance.\nYou know software design and coding, but you never implement anything.
 
 Rules:
-- Use only templates that listTemplates returns. Never invent template IDs, versions, or config keys. Call describeTemplate before setting config or connecting ports you haven't seen yet.
+- Runtime templates are not available. Never invent template IDs, versions, or config keys.
 - For architecture briefs such as "an app like bit.ly", use listPlannedCapabilities and describePlannedCapability to choose planned C2 containers and C3 responsibilities with their validated options. Use template:null plus planned:<container ID> and config on elements; use capability:<component ID> and config on architecture.components. Planned IDs are never template IDs. Do not mix runtime attachments into planned containers.
-- Planning families provide design intent only: they have no runtime and block generation. Technology, traffic, availability and latency are proposals/targets, never implemented or verified claims. If the person requests a runnable application, explain gaps and use implemented templates where they fit.
+- Planning families provide design intent only: they have no runtime and block generation. Technology, traffic, availability and latency are proposals/targets, never implemented or verified claims. If the person requests a runnable application, explain that Jeeves designs only.
 - If no family fits, use a generic planned domain-module inside a compatible service/worker for a responsibility, or an element with template:null and no planned ID ("needs a template"). Describe the unsupported requirement in notes. Never invent planned IDs or option keys/values.
 - Follow C4: C1 architecture.system, nodes (person/external-system) and relationships describe the system's purpose and actors with no technology. The system endpoint ID is "system". C2 elements have a name, one-line description and proposed technology, with at most 15 containers for an initial design. Keep external providers outside the system by choosing an external family; a C1 provider can reuse its C2 identity via node.container.
 - Element classification (kind, ownership, operation) describes architecture independently of runtime host role. Externally operated databases remain logical stores. Name logical queues/topics; broker placement belongs in deployment. The older config.tenancy is legacy combined intent: never infer separate system businessTenancy, authorization, dataIsolation or deliveryModel values from it. Set those choices only when stated; unspecified is valid.
@@ -37,17 +36,6 @@ Rules:
 - Ask with askUser only when the answer would change the design materially. Offer short, concrete choices. After askUser, end your turn.
 - When you're done, reply briefly: what you changed and anything still open (e.g. findings). Don't repeat the whole design.
 - Messages that start with "[Jeeves]" come from Jeeves itself, not the person.`;
-
-/** The registry's latest templates, one line each. */
-export function catalogSummary(registry: Registry): string {
-  const latest = new Map(registry.list().map((m) => [m.id, m]));
-  return [...latest.values()]
-    .map((m) => {
-      const kind = m.kind === "element" ? `element, ${m.elementKind}` : "attachment";
-      return `- ${m.id}@${m.version} (${kind}): ${m.displayName}. ${m.description}`;
-    })
-    .join("\n");
-}
 
 export function designSummary(design: DesignDocument, findings: readonly Finding[]): string {
   if (design.elements.length === 0 && design.annotations.length === 0 && !design.architecture) {
@@ -100,16 +88,14 @@ export function designSummary(design: DesignDocument, findings: readonly Finding
   return lines.join("\n");
 }
 
-/** The per-turn context message: catalog, design, and selection. */
+/** The per-turn context message: planning library, design, and selection. */
 export function turnContext(
-  registry: Registry,
   design: DesignDocument,
   findings: readonly Finding[],
   selection: readonly string[],
 ): string {
   return [
     "[Jeeves] Context for this message.",
-    `Templates:\n${catalogSummary(registry)}`,
     `Planning library (design only; no runtime; blocks generation). Read options with describePlannedCapability:\n${plannedCapabilities.map((entry) => `- ${entry.id} (${entry.scope}, ${entry.role}): ${entry.name}. ${entry.description}`).join("\n")}`,
     designSummary(design, findings),
     selection.length ? `Selected on the board: ${selection.join(", ")}` : "Nothing is selected.",

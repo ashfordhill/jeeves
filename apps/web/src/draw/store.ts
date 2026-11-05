@@ -6,7 +6,6 @@
  * One chronological stack orders server design history, board moves and architecture scope
  * snapshots. All persistence shares the request chain, and layout never changes semantic revision.
  */
-import type { TemplateDescription } from "@jeeves/registry";
 import type {
   ArchitectureLayoutView,
   DesignDocument,
@@ -18,39 +17,15 @@ import type {
 import { pruneArchitectureLayout, pruneLayout } from "@jeeves/spec";
 import { create } from "zustand";
 import { createExampleProject, DEFAULT_EXAMPLE_ID } from "../architecture/create-example.ts";
-import {
-  ApiError,
-  api,
-  type DesignState,
-  type EditResult,
-  type Project,
-  type TemplateCatalog,
-} from "./api.ts";
-import type { CanvasEnd, ConnectAction } from "./connect.ts";
-import { type FindingIndex, indexFindings } from "./findings.ts";
-import { templateKey } from "./flow.ts";
+import { ApiError, api, type DesignState, type EditResult, type Project } from "./api.ts";
 import { type DraftIntent, type DraftResult, formDrafts } from "./form-drafts.ts";
 
-export type Tool =
-  | { kind: "planned"; capability: string }
-  | { kind: "service" }
-  | { kind: "select" }
-  | { kind: "hand" }
-  | { kind: "connect" }
-  | { kind: "text" }
-  | { kind: "note" }
-  | { kind: "frame" }
-  | { kind: "element"; template: { id: string; version: string } }
-  | { kind: "attachment"; template: { id: string; version: string } };
-
-export type Notice = { tone: "error" | "info"; message: string; actions?: ConnectAction[] };
+export type Notice = { tone: "error" | "info"; message: string };
 
 export type Selection = { nodes: string[]; edges: string[] };
 
 /** A request for the canvas to select these items and bring them into view. */
 export type FocusRequest = Selection & { seq: number; zoom: boolean };
-
-export type RailTab = "inspector" | "findings" | "chat";
 
 /**
  * One undoable step. `design` marks a server-side edit made here; the server's history holds the
@@ -92,29 +67,20 @@ type Loaded = {
   project: Project;
   design: DesignDocument;
   findings: Finding[];
-  findingIndex: FindingIndex;
   history: DesignState["history"];
   layout: LayoutDocument;
-  catalog: TemplateCatalog;
-  templates: ReadonlyMap<string, TemplateDescription>;
 };
 
 type DrawState = {
   status: "idle" | "loading" | "ready" | "error";
   error?: string;
   loaded?: Loaded;
-  tool: Tool;
-  /** First end picked with the connector tool, waiting for the second click. */
-  pendingEnd?: CanvasEnd;
   notice?: Notice;
-  /** Annotation whose text is being edited in place. */
-  editing?: string;
   /** Layout changes not yet saved. */
   layoutDirty: boolean;
   /** Mirrors React Flow's selection, so the inspector can follow it. */
   selection: Selection;
   focusRequest?: FocusRequest;
-  railTab: RailTab;
   /** Selection in the active C4 scope; undefined means use the editable board selection. */
   architectureSelection?: string[];
   undoSteps: Step[];
@@ -146,14 +112,10 @@ type DrawState = {
   setLayoutItems(items: Record<string, LayoutItem>, options?: { undoable?: boolean }): void;
   setViewport(viewport: NonNullable<LayoutDocument["viewport"]>): void;
   flushLayout(): Promise<void>;
-  setTool(tool: Tool): void;
-  setPendingEnd(end: CanvasEnd | undefined): void;
   setNotice(notice: Notice | undefined): void;
-  setEditing(id: string | undefined): void;
   setSelection(selection: Selection): void;
   /** Selects the given items on the board and, with `zoom`, fits the camera to them. */
   focus(selection: Partial<Selection>, options?: { zoom?: boolean }): void;
-  setRailTab(tab: RailTab): void;
   undo(): Promise<void>;
   redo(): Promise<void>;
   /**
@@ -268,7 +230,6 @@ export const useDraw = create<DrawState>()((set, get) => {
         design: state.design,
         layout,
         findings: state.findings,
-        findingIndex: indexFindings(state.design, state.findings),
         history: state.history,
       },
     });
@@ -487,10 +448,8 @@ export const useDraw = create<DrawState>()((set, get) => {
 
   return {
     status: "idle",
-    tool: { kind: "select" },
     layoutDirty: false,
     selection: { nodes: [], edges: [] },
-    railTab: "inspector",
     undoSteps: [],
     redoSteps: [],
     redoBlocked: false,
@@ -507,7 +466,6 @@ export const useDraw = create<DrawState>()((set, get) => {
         status: "loading",
         error: undefined,
         notice: undefined,
-        pendingEnd: undefined,
         selection: { nodes: [], edges: [] },
         focusRequest: undefined,
         undoSteps: [],
@@ -515,10 +473,9 @@ export const useDraw = create<DrawState>()((set, get) => {
       });
       try {
         const project = await resolveProject(projectId);
-        const [received, layout, catalog] = await Promise.all([
+        const [received, layout] = await Promise.all([
           api.getDesign(project.id),
           api.getLayout(project.id),
-          api.templates(),
         ]);
         if (request !== opening) return;
         const known = accepted.get(project.id);
@@ -533,11 +490,8 @@ export const useDraw = create<DrawState>()((set, get) => {
             project,
             design: state.design,
             findings: state.findings,
-            findingIndex: indexFindings(state.design, state.findings),
             history: state.history,
             layout: pruneArchitectureLayout(layout, state.design),
-            catalog,
-            templates: new Map(catalog.templates.map((t) => [templateKey(t), t])),
           },
         });
       } catch (error) {
@@ -794,20 +748,8 @@ export const useDraw = create<DrawState>()((set, get) => {
       await saveLayout();
     },
 
-    setTool(tool) {
-      set({ tool, pendingEnd: undefined });
-    },
-
-    setPendingEnd(pendingEnd) {
-      set({ pendingEnd });
-    },
-
     setNotice(notice) {
       set({ notice });
-    },
-
-    setEditing(editing) {
-      set({ editing });
     },
 
     setSelection(selection) {
@@ -824,10 +766,6 @@ export const useDraw = create<DrawState>()((set, get) => {
         selection: next,
         focusRequest: { ...next, seq: ++focusSeq, zoom: options?.zoom ?? false },
       });
-    },
-
-    setRailTab(railTab) {
-      set({ railTab });
     },
   };
 });

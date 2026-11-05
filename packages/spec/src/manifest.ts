@@ -104,6 +104,9 @@ export interface TemplateLookup {
   versions(id: string): readonly string[];
 }
 
+/** The lookup the app uses now that runtime templates are gone: studio designs reference none. */
+export const noTemplates: TemplateLookup = { get: () => undefined, versions: () => [] };
+
 export function findPort(
   manifest: TemplateManifest,
   kind: Port["kind"],

@@ -4,18 +4,15 @@
  * committed as one operation at the end, so one chat turn is one undo step.
  */
 import type { ToolDefinition } from "@jeeves/providers";
-import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
   architecturePatterns,
   architectureProofOperations,
   architectureReview,
   backendPolicyConsumers,
-  type CreateTarget,
   componentCompatible,
   contractCanonical,
   contractSources,
-  createTargetSchema,
   type DesignDocument,
   describeArchitecturePattern,
   type FindingCode,
@@ -23,6 +20,7 @@ import {
   findingCodes,
   idSchema,
   libraryInsertSchema,
+  noTemplates,
   type OperationInput,
   operationSchema,
   patternConfigSchema,
@@ -48,11 +46,6 @@ import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
 import { runStudioTool, studioToolDefinitions } from "./studio.ts";
 
 const argsSchemas = {
-  listTemplates: z.strictObject({}),
-  describeTemplate: z.strictObject({
-    id: z.string().describe("Template ID from listTemplates"),
-    version: z.string().optional().describe("Exact version; latest if omitted"),
-  }),
   listPlannedCapabilities: z.strictObject({
     scope: z.enum(["container", "component"]).optional(),
   }),
@@ -90,7 +83,6 @@ const argsSchemas = {
   getArchitectureContracts: z.strictObject({}),
   getArchitectureReview: z.strictObject({}),
   getArchitectureAnnotationDraft: z.strictObject({}),
-  createTargetWorkspace: createTargetSchema,
   reviewSubtype: z.strictObject({ id: idSchema, template: templateRefSchema.nullable() }),
   applyOperations: z.strictObject({
     ops: z
@@ -114,10 +106,6 @@ const argsSchemas = {
 export type ToolName = keyof typeof argsSchemas;
 
 const descriptions: Record<ToolName, string> = {
-  listTemplates:
-    "List every template in the registry: element templates (with their kind) and attachment templates.",
-  describeTemplate:
-    "Full details of one template: config JSON Schema with defaults, presets, ports (connection kinds, direction, required), and attachment slots.",
   listPlannedCapabilities:
     "List design-only C2 container and C3 component families. These are planned, have no runtime, and block generation. Filter by scope if needed.",
   describePlannedCapability:
@@ -128,8 +116,6 @@ const descriptions: Record<ToolName, string> = {
     "Inspect project-local contracts/local types, backend entities/aggregates/queries/accessPolicies/accessBindings and exact affected query/byte/output/operation/capability paths, provided/required interfaces, relationship bindings, dataset authority/access/lifecycle, scoped unverified objectives, separate design review findings and authoritative REST/resource/durable-event sources with exact saved snapshots. Use these stable ownership references in setArchitecture; never duplicate or edit source shapes. Referenced versions are immutable except name/description; create an explicit version and review instances to update.",
   getArchitectureAnnotationDraft:
     "Suggest editable context and responsibility annotations from explicit saved auth/resource/extension bindings. Returns an architecture draft with revision and source references. Review and edit names/responsibilities, then apply using setArchitecture. Operation names do not prove behavior. Preserve provenance and existing architecture.",
-  createTargetWorkspace:
-    "Create a separate planning target from this saved design and baseRevision, with an immutable baseline and provenance. Stable identities, pins and configuration copy; output ownership and history do not. Generation/runs are refused. Keep protected-copy by default; conceptual-replacement requires an explicit planning reason and retains the original recipe in its baseline. Cannot combine target creation with edits in the same turn. Creation commits when the turn finishes. Never copy source output or claim deployment.",
   getArchitectureReview:
     "Read requirement-based architecture review with concern groups, assumptions, linked inputs, fingerprints, completion and decisions. Save reviewRequirements and decisions using setArchitecture; preserve other metadata. Accepted decisions need context, decision/reason, consequence, linked identities and exact finding/fingerprint acknowledgements. Contradictions cannot be acknowledged away. Changed relevant inputs expire acceptance; no review supplies runtime evidence or changes Generate. Ordinary planning edits need no additional approval.",
   listArchitectureLibrary:
@@ -181,13 +167,12 @@ const explanations: Record<FindingCode, string> = {
   DUPLICATE_ID: "Two items share an ID. IDs must be unique across the whole design; pick another.",
   UNKNOWN_REFERENCE: "Something refers to an ID that doesn't exist. Check the IDs with getDesign.",
   UNKNOWN_TEMPLATE:
-    'The template ID or version isn\'t in the registry. Use listTemplates for runtimes or listPlannedCapabilities for design intent; planned containers need a known planned ID and "template": null.',
-  TEMPLATE_KIND_MISMATCH:
-    "An element template was used as an attachment or the other way round. Check the kind in listTemplates.",
+    'Runtime templates are no longer available. Use listPlannedCapabilities for design intent; planned containers need a known planned ID and "template": null.',
+  TEMPLATE_KIND_MISMATCH: "An element template was used as an attachment or the other way round.",
   CONFIG_INVALID:
-    "A config value is malformed or the key doesn't exist. Read the config schema with describeTemplate or describePlannedCapability.",
+    "A config value is malformed or the key doesn't exist. Read the config schema with describePlannedCapability.",
   ATTACHMENT_INCOMPATIBLE:
-    "The element's template has no slot for this attachment, or the slot is full. See attachmentSlots in describeTemplate.",
+    "The element's template has no slot for this attachment, or the slot is full.",
   PORT_INCOMPATIBLE:
     "Neither end has a port for this connection kind and direction, or a port's accepts rule refuses the other end. Connections join outer elements; if several compatible capabilities fit, choose the capability in the inspector (fromCapability/toCapability). Attachments are never connection endpoints.",
   PORT_MULTIPLICITY: "The port allows a single connection and already has one.",
@@ -214,13 +199,10 @@ export class Workspace {
   annotationRevisionBound = false;
   deploymentRevisionBound = false;
   scenarioRevisionBound = false;
-  targetRequest: CreateTarget | undefined;
-  createdTarget: { id: string; name: string } | undefined;
   question: ChatQuestion | undefined;
   activity: ChatActivity[] = [];
 
   constructor(
-    private readonly registry: Registry,
     /** The committed design the pending edits apply to. */
     public base: DesignDocument,
     public working: DesignDocument = base,
@@ -239,15 +221,12 @@ export class Workspace {
     this.annotationRevisionBound = false;
     this.deploymentRevisionBound = false;
     this.scenarioRevisionBound = false;
-    this.targetRequest = undefined;
   }
 
   /** Runs one tool call and returns its JSON result for the model. */
   run(name: string, rawArgs: string): string {
     const result =
-      this.profile === "studio"
-        ? runStudioTool(this, this.registry, name, rawArgs)
-        : this.dispatch(name, rawArgs);
+      this.profile === "studio" ? runStudioTool(this, name, rawArgs) : this.dispatch(name, rawArgs);
     return JSON.stringify(result);
   }
 
@@ -274,10 +253,6 @@ export class Workspace {
     }
     const args = (parsed.success ? parsed.data : json) as never;
     switch (tool) {
-      case "listTemplates":
-        return this.listTemplates();
-      case "describeTemplate":
-        return this.describeTemplate(args);
       case "listPlannedCapabilities": {
         const { scope } = args as z.infer<typeof argsSchemas.listPlannedCapabilities>;
         this.log(tool, true, "Listed planned capabilities");
@@ -358,7 +333,7 @@ export class Workspace {
             { ...this.working, revision: this.base.revision },
             this.library.get(req.id, req.version),
             req,
-            this.registry,
+            noTemplates,
           );
           this.log(tool, preview.ok, "Previewed exact local architecture version");
           if (tool === "previewArchitectureLibrary" || !preview.ok) return preview;
@@ -401,9 +376,9 @@ export class Workspace {
             base,
             request.product,
             request.stage,
-            this.registry,
+            noTemplates,
           );
-          const result = applyOperations(base, ops, this.registry);
+          const result = applyOperations(base, ops, noTemplates);
           if (!result.ok) return result;
           if (tool === "previewArchitectureStudyStage")
             return { ok: true, ops, review: reviewArchitecture(result.design) };
@@ -437,7 +412,7 @@ export class Workspace {
         const preview = previewArchitecturePattern(
           { ...this.working, revision: this.base.revision },
           args,
-          this.registry,
+          noTemplates,
         );
         this.log(
           tool,
@@ -453,20 +428,6 @@ export class Workspace {
           patternBaseRevision: this.base.revision,
         };
       }
-      case "createTargetWorkspace":
-        if (this.pending.length || this.targetRequest)
-          return {
-            ok: false,
-            error: "Create a target in a separate turn from design edits or another creation.",
-          };
-        this.targetRequest = args;
-        this.log(tool, true, "Prepared a separate planning target from the saved source revision");
-        return {
-          ok: true,
-          prepared: true,
-          baseRevision: this.base.revision,
-          note: "The target is created atomically when this turn finishes; its link is returned after commit.",
-        };
       case "getArchitectureAnnotationDraft":
         if (this.pending.length)
           return {
@@ -521,7 +482,7 @@ export class Workspace {
         return {
           design: this.working,
           patternBaseRevision: this.base.revision,
-          findings: validateDesign(this.working, this.registry),
+          findings: validateDesign(this.working, noTemplates),
         };
       case "reviewSubtype": {
         const { id, template } = args as z.infer<typeof argsSchemas.reviewSubtype>;
@@ -534,7 +495,7 @@ export class Workspace {
               "Finish pending edits before proposing a revision-bound subtype review in a new turn.",
           };
         if (element.template && template?.id === element.template.id) {
-          const upgrade = reviewTemplateUpgrade(this.working, id, template, this.registry);
+          const upgrade = reviewTemplateUpgrade(this.working, id, template, noTemplates);
           this.log(
             tool,
             upgrade.ok,
@@ -568,7 +529,7 @@ export class Workspace {
       case "applyOperations":
         return this.applyOperations(args);
       case "validateDesign": {
-        const findings = validateDesign(this.working, this.registry);
+        const findings = validateDesign(this.working, noTemplates);
         this.log(tool, true, `Checked the design: ${plural(findings.length, "finding")}`);
         return { findings };
       }
@@ -579,42 +540,8 @@ export class Workspace {
     }
   }
 
-  private listTemplates() {
-    this.log("listTemplates", true, "Listed templates");
-    const latest = new Map(this.registry.list().map((m) => [m.id, m]));
-    return {
-      templates: [...latest.values()].map((m) => ({
-        id: m.id,
-        version: m.version,
-        kind: m.kind,
-        elementKind: m.kind === "element" ? m.elementKind : undefined,
-        displayName: m.displayName,
-        description: m.description,
-      })),
-    };
-  }
-
-  private describeTemplate({ id, version }: z.infer<(typeof argsSchemas)["describeTemplate"]>) {
-    const ref = version ? { id, version } : this.registry.latest(id);
-    const description = ref && this.registry.describe({ id, version: ref.version });
-    if (!description) {
-      this.log("describeTemplate", false, `No template ${id}${version ? `@${version}` : ""}`);
-      return {
-        ok: false,
-        error: `There is no template "${id}"${version ? ` at ${version}` : ""}.`,
-      };
-    }
-    this.log("describeTemplate", true, `Read template ${description.displayName}`);
-    return { template: description };
-  }
-
   private applyOperations({ ops }: { ops: OperationInput[] }) {
-    if (this.targetRequest)
-      return {
-        ok: false,
-        error: "Target creation uses the saved source. Save design edits in a separate turn.",
-      };
-    const result = applyOperations(this.working, ops, this.registry, {
+    const result = applyOperations(this.working, ops, noTemplates, {
       allowSubtypeConfirmation: false,
     });
     if (!result.ok) {
@@ -661,7 +588,7 @@ export class Workspace {
 
   private explainFinding({ code, element }: z.infer<(typeof argsSchemas)["explainFinding"]>) {
     this.log("explainFinding", true, `Looked up ${code}`);
-    const findings = validateDesign(this.working, this.registry).filter(
+    const findings = validateDesign(this.working, noTemplates).filter(
       (f) => f.code === code && (!element || f.target.element === element),
     );
     return { code, ...findingCatalog[code], explanation: explanations[code], current: findings };

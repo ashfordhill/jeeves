@@ -13,13 +13,13 @@ import {
   type ModelRole,
   ProviderError,
 } from "@jeeves/providers";
-import type { Registry } from "@jeeves/registry";
 import {
   applyOperations,
   type DesignDocument,
   designIds,
   type Finding,
   type LayoutDocument,
+  noTemplates,
 } from "@jeeves/spec";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import type { ArchitectureLibrary } from "../architecture/library.ts";
@@ -101,7 +101,6 @@ export class ChatService {
   constructor(
     private readonly db: Db,
     private readonly design: DesignService,
-    private readonly registry: Registry,
     private readonly models: ModelSource,
     private readonly library?: ArchitectureLibrary,
   ) {}
@@ -214,7 +213,6 @@ export class ChatService {
 
     const project = await this.design.getProject(projectId);
     const workspace = new Workspace(
-      this.registry,
       initial.design,
       initial.design,
       project?.name,
@@ -254,7 +252,7 @@ export class ChatService {
               text:
                 input.profile === "studio"
                   ? studioTurnContext(initial.design, initial.findings, input.selection)
-                  : turnContext(this.registry, initial.design, initial.findings, input.selection),
+                  : turnContext(initial.design, initial.findings, input.selection),
             },
           ],
         },
@@ -346,11 +344,6 @@ export class ChatService {
         const committed = await this.commit(projectId, workspace);
         flushActivity(before);
         if (committed.ok) {
-          if (workspace.createdTarget) {
-            const delta = `\n\nPlanning target created: [${workspace.createdTarget.name}](/?project=${workspace.createdTarget.id}#/draw).`;
-            reply += delta;
-            emit({ type: "text", delta });
-          }
           operationId = committed.operationId;
           changed = committed.changed;
           break;
@@ -429,31 +422,6 @@ export class ChatService {
   ): Promise<
     { ok: true; operationId: number | null; changed: string[] } | { ok: false; message: string }
   > {
-    if (workspace.targetRequest) {
-      const result = await this.design.createTarget(projectId, workspace.targetRequest);
-      if (result.ok) {
-        workspace.createdTarget = { id: result.project.id, name: result.project.name };
-        workspace.log(
-          "commit",
-          true,
-          `Created planning target ${result.project.name} (${result.project.id}); source unchanged`,
-        );
-        return { ok: true, operationId: null, changed: [] };
-      }
-      if (result.reason === "conflict") {
-        workspace.reset(result.state.design);
-        return {
-          ok: false,
-          message:
-            "The source revision changed. No target was created; read the source again before preparing a new target.",
-        };
-      }
-      if (result.reason === "invalid") {
-        workspace.targetRequest = undefined;
-        return { ok: false, message: describeErrors(result.errors) };
-      }
-      throw new TurnError("Source project not found.");
-    }
     if (workspace.pending.length === 0) return { ok: true, operationId: null, changed: [] };
     for (let attempt = 0; attempt <= MAX_REBASES; attempt++) {
       const result = await this.design.edit(projectId, {
@@ -520,7 +488,7 @@ export class ChatService {
               "Scenario inputs changed. Nothing was saved; read the current design and review relationships, contracts and expectations again.",
           };
         }
-        const replay = applyOperations(current, workspace.pending, this.registry);
+        const replay = applyOperations(current, workspace.pending, noTemplates);
         if (!replay.ok) {
           workspace.log("commit", false, "The design changed meanwhile; redoing the edits");
           workspace.reset(current);

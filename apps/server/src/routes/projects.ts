@@ -1,19 +1,4 @@
-import {
-  createRecipeDesign,
-  createStarterDesign,
-  RecipeError,
-  recipeCatalog,
-  StarterError,
-  starterCatalog,
-  starterConfigSchema,
-} from "@jeeves/generator";
-import { freePort } from "@jeeves/generator/baseline";
-import {
-  createTargetSchema,
-  layoutSchema,
-  operationBatchSchema,
-  templateRefSchema,
-} from "@jeeves/spec";
+import { layoutSchema, operationBatchSchema } from "@jeeves/spec";
 import type { FastifyReply } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
@@ -24,7 +9,6 @@ const projectParams = z.object({ id: z.uuid() });
 const projectBody = z.strictObject({ name: z.string().trim().min(1).max(120) });
 const projectPatch = z.strictObject({
   name: z.string().trim().min(1).max(120).optional(),
-  outputDir: z.string().trim().min(1).max(1000).optional(),
 });
 const source = z.enum(operationSources).default("api");
 
@@ -49,77 +33,6 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
   { service },
 ) => {
   app.get("/projects", async () => ({ projects: await service.listProjects() }));
-  app.get("/recipes", async () => ({ recipes: recipeCatalog() }));
-  app.get("/starters", async () => ({ starters: starterCatalog() }));
-  app.post(
-    "/projects/from-starter",
-    {
-      schema: {
-        body: z.strictObject({
-          name: z.string().trim().min(1).max(80),
-          starter: templateRefSchema,
-          config: starterConfigSchema.optional(),
-        }),
-      },
-    },
-    async (req, reply) => {
-      try {
-        const initial = createStarterDesign(req.body.starter, {
-          title: req.body.name,
-          hostPort: await freePort(),
-          config: req.body.config,
-        });
-        const project = await service.createProject(req.body.name, initial);
-        return reply.code(201).send({ project });
-      } catch (error) {
-        if (error instanceof StarterError || error instanceof z.ZodError)
-          return reply.code(422).send({ code: "INVALID_STARTER", message: error.message });
-        throw error;
-      }
-    },
-  );
-  app.post(
-    "/projects/from-recipe",
-    {
-      schema: {
-        body: z.strictObject({
-          name: z.string().trim().min(1).max(80),
-          recipe: templateRefSchema,
-          config: z.record(z.string(), z.unknown()).optional(),
-        }),
-      },
-    },
-    async (req, reply) => {
-      try {
-        const initial = createRecipeDesign(req.body.recipe, {
-          title: req.body.name,
-          hostPort: await freePort(),
-          config: req.body.config,
-        });
-        const project = await service.createProject(req.body.name, initial);
-        return reply.code(201).send({ project });
-      } catch (error) {
-        if (error instanceof RecipeError || error instanceof z.ZodError)
-          return reply.code(422).send({ code: "INVALID_RECIPE", message: error.message });
-        throw error;
-      }
-    },
-  );
-
-  app.post(
-    "/projects/:id/targets",
-    { schema: { params: projectParams, body: createTargetSchema } },
-    async (req, reply) => {
-      const result = await service.createTarget(req.params.id, req.body);
-      if (result.ok) return reply.code(201).send({ project: result.project });
-      return sendChange(reply, result);
-    },
-  );
-  app.get("/projects/:id/target", { schema: { params: projectParams } }, async (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return (await service.targetComparison(req.params.id)) ?? notFound(reply, "Target workspace");
-  });
-
   app.post("/projects", { schema: { body: projectBody } }, async (req, reply) => {
     const project = await service.createProject(req.body.name);
     return reply.code(201).send({ project });
@@ -147,23 +60,6 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
     const state = await service.getDesign(req.params.id);
     return state ?? notFound(reply);
   });
-
-  app.get(
-    "/projects/:id/api-preview",
-    { schema: { params: projectParams } },
-    async (req, reply) => {
-      reply.header("Cache-Control", "no-store");
-      return (await service.apiPreview(req.params.id)) ?? notFound(reply);
-    },
-  );
-
-  app.get(
-    "/projects/:id/architecture",
-    { schema: { params: projectParams } },
-    async (req, reply) => {
-      return (await service.architecture(req.params.id)) ?? notFound(reply);
-    },
-  );
 
   /** Read-only generation blueprint (`blueprint: 1`); the studio keeps writing via operations. */
   app.get("/projects/:id/blueprint", { schema: { params: projectParams } }, async (req, reply) => {

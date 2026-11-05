@@ -11,7 +11,6 @@ import {
   renameSync,
   writeFileSync,
 } from "node:fs";
-import { createRequire } from "node:module";
 import { isAbsolute, join, relative, resolve } from "node:path";
 
 export type Command = { executable: string; args: string[]; cwd: string };
@@ -20,40 +19,10 @@ export const profiles = {
   check: "Required lint, typecheck and offline unit gate",
   typecheck: "All workspace and maintenance-script type checks",
   unit: "Selected offline test files (or explicit all)",
-  templates: "Selected conformance files; may start disposable Docker/browser fixtures (or all)",
   browser: "Selected Playwright specs; starts the existing Jeeves test database (or all)",
   "browser-preview":
     "Build and serve production assets through selected strict Playwright specs (or all)",
   "browser-docker": "All Playwright specs using the existing Docker runner",
-  "browser-stream": "Bounded no-store stream diagnostic in pinned Firefox; no Docker",
-  "browser-stream-chromium":
-    "Same diagnostic in pinned Chromium; currently fails on the upstream completed-stream defect",
-  "qr-studio-recipe":
-    "Fresh deterministic QR Studio generation, build and full acceptance; disposable database",
-  "template-upgrade":
-    "Reviewed starter template upgrade, preserved output and newly selected policy in a disposable Inventory app",
-  "generated-http-pool-browser":
-    "Focused generated trio browser journey; template packs explicitly not selected",
-  "generated-http-pool":
-    "Diagram-generated trio pool with reviewed source, per-instance template packs and resource browser journey",
-  "local-http-pool":
-    "Compiled local HTTP pool with shared generated resources, readiness/loss/recovery and no replay; disposable consumer",
-  "local-execution":
-    "Disposable local limits, process restart, request drain and bounded shutdown proof",
-  "session-isolation":
-    "Two generated apps in one browser, restart and legacy account transition; disposable storage",
-  "resource-starter":
-    "Versioned editable starter to a running Inventory app; generated private setup, no model calls",
-  "generated-workspace":
-    "Diagram-generated Inventory workspace with frozen components and no frontend implementation model",
-  "resource-workspace":
-    "Compiled owner-resource workspace in a disposable Inventory app; no live consumer",
-  "generated-events":
-    "Generated non-QR event service, lifecycle and fixed acceptance; disposable Postgres",
-  "durable-events":
-    "Focused transactional delivery proof in disposable PostgreSQL; no live consumer",
-  "qrwty-product": "Isolated composed consumer verification; requires an absolute checkout path",
-  "qrwty-upgrade": "Disposable old-to-new migration proof; requires two absolute checkout paths",
 } as const;
 
 export function planWork(root: string, name: string, selections: string[]): WorkPlan {
@@ -93,29 +62,6 @@ export function planWork(root: string, name: string, selections: string[]): Work
     case "unit":
       pnpm("exec", "vitest", "run", "--passWithNoTests=false", ...files(".test.ts"));
       break;
-    case "templates":
-      pnpm(
-        "exec",
-        "vitest",
-        "run",
-        "--config",
-        "vitest.templates.config.ts",
-        "--passWithNoTests=false",
-        ...files(".conformance.ts"),
-      );
-      break;
-    case "durable-events":
-      none();
-      pnpm(
-        "exec",
-        "vitest",
-        "run",
-        "--config",
-        "vitest.templates.config.ts",
-        "--passWithNoTests=false",
-        "packages/durable-events/conformance/durable-events.conformance.ts",
-      );
-      break;
     case "browser":
     case "browser-preview": {
       const selected = files(".spec.ts");
@@ -134,81 +80,6 @@ export function planWork(root: string, name: string, selections: string[]): Work
       none();
       pnpm("test:e2e:docker");
       break;
-    case "browser-stream":
-    case "browser-stream-chromium": {
-      none();
-      const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
-      commands.push({
-        executable: process.execPath,
-        args: [
-          "--import",
-          loader,
-          join(root, "packages/generator/scripts/verify-browser-stream.ts"),
-          name === "browser-stream" ? "firefox" : "chromium",
-        ],
-        cwd: root,
-      });
-      break;
-    }
-    case "template-upgrade":
-    case "local-execution":
-    case "local-http-pool":
-    case "generated-http-pool":
-    case "generated-http-pool-browser":
-    case "session-isolation":
-    case "resource-starter":
-    case "generated-workspace":
-    case "resource-workspace":
-    case "generated-events":
-    case "qr-studio-recipe": {
-      none();
-      const workspaceMode = (
-        {
-          "resource-starter": "--starter",
-          "template-upgrade": "--upgrade-starter",
-          "generated-http-pool": "--pooled-starter",
-          "generated-http-pool-browser": "--pooled-browser",
-        } as Record<string, string>
-      )[name];
-      const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
-      commands.push({
-        executable: process.execPath,
-        args: [
-          "--import",
-          loader,
-          join(
-            root,
-            `packages/generator/scripts/verify-${workspaceMode ? "generated-workspace" : name}.ts`,
-          ),
-          ...(workspaceMode ? [workspaceMode] : []),
-        ],
-        cwd: root,
-      });
-      break;
-    }
-    case "qrwty-product":
-    case "qrwty-upgrade": {
-      const count = name === "qrwty-upgrade" ? 2 : 1;
-      if (
-        selections.length !== count ||
-        selections.some((path) => !isAbsolute(path) || !existsSync(join(path, "jeeves/lock.json")))
-      )
-        throw new Error(`${name} requires ${count} absolute generated qrwty checkout path(s).`);
-      repositories.push(...selections);
-      // Run Node directly so a signal reaches the verifier, which owns fixture cleanup.
-      const loader = createRequire(join(root, "apps/server/package.json")).resolve("tsx");
-      commands.push({
-        executable: process.execPath,
-        args: [
-          "--import",
-          loader,
-          join(root, `packages/generator/scripts/verify-${name}.ts`),
-          ...selections,
-        ],
-        cwd: root,
-      });
-      break;
-    }
     default:
       throw new Error(`Unknown profile: ${name}. Run 'pnpm work list'.`);
   }

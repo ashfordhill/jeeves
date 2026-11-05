@@ -55,7 +55,6 @@ export * from "./findings.ts";
 export * from "./focused-views.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";
-export * from "./local-deployment.ts";
 export * from "./local-execution.ts";
 export * from "./local-http-pool.ts";
 export * from "./manifest.ts";

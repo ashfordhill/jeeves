@@ -1,11 +1,10 @@
-import { builtinRegistry } from "@jeeves/registry";
 import { architectureExample, emptyDesign, plannedCapabilities } from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { designSummary, INSTRUCTIONS, turnContext } from "./context.ts";
 
 it("includes every planned family and complete architecture in the per-turn context", () => {
   const design = architectureExample("qrwty-target").design;
-  const context = turnContext(builtinRegistry(), design, [], ["api"]);
+  const context = turnContext(design, [], ["api"]);
   for (const entry of plannedCapabilities) {
     expect(context).toContain(`${entry.id} (${entry.scope}, ${entry.role})`);
   }

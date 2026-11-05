@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { policyDesignPreview } from "../../../apps/web/src/architecture/policy-preview.ts";
 import { applyOperations } from "./apply.ts";
 import { contractCanonical } from "./architecture-contracts.ts";
 import { architectureExample, architectureExamples } from "./architecture-examples.ts";
@@ -199,39 +198,6 @@ it("checks exact live grant/membership authority, bounded nonrecursive paths and
   expect(clause.subject).toEqual({ kind: "resource-field", field: "principal-id" });
   clause.subject = { kind: "session-principal" };
   expect(validateBackendPolicies(d).some((f) => f.message.includes("cannot borrow"))).toBe(true);
-});
-it("keeps hidden/removed list tombstones while the synthetic projection withholds ordinary text", () => {
-  const p = policy(fixture());
-  const preview = (facts: Record<string, "true" | "false" | "unknown">) =>
-    policyDesignPreview(p, {
-      context: "true",
-      current: "true",
-      action: "list",
-      site: "read",
-      projection: "read",
-      facts: { "category-read": "true", ...facts },
-    });
-  expect(preview({ visible: "true", hidden: "false", moderator: "false" }).fields).toContain(
-    "text",
-  );
-  expect(preview({ visible: "false", hidden: "true", moderator: "false" }).redacted).toEqual([
-    { field: "text", replacement: "null" },
-  ]);
-  expect(preview({ visible: "false", hidden: "true", moderator: "true" }).fields).toContain("text");
-  expect(preview({ visible: "false", hidden: "false", moderator: "true" }).redacted).toEqual([
-    { field: "text", replacement: "null" },
-  ]);
-  expect(
-    preview({ visible: "unknown", hidden: "unknown", moderator: "unknown" }).fields,
-  ).not.toContain("text");
-  expect(preview({ "category-read": "false", visible: "true" }).verdict).toBe("deny");
-  p.rules.push({
-    id: "explicit-deny",
-    effect: "deny",
-    actions: ["list"],
-    when: { operator: "all", clauses: ["visible"] },
-  });
-  expect(preview({ visible: "true" }).verdict).toBe("deny");
 });
 it("rejects redactions that contradict required/nonnullable logical fields, invalid conditions and parent fields", () => {
   for (const change of [

@@ -4,13 +4,13 @@
  * to that box, in a single operation batch (one undo step). Positions stay derived (SG06); nothing
  * here stores layout. Unlike the reference, an inbound spawn never retargets existing lines.
  */
-import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
   architectureSchema,
   buildStudioCommand,
   createStudioComponentSettings,
   type DesignDocument,
+  noTemplates,
   type OperationInput,
   type StudioComponentKind,
   type StudioConnectionCreation,
@@ -182,7 +182,7 @@ export type SpawnResult = {
 };
 
 const applied = (design: DesignDocument, ops: OperationInput[]) => {
-  const result = applyOperations(design, ops, builtinRegistry(), { baseRevision: design.revision });
+  const result = applyOperations(design, ops, noTemplates, { baseRevision: design.revision });
   if (!result.ok) throw new Error(result.errors[0]?.message ?? "This creation is invalid.");
   return result.design;
 };

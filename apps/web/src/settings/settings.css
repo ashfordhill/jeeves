@@ -95,16 +95,6 @@
   color: var(--ink-soft);
 }
 
-.settings-advanced {
-  padding-top: 4px;
-  border-top: 1px solid color-mix(in srgb, var(--line) 35%, transparent);
-}
-
-.settings-advanced summary {
-  cursor: pointer;
-  font-weight: 800;
-}
-
 .settings-note {
   margin-bottom: 10px;
 }
@@ -168,13 +158,8 @@
   margin-top: 6px;
 }
 
-.settings-role-fields-coding {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.7fr);
-}
-
 @media (max-width: 640px) {
-  .settings-role-fields,
-  .settings-role-fields-coding {
+  .settings-role-fields {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -1,7 +1,0 @@
-# What qrwty web's image build may see of the project root (the build context).
-*
-!vendor/jeeves/
-!frontends/qrwty-web/
-frontends/qrwty-web/node_modules/
-frontends/qrwty-web/dist/
-frontends/qrwty-web/test/

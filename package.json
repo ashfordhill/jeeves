@@ -17,8 +17,6 @@
     "test": "vitest run",
     "test:e2e": "pnpm db:up && playwright test",
     "test:e2e:docker": "pnpm db:up && scripts/e2e-docker.sh",
-    "test:templates": "vitest run --config vitest.templates.config.ts",
-    "qrwty:bootstrap": "pnpm --filter @jeeves/server exec tsx ../../scripts/qrwty-bootstrap.ts",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "work": "node scripts/work.ts",
     "references": "node scripts/references.ts"

@@ -3,7 +3,7 @@ import { viewFromHash } from "./views.ts";
 
 describe("viewFromHash", () => {
   it("reads known views", () => {
-    expect(viewFromHash("#/runs")).toBe("runs");
+    expect(viewFromHash("#/draw")).toBe("draw");
     expect(viewFromHash("#settings")).toBe("settings");
   });
 

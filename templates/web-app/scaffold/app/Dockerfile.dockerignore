@@ -1,7 +1,0 @@
-# What {{appName}}'s image build may see of the project root (the build context).
-*
-!vendor/jeeves/
-!{{appDir}}/
-{{appDir}}/node_modules/
-{{appDir}}/dist/
-{{appDir}}/test/

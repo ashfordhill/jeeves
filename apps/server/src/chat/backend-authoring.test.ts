@@ -1,4 +1,3 @@
-import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
   architectureContractSchema,
@@ -6,6 +5,7 @@ import {
   contractKey,
   type DesignDocument,
   designSchema,
+  noTemplates,
 } from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { toolDefinitions, Workspace } from "./tools.ts";
@@ -152,7 +152,7 @@ function fixture(): DesignDocument {
 }
 it("discovers exact backend policy uses including hidden query fields and byte paths", () => {
   const before = fixture(),
-    workspace = new Workspace(builtinRegistry(), before);
+    workspace = new Workspace(before);
   const discovered = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
   expect(discovered.backend).toEqual(model(before));
   expect(discovered.policyConsumers[0].policy).toEqual(ref("policy"));
@@ -171,8 +171,8 @@ it("discovers exact backend policy uses including hidden query fields and byte p
 });
 it("chat preserves protected policy versions and atomically saves a successor with exact query/byte retargets", () => {
   const before = fixture(),
-    registry = builtinRegistry(),
-    workspace = new Workspace(registry, before);
+    registry = noTemplates,
+    workspace = new Workspace(before);
   const edit = (architecture: NonNullable<DesignDocument["architecture"]>) =>
     JSON.parse(
       workspace.run(

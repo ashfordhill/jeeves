@@ -1,15 +1,13 @@
 /**
  * Header menu: the open project's name, renaming it, other projects to switch to, and "New
- * project". The name also names the generated project's default folder.
+ * project".
  */
 import { Button, Menu, Modal, TextInput, UnstyledButton } from "@mantine/core";
 import { IconChevronDown, IconList, IconPencil, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
-import { TargetCreateDialog } from "../architecture/ArchitectureTargets.tsx";
 import { api, type Project } from "./api.ts";
 import { ProjectBrowser } from "./ProjectBrowser.tsx";
 import { ProjectChooser } from "./ProjectChooser.tsx";
-import { RecipeDialog } from "./RecipeDialog.tsx";
 import { useDraw } from "./store.ts";
 
 /** The header menu stays short; the project browser lists everything with search and delete. */
@@ -18,8 +16,6 @@ const RECENT = 8;
 export function ProjectMenu() {
   const project = useDraw((s) => s.loaded?.project);
   const open = useDraw((s) => s.open);
-  const [targetOpen, setTargetOpen] = useState(false);
-  const [recipeOpen, setRecipeOpen] = useState(false);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -69,7 +65,6 @@ export function ProjectMenu() {
             Rename project
           </Menu.Item>
           <Menu.Divider />
-          <Menu.Item onClick={() => setTargetOpen(true)}>Create target from this design</Menu.Item>
           <Menu.Label>Recent projects</Menu.Label>
           {projects.slice(0, RECENT).map((p) => (
             <Menu.Item key={p.id} disabled={p.id === project.id} onClick={() => void open(p.id)}>
@@ -80,18 +75,13 @@ export function ProjectMenu() {
             All projects{projects.length > RECENT ? ` (${projects.length})` : ""}…
           </Menu.Item>
           <Menu.Divider />
-          <Menu.Item leftSection={<IconPlus size={14} />} onClick={() => setRecipeOpen(true)}>
-            New from recipe
-          </Menu.Item>
           <Menu.Item leftSection={<IconPlus size={14} />} onClick={() => setChooserOpen(true)}>
             New project
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
-      {targetOpen ? <TargetCreateDialog onClose={() => setTargetOpen(false)} /> : null}
       {chooserOpen ? <ProjectChooser onClose={() => setChooserOpen(false)} /> : null}
       {browserOpen ? <ProjectBrowser onClose={() => setBrowserOpen(false)} /> : null}
-      <RecipeDialog opened={recipeOpen} onClose={() => setRecipeOpen(false)} />
       <Modal opened={renaming !== null} onClose={() => setRenaming(null)} title="Rename project">
         <form
           className="project-rename"
@@ -102,7 +92,6 @@ export function ProjectMenu() {
         >
           <TextInput
             label="Project name"
-            description="Also the default name of the generated project's folder."
             value={renaming ?? ""}
             error={error}
             data-autofocus

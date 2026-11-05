@@ -1,6 +1,11 @@
 import { createFakeProvider } from "@jeeves/providers";
-import { builtinRegistry } from "@jeeves/registry";
-import { applyOperations, isStructural, reviewArchitecture, validateDesign } from "@jeeves/spec";
+import {
+  applyOperations,
+  isStructural,
+  noTemplates,
+  reviewArchitecture,
+  validateDesign,
+} from "@jeeves/spec";
 import { expect, it } from "vitest";
 import { DesignService } from "../design/service.ts";
 import { openTestDb } from "../test-support.ts";
@@ -8,7 +13,7 @@ import { effectRef, effectsAuthoringFixture } from "./effects-authoring-fixture.
 import { ChatService } from "./service.ts";
 import { toolDefinitions, Workspace } from "./tools.ts";
 
-const registry = builtinRegistry();
+const registry = noTemplates;
 function need<T>(value: T | undefined | null): T {
   if (value == null) throw new Error("Missing fixture value");
   return value;
@@ -28,7 +33,7 @@ it("scripted chat saves command/lifecycle/hook/effect/scenario edits as one real
   expect(validateDesign(after, registry).filter(isStructural)).toEqual([]);
   const db = await openTestDb();
   try {
-    const designs = new DesignService(db.db, registry);
+    const designs = new DesignService(db.db);
     const project = await designs.createProject("P68b offline combined authoring");
     const seeded = await designs.edit(project.id, {
       baseRevision: 0,
@@ -51,7 +56,7 @@ it("scripted chat saves command/lifecycle/hook/effect/scenario edits as one real
       },
       { text: "Saved design intent. Hook implementation and verification remain unavailable." },
     ]);
-    const chat = new ChatService(db.db, designs, registry, () => ({
+    const chat = new ChatService(db.db, designs, () => ({
       provider: fake,
       model: "fake-model",
     }));
@@ -93,7 +98,7 @@ it("scripted chat saves command/lifecycle/hook/effect/scenario edits as one real
 
 it("rejects dangling effect targets, unknown options and false hook success atomically without losing pending edits", () => {
   const before = effectsAuthoringFixture(),
-    workspace = new Workspace(registry, before);
+    workspace = new Workspace(before);
   const edit = (architecture: NonNullable<typeof before.architecture>) =>
     JSON.parse(
       workspace.run(
@@ -132,7 +137,7 @@ it("rejects dangling effect targets, unknown options and false hook success atom
 
 it("discovers exact effects/hooks, safe outcomes and recovery references through the shared chat schema", () => {
   const before = effectsAuthoringFixture(),
-    workspace = new Workspace(registry, before);
+    workspace = new Workspace(before);
   const discovered = JSON.parse(workspace.run("getArchitectureContracts", "{}"));
   const model = need(need(before.architecture).backend);
   expect(discovered.backend.effects).toEqual(model.effects);

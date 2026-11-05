@@ -1,7 +1,0 @@
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["node"] },
-  "include": ["*.ts", "test-pack", "conformance"],
-  // Copied into generated services by the conformance test; type-checked there.
-  "exclude": ["conformance/fixtures/*-service"]
-}

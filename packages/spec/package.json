@@ -8,8 +8,7 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "zod": "4.5.4",
-    "@jeeves/http-pool": "workspace:*"
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "ajv": "8.20.0",

@@ -1,31 +1,21 @@
 /**
  * Settings (PLAN §12): connections first (each provider's status and exact setup command), then
- * the two models most people change, with the planner behind an Advanced disclosure. Keys and
- * logins are set up outside the UI; Jeeves never shows them.
+ * the design chat's model. Keys and logins are set up outside the UI; Jeeves never shows them.
  */
 import { Autocomplete, Button, CopyButton, Loader, NativeSelect } from "@mantine/core";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   api,
   type ModelRole,
   type ProviderStatus,
-  type ReasoningEffort,
   type RoleModel,
   type SettingsView as Settings,
 } from "../draw/api.ts";
 import { StatusBadge } from "../shell/StatusBadge.tsx";
 import "./settings.css";
 
-const EFFORTS: { value: ReasoningEffort | ""; label: string }[] = [
-  { value: "", label: "Provider default" },
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-  { value: "xhigh", label: "Extra high" },
-];
-
 const MODEL_ROWS: {
-  role: Extract<ModelRole, "designChat" | "coding">;
+  role: ModelRole;
   label: string;
   providerLabel: string;
   description: string;
@@ -36,22 +26,10 @@ const MODEL_ROWS: {
     providerLabel: "Design provider",
     description: "Edits the design from the Chat tab.",
   },
-  {
-    role: "coding",
-    label: "Implementation model",
-    providerLabel: "Implementation provider",
-    description: "Implements each run's tasks in the generated project.",
-  },
 ];
 
-const roleKind = (role: ModelRole) => (role === "coding" ? "coding" : "model");
-
 function same(a: RoleModel, b: RoleModel) {
-  return (
-    a.provider === b.provider &&
-    a.model.trim() === b.model.trim() &&
-    (a.reasoningEffort ?? "") === (b.reasoningEffort ?? "")
-  );
+  return a.provider === b.provider && a.model.trim() === b.model.trim();
 }
 
 function modelProblem(provider: ProviderStatus | undefined, model: string) {
@@ -60,10 +38,9 @@ function modelProblem(provider: ProviderStatus | undefined, model: string) {
   return undefined;
 }
 
-function setupCommand(provider: ProviderStatus): string | undefined {
+function setupCommand(provider: ProviderStatus): string {
   if (provider.auth.type === "cli-login") return provider.auth.command;
-  if (provider.auth.type === "api-key") return `export ${provider.auth.envVar}=`;
-  return undefined;
+  return `export ${provider.auth.envVar}=`;
 }
 
 export function SettingsView() {
@@ -100,7 +77,7 @@ export function SettingsView() {
   }
 
   const providerOf = (id: string) => settings.providers.find((p) => p.id === id);
-  const allRoles: ModelRole[] = ["designChat", "coding", "planner"];
+  const allRoles = MODEL_ROWS.map((row) => row.role);
   const changed = allRoles.filter((role) => !same(roles[role], settings.roles[role]));
   const valid = allRoles.every(
     (role) => !modelProblem(providerOf(roles[role].provider), roles[role].model),
@@ -109,27 +86,16 @@ export function SettingsView() {
     setSaved(false);
     setRoles({ ...roles, [role]: next });
   };
-  const providerOptions = (role: ModelRole) =>
-    settings.providers
-      .filter((p) => p.kinds.includes(roleKind(role)))
-      .map((p) => ({
-        value: p.id,
-        label: p.available ? p.name : `${p.name} (coming later)`,
-        disabled: !p.available,
-      }));
-  const roleFields = (role: ModelRole, providerLabel: string, extra?: ReactNode) => {
+  const providerOptions = settings.providers.map((p) => ({ value: p.id, label: p.name }));
+  const roleFields = (role: ModelRole, providerLabel: string) => {
     const choice = roles[role];
     const provider = providerOf(choice.provider);
     return (
-      <div
-        className={
-          extra ? "settings-role-fields settings-role-fields-coding" : "settings-role-fields"
-        }
-      >
+      <div className="settings-role-fields">
         <NativeSelect
           label={providerLabel}
           value={choice.provider}
-          data={providerOptions(role)}
+          data={providerOptions}
           onChange={(event) => {
             const next = providerOf(event.currentTarget.value);
             if (!next) return;
@@ -137,18 +103,11 @@ export function SettingsView() {
             update(role, {
               provider: next.id,
               model: next.id === choice.provider ? choice.model : "",
-              ...(role === "coding" && choice.reasoningEffort
-                ? { reasoningEffort: choice.reasoningEffort }
-                : {}),
             });
           }}
         />
         <Autocomplete
-          label={
-            role === "designChat"
-              ? "Design model"
-              : `${providerLabel.replace(" provider", "")} model`
-          }
+          label={`${providerLabel.replace(" provider", "")} model`}
           value={choice.model}
           data={provider?.suggestedModels ?? []}
           placeholder={provider?.defaultModelAllowed ? `${provider.name}'s default` : undefined}
@@ -160,7 +119,6 @@ export function SettingsView() {
             })
           }
         />
-        {extra}
       </div>
     );
   };
@@ -176,9 +134,6 @@ export function SettingsView() {
             {
               provider: roles[role].provider,
               model: roles[role].model.trim(),
-              ...(roles[role].reasoningEffort
-                ? { reasoningEffort: roles[role].reasoningEffort }
-                : {}),
             },
           ]),
         ),
@@ -211,27 +166,23 @@ export function SettingsView() {
             return (
               <li key={p.id}>
                 <span className="settings-provider-name">{p.name}</span>
-                <StatusBadge color={p.ready ? "teal" : p.available ? "red" : "gray"}>
-                  {p.status}
-                </StatusBadge>
+                <StatusBadge color={p.ready ? "teal" : "red"}>{p.status}</StatusBadge>
                 <p className="settings-connection-help" title={p.help ?? p.description}>
                   {p.help ?? p.description}
                 </p>
-                {command ? (
-                  <CopyButton value={command} timeout={1500}>
-                    {({ copied, copy }) => (
-                      <button
-                        type="button"
-                        className="settings-setup"
-                        onClick={copy}
-                        aria-label={`Copy ${p.name} setup command`}
-                      >
-                        <code>{command}</code>
-                        <span className="settings-copy">{copied ? "Copied" : "Copy"}</span>
-                      </button>
-                    )}
-                  </CopyButton>
-                ) : null}
+                <CopyButton value={command} timeout={1500}>
+                  {({ copied, copy }) => (
+                    <button
+                      type="button"
+                      className="settings-setup"
+                      onClick={copy}
+                      aria-label={`Copy ${p.name} setup command`}
+                    >
+                      <code>{command}</code>
+                      <span className="settings-copy">{copied ? "Copied" : "Copy"}</span>
+                    </button>
+                  )}
+                </CopyButton>
               </li>
             );
           })}
@@ -258,29 +209,8 @@ export function SettingsView() {
               <fieldset key={role} className="settings-role">
                 <legend>{label}</legend>
                 <p className="settings-help">{description}</p>
-                {roleFields(
-                  role,
-                  providerLabel,
-                  role === "coding" ? (
-                    <NativeSelect
-                      label="Implementation effort"
-                      value={choice.reasoningEffort ?? ""}
-                      data={EFFORTS}
-                      onChange={(event) =>
-                        update("coding", {
-                          ...choice,
-                          reasoningEffort: (event.currentTarget.value || undefined) as
-                            | ReasoningEffort
-                            | undefined,
-                        })
-                      }
-                    />
-                  ) : undefined,
-                )}
-                {provider &&
-                !provider.ready &&
-                provider.available &&
-                !(settings.fakeModel && roleKind(role) === "model") ? (
+                {roleFields(role, providerLabel)}
+                {provider && !provider.ready && !settings.fakeModel ? (
                   <p className="settings-warning">
                     {provider.name} isn't set up yet ({provider.status}). See Connections above.
                   </p>
@@ -289,17 +219,6 @@ export function SettingsView() {
             );
           })}
 
-          <details className="settings-advanced">
-            <summary>Advanced</summary>
-            <fieldset className="settings-role">
-              <legend>Planner</legend>
-              <p className="settings-help">
-                Refines legacy plans. Structured extension plans don't call a planner model.
-              </p>
-              {roleFields("planner", "Planner provider")}
-            </fieldset>
-          </details>
-
           <div className="settings-actions">
             <Button
               type="submit"
@@ -307,7 +226,7 @@ export function SettingsView() {
               disabled={changed.length === 0 || !valid}
               loading={saving}
             >
-              Save models
+              Save model
             </Button>
             {saved && changed.length === 0 ? (
               <span className="settings-saved" role="status">

@@ -4,7 +4,6 @@
  * and where from. The choice per role is stored in the same file.
  */
 
-import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -15,9 +14,7 @@ import {
   type ProviderId,
   type ProviderInfo,
   providerCatalog,
-  type ReasoningEffort,
   type RoleModel,
-  reasoningEfforts,
   roleModelProblem,
 } from "@jeeves/providers";
 import { z } from "zod";
@@ -27,16 +24,14 @@ const providerEnum = z.enum(providerCatalog.map((p) => p.id) as [ProviderId, ...
 const roleModelSchema = z.strictObject({
   provider: providerEnum,
   model: z.string().trim().max(100),
-  reasoningEffort: z
-    .enum([...reasoningEfforts] as [ReasoningEffort, ...ReasoningEffort[]])
-    .optional(),
 });
 
 const configFileSchema = z.looseObject({
   openai: z.looseObject({ apiKey: z.string().optional() }).optional(),
-  roles: z.partialRecord(roleEnum, roleModelSchema).optional(),
+  /** Roles that no longer exist (planner, coding) are ignored and dropped on the next save. */
+  roles: z.looseObject({ designChat: roleModelSchema.optional() }).optional(),
   /** Before S13: a model name per role, always on the role's default provider. */
-  models: z.partialRecord(roleEnum, z.string()).optional(),
+  models: z.looseObject({ designChat: z.string().optional() }).optional(),
 });
 type ConfigFile = z.infer<typeof configFileSchema>;
 
@@ -47,14 +42,7 @@ export type KeySource = "env" | "file";
 
 export type ProviderStatus = Pick<
   ProviderInfo,
-  | "id"
-  | "name"
-  | "description"
-  | "kinds"
-  | "auth"
-  | "available"
-  | "suggestedModels"
-  | "defaultModelAllowed"
+  "id" | "name" | "description" | "auth" | "suggestedModels" | "defaultModelAllowed"
 > & {
   /** Whether the provider can be used right now (key set, logged in). */
   ready: boolean;
@@ -109,12 +97,7 @@ export class Settings {
     for (const role of modelRoles) {
       const chosen = config.roles?.[role];
       const legacy = config.models?.[role]?.trim();
-      if (chosen)
-        roles[role] = {
-          provider: chosen.provider,
-          model: chosen.model.trim(),
-          ...(chosen.reasoningEffort && { reasoningEffort: chosen.reasoningEffort }),
-        };
+      if (chosen) roles[role] = { provider: chosen.provider, model: chosen.model.trim() };
       else if (legacy) roles[role] = { ...DEFAULT_ROLE_MODELS[role], model: legacy };
     }
     return roles;
@@ -157,26 +140,6 @@ export class Settings {
               status: "Not logged in",
               help: "Run `codex login` in a terminal (a ChatGPT plan or an API key both work), then reload this page.",
             };
-      case "opencode": {
-        const installed = spawnSync(
-          this.env.JEEVES_OPENCODE_PATH?.trim() || "opencode",
-          ["--version"],
-          {
-            env: { ...process.env, ...this.env },
-            timeout: 5000,
-            stdio: "ignore",
-          },
-        );
-        return installed.status === 0
-          ? { ready: true, status: "Installed", help: null }
-          : {
-              ready: false,
-              status: "Not installed",
-              help: "Run `npm i -g opencode-ai`, then `opencode auth login` in a terminal, and reload this page.",
-            };
-      }
-      case "local":
-        return { ready: false, status: "Coming later", help: null };
     }
   }
 
@@ -187,9 +150,7 @@ export class Settings {
         id: p.id,
         name: p.name,
         description: p.description,
-        kinds: p.kinds,
         auth: p.auth,
-        available: p.available,
         suggestedModels: p.suggestedModels,
         defaultModelAllowed: p.defaultModelAllowed,
         ...this.providerStatus(p.id),

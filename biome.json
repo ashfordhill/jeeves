@@ -9,7 +9,6 @@
     "includes": [
       "**",
       "!**/pnpm-lock.yaml",
-      "!packages/generator/golden",
       "!.jeeves-feedback",
       "!.docs/visual-improvements/2026-11-03-ux-review/sources"
     ]

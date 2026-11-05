@@ -11507,3 +11507,92 @@ Owner follow-ups (details in the acceptance record):
 
 Dev servers: I started a temporary Vite on 4302 and stopped exactly that process. I started
 nothing on 4300, and the API on 4310 was reused and left running.
+
+## 2026-11-04 — CL1: remove the code-generation stack and unreached web UI (complete)
+
+Scope: `docs/cleanup-plan.md` phase CL1 (owner decision K1). One commit; 810 files changed
+(this entry included), 923 insertions, 112,156 deletions; 740 files deleted.
+
+Removed:
+
+- **Packages and folders:** `packages/generator`, `template-kit`, `orchestrator`, `registry`,
+  `http-pool`, `durable-events`, `analytics`, `qr-artwork`, `resource-workspace`, `product-ui`;
+  `templates/`, `recipes/`, `starters/`, `artifacts/`, `fixtures/acceptance`, `fixtures/coding`,
+  `scripts/qrwty-bootstrap.ts`, `vitest.templates.config.ts`. Workspace globs, root scripts
+  (`test:templates`, `qrwty:bootstrap`), the `pnpm work` generation profiles, Dockerfile copies and
+  the Biome/Docker ignore entries went with them.
+- **Server:** generate, runs and templates routes and services, the architecture-handoff export,
+  `/projects/:id/architecture`, `/api-preview`, `/recipes`, `/starters`, `/projects/from-starter`,
+  `/projects/from-recipe` and the planning-target routes. Migration `0007` drops the generations,
+  runs, tasks, attempts and implementation-usage tables, the project `target`, `output_dir`,
+  `git_strategy` and `max_retries` columns, and the `pgboss` schema. Dependencies `pg-boss`,
+  `@fastify/swagger` and `openapi-types` were removed.
+- **Chat:** the `listTemplates`, `describeTemplate` and `createTargetWorkspace` tools and the
+  template catalog in the legacy context. Validation and operations now use `noTemplates` (a new
+  empty `TemplateLookup` in `packages/spec/src/manifest.ts`); studio documents reference no
+  templates.
+- **Providers:** kept only what chat needs: the OpenAI and Codex model adapters, the fake and the
+  catalog. The coding agents (Codex agent, OpenCode, fake coding), the planner and coding roles,
+  reasoning effort and the unavailable "local" provider were removed. Settings now shows one
+  Design model. Old `planner`/`coding` entries in `~/.jeeves/config.json` are ignored and dropped
+  on the next save.
+- **Web:** the Generate tab and `generate/`, `runs/`, `api-reference/`, the empty
+  `editor-review/`, the old `architecture/` editors (76 files) and the legacy `draw/` canvas,
+  nodes, edges, inspector, toolbar, flow, connect and findings modules. Also the QR Studio and
+  Resource workspace starters, "New from recipe" and "Create target" in the project menu, the
+  Library's runtime-template list and QR product configuration. Unused rules were removed from
+  `draw.css` (1,590 → 379 lines) and the other stylesheets. `swagger-ui-dist` was removed. The
+  whole pre-studio E2E suite (41 specs and 2 helpers) was deleted, since every spec drove removed
+  UI.
+- **Spec:** `local-deployment.ts`, which was unreferenced and the only `@jeeves/http-pool` user.
+  The Discourse and Vendure test cases that imported the deleted web policy preview were removed.
+
+Kept, and why:
+
+- `architecture/ArchitectureLibrary.tsx` and `PatternComposer.tsx`: the studio Library's saved
+  architecture templates. `architecture/create-example.ts`: the TinyURL project creation.
+- `draw/` store, API client, project menu, chooser and browser, `TemplateIcon` and
+  `form-drafts`: the studio uses them. The store lost its dead tool, connector, editing, rail,
+  catalog and finding-index state.
+- The legacy (non-studio) chat toolset, its instructions, the design service's legacy validation
+  and `fixtures/designs`: these are K2 material for CL2.
+
+Checks (Node 24.21.0):
+
+- `pnpm install`: lockfile updated, 180 packages removed, remaining versions unchanged.
+- `pnpm lint`: exit 0 (1,906 warnings and 15 infos, down from 2,797 and 88).
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (Playwright on the owner's Vite 4300 and the API 4310 under tsx watch, which reloaded and
+  applied migration 0007 by itself):
+  - Top bar shows Design and Settings; the chooser offers Architecture study and Blank architecture.
+  - A new TinyURL project rendered C1 (4 boxes, 3 lines), C2 (12, 11) and C3 (21, 17).
+  - A `+` drag from Shorten API created Search index with its line.
+  - Link writer's Pool size was set to 32 and autosaved; a reload kept both edits.
+  - Settings rendered its one Design model.
+  - `GET /projects/:id/blueprint` returned 200, `no-store`, `blueprint: 1`.
+  - No page or console errors, and no write to another project was attempted.
+  - Only that project was deleted (204).
+  - Scratch script and screenshots are outside the repo.
+- Unit tests were not part of CL1. A spot run showed the settings and providers tests pass. The
+  `projects.test.ts` operations, undo and layout tests and `App.test.tsx` fail because they use
+  legacy template ops or the old Draw tab. These are for CL3.
+
+Notes for CL2:
+
+- `noTemplates`, `TemplateLookup`, template manifests, `validateDesign`'s template branches,
+  `architecture-handoff`, `architecture-targets` (`TargetOrigin`, `createTargetSchema`),
+  `architecture-view`/`architectureViews`, `api-preview`, `template-upgrade`, `local-execution`,
+  `local-http-pool`, `delivery` and `resources` now have no app caller beyond legacy validation and
+  chat. Reduce them with the studio model.
+- `apps/server/src/chat/tools.ts` and `context.ts` still hold the legacy toolset and
+  instructions; the web chat uses the studio profile.
+- `draw/store.ts` still carries the legacy board layout and history paths. `PatternComposer`
+  previews legacy patterns.
+- Root `@axe-core/playwright` is now used only by the planned E2E smoke set (CL3/CL4 decision).
+- `README`, `AGENTS`, `PLAN` and `CATALOG` still describe Generate and templates (CL4).
+
+Dev servers: I restarted neither. The API on 4310 reloaded itself under its tsx watcher, and the
+owner's Vite on 4300 served the new modules. Both are still running. A second idle
+`tsx watch` (from an earlier session, port taken) was left alone. The project
+"TinyURL · studio study" that was in the database before my check was not touched.

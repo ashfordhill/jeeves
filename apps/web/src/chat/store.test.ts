@@ -1,5 +1,4 @@
-import { builtinRegistry } from "@jeeves/registry";
-import { applyOperations, validateDesign } from "@jeeves/spec";
+import { applyOperations, noTemplates, validateDesign } from "@jeeves/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ChatEvent, ChatTurn } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
@@ -47,7 +46,7 @@ describe("chat store", () => {
             element: { id: "api", name: "API", template: { id: "http-service", version: "0.1.0" } },
           },
         ],
-        builtinRegistry(),
+        noTemplates,
       );
       if (!result.ok) throw new Error("bad fixture");
       api.state.done.push({ before: api.state.design, after: result.design });
@@ -55,7 +54,7 @@ describe("chat store", () => {
       const state = {
         projectId: TEST_PROJECT,
         design: result.design,
-        findings: validateDesign(result.design, builtinRegistry()),
+        findings: validateDesign(result.design, noTemplates),
         history: { canUndo: true, canRedo: false, latestEdit: api.state.done.length },
       };
       const done = turn({ operationId: api.state.done.length, changed: ["api"] });

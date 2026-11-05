@@ -1,4 +1,3 @@
-import { builtinRegistry } from "@jeeves/registry";
 import {
   type ArchitectureLibraryEntry,
   applyOperations,
@@ -7,6 +6,7 @@ import {
   type DesignDocument,
   instantiateStudioPackagePreset,
   type LibraryInsertInput,
+  noTemplates,
   type OperationInput,
   previewArchitectureTemplate,
   type StudioCommand,
@@ -131,7 +131,7 @@ export async function createAt(
           baseRevision: design.revision,
           roles: creation.roles,
         },
-        builtinRegistry(),
+        noTemplates,
       );
       if (!preview.ok)
         throw new Error(
@@ -229,7 +229,7 @@ export async function createAt(
         ).ops,
       ];
     }
-    const applied = applyOperations(design, ops, builtinRegistry(), {
+    const applied = applyOperations(design, ops, noTemplates, {
       baseRevision: design.revision,
     });
     if (!applied.ok) throw new Error(applied.errors[0]?.message ?? "This creation is invalid.");

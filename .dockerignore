@@ -20,7 +20,6 @@ apps/**/*.test.ts
 apps/**/*.test.tsx
 packages/**/*.test.ts
 packages/**/*.test.tsx
-packages/generator/golden
 AGENTS.md
 PLAN.md
 CATALOG.md

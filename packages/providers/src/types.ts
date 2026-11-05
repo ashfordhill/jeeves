@@ -1,5 +1,5 @@
 /**
- * Provider-neutral model interface (PLAN §12). The design chat and the planner talk to models
+ * Provider-neutral model interface (PLAN §12). The design chat talks to models
  * only through `ModelProvider`, so an adapter for another vendor is a new file, not a rewrite.
  */
 
@@ -83,5 +83,5 @@ export interface ModelProvider {
   respond(request: ModelRequest, options?: RespondOptions): Promise<ModelResponse>;
 }
 
-export type ModelRole = "designChat" | "planner" | "coding";
-export const modelRoles: readonly ModelRole[] = ["designChat", "planner", "coding"];
+export type ModelRole = "designChat";
+export const modelRoles: readonly ModelRole[] = ["designChat"];

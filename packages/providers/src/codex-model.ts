@@ -1,5 +1,5 @@
 /**
- * Codex as a `ModelProvider`, so the design chat and the planner can run on Codex's own login (a
+ * Codex as a `ModelProvider`, so the design chat can run on Codex's own login (a
  * ChatGPT plan) instead of an API key. Codex runs its own agent loop and has no way to call
  * Jeeves's tools, so each `respond` is one fresh Codex session that answers in structured output:
  * a message plus the tool calls it wants made. The caller runs the tools and calls `respond` again

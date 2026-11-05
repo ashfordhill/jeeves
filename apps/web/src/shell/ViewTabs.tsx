@@ -1,5 +1,5 @@
 /**
- * Top-bar Design / Generate / Settings tabs, styled as automation-pitch's view switch.
+ * Top-bar Design / Settings tabs, styled as automation-pitch's view switch.
  * Arrow keys move between tabs; mouse alone is always enough.
  */
 import type { KeyboardEvent } from "react";

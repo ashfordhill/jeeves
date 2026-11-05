@@ -24,8 +24,8 @@ shutdown() {
 trap shutdown EXIT
 trap 'exit 0' TERM INT
 
-mkdir -p "$JEEVES_HOME" "$JEEVES_PROJECTS_DIR"
-chown node:node "$JEEVES_HOME" "$JEEVES_PROJECTS_DIR"
+mkdir -p "$JEEVES_HOME"
+chown node:node "$JEEVES_HOME"
 
 if [[ -z "${DATABASE_URL:-}" ]]; then
   mkdir -p "$PGDATA" /run/postgresql

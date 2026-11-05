@@ -9,12 +9,12 @@ import {
   type ScriptByMessage,
   type ScriptStep,
 } from "@jeeves/providers";
-import { builtinRegistry } from "@jeeves/registry";
 import {
   applyOperations,
   architectureProofOperations,
   type DesignDocument,
   designSchema,
+  noTemplates,
   type OperationInput,
   type PatternRequestInput,
   previewArchitecturePattern,
@@ -27,21 +27,6 @@ import type { Db } from "../db/client.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 import { rasterizeSvg } from "./files.ts";
 import type { ChatEvent, ChatTurn, ModelSource } from "./service.ts";
-
-const linkShortener = designSchema.parse(
-  JSON.parse(
-    readFileSync(
-      new URL("../../../../fixtures/designs/link-shortener.json", import.meta.url),
-      "utf8",
-    ),
-  ),
-);
-
-/** The link-shortener fixture as one batch: elements, then connections. */
-const linkShortenerOps: OperationInput[] = [
-  ...linkShortener.elements.map((element) => ({ op: "addElement" as const, element })),
-  ...linkShortener.connections.map((connection) => ({ op: "connect" as const, connection })),
-];
 
 const service = (id: string, name = id): OperationInput => ({
   op: "addElement",
@@ -148,107 +133,6 @@ function textOf(item: ModelItem | undefined): string {
 }
 
 describe("design chat", () => {
-  it('turns "make me a link shortener" into valid elements and connections as one undo step', async () => {
-    const h = harness([
-      {
-        text: "Let me check the templates.",
-        toolCalls: [{ name: "listTemplates", arguments: {} }],
-      },
-      {
-        toolCalls: [
-          { name: "describeTemplate", arguments: { id: "http-service" } },
-          { name: "applyOperations", arguments: { ops: linkShortenerOps } },
-        ],
-      },
-      { text: "I added a links service with a REST API, its database, and a web app." },
-    ]);
-    const id = await h.project();
-    const { events, turn, state, layout } = await h.chat(
-      id,
-      "Make me a link shortener like bit.ly",
-    );
-
-    expect(events[0]).toMatchObject({ type: "turn", turn: { status: "running" } });
-    const streamed = events.flatMap((e) => (e.type === "text" ? [e.delta] : [])).join("");
-    expect(streamed).toBe(
-      "Let me check the templates.\n\nI added a links service with a REST API, its database, and a web app.",
-    );
-    expect(turn).toMatchObject({
-      status: "done",
-      reply: streamed,
-      error: null,
-      model: "fake-model",
-    });
-    expect(turn.activity.map((a) => a.summary)).toEqual([
-      "Listed templates",
-      "Read template HTTP service",
-      "Prepared 5 changes",
-      "Applied 5 changes as one undo step",
-    ]);
-    expect(turn.usage).toEqual({ inputTokens: 300, outputTokens: 60, known: true });
-
-    // Valid: every element and connection is there, with no findings.
-    expect(state.design.elements.map((e) => e.id)).toEqual(["links", "links-db", "web"]);
-    expect(state.design.connections.map((c) => c.kind)).toEqual(["uses-database", "calls"]);
-    expect(state.findings).toEqual([]);
-    expect([...turn.changed].sort()).toEqual(
-      ["links", "links-db", "links-uses-db", "web", "web-calls-links"].sort(),
-    );
-
-    // One operation, from chat, and it's the step undo would revert.
-    expect(state.history.latestEdit).toBe(turn.operationId);
-    const undone = await h.call("POST", `/projects/${id}/undo`, {
-      baseRevision: state.design.revision,
-    });
-    expect(undone.status).toBe(200);
-    expect(undone.body.design.elements).toEqual([]);
-    expect(undone.body.history.canUndo).toBe(false);
-
-    // New elements were auto-placed without overlapping each other.
-    const placed = ["links", "links-db", "web"].map((e) => layout.items[e]);
-    expect(placed.every(Boolean)).toBe(true);
-    expect(new Set(placed.map((p) => `${p?.x},${p?.y}`)).size).toBe(3);
-    expect((await h.layout(id)).items).toEqual(layout.items);
-
-    // The model saw the rules, the tools, the context, and the message.
-    const first = h.requests[0] as ModelRequest;
-    expect(first.tools.map((t) => t.name)).toEqual([
-      "listTemplates",
-      "describeTemplate",
-      "listPlannedCapabilities",
-      "describePlannedCapability",
-      "listArchitectureLibrary",
-      "describeArchitectureLibrary",
-      "previewArchitectureLibrary",
-      "applyArchitectureLibrary",
-      "listArchitecturePatterns",
-      "listArchitectureStudies",
-      "previewArchitectureStudyStage",
-      "applyArchitectureStudyStage",
-      "describeArchitecturePattern",
-      "previewArchitecturePattern",
-      "applyArchitecturePattern",
-      "getDesign",
-      "getArchitectureContracts",
-      "getArchitectureReview",
-      "getArchitectureAnnotationDraft",
-      "createTargetWorkspace",
-      "reviewSubtype",
-      "applyOperations",
-      "validateDesign",
-      "explainFinding",
-      "askUser",
-    ]);
-    expect(first.instructions).toMatch(/Never invent template IDs/);
-    expect(textOf(first.items[0])).toMatch(/^\[Jeeves\] Context.*http-service@0\.4\.0/s);
-    expect(textOf(first.items[0])).toMatch(/The design is empty/);
-    expect(textOf(first.items[1])).toBe("Make me a link shortener like bit.ly");
-
-    // Persisted, and sent as history with the next message.
-    const listed = await h.call("GET", `/projects/${id}/chat`);
-    expect(listed.body.turns).toEqual([turn]);
-  });
-
   it("plans bit.ly C1, C2 and C3 through catalog tools in one persistent undo step", async () => {
     const script = JSON.parse(
       readFileSync(new URL("../../../../fixtures/chat/e2e-script.json", import.meta.url), "utf8"),
@@ -691,8 +575,8 @@ it("scripted pattern application matches mouse expansion and is one undo step wi
     ],
   });
   const before = (await h.design(id)).design;
-  const preview = previewArchitecturePattern(before, req, builtinRegistry());
-  const expected = applyOperations(before, preview.ops, builtinRegistry());
+  const preview = previewArchitecturePattern(before, req, noTemplates);
+  const expected = applyOperations(before, preview.ops, noTemplates);
   expect(expected.ok).toBe(true);
   const { state, turn } = await h.chat(
     id,
@@ -818,7 +702,7 @@ it("records requirement-based review decisions in one scripted chat undo step", 
     id,
     "Accept the stated cache update gap while exploring, with its consequence.",
   );
-  const mouse = applyOperations(before, [op], builtinRegistry());
+  const mouse = applyOperations(before, [op], noTemplates);
   expect(mouse.ok).toBe(true);
   if (mouse.ok) expect(state.design).toEqual(mouse.design);
   expect(reviewArchitecture(state.design).complete).toBe(true);
@@ -903,82 +787,6 @@ it("refuses stale chat review snapshots instead of overwriting concurrent archit
   expect(
     turn.activity.some((a) => a.summary === "Review revision conflict; nothing was saved"),
   ).toBe(true);
-});
-
-it("creates a planning target through scripted chat without source edits or inherited history", async () => {
-  const h = harness([
-    {
-      toolCalls: [
-        { name: "createTargetWorkspace", arguments: { name: "Chat target", baseRevision: 1 } },
-      ],
-    },
-    { text: "Prepared the separate planning workspace." },
-  ]);
-  try {
-    const id = await h.project();
-    await h.call("POST", `/projects/${id}/operations`, { baseRevision: 0, ops: linkShortenerOps });
-    const before = await h.design(id);
-    const result = await h.chat(id, "Create a target copy");
-    expect(result.turn.status).toBe("done");
-    expect(result.turn.operationId).toBeNull();
-    expect(result.turn.reply).toContain("Planning target created:");
-    const list = (await h.call("GET", "/projects")).body.projects;
-    const target = list.find(
-      (p: { target?: { sourceProjectId: string } }) => p.target?.sourceProjectId === id,
-    );
-    expect(target).toMatchObject({
-      name: "Chat target",
-      revision: 0,
-      outputDir: null,
-      target: { sourceRevision: 1 },
-    });
-    expect((await h.design(target.id)).design.elements).toEqual(before.design.elements);
-    expect(await h.design(id)).toEqual(before);
-  } finally {
-    await h.app.close();
-  }
-});
-
-it("creates no chat target on a stale saved source revision", async () => {
-  let id = "";
-  let edited = false;
-  const scripted = withHook(
-    [
-      {
-        toolCalls: [
-          {
-            name: "createTargetWorkspace",
-            arguments: { name: "Stale chat target", baseRevision: 0 },
-          },
-        ],
-      },
-      { text: "Finish." },
-      { text: "The source changed; a fresh baseline is needed." },
-    ],
-    async (call) => {
-      if (call === 1 && !edited) {
-        edited = true;
-        await h.call("POST", `/projects/${id}/operations`, {
-          baseRevision: 0,
-          ops: [service("concurrent")],
-        });
-      }
-    },
-  );
-  const h = harness(scripted);
-  try {
-    id = await h.project();
-    const result = await h.chat(id, "Copy target");
-    expect(result.turn.operationId).toBeNull();
-    expect(
-      (await h.call("GET", "/projects")).body.projects.some(
-        (p: { name: string }) => p.name === "Stale chat target",
-      ),
-    ).toBe(false);
-    expect((await h.design(id)).design.elements.map((e) => e.id)).toEqual(["concurrent"]);
-  } finally {
-    await h.app.close();
-  }
 });
 
 it("does not replay sourced annotation drafts over concurrent edits", async () => {
@@ -1152,7 +960,7 @@ it.each([false, true])(
         const mouse = applyOperations(
           before,
           [{ op: "setArchitecture", architecture }],
-          builtinRegistry(),
+          noTemplates,
         );
         expect(mouse.ok).toBe(true);
         if (mouse.ok) expect(actual).toEqual(mouse.design);
@@ -1241,7 +1049,7 @@ it.each([false, true])(
         const mouse = applyOperations(
           before,
           [{ op: "setArchitecture", architecture }],
-          builtinRegistry(),
+          noTemplates,
         );
         expect(mouse.ok).toBe(true);
         if (mouse.ok) expect(actual).toEqual(mouse.design);
@@ -1272,8 +1080,8 @@ it.each(["qrwty", "inventory"] as const)(
       const base = { ...expected, revision: 0 };
       const result = applyOperations(
         base,
-        architectureProofOperations(base, product, stage.id, builtinRegistry()),
-        builtinRegistry(),
+        architectureProofOperations(base, product, stage.id, noTemplates),
+        noTemplates,
       );
       if (!result.ok) throw new Error(JSON.stringify(result.errors));
       expected = result.design;
