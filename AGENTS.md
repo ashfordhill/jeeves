@@ -41,6 +41,7 @@ projects they create. Never touch the owner's projects in the `jeeves` database 
   TypeScript source directly (`"exports": "./src/index.ts"`); there is no build step for internal
   packages.
 - Relative imports include the `.ts`/`.tsx` extension.
+- `packages/board` imports no Jeeves code.
 - Biome does lint and formatting: `pnpm format` fixes, `pnpm lint` checks. Don't add ESLint or
   Prettier.
 - Pin dependency versions exactly. Prefer versions automation-pitch already uses; otherwise pick a

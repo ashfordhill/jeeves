@@ -1,7 +1,8 @@
 # Lane grid and creation system: build plan (first version)
 
-**Status: proposed 2026-11-04. Not started.** The owner assigns units one at a time. Execution
-queue: [lane-grid execution units](plans/lane-grid/execution-units.md) (LG01–LG13).
+**Status: in progress since 2026-11-04; completed units are in the [handoff](handoff.md).** The
+owner assigns units one at a time. Execution queue:
+[lane-grid execution units](plans/lane-grid/execution-units.md) (LG01–LG13).
 
 This plan replaces the studio canvas (C1/C2/C3 tabs, ELK compound layout, merged lines, row-order
 drag, Library) with a locked lane grid ported from automation-illustrator

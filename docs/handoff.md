@@ -128,3 +128,64 @@ and line ranges cited in the units were read in this session.
 Notes for LG01: start with `packages/board/src/graph/` only. automation-illustrator's "lane" means
 Before/After, not a row; Jeeves lanes are the actor's tagged entry links. Nothing in the app
 changes until LG07.
+
+## 2026-11-04 — LG01: `@jeeves/board` package and graph rules (complete)
+
+New workspace package `packages/board` (`@jeeves/board`, private, ESM, no dependencies; exports
+`.` and `./graph`; `typecheck` script; Vitest project `board`). Root Vitest and
+`pnpm -r typecheck` pick it up. Its `tsconfig.json` sets `"types": []`, so no Node or DOM globals
+yet. `src/graph/` is ported from automation-illustrator `src/workflow/graph.ts` and
+`commands.ts` (0803c4a):
+
+- `types.ts`: `BoardNode`, `BoardEdge` (`async?`), `BoardGraph`, `NewLink { id, async? }`, `Rules
+  { root, canLink?, maxOut? }`, `GraphViolation { code, message, node?, edge? }`, `Result<T>` /
+  `Refusal` (a refusal has the same fields as a violation).
+- `reach.ts`: `reachableFrom`, `wouldCreateCycle`, `unreachableFrom`, `dropRedundantNew`,
+  `retargetIncoming`.
+- `check.ts`: `checkGraph` (duplicate id across tiles and links, missing reference or root,
+  self-link, duplicate pair, refused link, too many links, cycle, unreachable from the root).
+- `edit.ts`: `addAfter`, `insertBefore`, `link`, `planRemoval`, `applyRemoval`, `removeEdge`,
+  `uniqueEdgeId`. Every edit refuses an invalid input graph and checks its result with
+  `checkGraph`.
+
+Import guard: two Biome overrides with `noRestrictedImports` patterns. All of `packages/board`
+may not import `@jeeves/**` or any path through `apps/`. `src/graph/**` (except tests) may also
+import nothing but `./` files. Both were checked with throwaway probe files. AGENTS.md
+Conventions gained "`packages/board` imports no Jeeves code."; PLAN.md's repository layout has a
+`packages/board` row; the parent plan's status now says "in progress".
+
+Departures from the unit text, all small:
+
+- `insertBefore(graph, host, node, edge, rules)` takes a `NewLink` like `addAfter`, not a bare
+  `edgeId`, because the new → host link needs a mode.
+- `applyRemoval(graph, plan, alsoRemove, rules)` takes `rules` so it can run `checkGraph`.
+  `alsoRemove` must name exactly the strands; extra IDs are refused too.
+- `planRemoval(graph, node, rules, edgeId?)`: optional namer for restitched links (default
+  `source->target`, made unique). It is refused when the restitched graph without its strands
+  would still break a rule (for example a predecessor going over `maxOut`), so a plan that
+  returns ok always applies.
+- `maxOut` does not apply to the root: the actor's entries are capped per lane by the spec.
+- A restitched pair that already exists or is already reachable is dropped. automation-illustrator
+  merged it into the existing link (labels, dash); Jeeves connections keep their own settings.
+- M:N removals use fan pairings (as the plan says), not automation-illustrator's nearest pairs.
+
+Checks (Node 24.21.0 from `~/.nvm/versions/node/v24.21.0/bin`; the default `node` on PATH is 18):
+
+- `pnpm check`: exit 0 (Biome 163 files, all type checks including `packages/board`, 16 test
+  files / 101 tests passed; the board adds 8).
+- `pnpm test:e2e`: 5 passed.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- No browser check: nothing visible changed. The owner's dev servers on 4300/4310 were left
+  running and untouched.
+
+Notes for LG02:
+
+- `src/layout/` falls under the package-wide guard only, so it may import `elkjs`. Keep
+  `src/graph/` free of imports from outside the folder; the spec will import `@jeeves/board/graph`.
+- pnpm 12 writes no lockfile importer for a package without dependencies. Adding `elkjs` will
+  create the `packages/board` entry.
+- If the ELK tests need Node globals, add `"node"` to `types` in `packages/board/tsconfig.json`.
+  LG03 will need the DOM lib and JSX settings there.
+- For LG04/LG05: refusal messages name IDs (`"a" cannot link to "b".`). The spec should map
+  `code` with `node`/`edge` to its own plain-words messages with tile names. TinyURL in lanes
+  peaks at 3 outgoing links (Redirect, Shorten API), so no cap needed raising.
