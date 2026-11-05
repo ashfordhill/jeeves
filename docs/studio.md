@@ -47,9 +47,14 @@ no layout.
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and
-**Fit**. The canvas fits once when it opens; Fit refits, and never zooms in past 100%. TinyURL fits
-at 0.78 zoom at 1440×900 with the chat rail closed (0.61 with it open), and at 0.69 at 1280×800
-(0.53 open).
+**Fit**. The canvas fits once when it opens; Fit refits, and never zooms in past 100%. Opening or
+closing a rail, selecting (which opens the inspector) and adding tiles do not refit. TinyURL fits
+at these zooms:
+
+| Window | Both rails closed | Chat open | Inspector open | Both open |
+| --- | --- | --- | --- | --- |
+| 1440×900 | 0.78 | 0.61 | 0.60 | 0.44 |
+| 1280×800 | 0.69 | 0.53 | 0.52 | 0.35 |
 
 ## Creating and connecting
 
@@ -75,6 +80,7 @@ the rules accept there (the name shows under the icon the pointer is on).
   database, cache, storage or queue belongs to the application it is added next to.
 - **Release on another tile** to link to it (a merge): from the right side the tile links to it,
   from the left side it links to the tile, and from a lane tab it becomes an entry of that lane.
+  The tile it links to is then selected.
   Tiles the tab can link to stay bright with a dashed outline; on a tile, the fan steps back and the
   outline thickens. A dimmed tile can't be linked: releasing on it changes nothing and the notice
   says why ("Shorten API already starts the upload lane; a tile can start only one lane.").
@@ -216,19 +222,31 @@ external, nine connections and all eleven components, with nothing omitted and n
 
 ## Limits
 
-- The fan, the tabs and the X are drawn at the board's zoom and screen size: at low zoom they are
-  small and the fan can cover nearby tiles. A tile under a fan icon is linked by entering it where
-  no icon covers it (or after zooming in).
+- The fan, the tabs and the X are drawn at screen size beside tiles drawn at the board's zoom.
+  With both rails open (zoom 0.44 at 1440×900, 0.35 at 1280×800) the tabs are 18px or 14px, tile
+  names are hard to read, and the fan's icons cover nearby tiles and can spill over the rails. A
+  tile under a fan icon is linked by entering it where no icon covers it. Closing a rail and
+  clicking Fit helps.
+- The canvas does not refit when the inspector opens or the design grows, so tiles near the right
+  edge can leave the view until Fit is clicked.
+- After adding or linking, the new or linked tile is selected, so a second link from the same tile
+  starts with a click on it.
 - A removal's confirmation panel sits under the tile at screen size and can cover the tiles below
   it; the tiles it would remove stay visible through their rings.
+- Where two services fork to the same tiles, their lines share one bus. In TinyURL, Redirect
+  service and Shorten API both reach Link cache and Links database, and Redirect's dashed link to
+  Click events leaves from the top of the same bus, so the lines alone don't show which service
+  reaches which tile; selecting a line does. A click on a shared stretch selects one of the lines
+  on it (its thicker stroke is hard to tell apart on the bus, and its X sits at that line's own
+  middle); to select or remove a particular one, click its row in the tile's Connections list.
+- A tile starts at most one lane. Whether one tile may start both lanes is an open question for
+  the owner.
+- New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
+  belongs to the application it was first added next to; both are changed in the inspector.
 - Modules are not drawn. The inspector links a module only to tiles; a link between two modules
   of the same tile ("Supplies code") is made through chat.
-- Where two services fork to the same tiles, their lines share one bus. In TinyURL, Redirect
-  service and Shorten API both reach Link cache and Links database, so the lines alone don't show
-  which of them reaches Click events; selecting a line does. A click on a shared stretch selects one
-  of the lines on it; to select (or remove) a particular one, click its row in the tile's
-  Connections list.
 - An unload flush is an attempt, not a durability guarantee.
-- Live chat quality has not been evaluated.
+- Live chat quality with the lane-canvas instructions has not been evaluated; only the scripted
+  test model has run.
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).

@@ -15,23 +15,23 @@ or nothing is selected. People, external systems and their relationships stay in
 
 Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 
-| Kind | Name | Library group | Created at | What it is |
-| --- | --- | --- | --- | --- |
-| `service` | Microservice | Services | C2 | One independently deployed application. |
-| `browser` | Browser app | Services | C2 | Browser assets, standalone or served by an application. |
-| `worker` | Worker service | Services | C2 | A background application. |
-| `gateway` | Gateway | Services | C2 | An entry point routing requests to internal services. |
-| `billing` | Billing | Presets | C2 | One service with a payment provider choice. |
-| `redirect` | Redirect | Presets | C2 | A public redirect service with lookup store and cache shortcuts. |
-| `notification` | Notifications | Presets | C2 | One service with email delivery intent. |
-| `identity` | Identity | Presets | C2 | One service integrating an existing identity provider. |
-| `database` | Database | Resources | C2 or C3 | A logical store; engine and provider are separate choices. |
-| `cache` | Cache | Resources | C2 or C3 | A logical cache with an optional TTL. |
-| `queue` | Queue or topic | Resources | C3 only, owner required | One shared channel; C2 summarises producer → consumer. |
-| `object-store` | Object storage | Resources | C2 or C3 | A byte store with access intent. |
-| `search` | Search index | Resources | C2 or C3 | A derived search index. |
-| `cdn` | CDN | Integrations | C2 or C3 | Content delivery in front of an application or object store. |
-| `external-api` | External API | Integrations | C2 or C3 | An external integration boundary, named for the provider. |
+| Kind | Name | Tile type | What it is |
+| --- | --- | --- | --- |
+| `service` | Microservice | Service (default) | One independently deployed application. |
+| `worker` | Worker service | Service | A background application; the default after a queue. |
+| `redirect` | Redirect | Service | A public redirect service with lookup store and cache shortcuts. |
+| `identity` | Identity | Service | One service integrating an existing identity provider. |
+| `notification` | Notifications | Service | One service with email delivery intent. |
+| `billing` | Billing | Service | One service with a payment provider choice. |
+| `gateway` | Gateway | API (default) | An entry point routing requests to internal services. |
+| `cdn` | CDN | API | Content delivery in front of an application or object store. |
+| `database` | Database | Database (default) | A logical store; engine and provider are separate choices. |
+| `search` | Search index | Database | A derived search index. |
+| `cache` | Cache | Cache | A logical cache with an optional TTL. |
+| `queue` | Queue or topic | Queue | One shared channel between publishers and consumers; it needs an owner. |
+| `object-store` | Object storage | Storage | A byte store with access intent. |
+| `external-api` | External API | External | An external integration boundary, named for the provider. |
+| `browser` | Browser app | none | Browser assets, standalone or served by an application. Not offered on the lane canvas. |
 
 A new database, cache, storage or queue tile is owned by the application it is added next to.
 

@@ -55,17 +55,8 @@ type ValueAt<T, P extends PropertyKey> = T extends unknown
     : never
   : never;
 export type StudioFieldGroup = "General" | "Options" | "Connections";
-export type StudioCreationScope = "c2" | "c3-service" | "c3-package";
-export const studioLibraryGroups = [
-  "Services",
-  "Resources",
-  "Integrations",
-  "Presets",
-  "Examples",
-] as const;
-export type StudioLibraryGroup = (typeof studioLibraryGroups)[number];
 export type StudioVisual = {
-  /** Existing TemplateIcon/Tabler name; no external image or logo request. */
+  /** A StudioIcon (Tabler) name; no external image or logo request. */
   icon: string;
   /** Existing adaptive data-family theme color, including its dark-mode value. */
   color: "api" | "client" | "worker" | "data" | "messaging" | "external" | "generic";
@@ -131,8 +122,6 @@ export type StudioDefinition<K extends StudioKind = StudioKind> = {
   name: string;
   creationName: string;
   description: string;
-  libraryGroup: Exclude<StudioLibraryGroup, "Examples">;
-  creationScopes: readonly StudioCreationScope[];
   classification: Readonly<Pick<Classification, "kind">>;
   role: "application" | "browser" | "worker" | "data" | "messaging" | "integration";
   visual: Readonly<StudioVisual>;
@@ -284,8 +273,6 @@ const owner = (required = false) =>
     optional: !required,
     reference: { target: "owner", required },
   }) as const;
-const scopes: readonly StudioCreationScope[] = ["c2", "c3-service", "c3-package"];
-const applicationScopes: readonly StudioCreationScope[] = ["c2", "c3-package"];
 const applicationClassification = { kind: "Application" } as const;
 const dataClassification = { kind: "Data store" } as const;
 const externalClassification = { kind: "External system" } as const;
@@ -327,8 +314,6 @@ export const studioDefinitions = Object.freeze({
     name: "Microservice",
     creationName: "Microservice",
     description: "One independently deployed application responsibility.",
-    libraryGroup: "Services",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "application",
     visual: { icon: "server", color: "api", shape: "service" },
@@ -340,8 +325,6 @@ export const studioDefinitions = Object.freeze({
     name: "Browser app",
     creationName: "Browser app",
     description: "Browser assets delivered independently or by an actual application.",
-    libraryGroup: "Services",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "browser",
     visual: { icon: "browser", color: "client", shape: "browser" },
@@ -380,8 +363,6 @@ export const studioDefinitions = Object.freeze({
     name: "Worker service",
     creationName: "Worker service",
     description: "An independently executed background application.",
-    libraryGroup: "Services",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "worker",
     visual: { icon: "cpu", color: "worker", shape: "worker" },
@@ -405,8 +386,6 @@ export const studioDefinitions = Object.freeze({
     name: "Billing",
     creationName: "Billing",
     description: "One Billing service with a payment integration choice.",
-    libraryGroup: "Presets",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "application",
     visual: { icon: "credit-card", color: "api", shape: "service" },
@@ -432,8 +411,6 @@ export const studioDefinitions = Object.freeze({
     name: "Redirect",
     creationName: "Redirect",
     description: "One public Redirect service with identity-backed lookup dependencies.",
-    libraryGroup: "Presets",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "application",
     visual: { icon: "route", color: "api", shape: "service" },
@@ -468,8 +445,6 @@ export const studioDefinitions = Object.freeze({
     name: "Notifications",
     creationName: "Notifications",
     description: "One notification application with email delivery integration intent.",
-    libraryGroup: "Presets",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "application",
     visual: { icon: "mail", color: "api", shape: "service" },
@@ -495,8 +470,6 @@ export const studioDefinitions = Object.freeze({
     name: "Identity",
     creationName: "Identity",
     description: "One application integrating an existing identity provider.",
-    libraryGroup: "Presets",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "application",
     visual: { icon: "lock", color: "api", shape: "service" },
@@ -522,8 +495,6 @@ export const studioDefinitions = Object.freeze({
     name: "Gateway",
     creationName: "Gateway",
     description: "One entry point that routes client requests to internal services.",
-    libraryGroup: "Services",
-    creationScopes: applicationScopes,
     classification: applicationClassification,
     role: "application",
     visual: { icon: "arrows-split", color: "api", shape: "service" },
@@ -557,8 +528,6 @@ export const studioDefinitions = Object.freeze({
     name: "Database",
     creationName: "Database",
     description: "One logical authoritative store; engine and provider are separate choices.",
-    libraryGroup: "Resources",
-    creationScopes: scopes,
     classification: dataClassification,
     role: "data",
     visual: { icon: "database", color: "data", shape: "cylinder" },
@@ -591,8 +560,6 @@ export const studioDefinitions = Object.freeze({
     name: "Cache",
     creationName: "Cache",
     description: "A logical cache with an optional technical TTL policy.",
-    libraryGroup: "Resources",
-    creationScopes: scopes,
     classification: dataClassification,
     role: "data",
     visual: { icon: "bolt", color: "data", shape: "stack" },
@@ -634,9 +601,7 @@ export const studioDefinitions = Object.freeze({
   queue: define("queue", {
     name: "Queue or topic",
     creationName: "Queue",
-    description: "One shared logical channel, owned explicitly and shown at C3.",
-    libraryGroup: "Resources",
-    creationScopes: ["c3-service", "c3-package"],
+    description: "One shared logical channel, owned explicitly, between publishers and consumers.",
     classification: dataClassification,
     role: "messaging",
     visual: { icon: "list", color: "messaging", shape: "channel" },
@@ -678,8 +643,6 @@ export const studioDefinitions = Object.freeze({
     name: "Object storage",
     creationName: "Object storage",
     description: "A logical byte store with explicit access intent.",
-    libraryGroup: "Resources",
-    creationScopes: scopes,
     classification: dataClassification,
     role: "data",
     visual: { icon: "archive", color: "data", shape: "stack" },
@@ -711,8 +674,6 @@ export const studioDefinitions = Object.freeze({
     name: "Search index",
     creationName: "Search index",
     description: "A logical derived search index with engine and hosting intent.",
-    libraryGroup: "Resources",
-    creationScopes: scopes,
     classification: dataClassification,
     role: "data",
     visual: { icon: "search", color: "data", shape: "cylinder" },
@@ -746,8 +707,6 @@ export const studioDefinitions = Object.freeze({
     name: "CDN",
     creationName: "CDN",
     description: "External content delivery with an explicit existing origin.",
-    libraryGroup: "Integrations",
-    creationScopes: scopes,
     classification: externalClassification,
     role: "integration",
     visual: { icon: "world", color: "external", shape: "integration" },
@@ -779,8 +738,6 @@ export const studioDefinitions = Object.freeze({
     name: "External API",
     creationName: "External API",
     description: "An external integration boundary, named for the actual provider when known.",
-    libraryGroup: "Integrations",
-    creationScopes: scopes,
     classification: externalClassification,
     role: "integration",
     visual: { icon: "plug", color: "external", shape: "integration" },

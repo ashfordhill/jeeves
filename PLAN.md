@@ -142,7 +142,7 @@ The web app reaches these under `/api` (Vite proxy in development, nginx in the 
 
 ## Next
 
-The canvas is being rebuilt on an automation-illustrator-style locked lane grid: one actor, two
-lanes, typed tiles and no islands ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
-[execution units](docs/plans/lane-grid/execution-units.md)). Code generation will be a separate
-service that reads the blueprint.
+The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
+[execution units](docs/plans/lane-grid/execution-units.md)) is complete; its §7 lists what was left
+for later. One question is open for the owner: whether one tile may start both lanes (today a tile
+starts at most one). Code generation will be a separate service that reads the blueprint.

@@ -1216,3 +1216,129 @@ Notes for LG13:
   "Presets" group wording. `describeStudioDefinition` still returns those fields.
 - The scripted turns hard-code `baseRevision: 1`; a new scripted turn should too, on its own
   fresh project.
+
+## 2026-11-05 — LG13: lane-grid acceptance and documentation (complete)
+
+The lane-grid plan and its execution units are marked complete. This unit checked plan §2 in the
+running app by mouse, built TinyURL from Blank architecture, measured Fit and finished the docs.
+No cap was hit or raised, and no app behaviour changed.
+
+Code (small cleanup): `libraryGroup`, `creationScopes`, `studioLibraryGroups`,
+`StudioLibraryGroup` and `StudioCreationScope` are gone from `studio-definitions.ts` (43 lines).
+Only `describeStudioDefinition` returned them, so chat's kind description no longer has them. The
+queue definition's description no longer says "shown at C3" (chat lists it). A comment's
+`TemplateIcon` is now `StudioIcon`. `creationName` is also read only by `describeStudioDefinition`;
+I left it, since LG12 did not list it.
+
+Docs: CATALOG (the kinds table has a Tile type column instead of Library group and Created at,
+and the queue row is rewritten), studio settings (no creation scopes, Presets or "C3 only"; queue
+ownership; Asynchronous only where the link table allows), the studio guide (a Fit table, the
+selection after a merge, Limits rewritten with this unit's findings and the open question), C4
+notes (how the lane canvas uses C1/C2/C3), PLAN (Next), README (link blurbs), AGENTS (lane rules
+in the docs rule), and both plans' status lines. The blueprint doc was already accurate: its
+example matches a fresh study's blueprint field for field. Every relative link and anchor in the
+16 tracked Markdown files resolves.
+
+Acceptance (Playwright Chromium driven by mouse, 1440×900 unless noted; my own API on 4312 with
+`JEEVES_FAKE_MODEL_SCRIPT` and web on 4302 against `jeeves_e2e`, both stopped afterwards; every
+throwaway project was deleted (204), leaving the one auto-created study; no console errors or
+warnings in any run):
+
+| # | Result | Reason |
+| --- | --- | --- |
+| L1 | pass | There are no C1/C2/C3 tabs. The User is a stick-figure tile with no X, Delete does nothing on it, and selecting it shows only the system's Name and Goal. |
+| L2 | pass | The download chip and CDN sit above the upload chip and Shorten API. |
+| L3 | pass | Analytics worker `+` dropped on Redirect is refused ("…would make a loop."; the target is not lit, the revision is unchanged). An API `disconnect` of `cdn-redirect` is 422 `LANE_INVALID`. |
+| L4 | pass | Lines have no text. Exactly the click path is dashed (3 lines). The two entry chips are icons only. |
+| L5 | pass | Across the user's, Redirect's and the queue's fans: Service, API, Database, Cache, Queue, Storage and External, icons only (no Browser app). Redirect's kind row has 6 kinds; Link cache has none. |
+| L6 | pass | Tabs show only on the selected tile (Redirect: request and async on both sides; a queue: async only; a cache: Request before only; the user: one per lane). A pull draws the band and the scrim. Request before Redirect inserted CDN → Service → Redirect (then undone). |
+| L7 | pass | CDN's X restitched the download entry to Redirect (9 tiles). Redirect's X opens one panel listing Click events, Analytics worker and Analytics store ("Remove 4 tiles", 4 rings). Cancel changes nothing. |
+| L8 | pass | At 4 links Redirect keeps only its left tabs. At 3 download entries the user keeps only the upload tab. There is no `/layout` request and no position in the design. |
+| L9 | pass | Shorten API's Modules tab lists its 4 modules with a `+`. Modules are not drawn (10 tiles). |
+| L10 | pass | The Biome overrides are in place, and there are 0 `@jeeves`/`apps` imports in `packages/board/src` (a code check, not a mouse check). |
+| L11 | pass | The toolbar is Select, Hand and Fit. There is no Library, New island, Connection tool, preset or package frame. The inspector, chat rail, Settings and blueprint (200) remain. |
+| L12 | pass | Read-only GETs on the owner's 4310: one project, the lane-form TinyURL `41bbd268…` at revision 1, with 2 entries and no findings. The pre-lane project went in LG06. |
+| L13 | pass (scripted) | "Add a cache after the redirect service" by chat and Redirect's `+` → Cache by mouse give byte-identical designs (revision 2, `cache`, `redirect-cache-2`). Live chat with the new instructions is **untested**: no real provider was called. |
+
+TinyURL from **Blank architecture** (1440×900, chat open, as a fresh project opens): **11 drags
+and 9 clicks** to the study's lane graph (10 tiles, 11 lines, 3 dashed, 2 chips; entries
+download → CDN and upload → Shorten API; the same 9 links, in the same order per tile). The 9 clicks are 2
+kind-row clicks (API → CDN, Service → Redirect), 5 tile selections (Redirect twice before its
+second and third forks, the User before the upload lane, Shorten API twice after merges) and 2
+Fit clicks. Nine names were typed, each into the Name field that opens focused and selected.
+Creating the project took 4 more clicks (menu, New project, Blank architecture, Create). Refit
+with both rails closed, the result is laid out exactly like the study. Nothing blocked. What was
+awkward:
+
+- Fit was needed twice: the first tile opens the inspector, which narrows the board without a
+  refit (the new CDN was partly off the edge), and the chain later grew past the right edge at
+  zoom 1.
+- After a pick or a merge the new or target tile is selected, so every second fork from a tile,
+  and every merge, costs a click back on the source.
+- CDN and Redirect take a kind-row click each, because the fan's defaults are Gateway and
+  Microservice.
+- Links database ends up owned by Redirect (the first link) and the links carry default actions
+  ("Reads & writes", "Calls"). In the study, Shorten API owns it, with specific actions. Both are
+  inspector edits, not lane structure.
+
+Fit zoom (TinyURL; rails toggled from the header, then Fit):
+
+| Window | Both rails closed | Chat open | Inspector open | Both open |
+| --- | --- | --- | --- | --- |
+| 1440×900 | 0.78 | 0.61 | 0.60 | 0.44 |
+| 1280×800 | 0.69 | 0.53 | 0.52 | 0.35 |
+
+The ≥ 0.75 target (1440×900, chat closed) is met. Toggling a rail does not refit (0.614 stayed
+0.614).
+
+What the screenshots show. At 0.78, light and dark, the board reads cleanly: the User on the
+left, the two chips on its fork, CDN → Redirect on the download row, Shorten API below, URL
+reputation API in Redirect's column between the rows, and the dashed click path along the top.
+What still looks messy or hard to read:
+
+1. **The shared bus.** Redirect's and Shorten API's links to Link cache and Links database merge
+   into one vertical bus at the third column, and Redirect's dashed branch to Click events leaves
+   from its top. The lines alone don't say who reaches what (it could read as Shorten API
+   publishing clicks). Shorten API's line to the bus also runs just under the URL reputation API
+   tile.
+2. **Lines on a bus are hard to pick.** A click on the bus between Link cache and Links database
+   selected "Shorten API to Link cache". On the bus its 4px stroke barely differs from the others,
+   and its X sits at that line's own middle, next to Links database. Selecting it also opened the
+   inspector, which cut Analytics store off at the right edge.
+3. **The fan at low zoom.** With both rails open (0.44, or 0.35 at 1280) the tiles shrink to 56px
+   (45px at 1280) and their names are unreadable, while the fan icons stay about 56px. One fan icon sat squarely on
+   the Analytics store tile, a lit drop target. With the inspector open the fan spills over the
+   inspector's fields, because the overlay isn't clipped to the board. Tabs are 18px at 0.44 and
+   14px at 0.35.
+4. **The removal panel** under Redirect covers Shorten API, URL reputation API and Links database
+   at 0.44; the ringed tiles above it stay visible.
+5. **Selecting opens the inspector without a refit**, so right-edge tiles leave the view (above,
+   and during the Blank build).
+6. With 3 download entries (the L8 check) the user's fork has four lines, and Shorten API's links
+   to Link cache and Links database wrap around the URL reputation API. It is busy, but traceable.
+
+These are in the studio guide's Limits.
+
+Open question for the owner: **should one tile be able to start both lanes?** Today a tile starts
+at most one lane ("… already starts the upload lane; a tile can start only one lane."). The rule
+was not changed; it is in the guide's Limits and PLAN's Next.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 191 files, all type checks, 21 test files / 114 tests passed).
+- `pnpm test:e2e`: 8 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- The owner's 4300/4310 and `jeeves` database were untouched apart from the read-only GETs above.
+  The owner's `tsx watch` API reloaded with this unit's code and listens again. `~/.jeeves/` was
+  not touched.
+
+Notes for whoever picks up the canvas next:
+
+- The cheapest wins on the messy list are probably: refit (or keep the selection in view) when the
+  inspector opens, clip the fan and the HUD to the board, and keep the source selected after a
+  merge. All three are board or Workspace changes; none touches the lane rules.
+- Breaking the bus apart (no `mergeEdges` for some fans, or a per-source port offset) is an ELK
+  options change in `packages/board/src/layout/elkGraph.ts`. It moves every layout, so the layout
+  tests' expectations would change with it.
+- `creationName` in the definitions is the last metadata nothing but `describeStudioDefinition`
+  reads.

@@ -18,8 +18,8 @@ add it here unless the owner asks.
   unrelated work (for example the untracked `.jeeves-feedback/`). Push only when asked.
 - Keep docs current with the code: [studio guide](docs/studio.md),
   [studio settings](docs/studio-settings.md), [blueprint](docs/studio-blueprint.md) and
-  [CATALOG](CATALOG.md) when kinds, settings, components or providers change. Describe what
-  exists; history lives in Git.
+  [CATALOG](CATALOG.md) when kinds, lane rules, settings, components or providers change.
+  Describe what exists; history lives in Git.
 
 ## Verification
 

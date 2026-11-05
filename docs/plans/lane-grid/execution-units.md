@@ -1,5 +1,8 @@
 # Lane grid execution units
 
+**Status: complete (2026-11-05).** All thirteen units are done; their records are in the
+[handoff](../../handoff.md).
+
 Read the [parent plan](../../build-plan-lane-grid.md) first. Thirteen sequential units, LG01–LG13,
 proposed 2026-11-04. A fresh agent runs one unit at a time on primary `main`, only when the owner
 assigns it.

@@ -11,8 +11,8 @@ model has a property. The source of truth is
 ## Rules
 
 - Each kind has one immutable definition, `studio-<kind>@1.0.0`: display name, icon and colour,
-  classification, creation scopes, settings schema, provider choices and field descriptors.
-  Definitions are design vocabulary, not runtime templates.
+  classification, settings schema, provider choices and field descriptors. Definitions are design
+  vocabulary, not runtime templates.
 - Forms come from explicit field descriptors (path, label, control, allowed values or range,
   applicability, short help), never from schema reflection. A visible default is exactly the
   stored value.
@@ -48,9 +48,10 @@ redirect, notification, identity and gateway. References are IDs of existing obj
 | Routing / `S.routing` | `path-prefix`, `host-name` | Gateway. No route table; downstream services are its outgoing connections. |
 | Gateway product / `S.provider` | `unspecified`, `envoy`, `kong`, `nginx`, `traefik`, `aws-api-gateway`, `external` | Gateway. |
 
-Microservice, Browser app, Worker service and Gateway are the Services group; Billing, Redirect,
-Notifications and Identity are Presets with ordinary service semantics plus the fields above. A
-plain service can be named Catalog or Orders without gaining a business-rule form.
+Billing, Redirect, Notifications and Identity are kinds of the Service tile, like Microservice and
+Worker service: ordinary service semantics plus the fields above. Gateway is the API tile's
+default kind. Browser app stays in the format but no tile type offers it. A plain service can be
+named Catalog or Orders without gaining a business-rule form.
 
 A lookup shortcut names an existing connection and never duplicates its endpoints. The inspector
 lists the redirect's connections to a database or cache; chat sets it with an `edit` whose
@@ -91,7 +92,8 @@ binding's `owner`, not in `S`; a queue requires one. Ownership provisions nothin
 | `cdn` | `provider` unspecified / cloudflare / aws-cloudfront / google-cloud-cdn / external; `origin?` application or object-store ref | cache rules, domains, WAF |
 | `external-api` | `category` generic / payments / email / identity / recognition / workflow; `provider` unspecified / cloudflare / aws / google-cloud / external | request builders, webhooks, secrets |
 
-Queues are created at C3 only. Database and cache providers depend on the engine:
+A new queue is owned by the application it is added next to (its links are always asynchronous);
+one with no application next to it is refused. Database and cache providers depend on the engine:
 
 | Engine | Providers |
 | --- | --- |
@@ -114,7 +116,7 @@ plus a topic does not mean SQS); only the named products above carry a product i
 | --- | --- | --- |
 | Action | `planned.label`, 1–60 characters | Default from the endpoint kinds: Calls, Reads & writes, Publishes, Consumes, Uses. |
 | Protocol | Unspecified, HTTPS, HTTP, gRPC, WebSocket, SSE, SQL, Redis, Messaging, Native binding | — |
-| Interaction | Request / response, Asynchronous, Streaming | Queue links are Asynchronous. |
+| Interaction | Request / response, Asynchronous, Streaming | Queue links are Asynchronous. Asynchronous dashes the line and is accepted only where the [link table](../CATALOG.md#lanes-and-links) has an async mode; Streaming counts as a request. |
 | Access | Service identity, User identity, Public, Private network | Intent only. |
 | Timeout / `settings.timeoutMs?` | 1–300000 | HTTP, HTTPS or gRPC request/response only. |
 | Retry / `settings.retry` | `mode` unspecified / none / fixed; fixed adds `attempts` 1–10 and `delayMs` 1–60000 | Same protocols. Attempts are additional attempts. |

@@ -15,11 +15,11 @@ helps when designing new systems at a high level with LLMs, which often produce 
 looking output that only looks right at first glance. AI is better suited to well-defined small
 to medium tasks with a clearly defined outcome.
 
-- [The studio](docs/studio.md): the lane canvas, layout, the lane rules, the inspector, history,
-  chat and the TinyURL study.
+- [The studio](docs/studio.md): the lane canvas, layout, creating and removing tiles, the lane
+  rules, the inspector, history, chat, the TinyURL study and the current limits.
 - [Studio settings](docs/studio-settings.md): every configurable field and its values.
 - [Studio blueprint](docs/studio-blueprint.md): the code-generation boundary.
-- [Catalog](CATALOG.md): tile kinds, components, providers.
+- [Catalog](CATALOG.md): tile kinds and types, the lane link table, components, providers.
 - [Architecture overview](PLAN.md): apps, packages, data model and how they fit.
 - [C4 notes](docs/c4-modeling.md) and [Docker](docs/docker.md).
 
