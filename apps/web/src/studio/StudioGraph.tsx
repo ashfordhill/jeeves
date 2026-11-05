@@ -568,7 +568,7 @@ export function StudioGraph({
     const view = useDraw.getState().loaded?.layout.architecture?.[scope.key];
     void useDraw
       .getState()
-      .setArchitectureView(scope.key, { ...view, positions: {}, order: rows }, true)
+      .setArchitectureView(scope.key, { ...view, order: rows }, true)
       .then((ok) => {
         if (!ok) setHeld(undefined);
       });

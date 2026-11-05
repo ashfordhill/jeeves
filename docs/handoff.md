@@ -11596,3 +11596,87 @@ Dev servers: I restarted neither. The API on 4310 reloaded itself under its tsx 
 owner's Vite on 4300 served the new modules. Both are still running. A second idle
 `tsx watch` (from an earlier session, port taken) was left alone. The project
 "TinyURL · studio study" that was in the database before my check was not touched.
+
+## CL2 — studio format only; benchmarks and legacy models removed (2026-11-04)
+
+Applied owner decisions K2 and K3 (see [cleanup plan](cleanup-plan.md)). 233 files deleted,
+about 253,000 lines removed. Recoverable at tag `pre-cleanup-2026-11-04`.
+
+Removed:
+
+- **K3:** `benchmarks/` (48 files), the Discourse, Vendure, Zammad, Mattermost, enterprise-web
+  and video-platform models and examples, `benchmark*` spec modules and their tests.
+  `fixtures/designs` (22 files). Benchmark docs stay for CL4.
+- **K2, spec:** 147 files in `packages/spec/src` (92,177 → 6,054 lines), among them every
+  `architecture-*` model except `architecture.ts` and `architecture-choices.ts`, all `backend-*`,
+  `contract-*`, patterns, library, handoff, proofs, review, targets, deployments, scenarios,
+  planned capabilities, resources, delivery, local execution/HTTP pool, workspace, config,
+  manifests (`noTemplates`/`TemplateLookup`), template upgrade, subtype, api-preview, evidence,
+  focused views, `studio-legacy`, `studio-portable`, `studio-support`, `studio-sources` and the
+  TinyURL goal manifest. All 43 spec test files went with them (each tested removed or pre-studio
+  behaviour). `ajv` and `ajv-formats` were dropped from spec.
+- **K2, format:** a design is `{schemaVersion: 2, revision, architecture?, elements, connections}`.
+  Elements are `{id, name, classification?, description?}`; connections always carry `planned`
+  (label, protocol, interaction, security) and element-only endpoints; architecture is C1
+  `system`/`nodes`/`relationships` plus `studio`. Annotations, templates, attachments, notes,
+  recipes, capability endpoints, decisions and the implementation handoff are gone. Operations are
+  `setArchitecture`, `updateArchitectureSystem`, `setStudio`, `addElement`, `updateElement`,
+  `removeElement`, `connect`, `updatePlannedConnection`, `disconnect`. `applyOperations(design,
+  ops, options)` and `validateDesign(design)` no longer take a template lookup. An element without
+  studio settings is a structural `CONFIG_INVALID`; the per-connection "planned relationship"
+  `NEEDS_TEMPLATE` and the "no studio runtime resolver" finding were removed, so the TinyURL study
+  now has no findings. Finding codes shrank to nine. Layout is `{schemaVersion: 1, architecture?}`
+  with per-view `order` and `viewport` only.
+- **Server:** the saved architecture library (`architecture/`, `/architecture-library` routes),
+  the legacy chat toolset and instructions (`context.ts`), `place.ts`, `studio.ts` (merged into
+  `tools.ts`), the chat `profile` field (chat is always the studio toolset and `baseRevision` is
+  required), chat replay/rebase paths, the `done` event's layout, `createProject`'s initial
+  design, `upgradeDesign`, `SubtypeReview` and the server's `elkjs` dependency. Stored documents
+  are parsed with `designSchema` on read, so a non-studio document fails loudly.
+- **Web:** `ArchitectureLibrary.tsx`, `PatternComposer.tsx` and their CSS. The Library's
+  "Saved architecture templates" button and saved compositions are gone: the stored entries
+  (six, all retired Discourse/Vendure fragments, none studio) did not work on studio documents.
+  `~/.jeeves/architecture-library.json` (27 MB) was left on disk for the owner. The store lost the
+  board layout items, viewport, selection/focus, creation positions and the legacy history step;
+  chat "Changed" chips are plain labels (the board focus they drove no longer exists); the
+  subtype-confirmation card and every `legacyStudioKind` fallback went.
+
+Database: migration `0008_studio_documents_only` rewrites stored design revisions and operation
+snapshots into the reduced format and strips board items from layouts. No tables were dropped:
+every remaining table is in use. A dry run in a rolled-back transaction showed the owner's
+"TinyURL · studio study" parses and equals the current study exactly. The running API's
+`tsx watch` applied the migration by itself (both watchers raced, so `__drizzle_migrations` has
+the 0008 hash twice; harmless). The owner's project still has revision 1 and loads with no
+findings.
+
+Checks (Node 24.21.0):
+
+- `pnpm install`: lockfile updated (ajv devDeps, server `elkjs`), versions unchanged.
+- `pnpm lint`: exit 0, no warnings (was 1,906).
+- `pnpm typecheck`: exit 0.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Spot unit runs: server (projects rewritten for studio ops, chat reduced to generic cases)
+  24/24 pass; web draw and chat store tests 13/13 pass.
+- Browser (Playwright, Vite 4300, API 4310; neither restarted): chooser offers Architecture study
+  and Blank architecture; a new TinyURL project showed C1 4/3, C2 12/11, C3 21/17 boxes/lines; a
+  `+` drag from Shorten API created Search index; Link writer's Pool size 20 → 32 saved; Undo
+  restored 20 and Redo 32 (revisions 4, 5); reload kept both; Library groups are Resources,
+  Integrations, Examples with no saved-templates button; Settings shows one Design model;
+  blueprint 200, `no-store`, `blueprint: 1`, 4 services, 6 resources, 11 connections, 0
+  findings; one chat message (Codex) renamed Search index in one undo step in 18 s. No page or
+  console errors; no write to the owner's project; only the check project was deleted (204).
+
+Notes for CL3:
+
+- `packages/spec` has no tests now. Worth adding: `applyOperations`/`validateDesign` over studio
+  commands, `buildStudioCommand`, `studioViews`/relationships, `designBlueprint`, `pruneLayout`.
+- `App.test.tsx` still expects the old Draw tab. `apps/server/src/chat/chat.test.ts` keeps only
+  generic cases (askUser history, provider failure, unknown project/file, files); studio tool
+  tests (`tools.test.ts` was legacy-only and deleted) should be written.
+- The web draw store test resets modules per test because the store keeps accepted revisions
+  per project across opens.
+- `fixtures/chat/e2e-script.json` and the Playwright config belong to the E2E rewrite;
+  `fixtures/briefs` is used by no code.
+- Leftover for CL4: `draw/` naming (store, api, form-drafts and `draw.css` now serve only the
+  studio), `scripts/references.ts` and `docs/reference` (benchmark source references), docs for
+  benchmarks/P73a, and README/AGENTS/PLAN/CATALOG.

@@ -1,28 +1,18 @@
 /**
  * The design chat loop (PLAN §7). A turn calls the model with the §7 tools until it stops asking
  * for them (or asks the person something), then commits every edit as one `source: "chat"`
- * operation, so the turn is one undo step. If the design moved meanwhile, the edits are replayed
- * on the newer design; if they no longer fit, the model re-reads them. The studio profile instead
- * stops on a revision conflict so it cannot overwrite an intervening inspector edit.
+ * operation, so the turn is one undo step. A revision conflict stops the turn, so it cannot
+ * overwrite an intervening studio edit.
  */
 import {
-  CALLER_NOTE_PREFIX,
   type ContentPart,
   type ModelItem,
   type ModelProvider,
   type ModelRole,
   ProviderError,
 } from "@jeeves/providers";
-import {
-  applyOperations,
-  type DesignDocument,
-  designIds,
-  type Finding,
-  type LayoutDocument,
-  noTemplates,
-} from "@jeeves/spec";
+import { type DesignDocument, designIds, type Finding } from "@jeeves/spec";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import type { ArchitectureLibrary } from "../architecture/library.ts";
 import type { Db } from "../db/client.ts";
 import {
   type ChatActivity,
@@ -33,11 +23,8 @@ import {
   files,
 } from "../db/schema.ts";
 import type { DesignService, DesignState } from "../design/service.ts";
-import { INSTRUCTIONS, turnContext } from "./context.ts";
 import { type AcceptedType, checkFile, fileParts } from "./files.ts";
-import { placeNewItems } from "./place.ts";
-import { STUDIO_INSTRUCTIONS, studioTurnContext } from "./studio.ts";
-import { toolDefinitions, Workspace } from "./tools.ts";
+import { INSTRUCTIONS, toolDefinitions, turnContext, Workspace } from "./tools.ts";
 
 /** Picks the provider and model for a role, or says why there is none. */
 export type ModelSource = (
@@ -72,14 +59,14 @@ export type ChatEvent =
   | { type: "turn"; turn: ChatTurn }
   | { type: "text"; delta: string }
   | { type: "activity"; activity: ChatActivity }
-  | { type: "done"; turn: ChatTurn; state: DesignState; layout: LayoutDocument };
+  | { type: "done"; turn: ChatTurn; state: DesignState };
 
 export type ChatInput = {
   message: string;
   fileIds: string[];
   selection: string[];
-  profile?: "studio";
-  baseRevision?: number;
+  /** The revision the person saw; a newer design stops the message before it starts. */
+  baseRevision: number;
 };
 
 export type StartResult =
@@ -87,10 +74,6 @@ export type StartResult =
   | { ok: false; status: 404 | 409 | 422; code: string; message: string };
 
 export const MAX_ROUNDS = 16;
-/** How often a turn may redo its edits after they stopped fitting a newer design. */
-export const MAX_REDOS = 2;
-/** How often a commit is replayed on a newer design before giving up. */
-const MAX_REBASES = 3;
 /** Earlier turns sent as conversation history. */
 const HISTORY_TURNS = 12;
 
@@ -102,7 +85,6 @@ export class ChatService {
     private readonly db: Db,
     private readonly design: DesignService,
     private readonly models: ModelSource,
-    private readonly library?: ArchitectureLibrary,
   ) {}
 
   async listTurns(projectId: string): Promise<ChatTurn[]> {
@@ -146,13 +128,13 @@ export class ChatService {
   async start(projectId: string, input: ChatInput): Promise<StartResult> {
     const state = await this.design.getDesign(projectId);
     if (!state) return { ok: false, status: 404, code: "NOT_FOUND", message: "Project not found." };
-    if (input.profile === "studio" && input.baseRevision !== state.design.revision) {
+    if (input.baseRevision !== state.design.revision) {
       return {
         ok: false,
         status: 409,
         code: "REVISION_CONFLICT",
         message:
-          "The design changed before the studio message started. Reload and inspect the current design before sending again.",
+          "The design changed before the message started. Reload and inspect the current design before sending again.",
       };
     }
     if (this.running.has(projectId)) {
@@ -211,14 +193,7 @@ export class ChatService {
     if (!row) throw new Error("insert returned no chat turn");
     emit({ type: "turn", turn: (await this.toTurns([row]))[0] as ChatTurn });
 
-    const project = await this.design.getProject(projectId);
-    const workspace = new Workspace(
-      initial.design,
-      initial.design,
-      project?.name,
-      this.library,
-      input.profile,
-    );
+    const workspace = new Workspace(initial.design);
     const usage: ChatUsage = { inputTokens: 0, outputTokens: 0, known: true };
     let receivedUsage = false;
     let awaitingResponse = false;
@@ -249,10 +224,7 @@ export class ChatService {
           content: [
             {
               type: "text",
-              text:
-                input.profile === "studio"
-                  ? studioTurnContext(initial.design, initial.findings, input.selection)
-                  : turnContext(initial.design, initial.findings, input.selection),
+              text: turnContext(initial.design, initial.findings, input.selection),
             },
           ],
         },
@@ -265,8 +237,7 @@ export class ChatService {
           ],
         },
       ];
-      const tools = toolDefinitions(input.profile);
-      let redos = 0;
+      const tools = toolDefinitions();
       for (let round = 0; ; round++) {
         if (round >= MAX_ROUNDS) {
           throw new TurnError(
@@ -278,7 +249,7 @@ export class ChatService {
         const response = await source.provider.respond(
           {
             model: source.model,
-            instructions: input.profile === "studio" ? STUDIO_INSTRUCTIONS : INSTRUCTIONS,
+            instructions: INSTRUCTIONS,
             items,
             tools,
           },
@@ -348,24 +319,9 @@ export class ChatService {
           changed = committed.changed;
           break;
         }
-        if (input.profile === "studio")
-          throw new TurnError(
-            `Studio edits were not saved: ${committed.message} Inspect the current design before sending again.`,
-          );
-        if (redos >= MAX_REDOS)
-          throw new TurnError(`The edits couldn't be applied: ${committed.message}`);
-        redos++;
-        workspace.question = undefined;
-        items.push({
-          type: "message",
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `${CALLER_NOTE_PREFIX} Your edits were not applied: the design changed while you were working (${committed.message}). Call getDesign to read the current design, then make your changes again.`,
-            },
-          ],
-        });
+        throw new TurnError(
+          `Edits were not saved: ${committed.message} Inspect the current design before sending again.`,
+        );
       }
     } catch (caught) {
       if (awaitingResponse) {
@@ -380,9 +336,6 @@ export class ChatService {
     }
 
     const state = (await this.design.getDesign(projectId)) as DesignState;
-    let layout = (await this.design.getLayout(projectId)) as LayoutDocument;
-    if (operationId !== null)
-      layout = await this.placeNew(projectId, state.design, layout, input.selection);
 
     const [finished] = await this.db
       .update(chatTurns)
@@ -407,15 +360,11 @@ export class ChatService {
       .where(eq(chatTurns.id, row.id))
       .returning();
     const turn = (await this.toTurns(finished ? [finished] : []))[0] as ChatTurn;
-    emit({ type: "done", turn, state, layout });
+    emit({ type: "done", turn, state });
     return turn;
   }
 
-  /**
-   * Commits the pending edits as one operation. A stale base is handled by replaying the edits on
-   * the current design; if they no longer apply, nothing is committed and the workspace starts
-   * over from the current design.
-   */
+  /** Commits the pending edits as one operation. A stale base commits nothing. */
   private async commit(
     projectId: string,
     workspace: Workspace,
@@ -423,111 +372,36 @@ export class ChatService {
     { ok: true; operationId: number | null; changed: string[] } | { ok: false; message: string }
   > {
     if (workspace.pending.length === 0) return { ok: true, operationId: null, changed: [] };
-    for (let attempt = 0; attempt <= MAX_REBASES; attempt++) {
-      const result = await this.design.edit(projectId, {
-        baseRevision: workspace.base.revision,
-        ops: workspace.pending,
-        source: "chat",
-      });
-      if (result.ok) {
-        const count = workspace.pending.length;
-        const changed = changedIds(workspace.base, result.state.design);
-        workspace.log(
-          "commit",
-          true,
-          `Applied ${count} change${count === 1 ? "" : "s"} as one undo step`,
-        );
-        return { ok: true, operationId: result.operationId, changed };
-      }
-      if (result.reason === "conflict") {
-        const current = result.state.design;
-        if (workspace.profile === "studio") {
-          workspace.log("commit", false, "Studio revision conflict; nothing saved");
-          workspace.reset(current);
-          return { ok: false, message: "The design changed while the assistant was working." };
-        }
-        if (workspace.deploymentRevisionBound) {
-          workspace.reset(current);
-          return {
-            ok: false,
-            message:
-              "Deployment planning inputs changed. Nothing was saved; read the current design and review the placements and logical relationships again.",
-          };
-        }
-        if (workspace.annotationRevisionBound) {
-          workspace.reset(current);
-          return {
-            ok: false,
-            message:
-              "Annotation sources changed. Nothing was saved; read and review a new annotation draft.",
-          };
-        }
-        if (workspace.reviewRevisionBound) {
-          workspace.log("commit", false, "Review revision conflict; nothing was saved");
-          workspace.reset(current);
-          return {
-            ok: false,
-            message:
-              "The architecture review is stale. No review edits were saved. Read the current design and review relevant inputs again.",
-          };
-        }
-        if (workspace.patternRevisionBound) {
-          workspace.log("commit", false, "Pattern revision conflict; nothing was added");
-          workspace.reset(current);
-          return {
-            ok: false,
-            message:
-              "The pattern preview is stale. No pattern edits were added. Read the current design and preview compatible choices again.",
-          };
-        }
-        if (workspace.scenarioRevisionBound) {
-          workspace.reset(current);
-          return {
-            ok: false,
-            message:
-              "Scenario inputs changed. Nothing was saved; read the current design and review relationships, contracts and expectations again.",
-          };
-        }
-        const replay = applyOperations(current, workspace.pending, noTemplates);
-        if (!replay.ok) {
-          workspace.log("commit", false, "The design changed meanwhile; redoing the edits");
-          workspace.reset(current);
-          return { ok: false, message: describeErrors(replay.errors) };
-        }
-        workspace.log(
-          "commit",
-          true,
-          `The design changed meanwhile; replayed the edits on revision ${current.revision}`,
-        );
-        workspace.base = current;
-        workspace.working = replay.design;
-        continue;
-      }
-      if (result.reason === "invalid") {
-        workspace.reset((await this.design.getDesign(projectId))?.design ?? workspace.base);
-        return { ok: false, message: describeErrors(result.errors) };
-      }
-      throw new TurnError(
-        result.reason === "not-found" ? "The project was deleted." : result.message,
+    const result = await this.design.edit(projectId, {
+      baseRevision: workspace.base.revision,
+      ops: workspace.pending,
+      source: "chat",
+    });
+    if (result.ok) {
+      const count = workspace.pending.length;
+      workspace.log(
+        "commit",
+        true,
+        `Applied ${count} change${count === 1 ? "" : "s"} as one undo step`,
       );
+      return {
+        ok: true,
+        operationId: result.operationId,
+        changed: changedIds(workspace.base, result.state.design),
+      };
+    }
+    if (result.reason === "conflict") {
+      workspace.log("commit", false, "Revision conflict; nothing saved");
+      workspace.reset(result.state.design);
+      return { ok: false, message: "The design changed while the assistant was working." };
+    }
+    if (result.reason === "invalid") {
+      workspace.reset((await this.design.getDesign(projectId))?.design ?? workspace.base);
+      return { ok: false, message: describeErrors(result.errors) };
     }
     throw new TurnError(
-      "The design kept changing while the assistant worked. Nothing was changed.",
+      result.reason === "not-found" ? "The project was deleted." : result.message,
     );
-  }
-
-  /** Gives new items a position near the selection and saves the layout. */
-  private async placeNew(
-    projectId: string,
-    design: DesignDocument,
-    layout: LayoutDocument,
-    selection: readonly string[],
-  ): Promise<LayoutDocument> {
-    const placed = await placeNewItems(design, layout, selection);
-    if (Object.keys(placed).length === 0) return layout;
-    const next = { ...layout, items: { ...layout.items, ...placed } };
-    await this.design.putLayout(projectId, next);
-    return next;
   }
 
   /** Earlier turns as plain conversation: the person's messages and the replies. */
@@ -604,13 +478,12 @@ function describeErrors(errors: readonly Finding[]): string {
   return errors.map((e) => e.message).join(" ") || "the edits no longer fit";
 }
 
-/** IDs of elements, annotations, and connections that are new or different in `after`. */
+/** IDs of elements and connections that are new or different in `after`. */
 export function changedIds(before: DesignDocument, after: DesignDocument): string[] {
   const index = (design: DesignDocument) => {
     const map = new Map<string, string>();
     for (const element of design.elements) map.set(element.id, JSON.stringify(element));
     for (const connection of design.connections) map.set(connection.id, JSON.stringify(connection));
-    for (const annotation of design.annotations) map.set(annotation.id, JSON.stringify(annotation));
     return map;
   };
   const old = index(before);

@@ -36,11 +36,7 @@ export function DependencyActions({
         ? ({ element: source, resource: kind } as const)
         : undefined;
     const existing = design.connections.filter(
-      (item) =>
-        item.from.element === source &&
-        item.to.element === resource &&
-        !item.from.attachment &&
-        !item.to.attachment,
+      (item) => item.from.element === source && item.to.element === resource,
     );
     if (existing.length > 1) {
       setProblem(

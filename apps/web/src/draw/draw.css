@@ -159,7 +159,6 @@
   font: inherit;
   font-size: 12px;
   font-weight: 800;
-  cursor: pointer;
 }
 
 .chat-changed-all {
@@ -173,13 +172,6 @@
   background: color-mix(in srgb, var(--yellow) 30%, var(--cream));
 }
 
-.chat-chip:hover,
-.chat-changed-all:hover {
-  background: var(--paper);
-}
-
-.chat-chip:focus-visible,
-.chat-changed-all:focus-visible,
 .chat-file-remove:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 1px;

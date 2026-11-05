@@ -4,7 +4,6 @@ import { containerClassification, isExternalResponsibility } from "./architectur
 import type { DesignDocument, Element } from "./design.ts";
 import { type StudioComponentKind, studioComponentDefinitions } from "./studio-components.ts";
 import { type StudioDefinition, type StudioVisual, studioVisual } from "./studio-definitions.ts";
-import { legacyStudioKind } from "./studio-legacy.ts";
 import type {
   DefinitionRef,
   StudioElementBinding,
@@ -27,12 +26,6 @@ export const studioViewKeys = {
   containers: "studio:containers",
   components: "studio:components",
 } as const;
-/**
- * Pre-SG05 per-service/package detail scope keys may remain in saved URLs, preferences and layout
- * records. They are read as the whole-system C3 view and are never rewritten.
- */
-export const isLegacyStudioDetailKey = (key: string) =>
-  key.startsWith("studio:service:") || key.startsWith("studio:package:");
 export const studioNodeKeys = {
   system: "studio:context:system",
   context: (id: string) => `studio:context:${id}`,
@@ -53,7 +46,8 @@ export interface StudioViewNode {
   kind: StudioKind | "generic" | "package" | "component" | "person" | "system" | "external-system";
   name: string;
   description: string;
-  source: "studio" | "legacy" | "context";
+  /** `unbound` marks an element without studio settings, which validation reports. */
+  source: "studio" | "unbound" | "context";
   role: "primary" | "member" | "owner" | "reference";
   visual: Readonly<StudioVisual>;
   definition?: DefinitionRef;
@@ -83,9 +77,7 @@ export interface StudioViews {
   context: StudioScopeProjection;
   containers: StudioScopeProjection;
   components: StudioScopeProjection;
-  /** Source stays in the design for Generate/export; omitted internals never become fake children. */
   source: {
-    summarizedComponents: { id: string; owner: StudioSemanticRef }[];
     omittedElements: { ref: StudioSemanticRef; reason: "deployment-infrastructure" }[];
     /** Queues missing from C3 (none today; kept so source accounting stays explicit). */
     unscopedQueues: StudioSemanticRef[];
@@ -154,8 +146,7 @@ export function studioViews(
   const membership = new Map(
     packages.flatMap((pkg) => pkg.members.map((id) => [id, pkg] as const)),
   );
-  const kindFor = (element: Element) =>
-    bindings.get(element.id)?.settings.kind ?? legacyStudioKind(element);
+  const kindFor = (element: Element) => bindings.get(element.id)?.settings.kind;
   const omittedElements: StudioViews["source"]["omittedElements"] = [];
   const visible = byId(design.elements).filter((element) => {
     if (bindings.has(element.id)) return true;
@@ -183,9 +174,9 @@ export function studioViews(
       kind: kind ?? "generic",
       name: element.name,
       description: element.description ?? "",
-      source: binding ? "studio" : "legacy",
+      source: binding ? "studio" : "unbound",
       role,
-      visual: { ...(definition?.visual ?? studioVisual(binding ? undefined : kind)) },
+      visual: { ...(definition?.visual ?? studioVisual()) },
       ...(binding && {
         definition: { ...binding.definition },
         definitionStatus: definition ? ("known" as const) : ("unresolved" as const),
@@ -338,10 +329,6 @@ export function studioViews(
     containers,
     components: componentScope,
     source: {
-      summarizedComponents: byId(architecture?.components ?? []).map((component) => ({
-        id: component.id,
-        owner: elementRef(component.element),
-      })),
       omittedElements,
       unscopedQueues: visible
         .filter(
@@ -350,7 +337,7 @@ export function studioViews(
             !componentScope.nodes.some((node) => node.id === studioNodeKeys.element(element.id)),
         )
         .map((element) => elementRef(element.id)),
-      relationships: { accounting: [], unresolved: [], suppressed: [], componentRelationships: [] },
+      relationships: { accounting: [], unresolved: [], suppressed: [] },
     },
   });
 }

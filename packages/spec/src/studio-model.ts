@@ -68,7 +68,7 @@ export const studioResourceKinds = [
   "search",
 ] as const;
 
-/** An exact immutable definition identity; it is deliberately independent of TemplateRef. */
+/** An exact immutable definition identity. */
 export const definitionRefSchema = z.strictObject({ id: idSchema, version: versionSchema });
 export type DefinitionRef = z.infer<typeof definitionRefSchema>;
 export const studioDefinitionVersion = "1.0.0" as const;

@@ -1,7 +1,6 @@
 import {
   applyOperations,
   type DesignDocument,
-  noTemplates,
   type OperationInput,
   type StudioConnectionCreation,
   type StudioKind,
@@ -96,12 +95,10 @@ export function commitAction(
 ) {
   return useDraw.getState().createPlaced(projectId, (design) => {
     const ops = rebuild(design);
-    const result = applyOperations(design, ops, noTemplates, {
-      baseRevision: design.revision,
-    });
+    const result = applyOperations(design, ops, { baseRevision: design.revision });
     if (!result.ok) throw new Error(result.errors[0]?.message ?? "This action is invalid.");
     // SG06: automatic layout places new reference cards; no position is stored.
-    return { ops, positions: {} };
+    return ops;
   });
 }
 export function connectionCreation(

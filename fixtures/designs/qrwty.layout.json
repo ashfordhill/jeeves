@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "items": {
-    "qrwty": { "x": 360, "y": 0 },
-    "qrwty-db": { "x": 720, "y": 0 },
-    "qrwty-web": { "x": 0, "y": 0 }
-  },
-  "viewport": { "x": 0, "y": 0, "zoom": 1 }
-}

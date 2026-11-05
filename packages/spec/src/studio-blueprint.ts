@@ -279,7 +279,7 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
       omitted.push({ kind: "connection", id: connection.id, reason: "endpoint-outside-blueprint" });
       continue;
     }
-    const shown = connectionPresentation(connection, design);
+    const shown = connectionPresentation(connection);
     const settings = connectionSettings.get(connection.id);
     connections.push({
       id: connection.id,
@@ -289,7 +289,7 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
       action: shown.description,
       protocol: shown.protocol,
       interaction: shown.interaction,
-      ...(connection.planned && { access: connection.planned.security }),
+      access: connection.planned.security,
       ...(settings?.channelUse && { channelUse: settings.channelUse }),
       ...(settings?.timeoutMs !== undefined && { timeoutMs: settings.timeoutMs }),
       ...(settings?.retry && { retry: { ...settings.retry } }),

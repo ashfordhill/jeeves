@@ -1,20 +1,19 @@
 /**
- * Draw view state. The server owns the design: every semantic change is posted as an operation
- * batch and the store adopts whatever design the server answers with. Board layout is local-first;
- * architecture actions enter history after their separate layout PUT is acknowledged.
+ * Studio project state. The server owns the design: every semantic change is posted as an
+ * operation batch and the store adopts whatever design the server answers with. Studio row-order
+ * hints enter history after their separate layout PUT is acknowledged.
  *
- * One chronological stack orders server design history, board moves and architecture scope
- * snapshots. All persistence shares the request chain, and layout never changes semantic revision.
+ * One chronological stack orders server design history and studio view snapshots. All
+ * persistence shares the request chain, and layout never changes semantic revision.
  */
 import type {
-  ArchitectureLayoutView,
   DesignDocument,
   Finding,
   LayoutDocument,
-  LayoutItem,
   OperationInput,
+  StudioLayoutView,
 } from "@jeeves/spec";
-import { pruneArchitectureLayout, pruneLayout } from "@jeeves/spec";
+import { pruneLayout } from "@jeeves/spec";
 import { create } from "zustand";
 import { createExampleProject, DEFAULT_EXAMPLE_ID } from "../architecture/create-example.ts";
 import { ApiError, api, type DesignState, type EditResult, type Project } from "./api.ts";
@@ -22,29 +21,13 @@ import { type DraftIntent, type DraftResult, formDrafts } from "./form-drafts.ts
 
 export type Notice = { tone: "error" | "info"; message: string };
 
-export type Selection = { nodes: string[]; edges: string[] };
-
-/** A request for the canvas to select these items and bring them into view. */
-export type FocusRequest = Selection & { seq: number; zoom: boolean };
-
 /**
  * One undoable step. `design` marks a server-side edit made here; the server's history holds the
- * actual snapshots. `layout` holds board item changes; `architecture` holds a scope snapshot.
+ * actual snapshots. `architecture` holds a studio view snapshot.
  */
-type CreationPositions = Record<string, Record<string, { x: number; y: number }>>;
 type Step =
-  | { kind: "design"; creationPositions?: CreationPositions }
-  | {
-      kind: "layout";
-      before: Record<string, LayoutItem | undefined>;
-      after: Record<string, LayoutItem>;
-    }
-  | {
-      kind: "architecture";
-      key: string;
-      before?: ArchitectureLayoutView;
-      after?: ArchitectureLayoutView;
-    };
+  | { kind: "design" }
+  | { kind: "architecture"; key: string; before?: StudioLayoutView; after?: StudioLayoutView };
 
 type LocalHistory = { undoSteps: Step[]; redoSteps: Step[]; redoBlocked: boolean };
 const emptyHistory = (): LocalHistory => ({ undoSteps: [], redoSteps: [], redoBlocked: false });
@@ -78,10 +61,7 @@ type DrawState = {
   notice?: Notice;
   /** Layout changes not yet saved. */
   layoutDirty: boolean;
-  /** Mirrors React Flow's selection, so the inspector can follow it. */
-  selection: Selection;
-  focusRequest?: FocusRequest;
-  /** Selection in the active C4 scope; undefined means use the editable board selection. */
+  /** Semantic identities selected in the active studio view, sent with chat messages. */
   architectureSelection?: string[];
   undoSteps: Step[];
   redoSteps: Step[];
@@ -90,40 +70,27 @@ type DrawState = {
   historyBusy: boolean;
   setArchitectureView(
     key: string,
-    view: ArchitectureLayoutView | undefined,
+    view: StudioLayoutView | undefined,
     undoable?: boolean,
-    baselineCamera?: ArchitectureLayoutView["viewport"],
+    baselineCamera?: StudioLayoutView["viewport"],
   ): Promise<boolean>;
-  /** Compatibility aliases for old callers; both use the chronological history. */
-  undoArchitectureLayout(): Promise<void>;
-  redoArchitectureLayout(): Promise<void>;
 
   open(projectId?: string): Promise<void>;
   edit(ops: OperationInput[]): Promise<boolean>;
   /** Rebuild creation against the serialized revision; publish its placement only after acceptance. */
   createPlaced(
     projectId: string,
-    rebuild: (design: DesignDocument) => { ops: OperationInput[]; positions: CreationPositions },
+    rebuild: (design: DesignDocument) => OperationInput[],
   ): Promise<boolean>;
   editIntent(intent: DraftIntent): Promise<DraftResult>;
   /** Flush valid inspector input and wait for the existing serialized design queue. */
   flushEdits(): Promise<boolean>;
-  /** `undoable` records the change as a local undo step (moves and resizes). */
-  setLayoutItems(items: Record<string, LayoutItem>, options?: { undoable?: boolean }): void;
-  setViewport(viewport: NonNullable<LayoutDocument["viewport"]>): void;
   flushLayout(): Promise<void>;
   setNotice(notice: Notice | undefined): void;
-  setSelection(selection: Selection): void;
-  /** Selects the given items on the board and, with `zoom`, fits the camera to them. */
-  focus(selection: Partial<Selection>, options?: { zoom?: boolean }): void;
   undo(): Promise<void>;
   redo(): Promise<void>;
-  /**
-   * Adopts a design changed elsewhere in this app (a chat turn) as one design undo step. Layout
-   * items the server placed are added; local positions win for items already here. `changed`
-   * items are selected and brought into view.
-   */
-  adoptChange(state: DesignState, layout: LayoutDocument, changed: readonly string[]): void;
+  /** Adopts a design changed elsewhere in this app (a chat turn) as one design undo step. */
+  adoptChange(state: DesignState): void;
   /** Undoes that server edit, if it's still the newest one. Returns whether it did. */
   undoEdit(operationId: number): Promise<boolean>;
 };
@@ -142,10 +109,9 @@ export function canRedo(s: DrawState): boolean {
 
 let editChain: Promise<unknown> = Promise.resolve();
 let layoutTimer: ReturnType<typeof setTimeout> | undefined;
-let focusSeq = 0;
 
 const CONFLICT_MESSAGE =
-  "The design changed somewhere else, so the board was reloaded with the latest version. Try that again.";
+  "The design changed somewhere else, so the studio was reloaded with the latest version. Try that again.";
 
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -221,7 +187,7 @@ export const useDraw = create<DrawState>()((set, get) => {
       loaded.design.revision > state.design.revision
     )
       return;
-    const layout = pruneArchitectureLayout(loaded.layout, state.design);
+    const layout = pruneLayout(loaded.layout, state.design);
     const layoutChanged = JSON.stringify(layout) !== JSON.stringify(loaded.layout);
     set({
       loaded: {
@@ -297,70 +263,43 @@ export const useDraw = create<DrawState>()((set, get) => {
     layoutTimer = setTimeout(() => void saveLayout(), LAYOUT_SAVE_DELAY_MS);
   };
 
-  const viewAt = (layout: LayoutDocument, key: string, view?: ArchitectureLayoutView) => {
+  const viewAt = (layout: LayoutDocument, key: string, view?: StudioLayoutView) => {
     const architecture = { ...layout.architecture };
     if (view) architecture[key] = view;
     else delete architecture[key];
     return { ...layout, architecture };
   };
-  const liveView = (loaded: Loaded, key: string, view?: ArchitectureLayoutView) => {
-    const pruned = pruneArchitectureLayout(viewAt(loaded.layout, key, view), loaded.design)
-      .architecture?.[key];
-    // An empty placement has the same effect as no override. Dead cards never become ghosts.
-    return pruned &&
-      (Object.keys(pruned.positions).length ||
-        Object.keys(pruned).some((field) => field !== "positions"))
-      ? pruned
-      : undefined;
+  const liveView = (loaded: Loaded, key: string, view?: StudioLayoutView) => {
+    const pruned = pruneLayout(viewAt(loaded.layout, key, view), loaded.design).architecture?.[key];
+    // An empty view has the same effect as no override.
+    return pruned && Object.keys(pruned).length ? pruned : undefined;
   };
   const restoreLayout = async (
     loaded: Loaded,
-    step: Exclude<Step, { kind: "design" }>,
+    step: Extract<Step, { kind: "architecture" }>,
     direction: "undo" | "redo",
   ) => {
-    let layout: LayoutDocument;
-    if (step.kind === "architecture") {
-      const before = liveView(loaded, step.key, step.before);
-      const after = liveView(loaded, step.key, step.after);
-      if (same(before, after)) return false;
-      const target = direction === "undo" ? before : after;
-      const viewport = loaded.layout.architecture?.[step.key]?.viewport;
-      // Only an action that changed its camera (Tidy) restores one. Ordinary moves leave
-      // subsequent manual pan/zoom alone, even when their position override is removed.
-      const restored =
-        same(step.before?.viewport, step.after?.viewport) && viewport
-          ? { positions: {}, ...target, viewport }
-          : target;
-      layout = viewAt(loaded.layout, step.key, restored);
-      if (same(layout, loaded.layout)) return false;
-    } else {
-      const items = { ...loaded.layout.items };
-      for (const [id, item] of Object.entries(direction === "undo" ? step.before : step.after)) {
-        if (item) items[id] = item;
-        else delete items[id];
-      }
-      layout = pruneLayout({ ...loaded.layout, items }, loaded.design);
-      if (same(layout, loaded.layout)) return false;
-    }
+    const before = liveView(loaded, step.key, step.before);
+    const after = liveView(loaded, step.key, step.after);
+    if (same(before, after)) return false;
+    const target = direction === "undo" ? before : after;
+    const viewport = loaded.layout.architecture?.[step.key]?.viewport;
+    // Only an action that changed its camera restores one. Row moves leave later pan/zoom alone.
+    const restored =
+      same(step.before?.viewport, step.after?.viewport) && viewport
+        ? { ...target, viewport }
+        : target;
+    let layout = viewAt(loaded.layout, step.key, restored);
+    if (same(layout, loaded.layout)) return false;
     await api.putLayout(loaded.project.id, layout);
     const current = get().loaded;
     if (current?.project.id === loaded.project.id) {
-      if (step.kind === "architecture") {
-        let restored = layout.architecture?.[step.key];
-        const latest = current.layout.architecture?.[step.key];
-        if (restored && latest?.viewport !== loaded.layout.architecture?.[step.key]?.viewport)
-          restored = { ...restored, viewport: latest?.viewport };
-        layout = viewAt(current.layout, step.key, restored);
-      } else {
-        const items = { ...current.layout.items };
-        for (const id of Object.keys({ ...step.before, ...step.after })) {
-          const item = layout.items[id];
-          if (item) items[id] = item;
-          else delete items[id];
-        }
-        layout = { ...current.layout, items };
-      }
-      set({ loaded: { ...current, layout: pruneArchitectureLayout(layout, current.design) } });
+      let view = layout.architecture?.[step.key];
+      const latest = current.layout.architecture?.[step.key];
+      if (view && latest?.viewport !== loaded.layout.architecture?.[step.key]?.viewport)
+        view = { ...view, viewport: latest?.viewport };
+      layout = viewAt(current.layout, step.key, view);
+      set({ loaded: { ...current, layout: pruneLayout(layout, current.design) } });
     }
     return true;
   };
@@ -411,28 +350,6 @@ export const useDraw = create<DrawState>()((set, get) => {
         const result = await api[direction](projectId, loaded.design.revision);
         if (!settle(result)) return false;
         const step = steps.at(-1)?.kind === "design" ? steps.pop() : undefined;
-        if (
-          direction === "redo" &&
-          step?.kind === "design" &&
-          step.creationPositions &&
-          Object.keys(step.creationPositions).length
-        ) {
-          const current = get().loaded;
-          if (current?.project.id === projectId) {
-            let layout = current.layout;
-            for (const [key, positions] of Object.entries(step.creationPositions)) {
-              const view = layout.architecture?.[key];
-              layout = viewAt(layout, key, {
-                ...view,
-                positions: { ...view?.positions, ...positions },
-              });
-            }
-            set({
-              loaded: { ...current, layout: pruneArchitectureLayout(layout, current.design) },
-            });
-            scheduleLayoutSave();
-          }
-        }
         setHistory(projectId, {
           ...history(projectId),
           [source]: steps,
@@ -449,7 +366,6 @@ export const useDraw = create<DrawState>()((set, get) => {
   return {
     status: "idle",
     layoutDirty: false,
-    selection: { nodes: [], edges: [] },
     undoSteps: [],
     redoSteps: [],
     redoBlocked: false,
@@ -466,8 +382,6 @@ export const useDraw = create<DrawState>()((set, get) => {
         status: "loading",
         error: undefined,
         notice: undefined,
-        selection: { nodes: [], edges: [] },
-        focusRequest: undefined,
         undoSteps: [],
         redoSteps: [],
       });
@@ -491,7 +405,7 @@ export const useDraw = create<DrawState>()((set, get) => {
             design: state.design,
             findings: state.findings,
             history: state.history,
-            layout: pruneArchitectureLayout(layout, state.design),
+            layout: pruneLayout(layout, state.design),
           },
         });
       } catch (error) {
@@ -567,36 +481,9 @@ export const useDraw = create<DrawState>()((set, get) => {
       return chain(async () => {
         const loaded = get().loaded;
         if (!loaded || loaded.project.id !== projectId) return false;
-        const { ops, positions } = rebuild(loaded.design);
-        const result = await api.edit(projectId, loaded.design.revision, ops);
+        const result = await api.edit(projectId, loaded.design.revision, rebuild(loaded.design));
         if (!settle(result) || !result.ok) return false;
-        record(projectId, { kind: "design", creationPositions: positions });
-        // Studio positions are derived (SG06): creations store none and write no layout.
-        if (!Object.keys(positions).length) return true;
-        const current = get().loaded;
-        if (current?.project.id === projectId) {
-          let layout = current.layout;
-          for (const [key, additions] of Object.entries(positions)) {
-            const view = layout.architecture?.[key];
-            layout = viewAt(layout, key, {
-              ...view,
-              positions: { ...view?.positions, ...additions },
-            });
-          }
-          set({ loaded: { ...current, layout: pruneArchitectureLayout(layout, current.design) } });
-          scheduleLayoutSave();
-        } else {
-          // A valid creation still finishes its original project's placement after navigation.
-          let layout = await api.getLayout(projectId);
-          for (const [key, additions] of Object.entries(positions)) {
-            const view = layout.architecture?.[key];
-            layout = viewAt(layout, key, {
-              ...view,
-              positions: { ...view?.positions, ...additions },
-            });
-          }
-          await api.putLayout(projectId, pruneArchitectureLayout(layout, result.state.design));
-        }
+        record(projectId, { kind: "design" });
         return true;
       });
     },
@@ -609,7 +496,7 @@ export const useDraw = create<DrawState>()((set, get) => {
       await historyStep("redo");
     },
 
-    adoptChange(state, layout, changed) {
+    adoptChange(state) {
       const loaded = get().loaded;
       if (!loaded || loaded.project.id !== state.projectId) {
         const previous = accepted.get(state.projectId);
@@ -619,34 +506,10 @@ export const useDraw = create<DrawState>()((set, get) => {
         }
         return;
       }
-      if (state.design.revision < loaded.design.revision) return;
-      // An older state (a canvas edit landed after the turn) must not replace a newer one.
-      const newer = state.design.revision > loaded.design.revision;
-      if (newer) adopt(state);
-      const missing = Object.entries(layout.items).filter(([id]) => !loaded.layout.items[id]);
-      if (missing.length > 0) {
-        const current = get().loaded as Loaded;
-        set({
-          loaded: {
-            ...current,
-            layout: {
-              ...current.layout,
-              items: { ...current.layout.items, ...Object.fromEntries(missing) },
-            },
-          },
-        });
-      }
-      if (newer) record(state.projectId, { kind: "design" });
-      const connections = new Set(state.design.connections.map((c) => c.id));
-      if (changed.length > 0) {
-        get().focus(
-          {
-            nodes: changed.filter((id) => !connections.has(id)),
-            edges: changed.filter((id) => connections.has(id)),
-          },
-          { zoom: true },
-        );
-      }
+      // An older state (a studio edit landed after the turn) must not replace a newer one.
+      if (state.design.revision <= loaded.design.revision) return;
+      adopt(state);
+      record(state.projectId, { kind: "design" });
     },
 
     async undoEdit(operationId) {
@@ -657,7 +520,7 @@ export const useDraw = create<DrawState>()((set, get) => {
       const source = get().loaded;
       if (!source) return Promise.resolve(false);
       if (!undoable) {
-        const layout = pruneArchitectureLayout(viewAt(source.layout, key, view), source.design);
+        const layout = pruneLayout(viewAt(source.layout, key, view), source.design);
         if (same(layout, source.layout)) return Promise.resolve(true);
         set({ loaded: { ...source, layout } });
         scheduleLayoutSave();
@@ -676,7 +539,7 @@ export const useDraw = create<DrawState>()((set, get) => {
               ? current.layout
               : await api.getLayout(source.project.id);
           const before = layout.architecture?.[key];
-          const next = pruneArchitectureLayout(viewAt(layout, key, view), design);
+          const next = pruneLayout(viewAt(layout, key, view), design);
           if (same(layout, next)) return true;
           try {
             await api.putLayout(source.project.id, next);
@@ -696,53 +559,18 @@ export const useDraw = create<DrawState>()((set, get) => {
               key,
               camera !== savedCamera && committed ? { ...committed, viewport: camera } : committed,
             );
-            set({ loaded: { ...latest, layout: pruneArchitectureLayout(saved, latest.design) } });
+            set({ loaded: { ...latest, layout: pruneLayout(saved, latest.design) } });
           }
           record(source.project.id, {
             kind: "architecture",
             key,
-            before: baselineCamera
-              ? { positions: {}, ...before, viewport: baselineCamera }
-              : before,
+            before: baselineCamera ? { ...before, viewport: baselineCamera } : before,
             after: next.architecture?.[key],
           });
           return true;
         });
       });
     },
-    async undoArchitectureLayout() {
-      await get().undo();
-    },
-    async redoArchitectureLayout() {
-      await get().redo();
-    },
-
-    setLayoutItems(items, options) {
-      const loaded = get().loaded;
-      if (!loaded) return;
-      if (options?.undoable) {
-        const before = Object.fromEntries(
-          Object.keys(items).map((id) => [id, loaded.layout.items[id]]),
-        );
-        if (Object.entries(items).some(([id, item]) => !same(item, before[id])))
-          record(loaded.project.id, { kind: "layout", before, after: items });
-      }
-      set({
-        loaded: {
-          ...loaded,
-          layout: { ...loaded.layout, items: { ...loaded.layout.items, ...items } },
-        },
-      });
-      scheduleLayoutSave();
-    },
-
-    setViewport(viewport) {
-      const loaded = get().loaded;
-      if (!loaded) return;
-      set({ loaded: { ...loaded, layout: { ...loaded.layout, viewport } } });
-      scheduleLayoutSave();
-    },
-
     async flushLayout() {
       clearTimeout(layoutTimer);
       await saveLayout();
@@ -750,22 +578,6 @@ export const useDraw = create<DrawState>()((set, get) => {
 
     setNotice(notice) {
       set({ notice });
-    },
-
-    setSelection(selection) {
-      const current = get().selection;
-      const same = (a: string[], b: string[]) =>
-        a.length === b.length && a.every((id, i) => id === b[i]);
-      if (same(current.nodes, selection.nodes) && same(current.edges, selection.edges)) return;
-      set({ selection });
-    },
-
-    focus(selection, options) {
-      const next = { nodes: selection.nodes ?? [], edges: selection.edges ?? [] };
-      set({
-        selection: next,
-        focusRequest: { ...next, seq: ++focusSeq, zoom: options?.zoom ?? false },
-      });
     },
   };
 });

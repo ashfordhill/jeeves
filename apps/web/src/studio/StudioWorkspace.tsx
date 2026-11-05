@@ -1,6 +1,5 @@
 import {
   buildStudioCommand,
-  isLegacyStudioDetailKey,
   type StudioRelationship,
   type StudioScopeProjection,
   type StudioSemanticRef,
@@ -190,12 +189,8 @@ function SelectionSummary({
             );
             const name = (id?: string) =>
               loaded?.design.elements.find((element) => element.id === id)?.name ?? id;
-            const action =
-              connection?.planned?.label ??
-              connection?.label ??
-              context?.description ??
-              "Connection";
-            const protocol = connection?.planned?.protocol ?? connection?.protocol;
+            const action = connection?.planned.label ?? context?.description ?? "Connection";
+            const protocol = connection?.planned.protocol;
             return (
               <button
                 type="button"
@@ -412,14 +407,12 @@ function ProjectStudio({
     [loaded.design, loaded.project.name],
   );
   const scopes = useMemo(() => studioScopes(views), [views]);
-  const [scopeKey, setScopeKey] = useState(() => {
-    const saved =
+  const [scopeKey, setScopeKey] = useState(
+    () =>
       new URLSearchParams(window.location.search).get("studioScope") ??
       preferences.scope ??
-      studioViewKeys.containers;
-    // Old per-service/package detail scopes (URLs, preferences) open the whole-system C3.
-    return isLegacyStudioDetailKey(saved) ? studioViewKeys.components : saved;
-  });
+      studioViewKeys.containers,
+  );
   const scope = scopes.find((item) => item.key === scopeKey) ?? views.containers;
   // One selection, by identity, shared by all three tabs.
   const [pick, setPick] = useState<{ scope: string; id: string } | undefined>(() => {
@@ -746,7 +739,7 @@ function ProjectStudio({
     try {
       const ok = await useDraw.getState().createPlaced(loaded.project.id, (design) => {
         result = spawnOps(design, scope.level, loaded.project.name, source, side, choice);
-        return { ops: result.ops, positions: {} };
+        return result.ops;
       });
       setPicker(undefined);
       // An in-process component link has no connection form: select the new component instead.
@@ -895,7 +888,7 @@ function ProjectStudio({
                 <IconX size={17} />
               </button>
             </div>
-            <ChatPanel profile="studio" />
+            <ChatPanel />
           </aside>
           <RailResize
             side="chat"

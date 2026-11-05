@@ -6,7 +6,6 @@ import type { StudioComponent, StudioComponentConnection } from "../studio-compo
 import { studioDefinitions } from "../studio-definitions.ts";
 import { type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
 import type { StudioConnectionCreation, StudioElementCreation } from "../studio-operations.ts";
-import { studioGoalManifests } from "../studio-sources.ts";
 
 export type StudioStudy = {
   id: string;
@@ -28,26 +27,6 @@ export function createStudioStudy(
     componentConnections?: StudioComponentConnection[];
   } = {},
 ): { name: string; design: DesignDocument; layout: LayoutDocument } {
-  const manifest = studioGoalManifests.find(
-    (item) => item.example.id === study.id && item.example.version === study.version,
-  );
-  if (!manifest) throw new Error(`Missing exact goal manifest for ${study.id}@${study.version}.`);
-  const decisions = manifest.requirements
-    .filter((row) => row.disposition !== "represented-design")
-    .map((row) => ({
-      id: `studio-c4b-${row.requirementId}`,
-      name: (row.summary.split(":")[0] ?? row.requirementId).slice(0, 120),
-      status: "Unresolved" as const,
-      context: `${row.source.sourceId}: ${row.source.location}. ${row.summary}`.slice(0, 1200),
-      decision: row.remainingWork,
-      consequence:
-        "Source requirement remains unimplemented/unverified. Finite settings and this study do not supply application behavior or runtime support.",
-      links: [
-        ...row.nodeIds.map((id) => ({ kind: "element" as const, id })),
-        ...row.connectionIds.map((id) => ({ kind: "connection" as const, id })),
-      ],
-      acknowledgements: [],
-    }));
   const design = designSchema.parse({
     ...emptyDesign(),
     elements: elements.map((item) => ({
@@ -55,10 +34,6 @@ export function createStudioStudy(
       name: item.name,
       description: item.description,
       classification: studioDefinitions[item.settings.kind].classification,
-      template: null,
-      config: {},
-      attachments: [],
-      notes: "",
     })),
     connections: connections.map(({ id, from, to, kind, planned }) => ({
       id,
@@ -91,22 +66,9 @@ export function createStudioStudy(
           componentConnections: parts.componentConnections,
         }),
       },
-      decisions,
-      implementationHandoff: {
-        description: `${study.name}: design coverage and source-linked future implementation work only.`,
-        partial: true,
-        excludedScope:
-          "No application runtime, template binding, provisioning, generated build or behavior verification is supplied. Historical deployment and implementation detail remains pinned source.",
-        assignments: decisions.map((item) => ({
-          kind: "decision",
-          id: item.id,
-          owner: "Future application/runtime implementer",
-          blocks: item.decision,
-        })),
-      },
     }),
   });
   // SG06: studio coordinates are derived by automatic layout; a study stores no positions.
-  const layout = layoutSchema.parse({ schemaVersion: 1, items: {} });
+  const layout = layoutSchema.parse({ schemaVersion: 1 });
   return { name: study.name, design, layout };
 }

@@ -44,7 +44,6 @@ export type LiveTurn = {
 
 type ChatState = {
   projectId?: string;
-  profile?: "studio";
   status: "idle" | "loading" | "ready" | "error";
   turns: ChatTurn[];
   live?: LiveTurn;
@@ -53,7 +52,7 @@ type ChatState = {
   /** Problem sending (not a failed turn, which is shown in the turn itself). */
   error?: string;
 
-  load(projectId: string, profile?: "studio"): Promise<void>;
+  load(projectId: string): Promise<void>;
   setDraft(draft: string): void;
   attach(files: readonly File[]): Promise<void>;
   unstage(key: number): void;
@@ -73,8 +72,7 @@ export const useChat = create<ChatState>()((set, get) => ({
   draft: "",
   staged: [],
 
-  async load(projectId, profile) {
-    set({ profile });
+  async load(projectId) {
     if (get().projectId === projectId && get().status !== "error") return;
     set({ projectId, status: "loading", turns: [], live: undefined, staged: [], error: undefined });
     try {
@@ -127,16 +125,13 @@ export const useChat = create<ChatState>()((set, get) => ({
   },
 
   async send(text) {
-    const { projectId, live, staged, profile } = get();
+    const { projectId, live, staged } = get();
     const body = (text ?? get().draft).trim();
     if (!projectId || live || !body) return;
     if (staged.some((s) => s.status === "uploading")) return;
     const files = staged.flatMap((s) => (s.status === "ready" && s.file ? [s.file] : []));
     const draw = useDraw.getState();
-    const selection = draw.architectureSelection ?? [
-      ...draw.selection.nodes,
-      ...draw.selection.edges,
-    ];
+    const selection = draw.architectureSelection ?? [];
     // Live at once, so a second click can't send the message twice.
     set({
       live: { message: body, files, reply: "", activity: [] },
@@ -152,20 +147,13 @@ export const useChat = create<ChatState>()((set, get) => ({
       if (!(await draw.flushEdits())) throw new Error("Resolve the unsaved edit before sending");
       if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
         return;
-      // The server places new elements around what's saved, so save local moves first.
-      await draw.flushLayout();
-      if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
-        return;
       await api.chat(
         projectId,
         {
           message: body,
           fileIds: files.map((f) => f.id),
           selection,
-          ...(profile === "studio" && {
-            profile: "studio",
-            baseRevision: useDraw.getState().loaded?.design.revision,
-          }),
+          baseRevision: useDraw.getState().loaded?.design.revision ?? 0,
         },
         (event) => {
           if (get().projectId !== projectId) return;
@@ -181,7 +169,7 @@ export const useChat = create<ChatState>()((set, get) => ({
               break;
             case "done":
               set({ turns: [...get().turns, event.turn], live: undefined });
-              useDraw.getState().adoptChange(event.state, event.layout, event.turn.changed);
+              useDraw.getState().adoptChange(event.state);
               break;
           }
         },

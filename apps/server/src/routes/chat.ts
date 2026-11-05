@@ -7,8 +7,7 @@ import { notFound } from "./projects.ts";
 const projectParams = z.object({ id: z.uuid() });
 const fileParams = z.object({ id: z.uuid(), fileId: z.uuid() });
 const chatBody = z.strictObject({
-  profile: z.literal("studio").optional(),
-  baseRevision: z.int().nonnegative().optional(),
+  baseRevision: z.int().nonnegative(),
   message: z.string().trim().min(1).max(20_000),
   fileIds: z.array(z.uuid()).max(10).default([]),
   selection: z.array(z.string().max(63)).max(200).default([]),
@@ -18,9 +17,9 @@ const chatBody = z.strictObject({
  * Chat turns and their files.
  *
  * `POST /projects/:id/chat` answers with newline-delimited JSON (`ChatEvent`s): `turn` first,
- * then `text` deltas and `activity` lines, then `done` with the turn, the design state, and the
- * layout. Errors that prevent the turn from starting are ordinary JSON responses (404, 409
- * `CHAT_BUSY`, 422 `UNKNOWN_FILE`).
+ * then `text` deltas and `activity` lines, then `done` with the turn and the design state. Errors
+ * that prevent the turn from starting are ordinary JSON responses (404, 409 `CHAT_BUSY` or
+ * `REVISION_CONFLICT`, 422 `UNKNOWN_FILE`).
  */
 export const chatRoutes: FastifyPluginAsyncZod<{ chat: ChatService }> = async (app, { chat }) => {
   app.get("/projects/:id/chat", { schema: { params: projectParams } }, async (req) => ({

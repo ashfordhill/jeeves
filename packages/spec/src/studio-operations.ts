@@ -220,7 +220,7 @@ export function pruneStudioAfterDelete(
 /**
  * No I/O and no cached architecture replacement. Toolbar and assistant callers submit this exact
  * baseRevision/ops through the existing operations transport. The server remains authoritative.
- * Inputs are cloned, and legacy objects cannot acquire a second editable settings source.
+ * Inputs are cloned.
  */
 export function buildStudioCommand(
   design: DesignDocument,
@@ -248,26 +248,6 @@ export function buildStudioCommand(
     return operationBatchSchema.parse({
       baseRevision: design.revision,
       ops: [{ op: "setArchitecture", architecture }],
-    });
-  }
-  if (
-    input.type === "edit" &&
-    !draft.architecture?.studio?.elements.some((item) => item.element === input.element)
-  ) {
-    if (input.settings !== undefined || input.owner !== undefined)
-      throw new Error(
-        "Legacy objects have no editable studio settings. Only their name and purpose can change.",
-      );
-    return operationBatchSchema.parse({
-      baseRevision: design.revision,
-      ops: [
-        {
-          op: "updateElement",
-          id: input.element,
-          ...(input.name !== undefined && { name: input.name }),
-          ...(input.description !== undefined && { description: input.description }),
-        },
-      ],
     });
   }
   const ops: OperationInput[] = [];
@@ -336,10 +316,6 @@ export function buildStudioCommand(
           name: item.name,
           ...(item.description !== undefined && { description: item.description }),
           classification: { ...studioDefinitions[item.settings.kind].classification },
-          template: null,
-          config: {},
-          attachments: [],
-          notes: "",
         };
         ops.push({ op: "addElement", element });
         studio.elements.push({

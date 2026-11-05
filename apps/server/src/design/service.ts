@@ -2,13 +2,12 @@ import {
   applyOperations,
   type DesignDocument,
   designBlueprint,
+  designSchema,
   emptyDesign,
   emptyLayout,
   type Finding,
   type LayoutDocument,
-  noTemplates,
   type OperationInput,
-  upgradeDesign,
   validateDesign,
 } from "@jeeves/spec";
 import { and, asc, desc, eq } from "drizzle-orm";
@@ -65,14 +64,9 @@ export class DesignService {
     return project;
   }
 
-  createProject(
-    name: string,
-    initial?: { design: DesignDocument; layout: LayoutDocument },
-  ): Promise<Project> {
-    const design = initial ? { ...upgradeDesign(initial.design), revision: 0 } : emptyDesign();
+  createProject(name: string): Promise<Project> {
+    const design = emptyDesign();
     const findings = this.findings(design);
-    if (initial && findings.some((item) => item.severity === "error"))
-      throw new Error(findings.map((item) => item.message).join("\n"));
     return this.db.transaction(async (tx) => {
       const [project] = await tx.insert(projects).values({ name }).returning();
       if (!project) throw new Error("insert returned no project");
@@ -82,9 +76,7 @@ export class DesignService {
         document: design,
         findings,
       });
-      await tx
-        .insert(layouts)
-        .values({ projectId: project.id, document: initial?.layout ?? emptyLayout() });
+      await tx.insert(layouts).values({ projectId: project.id, document: emptyLayout() });
       return project;
     });
   }
@@ -139,9 +131,8 @@ export class DesignService {
       if (input.baseRevision !== project.revision) {
         return this.conflict(tx, project, input.baseRevision, current);
       }
-      const result = applyOperations(current.document, input.ops as OperationInput[], noTemplates, {
+      const result = applyOperations(current.document, input.ops as OperationInput[], {
         baseRevision: input.baseRevision,
-        allowSubtypeConfirmation: input.source !== "chat",
       });
       if (!result.ok) return { ok: false, reason: "invalid", errors: result.errors };
 
@@ -240,7 +231,10 @@ export class DesignService {
       }
 
       const snapshot = kind === "undo" ? target.before : target.after;
-      const design: DesignDocument = { ...upgradeDesign(snapshot), revision: project.revision + 1 };
+      const design: DesignDocument = {
+        ...designSchema.parse(snapshot),
+        revision: project.revision + 1,
+      };
       // Findings are recomputed: validation may have changed since the snapshot was taken.
       const findings = this.findings(design);
       await tx
@@ -322,12 +316,13 @@ export class DesignService {
         ),
       );
     if (!row) throw new Error(`project ${project.id} has no revision ${project.revision}`);
-    const document = upgradeDesign(row.document);
+    // Only studio documents are stored; anything else fails loudly here.
+    const document = designSchema.parse(row.document);
     return { document, findings: this.findings(document) };
   }
 
   private findings(design: DesignDocument): Finding[] {
-    return validateDesign(design, noTemplates);
+    return validateDesign(design);
   }
 
   private async state(db: Db | Tx, project: Project): Promise<DesignState> {

@@ -4,15 +4,26 @@
  */
 import {
   applyOperations,
+  buildStudioCommand,
+  createStudioSettings,
   type DesignDocument,
   emptyDesign,
   emptyLayout,
   type LayoutDocument,
-  noTemplates,
+  type OperationInput,
   validateDesign,
 } from "@jeeves/spec";
 
 export const TEST_PROJECT = "00000000-0000-4000-8000-000000000001";
+
+/** The ops that add one studio service to `design`. */
+export function serviceOps(design: DesignDocument, id: string, name = id): OperationInput[] {
+  return buildStudioCommand(design, {
+    type: "create",
+    system: { name: "System" },
+    elements: [{ id, name, settings: createStudioSettings("service") }],
+  }).ops;
+}
 
 export function fakeApi() {
   const state = {
@@ -33,7 +44,7 @@ export function fakeApi() {
   const designState = () => ({
     projectId: TEST_PROJECT,
     design: state.design,
-    findings: validateDesign(state.design, noTemplates),
+    findings: validateDesign(state.design),
     history: {
       canUndo: state.done.length > 0,
       canRedo: state.undone.length > 0,
@@ -68,7 +79,7 @@ export function fakeApi() {
       if (body.baseRevision !== state.design.revision) {
         return json({ code: "REVISION_CONFLICT", message: "stale", ...designState() }, 409);
       }
-      const result = applyOperations(state.design, body.ops, noTemplates);
+      const result = applyOperations(state.design, body.ops);
       if (!result.ok) {
         return json({ code: "INVALID_OPERATION", message: "invalid", errors: result.errors }, 422);
       }

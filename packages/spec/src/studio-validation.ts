@@ -1,6 +1,5 @@
 /** Structural studio hooks share the existing all-or-nothing semantic validation boundary. */
 import { containerClassification } from "./architecture-choices.ts";
-import { backendDeclarations } from "./backend-model.ts";
 import type { DesignDocument, Element } from "./design.ts";
 import { type Finding, type FindingCode, finding } from "./findings.ts";
 import {
@@ -9,7 +8,6 @@ import {
   studioComponentRequirements,
 } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
-import { legacyStudioKind } from "./studio-legacy.ts";
 import {
   type StudioKind,
   studioAccessSchema,
@@ -26,20 +24,10 @@ function occupiedDesignIds(design: DesignDocument): Set<string> {
   const model = design.architecture;
   return new Set([
     "system",
-    ...design.elements.flatMap((element) => [element.id, ...element.attachments.map((a) => a.id)]),
+    ...design.elements.map((element) => element.id),
     ...design.connections.map((item) => item.id),
-    ...design.annotations.map((item) => item.id),
-    ...Object.values(model ?? {}).flatMap((value) =>
-      Array.isArray(value)
-        ? value.flatMap((item) => ("id" in item ? [item.id as string] : []))
-        : [],
-    ),
-    ...backendDeclarations(model?.backend).map((item) => item.id),
-    ...(model?.deployments ?? []).flatMap((env) =>
-      [...env.nodes, ...env.instances, ...env.externals, ...env.interactions].map(
-        (item) => item.id,
-      ),
-    ),
+    ...(model?.nodes ?? []).map((item) => item.id),
+    ...(model?.relationships ?? []).map((item) => item.id),
   ]);
 }
 
@@ -73,12 +61,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
   );
   const application = (element: Element | undefined) =>
     !!element && containerClassification(element).kind === "Application";
-  const kind = (id: string): StudioKind | undefined => {
-    const binding = bindings.get(id);
-    if (binding) return binding.settings.kind;
-    const element = elements.get(id);
-    return element ? legacyStudioKind(element) : undefined;
-  };
+  const kind = (id: string): StudioKind | undefined => bindings.get(id)?.settings.kind;
   const occupied = occupiedDesignIds(design);
   studio.packages.forEach((item, index) => {
     const path = ["packages", index];
@@ -113,16 +96,6 @@ export function validateStudio(design: DesignDocument): Finding[] {
     if (!element)
       missing([...path, "element"], `Studio binding targets missing element ${binding.element}.`);
     else {
-      if (
-        element.template !== null ||
-        element.planned !== undefined ||
-        Object.keys(element.config).length ||
-        element.attachments.length
-      )
-        invalid(
-          [...path, "element"],
-          `Studio element ${element.id} must have template null, empty config/attachments and no legacy planned capability; conversion is unsupported.`,
-        );
       const expected = studioDefinitions[binding.settings.kind].classification.kind;
       if (element.classification?.kind !== expected)
         invalid(
@@ -195,11 +168,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
           missing([...path, "settings", field], `Lookup dependency ${id} does not exist.`);
         else if (
           connection.from.element !== binding.element ||
-          kind(connection.to.element) !== targetKind ||
-          connection.from.attachment ||
-          connection.to.attachment ||
-          connection.config?.fromCapability ||
-          connection.config?.toCapability
+          kind(connection.to.element) !== targetKind
         )
           invalid(
             [...path, "settings", field],
@@ -228,24 +197,11 @@ export function validateStudio(design: DesignDocument): Finding[] {
           path: ["connections", index, "planned", field],
         }),
       );
-    if (!connection.planned) canonicalPath("label/protocol/interaction/security");
-    else {
-      if (!studioActionSchema.safeParse(connection.planned.label).success) canonicalPath("label");
-      if (!studioProtocolSchema.safeParse(connection.planned.protocol).success)
-        canonicalPath("protocol");
-      if (!studioAccessSchema.safeParse(connection.planned.security).success)
-        canonicalPath("security");
-    }
-    if (
-      connection.from.attachment ||
-      connection.to.attachment ||
-      connection.config?.fromCapability ||
-      connection.config?.toCapability
-    )
-      invalid(
-        path,
-        "Studio relationships must connect outer elements without legacy capability bindings.",
-      );
+    if (!studioActionSchema.safeParse(connection.planned.label).success) canonicalPath("label");
+    if (!studioProtocolSchema.safeParse(connection.planned.protocol).success)
+      canonicalPath("protocol");
+    if (!studioAccessSchema.safeParse(connection.planned.security).success)
+      canonicalPath("security");
     for (const side of ["from", "to"] as const)
       if (!elements.has(connection[side].element))
         missing(path, `Relationship ${connection.id} has a missing ${side} element.`);
@@ -266,7 +222,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
           [...path, "channelUse"],
           `Channel ${settings.channelUse} requires ${publish ? "application → queue" : "queue → application"} endpoints.`,
         );
-      if (connection.planned?.interaction !== "Asynchronous")
+      if (connection.planned.interaction !== "Asynchronous")
         invalid(
           [...path, "channelUse"],
           "Channel connections require explicit Asynchronous interaction.",
@@ -274,10 +230,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
     }
     if (
       (settings?.timeoutMs !== undefined || settings?.retry !== undefined) &&
-      !studioAllowsRequestPolicies(
-        connection.planned?.protocol ?? "",
-        connection.planned?.interaction ?? "",
-      )
+      !studioAllowsRequestPolicies(connection.planned.protocol, connection.planned.interaction)
     ) {
       for (const field of ["timeoutMs", "retry"] as const)
         if (settings?.[field] !== undefined)
@@ -288,17 +241,6 @@ export function validateStudio(design: DesignDocument): Finding[] {
     }
   });
   validateStudioComponents(design, report, kind, application);
-  if (
-    studio.elements.length ||
-    studio.connections.length ||
-    studio.packages.length ||
-    studio.components?.length
-  )
-    report(
-      "NEEDS_TEMPLATE",
-      [],
-      "Studio settings and packages are design intent; application generation has no studio runtime resolver.",
-    );
   return findings;
 }
 
@@ -355,7 +297,7 @@ function validateStudioComponents(
       report(
         "CONFIG_INVALID",
         [...path, "host"],
-        "A component host must be a studio application element, not a resource, external system, package or legacy object.",
+        "A component host must be a studio application element, not a resource, external system, or package.",
       );
     else if (
       host.settings.kind === "browser" &&
@@ -445,12 +387,7 @@ function validateStudioComponents(
       return;
     }
     const ends = [via.from.element, via.to.element];
-    if (
-      !ends.includes(from.host) ||
-      !ends.includes(target) ||
-      via.from.attachment ||
-      via.to.attachment
-    ) {
+    if (!ends.includes(from.host) || !ends.includes(target)) {
       report(
         "CONFIG_INVALID",
         [...path, "to", "via"],

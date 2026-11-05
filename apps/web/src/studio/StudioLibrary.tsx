@@ -1,11 +1,5 @@
 import {
-  type ArchitectureLibraryEntry,
-  type LibraryInsertInput,
-  noTemplates,
-  previewArchitectureTemplate,
-  resolveStudioDefinition,
   type StudioScopeProjection,
-  studioArchitectureExample,
   studioArchitectureExamples,
   studioDefinitions,
   studioLibraryGroups,
@@ -13,10 +7,9 @@ import {
   studioScopes,
   studioViews,
 } from "@jeeves/spec";
-import { useCallback, useEffect, useState } from "react";
-import { ArchitectureLibrary } from "../architecture/ArchitectureLibrary.tsx";
+import { useState } from "react";
+import { createExampleProject } from "../architecture/create-example.ts";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
-import { api } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
 import { TemplateIcon } from "../draw/TemplateIcon.tsx";
 import { type Creation, creationLabel, creationScope } from "./creation.ts";
@@ -46,56 +39,6 @@ export function StudioLibrary({
   const [existing, setExisting] = useState("");
   const [error, setError] = useState<string>();
   const [creating, setCreating] = useState(false);
-  const [manage, setManage] = useState(false);
-  const [saved, setSaved] = useState<ArchitectureLibraryEntry[]>([]);
-  const [libraryProblem, setLibraryProblem] = useState(false);
-  const [roles, setRoles] = useState<LibraryInsertInput["roles"]>({});
-  const loadSaved = useCallback(
-    () =>
-      api
-        .architectureLibrary()
-        .then((entries) => {
-          setSaved(
-            entries.filter(
-              (entry) =>
-                entry.state === "published" &&
-                entry.fragment.architecture.studio &&
-                !entry.fragment.architecture.components?.length &&
-                entry.fragment.roles.some((role) => {
-                  const binding = entry.fragment.architecture.studio?.elements.find(
-                    (item) => item.element === role.id,
-                  );
-                  return (
-                    !role.required &&
-                    role.create &&
-                    binding &&
-                    resolveStudioDefinition(binding.definition)?.creationScopes.includes("c2")
-                  );
-                }) &&
-                entry.fragment.roles.every((role) => {
-                  const binding =
-                    role.studio ??
-                    entry.fragment.architecture.studio?.elements.find(
-                      (item) => item.element === role.id,
-                    );
-                  return (
-                    (role.kind === "boundary" || role.kind === "host") &&
-                    binding &&
-                    resolveStudioDefinition(binding.definition)
-                  );
-                }),
-            ),
-          );
-          setLibraryProblem(false);
-        })
-        .catch(() => {
-          setLibraryProblem(true);
-        }),
-    [],
-  );
-  useEffect(() => {
-    void loadSaved();
-  }, [loadSaved]);
   if (!loaded) return null;
   const target = creationScope(scope);
   const views = studioViews(loaded.design, studioDefinitions, loaded.project.name);
@@ -123,26 +66,6 @@ export function StudioLibrary({
   const matches = (value: string) => value.toLowerCase().includes(query.toLowerCase());
   const definition = definitions.find((item) => item.id === preview);
   const preset = presets.find((item) => item.id === preview);
-  const composition =
-    target === "c2"
-      ? saved.find((item) => `saved:${item.id}@${item.version}` === preview)
-      : undefined;
-  const compositionPreview = composition
-    ? previewArchitectureTemplate(
-        loaded.design,
-        composition,
-        {
-          id: composition.id,
-          version: composition.version,
-          contentHash: composition.contentHash,
-          instanceId: "lib-preview",
-          name: composition.metadata.name.slice(0, 80),
-          baseRevision: loaded.design.revision,
-          roles,
-        },
-        noTemplates,
-      )
-    : undefined;
   const example = studioArchitectureExamples.find((item) => item.id === preview);
   const contextKind = preview === "person" || preview === "external-system" ? preview : undefined;
   const add = async () => {
@@ -153,43 +76,9 @@ export function StudioLibrary({
         if (!(await useDraw.getState().flushEdits()))
           throw new Error("Resolve the pending edit first.");
         await useDraw.getState().flushLayout();
-        const source = studioArchitectureExample(example.id);
-        const project = await api.createProject(source.name);
-        try {
-          const result = await api.edit(project.id, 0, [
-            ...source.design.elements.map((element) => ({ op: "addElement" as const, element })),
-            ...source.design.connections.map((connection) => ({
-              op: "connect" as const,
-              connection,
-            })),
-            ...(source.design.architecture
-              ? [{ op: "setArchitecture" as const, architecture: source.design.architecture }]
-              : []),
-          ]);
-          if (!result.ok) throw new Error("The example could not be saved.");
-          await api.putLayout(project.id, source.layout);
-        } catch (error) {
-          // Only this newly created project is owned by the uncommitted insertion.
-          await api.deleteProject(project.id);
-          throw error;
-        }
+        const project = await createExampleProject(example.id);
         await useDraw.getState().open(project.id);
         onClose();
-      } catch (error) {
-        setError(error instanceof Error ? error.message : String(error));
-      } finally {
-        setCreating(false);
-      }
-    } else if (composition) {
-      setCreating(true);
-      try {
-        const current = (await api.architectureLibrary()).find(
-          (entry) => entry.id === composition.id && entry.version === composition.version,
-        );
-        if (current?.state !== "published" || current.contentHash !== composition.contentHash)
-          throw new Error("This composition changed; reopen Library.");
-        if (await onAdd({ type: "composition", entry: current, roles })) onClose();
-        else setError(useDraw.getState().notice?.message ?? "Could not add this composition.");
       } catch (error) {
         setError(error instanceof Error ? error.message : String(error));
       } finally {
@@ -209,20 +98,6 @@ export function StudioLibrary({
     }
   };
   const disabled = busy || creating;
-  if (manage)
-    return (
-      <ArchitectureLibrary
-        studio
-        onClose={() => {
-          setManage(false);
-          void loadSaved();
-        }}
-        onBack={() => {
-          setManage(false);
-          void loadSaved();
-        }}
-      />
-    );
   return (
     <ConfigurationDialog
       title="Library"
@@ -236,12 +111,8 @@ export function StudioLibrary({
           <button type="button" disabled={disabled} onClick={onClose}>
             Cancel
           </button>
-          {definition || preset || example || contextKind || composition ? (
-            <button
-              type="button"
-              disabled={disabled || (compositionPreview && !compositionPreview.ok)}
-              onClick={() => void add()}
-            >
+          {definition || preset || example || contextKind ? (
+            <button type="button" disabled={disabled} onClick={() => void add()}>
               {disabled ? "Adding…" : example ? "Create example project" : "Add"}
             </button>
           ) : null}
@@ -280,15 +151,13 @@ export function StudioLibrary({
               Back to list
             </button>
             <h3>
-              {composition?.metadata.name ??
-                definition?.name ??
+              {definition?.name ??
                 preset?.name ??
                 example?.name ??
                 (contextKind && creationLabel(contextKind))}
             </h3>
             <p>
-              {composition?.metadata.purpose ??
-                definition?.description ??
+              {definition?.description ??
                 preset?.description ??
                 example?.description ??
                 "A context identity; no runtime is created."}
@@ -298,47 +167,6 @@ export function StudioLibrary({
                 2 independent applications · 1 shared queue · 2 relationships. The package groups
                 its members; it adds no runtime.
               </p>
-            ) : null}
-            {composition && compositionPreview ? (
-              <>
-                <p>
-                  Saved composition · {composition.id}@{composition.version}. Adds{" "}
-                  {compositionPreview.additions.filter((item) => item.kind === "container").length}{" "}
-                  applications/resources in one edit. Design only.
-                </p>
-                {compositionPreview.roles
-                  .filter((role) => !role.create)
-                  .map((role) => {
-                    const choice = roles?.[role.id];
-                    return (
-                      <label key={role.id} className="studio-form-field">
-                        {role.name}
-                        <select
-                          value={choice?.mode === "reuse" ? choice.id : ""}
-                          onChange={(event) => {
-                            const value = event.currentTarget.value;
-                            setRoles((current) => ({
-                              ...current,
-                              [role.id]: value
-                                ? { mode: "reuse", id: value }
-                                : { mode: "unfilled" },
-                            }));
-                          }}
-                        >
-                          <option value="">Select an existing dependency</option>
-                          {role.candidates.map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.name} · {item.id}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    );
-                  })}
-                {compositionPreview.errors.length ? (
-                  <p role="alert">{compositionPreview.errors[0]}</p>
-                ) : null}
-              </>
             ) : null}
             {definition || preset ? (
               <p>
@@ -350,13 +178,7 @@ export function StudioLibrary({
                 Select the new object to configure it.
               </p>
             ) : null}
-            {example ? (
-              <p>
-                Creates a separate editable studio project with a pinned goal/source map and
-                explicit C4b obligations. Design only; application runtime generation is
-                unsupported.
-              </p>
-            ) : null}
+            {example ? <p>Creates a separate editable studio project. Design only.</p> : null}
           </section>
         ) : (
           <>
@@ -396,23 +218,6 @@ export function StudioLibrary({
                       </button>
                     ))
                 : null}
-              {active === "Presets" && target === "c2"
-                ? saved
-                    .filter((item) => matches(`${item.metadata.name} ${item.metadata.purpose}`))
-                    .map((item) => (
-                      <button
-                        type="button"
-                        key={`${item.id}@${item.version}`}
-                        onClick={() => {
-                          setRoles({});
-                          setPreview(`saved:${item.id}@${item.version}`);
-                        }}
-                      >
-                        <strong>{item.metadata.name}</strong>
-                        <span>{item.metadata.purpose}</span>
-                      </button>
-                    ))
-                : null}
               {active === "Examples"
                 ? studioArchitectureExamples
                     .filter((item) => matches(`${item.name} ${item.description}`))
@@ -424,31 +229,6 @@ export function StudioLibrary({
                     ))
                 : null}
             </div>
-            {active === "Presets" && target === "c2" ? (
-              <div className="studio-library-footer">
-                <button
-                  type="button"
-                  onClick={() =>
-                    void useDraw
-                      .getState()
-                      .flushEdits()
-                      .then((ok) => {
-                        if (ok) setManage(true);
-                      })
-                  }
-                >
-                  Saved architecture templates
-                </button>
-              </div>
-            ) : null}
-            {libraryProblem && active === "Presets" && target === "c2" ? (
-              <p>
-                Saved compositions could not load.{" "}
-                <button type="button" onClick={() => void loadSaved()}>
-                  Retry loading
-                </button>
-              </p>
-            ) : null}
             {scope.level !== "context" ? (
               <section className="studio-library-existing">
                 <label className="studio-form-field">
@@ -475,7 +255,7 @@ export function StudioLibrary({
                         return (
                           <option key={item.id} value={item.id}>
                             {item.name} ·{" "}
-                            {binding?.settings.kind ?? item.classification?.kind ?? "Legacy"}
+                            {binding?.settings.kind ?? item.classification?.kind ?? "Unbound"}
                             {name ? ` · ${name}` : ""} · {item.id}
                           </option>
                         );

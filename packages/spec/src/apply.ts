@@ -1,36 +1,15 @@
 import { z } from "zod";
-import { unbindArchitecture, validateArchitecture } from "./architecture.ts";
-import { validateContractTransition } from "./architecture-contracts.ts";
-import { validatePatternTransition } from "./architecture-pattern-provenance.ts";
-import { validateBackendBehaviorTransition } from "./backend-behavior.ts";
-import { validateBackendCapabilityTransition } from "./backend-capability-configs.ts";
-import { validateBackendDataTransition } from "./backend-data.ts";
-import { validateBackendEffectsTransition } from "./backend-effects.ts";
-import { validateBackendImplementationTransition } from "./backend-implementations.ts";
-import { validateBackendPolicyTransition } from "./backend-policy.ts";
-import {
-  type Annotation,
-  annotationSchema,
-  capabilityEndpoint,
-  type DesignDocument,
-  designIds,
-  type Element,
-  upgradeDesign,
-} from "./design.ts";
+import { unbindArchitecture } from "./architecture.ts";
+import { type DesignDocument, designIds } from "./design.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
-import type { TemplateLookup } from "./manifest.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
-import { plannedConnectionSchema } from "./planned-capabilities.ts";
 import { pruneStudioAfterDelete } from "./studio-operations.ts";
 import { validateStudio } from "./studio-validation.ts";
-import { sameSubtype, subtypeDiscards } from "./subtype.ts";
-import { reviewTemplateUpgrade } from "./template-upgrade.ts";
 import { validateDesign } from "./validate.ts";
 
 export interface ApplyOptions {
   /** Revision the caller based its edits on. A mismatch is a `REVISION_CONFLICT`. */
   baseRevision?: number;
-  allowSubtypeConfirmation?: boolean;
 }
 
 export type ApplyResult =
@@ -52,7 +31,6 @@ class OpError extends Error {
 export function applyOperations(
   design: DesignDocument,
   ops: readonly OperationInput[],
-  lookup: TemplateLookup,
   options: ApplyOptions = {},
 ): ApplyResult {
   if (options.baseRevision !== undefined && options.baseRevision !== design.revision) {
@@ -82,62 +60,24 @@ export function applyOperations(
     };
   }
 
-  if (design.recipe && parsed.data.some((op) => op.op === "upgradeTemplate"))
-    return {
-      ok: false,
-      errors: [
-        finding(
-          "INVALID_OPERATION",
-          "A protected recipe requires a separately reviewed recipe upgrade; detaching it in this batch does not authorize a template upgrade.",
-        ),
-      ],
-    };
-  const draft = upgradeDesign(design);
+  const draft = structuredClone(design);
   try {
     parsed.data.forEach((op, index) => {
-      applyOne(draft, op, index, options, lookup);
+      applyOne(draft, op, index);
     });
   } catch (error) {
     if (error instanceof OpError) return { ok: false, errors: [error.finding] };
     throw error;
   }
 
-  const contractErrors = [
-    ...validateBackendDataTransition(design, draft),
-    ...validateBackendImplementationTransition(design, draft),
-    ...validateBackendPolicyTransition(design, draft),
-    ...validateBackendBehaviorTransition(design, draft),
-    ...validateBackendEffectsTransition(design, draft),
-    ...validateBackendCapabilityTransition(design, draft),
-    ...validateContractTransition(design, draft),
-    ...validatePatternTransition(design, draft),
-  ];
-  if (contractErrors.length) return { ok: false, errors: contractErrors };
-  const before = new Set(validateDesign(design, lookup).filter(isStructural).map(findingKey));
-  if (parsed.data.some((op) => op.op === "setArchitecture")) {
-    const previous = new Set(
-      validateArchitecture(design).map((f) => architectureBindingKey(design, f)),
-    );
-    const newMissing = validateArchitecture(draft).filter(
-      (f) =>
-        f.code === "ARCHITECTURE_UNBOUND" &&
-        f.target.path?.includes("components") &&
-        !previous.has(architectureBindingKey(draft, f)),
-    );
-    if (newMissing.length)
-      return {
-        ok: false,
-        errors: newMissing.map((f) => finding("CONFIG_INVALID", f.message, f.target)),
-      };
-  }
-  const findings = validateDesign(draft, lookup);
+  const before = new Set(validateDesign(design).filter(isStructural).map(findingKey));
+  const findings = validateDesign(draft);
   // Studio has no historical invalid-data allowance: every resulting binding must be sound,
   // including when replacing a bad value at the same finding path or through setArchitecture.
   const studioErrors = validateStudio(draft).filter(isStructural);
   if (studioErrors.length) return { ok: false, errors: studioErrors };
   const introduced = findings.filter((f) => isStructural(f) && !before.has(findingKey(f)));
   if (introduced.length > 0) return { ok: false, errors: introduced };
-
   draft.revision = design.revision + 1;
   return { ok: true, design: draft, findings };
 }
@@ -146,23 +86,7 @@ function findingKey(f: Finding): string {
   return `${f.code} ${JSON.stringify(f.target)}`;
 }
 
-// Display renames do not change a lost binding's identity.
-function architectureBindingKey(design: DesignDocument, f: Finding): string {
-  const component = design.architecture?.components?.find((item) => item.id === f.target.path?.[2]);
-  const message =
-    component && f.message.startsWith(`${component.name}: `)
-      ? f.message.slice(component.name.length + 2)
-      : f.message;
-  return `${findingKey(f)} ${message}`;
-}
-
-function applyOne(
-  design: DesignDocument,
-  op: Operation,
-  index: number,
-  options: ApplyOptions,
-  lookup: TemplateLookup,
-): void {
+function applyOne(design: DesignDocument, op: Operation, index: number): void {
   const missing = (what: string, id: string) =>
     new OpError(finding("UNKNOWN_REFERENCE", `There is no ${what} "${id}".`, { op: index }));
   const ensureFree = (id: string) => {
@@ -179,13 +103,10 @@ function applyOne(
     if (!element) throw missing("element", id);
     return element;
   };
-  const findAttachment = (id: string) => {
-    for (const element of design.elements) {
-      const attachment = element.attachments.find((a) => a.id === id);
-      if (attachment) return { element, attachment };
-    }
-    throw missing("attachment", id);
-  };
+  const needsArchitecture = (what: string) =>
+    new OpError(
+      finding("INVALID_OPERATION", `Create an architecture system before ${what}.`, { op: index }),
+    );
 
   switch (op.op) {
     case "setArchitecture": {
@@ -194,140 +115,27 @@ function applyOne(
       return;
     }
     case "updateArchitectureSystem": {
-      if (!design.architecture)
-        throw new OpError(
-          finding("INVALID_OPERATION", "Create an architecture system before updating its text.", {
-            op: index,
-          }),
-        );
+      if (!design.architecture) throw needsArchitecture("updating its text");
       if (op.name !== undefined) design.architecture.system.name = op.name;
       if (op.description !== undefined) design.architecture.system.description = op.description;
       return;
     }
     case "setStudio": {
-      if (!design.architecture)
-        throw new OpError(
-          finding(
-            "INVALID_OPERATION",
-            "Create an architecture system before setting studio intent.",
-            {
-              op: index,
-            },
-          ),
-        );
+      if (!design.architecture) throw needsArchitecture("setting studio intent");
       if (op.studio === null) delete design.architecture.studio;
       else design.architecture.studio = op.studio;
       return;
     }
-    case "setRecipe": {
-      if (op.recipe) design.recipe = op.recipe;
-      else delete design.recipe;
-      return;
-    }
     case "addElement": {
       ensureFree(op.element.id);
-      for (const attachment of op.element.attachments) ensureFree(attachment.id);
       design.elements.push(op.element);
       return;
     }
     case "updateElement": {
       const element = findElement(op.id);
-      if (
-        op.template &&
-        element.template?.id === op.template.id &&
-        !sameSubtype(element.template, op.template)
-      )
-        throw new OpError(
-          finding(
-            "INVALID_OPERATION",
-            "Use upgradeTemplate for a reviewed same-template version change.",
-            { op: index },
-          ),
-        );
-      if (
-        op.template !== undefined &&
-        !sameSubtype(element.template, op.template) &&
-        subtypeDiscards(design, element).length
-      ) {
-        throw new OpError(
-          finding(
-            "INVALID_OPERATION",
-            "Use changeSubtype to review discarded configuration, components and connections.",
-            { op: index },
-          ),
-        );
-      }
       if (op.name !== undefined) element.name = op.name;
-      if (op.template !== undefined) element.template = op.template;
-      if (op.config !== undefined) element.config = op.config;
       if (op.description !== undefined) element.description = op.description;
-      if (op.technology !== undefined) element.technology = op.technology;
       if (op.classification !== undefined) element.classification = op.classification;
-      return;
-    }
-    case "upgradeTemplate": {
-      const element = findElement(op.id);
-      if (op.revision !== design.revision || !sameSubtype(element.template, op.from))
-        throw new OpError(
-          finding(
-            "REVISION_CONFLICT",
-            "This template upgrade review is stale. Close and review the current design before upgrading.",
-            { op: index, element: op.id },
-          ),
-        );
-      const review = reviewTemplateUpgrade(design, op.id, op.to, lookup);
-      if (!review.ok)
-        throw new OpError(
-          finding("INVALID_OPERATION", review.reason, { op: index, element: op.id }),
-        );
-      element.template = { ...op.to };
-      return;
-    }
-    case "changeSubtype": {
-      const element = findElement(op.id);
-      if (sameSubtype(element.template, op.template)) return;
-      if (element.template && op.template?.id === element.template.id)
-        throw new OpError(
-          finding(
-            "INVALID_OPERATION",
-            "Use upgradeTemplate for a reviewed same-template version change. Unsupported versions cannot use the destructive subtype path.",
-            { op: index },
-          ),
-        );
-      const discarded = subtypeDiscards(design, element);
-      if (
-        discarded.length &&
-        (options.allowSubtypeConfirmation === false ||
-          op.confirmation?.revision !== design.revision ||
-          JSON.stringify(op.confirmation.discarded) !== JSON.stringify(discarded))
-      ) {
-        throw new OpError(
-          finding(
-            "INVALID_OPERATION",
-            `Subtype change requires confirmation at revision ${design.revision}. Discarded: ${discarded.join("; ")}. Review and confirm this change in the editor.`,
-            { op: index },
-          ),
-        );
-      }
-      unbindArrows(
-        design,
-        element.attachments.map((a) => a.id),
-      );
-      element.template = op.template;
-      delete element.planned;
-      element.config = {};
-      element.attachments = [];
-      const removedConnections = design.connections.filter(
-        (c) => c.from.element === element.id || c.to.element === element.id,
-      );
-      design.connections = design.connections.filter(
-        (c) => c.from.element !== element.id && c.to.element !== element.id,
-      );
-      pruneStudioAfterDelete(
-        design,
-        [],
-        removedConnections.map((item) => item.id),
-      );
       return;
     }
     case "removeElement": {
@@ -340,7 +148,6 @@ function applyOne(
         (c) => c.from.element !== op.id && c.to.element !== op.id,
       );
       unbindArchitecture(design, element.id);
-      unbindArrows(design, [element.id, ...element.attachments.map((a) => a.id)]);
       pruneStudioAfterDelete(
         design,
         [op.id],
@@ -348,78 +155,14 @@ function applyOne(
       );
       return;
     }
-    case "addAttachment": {
-      const element = findElement(op.element);
-      ensureFree(op.attachment.id);
-      element.attachments.push(op.attachment);
-      return;
-    }
-    case "updateAttachment": {
-      const { attachment } = findAttachment(op.id);
-      if (op.template !== undefined) attachment.template = op.template;
-      if (op.config !== undefined) attachment.config = op.config;
-      return;
-    }
-    case "removeAttachment": {
-      const { element } = findAttachment(op.id);
-      const removedConnections = design.connections.filter(
-        (c) =>
-          capabilityEndpoint(c, "from").attachment === op.id ||
-          capabilityEndpoint(c, "to").attachment === op.id,
-      );
-      element.attachments = element.attachments.filter((a) => a.id !== op.id);
-      design.connections = design.connections.filter(
-        (c) =>
-          capabilityEndpoint(c, "from").attachment !== op.id &&
-          capabilityEndpoint(c, "to").attachment !== op.id,
-      );
-      unbindArrows(design, [op.id]);
-      pruneStudioAfterDelete(
-        design,
-        [],
-        removedConnections.map((item) => item.id),
-      );
-      return;
-    }
     case "connect": {
       ensureFree(op.connection.id);
-      design.connections.push(
-        upgradeDesign({ ...design, schemaVersion: 1, connections: [op.connection] })
-          .connections[0] as typeof op.connection,
-      );
-      return;
-    }
-    case "updateConnection": {
-      const connection = design.connections.find((item) => item.id === op.id);
-      if (!connection) throw missing("connection", op.id);
-      const patch = Object.fromEntries(
-        (["label", "protocol", "interaction"] as const)
-          .filter((field) => op[field] !== undefined)
-          .map((field) => [field, op[field]]),
-      );
-      if (connection.planned) {
-        const parsed = plannedConnectionSchema.safeParse({ ...connection.planned, ...patch });
-        if (!parsed.success)
-          throw new OpError(
-            finding(
-              "INVALID_OPERATION",
-              "A planned relationship needs a nonempty label and protocol.",
-            ),
-          );
-        connection.planned = parsed.data;
-      } else Object.assign(connection, patch);
+      design.connections.push(op.connection);
       return;
     }
     case "updatePlannedConnection": {
       const connection = design.connections.find((item) => item.id === op.id);
       if (!connection) throw missing("connection", op.id);
-      if (!connection.planned)
-        throw new OpError(
-          finding("INVALID_OPERATION", "This relationship has no planned fields to edit.", {
-            op: index,
-            connection: op.id,
-          }),
-        );
       for (const field of ["label", "protocol", "interaction", "security"] as const)
         if (op[field] !== undefined) Object.assign(connection.planned, { [field]: op[field] });
       return;
@@ -430,57 +173,5 @@ function applyOne(
       pruneStudioAfterDelete(design, [], [op.id]);
       return;
     }
-    case "setNotes": {
-      const owner: Element | { notes: string } | undefined =
-        design.elements.find((e) => e.id === op.id) ??
-        design.elements.flatMap((e) => e.attachments).find((a) => a.id === op.id);
-      if (!owner) throw missing("element or attachment", op.id);
-      owner.notes = op.notes;
-      return;
-    }
-    case "addAnnotation": {
-      ensureFree(op.annotation.id);
-      design.annotations.push(op.annotation);
-      return;
-    }
-    case "updateAnnotation": {
-      const position = design.annotations.findIndex((a) => a.id === op.id);
-      const current = design.annotations[position];
-      if (!current) throw missing("annotation", op.id);
-      const { op: _op, id: _id, ...changes } = op;
-      const merged: Record<string, unknown> = { ...current };
-      for (const [key, value] of Object.entries(changes)) {
-        if (value === null) delete merged[key];
-        else if (value !== undefined) merged[key] = value;
-      }
-      const result = annotationSchema.safeParse(merged);
-      if (!result.success) {
-        throw new OpError(
-          finding(
-            "INVALID_OPERATION",
-            `A ${current.kind} annotation can't take ${Object.keys(changes).join(", ")}: ${result.error.issues[0]?.message}`,
-            { op: index, annotation: op.id },
-          ),
-        );
-      }
-      design.annotations[position] = result.data;
-      return;
-    }
-    case "removeAnnotation": {
-      if (!design.annotations.some((a) => a.id === op.id)) throw missing("annotation", op.id);
-      design.annotations = design.annotations.filter((a) => a.id !== op.id);
-      unbindArrows(design, [op.id]);
-      return;
-    }
   }
-}
-
-function unbindArrows(design: DesignDocument, ids: readonly string[]): void {
-  design.annotations = design.annotations.map((annotation): Annotation => {
-    if (annotation.kind !== "arrow") return annotation;
-    const next = { ...annotation };
-    if (next.from !== undefined && ids.includes(next.from)) delete next.from;
-    if (next.to !== undefined && ids.includes(next.to)) delete next.to;
-    return next;
-  });
 }

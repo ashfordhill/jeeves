@@ -1,8 +1,8 @@
-import { applyOperations, noTemplates, validateDesign } from "@jeeves/spec";
+import { applyOperations, validateDesign } from "@jeeves/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ChatEvent, ChatTurn } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
-import { fakeApi, TEST_PROJECT } from "../test-api.ts";
+import { fakeApi, serviceOps, TEST_PROJECT } from "../test-api.ts";
 import { mediaTypeOf, useChat } from "./store.ts";
 
 const turn = (patch: Partial<ChatTurn>): ChatTurn => ({
@@ -38,23 +38,14 @@ describe("chat store", () => {
     posted = [];
     // The fake server: a chat turn adds one element as one edit, then streams the result.
     chatResponse = () => {
-      const result = applyOperations(
-        api.state.design,
-        [
-          {
-            op: "addElement",
-            element: { id: "api", name: "API", template: { id: "http-service", version: "0.1.0" } },
-          },
-        ],
-        noTemplates,
-      );
+      const result = applyOperations(api.state.design, serviceOps(api.state.design, "api", "API"));
       if (!result.ok) throw new Error("bad fixture");
       api.state.done.push({ before: api.state.design, after: result.design });
       api.state.design = result.design;
       const state = {
         projectId: TEST_PROJECT,
         design: result.design,
-        findings: validateDesign(result.design, noTemplates),
+        findings: validateDesign(result.design),
         history: { canUndo: true, canRedo: false, latestEdit: api.state.done.length },
       };
       const done = turn({ operationId: api.state.done.length, changed: ["api"] });
@@ -63,15 +54,10 @@ describe("chat store", () => {
         { type: "text", delta: "Added " },
         {
           type: "activity",
-          activity: { tool: "applyOperations", ok: true, summary: "Prepared 1 change" },
+          activity: { tool: "applyStudioCommands", ok: true, summary: "Prepared 1 change" },
         },
         { type: "text", delta: "it." },
-        {
-          type: "done",
-          turn: done,
-          state,
-          layout: { schemaVersion: 1, items: { api: { x: 400, y: 80 } } },
-        },
+        { type: "done", turn: done, state },
       ]);
     };
     vi.stubGlobal(
@@ -103,26 +89,24 @@ describe("chat store", () => {
     vi.unstubAllGlobals();
   });
 
-  it("streams a turn, hands the design and placed layout to the board, and highlights changes", async () => {
-    useDraw.getState().focus({ nodes: [] });
+  it("streams a turn and hands the design to the studio as one undo step", async () => {
     useChat.getState().setDraft("Add a service");
     const sending = useChat.getState().send();
     expect(useChat.getState().live?.message).toBe("Add a service");
     expect(useChat.getState().draft).toBe("");
     await sending;
 
-    expect(posted).toEqual([{ message: "Add a service", fileIds: [], selection: [] }]);
+    expect(posted).toEqual([
+      { message: "Add a service", fileIds: [], selection: [], baseRevision: 0 },
+    ]);
     const chat = useChat.getState();
     expect(chat.live).toBeUndefined();
     expect(chat.turns).toMatchObject([{ reply: "Added it.", changed: ["api"] }]);
 
     const draw = useDraw.getState();
     expect(draw.loaded?.design.elements.map((e) => e.id)).toEqual(["api"]);
-    expect(draw.loaded?.layout.items.api).toEqual({ x: 400, y: 80 });
-    expect(draw.selection).toEqual({ nodes: ["api"], edges: [] });
-    expect(draw.focusRequest).toMatchObject({ nodes: ["api"], zoom: true });
 
-    // The turn's undo is the board's newest design step.
+    // The turn's undo is the studio's newest design step.
     expect(await useDraw.getState().undoEdit(99)).toBe(false);
     expect(await useDraw.getState().undoEdit(1)).toBe(true);
     expect(useDraw.getState().loaded?.design.elements).toEqual([]);

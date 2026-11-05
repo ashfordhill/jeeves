@@ -2,7 +2,6 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
-  legacyStudioKind,
   type StudioComponentDefinition,
   type StudioComponentField,
   type StudioComponentSettings,
@@ -406,7 +405,7 @@ function ComponentDraftForm({
                 link.to.kind === "element"
                   ? name(link.to.id)
                   : componentName(outgoing ? link.to.id : link.from);
-              const protocol = via ? (via.planned?.protocol ?? via.protocol) : "In process";
+              const protocol = via ? via.planned.protocol : "In process";
               return (
                 <div className="studio-dependency-row" key={link.id}>
                   <button
@@ -421,7 +420,7 @@ function ComponentDraftForm({
                   >
                     {outgoing ? `→ ${other}` : `← ${other}`}
                     <span>
-                      {link.label ?? via?.planned?.label ?? via?.label ?? "Uses"}
+                      {link.label ?? via?.planned.label ?? "Uses"}
                       {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
                       {component.settings.kind === "external-call" && via
                         ? ` · ${retryText(binding?.settings)}`
@@ -571,20 +570,13 @@ function TargetForm({
       .filter(
         (item) =>
           item.from.element === ref.id &&
-          !item.from.attachment &&
-          !item.to.attachment &&
-          !item.config?.fromCapability &&
-          !item.config?.toCapability &&
-          (design.architecture?.studio?.elements.find(
+          design.architecture?.studio?.elements.find(
             (binding) => binding.element === item.to.element,
-          )?.settings.kind ??
-            design.elements
-              .filter((element) => element.id === item.to.element)
-              .map(legacyStudioKind)[0]) === kind,
+          )?.settings.kind === kind,
       )
       .map((item) => ({
         value: item.id,
-        label: `${design.elements.find((element) => element.id === item.to.element)?.name} · ${item.planned?.label ?? item.label ?? "Uses"}${item.planned?.protocol || item.protocol ? ` (${item.planned?.protocol ?? item.protocol})` : ""}`,
+        label: `${design.elements.find((element) => element.id === item.to.element)?.name} · ${item.planned.label} (${item.planned.protocol})`,
       }));
   };
   return (
@@ -665,13 +657,13 @@ function TargetForm({
                 (element) => element.id === item.from.element,
               )?.name;
               const to = design.elements.find((element) => element.id === item.to.element)?.name;
-              const protocol = item.planned?.protocol ?? item.protocol;
+              const protocol = item.planned.protocol;
               return (
                 <div className="studio-dependency-row" key={item.id}>
                   <button type="button" onClick={() => onConnection(item.id)}>
                     {from} → {to}
                     <span>
-                      {item.planned?.label ?? item.label ?? "Uses"}
+                      {item.planned.label}
                       {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
                     </span>
                   </button>

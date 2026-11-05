@@ -1,7 +1,7 @@
 /**
- * Design chat (PLAN §7) in the Draw rail: the conversation, streamed replies, `askUser` choice
- * cards, what each turn changed (click to show it on the board), an Undo button per turn, and a
- * composer with file attachments. Everything works by mouse; Ctrl/Cmd+Enter also sends.
+ * Design chat (PLAN §7) in the studio rail: the conversation, streamed replies, `askUser` choice
+ * cards, what each turn changed, an Undo button per turn, and a composer with file attachments.
+ * Everything works by mouse; Ctrl/Cmd+Enter also sends.
  */
 import { Button, FileButton, Loader, Textarea } from "@mantine/core";
 import {
@@ -14,7 +14,7 @@ import {
   IconSend,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../draw/api.ts";
 import { useDraw } from "../draw/store.ts";
 import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
@@ -22,7 +22,7 @@ import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
 const EXAMPLES = [
   "Make me a link shortener like bit.ly",
   "Add a web app that calls the selected service",
-  "What's missing before I can generate?",
+  "What is still undecided in this design?",
 ];
 
 function FileChips({ files }: { files: FileInfo[] }) {
@@ -59,12 +59,10 @@ function ActivityList({ activity }: { activity: ChatActivity[] }) {
   );
 }
 
-/** Buttons for the items a turn changed; clicking one shows it on the board. */
+/** The items a turn changed that still exist. */
 function ChangedItems({ ids }: { ids: string[] }) {
   const design = useDraw((s) => s.loaded?.design);
-  const focus = useDraw((s) => s.focus);
   if (!design || ids.length === 0) return null;
-  const connections = new Set(design.connections.map((c) => c.id));
   const nameOf = (id: string) => design.elements.find((e) => e.id === id)?.name ?? id;
   const label = (id: string) => {
     const connection = design.connections.find((c) => c.id === id);
@@ -73,31 +71,16 @@ function ChangedItems({ ids }: { ids: string[] }) {
       : nameOf(id);
   };
   const present = ids.filter(
-    (id) =>
-      connections.has(id) ||
-      design.elements.some((e) => e.id === id) ||
-      design.annotations.some((a) => a.id === id),
+    (id) => design.connections.some((c) => c.id === id) || design.elements.some((e) => e.id === id),
   );
   if (present.length === 0) return null;
-  const select = (only?: string) => {
-    const pick = only ? [only] : present;
-    focus(
-      {
-        nodes: pick.filter((id) => !connections.has(id)),
-        edges: pick.filter((id) => connections.has(id)),
-      },
-      { zoom: true },
-    );
-  };
   return (
     <div className="chat-changed">
-      <button type="button" className="chat-changed-all" onClick={() => select()}>
-        Changed:
-      </button>
+      <span className="chat-changed-all">Changed:</span>
       {present.map((id) => (
-        <button key={id} type="button" className="chat-chip" onClick={() => select(id)}>
+        <span key={id} className="chat-chip">
           {label(id)}
-        </button>
+        </span>
       ))}
     </div>
   );
@@ -127,42 +110,6 @@ function UndoTurn({ operationId }: { operationId: number }) {
 
 function QuestionCard({ question, active }: { question: ChatQuestion; active: boolean }) {
   const send = useChat((s) => s.send);
-  const edit = useDraw((s) => s.edit);
-  const revision = useDraw((s) => s.loaded?.design.revision);
-  const [resolved, setResolved] = useState(false);
-  const review = question.subtypeReview;
-  if (review)
-    return (
-      <fieldset
-        className="chat-question"
-        disabled={!active || resolved || revision !== review.revision}
-      >
-        <legend>{question.question}</legend>
-        <Button
-          size="xs"
-          variant="default"
-          onClick={async () => {
-            const { revision, discarded, id, template } = review;
-            if (
-              await edit([
-                { op: "changeSubtype", id, template, confirmation: { revision, discarded } },
-              ])
-            )
-              setResolved(true);
-          }}
-        >
-          Confirm subtype change
-        </Button>{" "}
-        <Button size="xs" variant="default" onClick={() => setResolved(true)}>
-          Cancel
-        </Button>
-        {resolved ? (
-          <p>Review closed.</p>
-        ) : revision !== review.revision ? (
-          <p>The design changed; request a fresh review.</p>
-        ) : null}
-      </fieldset>
-    );
   return (
     <fieldset className="chat-question" disabled={!active}>
       <legend>{question.question}</legend>
@@ -340,7 +287,7 @@ function Composer() {
   );
 }
 
-export function ChatPanel({ profile }: { profile?: "studio" }) {
+export function ChatPanel() {
   const projectId = useDraw((s) => s.loaded?.project.id);
   const load = useChat((s) => s.load);
   const status = useChat((s) => s.status);
@@ -351,8 +298,8 @@ export function ChatPanel({ profile }: { profile?: "studio" }) {
   const scroller = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (projectId) void load(projectId, profile);
-  }, [projectId, profile, load]);
+    if (projectId) void load(projectId);
+  }, [projectId, load]);
 
   // Keep the newest message in view as turns arrive and replies stream.
   const liveLength = live ? live.reply.length + live.activity.length : -1;

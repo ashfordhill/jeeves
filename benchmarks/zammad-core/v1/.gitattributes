@@ -1,2 +1,0 @@
-# Signed MIME fixture: preserve original CRLF bytes through checkout and diffs.
-inbound.eml binary

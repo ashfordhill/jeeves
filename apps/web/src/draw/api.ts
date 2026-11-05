@@ -2,19 +2,7 @@
  * Thin client for the design API (S3). Routes live under /api, which the Vite proxy strips.
  * Response shapes mirror apps/server/src/routes/*.ts.
  */
-import type {
-  ArchitectureLibraryEntry,
-  DesignDocument,
-  Finding,
-  LayoutDocument,
-  LibraryInsertInput,
-  LibraryMetadata,
-  OperationInput,
-  PatternPreview,
-  StudioCommand,
-  SubtypeReview,
-} from "@jeeves/spec";
-import { buildStudioCommand } from "@jeeves/spec";
+import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
 
 export type Project = {
   id: string;
@@ -43,7 +31,6 @@ export type ChatQuestion = {
   question: string;
   choices: string[];
   allowFreeText: boolean;
-  subtypeReview?: SubtypeReview;
 };
 export type ChatActivity = { tool: string; ok: boolean; summary: string };
 
@@ -76,7 +63,7 @@ export type ChatEvent =
   | { type: "turn"; turn: ChatTurn }
   | { type: "text"; delta: string }
   | { type: "activity"; activity: ChatActivity }
-  | { type: "done"; turn: ChatTurn; state: DesignState; layout: LayoutDocument };
+  | { type: "done"; turn: ChatTurn; state: DesignState };
 
 export type ModelRole = "designChat";
 
@@ -133,46 +120,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  architectureLibrary: () =>
-    request<{ entries: ArchitectureLibraryEntry[] }>("/architecture-library?all=true").then(
-      (r) => r.entries,
-    ),
-  saveArchitectureTemplate: (input: {
-    id: string;
-    version: string;
-    name: string;
-    purpose: string;
-    projectId: string;
-    baseRevision: number;
-    selection: { elements: string[]; components: string[] };
-  }) =>
-    request<{ entry: ArchitectureLibraryEntry }>("/architecture-library", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }).then((r) => r.entry),
-  changeLibrary: (
-    id: string,
-    version: string,
-    input: {
-      action: "edit" | "publish" | "retire" | "delete";
-      draftRevision: number;
-      metadata?: LibraryMetadata;
-    },
-  ) =>
-    request<{ entry?: ArchitectureLibraryEntry }>(`/architecture-library/${id}/${version}/change`, {
-      method: "POST",
-      body: JSON.stringify(input),
-    }).then((r) => r.entry),
-  cloneLibrary: (id: string, version: string, next: string) =>
-    request<{ entry: ArchitectureLibraryEntry }>(`/architecture-library/${id}/${version}/clone`, {
-      method: "POST",
-      body: JSON.stringify({ version: next }),
-    }).then((r) => r.entry),
-  previewLibrary: (projectId: string, input: LibraryInsertInput) =>
-    request<PatternPreview>(`/projects/${projectId}/architecture-library/preview`, {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
   listProjects: () => request<{ projects: Project[] }>("/projects").then((r) => r.projects),
 
   deleteProject: (id: string) => request<void>(`/projects/${id}`, { method: "DELETE" }),
@@ -205,12 +152,6 @@ export const api = {
   edit: (id: string, baseRevision: number, ops: OperationInput[]) =>
     change(`/projects/${id}/operations`, { baseRevision, ops, source: "canvas" }),
 
-  studioCommand: (id: string, accepted: DesignDocument, command: StudioCommand) =>
-    change(`/projects/${id}/operations`, {
-      ...buildStudioCommand(accepted, command),
-      source: "canvas",
-    }),
-
   undo: (id: string, baseRevision: number) =>
     change(`/projects/${id}/undo`, { baseRevision, source: "canvas" }),
 
@@ -227,8 +168,7 @@ export const api = {
       message: string;
       fileIds: string[];
       selection: string[];
-      profile?: "studio";
-      baseRevision?: number;
+      baseRevision: number;
     },
     onEvent: (event: ChatEvent) => void,
   ) => {

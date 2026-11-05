@@ -1,11 +1,7 @@
 /** Relationship presentation and accounting, never semantic wiring or shared editable settings. */
-import { componentConnections } from "./architecture.ts";
-import { containerClassification } from "./architecture-choices.ts";
 import type { Connection, DesignDocument } from "./design.ts";
-import { capabilityEndpoint } from "./design.ts";
 import { connectionPresentation, type RelationshipInteraction } from "./relationship-display.ts";
 import type { StudioComponentConnection } from "./studio-components.ts";
-import { legacyStudioKind } from "./studio-legacy.ts";
 import { studioApplicationKinds } from "./studio-model.ts";
 import type { StudioScopeProjection, StudioSemanticRef, StudioViews } from "./studio-view.ts";
 
@@ -18,10 +14,6 @@ export interface StudioRelationshipProvenance {
   contextRelationshipIds: string[];
   componentRelationshipIds: string[];
   componentIds: string[];
-  bindingIds: string[];
-  interfaceIds: string[];
-  contractRefs: { id: string; version: string }[];
-  capabilityRefs: { element: string; attachment: string }[];
 }
 export interface StudioRelationshipMember extends StudioRelationshipProvenance {
   id: string;
@@ -75,8 +67,6 @@ export interface StudioRelationshipSource {
     scopeKey: string;
     member: StudioRelationshipMember;
   }[];
-  /** Unconfigurable internals remain source, rather than fabricated owner-to-owner arrows. */
-  componentRelationships: StudioRelationshipMember[];
 }
 
 const sorted = (items: readonly string[]) => [...new Set(items)].sort();
@@ -101,10 +91,6 @@ const empty = (): StudioRelationshipProvenance => ({
   contextRelationshipIds: [],
   componentRelationshipIds: [],
   componentIds: [],
-  bindingIds: [],
-  interfaceIds: [],
-  contractRefs: [],
-  capabilityRefs: [],
 });
 function provenance(
   members: readonly StudioRelationshipProvenance[],
@@ -117,10 +103,6 @@ function provenance(
     contextRelationshipIds: sorted(members.flatMap((m) => m.contextRelationshipIds)),
     componentRelationshipIds: sorted(members.flatMap((m) => m.componentRelationshipIds)),
     componentIds: sorted(members.flatMap((m) => m.componentIds)),
-    bindingIds: sorted(members.flatMap((m) => m.bindingIds)),
-    interfaceIds: sorted(members.flatMap((m) => m.interfaceIds)),
-    contractRefs: unique(members.flatMap((m) => m.contractRefs)),
-    capabilityRefs: unique(members.flatMap((m) => m.capabilityRefs)),
   };
 }
 
@@ -131,41 +113,17 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
   const bindings = new Map(studio?.elements.map((b) => [b.element, b]));
   const connectionSettings = new Map(studio?.connections.map((b) => [b.connection, b.settings]));
   const queues = new Set(
-    design.elements
-      .filter((e) => (bindings.get(e.id)?.settings.kind ?? legacyStudioKind(e)) === "queue")
-      .map((e) => e.id),
+    design.elements.filter((e) => bindings.get(e.id)?.settings.kind === "queue").map((e) => e.id),
   );
   const membership = new Map(studio?.packages.flatMap((p) => p.members.map((id) => [id, p.id])));
-  const components = new Map(
-    architecture?.components?.map((component) => [component.id, component]),
-  );
-  const componentUses = new Map(
-    architecture?.components?.map((component) => [
-      component.id,
-      componentConnections(design, component),
-    ]),
-  );
   const connectionMembers = new Map<string, StudioRelationshipMember>();
   const source: StudioRelationshipSource = {
     accounting: [],
     unresolved: [],
     suppressed: [],
-    componentRelationships: [],
-  };
-  const bindingRefs = (kind: "connection" | "component-relationship", id: string) => {
-    const matches = ordered(
-      architecture?.bindings?.filter(
-        (b) => b.relationship.kind === kind && b.relationship.id === id,
-      ) ?? [],
-    );
-    return {
-      bindingIds: matches.map((b) => b.id),
-      interfaceIds: sorted(matches.flatMap((b) => [b.provided, b.required])),
-      contractRefs: unique(matches.map((b) => ({ ...b.contract }))),
-    };
   };
   for (const connection of ordered(design.connections)) {
-    const display = connectionPresentation(connection, design);
+    const display = connectionPresentation(connection);
     connectionMembers.set(connection.id, {
       ...empty(),
       id: `connection:${connection.id}`,
@@ -179,35 +137,6 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
       queueIds: sorted(
         [connection.from.element, connection.to.element].filter((id) => queues.has(id)),
       ),
-      componentIds: sorted(
-        [...componentUses].filter(([, uses]) => uses.has(connection.id)).map(([id]) => id),
-      ),
-      capabilityRefs: unique(
-        (["from", "to"] as const).flatMap((side) => {
-          const endpoint = capabilityEndpoint(connection, side);
-          return endpoint.attachment
-            ? [{ element: endpoint.element, attachment: endpoint.attachment }]
-            : [];
-        }),
-      ),
-      ...bindingRefs("connection", connection.id),
-    });
-  }
-  for (const relation of ordered(architecture?.componentRelationships ?? [])) {
-    const from = components.get(relation.from),
-      to = components.get(relation.to);
-    source.componentRelationships.push({
-      ...empty(),
-      id: `component:${relation.id}`,
-      kind: "component",
-      action: relation.description,
-      protocols: relation.protocol ? [relation.protocol] : [],
-      interactions: relation.interaction ? [relation.interaction] : [],
-      sourceRefs: from ? [elementRef(from.element)] : [],
-      targetRefs: to ? [elementRef(to.element)] : [],
-      componentIds: sorted([relation.from, relation.to]),
-      componentRelationshipIds: [relation.id],
-      ...bindingRefs("component-relationship", relation.id),
     });
   }
   const issue = (reason: StudioRelationshipIssue["reason"], member: StudioRelationshipMember) => {
@@ -357,23 +286,9 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
         );
       }
   }
-  // Roles come only from an explicit studio setting or an unambiguous existing binding.
-  // Names, labels, arrow orientation alone and asynchronous intent cannot imply a role.
-  const channelRole = (connection: Connection) => {
-    const roles = sorted(
-      architecture?.bindings
-        ?.filter(
-          (b) =>
-            b.relationship.kind === "connection" &&
-            b.relationship.id === connection.id &&
-            (b.role === "publish" || b.role === "consume"),
-        )
-        .map((b) => b.role) ?? [],
-    );
-    const declared = connectionSettings.get(connection.id)?.channelUse;
-    if (declared && roles.some((role) => role !== declared)) return undefined;
-    return declared ?? (roles.length === 1 ? roles[0] : undefined);
-  };
+  // Roles come only from the explicit studio setting. Names, labels, arrow orientation and
+  // asynchronous intent cannot imply a role.
+  const channelRole = (connection: Connection) => connectionSettings.get(connection.id)?.channelUse;
   for (const queueId of [...queues].sort()) {
     const links = ordered(
       design.connections.filter((c) => c.from.element === queueId || c.to.element === queueId),
@@ -387,25 +302,16 @@ export function withStudioRelationships(design: DesignDocument, views: StudioVie
         issue("ambiguous-channel-role", member);
         continue;
       }
-      // Old bindings can declare consumption on an application→queue dependency. Preserve that
-      // original C3 direction; the explicit role determines C2 message flow. New studio roles must
-      // follow the studio message-flow convention, enforced independently at the semantic boundary.
+      // Studio roles follow the message-flow convention: publish points at the queue, consume
+      // away from it.
       const other =
         connection.from.element === queueId ? connection.to.element : connection.from.element;
-      const application = design.elements.find((e) => e.id === other);
-      const applicationBinding = bindings.get(other);
-      const validApplication =
-        application &&
-        (applicationBinding
-          ? studioApplicationKinds.some((kind) => kind === applicationBinding.settings.kind)
-          : containerClassification(application).kind === "Application");
+      const applicationKind = bindings.get(other)?.settings.kind;
       if (
-        !validApplication ||
-        queues.has(other) ||
-        (connectionSettings.get(connection.id)?.channelUse &&
-          (role === "publish"
-            ? connection.to.element !== queueId
-            : connection.from.element !== queueId))
+        !studioApplicationKinds.some((kind) => kind === applicationKind) ||
+        (role === "publish"
+          ? connection.to.element !== queueId
+          : connection.from.element !== queueId)
       ) {
         issue("invalid-channel-direction", member);
         continue;

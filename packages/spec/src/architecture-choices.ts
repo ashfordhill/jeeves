@@ -1,7 +1,6 @@
 /** Architectural intent is independent of runtime host roles and executable wiring. */
 import { z } from "zod";
 import type { Element } from "./design.ts";
-import { plannedCapability } from "./planned-capabilities.ts";
 
 export const architectureKinds = [
   "Application",
@@ -56,12 +55,6 @@ export const systemChoiceOptions = {
   ],
   deliveryModel: ["Unspecified", "Hosted", "Private deployment", "Hosted and private"],
 } as const;
-export const systemChoiceLabels = {
-  businessTenancy: "Business tenancy",
-  authorization: "Authorization intent",
-  dataIsolation: "Data isolation",
-  deliveryModel: "Delivery model",
-} as const;
 export const systemChoicesSchema = z.strictObject({
   businessTenancy: z.enum(systemChoiceOptions.businessTenancy).optional(),
   authorization: z.enum(systemChoiceOptions.authorization).optional(),
@@ -69,36 +62,15 @@ export const systemChoicesSchema = z.strictObject({
   deliveryModel: z.enum(systemChoiceOptions.deliveryModel).optional(),
 });
 
+/** Explicit classification with unspecified defaults; nothing is inferred from names. */
 export function containerClassification(element: Element) {
-  const capability = plannedCapability(element.planned);
-  const catalogKind =
-    capability?.architectureKind ??
-    (element.template?.id === "postgres"
-      ? "Data store"
-      : ["http-service", "web-app"].includes(element.template?.id ?? "")
-        ? "Application"
-        : "Unspecified");
-  const kind = element.classification?.kind ?? catalogKind;
   return {
-    kind,
-    ownership:
-      element.classification?.ownership ??
-      (catalogKind === "External system"
-        ? "External responsibility"
-        : catalogKind === "Unspecified"
-          ? "Unspecified"
-          : "System responsibility"),
+    kind: element.classification?.kind ?? "Unspecified",
+    ownership: element.classification?.ownership ?? "Unspecified",
     operation: element.classification?.operation ?? "Unspecified",
   };
 }
 export function isExternalResponsibility(element: Element) {
   const value = containerClassification(element);
   return value.kind === "External system" || value.ownership === "External responsibility";
-}
-
-export function outsideSystem(element: Element) {
-  return (
-    isExternalResponsibility(element) ||
-    containerClassification(element).kind === "Deployment infrastructure"
-  );
 }

@@ -1,7 +1,6 @@
 import {
   buildStudioCommand,
   type DesignDocument,
-  legacyStudioKind,
   studioAccessSchema,
   studioAllowsRequestPolicies,
   studioConnectionSettingsSchema,
@@ -33,11 +32,7 @@ export function connectionSettings(values: DraftValues) {
 }
 
 function elementKind(design: DesignDocument, id: string) {
-  const element = design.elements.find((item) => item.id === id);
-  return (
-    design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind ??
-    (element && legacyStudioKind(element))
-  );
+  return design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
 }
 export function connectionQueue(design: DesignDocument, id: string) {
   const connection = design.connections.find((item) => item.id === id);

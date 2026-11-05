@@ -1,10 +1,4 @@
-import type {
-  DesignDocument,
-  Finding,
-  LayoutDocument,
-  OperationInput,
-  SubtypeReview,
-} from "@jeeves/spec";
+import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
 import {
   customType,
   index,
@@ -120,7 +114,6 @@ export type ChatQuestion = {
   question: string;
   choices: string[];
   allowFreeText: boolean;
-  subtypeReview?: SubtypeReview;
 };
 
 /** One line of "what the agent did" in a turn, e.g. a tool call and its outcome. */

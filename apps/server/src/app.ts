@@ -1,16 +1,13 @@
-import { dirname } from "node:path";
 import Fastify, { type FastifyInstance } from "fastify";
 import {
   hasZodFastifySchemaValidationErrors,
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
-import { ArchitectureLibrary } from "./architecture/library.ts";
 import { providerModels } from "./chat/models.ts";
 import { ChatService, type ModelSource } from "./chat/service.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
-import { architectureLibraryRoutes } from "./routes/architecture-library.ts";
 import { chatRoutes } from "./routes/chat.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { settingsRoutes } from "./routes/settings.ts";
@@ -73,9 +70,7 @@ export function buildApp({
   });
 
   const design = new DesignService(db);
-  const library = new ArchitectureLibrary(dirname(settings.configPath));
-  const chat = new ChatService(db, design, models, library);
-  app.register(architectureLibraryRoutes, { library, design });
+  const chat = new ChatService(db, design, models);
   app.register(projectRoutes, { service: design });
   app.register(chatRoutes, { chat });
   app.register(settingsRoutes, { settings });

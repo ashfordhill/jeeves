@@ -1,6 +1,6 @@
 /** C4 presentation only. These values never select transport or runtime behavior. */
 import { z } from "zod";
-import type { Connection, DesignDocument } from "./design.ts";
+import type { Connection } from "./design.ts";
 
 export const relationshipLabelSchema = z.string().trim().max(120);
 export const relationshipProtocolSchema = z.string().trim().min(1).max(80);
@@ -11,21 +11,10 @@ export const relationshipInteractionSchema = z.enum([
 ]);
 export type RelationshipInteraction = z.infer<typeof relationshipInteractionSchema>;
 
-export function connectionPresentation(connection: Connection, design: DesignDocument) {
-  const target = design.elements.find((element) => element.id === connection.to.element);
-  const name = target?.name ?? connection.to.element;
-  const defaults = {
-    "uses-database": { description: `Reads and writes ${name} records`, protocol: "SQL" },
-    calls: {
-      description: `Calls ${name}${/\bAPI$/i.test(name) ? "" : " API"}`,
-      protocol: "HTTPS/JSON",
-    },
-    "depends-on": { description: `Uses ${name}`, protocol: "Undecided" },
-  }[connection.kind];
+export function connectionPresentation(connection: Connection) {
   return {
-    description: connection.planned?.label ?? (connection.label?.trim() || defaults.description),
-    protocol: connection.planned?.protocol ?? connection.protocol ?? defaults.protocol,
-    interaction: connection.planned?.interaction ?? connection.interaction ?? "Request / response",
-    planned: Boolean(connection.planned),
+    description: connection.planned.label,
+    protocol: connection.planned.protocol,
+    interaction: connection.planned.interaction,
   };
 }

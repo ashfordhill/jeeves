@@ -51,11 +51,7 @@ export function ConnectionCreator({
             {
               id: newId,
               name: newName,
-              template: null,
               classification: studioDefinitions[draft.newKind].classification,
-              attachments: [],
-              config: {},
-              notes: "",
             },
           ],
           architecture: current.architecture && {

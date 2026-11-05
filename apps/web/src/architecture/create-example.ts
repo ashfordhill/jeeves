@@ -1,22 +1,16 @@
 /**
- * Creates a separate editable project from a planning example. The example's elements,
- * connections and architecture are saved through ordinary operations, so the result is a normal
- * design with history; the authored layout is stored alongside it.
+ * Creates a separate editable project from a studio study. The study's elements, connections and
+ * architecture are saved through ordinary operations, so the result is a normal design with
+ * history; its layout is stored alongside it.
  */
-import {
-  architectureExample,
-  studioArchitectureExample,
-  studioArchitectureExamples,
-} from "@jeeves/spec";
+import { studioArchitectureExample } from "@jeeves/spec";
 import { api, type Project } from "../draw/api.ts";
 
 /** The example a fresh installation opens with, and the chooser's preselected study. */
 export const DEFAULT_EXAMPLE_ID = "studio-tinyurl";
 
 export async function createExampleProject(id: string, name?: string): Promise<Project> {
-  const example = studioArchitectureExamples.some((item) => item.id === id)
-    ? studioArchitectureExample(id)
-    : architectureExample(id);
+  const example = studioArchitectureExample(id);
   const project = await api.createProject(name?.trim() || example.name);
   try {
     const result = await api.edit(project.id, 0, [

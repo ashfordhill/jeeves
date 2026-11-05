@@ -10,7 +10,6 @@ import {
   buildStudioCommand,
   createStudioComponentSettings,
   type DesignDocument,
-  noTemplates,
   type OperationInput,
   type StudioComponentKind,
   type StudioConnectionCreation,
@@ -182,7 +181,7 @@ export type SpawnResult = {
 };
 
 const applied = (design: DesignDocument, ops: OperationInput[]) => {
-  const result = applyOperations(design, ops, noTemplates, { baseRevision: design.revision });
+  const result = applyOperations(design, ops, { baseRevision: design.revision });
   if (!result.ok) throw new Error(result.errors[0]?.message ?? "This creation is invalid.");
   return result.design;
 };
@@ -385,11 +384,7 @@ export function dropConnect(
     relation,
     rebuild: (current) => {
       const existing = current.connections.find(
-        (item) =>
-          item.from.element === viaFrom &&
-          item.to.element === viaTo &&
-          !item.from.attachment &&
-          !item.to.attachment,
+        (item) => item.from.element === viaFrom && item.to.element === viaTo,
       );
       const connectionId = existing?.id ?? id();
       const traced: StudioConnectionCreation | undefined = existing

@@ -3,7 +3,6 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
-  legacyStudioKind,
   resolveStudioDefinition,
   type StudioOwner,
   type StudioSemanticRef,
@@ -29,8 +28,8 @@ export function originChoices(design: DesignDocument) {
     .filter(
       (item) =>
         containerClassification(item).kind === "Application" ||
-        (design.architecture?.studio?.elements.find((binding) => binding.element === item.id)
-          ?.settings.kind ?? legacyStudioKind(item)) === "object-store",
+        design.architecture?.studio?.elements.find((binding) => binding.element === item.id)
+          ?.settings.kind === "object-store",
     )
     .map((item) => ({
       value: item.id,

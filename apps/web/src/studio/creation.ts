@@ -1,14 +1,10 @@
 import {
-  type ArchitectureLibraryEntry,
   applyOperations,
   architectureSchema,
   buildStudioCommand,
   type DesignDocument,
   instantiateStudioPackagePreset,
-  type LibraryInsertInput,
-  noTemplates,
   type OperationInput,
-  previewArchitectureTemplate,
   type StudioCommand,
   type StudioCreationScope,
   type StudioKind,
@@ -28,7 +24,6 @@ export type BaseCreation = StudioKind | "person" | "external-system";
 export type Creation =
   | { type: "base"; kind: BaseCreation }
   | { type: "package" }
-  | { type: "composition"; entry: ArchitectureLibraryEntry; roles: LibraryInsertInput["roles"] }
   | { type: "group"; members: string[]; name: string };
 /** C3 is whole-system: resources and queues created there are owned by the selected application. */
 export function creationScope(scope: StudioScopeProjection): StudioCreationScope | undefined {
@@ -117,39 +112,7 @@ export async function createAt(
     const system = { name: loaded?.project.name ?? "System", description: "" };
     let command: StudioCommand;
     let ops: OperationInput[];
-    if (creation.type === "composition") {
-      if (scope.level !== "containers") throw new Error("Insert saved compositions at C2.");
-      const preview = previewArchitectureTemplate(
-        design,
-        creation.entry,
-        {
-          id: creation.entry.id,
-          version: creation.entry.version,
-          contentHash: creation.entry.contentHash,
-          instanceId: `lib-${ids.service.slice(-12)}`,
-          name: creation.entry.metadata.name.slice(0, 80),
-          baseRevision: design.revision,
-          roles: creation.roles,
-        },
-        noTemplates,
-      );
-      if (!preview.ok)
-        throw new Error(
-          preview.errors[0] ?? preview.unfilled[0] ?? "Select the required dependencies.",
-        );
-      ops = preview.ops;
-      const architecture = ops.find((op) => op.op === "setArchitecture");
-      const pkg =
-        architecture?.op === "setArchitecture"
-          ? architecture.architecture?.studio?.packages.find(
-              (pkg) => !design.architecture?.studio?.packages.some((old) => old.id === pkg.id),
-            )
-          : undefined;
-      const element = ops.find((op) => op.op === "addElement");
-      if (pkg) selected = studioNodeKeys.package(pkg.id);
-      else if (element?.op === "addElement") selected = studioNodeKeys.element(element.element.id);
-      else throw new Error("This composition adds no new visible object.");
-    } else if (
+    if (
       creation.type === "base" &&
       (creation.kind === "person" || creation.kind === "external-system")
     ) {
@@ -229,9 +192,7 @@ export async function createAt(
         ).ops,
       ];
     }
-    const applied = applyOperations(design, ops, noTemplates, {
-      baseRevision: design.revision,
-    });
+    const applied = applyOperations(design, ops, { baseRevision: design.revision });
     if (!applied.ok) throw new Error(applied.errors[0]?.message ?? "This creation is invalid.");
     const next = studioViews(applied.design, studioDefinitions, loaded?.project.name ?? "System");
     const nextScope = studioScopes(next).find((item) => item.key === scopeKey);
@@ -239,11 +200,11 @@ export async function createAt(
       nextScope?.nodes.filter((node) => !scope.nodes.some((old) => old.id === node.id)) ?? [];
     if (!additions.some((node) => node.id === selected)) {
       const first = additions[0];
-      if (!first) throw new Error("This composition adds no visible object in this scope.");
+      if (!first) throw new Error("This creation adds no visible object in this scope.");
       selected = first.id;
     }
     // SG06: the new box is appended and automatic layout places it; no position is stored.
-    return { ops, positions: {} };
+    return ops;
   });
   return ok ? selected : undefined;
 }
