@@ -18,7 +18,7 @@ GET /projects/:id/blueprint ──▶ future code generator (separate service, n
 
 | Path | Holds |
 | --- | --- |
-| `apps/web` | Vite + React 19 + Mantine. `App.tsx` is the shell (Design and Settings tabs, `#/design` and `#/settings`; project menu; status bar). `project/` holds the project store (`useProject`, zustand), API client, form drafts, project menu, chooser and browser. `canvas/` holds the lane canvas: `Workspace.tsx` (the Design tab: header actions, chat rail, canvas toolbar, inspector rail), `LaneCanvas.tsx` (the design's lane graph on the board), `creation.tsx` (the selected tile's pull tabs and fans from the lane rules, running `addTile` and `linkTiles`), `removal.tsx` (the red X on the selected tile and line and the removal's confirmation, running `removeTile` and `removeLink`), `TileInspector.tsx` (a tile's inspector: the kind row running `changeKind`, and the Modules tab, which adds, opens and removes modules), the tile and actor faces, the ELK worker client and the app's one layout engine (`elk.ts`), and `canvas.css` (the board's colours from the theme). `studio/` holds the inspector forms and their drafts (tile, connection and module forms), the rail preferences, `StudioIcon` and `studio.css` (the workspace chrome). `chat/` the chat rail and its store; `settings/` the Settings view; `shell/` and `theme/` the chrome. |
+| `apps/web` | Vite + React 19 + Mantine. `App.tsx` is the shell (Design and Settings tabs, `#/design` and `#/settings`; project menu; status bar). `project/` holds the project store (`useProject`, zustand), API client, form drafts, project menu, chooser and browser. `canvas/` holds the lane canvas: `Workspace.tsx` (the Design tab: header actions, chat rail, canvas toolbar, inspector rail), `LaneCanvas.tsx` (the design's lane graph on the board), `creation.tsx` (the selected tile's pull tabs and fans from the lane rules, running `addTile` and `linkTiles`), `removal.tsx` (the red X on the selected tile and line and the removal's confirmation, running `removeTile` and `removeLink`), `TileInspector.tsx` (a tile's inspector: the kind row running `changeKind`, and the Modules tab, which adds, opens and removes modules; an entry's inspector, with its lane row running `setEntryLane`, is in `Workspace.tsx`), the tile and actor faces, the ELK worker client and the app's one layout engine (`elk.ts`), and `canvas.css` (the board's colours from the theme). `studio/` holds the inspector forms and their drafts (tile, connection and module forms), the rail preferences, `StudioIcon` and `studio.css` (the workspace chrome). `chat/` the chat rail and its store; `settings/` the Settings view; `shell/` and `theme/` the chrome. |
 | `apps/server` | Fastify 5 with Zod type providers, Drizzle ORM on `pg`, migrations in `drizzle/`. `routes/` (projects, chat, settings), `design/service.ts` (projects, revisions, history, layout, blueprint), `chat/` (turn loop, tools, files, model wiring), `settings.ts` (provider keys and the chosen model). |
 | `packages/spec` | The design format and every pure function over it (no I/O). |
 | `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap) and edits (add after, insert before, link, plan and apply a removal with restitching, remove a link, the tile to select after a removal). The root export adds the layout core: ELK layered left to right on a 32px grid with stability hints, a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; a fitted camera refits when the board changes size, a user's pan or zoom is kept, and a picked tile that lands out of view is panned in; select and hand modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band; the selected line and the selected tile's lines in the selection colour, drawn on top; a selected line's red X, on a stretch no other line shares when it has one), `TileChrome` (the selected tile's `+` and `---` pull tabs: rubber band, scrim, icon fan kept on the board (`placeFan`) and drop targets; a picked tile docks at the next slot; the red X), a caller's panel at the board's bottom centre (`hud`, with marked tiles), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The web app's lane canvas mounts it. |
@@ -39,8 +39,8 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
 - `architecture` (`architecture.ts`): the C1 `system`, `nodes` (people, external systems) and
   `relationships`, plus `studio` (`studio-model.ts`): a binding per element (definition ref,
   typed settings, optional owner), packages, per-connection settings, C3 `components` and
-  `componentConnections`, lane `entries` (`{id, lane, element}`: the user's links to tiles) and
-  an optional study origin.
+  `componentConnections`, lane `entries` (`{id, lane, element}`: the user's links to tiles, `lane`
+  being `download`, `upload` or `both`; a tile has at most one) and an optional study origin.
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
@@ -66,13 +66,13 @@ Every change, from the canvas, chat or API, is an **operation batch** posted to
 `connect`, `updatePlannedConnection`, `disconnect`. The UI and chat build batches from
 higher-level **studio commands** (`buildStudioCommand` in `studio-operations.ts`), so both share
 one rule set. Tiles and links are added and removed only by the **lane commands**
-(`studio-lane-commands.ts`: `addTile`, `linkTiles`, `removeTile`, `removeLink`, `changeKind`):
-each is checked with the board edits under the lane rules and refused in plain words with tile
+(`studio-lane-commands.ts`: `addTile`, `linkTiles`, `removeTile`, `removeLink`, `changeKind`,
+`setEntryLane`): each is checked with the board edits under the lane rules and refused in plain words with tile
 names. The other studio commands edit in place: `edit`, `editSystem`, `editConnection` and the
 module commands (`createComponent`, `editComponent`, `connectComponent`, `disconnectComponent`,
 `removeComponent`). Pure helpers answer the canvas and chat: `laneTabs`, `laneChoices`,
-`laneLinkRefusal`, `planRemoveTile`, and `newTileIdentity` and `newLinkId` for fresh names and
-IDs.
+`laneLinkRefusal`, `laneEntryRefusal`, `planRemoveTile`, and `newTileIdentity` and `newLinkId`
+for fresh names and IDs.
 
 `applyOperations` applies a batch all-or-nothing and bumps `revision` once. The server runs each
 change in one transaction that locks the project row: a stale `baseRevision` is a 409 with the
@@ -100,11 +100,11 @@ layout), but the web app neither reads nor writes it.
 `POST /projects/:id/chat` streams a turn as NDJSON. The server loop (`chat/service.ts`) calls the
 chosen model with a finite toolset (`chat/tools.ts`): `listStudioDefinitions` (the tile types
 with their kinds, the module kinds and the caps), `describeStudioDefinition` (one kind's
-settings), `getDesign` (both lanes with their entries and tiles in lane order, then each tile's
-kind, settings, links with their modes and modules, the caps and the findings),
-`applyStudioCommands`, `validateDesign` and `askUser`. The instructions (`INSTRUCTIONS`) describe
-the actor, the two lanes, the link table, async forks, end tiles and the caps. The same summary
-and the selection go with each message as `[Jeeves]` context. `applyStudioCommands` takes the
+settings), `getDesign` (both lanes with their entries, a shared entry listed in both, and their
+tiles in lane order, then each tile's kind, settings, links with their modes and modules, the caps
+and the findings), `applyStudioCommands`, `validateDesign` and `askUser`. The instructions
+(`INSTRUCTIONS`) describe the actor, the two lanes and shared (both-lane) entries, the link table,
+async forks, end tiles and the caps. The same summary and the selection go with each message as `[Jeeves]` context. `applyStudioCommands` takes the
 studio commands, so tiles and links change only through the lane commands, as on the canvas;
 commands run against a working copy with the same builder and validation, and a refusal returns
 its plain-words reason (naming the command when a call has several) and changes nothing for that
@@ -143,6 +143,8 @@ The web app reaches these under `/api` (Vite proxy in development, nginx in the 
 ## Next
 
 The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
-[execution units](docs/plans/lane-grid/execution-units.md)) is complete; its §7 lists what was left
-for later. One question is open for the owner: whether one tile may start both lanes (today a tile
-starts at most one). Code generation will be a separate service that reads the blueprint.
+[execution units](docs/plans/lane-grid/execution-units.md), then
+[polish units](docs/plans/lane-grid/polish-units.md) PL01–PL02) is complete; the build plan's §7
+lists what was left for later. Whether the links after a shared entry tile should be tagged as
+reads or writes is a later owner decision; today they are ordinary forks. Code generation will be
+a separate service that reads the blueprint.

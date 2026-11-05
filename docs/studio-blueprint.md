@@ -28,7 +28,7 @@ history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 | --- | --- |
 | `revision` | The design revision it was read from. |
 | `system` | System name and description (C1). |
-| `entries` | The tiles the user reaches directly: `{lane, element}`, `lane` being `download` or `upload`, sorted by lane then element. Empty for a design without lane entries. |
+| `entries` | The tiles the user reaches directly: `{lane, element}`, `lane` being `download` or `upload`, sorted by lane then element. A tile whose entry starts both lanes is listed once per lane (two rows). Empty for a design without lane entries. |
 | `services` | Each studio application (service, browser, worker, billing, redirect, notification, identity, gateway): definition ref and status, settings, optional group, optional C1 context node, and its C3 `components` (kind, settings, purpose, typical third-party products, required link kinds). One service is one future deployable. |
 | `resources` | Database, cache, queue, object store, search, CDN: definition, settings, optional owner. |
 | `externals` | External API elements (category, provider), plus C1 external systems that have no C2 element (`source: "context"`). |

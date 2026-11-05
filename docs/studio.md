@@ -27,8 +27,9 @@ lane, with no islands and no cycles.
   Database, cache, queue and storage tiles are pills; services, APIs and externals are rounded
   rectangles. The user tile is 128×160.
 - **Lines** carry no words. A solid line is a request; a dashed line is an asynchronous link, and so
-  is every link that continues after one. A lane's entry line carries a download or upload chip.
-  Action, protocol and the rest are in the inspector.
+  is every link that continues after one. A lane's entry line carries a download or upload chip;
+  an entry that starts both lanes has one line whose chip shows both icons. Action, protocol and
+  the rest are in the inspector.
 - Click a tile, a line or a chip to select it and open the inspector; click empty paper to clear.
   The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
   a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
@@ -41,7 +42,8 @@ lane, with no islands and no cycles.
 
 The layout is automatic and never stored: ELK layered, left to right, on a 32px grid, with
 automation-illustrator's options. Each tile sits one column right of its furthest predecessor (the
-user's entries share the first column), a fork is centred on its tile, and links that meet at the
+user's entries share the first column, download-only entries above, an entry that starts both
+lanes between them, upload-only entries below), a fork is centred on its tile, and links that meet at the
 same tiles share one bus. The positions on screen are stability hints for the next layout, so forks
 keep their rows and columns when the design changes, and changes animate for 200ms. The first
 layout already follows these rules, so the first edit moves only what it changes. The canvas writes
@@ -94,18 +96,21 @@ icons line up along it, and an icon that would sit on a tile you can link to mov
   database, cache, storage or queue belongs to the application it is added next to.
 - **Release on another tile** to link to it (a merge): from the right side the tile links to it,
   from the left side it links to the tile, and from a lane tab it becomes an entry of that lane.
-  The tile you pulled from stays selected, so its next fork or merge starts at once.
+  A lane tab released on the tile that starts the other lane makes that tile start both lanes:
+  its entry line stays one line, now with both icons, and its forks sit between the lanes (for
+  one API that takes both the user's reads and writes). The tile you pulled from stays selected,
+  so its next fork or merge starts at once.
   Tiles the tab can link to stay bright with a dashed outline; on one of them, the fan steps back
   and the outline thickens. A dimmed tile can't be linked: releasing on it changes nothing and the
-  notice says why ("Shorten API already starts the upload lane; a tile can start only one
-  lane."). An icon over a dimmed tile can still be picked.
+  notice says why ("CDN already starts the download lane."). An icon over a dimmed tile can still
+  be picked.
 - **Release anywhere else**, or press Escape, and the band springs back.
 
 Each add or link is one batch and one undo step.
 
 Every tile must hang off the user through a lane, with no cycles, links the
 [link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 3 entries
-per lane; a tile starts at most one lane. An edit that breaks one of these rules is refused with a
+per lane; a tile has one entry at most, and an entry that starts both lanes counts in both. An edit that breaks one of these rules is refused with a
 notice and changes nothing, whether it comes from the canvas, the inspector, chat or the API.
 
 Optional shortcuts: V selects, H pans, Escape cancels a pull. Every action works by mouse alone.
@@ -116,7 +121,7 @@ The selected tile has a red **X** centred on its top edge (faint until the point
 user has none. The X removes the tile and links each tile before it to each tile after it, wherever
 the [link table](../CATALOG.md#lanes-and-links) allows, unless the first already reaches the
 second another way. A restitched link is asynchronous when either link it replaces was, and a lane
-entry passes on in its lane. Removing the CDN in TinyURL makes the Redirect service the download
+entry passes on in its lane (or both). Removing the CDN in TinyURL makes the Redirect service the download
 lane's entry.
 
 When the restitching can't reach some tiles (a resource doesn't link onward, so nothing replaces
@@ -128,7 +133,7 @@ Analytics store with it ("Remove 4 tiles"), since the CDN can't link to a queue.
 
 A selected line has a red X on a stretch of it that no other line shares, or at its middle when
 every stretch is shared (an entry line's sits above its chip). It removes that
-connection or entry, unless a tile would be cut off; then nothing changes and the notice names the
+connection or entry (an entry that starts both lanes leaves both), unless a tile would be cut off; then nothing changes and the notice names the
 tiles ("Removing the link from CDN to Redirect service would cut off Redirect service, …").
 
 After removing a tile, the tile before it is selected (the first one, in lane order; often the
@@ -170,8 +175,11 @@ for an application tile, **Modules**; empty ones are hidden.
 - A line: its two tiles, then Action, Protocol, Interaction, Access, and timeout/retry where the
   protocol allows. Switching Interaction between Request / response and Asynchronous changes the
   dash where the link table allows both.
-- A lane entry (its line or chip): the lane and the tile the user reaches; each is a button that
-  selects that tile.
+- A lane entry (its line or chip): its lanes, then the **lane row**: download, upload and both
+  as icons (the name is the tooltip), the current one filled yellow. Clicking another switches the
+  entry; one that would put a fourth entry in a lane is faded and its tooltip says why ("The
+  download lane already has 3 entries; the most is 3."). Below, the user and the tile the user
+  reaches, each a button that selects it.
 - The user, or nothing: the system's Name and Goal.
 
 Valid text autosaves after 500ms or on blur; selects commit at once. Selecting, switching tabs and
@@ -182,7 +190,7 @@ reopen to edit."
 ## History
 
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
-batch (an autosaved edit, a kind switch, adding, linking, unlinking or removing a module) or chat
+batch (an autosaved edit, a kind or lane switch, adding, linking, unlinking or removing a module) or chat
 turn is one step; a new edit ends the redo chain. Selecting, switching tabs, opening a module,
 panning, zooming and Fit add none. The history survives reloads.
 
@@ -191,15 +199,16 @@ panning, zooming and Fit add none. The history survives reloads.
 Chat (left rail, open by default in a fresh project) edits the design with the canvas's own
 commands, validation and history: a chat turn is one undo step, however many commands it ran.
 Tiles and links change only through the lane commands: `addTile` (after a tile or a lane, or
-before a tile), `linkTiles`, `removeTile`, `removeLink` and `changeKind`. So chat, like the mouse,
+before a tile), `linkTiles`, `removeTile`, `removeLink`, `changeKind` and `setEntryLane` (an
+entry's lane: download, upload or both). So chat, like the mouse,
 can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
 command changes nothing and comes back in the same plain words as the canvas notice ("Link cache
 can't link to URL reputation API. A cache can't link onward."); the turn's activity list shows
 it. Names, purposes, the goal, settings, link details and modules go through `edit`,
 `editSystem`, `editConnection` and the module commands.
 
-Chat reads the design as the canvas draws it: both lanes with their entries and tiles in lane
-order, then each tile with its kind, settings, links (sync or async) and modules, and the caps.
+Chat reads the design as the canvas draws it: both lanes with their entries (an entry that starts
+both lanes is listed in each, marked `both`) and tiles in lane order, then each tile with its kind, settings, links (sync or async) and modules, and the caps.
 It lists the seven tile types with their kinds. The selected tile, line or entry is sent with
 each message, so "Add a cache after the selected service" works. It can ask one focused question
 with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP, SVG). An empty
@@ -249,8 +258,8 @@ external, nine connections and all eleven components, with nothing omitted and n
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
   remove a particular one, click its row in the tile's Connections list.
-- A tile starts at most one lane. Whether one tile may start both lanes is an open question for
-  the owner.
+- The links after a tile that starts both lanes are ordinary forks: nothing marks which serve
+  reads and which serve writes.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
   belongs to the application it was first added next to; both are changed in the inspector.
 - Modules are not drawn. The inspector links a module only to tiles; a link between two modules

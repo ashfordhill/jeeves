@@ -554,12 +554,23 @@ export const studioLanes = ["download", "upload"] as const;
 export const studioLaneSchema = z.enum(studioLanes);
 export type StudioLane = z.infer<typeof studioLaneSchema>;
 /**
- * A link from the actor (the user, always present and never stored) to a tile, carrying one lane.
- * Which kinds may be entries and how many each lane holds are lane rules (`studio-lanes.ts`).
+ * The lanes an entry starts: one of the two, or `both` when one tile is where the user's reads and
+ * writes first land. In layout order: download-only entries, then both-lane, then upload-only.
+ */
+export const studioEntryLanes = ["download", "both", "upload"] as const;
+export const studioEntryLaneSchema = z.enum(studioEntryLanes);
+export type StudioEntryLane = z.infer<typeof studioEntryLaneSchema>;
+/** The lanes an entry counts toward: `both` is download and upload. */
+export const entryLanes = (lane: StudioEntryLane): readonly StudioLane[] =>
+  lane === "both" ? studioLanes : [lane];
+/**
+ * A link from the actor (the user, always present and never stored) to a tile, carrying one lane
+ * or both. A tile has at most one entry. Which kinds may be entries and how many each lane holds
+ * (a both-lane entry counts in each) are lane rules (`studio-lanes.ts`).
  */
 export const studioEntrySchema = z.strictObject({
   id: idSchema,
-  lane: studioLaneSchema,
+  lane: studioEntryLaneSchema,
   element: idSchema,
 });
 export type StudioEntry = z.infer<typeof studioEntrySchema>;

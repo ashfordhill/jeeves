@@ -60,7 +60,9 @@ has a distinct one.
 
 Every lane design starts from one **actor**, the user, which is not stored. Its **entries**
 (`architecture.studio.entries`) are links to the tiles the user reaches directly, each in the
-**download** or **upload** lane. Every tile must be reachable from the actor, with no cycles.
+**download** or **upload** lane, or in **both** when one tile (typically an API) is where the
+user's reads and writes first land: one line from the user, and both lanes branch from that tile.
+Every tile must be reachable from the actor, with no cycles.
 Which kinds may link, and how, is one table
 ([`studio-links.ts`](packages/spec/src/studio-links.ts)). "Application" means the Service and API
 kinds except `cdn`. A sync link is a request (solid line); an async link does not wait (dashed
@@ -78,8 +80,8 @@ line, as is every link that continues after one).
 | `cdn` → application, `object-store` | yes | no |
 | `database`, `cache`, `object-store`, `search` → anything | no (end tiles) | no |
 
-Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane. A tile is entered
-at most once. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
+Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane; an entry in both
+lanes counts toward each lane's 3. A tile has at most one entry. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
 these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
 C1 people, external systems and relationships are not tiles and are not checked.
 
@@ -90,16 +92,18 @@ to Geo lookup. A cache can't link onward."):
 | Command | What it does |
 | --- | --- |
 | `addTile` | A new tile after a tile, after a lane (an entry; always a request) or before a tile. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
-| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge). |
-| `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
-| `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
+| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge). From a lane onto the tile that starts the other lane, it makes that entry start both lanes instead (one line, no new link). |
+| `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane, or both). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
+| `removeLink` | Removes a connection or an entry (an entry in both lanes leaves both), unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
+| `setEntryLane` | Sets an entry's lane: `download`, `upload` or `both`, unless a lane it joins already has 3 entries. |
 
 On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
 ([studio guide](docs/studio.md#creating-and-connecting)); a tile's X runs `removeTile` (after
 `planRemoveTile`, with the tiles the confirmation listed as `alsoRemove`) and a line's X runs
 `removeLink` ([removing](docs/studio.md#removing)); the inspector's kind row runs `changeKind`
-(a kind it would refuse is disabled, with the reason as its tooltip). A new tile is named after its type and
+and an entry's lane row runs `setEntryLane` (a choice either would refuse is disabled, with the
+reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
 `lane-target` for an entry. Chat sends the same commands, and these are the only commands that
 add or remove tiles and links ([studio guide](docs/studio.md#chat)).

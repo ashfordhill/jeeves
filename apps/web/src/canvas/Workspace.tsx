@@ -1,15 +1,18 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
 // tabs add and link tiles (`creation.tsx`), the red X on a tile or line removes it
-// (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`).
+// (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`),
+// and an entry's lanes in its own inspector (`EntrySummary`).
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
+  buildStudioCommand,
   type DesignDocument,
   LANE_ACTOR,
   type LaneEdge,
   type LaneGraph,
+  laneEntryRefusal,
   laneGraph,
-  type StudioLane,
+  type StudioEntryLane,
   studioDefinitions,
 } from "@jeeves/spec";
 import {
@@ -28,6 +31,7 @@ import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { formDrafts } from "../project/form-drafts.ts";
 import { canRedo, canUndo, useProject } from "../project/store.ts";
+import { commitAction } from "../studio/actions.ts";
 import { ConnectionForm } from "../studio/ConnectionForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
@@ -346,7 +350,15 @@ function Inspector({
     );
   if (edge?.lane)
     return (
-      <EntrySummary edge={edge} lane={edge.lane} name={name} graph={graph} onSelect={onSelect} />
+      <EntrySummary
+        projectId={project.id}
+        design={design}
+        edge={edge}
+        lane={edge.lane}
+        name={name}
+        graph={graph}
+        onSelect={onSelect}
+      />
     );
   if (edge)
     return (
@@ -372,29 +384,78 @@ function Inspector({
   );
 }
 
-/** An entry line: its lane and the tile the user reaches directly. */
+/** The entry inspector's lane row, in this order. */
+const entryLaneChoices: readonly StudioEntryLane[] = ["download", "upload", "both"];
+
+/**
+ * An entry line: its lanes, the lane row (download, upload or both; a click is `setEntryLane`, a
+ * choice that would break a cap is disabled with the reason as its tooltip) and the tile the user
+ * reaches directly.
+ */
 function EntrySummary({
+  projectId,
+  design,
   edge,
   lane,
   name,
   graph,
   onSelect,
 }: {
+  projectId: string;
+  design: DesignDocument;
   edge: LaneEdge;
-  lane: StudioLane;
+  lane: StudioEntryLane;
   name: (id: string) => string;
   graph: LaneGraph;
   onSelect: (next: BoardSelection) => void;
 }) {
   const kind = graph.nodes.find((node) => node.id === edge.target)?.kind;
   const visual = kind ? studioDefinitions[kind].visual : undefined;
+  const choices = useMemo(
+    () =>
+      entryLaneChoices.map((choice) => ({
+        lane: choice,
+        refusal: choice === lane ? undefined : laneEntryRefusal(design, edge.id, choice),
+      })),
+    [design, edge.id, lane],
+  );
   return (
     <div className="studio-selection-summary">
       <h2 className="lane-inspector-title">
         <LaneIcon lane={lane} size={22} />
-        {laneNames[lane]} lane
+        {laneNames[lane]}
       </h2>
       <p className="lane-inspector-kind">Lane entry</p>
+      <fieldset className="lane-kinds" aria-label="Lanes">
+        {choices.map((choice) => {
+          const current = choice.lane === lane;
+          return (
+            <button
+              key={choice.lane}
+              type="button"
+              className="lane-kind"
+              aria-label={laneNames[choice.lane]}
+              aria-pressed={current}
+              title={choice.refusal ?? laneNames[choice.lane]}
+              disabled={!!choice.refusal}
+              onClick={() => {
+                if (current) return;
+                void commitAction(
+                  projectId,
+                  (latest) =>
+                    buildStudioCommand(latest, {
+                      type: "setEntryLane",
+                      entry: edge.id,
+                      lane: choice.lane,
+                    }).ops,
+                );
+              }}
+            >
+              <LaneIcon lane={choice.lane} size={choice.lane === "both" ? 18 : 22} />
+            </button>
+          );
+        })}
+      </fieldset>
       <div className="lane-entry">
         <button type="button" onClick={() => onSelect({ tile: LANE_ACTOR })}>
           {ACTOR_NAME}

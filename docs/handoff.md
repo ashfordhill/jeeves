@@ -1456,3 +1456,112 @@ Notes for PL02:
   height. A wider two-icon chip only needs its `w` changed there.
 - `ownStretchMidpoint` treats any shared collinear run as shared, so two entry lines leaving the
   User's port share their first stub, as before.
+
+## 2026-11-05 — PL02: one entry tile can start both lanes (complete)
+
+Owner, 2026-11-05: when one API is where both the user's reads and writes first land, one line
+goes from the user to it and both lanes branch from it. Read/write tags on the links after it are
+out of scope; they stay ordinary forks. The polish units, and the open question in the guide's
+Limits and PLAN's Next, are closed. No cap was raised.
+
+Spec:
+
+- `studio-model.ts`: `studioEntryLanes` (`download`, `both`, `upload`, in layout order),
+  `studioEntryLaneSchema`, `StudioEntryLane` and `entryLanes(lane)` (`both` → both lanes). An
+  entry's `lane` takes the new schema. `studioLanes`/`studioLaneSchema` are still the two lanes
+  (tabs, `addTile` from a lane, the blueprint).
+- `studio-lanes.ts`: `laneGraph` visits and orders entries download-only, then both, then
+  upload-only, draining breadth-first after each group. `LaneEdge.lane` is a `StudioEntryLane`.
+  `laneFindings` counts a both-lane entry in each lane's cap. A tile still has one entry (a second
+  one is "… is already a lane entry."). New `laneWords` ("the download lane", "both lanes").
+- `studio-lane-commands.ts`: `linkTiles` from a lane onto the other lane's entry tile sets that
+  entry to `both` (same ID; `linkId` must still be free but is unused; the ops are just
+  `setStudio`). A drop onto a tile already in that lane is refused ("CDN already starts the
+  download lane." / "… both lanes."); the old "a tile can start only one lane" refusal is gone.
+  New `setEntryLane { entry, lane }`, refused for an unknown entry, the same lane, or a lane it
+  joins that already has 3 entries. `removeLink` on a both-lane entry removes the whole entry
+  ("Removing the download and upload entry to API would cut off …"). `removeTile` and `addTile`
+  before an entry tile keep `both` and check both caps. New pure helper `laneEntryRefusal(design,
+  entry, lane)` beside `laneLinkRefusal`.
+- `studio-blueprint.ts`: a both-lane entry is two rows (`download` and `upload`); the schema is
+  unchanged.
+
+Web: `LaneCanvas.tsx` gives a both-lane entry a 52×32 chip (ELK keeps it clear) with the download
+and upload icons side by side (`LaneIcon` takes `both`; `.lane-icon-both`); `laneNames` are now
+full names ("Download lane", "Download and upload lanes"), so labels are unchanged for one lane.
+`creation.tsx`: `canDrop` allows the upgrade through `laneLinkRefusal`; `laneOrder` places a new
+download-only entry above the first both-lane entry and a new upload-only entry below the last.
+`Workspace.tsx`: the entry inspector has a lane row (download, upload, both as `.lane-kind` icon
+buttons, current one yellow); a choice `laneEntryRefusal` refuses is disabled with the reason as
+its title; a click commits `setEntryLane`.
+
+Chat (`tools.ts`): `setEntryLane` is in the schema (it is a lane command). The instructions
+describe shared entries (one line, both lanes branch from the tile; `linkTiles` from the other lane
+or `setEntryLane`; it counts toward both caps) and `removeLink` on one. `getDesign` lists a shared
+entry in both lanes, marked `lane: "both"`, and both lanes' tile lists start from it. The fixture is
+unchanged.
+
+Tests (120, +4): `linkTiles` upgrade (ops, entries, refusal from the same lane, `removeLink`
+refused when it strands and accepted once Shorten API also reaches the CDN); `setEntryLane` and the
+caps (both ways, a full download lane disables `both` and `download` for the upload entry and
+removes the user's download tab, two shared entries fill the upload lane); lane order with a
+shared entry stored out of order, and the cap counting it; two blueprint rows. `tools.test.ts`
+extends the empty-design test with `setEntryLane` and the shared entry in `getDesign`. E2E:
+`spawn.spec.ts` drags the user's upload `+` onto CDN: still 11 lines, the CDN chip "Download and
+upload lanes: User to CDN" with 2 icons, the User still selected, `download-cdn` now `both`; Undo
+restores "Download lane: User to CDN" and "Upload lane: User to Shorten API".
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 192 files, all type checks, 22 test files / 120 tests passed).
+- `pnpm test:e2e`: 9 passed, first run, twice (before and after the docs).
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Scripted chat: both `blueprint-chat` chat tests pass; no real provider was called.
+- Browser: Playwright Chromium driven by mouse at 1440×900 with chat open, light and the app's
+  dark mode. My own API on 4312 (`JEEVES_FAKE_MODEL_SCRIPT`, a scratch `JEEVES_HOME`) and web on
+  4302 against `jeeves_e2e`, both stopped afterwards; all 6 throwaway projects deleted (204),
+  leaving the one study already there. The owner's 4300/4310, the `jeeves` database and
+  `~/.jeeves/` were not touched (one GET `/health` on 4310). No console errors or warnings.
+
+Walkthrough from **Blank architecture**: download `+` → API, then the User and the upload `+`
+dropped on the API (drop ring shown): one line, a 52×32 chip with both icons, the User still
+selected. API `+` → Service and → Database, download `+` → Storage, upload `+` → Service 2, Fit:
+row centres Storage 328, Service 394, API 460, Database 526, Service 2 592, so the download-only
+entry is on top, the API in the middle with its forks between the lanes, and the upload-only entry
+below. The shared chip's inspector: "Download and upload lanes", row download / upload / both
+(both pressed); Download → the entry is `download`, the chip one icon, the line still selected.
+With External added (download lane full), the upload entry's row has Download and Both disabled,
+titled "The download lane already has 3 entries; the most is 3."; a forced click changed nothing.
+The API's entry back to Both (allowed: it already counts in download), then its X: refused, notice
+"Change not saved: Removing the download and upload entry to API would cut off API, Service and
+Database."; after Service 2 `+` dropped on the API, the same X removed the entry (API stays via
+Service 2). Then 11 Undo clicks back to the empty project, the entries matching every earlier step.
+TinyURL study: 10 tiles, 11 lines, two one-icon chips (32px at 0.61 zoom), entries
+`download-cdn`/`upload-shorten-api`, the familiar layout (ELK gets the same input as before for
+one-lane entries); upload `+` onto CDN → one two-icon chip, Undo → back.
+
+What the screenshots show: the two-icon chip reads at a glance as "both", the same box style as the
+one-icon chips, and fits the user's fork at every zoom tried. With a download-only and an
+upload-only entry around it, the shared API sits on the middle row and its forks fan out between
+the lanes, which is what the owner asked for. The lane row matches the kind row's look. Rough
+edges: the inspector title "Download and upload lanes" wraps to two lines at the default inspector
+width; the user keeps both lane tabs after the upgrade (a drop of the other tab on the shared tile
+is refused, the tile dimmed); an entry switched from both back to one lane keeps its row until the
+layout's stability hints let it go (it stays in its lane group, as the screenshot shows).
+
+Docs: studio guide (lines, layout order, creating and the refusal example, the rule paragraph,
+removing, the entry inspector's lane row, history, chat; Limits: the open question replaced by
+"links after a shared tile are ordinary forks"), CATALOG (entries, caps, `linkTiles`,
+`removeTile`, `removeLink`, new `setEntryLane` row, the lane row), studio settings (lane entries),
+blueprint doc (two rows), PLAN (data model, commands, `laneEntryRefusal`, chat, Next), polish
+plan and build plan status lines. `fixtures/chat/README.md` needed no change.
+
+Notes for whoever picks up lanes next:
+
+- Removing a tile restitches through the board's plan, which drops a pair already reachable. So if
+  a shared tile A forks to B and B already starts one lane, removing A leaves B in its one lane
+  (the other lane loses that path) rather than making B shared. Nothing is stranded, and
+  `setEntryLane` fixes it by hand.
+- `addTile` from a lane still takes `download` or `upload`; a new shared entry is an `addTile`
+  plus `setEntryLane` (chat) or a pick plus a drop (mouse).
+- Read/write tags on the links after a shared tile are the owner's later decision.

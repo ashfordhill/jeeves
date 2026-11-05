@@ -1,6 +1,6 @@
 # Lane grid polish units
 
-**Status:** PL01 complete (2026-11-05); PL02 next. Each unit's record is in the
+**Status: complete (2026-11-05).** PL01 and PL02 are done; each unit's record is in the
 [handoff](../../handoff.md).
 
 Follow-ups to the completed [lane-grid plan](../../build-plan-lane-grid.md), proposed 2026-11-05

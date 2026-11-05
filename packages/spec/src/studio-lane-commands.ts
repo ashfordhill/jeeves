@@ -1,5 +1,6 @@
 /**
- * Lane commands: add a tile, link two tiles, remove a tile or a link, and switch a tile's kind.
+ * Lane commands: add a tile, link two tiles, remove a tile or a link, switch a tile's kind, and
+ * set which lanes an entry starts.
  * The canvas, chat and API share them through `buildStudioCommand`. Each one is checked with the
  * board edits (`@jeeves/board/graph`) under the lane rules, and a refusal names the rule in plain
  * words with tile names. The pure helpers tell the canvas and chat which tabs a tile shows, which
@@ -27,7 +28,7 @@ import type { OperationInput } from "./operations.ts";
 import { studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import { freshId, slug, usedIds } from "./studio-ids.ts";
-import { LANE_ACTOR, laneFindings, laneGraph, laneRules } from "./studio-lanes.ts";
+import { LANE_ACTOR, laneFindings, laneGraph, laneRules, laneWords } from "./studio-lanes.ts";
 import {
   laneLimits,
   type StudioLinkMode,
@@ -36,10 +37,14 @@ import {
 } from "./studio-links.ts";
 import {
   createStudioSettings,
+  entryLanes,
+  type StudioEntry,
+  type StudioEntryLane,
   type StudioKind,
   type StudioLane,
   type StudioModel,
   studioDefinitionRef,
+  studioEntryLaneSchema,
   studioKindSchema,
   studioLaneSchema,
   studioLanes,
@@ -90,7 +95,10 @@ export const laneCommandSchemas = [
     linkId: idSchema,
     system: z.strictObject({ name: tileName, description: tileDescription.optional() }).optional(),
   }),
-  /** Links a lane or a tile to a tile already on the board (a merge). */
+  /**
+   * Links a lane or a tile to a tile already on the board (a merge). From a lane onto the tile
+   * that starts the other lane, it turns that entry into a both-lane entry (`linkId` is unused).
+   */
   z.strictObject({
     type: z.literal("linkTiles"),
     from: laneFromSchema,
@@ -108,6 +116,12 @@ export const laneCommandSchemas = [
   z.strictObject({ type: z.literal("removeLink"), link: idSchema }),
   /** Switches a tile to another kind of its tile type; its settings start from the defaults. */
   z.strictObject({ type: z.literal("changeKind"), element: idSchema, kind: studioKindSchema }),
+  /** Sets which lanes an entry starts: download, upload or both (counting toward both caps). */
+  z.strictObject({
+    type: z.literal("setEntryLane"),
+    entry: idSchema,
+    lane: studioEntryLaneSchema,
+  }),
 ] as const;
 export type LaneCommand = z.infer<(typeof laneCommandSchemas)[number]>;
 
@@ -198,10 +212,10 @@ function linkRefusal(
   const { name } = view;
   if (source === target) return `${sentence(name(source))} can't link to itself.`;
   if (source === LANE_ACTOR) {
-    // A tile starts at most one lane, so an entry in the other lane counts as a duplicate too.
+    // A tile has one entry; from the other lane, a link makes it a both-lane entry.
     const entry = view.entries.find((item) => item.element === target);
-    if (entry)
-      return `${sentence(name(target))} already starts the ${entry.lane} lane; a tile can start only one lane.`;
+    if (entry && (!lane || entryLanes(entry.lane).includes(lane)))
+      return `${sentence(name(target))} already starts ${laneWords(entry.lane)}.`;
   } else if (view.graph.edges.some((edge) => edge.source === source && edge.target === target))
     return `${sentence(name(source))} already links to ${name(target)}.`;
   if (wouldCreateCycle(view.graph.edges, source, target))
@@ -212,15 +226,24 @@ function linkRefusal(
       ? `${sentence(name(target))} can't start the ${lane} lane. ${reason}`
       : `${sentence(name(source))} can't link to ${name(target)}. ${reason}`;
   if (source === LANE_ACTOR) {
-    const count = view.entries.filter((item) => item.lane === lane).length;
-    if (count >= laneLimits.entriesPerLane)
-      return `The ${lane} lane already has ${count} entries; the most is ${laneLimits.entriesPerLane}.`;
+    const full = lane && laneFull(view.entries, lane);
+    if (full) return full;
   } else {
     const count = view.graph.edges.filter((edge) => edge.source === source).length;
     if (count >= laneLimits.outgoingLinks)
       return `${sentence(name(source))} already has ${count} links; the most is ${laneLimits.outgoingLinks}.`;
   }
   return undefined;
+}
+
+/** Why one more entry in `lane` breaks its cap, or `undefined`. `except` is an entry to leave out. */
+function laneFull(entries: readonly StudioEntry[], lane: StudioLane, except?: string) {
+  const count = entries.filter(
+    (item) => item.id !== except && entryLanes(item.lane).includes(lane),
+  ).length;
+  return count >= laneLimits.entriesPerLane
+    ? `The ${lane} lane already has ${count} entries; the most is ${laneLimits.entriesPerLane}.`
+    : undefined;
 }
 
 /** Why a `linkTiles` from `from` to the existing tile `to` is refused, or `undefined`. */
@@ -236,10 +259,26 @@ function linkTilesRefusal(
   if (to === LANE_ACTOR)
     return "Links don't lead back to the user; pull from the user's download or upload tab to start a lane.";
   for (const id of [source, to]) if (!view.has(id)) return `There is no tile "${id}".`;
-  return (
-    linkRefusal(view, source, to, async, "lane" in from ? from.lane : undefined) ??
-    refusalOf(view, link(view.graph, source, to, { id: "@new-link", async }, view.rules))
-  );
+  const lane = "lane" in from ? from.lane : undefined;
+  const why = linkRefusal(view, source, to, async, lane);
+  if (why) return why;
+  // A lane onto the other lane's entry tile adds no link: the entry starts both lanes.
+  if (lane && view.entries.some((item) => item.element === to)) return undefined;
+  return refusalOf(view, link(view.graph, source, to, { id: "@new-link", async }, view.rules));
+}
+
+/** Why setting entry `id` to start `lane` is refused, or `undefined`. */
+function entryLaneRefusal(view: Lanes, id: string, lane: StudioEntryLane): string | undefined {
+  const entry = view.entries.find((item) => item.id === id);
+  if (!entry) return `There is no lane entry "${id}".`;
+  if (entry.lane === lane)
+    return `${sentence(view.name(entry.element))} already starts ${laneWords(lane)}.`;
+  for (const added of entryLanes(lane)) {
+    if (entryLanes(entry.lane).includes(added)) continue;
+    const full = laneFull(view.entries, added, entry.id);
+    if (full) return full;
+  }
+  return undefined;
 }
 
 /** Why adding `tile` is refused, or `undefined`. `view` must already know the tile. */
@@ -274,7 +313,7 @@ function addTileRefusal(
     const reason = view.rules.refusal(item.source, tile.id, item.async);
     if (reason)
       return item.lane
-        ? `${sentence(view.name(tile.id))} can't start the ${item.lane} lane. ${reason}`
+        ? `${sentence(view.name(tile.id))} can't start ${laneWords(item.lane)}. ${reason}`
         : `${sentence(view.name(item.source))} can't link to ${view.name(tile.id)}. ${reason}`;
   }
   return (
@@ -286,7 +325,7 @@ function addTileRefusal(
 /**
  * Plans removing `tile` with the board's fan pairings. A restitched link gets a fresh ID
  * (`source-target`, or `lane-target` for an entry); restitched entries stay in the removed
- * tile's lane, which still holds at most `entriesPerLane`.
+ * tile's lane (or both), each of which still holds at most `entriesPerLane`.
  */
 function removal(view: Lanes, design: DesignDocument, tile: string): RemovalPlan {
   if (!view.has(tile) || tile === LANE_ACTOR) refuse(`There is no tile "${tile}".`);
@@ -304,13 +343,14 @@ function removal(view: Lanes, design: DesignDocument, tile: string): RemovalPlan
         ? `Removing ${view.name(tile)} would give ${view.name(plan.node)} more than ${laneLimits.outgoingLinks} links.`
         : explain(view, plan),
     );
-  if (lane) {
+  for (const each of lane ? entryLanes(lane) : []) {
     const count =
-      view.entries.filter((entry) => entry.lane === lane && entry.element !== tile).length +
-      plan.value.addEdges.filter((edge) => edge.source === LANE_ACTOR).length;
+      view.entries.filter(
+        (entry) => entryLanes(entry.lane).includes(each) && entry.element !== tile,
+      ).length + plan.value.addEdges.filter((edge) => edge.source === LANE_ACTOR).length;
     if (count > laneLimits.entriesPerLane)
       refuse(
-        `Removing ${view.name(tile)} would give the ${lane} lane ${count} entries; the most is ${laneLimits.entriesPerLane}.`,
+        `Removing ${view.name(tile)} would give the ${each} lane ${count} entries; the most is ${laneLimits.entriesPerLane}.`,
       );
   }
   return plan.value;
@@ -463,8 +503,18 @@ export function buildLaneCommand(
       const view = at();
       const why = linkTilesRefusal(view, from, to, input.link === "async");
       if (why) refuse(why);
-      if ("lane" in from) addEntry(out, { id: input.linkId, lane: from.lane, element: to });
-      else connect(out, linkConnection(view, input.linkId, from.tile, to, input.link));
+      if ("lane" in from) {
+        const entry = studio.entries?.find((item) => item.element === to);
+        if (entry) entry.lane = "both";
+        else addEntry(out, { id: input.linkId, lane: from.lane, element: to });
+      } else connect(out, linkConnection(view, input.linkId, from.tile, to, input.link));
+      break;
+    }
+    case "setEntryLane": {
+      const why = entryLaneRefusal(at(), input.entry, input.lane);
+      if (why) refuse(why);
+      const entry = studio.entries?.find((item) => item.id === input.entry);
+      if (entry) entry.lane = input.lane;
       break;
     }
     case "removeLink": {
@@ -474,7 +524,7 @@ export function buildLaneCommand(
       const result = removeEdge(view.graph, edge.id, view.rules);
       if (!result.ok) {
         const what = edge.lane
-          ? `the ${edge.lane} entry to ${view.name(edge.target)}`
+          ? `the ${edge.lane === "both" ? "download and upload" : edge.lane} entry to ${view.name(edge.target)}`
           : `the link from ${view.name(edge.source)} to ${view.name(edge.target)}`;
         if (result.code !== "strands") refuse(explain(view, result));
         const rest = view.graph.edges.filter((item) => item.id !== edge.id);
@@ -518,7 +568,7 @@ export function buildLaneCommand(
 
 /**
  * Removes the first tile and the tiles it strands, then adds the restitched links. Restitched
- * entries take the removed tile's entry's place and lane.
+ * entries take the removed tile's entry's place and lane (or both).
  */
 function removeTiles(out: Draft, view: Lanes, removed: string[], restitched: BoardEdge[]) {
   const { design, studio } = out;
@@ -698,6 +748,23 @@ export function laneLinkRefusal(
   const result = attempt(() => {
     requireLanes(design);
     return linkTilesRefusal(lanes(design)(), from, to, mode === "async");
+  });
+  return result.ok ? result.value : result.message;
+}
+
+/**
+ * Why setting the entry `entry` to start `lane` (download, upload or both) is refused, in plain
+ * words, or `undefined` when a `setEntryLane` would be accepted. The entry inspector disables a
+ * lane with it and shows the reason.
+ */
+export function laneEntryRefusal(
+  design: DesignDocument,
+  entry: string,
+  lane: StudioEntryLane,
+): string | undefined {
+  const result = attempt(() => {
+    requireLanes(design);
+    return entryLaneRefusal(lanes(design)(), entry, lane);
   });
   return result.ok ? result.value : result.message;
 }

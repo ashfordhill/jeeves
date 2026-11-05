@@ -2,8 +2,9 @@
 // is a side and a mode with something to offer (`laneTabs`): `+` adds or links with a request,
 // `---` asynchronously; the user has one `+` per lane. Its fan offers the tile types the rules
 // accept there (`laneChoices`), as icons. A picked type becomes a new tile (`addTile`, named after
-// its type) and is selected; a drop on a tile links to it (`linkTiles`) and leaves the tile you
-// pulled from selected, ready for its next fork or merge. Each is one batch and one undo step; a
+// its type) and is selected; a drop on a tile links to it (`linkTiles`; a lane tab dropped on the
+// other lane's entry tile makes that entry start both lanes) and leaves the tile you pulled from
+// selected, ready for its next fork or merge. Each is one batch and one undo step; a
 // refusal goes to the studio notice in plain words.
 import type { BoardProps, FanItem, TabSpec } from "@jeeves/board";
 import {
@@ -18,6 +19,7 @@ import {
   laneTabs,
   newLinkId,
   newTileIdentity,
+  type StudioEntryLane,
   type StudioLane,
   type StudioTileType,
   studioDefinitions,
@@ -35,7 +37,7 @@ const tabId = (tab: LaneTab) =>
   "lane" in tab.from ? `lane-${tab.from.lane}` : `${tab.side}-${tab.mode}`;
 
 function tabLabel(tab: LaneTab): string {
-  if ("lane" in tab.from) return `${laneNames[tab.from.lane]} lane`;
+  if ("lane" in tab.from) return laneNames[tab.from.lane];
   return `${tab.mode === "sync" ? "Request" : "Async"} ${tab.side}`;
 }
 
@@ -47,19 +49,20 @@ function dropLink(tab: LaneTab, target: string): { from: LaneFrom; to: string } 
 }
 
 /**
- * Where a new lane entry's tile takes its row: after the lane's last entry, so download stays
- * above upload; a first download entry goes above the first upload entry.
+ * Where a new lane entry's tile takes its row: after the lane's last entry of its own, so the
+ * entries stay download-only, both-lane, upload-only from top to bottom. A first download-only
+ * entry goes above the first both-lane or upload entry; a first upload-only one below the rest.
  */
 function laneOrder(graph: LaneGraph, lane: StudioLane): TabSpec["order"] {
-  const entries = (of: StudioLane) =>
+  const entries = (of: StudioEntryLane) =>
     graph.edges.filter((edge) => edge.lane === of).map((edge) => edge.target);
   const own = entries(lane).at(-1);
   if (own) return { after: own };
   if (lane === "download") {
-    const first = entries("upload")[0];
+    const first = entries("both")[0] ?? entries("upload")[0];
     return first ? { before: first } : undefined;
   }
-  const last = entries("download").at(-1);
+  const last = entries("both").at(-1) ?? entries("download").at(-1);
   return last ? { after: last } : undefined;
 }
 

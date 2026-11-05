@@ -37,3 +37,38 @@ test("pulls a --- tab onto a tile to link it asynchronously", async ({ page, tin
   );
   expect(publish?.planned).toMatchObject({ label: "Publishes", interaction: "Asynchronous" });
 });
+
+test("drops the user's other lane tab on an entry tile to start both lanes there", async ({
+  page,
+  tinyurl: id,
+}) => {
+  const chip = (name: string) => page.locator(".board").getByRole("button", { name, exact: true });
+  await tile(page, "User").click();
+  await pull(page, "User", "Upload lane");
+  await moveOnto(page, tile(page, "CDN"));
+  await expect(tile(page, "CDN")).toHaveClass(/is-drop-over/);
+  await page.mouse.up();
+
+  await ready(page);
+  // Still one entry line to the CDN, its chip now showing both lane icons.
+  await expect(lines(page)).toHaveCount(11);
+  await expect(chip("Download and upload lanes: User to CDN").locator("svg")).toHaveCount(2);
+  await expect(chip("Download lane: User to CDN")).toHaveCount(0);
+  await expect(tile(page, "User")).toHaveClass(/selected/);
+  const shared = await design(page, id);
+  expect(shared.revision).toBe(2);
+  expect(shared.architecture.studio.entries).toEqual([
+    { id: "download-cdn", lane: "both", element: "cdn" },
+    { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
+  ]);
+
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(chip("Download lane: User to CDN")).toBeVisible();
+  await expect(chip("Upload lane: User to Shorten API")).toBeVisible();
+  const restored = await design(page, id);
+  expect(restored.revision).toBe(3);
+  expect(restored.architecture.studio.entries.map((e) => `${e.lane} ${e.element}`)).toEqual([
+    "download cdn",
+    "upload shorten-api",
+  ]);
+});

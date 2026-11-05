@@ -127,8 +127,9 @@ the same edit. A C1 relationship has only its action and endpoints.
 
 ## Lane entries
 
-`architecture.studio.entries[]` (`id`, `lane` download / upload, `element`) records the tiles the
-user reaches directly. An entry has no settings and no form. Its ID shares the design's ID space,
+`architecture.studio.entries[]` (`id`, `lane` download / upload / both, `element`) records the
+tiles the user reaches directly; a tile has at most one entry, and `both` counts toward each
+lane's cap. An entry has no settings form; its inspector's lane row sets `lane`. Its ID shares the design's ID space,
 its element must exist, and removing the element removes the entry. Every tile must be reachable
 from the user through an entry; which kinds may be entries, and the other lane rules validation
 enforces, are in the [catalog](../CATALOG.md#lanes-and-links).

@@ -31,6 +31,21 @@ describe("designBlueprint", () => {
     expect(designBlueprint(shuffled, "TinyURL")).toEqual(blueprint);
   });
 
+  it("lists a both-lane entry once per lane, keeping the entries' shape", () => {
+    const design = tinyurl();
+    const entry = design.architecture?.studio?.entries?.find((item) => item.element === "cdn");
+    if (!entry) throw new Error("No CDN entry.");
+    entry.lane = "both";
+    const blueprint = designBlueprint(design, "TinyURL");
+    expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
+    expect(blueprint.entries).toEqual([
+      { lane: "download", element: "cdn" },
+      { lane: "upload", element: "cdn" },
+      { lane: "upload", element: "shorten-api" },
+    ]);
+    expect(blueprint.findings).toEqual([]);
+  });
+
   it("follows the design revision and publishes a JSON Schema", () => {
     const result = applyOperations(tinyurl(), [
       { op: "updateElement", id: "redirect", name: "Redirector" },

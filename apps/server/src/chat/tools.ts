@@ -10,6 +10,7 @@ import {
   applyOperations,
   buildStudioCommand,
   type DesignDocument,
+  entryLanes,
   type Finding,
   LANE_ACTOR,
   type LaneGraph,
@@ -35,19 +36,21 @@ export const INSTRUCTIONS = `You are Jeeves's architecture studio assistant. You
 
 The lane canvas:
 - One actor, the user (a mobile and desktop user), is always there. It is not a tile; you never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post). A lane entry links the user to the first tile of that path.
+- A tile has at most one entry. When one tile (typically an API) is where both the user's reads and writes first land, give it one shared entry with lane "both": one line from the user, and both lanes branch from that tile. linkTiles from a lane onto the tile that starts the other lane makes its entry shared; setEntryLane changes an entry's lane.
 - Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
 - A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
 - Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
 - Link table (source -> target: modes). User -> a service (not a worker), API, storage or external API: sync (a lane entry). Application (a Service or API kind other than the CDN) -> database, cache, storage, search, CDN: sync. Application -> application or external API: sync or async. Application -> queue: async (publish). Queue -> application: async (consume). External API -> application: sync or async. CDN -> application or storage: sync.
-- Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per lane; a tile starts at most one lane.
+- Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per lane; a shared entry counts toward both lanes.
 
-Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the lanes, every tile in lane order (kind, settings, links with their modes, modules) and the findings.
+Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the lanes (each with its entries; a shared entry is listed in both, marked lane "both"), every tile in lane order (kind, settings, links with their modes, modules) and the findings.
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addTile: a new tile after a tile, after a lane (from {"lane": "download"} or {"lane": "upload"}, side "after", link "sync"), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addTile from a lane that passes system {name}.
-- linkTiles: links a lane or a tile to a tile already on the canvas (a merge).
+- linkTiles: links a lane or a tile to a tile already on the canvas (a merge). From a lane onto the tile that starts the other lane, it makes that entry shared (lane "both") instead of adding a link.
+- setEntryLane: sets an entry's lane to "download", "upload" or "both", within the caps.
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
-- removeLink: removes a link or a lane entry, unless that cuts a tile off.
+- removeLink: removes a link or a lane entry (a shared entry goes from both lanes), unless that cuts a tile off.
 - changeKind: switches a tile to another kind of its tile type, as the inspector's kind row does; its settings start from that kind's defaults.
 - edit (a tile's name, purpose, settings or owner), editSystem (the system name and goal), editConnection (a link's label, protocol, interaction, access and settings). Settings are complete values, not patches.
 - createComponent, editComponent, connectComponent, disconnectComponent, removeComponent: modules inside an application tile. A module reaches other tiles only through its tile's own links.
@@ -83,7 +86,7 @@ const descriptions: Record<ToolName, string> = {
   getDesign:
     "Read the saved baseRevision, the system, both lanes, every tile in lane order with its kind, settings, links (sync or async) and modules, and the current findings.",
   applyStudioCommands:
-    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Tiles and links change only through addTile, linkTiles, removeTile, removeLink and changeKind. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
+    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Tiles and links change only through addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   askUser: "Ask a focused question with clickable choices, then end the turn.",
 };
@@ -121,13 +124,17 @@ function catalogSummary() {
   };
 }
 
+/** Whether an edge is an entry of this lane (a shared entry is in both). */
+const enters = (edge: LaneGraph["edges"][number], lane: StudioLane) =>
+  edge.lane !== undefined && entryLanes(edge.lane).includes(lane);
+
 /** The tiles one lane reaches, breadth-first from its entries: the canvas's lane order. */
 function laneTiles(graph: LaneGraph, lane: StudioLane): string[] {
   const order: string[] = [];
   const visit = (id: string) => {
     if (!order.includes(id)) order.push(id);
   };
-  for (const edge of graph.edges) if (edge.lane === lane) visit(edge.target);
+  for (const edge of graph.edges) if (enters(edge, lane)) visit(edge.target);
   for (let index = 0; index < order.length; index += 1)
     for (const edge of graph.edges)
       if (!edge.lane && edge.source === order[index]) visit(edge.target);
@@ -135,8 +142,9 @@ function laneTiles(graph: LaneGraph, lane: StudioLane): string[] {
 }
 
 /**
- * The design as chat sees it: the lanes with their entries and tiles, then every tile in lane
- * order with its kind, settings, outgoing links (sync or async) and modules.
+ * The design as chat sees it: the lanes with their entries (a shared entry in both, marked
+ * `lane: "both"`) and tiles, then every tile in lane order with its kind, settings, outgoing links
+ * (sync or async) and modules.
  */
 function designSummary(design: DesignDocument, findings: readonly Finding[]) {
   const studio = design.architecture?.studio;
@@ -168,8 +176,12 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
     lanes: studioLanes.map((lane) => ({
       lane,
       entries: graph.edges
-        .filter((edge) => edge.lane === lane)
-        .map((edge) => ({ id: edge.id, tile: edge.target })),
+        .filter((edge) => enters(edge, lane))
+        .map((edge) => ({
+          id: edge.id,
+          tile: edge.target,
+          ...(edge.lane === "both" && { lane: edge.lane }),
+        })),
       tiles: laneTiles(graph, lane),
     })),
     tiles: graph.nodes

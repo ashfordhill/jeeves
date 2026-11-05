@@ -4,6 +4,7 @@ import { type DesignDocument, emptyDesign } from "./design.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import {
   laneChoices,
+  laneEntryRefusal,
   laneLinkRefusal,
   laneTabs,
   newLinkId,
@@ -202,7 +203,7 @@ describe("addTile", () => {
 });
 
 describe("linkTiles", () => {
-  it("merges into a tile and refuses a loop, a second link and a second lane", () => {
+  it("merges into a tile and refuses a loop, a second link and a second entry in a lane", () => {
     const design = tinyurl();
     const merged = run(design, {
       type: "linkTiles",
@@ -242,12 +243,98 @@ describe("linkTiles", () => {
     expect(
       refusal(design, {
         type: "linkTiles",
-        from: { lane: "upload" },
+        from: { lane: "download" },
         to: "cdn",
         link: "sync",
-        linkId: "upload-cdn",
+        linkId: "download-cdn-2",
       }),
-    ).toBe("CDN already starts the download lane; a tile can start only one lane.");
+    ).toBe("CDN already starts the download lane.");
+  });
+
+  it("from the other lane onto an entry tile, makes that entry start both lanes", () => {
+    const design = tinyurl();
+    expect(laneLinkRefusal(design, { lane: "upload" }, "cdn", "sync")).toBeUndefined();
+    const shared = run(design, {
+      type: "linkTiles",
+      from: { lane: "upload" },
+      to: "cdn",
+      link: "sync",
+      linkId: "upload-cdn",
+    });
+    // One entry, the same line: no new link, the entry's lane only.
+    expect(shared.ops).toEqual(["setStudio"]);
+    expect(studioOf(shared.design).entries).toEqual([
+      { id: "download-cdn", lane: "both", element: "cdn" },
+      { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
+    ]);
+    expect(laneLinkRefusal(shared.design, { lane: "download" }, "cdn", "sync")).toBe(
+      "CDN already starts both lanes.",
+    );
+
+    // Removing the shared entry removes it from both lanes, unless that cuts tiles off.
+    expect(refusal(shared.design, { type: "removeLink", link: "download-cdn" })).toBe(
+      "Removing the download and upload entry to CDN would cut off CDN, Redirect service, Click events, Analytics worker and Analytics store.",
+    );
+    const reached = run(shared.design, {
+      type: "linkTiles",
+      from: { tile: "shorten-api" },
+      to: "cdn",
+      link: "sync",
+      linkId: "shorten-api-cdn",
+    }).design;
+    expect(
+      studioOf(run(reached, { type: "removeLink", link: "download-cdn" }).design).entries,
+    ).toEqual([{ id: "upload-shorten-api", lane: "upload", element: "shorten-api" }]);
+  });
+});
+
+describe("setEntryLane", () => {
+  it("sets an entry's lanes, counting a both-lane entry toward both caps", () => {
+    const design = tinyurl();
+    const both = run(design, { type: "setEntryLane", entry: "upload-shorten-api", lane: "both" });
+    expect(both.ops).toEqual(["setStudio"]);
+    expect(studioOf(both.design).entries?.at(-1)).toEqual({
+      id: "upload-shorten-api",
+      lane: "both",
+      element: "shorten-api",
+    });
+    const back = run(both.design, {
+      type: "setEntryLane",
+      entry: "upload-shorten-api",
+      lane: "download",
+    }).design;
+    expect(studioOf(back).entries?.map((entry) => entry.lane)).toEqual(["download", "download"]);
+
+    // Three download entries fill the lane: no fourth, shared or not.
+    let full = design;
+    for (const tile of ["redirect", "reputation"])
+      full = run(full, {
+        type: "linkTiles",
+        from: { lane: "download" },
+        to: tile,
+        link: "sync",
+        linkId: `download-${tile}`,
+      }).design;
+    const cap = "The download lane already has 3 entries; the most is 3.";
+    expect(laneEntryRefusal(full, "upload-shorten-api", "both")).toBe(cap);
+    expect(laneEntryRefusal(full, "upload-shorten-api", "download")).toBe(cap);
+    expect(laneEntryRefusal(full, "download-cdn", "both")).toBeUndefined();
+    expect(laneLinkRefusal(full, { lane: "download" }, "shorten-api", "sync")).toBe(cap);
+    expect(laneTabs(full, LANE_ACTOR).map((tab) => tab.from)).toEqual([{ lane: "upload" }]);
+    // Shared entries count in both lanes: sharing the CDN and Redirect fills the upload lane.
+    let shared = full;
+    for (const entry of ["download-cdn", "download-redirect"])
+      shared = run(shared, { type: "setEntryLane", entry, lane: "both" }).design;
+    expect(laneEntryRefusal(shared, "download-reputation", "both")).toBe(
+      "The upload lane already has 3 entries; the most is 3.",
+    );
+    expect(laneEntryRefusal(shared, "download-redirect", "upload")).toBeUndefined();
+    expect(refusal(design, { type: "setEntryLane", entry: "download-cdn", lane: "download" })).toBe(
+      "CDN already starts the download lane.",
+    );
+    expect(refusal(design, { type: "setEntryLane", entry: "cdn", lane: "both" })).toBe(
+      'There is no lane entry "cdn".',
+    );
   });
 });
 
@@ -370,9 +457,10 @@ describe("canvas helpers", () => {
     expect(laneLinkRefusal(design, { tile: "shorten-api" }, "click-events", "async")).toBe(
       undefined,
     );
-    // A tile starts only one lane.
-    expect(laneLinkRefusal(design, { lane: "download" }, "shorten-api", "sync")).toBe(
-      "Shorten API already starts the upload lane; a tile can start only one lane.",
+    // From a lane onto the other lane's entry tile: the entry starts both lanes.
+    expect(laneLinkRefusal(design, { lane: "download" }, "shorten-api", "sync")).toBeUndefined();
+    expect(laneLinkRefusal(design, { lane: "upload" }, "shorten-api", "sync")).toBe(
+      "Shorten API already starts the upload lane.",
     );
     expect(laneLinkRefusal(design, { tile: "redirect" }, "cdn", "sync")).toMatch(/loop/);
     // The user is reached only through its lane tabs.

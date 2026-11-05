@@ -279,6 +279,7 @@ export function buildStudioCommand(
     case "removeTile":
     case "removeLink":
     case "changeKind":
+    case "setEntryLane":
       ops.push(...buildLaneCommand(draft, studio, input));
       break;
   }

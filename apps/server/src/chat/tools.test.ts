@@ -162,7 +162,7 @@ describe("studio chat tools", () => {
     expect(workspace.activity.every((a) => !a.ok)).toBe(true);
   });
 
-  it("starts a design from nothing with a first tile on a lane that names the system", () => {
+  it("starts a design from nothing with a first tile on a lane that names the system, then shares it", () => {
     const workspace = new Workspace(emptyDesign());
     const first = {
       type: "addTile",
@@ -183,6 +183,15 @@ describe("studio chat tools", () => {
       entries: [{ id: "upload-api", tile: "api" }],
       tiles: ["api"],
     });
+    // One API where reads and writes first land: a shared entry, listed in both lanes.
+    expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "both" }).ok).toBe(true);
+    expect(run(workspace, "getDesign").lanes).toEqual(
+      ["download", "upload"].map((lane) => ({
+        lane,
+        entries: [{ id: "upload-api", tile: "api", lane: "both" }],
+        tiles: ["api"],
+      })),
+    );
   });
 
   it("records an askUser question for the turn", () => {

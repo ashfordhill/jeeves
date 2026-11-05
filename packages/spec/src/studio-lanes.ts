@@ -8,7 +8,13 @@ import { type BoardEdge, checkGraph, type Rules, reachableFrom } from "@jeeves/b
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { laneLimits, studioEntryKinds, studioLinkDefaults } from "./studio-links.ts";
-import { type StudioKind, type StudioLane, studioLanes } from "./studio-model.ts";
+import {
+  entryLanes,
+  type StudioEntryLane,
+  type StudioKind,
+  studioEntryLanes,
+  studioLanes,
+} from "./studio-model.ts";
 
 /** The actor's graph key. `idSchema` can never produce it, so it never meets a design ID. */
 export const LANE_ACTOR = "@actor";
@@ -16,24 +22,25 @@ export const LANE_ACTOR = "@actor";
 /** A tile; the actor alone has no kind. */
 export type LaneNode = { id: string; kind?: StudioKind };
 /**
- * A connection, or an entry (`lane` set; its source is the actor). `async` follows the
- * connection's interaction. `dashed` is async, or continues after an async link: its source can
- * only be reached from the actor through one.
+ * A connection, or an entry (`lane` set, `both` for a both-lane entry; its source is the actor).
+ * `async` follows the connection's interaction. `dashed` is async, or continues after an async
+ * link: its source can only be reached from the actor through one.
  */
-export type LaneEdge = BoardEdge & { async: boolean; dashed: boolean; lane?: StudioLane };
+export type LaneEdge = BoardEdge & { async: boolean; dashed: boolean; lane?: StudioEntryLane };
 export type LaneGraph = { nodes: LaneNode[]; edges: LaneEdge[] };
 
 /**
- * Nodes are the actor, then tiles breadth-first from the download entries, then from the upload
- * entries (children in connection order), then any unreachable tiles in document order, so
- * download lays out above upload. Edges are the entries, then each node's connections in node
- * order. Links to elements that do not exist are left out (validation reports them).
+ * Nodes are the actor, then tiles breadth-first from the download-only entries, then from the
+ * both-lane entries, then from the upload-only entries (children in connection order), then any
+ * unreachable tiles in document order, so download lays out above upload and a shared entry
+ * between them. Edges are the entries in that order, then each node's connections in node order.
+ * Links to elements that do not exist are left out (validation reports them).
  */
 export function laneGraph(design: DesignDocument): LaneGraph {
   const studio = design.architecture?.studio;
   const kinds = new Map(studio?.elements.map((item) => [item.element, item.settings.kind]));
   const exists = new Set(design.elements.map((element) => element.id));
-  const entries = studioLanes.flatMap((lane) =>
+  const entries = studioEntryLanes.flatMap((lane) =>
     (studio?.entries ?? []).filter((entry) => entry.lane === lane && exists.has(entry.element)),
   );
   const outgoing = new Map<string, LaneEdge[]>();
@@ -61,7 +68,7 @@ export function laneGraph(design: DesignDocument): LaneGraph {
     order.push(id);
     queue.push(id);
   };
-  for (const lane of studioLanes) {
+  for (const lane of studioEntryLanes) {
     for (const entry of entries) if (entry.lane === lane) visit(entry.element);
     for (let id = queue.shift(); id !== undefined; id = queue.shift())
       for (const edge of outgoing.get(id) ?? []) visit(edge.target);
@@ -128,12 +135,17 @@ export function laneRules(kindOf: (id: string) => StudioKind | undefined): LaneR
   };
 }
 
+/** An entry's lanes in words: "the download lane", "both lanes". */
+export const laneWords = (lane: StudioEntryLane): string =>
+  lane === "both" ? "both lanes" : `the ${lane} lane`;
+
 /**
  * `LANE_INVALID` findings: a tile the actor cannot reach, a cycle, a link or entry the link table
- * refuses, a pair linked twice, or a broken cap (`laneLimits`). Missing references, duplicate IDs,
- * self-links and elements without studio settings are reported by the existing validation. A
- * design without a studio model has no lanes and no findings. `validateStudio` includes these, so
- * a batch that breaks a lane rule is rejected.
+ * refuses, a pair linked twice (a tile has one entry), or a broken cap (`laneLimits`; a both-lane
+ * entry counts in each lane). Missing references, duplicate IDs, self-links and elements without
+ * studio settings are reported by the existing validation. A design without a studio model has no
+ * lanes and no findings. `validateStudio` includes these, so a batch that breaks a lane rule is
+ * rejected.
  */
 export function laneFindings(design: DesignDocument): Finding[] {
   const studio = design.architecture?.studio;
@@ -156,7 +168,8 @@ export function laneFindings(design: DesignDocument): Finding[] {
     out.push(finding("LANE_INVALID", message, target));
 
   for (const lane of studioLanes) {
-    const count = studio.entries?.filter((entry) => entry.lane === lane).length ?? 0;
+    const count =
+      studio.entries?.filter((entry) => entryLanes(entry.lane).includes(lane)).length ?? 0;
     if (count > laneLimits.entriesPerLane)
       report(`The ${lane} lane has ${count} entries; the most is ${laneLimits.entriesPerLane}.`, {
         path: ["architecture", "studio", "entries"],
@@ -173,7 +186,7 @@ export function laneFindings(design: DesignDocument): Finding[] {
           const reason = rules.refusal(edge.source, edge.target, edge.async);
           report(
             edge.lane
-              ? `${name(edge.target)} can't start the ${edge.lane} lane. ${reason}`
+              ? `${name(edge.target)} can't start ${laneWords(edge.lane)}. ${reason}`
               : `${name(edge.source)} → ${name(edge.target)}: ${reason}`,
             about(edge.id),
           );
