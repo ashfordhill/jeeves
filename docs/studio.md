@@ -32,7 +32,8 @@ lane, with no islands and no cycles.
 - Click a tile, a line or a chip to select it and open the inspector; click empty paper to clear.
   The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
   a red X; a selected line shows a red X too ([Removing](#removing)).
-  Modules (components) are not drawn, and C1 people, external systems and packages are not shown.
+  Modules (components) are not drawn; they are listed in their tile's inspector
+  ([Inspector](#inspector)). C1 people, external systems and packages are not shown.
 
 ## Layout and navigation
 
@@ -117,14 +118,33 @@ Optional shortcuts: Delete or Backspace does what the selected tile's or line's 
 
 ## Inspector
 
-The inspector shows the selection. Its sections are **General**, **Options** and **Connections**;
-empty ones are hidden.
+The inspector shows the selection. Its sections are **General**, **Options**, **Connections** and,
+for an application tile, **Modules**; empty ones are hidden.
 
-- A tile: its icon, name and kind, then name and purpose, the kind's settings, provider choices and
+- A tile: its icon, name and kind, then the **kind row** when its tile type has more than one
+  kind: one icon per kind (the name is the tooltip), the current one filled yellow. Clicking
+  another switches the tile to it (Service: microservice, worker, redirect, identity,
+  notifications, billing; API: gateway or CDN; Database: database or search index). The tile keeps
+  its name, purpose, links and modules; its settings start over from the new kind's defaults. A
+  kind the lane rules refuse is faded and its tooltip says why ("Shorten API can't become a worker.
+  A lane starts at a service (not a worker), …"; "ID generator in Shorten API can't use a search
+  index; remove its link to Links database first.").
+- General, Options and Connections: name and purpose, the kind's settings, provider choices and
   optional performance intent (replicas, autoscale signal, request timeout, concurrency limit;
   read replicas and partition key for databases; topology and eviction for caches; partitions for
   queues; redirect caching for the CDN). An empty input or **Unspecified** removes an optional
   value. Connections lists the tile's links; clicking one selects that line.
+- **Modules** (services and the gateway, not the CDN or resources): the tile's modules, each with
+  its kind's icon and its name. The dashed **`+`** below opens the ten module kinds as icons
+  (names in the tooltips); picking one adds a module named after its kind ("Data access", then
+  "Data access 2") with that kind's defaults, opens it and selects its name for renaming.
+- A module: a way back to its tile (the arrow and the tile's name), its icon, name and kind, the
+  typical product, its readiness ("A cache reader needs a cache connection."), then General (name,
+  purpose and **Remove module**), Options (its settings) and Connections: its links (a link
+  through a connection selects that line, a link to another module opens it; **Unlink** removes
+  it) and **Link to**, the tiles its tile links to whose kind it may use, through that link (an
+  event publisher reaches a queue only through a publish link, a consumer only through a consume
+  link).
 - A line: its two tiles, then Action, Protocol, Interaction, Access, and timeout/retry where the
   protocol allows. Switching Interaction between Request / response and Asynchronous changes the
   dash where the link table allows both.
@@ -140,7 +160,8 @@ reopen to edit."
 ## History
 
 **Undo/Redo** in the header step through the server's design history. Each accepted inspector
-batch or chat turn is one step; a new edit ends the redo chain. Selecting, switching tabs,
+batch (an autosaved edit, a kind switch, adding, linking, unlinking or removing a module) or chat
+turn is one step; a new edit ends the redo chain. Selecting, switching tabs, opening a module,
 panning, zooming and Fit add none. The history survives reloads.
 
 ## Chat
@@ -188,8 +209,8 @@ external, nine connections and all eleven components, with nothing omitted and n
   no icon covers it (or after zooming in).
 - A removal's confirmation panel sits under the tile at screen size and can cover the tiles below
   it; the tiles it would remove stay visible through their rings.
-- Modules (components) are neither drawn nor listed in the inspector yet; chat and the blueprint
-  carry them.
+- Modules are not drawn. The inspector links a module only to tiles; a link between two modules
+  of the same tile ("Supplies code") is made through chat.
 - Where two services fork to the same tiles, their lines share one bus. In TinyURL, Redirect
   service and Shorten API both reach Link cache and Links database, so the lines alone don't show
   which of them reaches Click events; selecting a line does. A click on a shared stretch selects one

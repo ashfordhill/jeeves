@@ -21,11 +21,12 @@ import {
   wouldCreateCycle,
 } from "@jeeves/board/graph";
 import { z } from "zod";
-import { type DesignDocument, designIds, elementSchema } from "./design.ts";
+import { type DesignDocument, elementSchema } from "./design.ts";
 import { idSchema } from "./ids.ts";
 import type { OperationInput } from "./operations.ts";
-import { type StudioComponentTargetKind, studioComponentDefinitions } from "./studio-components.ts";
+import { studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
+import { freshId, slug, usedIds } from "./studio-ids.ts";
 import { LANE_ACTOR, laneFindings, laneGraph, laneRules } from "./studio-lanes.ts";
 import {
   laneLimits,
@@ -45,6 +46,7 @@ import {
   studioLimits,
   studioResourceKinds,
 } from "./studio-model.ts";
+import { studioComponentTargetKind } from "./studio-modules.ts";
 import type { StudioConnectionCreation } from "./studio-operations.ts";
 import { pruneStudioAfterDelete } from "./studio-prune.ts";
 import {
@@ -314,33 +316,11 @@ function removal(view: Lanes, design: DesignDocument, tile: string): RemovalPlan
   return plan.value;
 }
 
-/** Every identity in use, including C1 declarations and components. */
-function usedIds(design: DesignDocument): Set<string> {
-  const architecture = design.architecture;
-  return new Set([
-    "system",
-    ...Array.from(designIds(design), (item) => item.id),
-    ...(architecture?.nodes ?? []).map((item) => item.id),
-    ...(architecture?.relationships ?? []).map((item) => item.id),
-    ...(architecture?.studio?.components ?? []).map((item) => item.id),
-    ...(architecture?.studio?.componentConnections ?? []).map((item) => item.id),
-  ]);
-}
 function requireFree(design: DesignDocument, ids: string[]) {
   const used = usedIds(design);
   ids.forEach((id, index) => {
     if (used.has(id) || ids.indexOf(id) !== index) refuse(`The ID "${id}" is already in use.`);
   });
-}
-/** `base`, or `base-2`, `base-3`…, shortened to fit an ID. */
-function freshId(base: string, taken: (id: string) => boolean): string {
-  const fit = (text: string, room: number) => text.slice(0, room).replace(/-+$/, "");
-  const stem = idSchema.safeParse(fit(base, 63)).success ? base : "link";
-  for (let n = 1; ; n += 1) {
-    const suffix = n === 1 ? "" : `-${n}`;
-    const id = `${fit(stem, 63 - suffix.length)}${suffix}`;
-    if (!taken(id)) return id;
-  }
 }
 
 type Draft = { design: DesignDocument; studio: StudioModel; ops: OperationInput[] };
@@ -423,23 +403,6 @@ function adoptOrphans(out: Draft) {
       )?.to.element;
     if (next) binding.owner = { kind: "element", id: next };
     else delete binding.owner;
-  }
-}
-
-/** What a component may use this kind as (validation's target kinds). */
-function componentTarget(kind: StudioKind): StudioComponentTargetKind {
-  switch (kind) {
-    case "identity":
-    case "database":
-    case "cache":
-    case "queue":
-    case "search":
-    case "object-store":
-    case "cdn":
-    case "external-api":
-      return kind;
-    default:
-      return "application";
   }
 }
 
@@ -621,7 +584,7 @@ function changeKind(
   const components = studio.components ?? [];
   if (!application && components.some((item) => item.host === element.id))
     refuse(`${name} holds modules, and ${noun(kind)} can't. Remove its modules first.`);
-  const target = componentTarget(kind);
+  const target = studioComponentTargetKind(kind);
   for (const item of studio.componentConnections ?? []) {
     if (item.to.kind !== "element" || item.to.id !== element.id) continue;
     const component = components.find((candidate) => candidate.id === item.from);
@@ -738,12 +701,6 @@ export function laneLinkRefusal(
   });
   return result.ok ? result.value : result.message;
 }
-
-const slug = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 
 /**
  * A name and ID for a new tile of this type: the type's name ("Cache"), then "Cache 2", "Cache 3"…,

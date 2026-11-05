@@ -237,9 +237,12 @@
   border-bottom: 1px solid var(--grid-dot);
 }
 .studio-inspector-tabs button {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   padding: 8px 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border: 0;
   border-bottom: 3px solid transparent;
   background: transparent;

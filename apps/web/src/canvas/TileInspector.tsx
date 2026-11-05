@@ -1,0 +1,305 @@
+// A tile's inspector: its icon, name and kind; the kind row (one icon per kind of its tile type, a
+// click is `changeKind`, a kind the rules refuse is disabled with the reason as its tooltip); then
+// General, Options, Connections and, for an application, Modules. Modules are a list with a `+`
+// icon menu (`createComponent`); a module opens its own form, with a way back to the tile. Each
+// change is one batch and one undo step. Modules are never drawn on the canvas.
+import type { BoardSelection } from "@jeeves/board";
+import {
+  applyOperations,
+  buildStudioCommand,
+  createStudioComponentSettings,
+  type DesignDocument,
+  moduleKinds,
+  newModuleIdentity,
+  type StudioComponent,
+  type StudioComponentKind,
+  type StudioKind,
+  studioComponentDefinitions,
+  studioComponentVisuals,
+  studioDefinitions,
+  studioTileDefinitions,
+  tileTypeOf,
+} from "@jeeves/spec";
+import { Menu } from "@mantine/core";
+import { IconArrowLeft, IconPlus } from "@tabler/icons-react";
+import { useEffect, useMemo, useState } from "react";
+import { commitAction } from "../studio/actions.ts";
+import { ComponentForm, type InspectorTab, TargetInspector } from "../studio/InspectorForm.tsx";
+import { StudioIcon } from "../studio/StudioIcon.tsx";
+
+const kindOf = (design: DesignDocument, id: string): StudioKind | undefined =>
+  design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
+
+/** Why switching this tile to `kind` is refused (the command's words, or apply's), if it is. */
+function changeKindRefusal(
+  design: DesignDocument,
+  element: string,
+  kind: StudioKind,
+): string | undefined {
+  try {
+    const ops = buildStudioCommand(design, { type: "changeKind", element, kind }).ops;
+    const result = applyOperations(design, ops, { baseRevision: design.revision });
+    return result.ok ? undefined : (result.errors[0]?.message ?? "This change is not allowed.");
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
+}
+
+/** One icon button per kind of the tile's type, the current kind pressed. Hidden for one kind. */
+function KindRow({
+  projectId,
+  design,
+  element,
+}: {
+  projectId: string;
+  design: DesignDocument;
+  element: string;
+}) {
+  const choices = useMemo(() => {
+    const current = kindOf(design, element);
+    const type = current && tileTypeOf(current);
+    if (!current || !type) return [];
+    return studioTileDefinitions[type].kinds.map((kind) => ({
+      kind,
+      current: kind === current,
+      refusal: kind === current ? undefined : changeKindRefusal(design, element, kind),
+    }));
+  }, [design, element]);
+  if (choices.length < 2) return null;
+  return (
+    <fieldset className="lane-kinds" aria-label="Kind">
+      {choices.map(({ kind, current, refusal }) => {
+        const definition = studioDefinitions[kind];
+        return (
+          <button
+            key={kind}
+            type="button"
+            className="lane-kind"
+            data-family={definition.visual.color}
+            aria-label={definition.name}
+            aria-pressed={current}
+            title={refusal ?? definition.name}
+            disabled={!!refusal}
+            onClick={() => {
+              if (current) return;
+              void commitAction(
+                projectId,
+                (latest) => buildStudioCommand(latest, { type: "changeKind", element, kind }).ops,
+              );
+            }}
+          >
+            <StudioIcon name={definition.visual.icon} size={22} />
+          </button>
+        );
+      })}
+    </fieldset>
+  );
+}
+
+/** The host's modules (icon and name; a click opens one) and the `+` icon menu of kinds. */
+function ModuleList({
+  projectId,
+  design,
+  host,
+  onOpen,
+}: {
+  projectId: string;
+  design: DesignDocument;
+  host: string;
+  onOpen: (id: string, created?: boolean) => void;
+}) {
+  const modules = (design.architecture?.studio?.components ?? []).filter(
+    (item) => item.host === host,
+  );
+  const add = (kind: StudioComponentKind) => {
+    const created = newModuleIdentity(design, host, kind);
+    void commitAction(
+      projectId,
+      (latest) =>
+        buildStudioCommand(latest, {
+          type: "createComponent",
+          component: { ...created, host, settings: createStudioComponentSettings(kind) },
+        }).ops,
+    ).then((ok) => {
+      if (ok) onOpen(created.id, true);
+    });
+  };
+  return (
+    <div className="lane-modules">
+      {modules.length ? (
+        <ul className="lane-module-list" aria-label="Modules">
+          {modules.map((item) => {
+            const visual = studioComponentVisuals[item.settings.kind];
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  data-family={visual.color}
+                  title={studioComponentDefinitions[item.settings.kind].name}
+                  onClick={() => onOpen(item.id)}
+                >
+                  <StudioIcon name={visual.icon} size={18} />
+                  <span>{item.name}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="studio-field-help">No modules yet.</p>
+      )}
+      <Menu position="bottom-start" shadow="md">
+        <Menu.Target>
+          <button
+            type="button"
+            className="lane-module-add"
+            aria-label="Add module"
+            title="Add module"
+          >
+            <IconPlus size={18} aria-hidden />
+          </button>
+        </Menu.Target>
+        <Menu.Dropdown className="lane-module-menu">
+          {moduleKinds(design, host).map((kind) => {
+            const name = studioComponentDefinitions[kind].name;
+            const visual = studioComponentVisuals[kind];
+            return (
+              <Menu.Item
+                key={kind}
+                className="lane-module-kind"
+                aria-label={name}
+                title={name}
+                onClick={() => add(kind)}
+              >
+                <span className="lane-module-icon" data-family={visual.color}>
+                  <StudioIcon name={visual.icon} size={22} />
+                </span>
+              </Menu.Item>
+            );
+          })}
+        </Menu.Dropdown>
+      </Menu>
+    </div>
+  );
+}
+
+/** An open module: back to its tile, its icon, name and kind, then its form. */
+function ModuleInspector({
+  projectId,
+  design,
+  module,
+  onBack,
+  onOpen,
+  onSelect,
+}: {
+  projectId: string;
+  design: DesignDocument;
+  module: StudioComponent;
+  onBack: () => void;
+  onOpen: (id: string) => void;
+  onSelect: (next: BoardSelection) => void;
+}) {
+  const host = design.elements.find((item) => item.id === module.host)?.name ?? module.host;
+  const visual = studioComponentVisuals[module.settings.kind];
+  return (
+    <div className="studio-selection-summary">
+      <button
+        type="button"
+        className="lane-inspector-back"
+        aria-label={`Back to ${host}`}
+        title={`Back to ${host}`}
+        onClick={onBack}
+      >
+        <IconArrowLeft size={16} aria-hidden />
+        {host}
+      </button>
+      <h2 className="lane-inspector-title" data-family={visual.color}>
+        <StudioIcon name={visual.icon} size={22} />
+        {module.name}
+      </h2>
+      <p className="lane-inspector-kind">{studioComponentDefinitions[module.settings.kind].name}</p>
+      <ComponentForm
+        projectId={projectId}
+        id={module.id}
+        design={design}
+        onConnection={(line) => onSelect({ line })}
+        onComponent={onOpen}
+        onRemoved={onBack}
+      />
+    </div>
+  );
+}
+
+export function TileInspector({
+  projectId,
+  design,
+  id,
+  name,
+  onSelect,
+}: {
+  projectId: string;
+  design: DesignDocument;
+  id: string;
+  name: string;
+  onSelect: (next: BoardSelection) => void;
+}) {
+  const [tab, setTab] = useState<InspectorTab>("General");
+  const [open, setOpen] = useState<string>();
+  const [focusName, setFocusName] = useState<string>();
+  const module = open
+    ? design.architecture?.studio?.components?.find((item) => item.id === open && item.host === id)
+    : undefined;
+  useEffect(() => {
+    // A new module opens with its Name field focused, ready to rename.
+    if (!focusName || focusName !== module?.id) return;
+    const field = document.querySelector<HTMLInputElement>(
+      '.studio-inspector input[id$="-component.name"]',
+    );
+    if (!field) return;
+    field.focus();
+    field.select();
+    setFocusName(undefined);
+  });
+  const openModule = (next: string, created?: boolean) => {
+    setOpen(next);
+    if (created) setFocusName(next);
+  };
+  if (module)
+    return (
+      <ModuleInspector
+        projectId={projectId}
+        design={design}
+        module={module}
+        onBack={() => setOpen(undefined)}
+        onOpen={openModule}
+        onSelect={onSelect}
+      />
+    );
+  const kind = kindOf(design, id);
+  const definition = kind ? studioDefinitions[kind] : undefined;
+  const application = moduleKinds(design, id).length > 0;
+  return (
+    <div className="studio-selection-summary">
+      <h2 className="lane-inspector-title" data-family={definition?.visual.color ?? "generic"}>
+        <StudioIcon name={definition?.visual.icon} size={22} />
+        {name}
+      </h2>
+      {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
+      <KindRow projectId={projectId} design={design} element={id} />
+      <TargetInspector
+        projectId={projectId}
+        element={id}
+        label={name}
+        design={design}
+        onConnection={(line) => onSelect({ line })}
+        tab={tab}
+        onTab={setTab}
+        modules={
+          application ? (
+            <ModuleList projectId={projectId} design={design} host={id} onOpen={openModule} />
+          ) : undefined
+        }
+      />
+    </div>
+  );
+}

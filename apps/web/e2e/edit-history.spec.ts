@@ -1,33 +1,35 @@
 import type { Page } from "@playwright/test";
 import { design, expect, ready, test, tile } from "./studio.ts";
 
-const requestTimeout = async (page: Page, id: string) =>
-  (await design(page, id)).architecture.studio.elements.find((e) => e.element === "shorten-api")
-    ?.settings.requestTimeoutMs;
+const poolSize = async (page: Page, id: string) =>
+  (await design(page, id)).architecture.studio.components.find((c) => c.name === "Link writer")
+    ?.settings.poolSize;
 
-test("autosaves a setting, undoes and redoes it, and keeps it after reload", async ({
+test("autosaves a module setting, undoes and redoes it, and keeps it after reload", async ({
   page,
   tinyurl: id,
 }) => {
   const inspector = page.locator(".studio-inspector");
-  const timeout = inspector.getByLabel("Request timeout", { exact: true });
+  const pool = inspector.getByLabel("Pool size", { exact: true });
   const open = async () => {
     await tile(page, "Shorten API").click();
+    await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
+    await inspector.getByRole("button", { name: "Link writer", exact: true }).click();
     await inspector.getByRole("tab", { name: "Options", exact: true }).click();
   };
   await open();
-  await expect(timeout).toHaveValue("3000");
-  await timeout.fill("4500");
-  await expect.poll(() => requestTimeout(page, id)).toBe(4500);
+  await expect(pool).toHaveValue("20");
+  await pool.fill("32");
+  await expect.poll(() => poolSize(page, id)).toBe(32);
 
   await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect.poll(() => requestTimeout(page, id)).toBe(3000);
+  await expect.poll(() => poolSize(page, id)).toBe(20);
   await page.getByRole("button", { name: "Redo", exact: true }).click();
-  await expect.poll(() => requestTimeout(page, id)).toBe(4500);
+  await expect.poll(() => poolSize(page, id)).toBe(32);
 
   await page.reload();
   await ready(page);
   expect(new URL(page.url()).searchParams.get("project")).toBe(id);
   await open();
-  await expect(timeout).toHaveValue("4500");
+  await expect(pool).toHaveValue("32");
 });

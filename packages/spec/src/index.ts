@@ -19,6 +19,7 @@ export * from "./studio-lane-commands.ts";
 export * from "./studio-lanes.ts";
 export * from "./studio-links.ts";
 export * from "./studio-model.ts";
+export * from "./studio-modules.ts";
 export * from "./studio-operations.ts";
 export * from "./studio-presets.ts";
 export * from "./studio-prune.ts";

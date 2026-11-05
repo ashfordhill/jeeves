@@ -136,7 +136,9 @@ enforces, are in the [catalog](../CATALOG.md#lanes-and-links).
 
 Components are `architecture.studio.components[]` (`id`, `host`, `name`, optional `description`,
 `settings`) and `componentConnections[]` (`id`, `from`, `to: {kind: component, id} | {kind:
-element, id, via}`, optional `label`).
+element, id, via}`, optional `label`). In the studio they are a tile's modules, edited in its
+inspector: a new one starts with the defaults below and its kind's name, and Purpose is its
+`description`.
 
 | Kind | Settings (default first) |
 | --- | --- |

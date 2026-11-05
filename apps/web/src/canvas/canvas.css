@@ -235,3 +235,144 @@
   outline: 3px solid var(--blue);
   outline-offset: 2px;
 }
+
+/* A tile's kind row (automation-illustrator's Type keys): one icon per kind of its tile type, the
+   current kind filled yellow; a refused kind is faded, with the reason as its tooltip. */
+.lane-kinds {
+  display: flex;
+  gap: 6px;
+  min-inline-size: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.lane-kind {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  max-width: 48px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--cream);
+  color: var(--type-color, var(--ink));
+  box-shadow: var(--chip-shadow);
+  cursor: pointer;
+}
+
+.lane-kind[aria-pressed="true"] {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--on-yellow);
+  box-shadow: none;
+  cursor: default;
+}
+
+.lane-kind:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* An open module's way back to its tile. */
+.lane-inspector-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 8px;
+  padding: 3px 6px 3px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.lane-inspector-back:hover {
+  color: var(--ink);
+  background: var(--paper-deep);
+}
+
+/* The Modules tab: each module's icon and name, then the `+` that opens the kind menu. */
+.lane-modules {
+  display: grid;
+  gap: 8px;
+}
+
+.lane-module-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lane-module-list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.lane-module-list button > svg {
+  flex: 0 0 auto;
+  color: var(--type-color, var(--ink));
+}
+
+.lane-module-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 2px dashed var(--grid-dot);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--plus);
+  cursor: pointer;
+}
+
+.lane-module-add:hover,
+.lane-module-add[aria-expanded="true"] {
+  border-color: var(--plus);
+}
+
+.lane-module-menu {
+  display: grid;
+  grid-template-columns: repeat(5, 44px);
+  gap: 4px;
+}
+
+/* Mantine's focus holder stays out of the grid. */
+.lane-module-menu > [data-autofocus] {
+  position: absolute;
+}
+
+.lane-module-menu .lane-module-kind {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+
+.lane-module-icon {
+  display: flex;
+  color: var(--type-color, var(--ink));
+}

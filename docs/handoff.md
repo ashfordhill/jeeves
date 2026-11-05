@@ -1025,3 +1025,99 @@ Notes for LG11:
   them; worth knowing when testing the Modules list.
 - The HUD's buttons are styled in `canvas.css` (`.lane-remove-actions`); `ComponentForm`'s own
   remove button already uses `.studio-danger`.
+
+## 2026-11-04 — LG11: inspector kind row and modules list (complete)
+
+A tile's inspector now switches its kind and lists its modules. Modules stay off the canvas.
+
+Spec:
+
+- New `studio-modules.ts` (exported): `studioComponentVisuals` (each module kind's icon and colour,
+  restored from `9850e30`'s `studio-view.ts`), `studioComponentTargetKind` (moved out of the lane
+  commands, where it was `componentTarget`), `moduleKinds(design, host)` (the ten kinds for an
+  application, the client-safe ones for a browser app, none otherwise), `newModuleIdentity(design,
+  host, kind)` ("Data access", then "Data access 2" within the host; ID `shorten-api-data-access`,
+  free across the design) and `moduleLinkChoices(design, component)` → `{element, via, id}[]`:
+  each tile the host links to or from whose kind the module may use, through that connection
+  (publisher/consumer only through a publish/consume link), minus links it already has.
+- New internal `studio-ids.ts` (not in the index): `usedIds`, `freshId` and `slug`, moved out of
+  `studio-lane-commands.ts` unchanged so the module helpers share them.
+
+Web:
+
+- New `canvas/TileInspector.tsx`, mounted by `Workspace.Inspector` for a tile. Header as before,
+  then the **kind row** (`<fieldset aria-label="Kind">`): one icon button per kind of the tile
+  type, `aria-label` the kind name, `aria-pressed` on the current one (yellow, as
+  automation-illustrator's `.inspector-type.is-on`). Each other kind is dry-run on render
+  (`buildStudioCommand` changeKind, then `applyOperations`); a refusal disables the button and
+  becomes its `title`. A click runs `changeKind` through `commitAction`.
+- `TargetInspector`/`TargetForm` take `modules` (a **Modules** tab, last) and an optional
+  controlled `tab`/`onTab`, so coming back from a module lands on Modules. The tab's `ModuleList`:
+  one button per module (kind icon, name; kind name as tooltip), "No modules yet." when empty, and
+  a dashed `+` (`aria-label="Add module"`) opening a Mantine `Menu` of the ten kinds as icons in a
+  5×2 grid (`menuitem`s named by kind). A pick runs `createComponent` with
+  `createStudioComponentSettings(kind)`, opens the new module and selects its Name.
+- An open module (`ModuleInspector`): "← Shorten API" (`aria-label="Back to Shorten API"`), its
+  icon, name and kind, then `ComponentForm` (now mounted). `ComponentForm` changes: the
+  Component/Inside facts went (the header shows them; Typical stays), "Remove component" is
+  **Remove module** and calls `onRemoved` (back to the list), the stale "Drag this component's +
+  handle" help is now "No links yet.", and Connections gained a **Link to** select over
+  `moduleLinkChoices` (runs `connectComponent`). A module that disappears (undo, chat) closes.
+- `StudioIcon` regained `shield`, `repeat`, `plug-connected`, `puzzle`. CSS in `canvas.css`
+  (`.lane-kinds`, `.lane-kind`, `.lane-inspector-back`, `.lane-module*`; Mantine's autofocus holder
+  is taken out of the menu grid). `.studio-inspector-tabs` buttons size to their labels and don't
+  wrap (four tabs at the default 320px rail; at the 240px minimum the labels ellipsize).
+
+Departures (mine, small): the kind row is hidden for tile types with one kind (cache, queue,
+storage, external), where it would be a single pressed button; the header already shows the kind.
+**Link to** is not in LG11's list: without it a new module's readiness gap ("A cache reader needs
+a cache connection.") could only be fixed through chat, since the old canvas's module handles are
+gone. It links to tiles only; module-to-module links stay chat-only (in Limits).
+
+E2E: `edit-history` edits Link writer's pool size 20 → 32 via Shorten API → Modules → Link writer
+→ Options (autosave, undo, redo, reload). Still 7 tests.
+
+Tests: `studio-modules.test.ts` (2): kinds per host, numbered names and IDs; a new data access in
+Shorten API links only to Links database via `shorten-db` and its readiness gap clears; a consumer
+in Redirect gets no choice (only a publish link to the queue); the click publisher is offered only
+Links database.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 192 files, all type checks, 21 test files / 116 tests passed).
+- `pnpm test:e2e`: 7 passed, first run; 7 passed again after the last edits.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (Playwright Chromium by mouse at 1440×900, light and dark; my own API on 4312 and web on
+  4302 against `jeeves_e2e`, both stopped afterwards; the owner's 4300/4310 and `jeeves`
+  untouched, though tsx watch reloaded the owner's API with this code and it reports healthy;
+  every throwaway project deleted, 204): TinyURL shows 10 tiles and 11 lines. Redirect service's
+  row: Microservice, Worker service, Redirect (pressed), Identity, Notifications, Billing; Worker
+  → revision +1, header "Worker service"; Redirect → back; Undo twice → worker, redirect. Analytics
+  worker → Microservice → Worker service, Undo twice. Shorten API's Worker service is disabled,
+  title "Shorten API can't become a worker. A lane starts at a service (not a worker), an API,
+  storage or an external API."; Links database's Search index is disabled ("ID generator in
+  Shorten API can't use a search index; remove its link to Links database first."); Link cache has
+  no row. CDN → Gateway (classification Application, Modules tab appears) → CDN (tab gone), Undo
+  twice. Shorten API → Modules lists its four; `+` → Cache reader → `shorten-api-cache-reader`
+  opens with its Name selected and the gap "A cache reader needs a cache connection."; Pattern →
+  read-through, Shared cache TTL 600, Link to → "Link cache · Counts requests" (gap met), Remove
+  module → back to the four; Undo five times restores the module, then unlinks it, clears the TTL,
+  resets the pattern and removes it. Link writer opens; "← Shorten API" returns to the Modules tab.
+  No console errors or warnings. Native tooltips don't show in headless screenshots; the titles
+  were read from the DOM.
+
+Docs: studio guide (the canvas note, Inspector rewritten with the kind row, Modules and the module
+form, History, Limits), CATALOG (kind row → `changeKind`, component icons, module helpers and
+commands), studio settings (Components: edited in the tile's inspector), PLAN (`TileInspector.tsx`,
+`studio-modules.ts`). No cap was hit or raised.
+
+Notes for LG12:
+
+- Chat can keep the component commands as they are; the canvas uses `createComponent`,
+  `connectComponent`, `disconnectComponent`, `removeComponent` and `editComponent`.
+  `newModuleIdentity`, `moduleLinkChoices` and `studioComponentVisuals` are available if
+  `getDesign` or `listStudioDefinitions` want module names, link choices or icons.
+- `architectureSelection` (sent with chat) is still the tile, line or entry; an open module is not
+  added. If "change this module" should work, `TileInspector`'s `open` state is where to report it.
+- `changeKind` is a mouse action now; the chat's instructions should mention it next to the other
+  lane commands.

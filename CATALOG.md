@@ -40,7 +40,7 @@ the application or package it was created from.
 
 The lane canvas groups kinds into seven tile types, offered as icons in a pulled tab's fan (only
 the types the link table accepts there). The first kind is the default and the others are
-variants.
+variants, switched by the kind row in the tile's inspector (`changeKind`).
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
@@ -99,7 +99,8 @@ to Geo lookup. A cache can't link onward."):
 On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
 ([studio guide](docs/studio.md#creating-and-connecting)); a tile's X runs `removeTile` (after
 `planRemoveTile`, with the tiles the confirmation listed as `alsoRemove`) and a line's X runs
-`removeLink` ([removing](docs/studio.md#removing)). A new tile is named after its type and
+`removeLink` ([removing](docs/studio.md#removing)); the inspector's kind row runs `changeKind`
+(a kind it would refuse is disabled, with the reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
 `lane-target` for an entry.
 
@@ -111,22 +112,29 @@ service, so the lane rules refuse it.
 ## Components (C3)
 
 Components live inside one application and reach other boxes only through an existing C2
-connection.
+connection. In the studio they are the **modules** of an application tile: listed in its
+inspector, never drawn ([studio guide](docs/studio.md#inspector)).
+Icons: `studioComponentVisuals` in [`studio-modules.ts`](packages/spec/src/studio-modules.ts).
 
-| Kind | Name | Typical product |
-| --- | --- | --- |
-| `rate-limiter` | Rate limiter | Redis |
-| `cache-reader` | Cache reader | Redis, Memcached |
-| `id-generator` | ID generator | PostgreSQL, Redis |
-| `redirect-responder` | Redirect responder | CDN |
-| `event-publisher` | Event publisher | Kafka, Amazon SQS, Redis Streams |
-| `event-consumer` | Event consumer | Kafka, Amazon SQS, Redis Streams |
-| `data-access` | Data access | PostgreSQL |
-| `auth-guard` | Auth guard | Identity service |
-| `external-call` | External call | Any API |
-| `custom` | Custom | none: project-specific logic described by a one-line purpose |
+| Kind | Name | Icon | Typical product |
+| --- | --- | --- | --- |
+| `rate-limiter` | Rate limiter | `shield` | Redis |
+| `cache-reader` | Cache reader | `bolt` | Redis, Memcached |
+| `id-generator` | ID generator | `repeat` | PostgreSQL, Redis |
+| `redirect-responder` | Redirect responder | `route` | CDN |
+| `event-publisher` | Event publisher | `plug-connected` | Kafka, Amazon SQS, Redis Streams |
+| `event-consumer` | Event consumer | `plug` | Kafka, Amazon SQS, Redis Streams |
+| `data-access` | Data access | `database` | PostgreSQL |
+| `auth-guard` | Auth guard | `lock` | Identity service |
+| `external-call` | External call | `world` | Any API |
+| `custom` | Custom | `puzzle` | none: project-specific logic described by a one-line purpose |
 
-Browser apps host only auth guard, external call and custom components.
+Browser apps host only auth guard, external call and custom components. The inspector adds a
+module with `createComponent` (`moduleKinds` lists the kinds the tile may hold; `newModuleIdentity`
+names it after its kind, numbered within the tile, with an ID such as `shorten-api-data-access`),
+links it with `connectComponent` to one of `moduleLinkChoices` (the tiles its host links to whose
+kind it may use, through that link), unlinks it with `disconnectComponent` and removes it with
+`removeComponent`.
 
 ## Settings
 

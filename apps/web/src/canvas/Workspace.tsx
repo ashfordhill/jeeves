@@ -1,7 +1,7 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
 // tabs add and link tiles (`creation.tsx`), the red X on a tile or line removes it
-// (`removal.tsx`); settings are edited in the inspector.
+// (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`).
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
   type DesignDocument,
@@ -38,6 +38,7 @@ import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { LaneCanvas, LaneIcon, laneNames } from "./LaneCanvas.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { useLaneRemoval } from "./removal.tsx";
+import { TileInspector } from "./TileInspector.tsx";
 import { ACTOR_NAME } from "./tiles/ActorTile.tsx";
 
 type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
@@ -334,27 +335,16 @@ function Inspector({
   const { design, project } = loaded;
   const name = (id: string) => elementName(design, id);
   const edge = selection.line ? graph.edges.find((item) => item.id === selection.line) : undefined;
-  if (selection.tile && selection.tile !== LANE_ACTOR) {
-    const id = selection.tile;
-    const kind = graph.nodes.find((node) => node.id === id)?.kind;
-    const definition = kind ? studioDefinitions[kind] : undefined;
+  if (selection.tile && selection.tile !== LANE_ACTOR)
     return (
-      <div className="studio-selection-summary">
-        <h2 className="lane-inspector-title" data-family={definition?.visual.color ?? "generic"}>
-          <StudioIcon name={definition?.visual.icon} size={22} />
-          {name(id)}
-        </h2>
-        {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
-        <TargetInspector
-          projectId={project.id}
-          element={id}
-          label={name(id)}
-          design={design}
-          onConnection={(line) => onSelect({ line })}
-        />
-      </div>
+      <TileInspector
+        projectId={project.id}
+        design={design}
+        id={selection.tile}
+        name={name(selection.tile)}
+        onSelect={onSelect}
+      />
     );
-  }
   if (edge?.lane)
     return (
       <EntrySummary edge={edge} lane={edge.lane} name={name} graph={graph} onSelect={onSelect} />

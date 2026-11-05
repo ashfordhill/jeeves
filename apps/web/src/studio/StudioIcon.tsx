@@ -1,6 +1,6 @@
 /**
- * Tabler icons named by the kinds' visuals (`visual.icon`) and the tile types. Unknown names fall
- * back to a box.
+ * Tabler icons named by the kinds' visuals (`visual.icon`), the tile types and the module kinds
+ * (`studioComponentVisuals`). Unknown names fall back to a box.
  */
 import {
   type Icon,
@@ -17,10 +17,14 @@ import {
   IconLock,
   IconMail,
   IconPlug,
+  IconPlugConnected,
+  IconPuzzle,
   IconQuestionMark,
+  IconRepeat,
   IconRoute,
   IconSearch,
   IconServer,
+  IconShield,
   IconWorld,
 } from "@tabler/icons-react";
 
@@ -38,8 +42,12 @@ const ICONS: Record<string, Icon> = {
   lock: IconLock,
   mail: IconMail,
   plug: IconPlug,
+  "plug-connected": IconPlugConnected,
+  puzzle: IconPuzzle,
+  repeat: IconRepeat,
   route: IconRoute,
   search: IconSearch,
+  shield: IconShield,
   world: IconWorld,
 };
 

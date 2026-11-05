@@ -2,6 +2,7 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
+  moduleLinkChoices,
   type StudioComponentDefinition,
   type StudioComponentField,
   type StudioComponentSettings,
@@ -18,7 +19,7 @@ import {
   studioProviderChoices,
   validateStudio,
 } from "@jeeves/spec";
-import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
 import {
   type DraftSpec,
   type DraftValues,
@@ -196,8 +197,9 @@ const retryText = (settings?: StudioConnectionSettings) => {
 };
 
 /**
- * A module's (C3 component's) form: General, Options and Connections, autosaving like a tile's.
- * Nothing mounts it yet; a service tile's module list will open it.
+ * A module's (C3 component's) form, opened from its tile's Modules list: readiness, then General
+ * (with Remove module), Options and Connections (its links, Unlink, and Link to), autosaving like
+ * a tile's.
  */
 export function ComponentForm({
   projectId,
@@ -205,12 +207,15 @@ export function ComponentForm({
   design,
   onConnection,
   onComponent,
+  onRemoved,
 }: {
   projectId: string;
   id: string;
   design: DesignDocument;
   onConnection: (id: string) => void;
   onComponent: (id: string) => void;
+  /** The module was removed. */
+  onRemoved?: () => void;
 }) {
   const spec = useMemo(() => componentSpec(projectId, id, design), [projectId, id, design]);
   if (!spec) return null;
@@ -221,6 +226,7 @@ export function ComponentForm({
       design={design}
       onConnection={onConnection}
       onComponent={onComponent}
+      onRemoved={onRemoved}
     />
   );
 }
@@ -231,12 +237,14 @@ function ComponentDraftForm({
   design,
   onConnection,
   onComponent,
+  onRemoved,
 }: {
   spec: DraftSpec;
   id: string;
   design: DesignDocument;
   onConnection: (id: string) => void;
   onComponent: (id: string) => void;
+  onRemoved?: () => void;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
@@ -262,7 +270,6 @@ function ComponentDraftForm({
     component.settings.kind
   ] as StudioComponentDefinition;
   const settings = draftSettings(entry.values) as Partial<StudioComponentSettings>;
-  const host = design.elements.find((item) => item.id === component.host);
   const name = (elementId: string) =>
     design.elements.find((item) => item.id === elementId)?.name ?? elementId;
   const componentName = (componentId: string) =>
@@ -291,11 +298,34 @@ function ComponentDraftForm({
   const remove = async () => {
     setRemoving(true);
     await formDrafts.flushProject(spec.projectId, true);
-    await commitAction(
+    const removed = await commitAction(
       spec.projectId,
       (latest) => buildStudioCommand(latest, { type: "removeComponent", components: [id] }).ops,
     );
     setRemoving(false);
+    if (removed) onRemoved?.();
+  };
+  // Link to: the tiles the host links to whose kind this module may use, through that link.
+  const linkChoices = moduleLinkChoices(design, id);
+  const linkTo = (value: string) => {
+    const choice = linkChoices.find((item) => `${item.element}>${item.via}` === value);
+    if (!choice) return;
+    void commitAction(
+      spec.projectId,
+      (latest) =>
+        buildStudioCommand(latest, {
+          type: "connectComponent",
+          links: [
+            {
+              link: {
+                id: choice.id,
+                from: id,
+                to: { kind: "element", id: choice.element, via: choice.via },
+              },
+            },
+          ],
+        }).ops,
+    );
   };
   return (
     <form
@@ -307,14 +337,6 @@ function ComponentDraftForm({
       }}
     >
       <dl className="studio-component-meta">
-        <dt>Component</dt>
-        <dd>{definition.name}</dd>
-        {host ? (
-          <>
-            <dt>Inside</dt>
-            <dd>{host.name}</dd>
-          </>
-        ) : null}
         <dt>Typical</dt>
         <dd>
           {definition.thirdParty.length ? definition.thirdParty.join(", ") : "Generated stub"}
@@ -389,17 +411,13 @@ function ComponentDraftForm({
               disabled={removing}
               onClick={() => void remove()}
             >
-              {removing ? "Removing…" : "Remove component"}
+              {removing ? "Removing…" : "Remove module"}
             </button>
           </div>
         ) : null}
         {active === "Connections" ? (
           <div className="studio-dependencies">
-            {links.length ? null : (
-              <p className="studio-field-help">
-                No links yet. Drag this component's + handle to a box, or out to add one.
-              </p>
-            )}
+            {links.length ? null : <p className="studio-field-help">No links yet.</p>}
             {links.map((link) => {
               const outgoing = link.from === id;
               const via =
@@ -452,6 +470,33 @@ function ComponentDraftForm({
                 </div>
               );
             })}
+            {linkChoices.length ? (
+              <div className="studio-form-field">
+                <label htmlFor={`${tabId}-link-to`}>Link to</label>
+                <select
+                  id={`${tabId}-link-to`}
+                  value=""
+                  onChange={(event) => linkTo(event.currentTarget.value)}
+                >
+                  <option value="">Choose a tile</option>
+                  {linkChoices.map((choice) => {
+                    const via = design.connections.find((item) => item.id === choice.via);
+                    return (
+                      <option
+                        key={`${choice.element}>${choice.via}`}
+                        value={`${choice.element}>${choice.via}`}
+                      >
+                        {name(choice.element)}
+                        {via?.planned?.label ? ` · ${via.planned.label}` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+                <small className="studio-field-help">
+                  Through {name(component.host)}'s own link to that tile.
+                </small>
+              </div>
+            ) : null}
             {component.settings.kind === "external-call" ? (
               <p className="studio-field-help">
                 Timeout and retries belong to the traced connection; open it to edit them.
@@ -464,9 +509,13 @@ function ComponentDraftForm({
   );
 }
 
+/** The inspector's sections: the field groups, and Modules for an application tile. */
+export type InspectorTab = StudioFieldGroup | "Modules";
+
 /**
  * The inspector for a tile's element, or for the system when `element` is undefined: General,
- * Options and Connections.
+ * Options and Connections, and Modules when `modules` is given. The open tab is the caller's when
+ * it passes `tab` and `onTab`.
  */
 export function TargetInspector({
   projectId,
@@ -474,6 +523,9 @@ export function TargetInspector({
   label,
   design,
   onConnection,
+  modules,
+  tab,
+  onTab,
 }: {
   projectId: string;
   element?: string;
@@ -481,6 +533,10 @@ export function TargetInspector({
   label: string;
   design: DesignDocument;
   onConnection: (id: string) => void;
+  /** The Modules tab's content. */
+  modules?: ReactNode;
+  tab?: InspectorTab;
+  onTab?: (tab: InspectorTab) => void;
 }) {
   const target = useMemo<InspectorTarget>(
     () => (element ? { kind: "element", id: element } : { kind: "system" }),
@@ -491,7 +547,17 @@ export function TargetInspector({
     [projectId, target, label, design],
   );
   if (!spec) return null;
-  return <TargetForm spec={spec} design={design} target={target} onConnection={onConnection} />;
+  return (
+    <TargetForm
+      spec={spec}
+      design={design}
+      target={target}
+      onConnection={onConnection}
+      modules={modules}
+      tab={tab}
+      onTab={onTab}
+    />
+  );
 }
 
 /** The system's description reads as its goal. */
@@ -504,20 +570,28 @@ function TargetForm({
   design,
   target: ref,
   onConnection,
+  modules,
+  tab,
+  onTab,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
   target: InspectorTarget;
   onConnection: (id: string) => void;
+  modules?: ReactNode;
+  tab?: InspectorTab;
+  onTab?: (tab: InspectorTab) => void;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
   useEffect(() => () => formDrafts.leave(entry.key), [entry.key]);
   const tabId = useId();
-  const [selectedTab, setSelectedTab] = useState<StudioFieldGroup>("General");
+  const [ownTab, setOwnTab] = useState<InspectorTab>("General");
+  const selectedTab = tab ?? ownTab;
+  const setSelectedTab = onTab ?? setOwnTab;
   const settings = draftSettings(entry.values) as StudioSettings;
   const definition = settings.kind ? studioDefinitions[settings.kind] : undefined;
-  const groups: { group: StudioFieldGroup; fields: InspectorField[] }[] = definition
+  const groups: { group: InspectorTab; fields: InspectorField[] }[] = definition
     ? studioFieldGroups(settings).map((item) => ({
         group: item.group,
         // Provider choices are narrowed per engine, so they widen to plain string choices here.
@@ -539,6 +613,7 @@ function TargetForm({
       : [];
   if (connections.length && !groups.some((group) => group.group === "Connections"))
     groups.push({ group: "Connections", fields: [] });
+  if (modules) groups.push({ group: "Modules", fields: [] });
   const active = groups.some((group) => group.group === selectedTab) ? selectedTab : "General";
   const current = groups.find((group) => group.group === active) ?? { fields: canonical };
   const applications = design.elements.filter(
@@ -643,6 +718,7 @@ function TargetForm({
             })}
           </div>
         ) : null}
+        {active === "Modules" ? modules : null}
       </div>
     </form>
   );
