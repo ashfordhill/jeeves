@@ -923,15 +923,6 @@ export function resolveStudioDefinition(ref: DefinitionRef): StudioDefinition | 
     (definition) => definition.id === ref.id && definition.version === ref.version,
   ) as StudioDefinition | undefined;
 }
-export const studioNeutralVisual: Readonly<StudioVisual> = freeze({
-  icon: "box",
-  color: "generic",
-  shape: "box",
-});
-export function studioVisual(kind?: StudioKind): Readonly<StudioVisual> {
-  return kind ? studioDefinitions[kind].visual : studioNeutralVisual;
-}
-
 /** Visible provider options use the very same finite compatibility rows as validation. */
 export function studioProviderChoices(settings: StudioSettings): readonly StudioChoice[] {
   if (settings.kind === "database") return choices(studioDatabaseProviders[settings.engine]);

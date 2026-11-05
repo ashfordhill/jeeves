@@ -7,8 +7,6 @@ import {
   buildStudioCommand,
   type DesignDocument,
   emptyDesign,
-  emptyLayout,
-  type LayoutDocument,
   type OperationInput,
   validateDesign,
 } from "@jeeves/spec";
@@ -31,9 +29,6 @@ export function serviceOps(design: DesignDocument, id: string, name = id): Opera
 export function fakeApi() {
   const state = {
     design: emptyDesign() as DesignDocument,
-    layout: emptyLayout() as LayoutDocument,
-    layoutPuts: 0,
-    calls: [] as string[],
     /** Snapshots before/after each applied edit, and the edits undone (newest last). */
     done: [] as { before: DesignDocument; after: DesignDocument }[],
     undone: [] as { before: DesignDocument; after: DesignDocument }[],
@@ -64,7 +59,6 @@ export function fakeApi() {
     const url = new URL(String(input), "http://localhost");
     const method = init?.method ?? "GET";
     const path = url.pathname.replace(/^\/api/, "");
-    state.calls.push(`${method} ${path}`);
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     const projectPath = `/projects/${TEST_PROJECT}`;
 
@@ -72,12 +66,6 @@ export function fakeApi() {
     if (path === "/projects") return json({ projects: [project()] });
     if (path === projectPath) return json({ project: project() });
     if (path === `${projectPath}/design`) return json(designState());
-    if (path === `${projectPath}/layout` && method === "GET") return json({ layout: state.layout });
-    if (path === `${projectPath}/layout` && method === "PUT") {
-      state.layout = body;
-      state.layoutPuts++;
-      return json({ layout: body });
-    }
     if (path === `${projectPath}/operations`) {
       if (body.baseRevision !== state.design.revision) {
         return json({ code: "REVISION_CONFLICT", message: "stale", ...designState() }, 409);

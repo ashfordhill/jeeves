@@ -1,4 +1,4 @@
-/* This shell is opt-in; all selectors stay scoped to the new surface. */
+/* The Design tab's chrome: header actions, rails, canvas toolbar, notices and inspector forms. */
 .studio-app-header {
   gap: 12px;
 }
@@ -25,23 +25,13 @@
   justify-content: space-between;
   gap: 10px;
 }
-.studio-depth,
 .studio-header-actions {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 5px;
   min-width: 0;
 }
-.studio-depth {
-  flex: 1;
-}
-.studio-depth > button {
-  flex: 0 0 auto;
-}
-.studio-header-actions {
-  flex: 0 0 auto;
-}
-.studio-depth button,
 .studio-header-actions button {
   color: var(--chrome-ink);
   background: var(--chrome-well);
@@ -55,7 +45,6 @@
   display: flex;
   align-items: center;
 }
-.studio-depth button[aria-current="page"],
 .studio-header-actions button[aria-pressed="true"] {
   background: var(--yellow);
   color: var(--on-yellow);
@@ -114,207 +103,6 @@
   min-width: 0;
   overflow: hidden;
 }
-.studio-graph {
-  position: absolute;
-  inset: 0;
-}
-.studio-card {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  background: color-mix(in srgb, var(--type-color) 9%, var(--cream));
-  border: 2px solid var(--type-color);
-  border-radius: 12px;
-  color: var(--ink);
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: ns-resize;
-}
-.studio-fit {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  z-index: 5;
-  border: 1px solid var(--ink-soft);
-  border-radius: 8px;
-  background: var(--cream);
-  color: var(--ink);
-  padding: 7px 12px;
-  font: inherit;
-  cursor: pointer;
-}
-.studio-fit:disabled {
-  cursor: default;
-}
-.studio-routing-error {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  max-width: calc(100% - 24px);
-  z-index: 5;
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: var(--cream);
-  color: var(--ink);
-  box-shadow: 0 1px 6px #0002;
-}
-.studio-card strong {
-  font-size: 15px;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-}
-.studio-role-icon {
-  position: relative;
-  color: var(--type-color);
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-}
-.studio-provider-mark {
-  position: absolute;
-  right: -5px;
-  bottom: -6px;
-  display: flex;
-  border-radius: 3px;
-  background: var(--cream);
-  padding: 1px;
-}
-.studio-card-text {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.studio-card-purpose,
-.studio-card-technology {
-  display: block;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  font-size: 11px;
-  line-height: 1.2;
-}
-.studio-card-technology {
-  color: var(--ink-soft);
-}
-.studio-card[data-shape="cylinder"] {
-  border-radius: 50% / 12px;
-  padding-top: 14px;
-  padding-bottom: 8px;
-  position: relative;
-}
-.studio-card[data-shape="cylinder"]::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  height: 12px;
-  border: 2px solid var(--type-color);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.studio-card[data-kind="person"] {
-  border-radius: 20px;
-}
-.studio-card:hover {
-  box-shadow: 0 0 0 1px var(--type-color);
-}
-.studio-card[data-selected="true"] {
-  outline: 3px solid var(--blue);
-  outline-offset: 2px;
-}
-.studio-card .react-flow__handle,
-.studio-frame .react-flow__handle {
-  opacity: 0;
-  pointer-events: none;
-}
-.studio-card[data-kind="component"] {
-  border-width: 1.5px;
-  border-radius: 8px;
-  padding: 8px;
-  gap: 8px;
-}
-/* An open labelled group: a package at C2, an application with its components at C3. */
-.studio-frame {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  border: 2px dashed var(--type-color);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--type-color) 4%, transparent);
-  color: var(--ink);
-  cursor: pointer;
-}
-.studio-frame[data-kind="package"] {
-  border-style: dotted;
-  background: transparent;
-}
-.studio-frame:hover {
-  box-shadow: 0 0 0 1px var(--type-color);
-}
-.studio-frame[data-selected="true"] {
-  outline: 3px solid var(--blue);
-  outline-offset: 2px;
-}
-.studio-frame-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 12px;
-  min-width: 0;
-}
-.studio-frame-header strong {
-  font-size: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.studio-frame-kind {
-  margin-left: auto;
-  flex: 0 0 auto;
-  font-size: 11px;
-  color: var(--ink-soft);
-}
-/* Lines keep 2px (3px selected) on screen at every zoom; the head is screen-sized too. */
-.studio-graph .react-flow__edge-path,
-.studio-graph .react-flow__edge-interaction,
-.studio-crossing-gap {
-  vector-effect: non-scaling-stroke;
-}
-.studio-arrow {
-  stroke: none;
-}
-.studio-relation-text {
-  cursor: pointer;
-  fill: var(--ink);
-  font-size: 12px;
-  stroke: var(--cream);
-  stroke-width: 4px;
-  stroke-linejoin: round;
-  paint-order: stroke fill;
-}
-.studio-relation-plate {
-  fill: var(--cream);
-  pointer-events: none;
-}
-.studio-relation-text[data-merged] {
-  font-weight: 700;
-  text-decoration: underline dotted;
-}
-.studio-crossing-gap {
-  fill: none;
-  stroke: var(--cream);
-  stroke-width: 6px;
-  pointer-events: none;
-}
 .studio-tools {
   position: absolute;
   top: 12px;
@@ -348,237 +136,6 @@
   opacity: 0.45;
   cursor: default;
 }
-.studio-placement-hint {
-  position: absolute;
-  top: 64px;
-  left: 12px;
-  right: 12px;
-  text-align: center;
-  pointer-events: none;
-  font-size: 12px;
-  color: var(--ink-soft);
-}
-/* `+` handles, the pull preview, the kind picker and the empty-canvas start. */
-.studio-card,
-.studio-frame {
-  position: relative;
-}
-.studio-spawn {
-  position: absolute;
-  top: 50%;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: 2px solid var(--type-color, var(--ink-soft));
-  border-radius: 50%;
-  background: var(--cream);
-  color: var(--ink);
-  font:
-    700 15px / 1 system-ui,
-    sans-serif;
-  cursor: grab;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-.studio-spawn[data-side="in"] {
-  left: 0;
-}
-.studio-spawn[data-side="out"] {
-  right: 0;
-}
-.react-flow__node:hover > * > .studio-spawn,
-.react-flow__node.selected > * > .studio-spawn,
-.studio-spawn:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-.studio-spawn:hover {
-  background: var(--yellow);
-}
-.studio-graph[data-pulling="true"],
-.studio-graph[data-pulling="true"] * {
-  cursor: grabbing !important;
-}
-.studio-pull {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 6;
-}
-.studio-pull line {
-  stroke: var(--blue);
-  stroke-width: 2px;
-  stroke-dasharray: 6 4;
-}
-.studio-pull-ghost {
-  fill: color-mix(in srgb, var(--blue) 8%, transparent);
-  stroke: var(--blue);
-  stroke-width: 2px;
-  stroke-dasharray: 6 4;
-}
-.studio-pull-target {
-  fill: none;
-  stroke: var(--blue);
-  stroke-width: 3px;
-}
-.studio-picker-backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-}
-.studio-picker {
-  position: absolute;
-  top: 64px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 8;
-  width: 276px;
-  max-height: calc(100% - 80px);
-  overflow: auto;
-  box-sizing: border-box;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--cream);
-  box-shadow: var(--chip-shadow);
-  font-size: 13px;
-}
-.studio-picker[data-anchored="true"] {
-  transform: none;
-}
-.studio-picker-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.studio-picker-header button {
-  display: flex;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  padding: 2px;
-}
-.studio-picker p {
-  margin: 0;
-  color: var(--ink-soft);
-}
-.studio-kind-group + .studio-kind-group {
-  margin-top: 10px;
-}
-.studio-kind-heading {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 11px;
-  color: var(--ink-soft);
-}
-.studio-kind-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
-.studio-kind {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 7px;
-  border: 1px solid var(--grid-dot);
-  border-radius: 7px;
-  background: var(--paper);
-  color: var(--ink);
-  font: inherit;
-  font-size: 12px;
-  text-align: left;
-  cursor: pointer;
-}
-.studio-kind:hover:not(:disabled) {
-  background: var(--yellow);
-}
-.studio-kind:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.studio-empty {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: min(320px, calc(100% - 32px));
-  padding: 16px;
-  border: 1px dashed var(--ink-soft);
-  border-radius: 12px;
-  background: var(--cream);
-  font-size: 13px;
-}
-.studio-empty > span {
-  color: var(--ink-soft);
-  margin-bottom: 6px;
-}
-.studio-library nav,
-.studio-library-footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.studio-library button,
-.studio-library-footer button {
-  font: inherit;
-  font-size: 13px;
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid var(--grid-dot);
-  border-radius: 7px;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-.studio-library button[aria-current="page"] {
-  background: var(--yellow);
-}
-.studio-library-list {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.studio-library-list > button {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  text-align: left;
-}
-.studio-library-list span {
-  flex: 1 1 100%;
-  font-size: 12px;
-  color: var(--ink-soft);
-}
-.studio-library-existing {
-  margin-top: 16px;
-}
-.studio-library-preview p,
-.studio-library-footer p {
-  font-size: 13px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-.studio-library-footer {
-  justify-content: flex-end;
-  margin: 0;
-}
-.studio-library-footer p {
-  flex: 1 1 100%;
-  color: var(--minus);
-  margin: 0;
-}
 .studio-selection-summary {
   padding: 4px 16px 20px;
   overflow: auto;
@@ -591,28 +148,6 @@
 .studio-selection-summary p {
   font-size: 13px;
   line-height: 1.5;
-}
-.studio-members {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.studio-members button {
-  font: inherit;
-  font-size: 12px;
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid var(--grid-dot);
-  border-radius: 6px;
-  padding: 8px;
-  text-align: left;
-  cursor: pointer;
-}
-.studio-members button[aria-pressed="true"] {
-  outline: 2px solid var(--blue);
 }
 .studio-notice {
   position: absolute;
@@ -725,7 +260,6 @@
   flex-direction: column;
   gap: 8px;
 }
-
 .studio-dependencies button {
   border: 1px solid var(--grid-dot);
   border-radius: 6px;
@@ -743,29 +277,12 @@
   margin-top: 3px;
   font-size: 12px;
 }
-
-.studio-members legend {
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-.studio-members span {
-  display: block;
-  margin-top: 3px;
-}
-
-.studio-membership,
-.studio-dependency-actions {
+.studio-membership {
   display: grid;
   gap: 8px;
   margin-top: 14px;
 }
-.studio-membership h3 {
-  font-size: 13px;
-  margin: 4px 0;
-}
-.studio-membership button,
-.studio-dependency-actions button,
-.studio-action {
+.studio-membership button {
   border: 1px solid var(--grid-dot);
   border-radius: 6px;
   padding: 8px;
@@ -775,12 +292,10 @@
   color: var(--ink);
   cursor: pointer;
 }
-.studio-member-row,
 .studio-dependency-row {
   display: flex;
   gap: 5px;
 }
-.studio-member-row > button:first-child,
 .studio-dependency-row > button:first-child {
   flex: 1;
   min-width: 0;
@@ -788,14 +303,9 @@
 .studio-danger {
   color: var(--minus) !important;
 }
-.studio-membership button:disabled,
-.studio-dependency-actions button:disabled,
-.studio-library-footer button:disabled {
+.studio-membership button:disabled {
   opacity: 0.45;
   cursor: default;
-}
-.studio-card[data-kind="component"] strong {
-  font-size: 13px;
 }
 /* Component inspector facts, readiness and field help. */
 .studio-component-meta {

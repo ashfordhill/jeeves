@@ -728,3 +728,94 @@ Notes for LG09:
 - `Workspace.select({ tile })` is where `onPick` should land the new tile; `LaneCanvas` passes no
   `hints` yet. The chat rail's suggestion "Add a web app that calls the selected service" is stale
   (no browser tile); that is LG12's.
+
+## 2026-11-04 — LG08: the old studio canvas removed (complete)
+
+Removal and rename only; the app looks and behaves as after LG07. About 7,000 lines went
+(60 files, +243/−7,287 before this entry).
+
+Deleted (about 5,850 lines in 20 files): `apps/web/src/studio/` `StudioWorkspace`, `StudioGraph`,
+`layout`, `layout.worker`, `layout-client`, `use-layout`, `use-settle`, `routing`, `spawn`,
+`creation`, `StudioLibrary`, `ConnectionCreator`, `MembershipActions`, `DependencyActions`,
+`card-appearance`, `text` (only routing and card-appearance used it) and `studio.test.ts` (all of
+it tested the old layout, routing and spawn); `packages/spec/src/` `studio-view.ts`,
+`studio-relationships.ts` and `studio-view.test.ts`. Its two `designBlueprint` tests were not
+canvas tests, so they moved unchanged to `studio-blueprint.test.ts`. Also gone: `pruneLayout` and
+the `StudioLayoutView` type (`layout.ts` keeps `layoutSchema`, `LayoutDocument` and `emptyLayout`
+for the server), `studioVisual`/`studioNeutralVisual`, `instantiateStudioPackagePreset` and
+`StudioServiceWorkerIds` (chat only lists and resolves the preset), the study's `layout` result,
+`TargetForm`'s `actions` prop and the node-based `InspectorForm` wrapper, `actions.ts`'s
+connection defaults and `ConnectionDraft`, the eight `StudioIcon` names only the old canvas drew
+(`shield`, `repeat`, `plug-connected`, `puzzle`, `user`, `building`, `settings`, `activity`),
+about 500 lines of `studio.css` and the dead rules at the top of `design-view.css`.
+
+Store (`project/store.ts`, 585 → 314 lines): no layout read on open, no layout PUTs (nor from
+`createExampleProject`), no row-order steps. With only design steps left, the local
+chronological stack shadowed the server's history, so it went too: `canUndo`/`canRedo` read
+`loaded.history`, and Undo/Redo/`undoEdit` call the server. The one behaviour that changes is a
+multi-tab edge: after an edit here, a redo chain made by another tab is no longer blocked.
+`open` sets `loading` synchronously (it used to await `flushLayout` first), so StrictMode's second
+effect sees `loading` and does not open twice. `createPlaced` is now `commit(projectId, rebuild)`
+("placement" is gone). The API client lost `getLayout`/`putLayout`; the fake API lost its layout
+routes and call log.
+
+Narrowed: the tile inspector's target is `InspectorTarget = {kind: "system"} | {kind: "element",
+id}` in `inspector-drafts.ts` (no context or package branches; `StudioSemanticRef` is gone), and
+`ConnectionForm` takes `connection: string` (no C1 relationship branch). `preferences.ts` keeps
+only the rails' open state and widths (same `jeeves.studio.ui.v1:<project>` key).
+
+Renamed: `useDraw` → `useProject` (`DrawState` → `ProjectState`), the `draw` view → `design`
+(`#/design`; an old `#/draw` link falls back to Design), `.draw-loading` → `.view-loading` (moved
+to `tokens.css`, since Settings uses it too).
+
+Reachability pass (my script over `git ls-files`: web, server and test entry points, then every
+`export` searched across the repo): no unreached source files except `vite-env.d.ts` and the
+board's `css.d.ts` (ambient types); no unused CSS classes in `apps/web` or `packages/board`.
+Removed while at it, unreferenced before this unit: the board's `polylineKey` and `svgDashPhase`
+(automation-illustrator's FlowArrow used them; BoardLine doesn't) and `formDrafts.get`. Left, as
+CL4 did: schema-derived type aliases (`Endpoint`, `RelationshipInteraction`, `ConnectionKind`,
+`DesignDocumentInput`, `StudioComponentTarget`, `StudioConnectionBinding`, `OperationKind`,
+`EditState`, `ScriptByMessage`) and exports used only in their own file. The one deliberate
+exception: `ComponentForm` (with `ComponentDraftForm`, `component-drafts.ts`, `commitAction` and
+`store.commit`) is exported but not mounted, for LG11. The server's layout route, service and
+table stay; PLAN says the canvas does not use them.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 178 files, all type checks, 19 test files / 109 tests passed;
+  −13 tests: 5 in `studio.test.ts`, 6 view and layout tests, 2 store layout tests).
+- `pnpm test:e2e`: 4 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (Playwright Chromium by mouse; my own API on 4312 and web on 4302 against `jeeves_e2e`,
+  both stopped afterwards; the owner's 4300/4310 and `jeeves` untouched, though tsx watch reloaded
+  the owner's API with this code and it reports healthy): a TinyURL study made through the project
+  menu shows 10 tiles, 11 lines, 3 dashed and 2 chips. Settings and back gives `#/design`.
+  Redirect service opens its inspector with 4 Connections rows (one button each); a row selects
+  "CDN → Redirect service" (General, Options); the download chip shows "Download lane"; the User
+  shows Name and Goal. Shorten API's request timeout 3000 → 4500 saves revision 2; Undo restores
+  3000 (rev 3, Redo enabled); Redo gives 4500 (rev 4, Redo disabled). Switching Shorten API → URL
+  reputation API to Asynchronous dashes 4 lines; Undo gives 3. Empty paper shows the system. Fit:
+  0.78 with chat and inspector closed, 0.61 with chat open (as LG07). No `/layout` request, no
+  console errors or warnings. Light and dark screenshots match LG07's look. The throwaway projects
+  were deleted (one from an aborted first run of my script, 204).
+
+Docs: PLAN (diagram, `apps/web` row, data model, history, Layout, API table), studio guide
+(History), studio settings (lookup shortcuts: the inspector picks an existing connection; chat's
+`connect` with `lookup` creates one; the "creates one if none exists" UI went with
+`DependencyActions` in LG07), CATALOG (packages are not shown), `patches/README.md` (the React
+Flow patch reason and manual pass now name the lane canvas; the patch is still applied).
+
+Notes for LG09:
+
+- Write through `commitAction(projectId, (design) => buildStudioCommand(design, {type: "addTile",
+  …}).ops)` (`studio/actions.ts`): it rebuilds against the latest design inside the store's
+  request chain, dry-runs `applyOperations`, and a refusal becomes the error notice ("Change not
+  saved: …"). Each accepted batch is one server undo step; there is no local history to update.
+- `StudioIcon` knows the seven tile-type icons (`server`, `api`, `database`, `bolt`, `list`,
+  `archive`, `plug`).
+- The E2E smoke set is `canvas`, `edit-history` and `blueprint-chat` (4 tests); `spawn.spec.ts`
+  comes back with LG09.
+
+Notes for LG11: the C3 component icons were `studioComponentVisuals` in
+`git show 9850e30:packages/spec/src/studio-view.ts` (lines 100–112); their `shield`, `repeat`,
+`plug-connected` and `puzzle` icons were dropped from `StudioIcon` and need adding back with them.

@@ -1,11 +1,11 @@
 /**
  * Design chat state: the project's turns, the turn being streamed, the message draft, and files
- * staged for the next message. A finished turn's design is handed to the Draw store, so the board
- * shows the edit and highlights what changed.
+ * staged for the next message. A finished turn's design is handed to the project store, so the
+ * canvas shows the edit.
  */
 import { create } from "zustand";
 import { api, type ChatActivity, type ChatTurn, type FileInfo } from "../project/api.ts";
-import { useDraw } from "../project/store.ts";
+import { useProject } from "../project/store.ts";
 
 /** Accepted attachments, by extension, with the media type they're sent as. */
 export const ACCEPTED_FILES: Record<string, string> = {
@@ -130,8 +130,8 @@ export const useChat = create<ChatState>()((set, get) => ({
     if (!projectId || live || !body) return;
     if (staged.some((s) => s.status === "uploading")) return;
     const files = staged.flatMap((s) => (s.status === "ready" && s.file ? [s.file] : []));
-    const draw = useDraw.getState();
-    const selection = draw.architectureSelection ?? [];
+    const project = useProject.getState();
+    const selection = project.architectureSelection ?? [];
     // Live at once, so a second click can't send the message twice.
     set({
       live: { message: body, files, reply: "", activity: [] },
@@ -144,8 +144,8 @@ export const useChat = create<ChatState>()((set, get) => ({
       if (current) set({ live: { ...current, ...patch(current) } });
     };
     try {
-      if (!(await draw.flushEdits())) throw new Error("Resolve the unsaved edit before sending");
-      if (get().projectId !== projectId || useDraw.getState().loaded?.project.id !== projectId)
+      if (!(await project.flushEdits())) throw new Error("Resolve the unsaved edit before sending");
+      if (get().projectId !== projectId || useProject.getState().loaded?.project.id !== projectId)
         return;
       await api.chat(
         projectId,
@@ -153,7 +153,7 @@ export const useChat = create<ChatState>()((set, get) => ({
           message: body,
           fileIds: files.map((f) => f.id),
           selection,
-          baseRevision: useDraw.getState().loaded?.design.revision ?? 0,
+          baseRevision: useProject.getState().loaded?.design.revision ?? 0,
         },
         (event) => {
           if (get().projectId !== projectId) return;
@@ -169,7 +169,7 @@ export const useChat = create<ChatState>()((set, get) => ({
               break;
             case "done":
               set({ turns: [...get().turns, event.turn], live: undefined });
-              useDraw.getState().adoptChange(event.state);
+              useProject.getState().adoptChange(event.state);
               break;
           }
         },

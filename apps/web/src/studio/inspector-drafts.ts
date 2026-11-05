@@ -1,16 +1,17 @@
 import {
-  architectureSchema,
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
   resolveStudioDefinition,
   type StudioOwner,
-  type StudioSemanticRef,
   studioLimits,
   studioResourceKinds,
   studioSettingsSchema,
 } from "@jeeves/spec";
 import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
+
+/** What the tile inspector edits: an element, or the system (the actor and no selection). */
+export type InspectorTarget = { kind: "system" } | { kind: "element"; id: string };
 
 export function ownerChoices(design: DesignDocument) {
   return [
@@ -54,7 +55,7 @@ export function draftSettings(values: DraftValues) {
 /** Exact studio definitions or safe legacy canonical text, never reflected backend fields. */
 export function inspectorSpec(
   projectId: string,
-  ref: StudioSemanticRef,
+  ref: InspectorTarget,
   label: string,
   design: DesignDocument,
 ): DraftSpec | undefined {
@@ -67,14 +68,10 @@ export function inspectorSpec(
     ? `${binding.definition.id}@${binding.definition.version}`
     : `canonical-${ref.kind}@1`;
   const read: DraftSpec["read"] = (current) => {
-    let object: { name: string; description?: string } | undefined;
-    if (ref.kind === "system")
-      object = current.architecture?.system ?? { name: label, description: "" };
-    else if (ref.kind === "context")
-      object = current.architecture?.nodes.find((item) => item.id === ref.id);
-    else if (ref.kind === "package")
-      object = current.architecture?.studio?.packages.find((item) => item.id === ref.id);
-    else object = current.elements.find((item) => item.id === ref.id);
+    const object =
+      ref.kind === "system"
+        ? (current.architecture?.system ?? { name: label, description: "" })
+        : current.elements.find((item) => item.id === ref.id);
     if (!object) return;
     const currentBinding =
       ref.kind === "element"
@@ -156,37 +153,23 @@ export function inspectorSpec(
           description: String(values["element.description"]),
         }),
       };
-      if (ref.kind === "element") {
-        if (!binding)
-          return buildStudioCommand(current, { type: "edit", element: ref.id, ...text }).ops;
-        return buildStudioCommand(current, {
-          type: "edit",
-          element: ref.id,
-          ...text,
-          ...(paths.includes("owner") && { owner: ownerValue(values.owner) }),
-          ...(paths.some((path) => path.startsWith("settings.")) && {
-            settings: studioSettingsSchema.parse(draftSettings(values)),
-          }),
-        }).ops;
-      }
-      if (ref.kind === "package") {
-        const pkg = current.architecture?.studio?.packages.find((item) => item.id === ref.id);
-        if (!pkg) throw new Error("Package no longer exists");
-        return buildStudioCommand(current, { type: "group", package: { ...pkg, ...text } }).ops;
-      }
       if (ref.kind === "system")
         return buildStudioCommand(current, {
           type: "editSystem",
           ...(!current.architecture && { name: label }),
           ...text,
         }).ops;
-      const architecture = structuredClone(
-        current.architecture ?? architectureSchema.parse({ system: { name: label } }),
-      );
-      const node = architecture.nodes.find((item) => item.id === ref.id);
-      if (!node) throw new Error("Context object no longer exists");
-      Object.assign(node, text);
-      return [{ op: "setArchitecture", architecture }];
+      if (!binding)
+        return buildStudioCommand(current, { type: "edit", element: ref.id, ...text }).ops;
+      return buildStudioCommand(current, {
+        type: "edit",
+        element: ref.id,
+        ...text,
+        ...(paths.includes("owner") && { owner: ownerValue(values.owner) }),
+        ...(paths.some((path) => path.startsWith("settings.")) && {
+          settings: studioSettingsSchema.parse(draftSettings(values)),
+        }),
+      }).ops;
     },
   };
 }

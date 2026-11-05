@@ -1,7 +1,7 @@
 import { applyOperations, validateDesign } from "@jeeves/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ChatEvent, ChatTurn } from "../project/api.ts";
-import { useDraw } from "../project/store.ts";
+import { canUndo, useProject } from "../project/store.ts";
 import { fakeApi, serviceOps, TEST_PROJECT } from "../test-api.ts";
 import { mediaTypeOf, useChat } from "./store.ts";
 
@@ -72,7 +72,7 @@ describe("chat store", () => {
         return api.fetch(input, init);
       }),
     );
-    await useDraw.getState().open(TEST_PROJECT);
+    await useProject.getState().open(TEST_PROJECT);
     useChat.setState({
       projectId: undefined,
       status: "idle",
@@ -103,14 +103,13 @@ describe("chat store", () => {
     expect(chat.live).toBeUndefined();
     expect(chat.turns).toMatchObject([{ reply: "Added it.", changed: ["api"] }]);
 
-    const draw = useDraw.getState();
-    expect(draw.loaded?.design.elements.map((e) => e.id)).toEqual(["api"]);
+    expect(useProject.getState().loaded?.design.elements.map((e) => e.id)).toEqual(["api"]);
 
     // The turn's undo is the studio's newest design step.
-    expect(await useDraw.getState().undoEdit(99)).toBe(false);
-    expect(await useDraw.getState().undoEdit(1)).toBe(true);
-    expect(useDraw.getState().loaded?.design.elements).toEqual([]);
-    expect(useDraw.getState().undoSteps).toEqual([]);
+    expect(await useProject.getState().undoEdit(99)).toBe(false);
+    expect(await useProject.getState().undoEdit(1)).toBe(true);
+    expect(useProject.getState().loaded?.design.elements).toEqual([]);
+    expect(canUndo(useProject.getState())).toBe(false);
   });
 
   it("keeps the draft and says why when the message can't be sent", async () => {

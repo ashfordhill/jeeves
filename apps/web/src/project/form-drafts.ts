@@ -58,9 +58,6 @@ class FormDrafts {
     this.version++;
     for (const listener of this.listeners) listener();
   }
-  get(key: string) {
-    return this.entries.get(key);
-  }
   forProject(projectId: string) {
     return [...this.entries.values()].filter((entry) => entry.spec.projectId === projectId);
   }

@@ -2,7 +2,7 @@
  * Thin client for the design API. Routes live under /api, which the Vite proxy strips.
  * Response shapes mirror apps/server/src/routes/*.ts.
  */
-import type { DesignDocument, Finding, LayoutDocument, OperationInput } from "@jeeves/spec";
+import type { DesignDocument, Finding, OperationInput } from "@jeeves/spec";
 
 export type Project = {
   id: string;
@@ -139,15 +139,6 @@ export const api = {
     request<{ project: Project }>(`/projects/${id}`).then((r) => r.project),
 
   getDesign: (id: string) => request<DesignState>(`/projects/${id}/design`),
-
-  getLayout: (id: string) =>
-    request<{ layout: LayoutDocument }>(`/projects/${id}/layout`).then((r) => r.layout),
-
-  putLayout: (id: string, layout: LayoutDocument) =>
-    request<{ layout: LayoutDocument }>(`/projects/${id}/layout`, {
-      method: "PUT",
-      body: JSON.stringify(layout),
-    }),
 
   edit: (id: string, baseRevision: number, ops: OperationInput[]) =>
     change(`/projects/${id}/operations`, { baseRevision, ops, source: "canvas" }),

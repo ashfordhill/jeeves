@@ -17,7 +17,7 @@ import { mantineTheme } from "./theme/mantineTheme.ts";
 
 function ViewBody({ view }: { view: ViewId }) {
   switch (view) {
-    case "draw":
+    case "design":
       return <DesignView />;
     case "settings":
       return <SettingsView />;
@@ -34,7 +34,7 @@ export function App() {
       <header className="app-header chrome-bar studio-app-header">
         <span className="app-brand">Jeeves</span>
         <ViewTabs view={view} onSelect={setView} />
-        {view === "draw" ? <div id="studio-header-controls" /> : null}
+        {view === "design" ? <div id="studio-header-controls" /> : null}
         <span className="app-header-end">
           <ProjectMenu />
         </span>

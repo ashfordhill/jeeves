@@ -3,23 +3,20 @@ import { Button, Loader } from "@mantine/core";
 import { useEffect } from "react";
 import { Workspace } from "../canvas/Workspace.tsx";
 import "./design-view.css";
-import { projectFromUrl, useDraw } from "./store.ts";
+import { projectFromUrl, useProject } from "./store.ts";
 
 export function DesignView() {
-  const status = useDraw((s) => s.status);
-  const error = useDraw((s) => s.error);
-  const projectId = useDraw((s) => s.loaded?.project.id);
-  const open = useDraw((s) => s.open);
+  const status = useProject((s) => s.status);
+  const error = useProject((s) => s.error);
+  const projectId = useProject((s) => s.loaded?.project.id);
+  const open = useProject((s) => s.open);
 
   useEffect(() => {
-    if (useDraw.getState().status === "idle") void open(projectFromUrl());
+    if (useProject.getState().status === "idle") void open(projectFromUrl());
   }, [open]);
 
   useEffect(() => {
-    const flush = () => {
-      void useDraw.getState().flushEdits();
-      void useDraw.getState().flushLayout();
-    };
+    const flush = () => void useProject.getState().flushEdits();
     window.addEventListener("pagehide", flush);
     return () => {
       window.removeEventListener("pagehide", flush);
@@ -40,7 +37,7 @@ export function DesignView() {
   }
   if (!projectId || status === "loading") {
     return (
-      <div className="draw-loading" role="status">
+      <div className="view-loading" role="status">
         <Loader size="sm" /> Loading design…
       </div>
     );

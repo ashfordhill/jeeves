@@ -1,7 +1,7 @@
 /**
  * Creates a separate editable project from a studio study. The study's elements, connections and
  * architecture are saved through ordinary operations, so the result is a normal design with
- * history; its layout is stored alongside it.
+ * history.
  */
 import { studioArchitectureExample } from "@jeeves/spec";
 import { api, type Project } from "./api.ts";
@@ -21,7 +21,6 @@ export async function createExampleProject(id: string, name?: string): Promise<P
         : []),
     ]);
     if (!result.ok) throw new Error("The example could not be saved.");
-    await api.putLayout(project.id, example.layout);
     return project;
   } catch (error) {
     await api.deleteProject(project.id);

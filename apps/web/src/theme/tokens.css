@@ -318,6 +318,16 @@ body,
   inset: 0;
 }
 
+.view-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
 .empty-view {
   position: absolute;
   top: 50%;

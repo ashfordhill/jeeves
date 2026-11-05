@@ -95,10 +95,10 @@ to Geo lookup. A cache can't link onward."):
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
 
-A **package** groups two or more independent applications into an open frame at C2; it has no
-language, provider or runtime. The **Service and worker** preset (offered to chat) creates a
-service, a worker and a package-owned work queue in one step; nothing links to the service, so the
-lane rules refuse it.
+A **package** groups two or more independent applications; it has no language, provider or
+runtime, and the lane canvas does not show it. The **Service and worker** preset (offered to chat)
+creates a service, a worker and a package-owned work queue in one step; nothing links to the
+service, so the lane rules refuse it.
 
 ## Components (C3)
 

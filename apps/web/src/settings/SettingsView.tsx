@@ -70,7 +70,7 @@ export function SettingsView() {
   }
   if (!settings || !roles) {
     return (
-      <div className="draw-loading" role="status">
+      <div className="view-loading" role="status">
         <Loader size="sm" /> Loading settings…
       </div>
     );

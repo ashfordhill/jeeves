@@ -2,8 +2,8 @@
 // Line polylines: SVG output, the right-angle fallback for a line ELK has not routed yet,
 // interpolation for layout motion, and dash segments whose phase is locked to the world.
 //
-// Changes from automation-illustrator: horizontal only, no restitch-preview dash, and the
-// "dotted" choice dash is the board's dashed (asynchronous) line.
+// Changes from automation-illustrator: horizontal only, no restitch-preview dash, no route keys
+// or SVG dash phase helper, and the "dotted" choice dash is the board's dashed (asynchronous) line.
 import { GRID, type Point } from "./metrics.ts";
 
 /** Right-angle fallback for a line that has no ELK route yet. */
@@ -95,10 +95,6 @@ export function lerpPolylines(from: readonly Point[], to: readonly Point[], t: n
   });
 }
 
-export function polylineKey(points: readonly Point[]): string {
-  return points.map((p) => `${Math.round(p.x)},${Math.round(p.y)}`).join("|");
-}
-
 /** Dashed (asynchronous) line pattern: 8px dash, 7px gap. */
 export const DASH_LENGTH = 8;
 export const DASH_GAP = 7;
@@ -146,9 +142,4 @@ export function polylineDrawSegments(points: readonly Point[], period: number): 
     }
   }
   return out;
-}
-
-/** SVG dash phase at `distance` along a segment (`distance - stroke-dashoffset`). */
-export function svgDashPhase(distance: number, dashOffset: number, period: number): number {
-  return mod(distance - dashOffset, period);
 }

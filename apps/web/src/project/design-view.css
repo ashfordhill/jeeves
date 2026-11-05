@@ -1,44 +1,4 @@
-/*
- * Draw board. Card, handle, and edge looks follow automation-pitch (tokens.css .react-flow__handle,
- * step tiles: 3px --line border, 14px radius, --cream fill, --shadow).
- */
-
-.draw-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-weight: 800;
-}
-
-/* Toolbar */
-
-/* Palettes */
-.palette {
-  border: 3px solid var(--line) !important;
-  border-radius: 14px !important;
-  background: var(--cream) !important;
-  color: var(--ink);
-  padding: 10px !important;
-}
-
-.palette[data-dragging] {
-  opacity: 0.25;
-}
-
-/* Handles (automation-pitch look); hidden until hover or the connector tool. */
-
-/* Element card */
-
-/* Annotations */
-
-/* Edges */
-
-/* Overlays */
-
-/* React Flow zoom controls in the board's style. */
+/* The project menu, rename dialog and browser, and the design chat. */
 
 /* Header project menu */
 .project-menu-btn {
@@ -59,10 +19,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-/* Draw layout: board on the left, inspector rail on the right. */
-
-/* Findings badge on element cards. */
 
 /* Design chat: the transcript scrolls; the composer stays at the bottom. */
 .chat-panel {
@@ -294,13 +250,6 @@
   justify-content: flex-end;
   gap: 8px;
 }
-
-/* Service geometry belongs to layout; capabilities stay inside the outer card. */
-.react-flow__node-element {
-  min-width: 260px;
-}
-
-/* C4 container notation; all geometry below is a view, never a layout annotation. */
 
 /* Project browser: searchable list of every project with open and delete. */
 .project-browser {

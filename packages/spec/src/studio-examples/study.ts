@@ -1,7 +1,6 @@
 /** Static study assembly over the same finite definitions and semantic identities as the editor. */
 import { type ArchitectureInput, architectureSchema } from "../architecture.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "../design.ts";
-import { type LayoutDocument, layoutSchema } from "../layout.ts";
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
 import { studioDefinitions } from "../studio-definitions.ts";
 import { type StudioEntry, type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
@@ -28,7 +27,7 @@ export function createStudioStudy(
     components?: StudioComponent[];
     componentConnections?: StudioComponentConnection[];
   } = {},
-): { name: string; design: DesignDocument; layout: LayoutDocument } {
+): { name: string; design: DesignDocument } {
   const design = designSchema.parse({
     ...emptyDesign(),
     elements: elements.map((item) => ({
@@ -71,7 +70,6 @@ export function createStudioStudy(
       },
     }),
   });
-  // Studio coordinates are derived by automatic layout; a study stores no positions.
-  const layout = layoutSchema.parse({ schemaVersion: 1 });
-  return { name: study.name, design, layout };
+  // The canvas lays a study out automatically; a study stores no positions.
+  return { name: study.name, design };
 }

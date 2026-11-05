@@ -26,7 +26,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { formDrafts } from "../project/form-drafts.ts";
-import { canRedo, canUndo, useDraw } from "../project/store.ts";
+import { canRedo, canUndo, useProject } from "../project/store.ts";
 import { ConnectionForm } from "../studio/ConnectionForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
@@ -37,10 +37,10 @@ import { LaneCanvas, LaneIcon, laneNames } from "./LaneCanvas.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { ACTOR_NAME } from "./tiles/ActorTile.tsx";
 
-type Loaded = NonNullable<ReturnType<typeof useDraw.getState>["loaded"]>;
+type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
 
 export function Workspace() {
-  const loaded = useDraw((state) => state.loaded);
+  const loaded = useProject((state) => state.loaded);
   if (!loaded) return null;
   return <ProjectWorkspace key={loaded.project.id} loaded={loaded} />;
 }
@@ -61,11 +61,11 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       (entry) =>
         entry.flight || (entry.paths.size && !entry.problem && !Object.keys(entry.errors).length),
     );
-  const historyBusy = useDraw((state) => state.historyBusy);
+  const historyBusy = useProject((state) => state.historyBusy);
   const failed = formDrafts.hasProblems(projectId);
-  const undoable = useDraw(canUndo);
-  const redoable = useDraw(canRedo);
-  const notice = useDraw((state) => state.notice);
+  const undoable = useProject(canUndo);
+  const redoable = useProject(canRedo);
+  const notice = useProject((state) => state.notice);
   const [preferences, setPreferences] = useStudioPreferences(projectId);
   const [mode, setMode] = useState<BoardMode>("select");
   const [pick, setPick] = useState<BoardSelection>({});
@@ -84,9 +84,9 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       : selection.tile && selection.tile !== LANE_ACTOR
         ? [selection.tile]
         : [];
-    useDraw.setState({ architectureSelection: ids });
+    useProject.setState({ architectureSelection: ids });
   }, [selection.tile, selection.line]);
-  useEffect(() => () => useDraw.setState({ architectureSelection: undefined }), []);
+  useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
   useEffect(() => {
     // Optional V/H shortcuts mirror the Select and Hand buttons (mouse remains sufficient).
     const shortcut = (event: KeyboardEvent) => {
@@ -125,7 +125,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         title="Undo"
         aria-label="Undo"
         disabled={historyBusy || failed || (!undoable && !hasDraft)}
-        onClick={() => void useDraw.getState().undo()}
+        onClick={() => void useProject.getState().undo()}
       >
         <IconArrowBackUp size={18} />
       </button>
@@ -134,7 +134,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         title="Redo"
         aria-label="Redo"
         disabled={historyBusy || failed || !redoable || hasDraft}
-        onClick={() => void useDraw.getState().redo()}
+        onClick={() => void useProject.getState().redo()}
       >
         <IconArrowForwardUp size={18} />
       </button>
@@ -224,7 +224,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
             <button
               type="button"
               aria-label="Dismiss notice"
-              onClick={() => useDraw.getState().setNotice(undefined)}
+              onClick={() => useProject.getState().setNotice(undefined)}
             >
               <IconX size={16} />
             </button>
@@ -320,11 +320,7 @@ function Inspector({
         <p>
           {name(edge.source)} → {name(edge.target)}
         </p>
-        <ConnectionForm
-          projectId={project.id}
-          target={{ kind: "connection", id: edge.id }}
-          design={design}
-        />
+        <ConnectionForm projectId={project.id} connection={edge.id} design={design} />
       </div>
     );
   return (

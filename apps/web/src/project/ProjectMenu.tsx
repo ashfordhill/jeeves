@@ -8,14 +8,14 @@ import { useState } from "react";
 import { api, type Project } from "./api.ts";
 import { ProjectBrowser } from "./ProjectBrowser.tsx";
 import { ProjectChooser } from "./ProjectChooser.tsx";
-import { useDraw } from "./store.ts";
+import { useProject } from "./store.ts";
 
 /** The header menu stays short; the project browser lists everything with search and delete. */
 const RECENT = 8;
 
 export function ProjectMenu() {
-  const project = useDraw((s) => s.loaded?.project);
-  const open = useDraw((s) => s.open);
+  const project = useProject((s) => s.loaded?.project);
+  const open = useProject((s) => s.open);
   const [chooserOpen, setChooserOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);

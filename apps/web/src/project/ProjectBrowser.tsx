@@ -7,7 +7,7 @@ import { IconSearch, IconTrash } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { api, type Project } from "./api.ts";
 import { formDrafts } from "./form-drafts.ts";
-import { useDraw } from "./store.ts";
+import { useProject } from "./store.ts";
 
 function formatDate(iso: string) {
   const date = new Date(iso);
@@ -15,8 +15,8 @@ function formatDate(iso: string) {
 }
 
 export function ProjectBrowser({ onClose }: { onClose: () => void }) {
-  const current = useDraw((s) => s.loaded?.project.id);
-  const open = useDraw((s) => s.open);
+  const current = useProject((s) => s.loaded?.project.id);
+  const open = useProject((s) => s.open);
   const [projects, setProjects] = useState<Project[]>();
   const [query, setQuery] = useState("");
   const [confirming, setConfirming] = useState<string>();

@@ -8,7 +8,7 @@ for a user is in the [studio guide](docs/studio.md); field values are in
 ```text
 apps/web (React studio) ──/api──▶ apps/server (Fastify) ──▶ Postgres
         │                              │
-        └──── @jeeves/spec ◀───────────┤   (schemas, operations, validation, views, blueprint)
+        └──── @jeeves/spec ◀───────────┤   (schemas, operations, validation, lanes, blueprint)
                                        └──▶ @jeeves/providers ──▶ OpenAI API / Codex (chat only)
 
 GET /projects/:id/blueprint ──▶ future code generator (separate service, not in this repo)
@@ -18,7 +18,7 @@ GET /projects/:id/blueprint ──▶ future code generator (separate service, n
 
 | Path | Holds |
 | --- | --- |
-| `apps/web` | Vite + React 19 + Mantine. `App.tsx` is the shell (Design and Settings tabs, project menu, status bar). `project/` holds the project store (zustand), API client, form drafts, project menu, chooser and browser. `canvas/` holds the lane canvas: `Workspace.tsx` (the Design tab: header actions, chat rail, canvas toolbar, inspector rail), `LaneCanvas.tsx` (the design's lane graph on the board), the tile and actor faces, the ELK worker client and the app's one layout engine (`elk.ts`), and `canvas.css` (the board's colours from the theme). `studio/` holds the inspector forms and drafts, and the old C1/C2/C3 canvas (no longer mounted; to be deleted). `chat/` the chat rail and its store; `settings/` the Settings view; `shell/` and `theme/` the chrome. |
+| `apps/web` | Vite + React 19 + Mantine. `App.tsx` is the shell (Design and Settings tabs, `#/design` and `#/settings`; project menu; status bar). `project/` holds the project store (`useProject`, zustand), API client, form drafts, project menu, chooser and browser. `canvas/` holds the lane canvas: `Workspace.tsx` (the Design tab: header actions, chat rail, canvas toolbar, inspector rail), `LaneCanvas.tsx` (the design's lane graph on the board), the tile and actor faces, the ELK worker client and the app's one layout engine (`elk.ts`), and `canvas.css` (the board's colours from the theme). `studio/` holds the inspector forms and their drafts (tile, connection and module forms), the rail preferences, `StudioIcon` and `studio.css` (the workspace chrome). `chat/` the chat rail and its store; `settings/` the Settings view; `shell/` and `theme/` the chrome. |
 | `apps/server` | Fastify 5 with Zod type providers, Drizzle ORM on `pg`, migrations in `drizzle/`. `routes/` (projects, chat, settings), `design/service.ts` (projects, revisions, history, layout, blueprint), `chat/` (turn loop, tools, files, model wiring), `settings.ts` (provider keys and the chosen model). |
 | `packages/spec` | The design format and every pure function over it (no I/O). |
 | `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap) and edits (add after, insert before, link, plan and apply a removal with restitching, remove a link). The root export adds the layout core: ELK layered left to right on a 32px grid with stability hints, a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; select and hand modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The web app's lane canvas mounts it. |
@@ -47,9 +47,8 @@ component kinds (`studio-components.ts`) and one package preset (`studio-presets
 study is TinyURL in lanes (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
-reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-view.ts` and
-`studio-relationships.ts` project the design into C1/C2/C3 scopes with merged relationships;
-`studio-blueprint.ts` projects it into the blueprint.
+reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-blueprint.ts`
+projects the design into the blueprint.
 
 The lane model: `studio-tiles.ts` groups kinds into seven tile types; `studio-links.ts` is the
 link table (which kinds link, sync or async, and the connection each link gets) with the caps;
@@ -77,8 +76,7 @@ change in one transaction that locks the project row: a stale `baseRevision` is 
 current state, an invalid batch a 422 with findings. Each applied batch is a row in `operations`
 with before/after snapshots and a source (`canvas`, `chat`, `api`). Undo and redo
 (`POST /projects/:id/undo|redo`) restore a snapshot as a new revision; a new edit ends the redo
-chain. The web store keeps one chronological stack over server edits and local row-order
-changes.
+chain. The web store's Undo and Redo follow that server history; it keeps no history of its own.
 
 Tables: `projects`, `design_revisions`, `operations`, `layouts`, `files`, `chat_turns`. The server
 applies migrations on start.
@@ -89,8 +87,9 @@ Positions are never stored. The lane canvas projects the design with `laneGraph`
 with the board's ELK engine (layered, left to right, 32px grid, automation-illustrator's options),
 running ELK in a Web Worker with a main-thread fallback (`canvas/elk.ts`). The positions on screen
 are the stability hints for the next layout. The **layout document** (`layout.ts`,
-`PUT /projects/:id/layout`) holds a per-view row `order` and an optional `viewport` and never
-changes the design revision; the lane canvas neither reads nor writes it.
+`GET/PUT /projects/:id/layout`) holds a per-view row `order` and an optional `viewport` and never
+changes the design revision. The server keeps the route (a new project starts with an empty
+layout), but the web app neither reads nor writes it.
 
 ## Chat
 
@@ -123,7 +122,7 @@ interface a future code generator should read. See [studio blueprint](docs/studi
 | `GET/POST /projects`, `GET/PATCH/DELETE /projects/:id` | Projects |
 | `GET /projects/:id/design`, `/findings`, `/blueprint` | Design state, findings, blueprint |
 | `POST /projects/:id/operations`, `/undo`, `/redo` | Changes and history |
-| `GET/PUT /projects/:id/layout` | Row order and viewport hints |
+| `GET/PUT /projects/:id/layout` | Row order and viewport hints (unused by the canvas) |
 | `GET/POST /projects/:id/chat`, `POST /projects/:id/files`, `GET /projects/:id/files/:fileId` | Chat and attachments |
 | `GET /settings`, `PUT /settings/roles` | Providers and the chat model |
 

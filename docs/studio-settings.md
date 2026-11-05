@@ -41,7 +41,7 @@ redirect, notification, identity and gateway. References are IDs of existing obj
 | Hosting provider / `S.provider` | `unspecified`, `cloudflare`, `aws`, `google-cloud`, `external` | Browser, standalone. |
 | Concurrency / `S.concurrency` | optional integer 1–1024 | Worker. Its concurrency limit. |
 | Payment provider / `S.provider` | `unspecified`, `stripe`, `external` | Billing. One service; no adapter or entitlement boxes. |
-| Lookup store / `S.lookupStoreConnection` | optional connection ref to a database | Redirect. Picks or creates the real service→store connection. |
+| Lookup store / `S.lookupStoreConnection` | optional connection ref to a database | Redirect. Names the real service→store connection. |
 | Lookup cache / `S.lookupCacheConnection` | optional connection ref to a cache | Redirect. Same rule. |
 | Delivery provider / `S.provider` | `unspecified`, `resend`, `aws-ses`, `external` | Notification. |
 | Identity integration / `S.provider` | `unspecified`, `oidc`, `external` | Identity. No roles, grants or login screens. |
@@ -52,10 +52,10 @@ Microservice, Browser app, Worker service and Gateway are the Services group; Bi
 Notifications and Identity are Presets with ordinary service semantics plus the fields above. A
 plain service can be named Catalog or Orders without gaining a business-rule form.
 
-A lookup shortcut selects an existing connection and never duplicates its endpoints. If none
-exists and exactly one valid direction exists, it creates one; if several exist, pick one under
-Connections. Clearing it removes the setting, not the connection; deleting the connection clears
-the shortcut in the same operation.
+A lookup shortcut names an existing connection and never duplicates its endpoints. The inspector
+lists the redirect's connections to a database or cache; a `connect` command with `lookup` (chat)
+creates the connection and sets the shortcut in one batch. Clearing it removes the setting, not
+the connection; deleting the connection clears the shortcut in the same operation.
 
 A **package** has name, purpose and members only: no language, provider or runtime. The **Service
 and worker** preset creates a service, a worker and a package-owned work queue as one batch, which

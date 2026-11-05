@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { api, type Project } from "./api.ts";
 import { createExampleProject, DEFAULT_EXAMPLE_ID } from "./create-example.ts";
-import { useDraw } from "./store.ts";
+import { useProject } from "./store.ts";
 import "./project-chooser.css";
 
 type Choice = "study" | "blank";
@@ -31,7 +31,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
         choice === "blank"
           ? await api.createProject(name.trim())
           : await createExampleProject(study, name.trim());
-      await useDraw.getState().open(project.id);
+      await useProject.getState().open(project.id);
       onClose();
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Could not create the project.");

@@ -81,9 +81,9 @@ reopen to edit."
 
 ## History
 
-**Undo/Redo** in the header follow one chronological stack of design edits. Each accepted
-inspector batch or chat turn is one step. Selecting, switching tabs, panning, zooming and Fit add
-none. The server keeps design history across reloads.
+**Undo/Redo** in the header step through the server's design history. Each accepted inspector
+batch or chat turn is one step; a new edit ends the redo chain. Selecting, switching tabs,
+panning, zooming and Fit add none. The history survives reloads.
 
 ## Chat
 

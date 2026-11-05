@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useDraw } from "../project/store.ts";
+import { useProject } from "../project/store.ts";
 import { type ViewId, viewFromHash } from "./views.ts";
 
 export function useHashView(): [ViewId, (next: ViewId) => void] {
@@ -12,7 +12,7 @@ export function useHashView(): [ViewId, (next: ViewId) => void] {
   }, []);
 
   const select = useCallback((next: ViewId) => {
-    void useDraw
+    void useProject
       .getState()
       .flushEdits()
       .then(() => {

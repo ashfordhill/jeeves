@@ -26,6 +26,6 @@ describe("App shell", () => {
     );
     expect(await screen.findByText("Server healthy")).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: "Design" }));
-    await waitFor(() => expect(window.location.hash).toBe("#/draw"));
+    await waitFor(() => expect(window.location.hash).toBe("#/design"));
   });
 });

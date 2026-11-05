@@ -16,7 +16,7 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useRef } from "react";
 import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../project/api.ts";
-import { useDraw } from "../project/store.ts";
+import { useProject } from "../project/store.ts";
 import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
 
 const EXAMPLES = [
@@ -61,7 +61,7 @@ function ActivityList({ activity }: { activity: ChatActivity[] }) {
 
 /** The items a turn changed that still exist. */
 function ChangedItems({ ids }: { ids: string[] }) {
-  const design = useDraw((s) => s.loaded?.design);
+  const design = useProject((s) => s.loaded?.design);
   if (!design || ids.length === 0) return null;
   const nameOf = (id: string) => design.elements.find((e) => e.id === id)?.name ?? id;
   const label = (id: string) => {
@@ -87,8 +87,8 @@ function ChangedItems({ ids }: { ids: string[] }) {
 }
 
 function UndoTurn({ operationId }: { operationId: number }) {
-  const latest = useDraw((s) => s.loaded?.history.latestEdit);
-  const undoEdit = useDraw((s) => s.undoEdit);
+  const latest = useProject((s) => s.loaded?.history.latestEdit);
+  const undoEdit = useProject((s) => s.undoEdit);
   const canUndo = latest === operationId;
   return (
     <Button
@@ -288,7 +288,7 @@ function Composer() {
 }
 
 export function ChatPanel() {
-  const projectId = useDraw((s) => s.loaded?.project.id);
+  const projectId = useProject((s) => s.loaded?.project.id);
   const load = useChat((s) => s.load);
   const status = useChat((s) => s.status);
   const turns = useChat((s) => s.turns);

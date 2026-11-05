@@ -3,7 +3,6 @@ import {
   type StudioConnectionSettings,
   type StudioFieldGroup,
   studioConnectionFieldGroups,
-  studioConnectionFields,
 } from "@jeeves/spec";
 import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
 import { formDrafts } from "../project/form-drafts.ts";
@@ -12,31 +11,30 @@ import {
   connectionQueue,
   connectionSettings,
   connectionSpec,
-  type RelationshipTarget,
 } from "./connection-drafts.ts";
 
 export function ConnectionForm({
   projectId,
-  target,
+  connection,
   design,
 }: {
   projectId: string;
-  target: RelationshipTarget;
+  connection: string;
   design: DesignDocument;
 }) {
   const spec = useMemo(
-    () => connectionSpec(projectId, target, design),
-    [projectId, target, design],
+    () => connectionSpec(projectId, connection, design),
+    [projectId, connection, design],
   );
-  return spec ? <TargetConnectionForm spec={spec} target={target} design={design} /> : null;
+  return spec ? <TargetConnectionForm spec={spec} connection={connection} design={design} /> : null;
 }
 function TargetConnectionForm({
   spec,
-  target,
+  connection,
   design,
 }: {
   spec: NonNullable<ReturnType<typeof connectionSpec>>;
-  target: RelationshipTarget;
+  connection: string;
   design: DesignDocument;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
@@ -44,20 +42,12 @@ function TargetConnectionForm({
   useEffect(() => () => formDrafts.leave(entry.key), [entry.key]);
   const id = useId();
   const [selected, setSelected] = useState<StudioFieldGroup>("General");
-  const groups =
-    target.kind === "context"
-      ? [
-          {
-            group: "General" as const,
-            fields: studioConnectionFields.filter((field) => field.path === "planned.label"),
-          },
-        ]
-      : studioConnectionFieldGroups({
-          protocol: String(entry.values["planned.protocol"]),
-          interaction: String(entry.values["planned.interaction"]),
-          settings: connectionSettings(entry.values) as StudioConnectionSettings,
-          queue: connectionQueue(design, target.id),
-        });
+  const groups = studioConnectionFieldGroups({
+    protocol: String(entry.values["planned.protocol"]),
+    interaction: String(entry.values["planned.interaction"]),
+    settings: connectionSettings(entry.values) as StudioConnectionSettings,
+    queue: connectionQueue(design, connection),
+  });
   const active = groups.find((item) => item.group === selected) ?? groups[0];
   if (!active) return null;
   return (

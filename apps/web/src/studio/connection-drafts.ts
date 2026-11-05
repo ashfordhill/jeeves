@@ -10,8 +10,6 @@ import {
 } from "@jeeves/spec";
 import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
 
-export type RelationshipTarget = { kind: "connection" | "context"; id: string };
-
 export function connectionSettings(values: DraftValues) {
   const mode = values["settings.retry.mode"];
   return {
@@ -44,19 +42,16 @@ export function connectionQueue(design: DesignDocument, id: string) {
   );
 }
 
+/** A connection's form: its planned label, protocol, interaction and access, and its settings. */
 export function connectionSpec(
   projectId: string,
-  target: RelationshipTarget,
+  id: string,
   design: DesignDocument,
 ): DraftSpec | undefined {
   const read: DraftSpec["read"] = (current) => {
-    if (target.kind === "context") {
-      const relation = current.architecture?.relationships.find((item) => item.id === target.id);
-      return relation ? { "planned.label": relation.description } : undefined;
-    }
-    const connection = current.connections.find((item) => item.id === target.id);
+    const connection = current.connections.find((item) => item.id === id);
     const binding = current.architecture?.studio?.connections.find(
-      (item) => item.connection === target.id,
+      (item) => item.connection === id,
     );
     if (!connection?.planned || !binding) return;
     const { retry, ...settings } = binding.settings;
@@ -78,8 +73,8 @@ export function connectionSpec(
   if (!initial) return;
   return {
     projectId,
-    target: `${target.kind}-relationship:${target.id}`,
-    definition: `${target.kind}-relationship@1`,
+    target: `connection:${id}`,
+    definition: "connection@1",
     label: String(initial["planned.label"]),
     read,
     validate(values) {
@@ -88,7 +83,6 @@ export function connectionSpec(
       if (typeof action !== "string" || !action.trim()) errors["planned.label"] = "Enter an action";
       else if (action.length > studioLimits.action && action !== initial["planned.label"])
         errors["planned.label"] = `Use ${studioLimits.action} characters or fewer`;
-      if (target.kind === "context") return errors;
       for (const [field, schema] of [
         ["protocol", studioProtocolSchema],
         ["interaction", studioInteractionSchema],
@@ -110,8 +104,8 @@ export function connectionSpec(
       )
         errors["planned.protocol"] =
           "Timeout and retry require HTTP, HTTPS or gRPC request/response";
-      const connection = design.connections.find((item) => item.id === target.id);
-      if (connection && connectionQueue(design, target.id)) {
+      const connection = design.connections.find((item) => item.id === id);
+      if (connection && connectionQueue(design, id)) {
         const queueIsTarget = elementKind(design, connection.to.element) === "queue";
         if (values["settings.channelUse"] !== (queueIsTarget ? "publish" : "consume"))
           errors["settings.channelUse"] = queueIsTarget
@@ -123,14 +117,6 @@ export function connectionSpec(
       return errors;
     },
     build(current, values, paths) {
-      if (target.kind === "context") {
-        if (!current.architecture) throw new Error("Connection no longer exists");
-        const architecture = structuredClone(current.architecture);
-        const relation = architecture.relationships.find((item) => item.id === target.id);
-        if (!relation) throw new Error("Connection no longer exists");
-        relation.description = String(values["planned.label"]);
-        return [{ op: "setArchitecture", architecture }];
-      }
       const planned = Object.fromEntries(
         paths
           .filter((path) => path.startsWith("planned."))
@@ -138,7 +124,7 @@ export function connectionSpec(
       );
       return buildStudioCommand(current, {
         type: "editConnection",
-        connection: target.id,
+        connection: id,
         ...(Object.keys(planned).length && { planned }),
         ...(paths.some((path) => path.startsWith("settings.")) && {
           settings: studioConnectionSettingsSchema.parse(connectionSettings(values)),
