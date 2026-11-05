@@ -255,3 +255,103 @@ Notes for LG03:
   `SNAP_PX`, `MODEST_MAX_PX` and `ANIMATE_MS` from `animate.ts`.
 - `packages/board/tsconfig.json` has the DOM lib already; LG03 adds JSX (and `.test.tsx` to
   `vitest.config.ts` includes).
+
+## 2026-11-04 — LG03: board React layer (complete)
+
+`@jeeves/board` has React 19.2.8, React DOM 19.2.8 and `@xyflow/react` 12.11.6 as peer and dev
+dependencies, plus dev `@types/react` 19.2.18, `@types/react-dom` 19.2.7,
+`@testing-library/react` 16.3.3 and `jsdom` 29.1.1 (the web app's versions). React, React DOM
+and the patched React Flow in `packages/board/node_modules` have the same real paths as the web
+app's, so there is one copy of each. `tsconfig.json` adds `DOM.Iterable` and `jsx: react-jsx`;
+`src/react/css.d.ts` declares `*.css` because TypeScript 7 checks side-effect imports.
+`vitest.config.ts` includes `.test.tsx`; the React test opts into jsdom with a
+`@vitest-environment` comment, and the other board tests stay in node.
+
+New `src/react/`, exported from the package root (`@jeeves/board`). Ported from
+automation-illustrator 0803c4a:
+
+- `Board.tsx` (`Board.tsx`, `controls/PathHostFrame.tsx`). Props as in the unit text plus
+  `ref` (`BoardHandle { fit() }`, React 19 ref prop). Exported types: `TileSpec`, `LineSpec`
+  (with an optional `label`, the line's accessible name, never drawn), `BoardSelection`,
+  `BoardMode`, `TileShape`. React Flow has no dragging, connecting or deleting. Dragging the
+  paper pans, and the wheel uses automation-illustrator's handler: 1.08 per notch, stops at
+  0.72 × fit, and zooming in on empty paper aims at the graph. Pinch zoom-out has the same floor.
+  It also has `snapGrid` [32, 32], zoom 0.2–2.5 and 32px dots. The first non-empty layout gets
+  one camera: a fit, or a sole tile centred at the current zoom. The board stays covered until
+  then. The root is `.board` with
+  `data-layout="initial|updating|ready"`, `data-board="loading|ready"`, `data-mode` and
+  `data-layout-error`. Each tile is a `.board-tile` frame (`data-shape` rect radius 14, pill
+  radius 32, a 4px selection ring) holding the caller's `content`. Tiles are React Flow nodes
+  with role `group` and `aria-label` = `label`. Lines are role `group` too, named by `label` or
+  by React Flow's default "Edge from a to b". In hand mode, tiles and lines let the pointer
+  through, so every drag pans and clicks select or clear nothing.
+- `BoardLine.tsx` (`routing/FlowArrow.tsx`): ELK route or the orthogonal fallback, 2.75px
+  (4px selected), dashed as world-locked `polylineDrawSegments` over a transparent hit path,
+  44px hit band, chip `<button class="board-chip">` at its ELK rect; clicking the line or chip
+  selects it.
+- `useBoardLayout.ts` (`useLaneLayout.ts`): the stability hints are the last layout's positions
+  plus `hints` for tiles that have none. Shown positions win.
+- `useAnimatedLayout.ts`, `camera.ts` (`firstLayoutCamera.ts`, `zoom.ts`) and `context.ts`
+  (`LaneLayoutContext.ts`).
+- `board.css`: `--board-line`, `--board-ink`, `--board-tile`, `--board-select`, `--board-plus`,
+  `--board-dash`, plus `--board-paper`, `--board-dot`, `--board-shadow` and the custom grab
+  cursors, all with automation-illustrator's light values. They are defined on `:where(.board)`
+  (zero specificity).
+
+Departures, all small:
+
+- A fit never zooms in past 100% (`FIT_MAX_ZOOM` 1). automation-illustrator allows 2.5.
+- The wheel and pinch floor uses the board's own fit zoom (`viewportToFitRect`), not React
+  Flow's `getViewportForBounds`.
+- The React Flow attribution stays visible, as in the current studio. Hiding it logs a dev warning.
+- Each node declares static `handles` (west and east, mid-height) next to hidden `<Handle>`s, so
+  lines draw before React Flow measures a tile (and in jsdom, where it never does).
+- A tile with no shown position is drawn at its `hints` position. Without a hint, it and its
+  lines stay hidden until ELK places it.
+- Selection is controlled through the callbacks only; React Flow's own selection state is unused.
+
+Test (`src/react/board.test.tsx`, 1, jsdom, fake `ElkLike` with fixed geometry): 3 tiles at
+their ELK positions, the solid line follows its ELK route with no dashes, the dashed line draws
+dash segments, the board leaves the cover after the first camera, clicking a tile calls
+`onSelectTile` and clicking a chip calls `onSelectLine`.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 181 files, all type checks, 18 test files / 108 tests passed; the
+  board adds 1).
+- `pnpm test:e2e`: the first run had 1 failure, the same cold-start 5s `expect.poll` for the new
+  project's URL as in LG02 (`edit-history`). The next two runs: 5 passed each. The likely cause:
+  LG02 and LG03 both changed `pnpm-lock.yaml`, which invalidates Vite's dependency cache, so the
+  first page load after the change waits for Vite to re-optimize.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- The app shows nothing new. As an extra check I loaded the board in a throwaway Vite page (not
+  committed; removed, and its server on 4399 stopped) in Chromium with bundled ELK and TinyURL's lane
+  geometry (10 tiles, 11 lines, 3 dashed, 2 chips). It renders. Tile, line, chip and paper clicks
+  select or clear. Drag pans. The wheel zooms by 1.08 a notch and stops at 0.72 × fit. Fit
+  refits. Hand mode pans from a tile without selecting. Adding a tile relays out and animates.
+  No console errors or warnings. Fit zoom with the board at full window width: 0.78 at 1440×900,
+  0.69 at 1280×800. The owner's dev servers on 4300/4310 were left alone.
+
+PLAN.md's `packages/board` row describes the React layer.
+
+Notes for LG04:
+
+- `@jeeves/spec` must import only `@jeeves/board/graph`; the package root now pulls in React,
+  React Flow and CSS.
+
+Notes for LG07:
+
+- Create one engine (`createLayoutEngine(elk, …)`) per app, not per render, or the cache is lost.
+  The Fit button calls `boardRef.current?.fit()`. `.board` fills its parent, which needs a height.
+- Map `--board-*` in `canvas.css` on `.board` (light and dark); the defaults have zero specificity.
+- Tile `content` is the face inside the frame (the frame draws border, radius, background, shadow
+  and the selection ring). Chip `content` sits inside a `<button>`, so keep it phrasing content (an
+  icon). Board.tsx imports `@xyflow/react/dist/base.css` itself.
+- E2E: query tiles with `getByRole("group", { name, exact: true })`. Line names that contain tile
+  names match without `exact`.
+- Fit uses automation-illustrator's padding (`FIT_PADDING` 0.28 per side), the main lever on the
+  ≥ 0.75 target. With the rails open the zoom will be below the full-width figures above.
+- Look: Redirect's dashed line to Click events shares its first trunk segment with Redirect's
+  solid fan (one east port, `mergeEdges`), so it looks solid there. A new tile appears at its
+  final slot at once while the others animate. LG09's dock hint draws it at its slot before ELK
+  lands.

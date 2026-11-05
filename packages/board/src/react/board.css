@@ -1,0 +1,127 @@
+/* Ported from automation-illustrator src/board/Board.css and the board rules of
+   src/app/styles/tokens.css (0803c4a).
+   The theme is a set of --board-* variables with automation-illustrator's light values as
+   defaults. `:where()` keeps the defaults at zero specificity, so an app sets its own on `.board`
+   (light and dark) without fighting the order of stylesheets. */
+:where(.board) {
+  --board-paper: #e8f4fa;
+  --board-dot: #aabec8;
+  --board-line: #123a50;
+  --board-ink: #071c28;
+  --board-tile: #f7fcfe;
+  --board-shadow: rgba(7, 28, 40, 0.16);
+  --board-select: #1a8fd4;
+  --board-plus: #1e8a62;
+  --board-dash: color-mix(in srgb, #1db8a8 55%, color-mix(in srgb, #e8f4fa 88%, #0c3349));
+  /* Windows has no native grab cursor; a white hand with a black outline matches the OS pointer. */
+  --board-grab-cursor:
+    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23fff' stroke='%23fff' stroke-width='3.25' stroke-linejoin='round' stroke-linecap='round' d='M8.2 16.2V8.6a1.85 1.85 0 0 1 3.7 0v5.6h.35V6.8a1.85 1.85 0 0 1 3.7 0v7.4h.35V8.2a1.75 1.75 0 0 1 3.5 0v6.8h.3v-4.4a1.6 1.6 0 0 1 3.2 0v7.8a5.5 5.5 0 0 1-5.5 5.5h-3.6A5.5 5.5 0 0 1 8.2 19.6v-2.2c-1.6-.5-3.2-1.5-3.8-2.1a1.7 1.7 0 0 1 2.35-2.45c.7.55 1.7 1.4 2.65 1.95z'/%3E%3Cpath fill='%23fff' stroke='%23111' stroke-width='1.35' stroke-linejoin='round' stroke-linecap='round' d='M8.2 16.2V8.6a1.85 1.85 0 0 1 3.7 0v5.6h.35V6.8a1.85 1.85 0 0 1 3.7 0v7.4h.35V8.2a1.75 1.75 0 0 1 3.5 0v6.8h.3v-4.4a1.6 1.6 0 0 1 3.2 0v7.8a5.5 5.5 0 0 1-5.5 5.5h-3.6A5.5 5.5 0 0 1 8.2 19.6v-2.2c-1.6-.5-3.2-1.5-3.8-2.1a1.7 1.7 0 0 1 2.35-2.45c.7.55 1.7 1.4 2.65 1.95z'/%3E%3C/svg%3E")
+    12 9,
+    grab;
+  --board-grabbing-cursor:
+    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23fff' stroke='%23fff' stroke-width='3.25' stroke-linejoin='round' stroke-linecap='round' d='M8.2 16.2V8.6a1.85 1.85 0 0 1 3.7 0v5.6h.35V6.8a1.85 1.85 0 0 1 3.7 0v7.4h.35V8.2a1.75 1.75 0 0 1 3.5 0v6.8h.3v-4.4a1.6 1.6 0 0 1 3.2 0v7.8a5.5 5.5 0 0 1-5.5 5.5h-3.6A5.5 5.5 0 0 1 8.2 19.6v-2.2c-1.6-.5-3.2-1.5-3.8-2.1a1.7 1.7 0 0 1 2.35-2.45c.7.55 1.7 1.4 2.65 1.95z'/%3E%3Cpath fill='%23fff' stroke='%23111' stroke-width='1.35' stroke-linejoin='round' stroke-linecap='round' d='M8.2 16.2V8.6a1.85 1.85 0 0 1 3.7 0v5.6h.35V6.8a1.85 1.85 0 0 1 3.7 0v7.4h.35V8.2a1.75 1.75 0 0 1 3.5 0v6.8h.3v-4.4a1.6 1.6 0 0 1 3.2 0v7.8a5.5 5.5 0 0 1-5.5 5.5h-3.6A5.5 5.5 0 0 1 8.2 19.6v-2.2c-1.6-.5-3.2-1.5-3.8-2.1a1.7 1.7 0 0 1 2.35-2.45c.7.55 1.7 1.4 2.65 1.95z'/%3E%3C/svg%3E")
+    12 9,
+    grabbing;
+}
+
+.board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--board-paper);
+  color: var(--board-ink);
+}
+
+.board .react-flow__pane {
+  cursor: var(--board-grab-cursor);
+}
+
+.board .react-flow__pane.dragging {
+  cursor: var(--board-grabbing-cursor);
+}
+
+.board .react-flow__node {
+  cursor: pointer;
+  overflow: visible;
+}
+
+/* Nothing to draw until the first layout and its camera land. */
+.board[data-layout="initial"] .react-flow__viewport,
+.board[data-board="loading"] .react-flow__viewport,
+.board[data-board="loading"] .react-flow__edgelabel-renderer {
+  visibility: hidden;
+}
+
+.board-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--board-ink);
+}
+
+/* Tile frame: a rounded rectangle, or a pill. The face inside is the app's. */
+.board-tile {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 3px solid var(--board-line);
+  border-radius: 14px;
+  background: var(--board-tile);
+  color: var(--board-ink);
+  box-shadow: 0 5px 0 var(--board-shadow);
+  overflow: hidden;
+}
+
+.board-tile[data-shape="pill"] {
+  border-radius: 32px;
+}
+
+.board-tile[data-selected] {
+  box-shadow: 0 0 0 4px var(--board-select);
+}
+
+/* Lines are drawn from ELK routes; the handles only anchor the fallback route. */
+.board .react-flow__handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.board-chip {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background: var(--board-tile);
+  border: 3px solid var(--board-line);
+  border-radius: 10px;
+  color: var(--board-ink);
+  box-shadow: 0 3px 0 var(--board-shadow);
+  font: inherit;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.board-chip[data-selected] {
+  outline: 2px dashed var(--board-line);
+  outline-offset: 1px;
+}
+
+/* Hand mode: tiles (inline style) and lines let the pointer through, so every drag pans. */
+.board[data-mode="hand"] .react-flow__edge,
+.board[data-mode="hand"] .board-chip {
+  pointer-events: none;
+}
