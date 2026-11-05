@@ -58,7 +58,9 @@ const nouns: Record<StudioKind, string> = {
   cdn: "a CDN",
   "external-api": "an external API",
 };
-const noun = (kind: StudioKind) => nouns[kind];
+/** A kind in plain words, with its article: "a cache", "object storage". */
+export const studioKindNoun = (kind: StudioKind): string => nouns[kind];
+const noun = studioKindNoun;
 const Noun = (kind: StudioKind) => noun(kind).charAt(0).toUpperCase() + noun(kind).slice(1);
 
 const refuse = (message: string): StudioLinkResult => ({ ok: false, message });

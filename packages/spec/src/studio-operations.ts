@@ -16,6 +16,7 @@ import {
   studioComponentSettingsSchema,
 } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
+import { buildLaneCommand, laneCommandSchemas } from "./studio-lane-commands.ts";
 import {
   definitionRefSchema,
   type StudioElementBinding,
@@ -32,6 +33,7 @@ import {
   studioProtocolSchema,
   studioSettingsSchema,
 } from "./studio-model.ts";
+import { pruneStudioAfterDelete } from "./studio-prune.ts";
 
 const studioName = z.string().trim().min(1).max(studioLimits.name);
 const studioDescription = z.string().trim().max(studioLimits.description);
@@ -160,64 +162,9 @@ export const studioCommandSchema = z.discriminatedUnion("type", [
     packageAction: z.enum(["ungroup", "delete-members"]).optional(),
     reassignOwners,
   }),
+  ...laneCommandSchemas,
 ]);
 export type StudioCommand = z.infer<typeof studioCommandSchema>;
-
-/**
- * Called only by explicit destructive operations, on an already detached draft. Never cascade
- * resource ownership: a missing element/package owner must be reassigned or rejected by validation.
- */
-export function pruneStudioAfterDelete(
-  design: DesignDocument,
-  removedElements: string[] = [],
-  removedConnections: string[] = [],
-): void {
-  const studio = design.architecture?.studio;
-  if (!studio) return;
-  const removed = new Set(removedElements);
-  const connections = new Set(removedConnections);
-  studio.elements = studio.elements.filter((item) => !removed.has(item.element));
-  studio.connections = studio.connections.filter((item) => !connections.has(item.connection));
-  // An entry is the actor's link to a tile: it goes with the tile.
-  if (studio.entries) studio.entries = studio.entries.filter((item) => !removed.has(item.element));
-  studio.packages = studio.packages.flatMap((item) => {
-    const members = item.members.filter((id) => !removed.has(id));
-    return members.length < 2 ? [] : [{ ...item, members }];
-  });
-  // A host's components are its own internals and go with it; links that traced a removed
-  // connection or reached a removed element are dropped. Other services' data is untouched.
-  if (studio.components) {
-    studio.components = studio.components.filter((item) => !removed.has(item.host));
-    const kept = new Set(studio.components.map((item) => item.id));
-    for (const item of studio.components)
-      if (
-        item.settings.kind === "event-consumer" &&
-        item.settings.deadLetterQueue &&
-        removed.has(item.settings.deadLetterQueue)
-      )
-        delete item.settings.deadLetterQueue;
-    if (studio.componentConnections)
-      studio.componentConnections = studio.componentConnections.filter(
-        (link) =>
-          kept.has(link.from) &&
-          (link.to.kind === "component"
-            ? kept.has(link.to.id)
-            : !removed.has(link.to.id) && !connections.has(link.to.via)),
-      );
-  }
-  for (const binding of studio.elements) {
-    const settings = binding.settings;
-    if (settings.kind === "browser" && settings.delivery === "bundled") {
-      if (settings.servedBy && removed.has(settings.servedBy)) delete settings.servedBy;
-    }
-    if (settings.kind === "cdn" && settings.origin && removed.has(settings.origin))
-      delete settings.origin;
-    if (settings.kind === "redirect") {
-      for (const field of ["lookupStoreConnection", "lookupCacheConnection"] as const)
-        if (settings[field] && connections.has(settings[field])) delete settings[field];
-    }
-  }
-}
 
 /**
  * No I/O and no cached architecture replacement. Toolbar and assistant callers submit this exact
@@ -254,9 +201,9 @@ export function buildStudioCommand(
   }
   const ops: OperationInput[] = [];
   if (!draft.architecture) {
-    if (input.type !== "create" || !input.system)
-      throw new Error("Create an architecture system before using studio commands.");
-    draft.architecture = architectureSchema.parse({ system: input.system });
+    const system = input.type === "create" || input.type === "addTile" ? input.system : undefined;
+    if (!system) throw new Error("Create an architecture system before using studio commands.");
+    draft.architecture = architectureSchema.parse({ system });
     ops.push({ op: "setArchitecture", architecture: structuredClone(draft.architecture) });
   }
   const studio: StudioModel = draft.architecture.studio ?? {
@@ -431,6 +378,13 @@ export function buildStudioCommand(
       );
       break;
     }
+    case "addTile":
+    case "linkTiles":
+    case "removeTile":
+    case "removeLink":
+    case "changeKind":
+      ops.push(...buildLaneCommand(draft, studio, input));
+      break;
     case "delete": {
       const elements = new Set(input.elements ?? []);
       if (input.package) {

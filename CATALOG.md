@@ -81,6 +81,18 @@ Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane. A
 at most once. A broken rule is a `LANE_INVALID` finding (`laneFindings`); validation does not
 enforce the lane rules yet, because the TinyURL study has no entries yet.
 
+Lane commands ([`studio-lane-commands.ts`](packages/spec/src/studio-lane-commands.ts)) edit a
+design that keeps these rules, and refuse in plain words with tile names ("Link cache can't link
+to Geo lookup. A cache can't link onward."):
+
+| Command | What it does |
+| --- | --- |
+| `addTile` | A new tile after a tile, after a lane (an entry; always a request) or before a tile. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
+| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge). |
+| `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
+| `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
+| `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
+
 A **package** groups two or more independent applications into an open frame at C2; it has no
 language, provider or runtime. The **Service and worker** preset (Library → Presets) creates a
 service, a worker and a package-owned work queue in one step.

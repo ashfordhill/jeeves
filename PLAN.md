@@ -65,7 +65,11 @@ Every change, from the canvas, chat or API, is an **operation batch** posted to
 `updateArchitectureSystem`, `setStudio`, `addElement`, `updateElement`, `removeElement`,
 `connect`, `updatePlannedConnection`, `disconnect`. The UI and chat build batches from
 higher-level **studio commands** (`buildStudioCommand` in `studio-operations.ts`: create, edit,
-connect, group, components, delete and so on), so both share one rule set.
+connect, group, components, delete and so on), so both share one rule set. The **lane commands**
+(`studio-lane-commands.ts`: `addTile`, `linkTiles`, `removeTile`, `removeLink`, `changeKind`)
+are studio commands too: each is checked with the board edits under the lane rules and refused in
+plain words with tile names. Pure helpers answer the canvas and chat: `laneTabs`, `laneChoices`
+and `planRemoveTile`.
 
 `applyOperations` applies a batch all-or-nothing and bumps `revision` once. The server runs each
 change in one transaction that locks the project row: a stale `baseRevision` is a 409 with the

@@ -3,7 +3,7 @@ import { unbindArchitecture } from "./architecture.ts";
 import { type DesignDocument, designIdNouns, designIds } from "./design.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
-import { pruneStudioAfterDelete } from "./studio-operations.ts";
+import { pruneStudioAfterDelete } from "./studio-prune.ts";
 import { validateStudio } from "./studio-validation.ts";
 import { validateDesign } from "./validate.ts";
 

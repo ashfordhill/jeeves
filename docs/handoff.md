@@ -441,3 +441,89 @@ Notes for LG05:
   pair on the board). If the owner wants one tile in both lanes, that is a later decision.
 - An existing connection whose interaction is edited to Asynchronous where the table has no async
   mode (for example application → database) will be `LANE_INVALID` once LG06 enforces the rules.
+
+## 2026-11-04 — LG05: lane commands in the spec (complete)
+
+New `packages/spec/src/studio-lane-commands.ts`; its five schemas join `studioCommandSchema`, and
+`buildStudioCommand` hands them to `buildLaneCommand(draft, studio, input)`. Each command checks
+the board edit (`addAfter`, `insertBefore`, `link`, `planRemoval`/`applyRemoval`, `removeEdge`)
+under `laneRules`, with its own plain-words checks first so a refusal names tiles, not IDs. A
+refusal is thrown as an `Error` (as the other commands do). A command first refuses a design that
+already breaks a lane rule ("Fix the lanes first. …"), and finally runs `laneFindings` on the
+result, which also covers the entry cap.
+
+- `addTile { from: {lane}|{tile}, side, link, tile: {id, name, kind, description?}, linkId,
+  system? }`. A lane is `after` and `sync` only and makes an entry. A new resource is owned by
+  the `from` tile when that is an application (a queue without one is refused). `before` moves
+  every entry and connection into the host to the new tile: an entry keeps its ID, lane and
+  place; a connection is a `disconnect` plus a `connect` with the same ID, its mode and the link
+  table's defaults for the new target (it moves to the end of `connections`). Module links and
+  Redirect lookups that traced the moved connection are pruned, as for any removed connection.
+- `linkTiles { from, to, link, linkId }`. A second entry for a tile, even in the other lane, is
+  refused: "CDN already starts the download lane; a tile can start only one lane."
+- `removeTile { tile, alsoRemove? }`. `alsoRemove` must equal the strands exactly. Restitched
+  connections get `source-target` IDs and restitched entries `lane-target` (`-2`, `-3`… if taken,
+  shortened to 63 characters); an entry restitch takes the removed entry's place and lane. The
+  tile and its strands are `removeElement` ops; `pruneStudioAfterDelete` clears modules, links,
+  entries, package memberships, CDN origin, servedBy and lookups. A surviving resource whose
+  owner went (or whose owner package dissolved) passes to the first application that links to
+  it; a queue falls back to its first consumer.
+- `removeLink { link }`: a connection or an entry; refused, naming the tiles, if that strands any.
+- `changeKind { element, kind }`: same tile type only. Fresh `createStudioSettings` and definition
+  ref, `updateElement` when the classification changes (gateway ↔ CDN). Refused when a link or
+  entry no longer fits, when a non-application would keep modules, or when another module's link
+  to the tile no longer fits its targets (Links database → search: "ID generator in Shorten API
+  can't use a search index; …"). Cleared: a CDN origin or servedBy that needs an application, a
+  Redirect lookup that needs the old kind; a non-application leaves its packages.
+- Helpers: `laneChoices(design, from, side, mode)` → `{type, kind}[]` (the default kind, else the
+  type's first kind the rules accept; Service after a queue → worker); `laneTabs(design, nodeKey)`
+  → `{from, side, mode}[]` with at least one choice (the actor gets one `after`/`sync` tab per
+  lane); `planRemoveTile(design, id)` → `{ok, value: {strands}}` or `{ok: false, message}`.
+- Moved, unchanged: `pruneStudioAfterDelete` to `studio-prune.ts` (so the lane module can use it
+  without an import cycle; `apply.ts` imports it from there, the package index exports it).
+  `studioKindNoun` is now exported from `studio-links.ts`.
+
+Departures: `addTile` takes an optional `system`, like `create`, so a new project's first tile
+can create the system. `laneChoices` takes `from: {lane}|{tile}` instead of a node key, because
+the actor's choices depend on the lane's cap; `laneTabs` returns tabs in that shape, so a tab can
+be passed straight on. No cap was raised.
+
+Tests (`studio-lane-commands.test.ts`, 7; each accepted command is applied with
+`applyOperations` and leaves no `laneFindings`): add after (a queue, owned, publish), before an
+entry tile and before a tile with two incoming links, from a lane, and the first tile of an empty
+project; refusals for add (cache onward, before the user, worker entry, taken ID, 4 links,
+3 entries); a merge, an entry merge, and refused loop, duplicate, async-to-database and
+second-lane links; removing the CDN restitches `download-redirect`, removing the queue gives an
+async call, `removeLink` and its strand refusal; removing Redirect needs exactly its three strands
+and hands Link cache to Shorten API; `changeKind` accepted (redirect → service) and refused
+(entry → worker, other type, module link, same kind); `laneChoices` and `laneTabs` after a
+queue, on a cache, for a lane and the actor.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 188 files, all type checks, 20 test files / 122 tests passed).
+- `pnpm test:e2e`: 5 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- No browser check: nothing in the app uses the lane commands yet. The chat tool schema now lists
+  them (it is built from `studioCommandSchema`), but the instructions don't mention them (LG12).
+
+Docs: CATALOG (lane commands table), PLAN (studio commands).
+
+Notes for LG06:
+
+- Lane commands refuse any design with a `LANE_INVALID` finding, so they only work on TinyURL
+  once it is in lanes. The fixture `tinyurlInLanes()` is in both `studio-lanes.test.ts` and
+  `studio-lane-commands.test.ts`; replace both with the rewritten study.
+- Once `validateStudio` reports `laneFindings`, the final `laneFindings` check in
+  `buildLaneCommand` is redundant with `applyOperations` but still gives the plain message before
+  the batch is sent; keep it.
+- Removing the Web app is a plain `delete`; the restitch logic is only in `removeTile`.
+
+Notes for LG09–LG12:
+
+- `laneTabs(design, LANE_ACTOR)` gives `{ from: { lane } }` tabs; pass a tab's `from`, `side`
+  and `mode` to `laneChoices`, then `addTile` with the chosen `kind`. A drop on a tile is
+  `linkTiles`; on the left side the canvas must decide the direction (tile → host).
+- `planRemoveTile` gives the strands for the confirmation; send them as `alsoRemove`.
+- Inserting before a tile resets the moved connections' labels and settings to the defaults and
+  drops module links that traced them (readiness gaps, not errors).
