@@ -105,3 +105,26 @@ Notes for the next unit:
   current ELK canvas and will need rewriting with it.
 - `useDraw`, the `draw` view ID and some `draw-*` CSS class names remain; rename them with the
   canvas rebuild if wanted.
+
+## 2026-11-04 — Lane-grid build plan (LG01–LG13), proposed
+
+Planning only; no code changed. The owner's brief (`~/jeeves-planning/2026-11-04/BRIEF.md`) became
+[the lane-grid build plan](build-plan-lane-grid.md) and its
+[execution units](plans/lane-grid/execution-units.md), after a full read of this repository and of
+automation-illustrator's `src/board/`, `src/state/store.ts` and `src/workflow/` (commit `0803c4a`).
+PLAN.md's "Next" section links them.
+
+Owner answers on 2026-11-04:
+
+- The `+` picker shows seven tile types as icons (Service, API, Database, Cache, Queue, Storage,
+  External). The exact kind is an icon row in the inspector. Browser app is not creatable.
+- Projects made before the lane canvas are deleted, not migrated. There is no backwards
+  compatibility. LG06 does this as a one-time, owner-authorized exception to "never touch the
+  owner's projects".
+
+Checked: every relative link in the two new docs resolves. The automation-illustrator file paths
+and line ranges cited in the units were read in this session.
+
+Notes for LG01: start with `packages/board/src/graph/` only. automation-illustrator's "lane" means
+Before/After, not a row; Jeeves lanes are the actor's tagged entry links. Nothing in the app
+changes until LG07.

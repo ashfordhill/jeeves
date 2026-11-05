@@ -115,6 +115,7 @@ The web app reaches these under `/api` (Vite proxy in development, nginx in the 
 
 ## Next
 
-The owner has decided to rebuild the canvas on an automation-illustrator-style locked lane grid
-(see [C4 notes](docs/c4-modeling.md)). Code generation will be a separate service that reads the
-blueprint.
+The canvas is being rebuilt on an automation-illustrator-style locked lane grid: one actor, two
+lanes, typed tiles and no islands ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
+[execution units](docs/plans/lane-grid/execution-units.md)). Code generation will be a separate
+service that reads the blueprint.
