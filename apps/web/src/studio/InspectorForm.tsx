@@ -25,7 +25,7 @@ import {
   type DraftValues,
   type FormDraft,
   formDrafts,
-} from "../draw/form-drafts.ts";
+} from "../project/form-drafts.ts";
 import { applicationKind, type ConnectionDraft, commitAction, endpointKind } from "./actions.ts";
 import {
   componentFieldApplies,
@@ -192,7 +192,7 @@ const retryText = (settings?: StudioConnectionSettings) => {
   ].join(" · ");
 };
 
-/** SG09: C3 component inspector (General / Options / Connections), autosaving like elements. */
+/** C3 component inspector (General / Options / Connections), autosaving like elements. */
 function ComponentForm({
   projectId,
   id,
@@ -532,7 +532,7 @@ function TargetForm({
         fields: [...item.fields] as unknown as InspectorField[],
       }))
     : [{ group: "General", fields: canonical }];
-  // SG09: service and resource performance intent joins Options (after the definition fields).
+  // Service and resource performance intent joins Options (after the definition fields).
   const performance = definition ? studioPerformanceFields[settings.kind] : [];
   if (performance.length) {
     const options = groups.find((group) => group.group === "Options");

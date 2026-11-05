@@ -1,6 +1,7 @@
 .git
 .github
-.docs
+.claude
+.jeeves-feedback
 .cursor
 .codex
 docs

@@ -81,7 +81,7 @@ export class DesignService {
     });
   }
 
-  /** SG03 code-generation boundary: read-only, derived on request, never stored. */
+  /** Code-generation boundary: read-only, derived on request, never stored. */
   async blueprint(projectId: string) {
     const project = await this.getProject(projectId);
     if (!project) return undefined;

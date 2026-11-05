@@ -8,7 +8,7 @@ import {
   studioLimits,
   studioProtocolSchema,
 } from "@jeeves/spec";
-import type { DraftErrors, DraftSpec, DraftValues } from "../draw/form-drafts.ts";
+import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
 
 export type RelationshipTarget = { kind: "connection" | "context"; id: string };
 

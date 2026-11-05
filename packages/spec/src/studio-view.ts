@@ -20,7 +20,7 @@ import {
 export type StudioSemanticRef =
   | { kind: "system" }
   | { kind: "context" | "element" | "package" | "component"; id: string };
-/** Three equal levels (SG05). C3 is one whole-system projection, never a per-service scope. */
+/** Three equal levels. C3 is one whole-system projection, never a per-service scope. */
 export const studioViewKeys = {
   context: "studio:context",
   containers: "studio:containers",
@@ -54,7 +54,7 @@ export interface StudioViewNode {
   definitionStatus?: "known" | "unresolved";
   owner?: StudioOwner;
   execution?: StudioExecutionIntent;
-  /** C3 component kind, from the finite SG02 catalog. */
+  /** C3 component kind, from the finite catalog. */
   componentKind?: StudioComponentKind;
   /** An open labelled group: a package at C2, an application holding components at C3. */
   frame?: true;
@@ -96,7 +96,7 @@ export const studioScopes = (views: StudioViews): StudioScopeProjection[] => [
   views.containers,
   views.components,
 ];
-/** Per-kind C3 component card visual; also used by the studio `+` picker (SG09). */
+/** Per-kind C3 component card visual; also used by the studio `+` picker. */
 export const studioComponentVisuals: Readonly<Record<StudioComponentKind, Readonly<StudioVisual>>> =
   {
     "rate-limiter": { icon: "shield", color: "generic", shape: "box" },

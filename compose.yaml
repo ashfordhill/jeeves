@@ -1,4 +1,4 @@
-# Jeeves's own Postgres (not a generated project's). Host port 54329 avoids clashing with a local 5432.
+# Postgres for `pnpm dev` and the E2E tests. Host port 54329 avoids clashing with a local 5432.
 name: jeeves
 services:
   postgres:

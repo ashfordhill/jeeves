@@ -29,9 +29,8 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
-import { formDrafts } from "../draw/form-drafts.ts";
-import { canRedo, canUndo, useDraw } from "../draw/store.ts";
-import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { formDrafts } from "../project/form-drafts.ts";
+import { canRedo, canUndo, useDraw } from "../project/store.ts";
 import { type ConnectionDraft, commitAction, connectionDefaults } from "./actions.ts";
 import { ConnectionCreator } from "./ConnectionCreator.tsx";
 import { ConnectionForm } from "./ConnectionForm.tsx";
@@ -42,6 +41,7 @@ import { InspectorForm } from "./InspectorForm.tsx";
 import { useStudioPreferences } from "./preferences.ts";
 import { studioPaths } from "./routing.ts";
 import { StudioGraph, type StudioHandleRelease } from "./StudioGraph.tsx";
+import { StudioIcon } from "./StudioIcon.tsx";
 import { StudioLibrary } from "./StudioLibrary.tsx";
 import {
   choicesFor,
@@ -301,12 +301,12 @@ function KindButton({
 }) {
   return (
     <button type="button" className="studio-kind" disabled={busy} onClick={onPick}>
-      <TemplateIcon name={spawnChoiceIcon(choice)} size={17} />
+      <StudioIcon name={spawnChoiceIcon(choice)} size={17} />
       <span>{spawnChoiceLabel(choice)}</span>
     </button>
   );
 }
-/** SG08 kind picker: opened where a `+` handle was released, or by New island. */
+/** Kind picker: opened where a `+` handle was released, or by New island. */
 function KindPicker({
   title,
   at,
@@ -428,7 +428,7 @@ function ProjectStudio({
     return id && (kind === "connection" || kind === "context") ? { kind, id } : undefined;
   });
   const [hand, setHand] = useState(false);
-  // SG08: the kind picker after a handle pull, or for a New island / first box.
+  // The kind picker after a handle pull, or for a New island / first box.
   const [picker, setPicker] = useState<
     | { type: "spawn"; source: string; side: SpawnSide; at: { x: number; y: number } }
     | { type: "island"; at?: { x: number; y: number } }
@@ -523,7 +523,7 @@ function ProjectStudio({
     );
   }, [scope.key, selected, selectedMember, setPreferences]);
   useEffect(() => {
-    // Keep the shared store's canonical selection useful to the existing chat; UX13 owns its tools.
+    // Keep the shared store's canonical selection useful to the existing chat.
     const ids =
       (selectedMember ? [selectedMember.id] : undefined) ??
       selectedNode?.refs.flatMap((ref) => ("id" in ref ? [ref.id] : [])) ??

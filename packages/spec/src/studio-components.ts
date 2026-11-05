@@ -1,5 +1,5 @@
 /**
- * SG02: finite C3 component catalog. A component is a module inside exactly one studio
+ * Finite C3 component catalog. A component is a module inside exactly one studio
  * application. Settings are design intent; no template exists for any component yet.
  * Third-party products are the intended implementation; Jeeves code would only wire them.
  */
@@ -139,8 +139,8 @@ export const studioAuthGuardSettingsSchema = z.strictObject({
   credential: authCredentialSchema,
 });
 /**
- * Timeout and retries stay on the traced C2 connection binding (single destination rule,
- * model contract §2); the component owns only the circuit-breaker choice.
+ * Timeout and retries stay on the traced C2 connection binding (single destination rule);
+ * the component owns only the circuit-breaker choice.
  */
 export const studioExternalCallSettingsSchema = z.strictObject({
   kind: z.literal("external-call"),

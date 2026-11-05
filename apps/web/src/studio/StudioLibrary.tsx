@@ -8,11 +8,11 @@ import {
   studioViews,
 } from "@jeeves/spec";
 import { useState } from "react";
-import { createExampleProject } from "../architecture/create-example.ts";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
-import { useDraw } from "../draw/store.ts";
-import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { createExampleProject } from "../project/create-example.ts";
+import { useDraw } from "../project/store.ts";
 import { type Creation, creationLabel, creationScope } from "./creation.ts";
+import { StudioIcon } from "./StudioIcon.tsx";
 
 export function StudioLibrary({
   scope,
@@ -203,7 +203,7 @@ export function StudioLibrary({
                 )
                 .map((item) => (
                   <button type="button" key={item.id} onClick={() => setPreview(item.id)}>
-                    <TemplateIcon name={item.visual.icon} size={20} />
+                    <StudioIcon name={item.visual.icon} size={20} />
                     <strong>{item.name}</strong>
                     <span>{item.description}</span>
                   </button>

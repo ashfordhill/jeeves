@@ -6,7 +6,7 @@ import {
   type StudioKind,
   studioApplicationKinds,
 } from "@jeeves/spec";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 
 export function endpointKind(design: DesignDocument, id: string): StudioKind | undefined {
   return design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
@@ -31,7 +31,7 @@ export function connectionDefaults(
   if (!source || !target) throw new Error("Connect finite studio objects in a studio design.");
   return kindConnectionDefaults(source, target);
 }
-/** The same rules by kind alone, so a picker can list only kinds that can connect (SG08). */
+/** The same rules by kind alone, so a picker can list only kinds that can connect. */
 export function kindConnectionDefaults(
   source: StudioKind,
   target: StudioKind,
@@ -97,7 +97,7 @@ export function commitAction(
     const ops = rebuild(design);
     const result = applyOperations(design, ops, { baseRevision: design.revision });
     if (!result.ok) throw new Error(result.errors[0]?.message ?? "This action is invalid.");
-    // SG06: automatic layout places new reference cards; no position is stored.
+    // Automatic layout places new reference cards; no position is stored.
     return ops;
   });
 }

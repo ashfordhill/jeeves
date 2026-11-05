@@ -1,11 +1,11 @@
 /**
  * App shell: header (brand, Design / Settings tabs, project menu), the view stage on
- * paper, and the status bar. Layout and chrome follow automation-pitch. The Draw view lays out
+ * paper, and the status bar. Layout and chrome follow automation-pitch. The design view lays out
  * its own inspector rail.
  */
 import { MantineProvider } from "@mantine/core";
-import { DrawView } from "./draw/DrawView.tsx";
-import { ProjectMenu } from "./draw/ProjectMenu.tsx";
+import { DesignView } from "./project/DesignView.tsx";
+import { ProjectMenu } from "./project/ProjectMenu.tsx";
 import { SettingsView } from "./settings/SettingsView.tsx";
 import { StatusBar } from "./shell/StatusBar.tsx";
 import { useColorScheme } from "./shell/useColorScheme.ts";
@@ -18,7 +18,7 @@ import { mantineTheme } from "./theme/mantineTheme.ts";
 function ViewBody({ view }: { view: ViewId }) {
   switch (view) {
     case "draw":
-      return <DrawView />;
+      return <DesignView />;
     case "settings":
       return <SettingsView />;
   }

@@ -1,5 +1,5 @@
 /**
- * The providers Jeeves knows about, for the Settings picker (PLAN §12). The design chat picks a
+ * The providers Jeeves knows about, for the Settings picker. The design chat picks a
  * provider and a model; each provider here is a `ModelProvider` (chat with tools).
  */
 import type { ModelRole } from "./types.ts";

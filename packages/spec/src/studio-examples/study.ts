@@ -20,7 +20,7 @@ export function createStudioStudy(
   elements: StudioElementCreation[],
   connections: StudioConnectionCreation[],
   context: Pick<Architecture, "system" | "nodes" | "relationships">,
-  /** SG04: optional group frames and C3 components, stored exactly as given. */
+  /** Optional group frames and C3 components, stored exactly as given. */
   parts: {
     packages?: StudioPackage[];
     components?: StudioComponent[];
@@ -68,7 +68,7 @@ export function createStudioStudy(
       },
     }),
   });
-  // SG06: studio coordinates are derived by automatic layout; a study stores no positions.
+  // Studio coordinates are derived by automatic layout; a study stores no positions.
   const layout = layoutSchema.parse({ schemaVersion: 1 });
   return { name: study.name, design, layout };
 }

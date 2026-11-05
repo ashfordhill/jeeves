@@ -117,7 +117,7 @@ export const studioNotificationProviderSchema = z.enum([
   "external",
 ]);
 export const studioIdentityProviderSchema = z.enum(["unspecified", "oidc", "external"]);
-/** SG03: gateway routing and product intent. Third-party gateways are the intended implementation. */
+/** Gateway routing and product intent. Third-party gateways are the intended implementation. */
 export const studioGatewayRoutingSchema = z.enum(["path-prefix", "host-name"]);
 export const studioGatewayProviderSchema = z.enum([
   "unspecified",
@@ -129,10 +129,10 @@ export const studioGatewayProviderSchema = z.enum([
   "external",
 ]);
 
-/** SG02 scaling signal. Queue lag only makes sense for an application that consumes a queue. */
+/** Scaling signal. Queue lag only makes sense for an application that consumes a queue. */
 export const studioAutoscaleSignalSchema = z.enum(["cpu", "requests-per-second", "queue-lag"]);
 /**
- * SG02 performance intent, optional on every common application kind (absent = unspecified).
+ * Performance intent, optional on every common application kind (absent = unspecified).
  * Workers keep their existing `concurrency` as their concurrency limit and have no request timeout.
  */
 const scalingFields = {
@@ -255,7 +255,7 @@ export const studioDatabaseProviders = {
   mysql: hostedProviders,
   sqlite: ["unspecified", "self-hosted", "cloudflare-d1", "external"],
   mongodb: ["unspecified", "self-hosted", "external"],
-  /** SG04: analytical column store (TinyURL analytics). */
+  /** Analytical column store (TinyURL analytics). */
   clickhouse: ["unspecified", "self-hosted", "aws", "google-cloud", "external"],
 } as const;
 export const studioCacheEngineSchema = z.enum(["unspecified", "redis-compatible", "memcached"]);
@@ -307,7 +307,7 @@ export const studioExternalCategorySchema = z.enum([
   "workflow",
 ]);
 export const studioExternalProviderSchema = studioBrowserProviderSchema;
-/** SG02 resource performance intent; every field is optional and absent means unspecified. */
+/** Resource performance intent; every field is optional and absent means unspecified. */
 export const studioCacheTopologySchema = z.enum(["standalone", "cluster"]);
 export const studioCacheEvictionSchema = z.enum(["lru", "lfu", "ttl", "none"]);
 export const studioCdnRedirectCachingSchema = z.enum(["disabled", "enabled"]);
@@ -562,7 +562,7 @@ export const studioModelSchema = z
     elements: z.array(studioElementBindingSchema).max(studioLimits.elements),
     packages: z.array(studioPackageSchema).max(studioLimits.packages),
     connections: z.array(studioConnectionBindingSchema).max(studioLimits.connections),
-    /** SG02, optional so version-1 documents without components read unchanged. */
+    /** Optional so version-1 documents without components read unchanged. */
     components: z.array(studioComponentSchema).max(studioComponentLimits.components).optional(),
     componentConnections: z
       .array(studioComponentConnectionSchema)

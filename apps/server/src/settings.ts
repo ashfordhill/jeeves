@@ -1,5 +1,5 @@
 /**
- * Provider keys and the provider and model per role (PLAN §12). Keys come from the environment or
+ * Provider keys and the provider and model per role. Keys come from the environment or
  * `~/.jeeves/config.json` and never leave this process: the API reports only whether a key is set
  * and where from. The choice per role is stored in the same file.
  */
@@ -30,7 +30,7 @@ const configFileSchema = z.looseObject({
   openai: z.looseObject({ apiKey: z.string().optional() }).optional(),
   /** Roles that no longer exist (planner, coding) are ignored and dropped on the next save. */
   roles: z.looseObject({ designChat: roleModelSchema.optional() }).optional(),
-  /** Before S13: a model name per role, always on the role's default provider. */
+  /** Older files: a model name per role, always on the role's default provider. */
   models: z.looseObject({ designChat: z.string().optional() }).optional(),
 });
 type ConfigFile = z.infer<typeof configFileSchema>;

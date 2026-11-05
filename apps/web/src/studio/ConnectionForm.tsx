@@ -6,7 +6,7 @@ import {
   studioConnectionFields,
 } from "@jeeves/spec";
 import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
-import { formDrafts } from "../draw/form-drafts.ts";
+import { formDrafts } from "../project/form-drafts.ts";
 import {
   connectionChange,
   connectionQueue,

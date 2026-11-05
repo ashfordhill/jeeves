@@ -1,0 +1,62 @@
+/** Tabler icons named by studio visuals (`visual.icon`). Unknown names fall back to a box. */
+import {
+  type Icon,
+  IconActivity,
+  IconApi,
+  IconArchive,
+  IconArrowsSplit,
+  IconBolt,
+  IconBox,
+  IconBrowser,
+  IconBuilding,
+  IconCpu,
+  IconCreditCard,
+  IconDatabase,
+  IconList,
+  IconLock,
+  IconMail,
+  IconPlug,
+  IconPlugConnected,
+  IconPuzzle,
+  IconQuestionMark,
+  IconRepeat,
+  IconRoute,
+  IconSearch,
+  IconServer,
+  IconSettings,
+  IconShield,
+  IconUser,
+  IconWorld,
+} from "@tabler/icons-react";
+
+const ICONS: Record<string, Icon> = {
+  api: IconApi,
+  browser: IconBrowser,
+  database: IconDatabase,
+  "plug-connected": IconPlugConnected,
+  server: IconServer,
+  repeat: IconRepeat,
+  settings: IconSettings,
+  activity: IconActivity,
+  archive: IconArchive,
+  "arrows-split": IconArrowsSplit,
+  bolt: IconBolt,
+  cpu: IconCpu,
+  "credit-card": IconCreditCard,
+  list: IconList,
+  lock: IconLock,
+  mail: IconMail,
+  plug: IconPlug,
+  puzzle: IconPuzzle,
+  route: IconRoute,
+  search: IconSearch,
+  shield: IconShield,
+  world: IconWorld,
+  user: IconUser,
+  building: IconBuilding,
+};
+
+export function StudioIcon({ name, size = 20 }: { name: string | undefined; size?: number }) {
+  const Glyph = name ? (ICONS[name] ?? IconBox) : IconQuestionMark;
+  return <Glyph size={size} stroke={2} aria-hidden />;
+}

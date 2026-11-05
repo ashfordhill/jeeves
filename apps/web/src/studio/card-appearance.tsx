@@ -15,12 +15,12 @@ import {
   IconPackages,
   IconStack2,
 } from "@tabler/icons-react";
-import { TemplateIcon } from "../draw/TemplateIcon.tsx";
+import { StudioIcon } from "./StudioIcon.tsx";
 
 export { boundedStudioText } from "./text.ts";
 
 /** World dimensions belong to the role, never the camera, name or support status. Every size is a
- * multiple of the 32px layout grid (SG06). */
+ * multiple of the 32px layout grid. */
 export function studioCardSize(node: StudioViewNode) {
   if (node.kind === "component") return { width: 192, height: 64 };
   return {
@@ -47,7 +47,7 @@ export function StudioRoleIcon({ node }: { node: StudioViewNode }) {
   return Glyph ? (
     <Glyph size={28} stroke={2} aria-hidden />
   ) : (
-    <TemplateIcon name={node.visual.icon} size={28} />
+    <StudioIcon name={node.visual.icon} size={28} />
   );
 }
 

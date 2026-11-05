@@ -1,6 +1,6 @@
 import { buildStudioCommand, type DesignDocument, type StudioViewNode } from "@jeeves/spec";
 import { useState } from "react";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 import { applicationKind, type ConnectionDraft, commitAction, endpointKind } from "./actions.ts";
 
 /** Pick a real identity. Reuse never changes another consumer's resource or owner. */

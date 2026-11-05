@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { formDrafts } from "../draw/form-drafts.ts";
+import { formDrafts } from "../project/form-drafts.ts";
 
 export function DraftFeedback({ projectId }: { projectId: string }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);

@@ -4,8 +4,8 @@
  * shows the edit and highlights what changed.
  */
 import { create } from "zustand";
-import { api, type ChatActivity, type ChatTurn, type FileInfo } from "../draw/api.ts";
-import { useDraw } from "../draw/store.ts";
+import { api, type ChatActivity, type ChatTurn, type FileInfo } from "../project/api.ts";
+import { useDraw } from "../project/store.ts";
 
 /** Accepted attachments, by extension, with the media type they're sent as. */
 export const ACCEPTED_FILES: Record<string, string> = {

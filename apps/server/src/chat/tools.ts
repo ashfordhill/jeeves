@@ -1,5 +1,5 @@
 /**
- * The design chat agent's tools (PLAN §7): a finite studio vocabulary. They act on a working copy
+ * The design chat agent's tools: a finite studio vocabulary. They act on a working copy
  * of the design: edits are checked with the same `buildStudioCommand` and `applyOperations` the
  * studio uses and collected, and the whole turn is committed as one operation at the end, so one
  * chat turn is one undo step.

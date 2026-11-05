@@ -1,3 +1,0 @@
-SESSION default 1440
-SESSION default 1280
-{"pass":true,"phase":"default","records":6,"writes":81,"messages":[{"width":1440,"type":"error","text":"Failed to load resource: the server responded with a status of 503 (Service Unavailable)"},{"width":1280,"type":"error","text":"Failed to load resource: the server responded with a status of 503 (Service Unavailable)"}]}

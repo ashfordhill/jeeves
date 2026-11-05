@@ -1,7 +1,7 @@
 import { applyOperations, validateDesign } from "@jeeves/spec";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChatEvent, ChatTurn } from "../draw/api.ts";
-import { useDraw } from "../draw/store.ts";
+import type { ChatEvent, ChatTurn } from "../project/api.ts";
+import { useDraw } from "../project/store.ts";
 import { fakeApi, serviceOps, TEST_PROJECT } from "../test-api.ts";
 import { mediaTypeOf, useChat } from "./store.ts";
 

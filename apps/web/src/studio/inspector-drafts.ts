@@ -10,7 +10,7 @@ import {
   studioResourceKinds,
   studioSettingsSchema,
 } from "@jeeves/spec";
-import type { DraftErrors, DraftSpec, DraftValues } from "../draw/form-drafts.ts";
+import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
 
 export function ownerChoices(design: DesignDocument) {
   return [

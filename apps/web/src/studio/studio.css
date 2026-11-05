@@ -283,7 +283,7 @@
   font-size: 11px;
   color: var(--ink-soft);
 }
-/* SG07: lines keep 2px (3px selected) on screen at every zoom; the head is screen-sized too. */
+/* Lines keep 2px (3px selected) on screen at every zoom; the head is screen-sized too. */
 .studio-graph .react-flow__edge-path,
 .studio-graph .react-flow__edge-interaction,
 .studio-crossing-gap {
@@ -358,7 +358,7 @@
   font-size: 12px;
   color: var(--ink-soft);
 }
-/* SG08: `+` handles, the pull preview, the kind picker and the empty-canvas start. */
+/* `+` handles, the pull preview, the kind picker and the empty-canvas start. */
 .studio-card,
 .studio-frame {
   position: relative;
@@ -797,7 +797,7 @@
 .studio-card[data-kind="component"] strong {
   font-size: 13px;
 }
-/* SG09: component inspector facts, readiness and field help. */
+/* Component inspector facts, readiness and field help. */
 .studio-component-meta {
   display: grid;
   grid-template-columns: auto 1fr;

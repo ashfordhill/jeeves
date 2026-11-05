@@ -1,7 +1,7 @@
 /**
- * SG08: `+` handle creation, adapted from automation-illustrator's `spawnBranch`. A drag from a
+ * `+` handle creation, adapted from automation-illustrator's `spawnBranch`. A drag from a
  * box's east (out) or west (in) handle creates one new box plus the one relationship that joins it
- * to that box, in a single operation batch (one undo step). Positions stay derived (SG06); nothing
+ * to that box, in a single operation batch (one undo step). Positions stay derived; nothing
  * here stores layout. Unlike the reference, an inbound spawn never retargets existing lines.
  */
 import {
@@ -154,7 +154,7 @@ export function c3SpawnChoices(endpoint: SpawnEndpoint, side: SpawnSide): SpawnC
         return defaults && (kind !== "queue" || applicationKind(endpoint.kind));
       })
       .map((kind): SpawnChoice => ({ type: "element", kind }));
-    // SG09: an application (card or frame) gains a component inside it, with no link yet.
+    // An application (card or frame) gains a component inside it, with no link yet.
     return [
       ...(applicationKind(endpoint.kind) ? hostedComponents(endpoint.kind) : []),
       ...elements,
@@ -230,7 +230,7 @@ export function spawnOps(
     if (level !== "components") throw new Error("Add components at C3.");
     const definition = studioComponentDefinitions[choice.kind];
     if (endpoint.type === "element") {
-      // SG09: a first (or further) component inside this application, not linked to anything.
+      // A first (or further) component inside this application, not linked to anything.
       if (!applicationKind(endpoint.kind))
         throw new Error("Components live inside an application.");
       if (endpoint.kind === "browser" && !definition.browserHost)

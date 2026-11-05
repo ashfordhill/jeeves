@@ -1,9 +1,0 @@
-# P20 reference observations
-
-Read-only review on 2026-10-31: Excalidraw's public browser app and the local automation-pitch v1.3.0 demo, plus all 602 lines of `.docs/VISUAL_IMPROVEMENTS.md` across the overnight work. No diagrams/accounts/files were uploaded to Excalidraw. Screenshots use a fresh browser context and the automation-pitch built-in example, not user project data.
-
-Excalidraw keeps a small centered tool island, quiet corner controls and abundant canvas space. Its initial state provides a direct starting action. Jeeves needs similarly clear entry points while retaining the information that executable designs require. A C4 level selector should have explicit labels/breadcrumbs; importing Excalidraw or replacing React Flow is unnecessary.
-
-Automation-pitch has strong consistent chrome, equal-sized icon controls, a clear selected state and a separate contextual inspector. Its visual change log repeatedly documents clipping, controls shifting when content changes, ambiguous icons, tiny diagrams after fit and first-load camera flicker. The current built-in sample still appears small at 1440px, so Jeeves should adopt its interaction lessons without copying that scale. Derived architecture views should use readable bounded zoom, stable node/control footprints and explicit empty states. Level switching must preserve the editable board's layout/camera.
-
-C4 reference: [system context](https://c4model.com/diagrams/system-context), [containers](https://c4model.com/diagrams/container), [components](https://c4model.com/diagrams/component). Context concerns people and systems; containers are applications/data stores; component scope is one container. Deployment instances, replicas and failover belong in an environment-specific deployment view. No source artwork is copied. Existing Jeeves capabilities must be mapped to meaningful responsibilities rather than relabeling every UI component or attachment as a C4 component.

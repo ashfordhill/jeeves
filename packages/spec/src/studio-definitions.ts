@@ -34,7 +34,6 @@ import {
   studioHostSchema,
   studioIdentityProviderSchema,
   studioInteractionSchema,
-  studioKinds,
   studioLanguageSchema,
   studioLimits,
   studioNotificationProviderSchema,
@@ -257,7 +256,7 @@ const commonApplication = [
     group: "General",
     control: "select",
     choices: choices(studioLanguageSchema.options),
-    help: "Language intent; runtime support is reviewed in Generate.",
+    help: "Language intent only; it selects no runtime or template.",
   },
   {
     path: "settings.host",
@@ -811,8 +810,7 @@ export const studioDefinitions = Object.freeze({
 });
 
 /**
- * SG02 performance descriptors. Deliberately not merged into `definition.fields` yet, so the
- * current inspector renders unchanged; the component/performance inspector unit (SG09) adopts them.
+ * Performance descriptors, kept outside `definition.fields`; the inspector appends them to Options.
  * Every field is optional: an empty input means unspecified and is never filled on read.
  */
 export type StudioPerformanceField = FieldBase & {
@@ -925,11 +923,6 @@ export function resolveStudioDefinition(ref: DefinitionRef): StudioDefinition | 
     (definition) => definition.id === ref.id && definition.version === ref.version,
   ) as StudioDefinition | undefined;
 }
-export function studioCreationCatalog(scope: StudioCreationScope) {
-  return studioKinds
-    .map((kind) => studioDefinitions[kind])
-    .filter((definition) => definition.creationScopes.includes(scope));
-}
 export const studioNeutralVisual: Readonly<StudioVisual> = freeze({
   icon: "box",
   color: "generic",
@@ -938,76 +931,6 @@ export const studioNeutralVisual: Readonly<StudioVisual> = freeze({
 export function studioVisual(kind?: StudioKind): Readonly<StudioVisual> {
   return kind ? studioDefinitions[kind].visual : studioNeutralVisual;
 }
-
-/** Provider labels identify only what was selected. Generic clouds never imply a hidden product. */
-export type StudioProviderId =
-  | (typeof studioHostSchema.options)[number]
-  | (typeof studioBrowserProviderSchema.options)[number]
-  | (typeof studioBillingProviderSchema.options)[number]
-  | (typeof studioNotificationProviderSchema.options)[number]
-  | (typeof studioIdentityProviderSchema.options)[number]
-  | (typeof studioQueueProviderSchema.options)[number]
-  | (typeof studioObjectStoreProviderSchema.options)[number]
-  | (typeof studioCdnProviderSchema.options)[number]
-  | StudioSettingsByKind["database"]["provider"]
-  | StudioSettingsByKind["cache"]["provider"];
-const providerIdentity: Record<
-  StudioProviderId,
-  "unspecified" | "external" | "hosting" | "ecosystem" | "product" | "integration"
-> = {
-  unspecified: "unspecified",
-  external: "external",
-  "self-hosted": "hosting",
-  aws: "ecosystem",
-  "google-cloud": "ecosystem",
-  cloudflare: "ecosystem",
-  "cloudflare-workers": "product",
-  stripe: "product",
-  resend: "product",
-  "aws-ses": "product",
-  oidc: "integration",
-  neon: "product",
-  supabase: "product",
-  "cloudflare-d1": "product",
-  upstash: "product",
-  "cloudflare-queues": "product",
-  "cloudflare-r2": "product",
-  "aws-s3": "product",
-  "google-cloud-storage": "product",
-  "aws-cloudfront": "product",
-  "google-cloud-cdn": "product",
-};
-export const studioProviders = freeze(
-  Object.fromEntries(
-    Object.entries(providerIdentity).map(([id, identity]) => [
-      id,
-      {
-        id,
-        label: labels[id] ?? id,
-        identity,
-        artwork: "capability-symbol" as const,
-        c4bObligation:
-          identity === "unspecified"
-            ? "Select and implement an integration when required."
-            : integrationObligation,
-      },
-    ]),
-  ) as Record<
-    StudioProviderId,
-    {
-      id: StudioProviderId;
-      label: string;
-      identity: (typeof providerIdentity)[StudioProviderId];
-      artwork: "capability-symbol";
-      c4bObligation: string;
-    }
-  >,
-);
-export const studioProviderCompatibility = freeze({
-  database: studioDatabaseProviders,
-  cache: studioCacheProviders,
-  search: studioSearchProviders,
-});
 
 /** Visible provider options use the very same finite compatibility rows as validation. */
 export function studioProviderChoices(settings: StudioSettings): readonly StudioChoice[] {
@@ -1046,46 +969,6 @@ export function studioFieldGroups(settings: StudioSettings) {
       );
     return visible.length ? [{ group, fields: visible }] : [];
   });
-}
-
-/** Pure pending-edit normalization, used by later forms/chat. No document/graph mutation or I/O. */
-export function changeStudioSetting(
-  settings: StudioSettings,
-  key: Exclude<UnionKeys<StudioSettings>, "kind">,
-  value: unknown,
-): StudioSettings {
-  if (
-    !(studioDefinitions[settings.kind].fields as readonly StudioElementField[]).some(
-      (field) => field.path === `settings.${key}`,
-    )
-  )
-    throw new Error(`No ${key} field exists on studio-${settings.kind}.`);
-  const next = { ...settings, [key]: value } as unknown as Record<string, unknown>;
-  if (key === "execution" && value !== settingValue(settings, "settings.execution")) {
-    if (value === "docker") delete next.host;
-    else if (value === "managed") next.host = "unspecified";
-  }
-  if (key === "delivery" && value !== settingValue(settings, "settings.delivery")) {
-    if (value === "bundled") {
-      delete next.provider;
-      delete next.servedBy;
-    } else if (value === "standalone") {
-      delete next.servedBy;
-      next.provider = "unspecified";
-    }
-  }
-  if (
-    key === "engine" &&
-    (settings.kind === "database" || settings.kind === "cache" || settings.kind === "search")
-  ) {
-    const rows = studioProviderCompatibility[settings.kind] as Readonly<
-      Record<string, readonly string[]>
-    >;
-    if (typeof value === "string" && rows[value] && !rows[value].includes(String(next.provider)))
-      next.provider = "unspecified";
-  }
-  // Each exact kind's validator rejects hidden controls, illegal choices, decimals and bounds.
-  return studioSettingsSchemas[settings.kind].parse(next);
 }
 
 type StudioConnectionValues = {
@@ -1211,73 +1094,6 @@ export function studioConnectionFieldGroups(input: {
     return fields.length ? [{ group, fields }] : [];
   });
 }
-
-/** Typed defaults for a newly created connection; optional numbers stay absent. */
-export function createStudioConnectionSettings(
-  protocol: string,
-  interaction: string,
-): StudioConnectionSettings {
-  return studioAllowsRequestPolicies(protocol, interaction)
-    ? { retry: { mode: "unspecified" } }
-    : {};
-}
-export const studioPackageFields = freeze([
-  {
-    path: "package.name",
-    label: "Name",
-    group: "General",
-    control: "text",
-    min: 1,
-    max: studioLimits.name,
-  },
-  {
-    path: "package.description",
-    label: "Purpose",
-    group: "General",
-    control: "text",
-    min: 0,
-    max: studioLimits.description,
-    optional: true,
-  },
-  {
-    path: "package.members",
-    label: "Members",
-    group: "Connections",
-    control: "members",
-    min: studioLimits.members.min,
-    max: studioLimits.members.max,
-    target: "application",
-  },
-] as const);
-export const studioContextFields = freeze([
-  {
-    path: "name",
-    label: "Name",
-    group: "General",
-    control: "text",
-    min: 1,
-    max: studioLimits.name,
-  },
-  {
-    path: "description",
-    label: "Purpose",
-    group: "General",
-    control: "text",
-    min: 0,
-    max: studioLimits.description,
-    optional: true,
-  },
-] as const);
-export const studioContextRelationshipFields = freeze([
-  {
-    path: "description",
-    label: "Action",
-    group: "General",
-    control: "text",
-    min: 1,
-    max: studioLimits.action,
-  },
-] as const);
 
 /** Deterministic JSON metadata; validators stay in the model, defaults remain typed and explicit. */
 export function describeStudioDefinition(ref: DefinitionRef) {

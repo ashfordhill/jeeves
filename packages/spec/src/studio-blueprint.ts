@@ -1,5 +1,5 @@
 /**
- * SG03: the read-only code-generation boundary. A blueprint is a versioned projection of the
+ * The read-only code-generation boundary. A blueprint is a versioned projection of the
  * studio model holding only generation-relevant parts. It omits layout, presentation, history and
  * studio UI state. It states design intent only: it never claims a template, runtime or evidence.
  */

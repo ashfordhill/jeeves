@@ -1,7 +1,0 @@
-$ tsc -p .
-src/studio-relationships.ts(271,64): error TS2339: Property 'id' does not exist on type 'StudioSemanticRef'.
-  Property 'id' does not exist on type '{ kind: "system"; }'.
-[ELIFECYCLE] Command failed with exit code 1.
-Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
-
-  × "pnpm recursive run" failed in /home/ash/github/jeeves/packages/spec

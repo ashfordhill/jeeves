@@ -1,5 +1,5 @@
 /**
- * SG04: the TinyURL study (plan §7), the single studio study and fresh-install default. A
+ * The TinyURL study, the single studio study and fresh-install default. A
  * read-heavy, low-latency URL shortener: about 100 reads per write, cache-aside with an
  * in-process L1 plus Redis and single-flight, range-allocated base62 IDs, 302 redirects with a
  * short edge max-age, and batched asynchronous click tracking. Design intent only.

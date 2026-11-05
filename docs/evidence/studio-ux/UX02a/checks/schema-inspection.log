@@ -1,1 +1,0 @@
-{"fixtures":7,"rejections":70,"settingsKinds":14,"oldFactories":9,"compatibility":[{"kind":"database","engineProviderCombinations":40,"accepted":21,"rejected":19},{"kind":"cache","engineProviderCombinations":18,"accepted":13,"rejected":5},{"kind":"search","engineProviderCombinations":25,"accepted":22,"rejected":3}],"result":"passed"}

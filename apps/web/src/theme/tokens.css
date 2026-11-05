@@ -247,7 +247,7 @@ body,
   gap: 6px;
 }
 
-/* Jeeves shell (S1): header brand, view stage, and the empty-view card. */
+/* Jeeves shell: header brand, view stage, and the empty-view card. */
 .app-header {
   height: var(--header-height);
   box-sizing: border-box;

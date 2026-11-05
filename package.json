@@ -13,13 +13,11 @@
     "dev": "pnpm db:up && pnpm --parallel --filter @jeeves/server --filter @jeeves/web dev",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "typecheck": "pnpm -r --no-bail typecheck && tsc -p scripts/tsconfig.json",
+    "typecheck": "pnpm -r --no-bail typecheck",
     "test": "vitest run",
     "test:e2e": "pnpm db:up && playwright test",
     "test:e2e:docker": "pnpm db:up && scripts/e2e-docker.sh",
-    "check": "pnpm lint && pnpm typecheck && pnpm test",
-    "work": "node scripts/work.ts",
-    "references": "node scripts/references.ts"
+    "check": "pnpm lint && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -6,12 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!**/pnpm-lock.yaml",
-      "!.jeeves-feedback",
-      "!.docs/visual-improvements/2026-11-03-ux-review/sources"
-    ]
+    "includes": ["**", "!**/pnpm-lock.yaml", "!.jeeves-feedback"]
   },
   "formatter": {
     "indentStyle": "space",

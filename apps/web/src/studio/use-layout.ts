@@ -37,7 +37,7 @@ export function useStudioLayout(
       return context.measureText(text).width;
     };
     // A long one-line label stacks: its verb phrase above the line and its protocol below, so
-    // ELK reserves about half the width between columns (SG07).
+    // ELK reserves about half the width between columns.
     const stack = (text: string, bold: boolean) => {
       const width = measure(text, bold);
       const cut = text.lastIndexOf(" · ");

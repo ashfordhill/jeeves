@@ -27,7 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 import {
   StudioProviderMark,
   StudioRoleIcon,
@@ -246,7 +246,7 @@ function StudioRelation({ data, ...props }: EdgeProps<Relation>) {
 const edgeTypes = { studio: StudioRelation };
 
 /**
- * Automatic ELK layout (SG06). Positions are derived; dragging a box up or down inside its column
+ * Automatic ELK layout. Positions are derived; dragging a box up or down inside its column
  * changes only its row, saved as one undoable row-order hint. Nothing else writes layout.
  */
 export function StudioGraph({
@@ -357,7 +357,7 @@ export function StudioGraph({
       window.removeEventListener("keydown", cancel);
     };
   }, []);
-  // SG08 handle pull: below the threshold a release is a click; past it a preview follows the
+  // Handle pull: below the threshold a release is a click; past it a preview follows the
   // pointer and the release either connects to the box beneath or opens the kind picker.
   const [pull, setPull] = useState<{
     source: string;

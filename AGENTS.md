@@ -1,61 +1,55 @@
 # Agents working on Jeeves
 
-Jeeves is built one section or improvement package at a time (PLAN.md §15). For work on an S section, P improvement package or UX work unit:
+Jeeves is an architecture design studio with chat and a read-only blueprint API (see
+[README](README.md) and [PLAN](PLAN.md)). Code generation is a separate future service; do not
+add it here unless the owner asks.
 
-1. Read [PLAN.md §15 "How to work a section"](PLAN.md#15-build-sections) and do exactly what it says.
-2. Read the latest entries in [docs/handoff.md](docs/handoff.md) before writing code. For P7–P11, your package's section in [docs/build-plan.md](docs/build-plan.md) is the specification.
-3. When you finish, append your own entry to `docs/handoff.md`. Never edit earlier entries.
-4. After the required checks and handoff are complete, create a local Git commit for that section or improvement package, using its ID in the commit title (for example, `P4: ...` or `S15: ...`). The user has given standing authorization for local commits: do not ask for permission. Keep each completed package in its own commit, stage only its scoped changes, and preserve unrelated work.
+## How work happens
 
-The improvement-package ordering in `docs/improvements.md` supersedes the historical S14-next sequence.
+- Work one assigned unit at a time, on `main` in the primary checkout
+  (`/home/ash/github/jeeves`). Do not create branches or worktrees, use `git stash`, or delegate to
+  other agents unless the owner asks. The owner may have a coordinator hand sequential units to
+  fresh agents; each one does only its own unit.
+- Before writing code, read the latest entries in [docs/handoff.md](docs/handoff.md). When you
+  finish, append your own short entry: what changed, how it was checked, notes for the next unit.
+  Never edit earlier entries.
+- When the checks below pass and the handoff entry is written, create one local commit for the
+  unit. Local commits are authorized; do not ask. Stage only the unit's changes and preserve
+  unrelated work (for example the untracked `.jeeves-feedback/`). Push only when asked.
+- Keep docs current with the code: [studio guide](docs/studio.md),
+  [studio settings](docs/studio-settings.md), [blueprint](docs/studio-blueprint.md) and
+  [CATALOG](CATALOG.md) when kinds, settings, components or providers change. Describe what
+  exists; history lives in Git.
 
-Work sequentially in the primary checkout, `/home/ash/github/jeeves`, on `main`. If a session starts in a Codex worktree, inspect its local changes and switch work to the primary checkout before implementation; preserve any unique work. The user is running one agent at a time on Jeeves; do not create additional worktrees or branches, or delegate to other agents, unless the user changes that instruction. Keep committing completed packages locally on `main`.
+## Verification
 
-## Architecture work
+Before handing off:
 
-Before changing C1/C2/C3 authoring, the catalog, connections or architecture patterns, read
-[C4 modeling guidance](docs/c4-modeling.md). The current user priority is C2/C3 design and
-reusable composition; new application runtime/code-generation work is deferred to a separate
-task. The [revised P46–P57 roadmap](docs/build-plan-c4-evolution.md) is the planning
-record for that completed sequence; the [direction review](docs/reviews/c4-direction-review-2026-10-31.md)
-explains its rationale. P46–P57 are complete. Runtime/template and generation work needs a separate task. When asked to execute, start with the requested package,
-not the whole sequence.
-The current UX specification is the [studio build plan](docs/build-plan-studio-ux.md), with
-[25 sequential assignments](docs/plans/studio-ux/execution-units.md) and the
-[resolved owner decisions](.docs/visual-improvements/2026-11-03-ux-review/DECISIONS-FINAL.md).
-It supersedes conflicting older UI requirements. Its completed split children retain their
-separate evidence and local commits; do not restart the historical queue.
-UX01–UX15 are complete; the studio is the default and the temporary flag is removed.
-Read [UX15 acceptance](docs/evidence/studio-ux/UX15/README.md) before changing the implemented contracts.
-No remaining UX queue or runtime work is automatically authorized.
-The [studio grid plan](docs/build-plan-studio-grid.md) (SG01–SG10: C1/C2/C3 tabs,
-automatic ELK grid layout, handle drag-to-create, merged lines, C3 components, blueprint API,
-TinyURL study) is complete. Read [SG10 acceptance](docs/evidence/studio-grid/SG10/README.md) and its
-owner follow-ups before changing those contracts; no further SG work is automatically authorized.
-P73a is checkpointed incomplete; P73a/P73b and the backend batch remain paused for this UX work.
-The [backend benchmark roadmap](docs/build-plan-backend-benchmarks.md) now specifies future
-Discourse, Vendure and Zammad core foundations. It is a plan, not implemented capability or
-authorization to start the sequence. For that work, read its shared contract and
-[79-unit assignment queue](docs/plans/backend-benchmarks/execution-units.md). Execute one requested
-work unit at a time; split parents require separate child assignments and local commits.
-Keep architecture intent, template availability and verification evidence distinct.
-The [studio guide](docs/architecture-studio.md) describes the implemented default studio.
-Historical evidence retains old controls as source history, not current requirements.
-For this UX cleanup, the user explicitly defers unit/E2E test maintenance and suite execution.
-Use lint, typecheck, a production build and direct browser inspection instead of `pnpm check`.
+1. `pnpm check` (Biome lint, type checks, unit tests).
+2. `pnpm test:e2e` (or `pnpm test:e2e:docker` when Chromium's system libraries are missing).
+3. `pnpm --filter @jeeves/web build`.
+4. A browser check of the running app for anything user-visible: it loads, the TinyURL study
+   renders at C1/C2/C3, and the changed behaviour works by mouse.
 
-## Repo conventions
+Unit tests must not need Docker, Postgres or network access (the server uses PGlite). E2E tests
+live in `apps/web/e2e/`, use the `jeeves_e2e` database and a scripted chat model, and delete the
+projects they create. Never touch the owner's projects in the `jeeves` database or `~/.jeeves/`.
 
-- Maintain [CATALOG.md](CATALOG.md) when offerings, reusable C1/C2/C3 boundaries or availability change. Keep it conceptual and cross-linked; exact implementation details belong in the referenced template documentation.
+## Conventions
 
-- pnpm workspaces, TypeScript (strict), ESM everywhere. Workspace packages export their TypeScript source directly (`"exports": "./src/index.ts"`); there is no build step for internal packages.
+- pnpm workspaces, TypeScript (strict), ESM everywhere. Workspace packages export their
+  TypeScript source directly (`"exports": "./src/index.ts"`); there is no build step for internal
+  packages.
 - Relative imports include the `.ts`/`.tsx` extension.
-- Biome does lint and formatting: `pnpm format` fixes, `pnpm lint` checks. Don't add ESLint or Prettier.
-- Pin dependency versions exactly. Prefer versions automation-pitch already uses; otherwise pick a release at least two weeks old.
-- Outside an explicit task-specific verification exception above, `pnpm check` (lint, type check, unit tests) must pass before you hand off. Unit tests must not need Docker, Postgres or network access.
-- E2E tests live in `apps/web/e2e/` and run with `pnpm test:e2e` (or `pnpm test:e2e:docker` when Chromium's system libraries aren't installed; see README).
-- Every UI action must work by mouse alone; keyboard shortcuts are optional extras (PLAN §5).
-- Server binds to `127.0.0.1` only. Never put API keys in the repo.
+- Biome does lint and formatting: `pnpm format` fixes, `pnpm lint` checks. Don't add ESLint or
+  Prettier.
+- Pin dependency versions exactly. Prefer versions automation-pitch already uses; otherwise pick a
+  release at least two weeks old.
+- Every UI action must work by mouse alone; keyboard shortcuts are optional extras.
+- The server binds to `127.0.0.1` only. Never put API keys in the repo.
+- Settings are a finite allowlist ([studio settings](docs/studio-settings.md)): add a field only
+  with its schema, form, validation and blueprint output together.
+- Keep design intent, template availability and verification evidence distinct.
 
 ## Ports
 

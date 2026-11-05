@@ -1,6 +1,6 @@
 /**
- * Derived paths only: no saved connections or positions. One drawn line per ordered box pair
- * (SG07); geometry is ELK's (layout.ts).
+ * Derived paths only: no saved connections or positions. One drawn line per ordered box pair;
+ * geometry is ELK's (layout.ts).
  */
 import type { StudioRelationship, StudioScopeProjection } from "@jeeves/spec";
 import type { Point } from "./creation.ts";
@@ -82,7 +82,7 @@ export function movedStudioGeometry(
 }
 
 /**
- * One line per ordered box pair (plan §4, O4). The projection already merges every member between
+ * One line per ordered box pair. The projection already merges every member between
  * the same two boxes in the same direction into one edge; opposite directions stay two edges.
  */
 export function studioPaths(scope: StudioScopeProjection): StudioPath[] {
@@ -91,7 +91,7 @@ export function studioPaths(scope: StudioScopeProjection): StudioPath[] {
     .map((edge) => ({ id: edge.id, item: edge, edgeIds: [edge.id] }));
 }
 
-/** About 24 characters: verb plus protocol (plan §4, O8). */
+/** About 24 characters: verb plus protocol. */
 export const STUDIO_SHORT_LABEL = 24;
 const hidden = new Set(["In process", "Unspecified", "Undecided"]);
 const preposition = new Set([
@@ -120,7 +120,7 @@ const verbCase = (words: string[]) =>
       : word,
   );
 
-/** Links inside one frame that never leave the process need no label room (SG07). */
+/** Links inside one frame that never leave the process need no label room. */
 export function studioInProcess(item: StudioRelationship) {
   return item.members.every(
     (member) => member.protocols.length > 0 && member.protocols.every((p) => p === "In process"),

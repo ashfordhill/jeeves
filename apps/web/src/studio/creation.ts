@@ -17,7 +17,7 @@ import {
   studioServiceWorkerPreset,
   studioViews,
 } from "@jeeves/spec";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 
 export type Point = { x: number; y: number };
 export type BaseCreation = StudioKind | "person" | "external-system";
@@ -29,7 +29,7 @@ export type Creation =
 export function creationScope(scope: StudioScopeProjection): StudioCreationScope | undefined {
   return scope.level === "context" ? undefined : scope.level === "containers" ? "c2" : "c3-service";
 }
-/** SG08: generic C2 kinds offered by the `+` handles, New island and the empty-canvas start. */
+/** Generic C2 kinds offered by the `+` handles, New island and the empty-canvas start. */
 export const c2Kinds: readonly StudioKind[] = [
   "service",
   "worker",
@@ -203,7 +203,7 @@ export async function createAt(
       if (!first) throw new Error("This creation adds no visible object in this scope.");
       selected = first.id;
     }
-    // SG06: the new box is appended and automatic layout places it; no position is stored.
+    // The new box is appended and automatic layout places it; no position is stored.
     return ops;
   });
   return ok ? selected : undefined;

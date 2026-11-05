@@ -1,5 +1,5 @@
 /**
- * SG09: draft spec for one C3 component. Same autosave controller as elements (form-drafts):
+ * Draft spec for one C3 component. Same autosave controller as elements (form-drafts):
  * draft identity is project + component + kind, edits become one `editComponent` command.
  */
 import {
@@ -12,7 +12,7 @@ import {
   studioComponentLimits,
   studioComponentSettingsSchemas,
 } from "@jeeves/spec";
-import type { DraftErrors, DraftSpec, DraftValues } from "../draw/form-drafts.ts";
+import type { DraftErrors, DraftSpec, DraftValues } from "../project/form-drafts.ts";
 import { endpointKind } from "./actions.ts";
 import { draftSettings } from "./inspector-drafts.ts";
 

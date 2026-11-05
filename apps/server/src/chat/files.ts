@@ -1,5 +1,5 @@
 /**
- * Chat file input (PLAN §7). Markdown and text go to the model as text; PNG, JPEG, and WebP as
+ * Chat file input. Markdown and text go to the model as text; PNG, JPEG, and WebP as
  * images; SVG is rasterized to PNG with resvg, and its source is included too when it's small.
  */
 import type { ContentPart, ImageMediaType } from "@jeeves/providers";

@@ -1,5 +1,5 @@
 /**
- * Design chat (PLAN §7) in the studio rail: the conversation, streamed replies, `askUser` choice
+ * Design chat in the studio rail: the conversation, streamed replies, `askUser` choice
  * cards, what each turn changed, an Undo button per turn, and a composer with file attachments.
  * Everything works by mouse; Ctrl/Cmd+Enter also sends.
  */
@@ -15,8 +15,8 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useEffect, useRef } from "react";
-import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../draw/api.ts";
-import { useDraw } from "../draw/store.ts";
+import type { ChatActivity, ChatQuestion, ChatTurn, FileInfo } from "../project/api.ts";
+import { useDraw } from "../project/store.ts";
 import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
 
 const EXAMPLES = [

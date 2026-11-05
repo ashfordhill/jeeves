@@ -1,6 +1,0 @@
-$ tsc -p .
-src/studio/ServiceForm.tsx(58,30): error TS2731: Implicit conversion of a 'symbol' to a 'string' will fail at runtime. Consider wrapping this expression in 'String(...)'.
-[ELIFECYCLE] Command failed with exit code 1.
-Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
-
-  × "pnpm recursive run" failed in /home/ash/github/jeeves/apps/web

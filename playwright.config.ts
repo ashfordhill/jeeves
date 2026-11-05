@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL: webOrigin,
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
   projects: [

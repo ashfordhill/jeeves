@@ -1,4 +1,0 @@
-{"id":"studio-discourse-foundation","rows":159,"c4b":146,"observations":66,"views":[{"key":"studio:context","nodes":7},{"key":"studio:containers","nodes":10},{"key":"studio:service:api","nodes":5},{"key":"studio:service:worker","nodes":5}]}
-{"id":"studio-vendure-foundation","rows":168,"c4b":151,"observations":63,"views":[{"key":"studio:context","nodes":10},{"key":"studio:containers","nodes":13},{"key":"studio:service:api","nodes":7},{"key":"studio:service:worker","nodes":4}]}
-{"id":"studio-zammad-foundation","rows":107,"c4b":93,"observations":66,"views":[{"key":"studio:context","nodes":7},{"key":"studio:containers","nodes":10},{"key":"studio:service:api","nodes":7},{"key":"studio:service:worker","nodes":4}]}
-All seven preceding studio study outputs remain exact.

@@ -247,7 +247,7 @@ export function validateStudio(design: DesignDocument): Finding[] {
 type Report = (code: FindingCode, path: (string | number)[], message: string) => void;
 
 /**
- * SG02 component rules. Structure (host, targets, traced C2 connection, channel role, identity)
+ * Component rules. Structure (host, targets, traced C2 connection, channel role, identity)
  * is an error; a missing dependency that settings call for is a readiness gap (CONFIG_REQUIRED).
  */
 function validateStudioComponents(

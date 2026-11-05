@@ -1,6 +1,0 @@
-$ tsc -p .
-src/studio-view.ts(135,7): error TS2367: This comparison appears to be unintentional because the types '"database" | "external" | "frontend" | "service" | "worker" | undefined' and '"library"' have no overlap.
-[ELIFECYCLE] Command failed with exit code 1.
-Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
-
-  × "pnpm recursive run" failed in /home/ash/github/jeeves/packages/spec

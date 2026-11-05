@@ -1,5 +1,5 @@
 /**
- * Scripted fake provider (PLAN §11): replays canned responses so chat and planner tests never need
+ * Scripted fake provider: replays canned responses so chat tests never need
  * an API key. Text is streamed word by word, like a real provider.
  */
 import { z } from "zod";

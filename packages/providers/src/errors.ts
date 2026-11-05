@@ -2,7 +2,7 @@ import type { ModelCapabilities, ModelProvider, ModelRequest } from "./types.ts"
 
 /**
  * - `auth`: missing or rejected credentials
- * - `quota`: the account is out of credit; retrying won't help (PLAN §10 `waiting_for_provider`)
+ * - `quota`: the account is out of credit; retrying won't help
  * - `rate-limit`: too many requests right now
  * - `unavailable`: network failure or a provider-side error
  * - `bad-request`: the provider refused the request as malformed

@@ -8,11 +8,10 @@ docker run -d --name jeeves --restart unless-stopped --stop-timeout 30 -p 127.0.
 ```
 
 Open **http://localhost:4300**. On an empty volume, the first browser visit creates and opens
-the editable Mattermost reference. Existing projects are preserved and the last selected project
-opens on subsequent visits. The image supports Linux AMD64 and ARM64, including Docker Desktop.
+an editable copy of the TinyURL study. Existing projects are preserved and the last selected
+project opens on later visits. The image supports Linux AMD64 and ARM64, including Docker Desktop.
 
-`jeeves-data` is created automatically. It holds the database, Jeeves settings, reusable
-architecture library and generated project folders. Recreating the container with that same
+`jeeves-data` is created automatically. It holds the database and Jeeves settings. Recreating the container with that same
 volume keeps your work. Your existing development database is separate; it is not imported.
 If port 4300 is already occupied, change the mapping to `127.0.0.1:4302:4300` and open port 4302.
 
@@ -39,7 +38,7 @@ docker start jeeves
 ```
 
 The health check checks the API and database through the same HTTP port as the UI. Nginx serves
-the production web build and forwards `/api/`, including streamed chat/run responses. The API
+the production web build and forwards `/api/`, including streamed chat responses. The API
 and bundled database listen only on container loopback. The run command publishes the UI only on
 the host's loopback address; Jeeves remains a local, single-user application without account login.
 The API, database and nginx run as unprivileged users. The entrypoint initializes volume ownership,
@@ -49,13 +48,12 @@ You can supply `DATABASE_URL` to use an existing PostgreSQL server instead of th
 Jeeves still needs its `/data` volume for settings and files. The external database must be reachable
 from the container and its role must be allowed to apply Jeeves's migrations.
 
-The architecture studio and examples need no model credentials. Configure optional model providers
-in Settings. Running generated applications and external coding tools requires their separate
-execution environment; this image does not include a Docker daemon or mount the host Docker socket.
+The studio needs no model credentials. Configure an optional chat provider in Settings. The
+image does not include a Docker daemon or mount the host Docker socket.
 
 ## Publishing
 
-[The Docker workflow](../.github/workflows/docker.yml), adapted from automation-pitch, builds and
+[The Docker workflow](../.github/workflows/docker.yml) builds and
 pushes `ghcr.io/ashfordhill/jeeves:latest` and a commit-specific tag on every normal push to `main`.
 It can also be started manually on `main`. GitHub Actions supplies the registry credentials through
 `GITHUB_TOKEN`; no repository secret is needed. Builds are serialized so older builds cannot

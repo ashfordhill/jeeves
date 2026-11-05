@@ -1,5 +1,5 @@
 /**
- * The design chat loop (PLAN §7). A turn calls the model with the §7 tools until it stops asking
+ * The design chat loop. A turn calls the model with its studio tools until it stops asking
  * for them (or asks the person something), then commits every edit as one `source: "chat"`
  * operation, so the turn is one undo step. A revision conflict stops the turn, so it cannot
  * overwrite an intervening studio edit.

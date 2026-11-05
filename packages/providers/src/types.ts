@@ -1,5 +1,5 @@
 /**
- * Provider-neutral model interface (PLAN §12). The design chat talks to models
+ * Provider-neutral model interface. The design chat talks to models
  * only through `ModelProvider`, so an adapter for another vendor is a new file, not a rewrite.
  */
 

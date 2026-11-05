@@ -2,7 +2,7 @@
 
 import { TINYURL_STUDIO_EXAMPLE, tinyurlStudioExample } from "./tinyurl.ts";
 
-/** SG04: TinyURL is the single study. Earlier studies live in git history only. */
+/** TinyURL is the single study. Earlier studies live in git history only. */
 export const studioArchitectureExamples = Object.freeze([TINYURL_STUDIO_EXAMPLE]);
 
 export function studioArchitectureExample(id: string) {

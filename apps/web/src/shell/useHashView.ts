@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 import { type ViewId, viewFromHash } from "./views.ts";
 
 export function useHashView(): [ViewId, (next: ViewId) => void] {

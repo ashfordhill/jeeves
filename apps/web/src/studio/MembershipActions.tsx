@@ -8,7 +8,7 @@ import {
 } from "@jeeves/spec";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 import { applicationKind, commitAction, endpointKind } from "./actions.ts";
 
 export function MembershipActions({

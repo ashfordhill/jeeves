@@ -4,7 +4,7 @@ import type { DesignDocument } from "./design.ts";
 const cameraSchema = z.strictObject({ x: z.number(), y: z.number(), zoom: z.number().positive() });
 const viewIdentity = z.string().min(1).max(300);
 
-/** Per-view presentation hints. Studio coordinates are derived by automatic layout (SG06). */
+/** Per-view presentation hints. Studio coordinates are derived by automatic layout. */
 export const studioLayoutViewSchema = z.strictObject({
   /** Row-order hint: node identities in preferred top-to-bottom order. */
   order: z.array(viewIdentity).max(1000).optional(),

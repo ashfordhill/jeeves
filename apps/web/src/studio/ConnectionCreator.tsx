@@ -11,7 +11,7 @@ import {
 } from "@jeeves/spec";
 import { useId, useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
-import { useDraw } from "../draw/store.ts";
+import { useDraw } from "../project/store.ts";
 import { type ConnectionDraft, commitAction, connectionCreation, endpointKind } from "./actions.ts";
 
 export function ConnectionCreator({

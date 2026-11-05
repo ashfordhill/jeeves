@@ -1,5 +1,5 @@
 /**
- * Derived studio geometry (SG06). ELK `layered` on a 32px grid, like automation-illustrator:
+ * Derived studio geometry. ELK `layered` on a 32px grid, like automation-illustrator:
  * coordinates are never stored. The only stored input is an optional row order (`order`), which
  * keeps boxes in the rows the user chose inside their column. Pure: runs inside the studio worker.
  */
@@ -29,7 +29,7 @@ export interface StudioLayoutNode {
   frame?: true;
 }
 export interface StudioLayoutLabel {
-  /** A line break stacks the label: verb phrase above the line, protocol below (SG07). */
+  /** A line break stacks the label: verb phrase above the line, protocol below. */
   short: string;
   detail: string;
   /** Measured pixel widths of both texts (their widest line) at the studio font. */
@@ -68,7 +68,7 @@ const LAYERED: LayoutOptions = {
   "elk.randomSeed": "1",
   "elk.spacing.nodeNode": "32",
   // Every labelled relationship adds a label layer, so ELK's between-layer gap applies twice:
-  // 32 + label + 32 matches the reference's 64px visible gap between boxes (plan §4).
+  // 32 + label + 32 matches the reference's 64px visible gap between boxes.
   "elk.layered.spacing.nodeNodeBetweenLayers": "32",
   "elk.layered.spacing.edgeNodeBetweenLayers": "16",
   "elk.layered.spacing.edgeEdgeBetweenLayers": "16",
@@ -161,7 +161,7 @@ function orthogonal(points: Point[]): Point[] {
 }
 
 /**
- * Every line leaves and enters its box horizontally (SG07), so the arrowhead points into the box
+ * Every line leaves and enters its box horizontally, so the arrowhead points into the box
  * and no line runs along a box edge: a vertical first or last run moves 16px away from the port.
  */
 function horizontalEnds(points: Point[]): Point[] {

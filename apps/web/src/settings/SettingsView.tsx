@@ -1,5 +1,5 @@
 /**
- * Settings (PLAN §12): connections first (each provider's status and exact setup command), then
+ * Settings: connections first (each provider's status and exact setup command), then
  * the design chat's model. Keys and logins are set up outside the UI; Jeeves never shows them.
  */
 import { Autocomplete, Button, CopyButton, Loader, NativeSelect } from "@mantine/core";
@@ -10,7 +10,7 @@ import {
   type ProviderStatus,
   type RoleModel,
   type SettingsView as Settings,
-} from "../draw/api.ts";
+} from "../project/api.ts";
 import { StatusBadge } from "../shell/StatusBadge.tsx";
 import "./settings.css";
 
