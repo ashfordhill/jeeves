@@ -39,7 +39,8 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
 - `architecture` (`architecture.ts`): the C1 `system`, `nodes` (people, external systems) and
   `relationships`, plus `studio` (`studio-model.ts`): a binding per element (definition ref,
   typed settings, optional owner), packages, per-connection settings, C3 `components` and
-  `componentConnections`, and an optional study origin.
+  `componentConnections`, lane `entries` (`{id, lane, element}`: the user's links to tiles) and
+  an optional study origin.
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`) and one package preset (`studio-presets.ts`). The only
@@ -49,6 +50,13 @@ study is TinyURL (`studio-examples/`).
 reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-view.ts` and
 `studio-relationships.ts` project the design into C1/C2/C3 scopes with merged relationships;
 `studio-blueprint.ts` projects it into the blueprint.
+
+The lane model: `studio-tiles.ts` groups kinds into seven tile types; `studio-links.ts` is the
+link table (which kinds link, sync or async, and the connection each link gets) with the caps;
+`studio-lanes.ts` projects a design into the board graph (`laneGraph`: the `@actor` root, lane
+order, async and dashed links) and checks it with `@jeeves/board/graph` (`laneRules` for
+`checkGraph` and the board edits; `laneFindings`, `LANE_INVALID`, not yet part of validation). The spec imports only `@jeeves/board/graph`, never
+the board's React root (Biome enforces this).
 
 ## Operations and history
 

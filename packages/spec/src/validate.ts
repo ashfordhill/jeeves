@@ -1,22 +1,24 @@
 import { validateArchitecture } from "./architecture.ts";
 import { containerClassification } from "./architecture-choices.ts";
-import { type DesignDocument, designIds } from "./design.ts";
+import { type DesignDocument, type DesignIdType, designIdNouns, designIds } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 
 /** Every finding for a studio design: identities, references, C1 context and studio settings. */
 export function validateDesign(design: DesignDocument): Finding[] {
   const findings: Finding[] = validateArchitecture(design);
 
-  const seen = new Map<string, string>();
+  const seen = new Map<string, DesignIdType>();
   for (const { id, type } of designIds(design)) {
     const previous = seen.get(id);
     if (previous) {
       findings.push(
-        finding("DUPLICATE_ID", `ID "${id}" is used by a ${previous} and a ${type}.`, {
-          ...(type === "package"
-            ? { path: ["architecture", "studio", "packages", id] }
-            : { [type]: id }),
-        }),
+        finding(
+          "DUPLICATE_ID",
+          `ID "${id}" is used by ${designIdNouns[previous]} and ${designIdNouns[type]}.`,
+          type === "package" || type === "entry"
+            ? { path: ["architecture", "studio", type === "package" ? "packages" : "entries", id] }
+            : { [type]: id },
+        ),
       );
     } else {
       seen.set(id, type);

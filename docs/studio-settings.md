@@ -123,6 +123,13 @@ plus a topic does not mean SQS); only the named products above carry a product i
 When a protocol or interaction change makes timeout or retry inapplicable, they are removed in
 the same edit. A C1 relationship has only its action and endpoints.
 
+## Lane entries
+
+`architecture.studio.entries[]` (`id`, `lane` download / upload, `element`) records the tiles the
+user reaches directly. An entry has no settings and no form. Its ID shares the design's ID space,
+its element must exist, and removing the element removes the entry. Which kinds may be entries is
+in the [catalog](../CATALOG.md#lanes-and-links).
+
 ## Components
 
 Components are `architecture.studio.components[]` (`id`, `host`, `name`, optional `description`,

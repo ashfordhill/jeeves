@@ -4,7 +4,9 @@ import {
   type OperationInput,
   type StudioConnectionCreation,
   type StudioKind,
+  type StudioLinkMode,
   studioApplicationKinds,
+  studioLinkDefaults,
 } from "@jeeves/spec";
 import { useDraw } from "../project/store.ts";
 
@@ -29,57 +31,13 @@ export function connectionDefaults(
   const source = endpointKind(design, from),
     target = endpointKind(design, to);
   if (!source || !target) throw new Error("Connect finite studio objects in a studio design.");
-  return kindConnectionDefaults(source, target);
+  const link = studioLinkDefaults(source, target, canvasLinkMode(source, target));
+  if (!link.ok) throw new Error(link.message);
+  return link.value;
 }
-/** The same rules by kind alone, so a picker can list only kinds that can connect. */
-export function kindConnectionDefaults(
-  source: StudioKind,
-  target: StudioKind,
-): Omit<StudioConnectionCreation, "id" | "from" | "to"> {
-  const publish = applicationKind(source) && target === "queue";
-  const consume = source === "queue" && applicationKind(target);
-  if (source === "queue" || target === "queue") {
-    if (!publish && !consume)
-      throw new Error(
-        "A queue connects to an application: application → queue publishes; queue → application consumes.",
-      );
-    return {
-      kind: "depends-on" as const,
-      planned: {
-        label: publish ? "Publishes" : "Consumes",
-        protocol: "Messaging",
-        interaction: "Asynchronous" as const,
-        security: "Service identity" as const,
-      },
-      settings: { channelUse: publish ? ("publish" as const) : ("consume" as const) },
-    };
-  }
-  const data = target === "database" || target === "cache";
-  const allowed =
-    applicationKind(source) ||
-    (source === "external-api" && applicationKind(target)) ||
-    (source === "cdn" && (applicationKind(target) || target === "object-store"));
-  if (!allowed)
-    throw new Error("Choose an application as the source, or a compatible integration dependency.");
-  return {
-    kind: data
-      ? ("uses-database" as const)
-      : applicationKind(target) || target === "external-api"
-        ? ("calls" as const)
-        : ("depends-on" as const),
-    planned: {
-      label: data
-        ? "Reads & writes"
-        : applicationKind(target) || target === "external-api"
-          ? "Calls"
-          : "Uses",
-      protocol: target === "database" ? "SQL" : target === "cache" ? "Redis" : "HTTPS",
-      interaction: "Request / response" as const,
-      security: "Service identity" as const,
-    },
-    settings: {},
-  };
-}
+/** This canvas has no link mode: queue links are asynchronous and all others are requests. */
+export const canvasLinkMode = (source: StudioKind, target: StudioKind): StudioLinkMode =>
+  source === "queue" || target === "queue" ? "async" : "sync";
 export type ConnectionDraft = {
   from?: string;
   to?: string;

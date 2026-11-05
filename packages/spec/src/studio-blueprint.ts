@@ -24,6 +24,7 @@ import {
   studioDefinitionStatus,
   studioExternalCategorySchema,
   studioExternalProviderSchema,
+  studioLaneSchema,
   studioOwnerSchema,
   studioRetrySchema,
   studioSettingsSchema,
@@ -128,8 +129,10 @@ export const blueprintComponentLinkSchema = z.strictObject({
   ]),
   label: text.optional(),
 });
+/** A tile the user reaches directly, and in which lane. */
+export const blueprintEntrySchema = z.strictObject({ lane: studioLaneSchema, element: idSchema });
 export const blueprintOmissionSchema = z.strictObject({
-  kind: z.enum(["element", "connection", "component", "component-link"]),
+  kind: z.enum(["element", "connection", "component", "component-link", "entry"]),
   id: idSchema,
   reason: z.enum(["no-studio-binding", "endpoint-outside-blueprint", "host-not-a-service"]),
 });
@@ -138,6 +141,8 @@ export const designBlueprintSchema = z.strictObject({
   /** Semantic design revision the blueprint was read from. */
   revision: z.int().nonnegative(),
   system: z.strictObject({ name: text, description: text }),
+  /** The user's lane entries, sorted by lane then element. */
+  entries: z.array(blueprintEntrySchema),
   services: z.array(blueprintServiceSchema),
   resources: z.array(blueprintResourceSchema),
   externals: z.array(blueprintExternalSchema),
@@ -319,6 +324,17 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
     });
   }
 
+  const entries: DesignBlueprint["entries"] = [];
+  for (const entry of byId(studio?.entries ?? [])) {
+    if (!endpointKind.has(entry.element)) {
+      omitted.push({ kind: "entry", id: entry.id, reason: "endpoint-outside-blueprint" });
+      continue;
+    }
+    entries.push({ lane: entry.lane, element: entry.element });
+  }
+  const order = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
+  entries.sort((a, b) => order(a.lane, b.lane) || order(a.element, b.element));
+
   const componentLinks: DesignBlueprint["componentLinks"] = [];
   for (const link of byId(studio?.componentConnections ?? [])) {
     const service = componentHost.get(link.from);
@@ -347,6 +363,7 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
       name: architecture?.system.name ?? projectName,
       description: architecture?.system.description ?? "",
     },
+    entries,
     services,
     resources,
     externals,

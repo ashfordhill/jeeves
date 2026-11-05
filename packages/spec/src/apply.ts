@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { unbindArchitecture } from "./architecture.ts";
-import { type DesignDocument, designIds } from "./design.ts";
+import { type DesignDocument, designIdNouns, designIds } from "./design.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
 import { pruneStudioAfterDelete } from "./studio-operations.ts";
@@ -93,7 +93,9 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
     for (const entry of designIds(design)) {
       if (entry.id === id) {
         throw new OpError(
-          finding("DUPLICATE_ID", `ID "${id}" is already used by a ${entry.type}.`, { op: index }),
+          finding("DUPLICATE_ID", `ID "${id}" is already used by ${designIdNouns[entry.type]}.`, {
+            op: index,
+          }),
         );
       }
     }

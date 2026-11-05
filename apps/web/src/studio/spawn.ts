@@ -20,14 +20,15 @@ import {
   studioComponentKinds,
   studioComponentVisuals,
   studioDefinitions,
+  studioLinkDefaults,
   studioResourceKinds,
 } from "@jeeves/spec";
 import {
   applicationKind,
   type ConnectionDraft,
+  canvasLinkMode,
   connectionDefaults,
   endpointKind,
-  kindConnectionDefaults,
 } from "./actions.ts";
 import { c2Kinds, c3Kinds, designNames, id, uniqueName } from "./creation.ts";
 
@@ -98,11 +99,8 @@ export function spawnEndpoint(
 }
 
 const defaultsFor = (source: StudioKind, target: StudioKind) => {
-  try {
-    return kindConnectionDefaults(source, target);
-  } catch {
-    return undefined;
-  }
+  const link = studioLinkDefaults(source, target, canvasLinkMode(source, target));
+  return link.ok ? link.value : undefined;
 };
 /** The C2 connection a component link traces, from the host's point of view. */
 function viaDefaults(

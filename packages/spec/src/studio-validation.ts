@@ -28,6 +28,7 @@ function occupiedDesignIds(design: DesignDocument): Set<string> {
     ...design.connections.map((item) => item.id),
     ...(model?.nodes ?? []).map((item) => item.id),
     ...(model?.relationships ?? []).map((item) => item.id),
+    ...(model?.studio?.entries ?? []).map((item) => item.id),
   ]);
 }
 
@@ -176,6 +177,14 @@ export function validateStudio(design: DesignDocument): Finding[] {
           );
       }
     }
+  });
+  // Which kinds may be entries, and how many, are lane rules (`laneFindings`).
+  studio.entries?.forEach((entry, index) => {
+    if (!elements.has(entry.element))
+      missing(
+        ["entries", index, "element"],
+        `Lane entry ${entry.id} targets missing element ${entry.element}.`,
+      );
   });
   studio.connections.forEach((binding, index) => {
     if (!connections.has(binding.connection))

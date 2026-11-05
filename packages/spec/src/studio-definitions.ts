@@ -595,7 +595,7 @@ export const studioDefinitions = Object.freeze({
     creationScopes: scopes,
     classification: dataClassification,
     role: "data",
-    visual: { icon: "archive", color: "data", shape: "stack" },
+    visual: { icon: "bolt", color: "data", shape: "stack" },
     fields: [
       ...general,
       owner(),

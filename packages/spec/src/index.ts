@@ -1,5 +1,6 @@
 // The studio format: Zod schemas for the design, layout, operations and findings, the studio
-// vocabulary, and the pure functions that apply, validate, view and export studio designs.
+// vocabulary (kinds, tile types, link rules, lanes), and the pure functions that apply, validate,
+// view and export studio designs.
 
 export * from "./apply.ts";
 export * from "./architecture.ts";
@@ -14,10 +15,13 @@ export * from "./studio-blueprint.ts";
 export * from "./studio-components.ts";
 export * from "./studio-definitions.ts";
 export * from "./studio-examples/index.ts";
+export * from "./studio-lanes.ts";
+export * from "./studio-links.ts";
 export * from "./studio-model.ts";
 export * from "./studio-operations.ts";
 export * from "./studio-presets.ts";
 export * from "./studio-relationships.ts";
+export * from "./studio-tiles.ts";
 export * from "./studio-validation.ts";
 export * from "./studio-view.ts";
 export * from "./validate.ts";

@@ -178,6 +178,8 @@ export function pruneStudioAfterDelete(
   const connections = new Set(removedConnections);
   studio.elements = studio.elements.filter((item) => !removed.has(item.element));
   studio.connections = studio.connections.filter((item) => !connections.has(item.connection));
+  // An entry is the actor's link to a tile: it goes with the tile.
+  if (studio.entries) studio.entries = studio.entries.filter((item) => !removed.has(item.element));
   studio.packages = studio.packages.flatMap((item) => {
     const members = item.members.filter((id) => !removed.has(id));
     return members.length < 2 ? [] : [{ ...item, members }];

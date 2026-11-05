@@ -92,6 +92,23 @@
           }
         }
       }
+    },
+    {
+      "includes": ["packages/spec/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@jeeves/board": "The spec runs on the server too: import @jeeves/board/graph, never the board root (React, React Flow, CSS)."
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

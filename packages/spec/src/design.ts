@@ -65,13 +65,21 @@ export function emptyDesign(): DesignDocument {
   return { schemaVersion: 2, revision: 0, elements: [], connections: [] };
 }
 
+export type DesignIdType = "element" | "connection" | "package" | "entry";
+/** How a message names each kind of identity ("used by a lane entry"). */
+export const designIdNouns: Record<DesignIdType, string> = {
+  element: "an element",
+  connection: "a connection",
+  package: "a package",
+  entry: "a lane entry",
+};
+
 /** Every ID in the design with what it names, in document order. */
-export function* designIds(design: DesignDocument): Generator<{
-  id: string;
-  type: "element" | "connection" | "package";
-}> {
+export function* designIds(design: DesignDocument): Generator<{ id: string; type: DesignIdType }> {
   for (const element of design.elements) yield { id: element.id, type: "element" };
   for (const connection of design.connections) yield { id: connection.id, type: "connection" };
   for (const item of design.architecture?.studio?.packages ?? [])
     yield { id: item.id, type: "package" };
+  for (const item of design.architecture?.studio?.entries ?? [])
+    yield { id: item.id, type: "entry" };
 }

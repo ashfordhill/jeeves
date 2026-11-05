@@ -355,3 +355,89 @@ Notes for LG07:
   solid fan (one east port, `mergeEdges`), so it looks solid there. A new tile appears at its
   final slot at once while the others animate. LG09's dock hint draws it at its slot before ELK
   lands.
+
+## 2026-11-04 — LG04: lane model in the spec (complete)
+
+`@jeeves/spec` depends on `@jeeves/board` (`workspace:*`) and imports only `@jeeves/board/graph`.
+A Biome override on `packages/spec/**` (`noRestrictedImports`, `paths`) rejects the bare
+`@jeeves/board` import; I checked that it fires on the root and not on `/graph`.
+
+- Model (`studio-model.ts`): `studioLanes`, `studioLaneSchema`, `studioEntrySchema` and the
+  optional `architecture.studio.entries: [{id, lane, element}]` (unique IDs). `designIds` yields
+  entries (type `entry`), so they share the design's ID space; DUPLICATE_ID messages use
+  `designIdNouns` ("a lane entry"). `validateStudio` reports an entry to a missing element
+  (UNKNOWN_REFERENCE), and `pruneStudioAfterDelete` (so `removeElement` and `delete`) removes
+  the entries of a removed element.
+- `studio-tiles.ts`: `studioTileTypes`, `studioTileDefinitions` (name, picker icon, shape
+  `rect|pill`, kinds with the default first), `tileTypeOf(kind)` (browser: none) and
+  `defaultKind(type, { after })` (Service after a queue → worker). The cache icon is `bolt`;
+  every kind's icon is now distinct.
+- `studio-links.ts`: `studioLinkDefaults(source, target, "sync" | "async")` returns
+  `{ ok: true, value }` (the old `kindConnectionDefaults` output, plus calls/Asynchronous for the
+  async column) or `{ ok: false, message }` in plain words ("A cache can't link onward.").
+  "Application" is the Service and API kinds except cdn, so `browser` takes no links at all.
+  Also `studioEntryKinds` and `laneLimits = { entriesPerLane: 3, outgoingLinks: 4 }`.
+- `studio-lanes.ts`: `LANE_ACTOR = "@actor"`; `laneGraph(design)` → `{ nodes: {id, kind?}[],
+  edges: {id, source, target, async, dashed, lane?}[] }` (actor, download BFS, upload BFS, then
+  unreachable tiles; edges: entries, then each node's connections in node order; links to missing
+  elements are dropped). `laneRules(kindOf)` is the board `Rules` (root, `canLink` from the
+  entry kinds and link table, `maxOut` 4) plus `refusal()` for the message. `laneFindings(design)`
+  runs `checkGraph` with it and adds the per-lane entry cap. It reports unreachable tiles, cycles,
+  refused links and entries, a pair linked twice (including an element entered twice, in either
+  lane), and both caps, all as `LANE_INVALID` (new, structural error). Duplicate IDs, missing
+  references and self-links are left to the existing validation. Not called from
+  `validateStudio` (LG06).
+- Blueprint: `entries: [{lane, element}]`, sorted by lane then element. An entry whose element is
+  outside the blueprint is `omitted` (kind `entry`). Still `blueprint: 1`.
+- Web: `kindConnectionDefaults` is gone. `connectionDefaults` and spawn's `defaultsFor` call
+  `studioLinkDefaults` with `canvasLinkMode` (async when a queue is involved, as before).
+
+Departure: on the current C1/C2/C3 canvas the TinyURL Web app (browser) now offers no spawn
+choices ("No new box fits on this side"), and connecting to or from it is refused, because the
+plan's link table has no browser. Every other pair builds the same connection as before. LG06
+removes the Web app from the study.
+
+Tests (`studio-lanes.test.ts`, 7): the whole 15×15×2 link table against the plan; link defaults
+and refusal wording; tile types (every kind but browser once, distinct icons, defaults) and entry
+kinds; entries in the model (DUPLICATE_ID, UNKNOWN_REFERENCE, pruned on delete, blueprint);
+`laneGraph` order and dashing on TinyURL in lanes (3 dashed, solid again once the worker is also
+reached by a request); `laneFindings` (unreachable, cycle, refused link and entry, both caps);
+`laneRules` with the board's `addAfter`. The fixture is TinyURL with the Web app deleted and
+entries download → CDN, upload → Shorten API.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 185 files, all type checks, 19 test files / 115 tests passed).
+- `pnpm test:e2e`: the first run had 2 failures, the known cold start (the 5s project-URL poll,
+  and the Create project button detaching during the first load) after this unit's lockfile
+  change. The next two runs: 5 passed each.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (own server and web on 4311/4301 against `jeeves_e2e`, stopped afterwards; the owner's
+  4300/4310 left alone): TinyURL renders at C1 (4 nodes, 3 lines), C2 (12, 11) and C3 (21, 17).
+  The spawn picker shows Cache with the bolt icon; the Link cache card keeps its shape icon
+  (`stack-2`). Spawning a Cache from Shorten API by mouse gives revision 2 and a uses-database,
+  Redis, Request / response connection. The Web app picker is empty as described above. No page
+  errors.
+
+Docs: CATALOG (tile types; lanes and the link table with the caps), the blueprint doc
+(`entries`, `entry` omissions), studio settings (lane entries), PLAN (data model).
+
+Notes for LG05:
+
+- Use `laneRules(kindOf)` with the board edits. For a tile an edit adds, `kindOf` must answer
+  for its new ID, e.g. `(id) => (id === newId ? kind : kinds.get(id))`, with `kinds` taken from
+  `laneGraph(design).nodes`. `refusal(source, target, async)` gives the plain-words reason for a
+  refused-link result. `checkGraph`'s `maxOut` skips the root, so check `entriesPerLane` yourself
+  (or run `laneFindings` on the result).
+- `applyOperations` does not reject lane violations until LG06 wires `laneFindings` into
+  `validateStudio`. Lane commands should check (`laneFindings` on the dry-run result, or the
+  board edit results) and throw with the message themselves.
+- `studioLinkDefaults(...).value` is ready to spread into a `StudioConnectionCreation`
+  (`{ id, from, to, ...value }`). A replaced link keeps its mode: read it from
+  `planned.interaction === "Asynchronous"`.
+- `laneGraph` edges carry `lane` only on entries. Entry IDs share the design's ID space, so a new
+  entry's ID must be free like any other.
+- An element can be an entry only once (a second entry, even in the other lane, is a duplicate
+  pair on the board). If the owner wants one tile in both lanes, that is a later decision.
+- An existing connection whose interaction is edited to Asynchronous where the table has no async
+  mode (for example application → database) will be `LANE_INVALID` once LG06 enforces the rules.

@@ -35,6 +35,52 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 Applications can also be created as members of a package. A resource created at C3 is owned by
 the application or package it was created from.
 
+## Tile types (lane canvas)
+
+The lane canvas (being built; the C1/C2/C3 canvas is still the one shown) offers seven tile types
+as picker icons. Each groups kinds; the first kind is the default and the others are variants.
+Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
+
+| Tile type | Picker icon | Kinds (default first) | Tile shape |
+| --- | --- | --- | --- |
+| Service | `server` | `service`, `worker`, `redirect`, `identity`, `notification`, `billing` | rounded rectangle |
+| API | `api` | `gateway`, `cdn` | rounded rectangle |
+| Database | `database` | `database`, `search` | pill |
+| Cache | `bolt` | `cache` | pill |
+| Queue | `list` | `queue` | pill |
+| Storage | `archive` | `object-store` | pill |
+| External | `plug` | `external-api` | rounded rectangle |
+
+A Service spawned after a queue defaults to `worker`. `browser` belongs to no tile type: on the
+lane canvas the user (the actor) is the client. A tile face shows its kind's own icon; every kind
+has a distinct one.
+
+## Lanes and links
+
+Every lane design starts from one **actor**, the user, which is not stored. Its **entries**
+(`architecture.studio.entries`) are links to the tiles the user reaches directly, each in the
+**download** or **upload** lane. Every tile must be reachable from the actor, with no cycles.
+Which kinds may link, and how, is one table
+([`studio-links.ts`](packages/spec/src/studio-links.ts)). "Application" means the Service and API
+kinds except `cdn`. A sync link is a request (solid line); an async link does not wait (dashed
+line, as is every link that continues after one).
+
+| Source → target | Sync | Async |
+| --- | --- | --- |
+| actor → `service`, `redirect`, `identity`, `notification`, `billing`, `gateway`, `cdn`, `object-store`, `external-api` (an entry) | yes | no |
+| application → `database`, `cache` | yes (uses-database) | no |
+| application → `object-store`, `search`, `cdn` | yes (depends-on) | no |
+| application → application, `external-api` | yes (calls) | yes (calls, Asynchronous) |
+| application → `queue` | no | yes (publish) |
+| `queue` → application | no | yes (consume) |
+| `external-api` → application | yes | yes |
+| `cdn` → application, `object-store` | yes | no |
+| `database`, `cache`, `object-store`, `search` → anything | no (end tiles) | no |
+
+Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane. A tile is entered
+at most once. A broken rule is a `LANE_INVALID` finding (`laneFindings`); validation does not
+enforce the lane rules yet, because the TinyURL study has no entries yet.
+
 A **package** groups two or more independent applications into an open frame at C2; it has no
 language, provider or runtime. The **Service and worker** preset (Library → Presets) creates a
 service, a worker and a package-owned work queue in one step.

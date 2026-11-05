@@ -14,6 +14,8 @@ export const findingCatalog = {
   UNKNOWN_REFERENCE: { category: "structural", severity: "error" },
   CONFIG_INVALID: { category: "structural", severity: "error" },
   DUPLICATE_CONNECTION: { category: "structural", severity: "error" },
+  /** The lane graph breaks a lane rule: unreachable tile, cycle, refused link or a cap. */
+  LANE_INVALID: { category: "structural", severity: "error" },
   NEEDS_TEMPLATE: { category: "readiness", severity: "error" },
   CONFIG_REQUIRED: { category: "readiness", severity: "error" },
   ARCHITECTURE_UNBOUND: { category: "readiness", severity: "warning" },

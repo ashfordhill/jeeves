@@ -550,6 +550,20 @@ export const studioConnectionBindingSchema = z.strictObject({
   settings: studioConnectionSettingsSchema,
 });
 export type StudioConnectionBinding = z.infer<typeof studioConnectionBindingSchema>;
+/** The actor's two lanes: download (receive, view, consume) above, upload (create, post) below. */
+export const studioLanes = ["download", "upload"] as const;
+export const studioLaneSchema = z.enum(studioLanes);
+export type StudioLane = z.infer<typeof studioLaneSchema>;
+/**
+ * A link from the actor (the user, always present and never stored) to a tile, carrying one lane.
+ * Which kinds may be entries and how many each lane holds are lane rules (`studio-lanes.ts`).
+ */
+export const studioEntrySchema = z.strictObject({
+  id: idSchema,
+  lane: studioLaneSchema,
+  element: idSchema,
+});
+export type StudioEntry = z.infer<typeof studioEntrySchema>;
 export const studioModelSchema = z
   .strictObject({
     version: z.literal(1, { error: "Unsupported studio version; only version 1 is supported." }),
@@ -568,6 +582,8 @@ export const studioModelSchema = z
       .array(studioComponentConnectionSchema)
       .max(studioComponentLimits.componentConnections)
       .optional(),
+    /** Optional so documents made before lanes read unchanged. */
+    entries: z.array(studioEntrySchema).max(studioLimits.connections).optional(),
   })
   .superRefine((value, ctx) => {
     const unique = (items: string[], collection: string, field: string) => {
@@ -605,6 +621,11 @@ export const studioModelSchema = z
     unique(
       (value.componentConnections ?? []).map((item) => item.id),
       "componentConnections",
+      "id",
+    );
+    unique(
+      (value.entries ?? []).map((item) => item.id),
+      "entries",
       "id",
     );
     const members = new Set<string>();
