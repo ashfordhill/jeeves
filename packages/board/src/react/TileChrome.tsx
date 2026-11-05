@@ -9,8 +9,8 @@
 // Changes from automation-illustrator: the tabs, fan items and drop rules come from props; one
 // tab both fans and drops (there, `+` only fans and the path tab only drops); a `---` tab's band
 // is dashed; tiles the tab may drop on show through the scrim and the others stay dimmed; a
-// refused drop is reported; Escape cancels and a cancelled pull springs back. No tile pickup,
-// insert silhouette or X.
+// refused drop is reported; Escape cancels and a cancelled pull springs back. The red X shows
+// only when the caller lets the tile go (`remove`). No tile pickup or insert silhouette.
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -32,6 +32,7 @@ import {
   tileScreenRect,
   underTileOrigin,
 } from "./overlay.ts";
+import { RemoveButton } from "./RemoveButton.tsx";
 import { prefersReducedMotion } from "./useAnimatedLayout.ts";
 
 export const PULL_THRESHOLD = 36;
@@ -76,6 +77,8 @@ export type ChromeProps = {
   onPick: (tab: TabSpec, item: string) => void;
   onDrop: (tab: string, target: string) => void;
   onRefused: (tab: string, target: string) => void;
+  /** The red X above the tile; none when the tile can't be removed. */
+  remove?: { label: string; onRemove: () => void };
 };
 
 type Hover = { item: string } | { tile: string } | null;
@@ -120,6 +123,13 @@ export function TileChrome(props: ChromeProps) {
           </div>
         ) : null;
       })}
+      {props.remove ? (
+        <RemoveButton
+          className="board-remove-tile"
+          label={props.remove.label}
+          onRemove={props.remove.onRemove}
+        />
+      ) : null}
     </div>
   );
 }

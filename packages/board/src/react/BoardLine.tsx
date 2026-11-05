@@ -2,10 +2,11 @@
 // One line: the ELK route from the shown layout (a right-angle fallback until ELK has routed
 // it), solid or dashed, a 44px hit band, and an optional chip at the rect ELK kept clear for it.
 // The dashes are drawn per segment with their phase locked to the world, so shared trunks keep
-// the same gaps.
+// the same gaps. A selected line shows a red X at its midpoint (above its chip, when it has one).
 //
 // Changes from automation-illustrator: no restitch preview, stretch, insert hover, label editor
-// or context menu. The chip holds caller content (an icon) instead of condition text.
+// or context menu (removal is the X). The chip holds caller content (an icon) instead of
+// condition text.
 import { BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps } from "@xyflow/react";
 import type { ReactNode } from "react";
 import {
@@ -19,11 +20,15 @@ import {
   polylineToSvg,
 } from "../layout/polyline.ts";
 import { useBoardContext } from "./context.ts";
+import { RemoveButton } from "./RemoveButton.tsx";
 
 /** The invisible hit band, wider than the drawn stroke. */
 export const LINE_HIT_WIDTH = 44;
 export const LINE_WIDTH = 2.75;
 export const LINE_WIDTH_SELECTED = 4;
+/** The X's size (board.css) and its room above a chip. */
+const REMOVE_SIZE = 40;
+const REMOVE_GAP = 8;
 
 export type BoardLineData = {
   dashed: boolean;
@@ -43,7 +48,7 @@ export function BoardLine({
   selected,
   data,
 }: EdgeProps<BoardLineEdge>) {
-  const { layout, selectLine } = useBoardContext();
+  const { layout, selectLine, removeLine } = useBoardContext();
   const dashed = Boolean(data?.dashed);
   const route = layout?.routes[id];
   const points =
@@ -53,10 +58,14 @@ export function BoardLine({
   const segments = dashed ? polylineDrawSegments(points, DASH_PERIOD) : [];
 
   const rect = layout?.chips[id];
-  const mid = rect ? null : pointAtLength(points, pathLength(points) / 2);
+  const mid = pointAtLength(points, pathLength(points) / 2);
   const chip = rect
     ? { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2, w: rect.w, h: rect.h }
-    : { x: mid?.x ?? 0, y: mid?.y ?? 0, w: undefined, h: undefined };
+    : { x: mid.x, y: mid.y, w: undefined, h: undefined };
+  // The X sits on the line's midpoint, or just above its chip so both stay clickable.
+  const remove = data?.chip
+    ? { x: chip.x, y: chip.y - (chip.h ?? REMOVE_SIZE) / 2 - REMOVE_GAP - REMOVE_SIZE / 2 }
+    : mid;
 
   return (
     <>
@@ -108,6 +117,16 @@ export function BoardLine({
           >
             {data.chip}
           </button>
+        </EdgeLabelRenderer>
+      ) : null}
+      {selected && removeLine ? (
+        <EdgeLabelRenderer>
+          <RemoveButton
+            className="board-remove-line"
+            label={`Remove ${data?.label ?? "line"}`}
+            onRemove={() => removeLine(id)}
+            style={{ transform: `translate(-50%, -50%) translate(${remove.x}px, ${remove.y}px)` }}
+          />
         </EdgeLabelRenderer>
       ) : null}
     </>

@@ -83,6 +83,7 @@ export async function design(page: Page, id: string) {
       studio: {
         elements: { element: string; settings: Record<string, unknown> }[];
         components: { name: string; settings: Record<string, unknown> }[];
+        entries: { id: string; lane: string; element: string }[];
       };
     };
   };

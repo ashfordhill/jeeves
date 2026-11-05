@@ -1,6 +1,7 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
-// tabs add and link tiles (`creation.tsx`); settings are edited in the inspector.
+// tabs add and link tiles (`creation.tsx`), the red X on a tile or line removes it
+// (`removal.tsx`); settings are edited in the inspector.
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
   type DesignDocument,
@@ -36,6 +37,7 @@ import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { LaneCanvas, LaneIcon, laneNames } from "./LaneCanvas.tsx";
 import { RailResize } from "./RailResize.tsx";
+import { useLaneRemoval } from "./removal.tsx";
 import { ACTOR_NAME } from "./tiles/ActorTile.tsx";
 
 type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
@@ -100,18 +102,23 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     field.select();
     setFocusName(undefined);
   });
+  // Optional shortcuts (mouse remains sufficient): V/H mirror the Select and Hand buttons, and
+  // Delete/Backspace the selected tile's or line's X.
+  const removeSelected = useRef(() => {});
   useEffect(() => {
-    // Optional V/H shortcuts mirror the Select and Hand buttons (mouse remains sufficient).
     const shortcut = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-      if ((key !== "v" && key !== "h") || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
       if (
         target?.isContentEditable ||
         (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
       )
         return;
-      setMode(key === "h" ? "hand" : "select");
+      const key = event.key.toLowerCase();
+      if (key === "v" || key === "h") setMode(key === "h" ? "hand" : "select");
+      if (key !== "delete" && key !== "backspace") return;
+      event.preventDefault();
+      removeSelected.current();
     };
     window.addEventListener("keydown", shortcut);
     return () => window.removeEventListener("keydown", shortcut);
@@ -138,6 +145,18 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     },
     onLinked: (tile) => select({ tile }),
   });
+  const { remove, ...removal } = useLaneRemoval({
+    projectId,
+    design: loaded.design,
+    graph,
+    tile: mode === "select" ? selection.tile : undefined,
+    onRemoved: (tile) => select(tile ? { tile } : {}),
+  });
+  removeSelected.current = () => {
+    if (mode !== "select") return;
+    if (selection.tile) remove(selection.tile);
+    else if (selection.line) removal.onRemoveLine?.(selection.line);
+  };
   const toggle = (rail: "chatOpen" | "inspectorOpen") => {
     if (rail === "inspectorOpen") void formDrafts.flushProject(projectId, true);
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
@@ -220,6 +239,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           onSelectLine={(line) => select({ line })}
           onClear={() => select({})}
           creation={creation}
+          removal={removal}
         />
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button

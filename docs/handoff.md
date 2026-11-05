@@ -941,3 +941,87 @@ Notes for LG10:
 - E2E helpers: `pull(page, tile, tab)` and `moveOnto(page, locator)`; after selecting a tile the
   inspector opens and nothing refits, so click Fit before acting on tiles at the right edge. At
   Fit with both rails open the zoom is ~0.44 and tabs are ~17px.
+
+## 2026-11-04 — LG10: delete tiles and lines (complete)
+
+The selected tile and the selected line now have automation-illustrator's red X.
+
+Board (`packages/board`, still no Jeeves imports):
+
+- `react/RemoveButton.tsx` (ported from `TileChrome.tsx`'s X button): a 40px round red button,
+  45% opacity until hover or focus, Tabler's X path drawn inline. CSS ported from
+  `.node-remove-x-btn`/`.tile-remove-x` into `board.css` with `--board-remove`,
+  `--board-remove-active`, `--board-remove-ink`.
+- `TileChrome` takes `remove?: {label, onRemove}` and draws the X centred on the tile's top edge
+  (`top: -20px`, not automation-illustrator's −14px, so it clears the face's icon); it hides while
+  a tab is pulled (`.board-chrome[data-pulling]`).
+- `Board`: new props `removable(tile)`, `onRemoveTile`, `onRemoveLine` and `hud: {tile, content,
+  marked?}`. The chrome now renders for "tabs or removable" (a tab-less tile still gets its X).
+  `hud` is drawn under its tile at screen size through React Flow's `NodeToolbar` (class
+  `board-hud nopan nowheel`, 18px below, ported `.remove-picker-hud` look); while it shows, that
+  tile has no chrome and the `marked` tiles get a red dashed ring (`is-marked`). `pullClass` is
+  now `tileClass`.
+- `BoardLine`: a selected line shows the X at its midpoint (`pointAtLength(points, length/2)`), or
+  for a line with a chip, 8px above the chip; the board context carries `removeLine` (select mode
+  only). Its accessible name is `Remove <line label>`.
+- `graph/edit.ts`: `nextTileAfterRemoval(remaining, predecessorIds, successorIds)` (ported).
+
+Web: new `canvas/removal.tsx` (`useLaneRemoval`), next to `creation.tsx` rather than inside it; the
+two hooks share nothing but `commitAction`. The X runs `planRemoveTile`; no strands →
+`removeTile` at once; strands → the HUD ("Removing Redirect service also removes", each strand's
+icon and name, **Cancel** and **Remove N tiles**, N = strands + 1, the confirm focused with
+`preventScroll` so Enter confirms). Cancel, Escape, clicking paper or selecting anything else, or
+Hand drops it. Confirm sends `removeTile` with `alsoRemove: strands` (a design that changed
+meanwhile is refused by the command, not silently widened). After a tile removal
+`nextTileAfterRemoval` on the new lane graph picks the selection (the first predecessor in lane
+order, so the User after CDN); after a line removal nothing is selected (as automation-
+illustrator's `removePath`). A line X runs `removeLink`; a refusal reaches the notice through
+`commitAction` ("Change not saved: Removing the link from CDN to Redirect service would cut off
+…"). `planRemoveTile` refusals go to the notice as they are. Optional Delete/Backspace in
+`Workspace.tsx` does the selected tile's or line's X (ignored in inputs, selects, text areas and
+contenteditable). `LaneCanvas` takes a `removal` prop beside `creation`. `canvas.css` maps the
+remove colours to `--minus` and styles the HUD content.
+
+E2E: new `remove.spec.ts` (1 test): CDN's X → 9 tiles, 10 lines, the User selected, revision 2,
+CDN gone and entry `download-redirect` → `redirect`; Undo → 10 tiles, 11 lines, revision 3, the
+download entry back on `cdn`. `studio.ts`'s `design()` type gained `entries`.
+
+Tests: `nextTileAfterRemoval` (parent, then a remaining child, else none) in `graph.test.ts`.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 188 files, all type checks, 20 test files / 114 tests passed).
+- `pnpm test:e2e`: 7 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (Playwright Chromium driven by mouse at 1440×900, light and dark; my own API on 4312 and
+  web on 4302 against `jeeves_e2e`, both stopped afterwards; the owner's 4300/4310 and `jeeves`
+  untouched; every throwaway project deleted, one left by an aborted first run removed by
+  `DELETE` → 204): TinyURL renders 10 tiles and 11 lines. The User has no X. CDN's X → 9 tiles,
+  10 lines, entries `download-redirect` and `upload-shorten-api`, User selected; Undo → 10/11.
+  Redirect's X → the HUD lists Click events, Analytics worker and Analytics store, 4 tiles ringed,
+  no chrome, "Remove 4 tiles" focused; Cancel → nothing changed (revision unchanged), chrome back;
+  Escape and a paper click also cancel; Remove 4 tiles → 6 tiles, 5 lines, CDN selected; Undo →
+  10/11. Redirect → Link cache, selected from Redirect's Connections list (it shares a bus), X at
+  its midpoint → 10 lines; Undo → 11. CDN → Redirect's X → refused with the notice above, revision
+  unchanged. The download chip's X (above the chip) → refused ("Removing the download entry to CDN
+  would cut off CDN, …"). Delete on Analytics store removes it. Hand mode shows no X. No console
+  errors or warnings.
+- Look: the X sits centred on the top edge, faint, full red on hover, as in automation-
+  illustrator; at Fit with the inspector open (~0.5 zoom) it is about 20px. The HUD sits under the
+  tile at screen size and covers the tiles below it (Shorten API and Links database under
+  Redirect); the ringed tiles stay visible. On a shared bus a click picks one of the lines on it,
+  so a particular bus line is best selected from its tile's Connections list (in Limits).
+
+Docs: studio guide (new Removing section, the canvas and creating intros, Limits: X size at low
+zoom, the HUD covering tiles below, selecting a bus line), CATALOG (canvas → `removeTile` /
+`removeLink`), PLAN (`removal.tsx`, the board's X, `hud` and `nextTileAfterRemoval`). No cap was
+hit or raised.
+
+Notes for LG11:
+
+- The inspector is untouched; `Workspace.Inspector` still renders `TargetInspector` for a tile.
+  A type-variant row and Modules list go above/below it there.
+- Removing a tile prunes its modules (`pruneStudioAfterDelete`), so Undo is the only way back to
+  them; worth knowing when testing the Modules list.
+- The HUD's buttons are styled in `canvas.css` (`.lane-remove-actions`); `ComponentForm`'s own
+  remove button already uses `.studio-danger`.

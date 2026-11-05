@@ -181,6 +181,20 @@ export function removeEdge(graph: BoardGraph, edgeId: string, rules: Rules): Res
   return checked(next, rules);
 }
 
+/**
+ * The tile to select after a removal: the first predecessor still on the board, else the first
+ * remaining successor, else none.
+ */
+export function nextTileAfterRemoval(
+  remaining: BoardGraph,
+  predecessorIds: readonly string[],
+  successorIds: readonly string[],
+): string | null {
+  const ids = new Set(remaining.nodes.map((n) => n.id));
+  const alive = (id: string) => ids.has(id);
+  return predecessorIds.find(alive) ?? successorIds.find(alive) ?? null;
+}
+
 /** `source->target`, with `~2`, `~3`… when that id is taken. */
 export function uniqueEdgeId(source: string, target: string, taken: ReadonlySet<string>): string {
   const base = `${source}->${target}`;

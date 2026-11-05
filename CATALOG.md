@@ -97,7 +97,9 @@ to Geo lookup. A cache can't link onward."):
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
 
 On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
-([studio guide](docs/studio.md#creating-and-connecting)). A new tile is named after its type and
+([studio guide](docs/studio.md#creating-and-connecting)); a tile's X runs `removeTile` (after
+`planRemoveTile`, with the tiles the confirmation listed as `alsoRemove`) and a line's X runs
+`removeLink` ([removing](docs/studio.md#removing)). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
 `lane-target` for an entry.
 

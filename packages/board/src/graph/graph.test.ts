@@ -1,7 +1,15 @@
 // Ported from automation-illustrator src/workflow/graph.test.ts, commands.test.ts (0803c4a).
 import { describe, expect, it } from "vitest";
 import { checkGraph } from "./check.ts";
-import { addAfter, applyRemoval, insertBefore, link, planRemoval, removeEdge } from "./edit.ts";
+import {
+  addAfter,
+  applyRemoval,
+  insertBefore,
+  link,
+  nextTileAfterRemoval,
+  planRemoval,
+  removeEdge,
+} from "./edit.ts";
 import type { BoardGraph, Result, Rules } from "./types.ts";
 
 const rules: Rules = { root: "r", maxOut: 2 };
@@ -209,5 +217,12 @@ describe("removal", () => {
     expect(cut).toMatchObject({ ok: false, code: "strands" });
     expect(cut.ok ? "" : cut.message).toContain('"m"');
     expect(code(removeEdge(diamond, "nope", rules))).toBe("missing-ref");
+  });
+
+  it("selects the parent after a removal, then a remaining child, else none", () => {
+    const chain = graph(["r", "a"], [["e1", "r", "a"]]);
+    expect(nextTileAfterRemoval(chain, ["r"], [])).toBe("r");
+    expect(nextTileAfterRemoval(chain, ["gone"], ["a"])).toBe("a");
+    expect(nextTileAfterRemoval(graph([], []), ["r"], ["a"])).toBeNull();
   });
 });

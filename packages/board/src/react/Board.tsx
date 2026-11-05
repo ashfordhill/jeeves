@@ -4,7 +4,9 @@
 // dragging the paper pans, the wheel zooms, a click selects. The first non-empty layout takes a
 // one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. The selected tile
 // shows the caller's pull tabs (`TileChrome`): a picked fan item becomes a new tile, which docks
-// at the next slot beside its source until ELK lands and the layout animates.
+// at the next slot beside its source until ELK lands and the layout animates. A removable
+// selected tile, and a selected line, show a red X; a caller's panel (`hud`, a confirmation)
+// sits under a tile at screen size.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
@@ -18,6 +20,7 @@ import {
   Handle,
   type Node,
   type NodeProps,
+  NodeToolbar,
   Position,
   ReactFlow,
   ReactFlowProvider,
@@ -99,6 +102,11 @@ export type LineSpec = {
 };
 
 export type BoardSelection = { tile?: string; line?: string };
+/**
+ * A panel under a tile, at screen size (such as a confirmation). While it shows, that tile has no
+ * chrome and the `marked` tiles get a warning ring.
+ */
+export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
 export type BoardMode = "select" | "hand";
 export type BoardHandle = { fit: () => void };
 
@@ -131,11 +139,21 @@ export type BoardProps = {
   onDrop?: (tile: string, tab: string, target: string) => void;
   /** A release over a tile `canDrop` refuses; the pull springs back. */
   onDropRefused?: (tile: string, tab: string, target: string) => void;
+  /** Whether the selected tile shows a red X (select mode). */
+  removable?: (tile: string) => boolean;
+  /** The selected tile's X was clicked. */
+  onRemoveTile?: (tile: string) => void;
+  /** The selected line's X (at its midpoint) was clicked; without it lines have no X. */
+  onRemoveLine?: (line: string) => void;
+  hud?: TileHud;
   ref?: Ref<BoardHandle>;
 };
 
-type TileData = { shape: TileShape; content: ReactNode; chrome?: ReactNode };
+type TileData = { shape: TileShape; content: ReactNode; chrome?: ReactNode; hud?: ReactNode };
 type TileNode = Node<TileData, "tile">;
+
+/** Room between a tile and the panel under it. */
+const HUD_OFFSET = 18;
 
 function Tile({ data, selected }: NodeProps<TileNode>) {
   return (
@@ -146,6 +164,17 @@ function Tile({ data, selected }: NodeProps<TileNode>) {
         <Handle type="source" position={Position.Right} isConnectable={false} />
       </div>
       {data.chrome}
+      {data.hud ? (
+        <NodeToolbar
+          isVisible
+          position={Position.Bottom}
+          offset={HUD_OFFSET}
+          className="board-hud nopan nowheel"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {data.hud}
+        </NodeToolbar>
+      ) : null}
     </div>
   );
 }
@@ -236,6 +265,10 @@ function Inner({
   onPick,
   onDrop,
   onDropRefused,
+  removable,
+  onRemoveTile,
+  onRemoveLine,
+  hud,
   handle,
 }: Omit<BoardProps, "ref"> & { handle?: Ref<BoardHandle> }) {
   const rf = useReactFlow<TileNode, BoardLineEdge>();
@@ -405,12 +438,27 @@ function Inner({
     );
   }, []);
   const source = selected.tile;
-  const chromeTile = !hand && !covering && source && tabs?.length && placed(source) ? source : null;
+  /* A tile with a panel under it shows no chrome; the panel speaks for it. */
+  const hudTile = !hand && !covering && hud && placed(hud.tile) ? hud.tile : null;
+  const removeTile = source && removable?.(source) ? onRemoveTile : undefined;
+  const chromeTile =
+    !hand &&
+    !covering &&
+    source &&
+    source !== hudTile &&
+    (tabs?.length || removeTile) &&
+    placed(source)
+      ? source
+      : null;
+  const label = (id: string) => tiles.find((t) => t.id === id)?.label ?? id;
   const chrome = chromeTile ? (
     <TileChrome
       tile={chromeTile}
       size={sizes[chromeTile] ?? { w: 128, h: 128 }}
       tabs={tabs ?? []}
+      {...(removeTile && {
+        remove: { label: `Remove ${label(chromeTile)}`, onRemove: () => removeTile(chromeTile) },
+      })}
       host={hostRef}
       others={() => tiles.map((t) => t.id).filter((id) => id !== chromeTile && placed(id))}
       canDrop={(tab, target) => canDrop?.(chromeTile, tab, target) ?? false}
@@ -437,8 +485,10 @@ function Inner({
       onRefused={(tab, target) => onDropRefused?.(chromeTile, tab, target)}
     />
   ) : null;
-  /* Tiles the pull may drop on are outlined; the one under the pointer more strongly. */
-  const pullClass = (id: string): string => {
+  /* Tiles the pull may drop on are outlined; the one under the pointer more strongly. Tiles a
+     panel is about (a removal's) get a warning ring. */
+  const tileClass = (id: string): string => {
+    if (hudTile && hud?.marked?.includes(id)) return " is-marked";
     if (!pull?.targets?.has(id) || !chromeTile) return "";
     return pull.over === id ? " is-drop-target is-drop-over" : " is-drop-target";
   };
@@ -454,11 +504,12 @@ function Inner({
         shape: t.shape,
         content: t.content,
         ...(t.id === chromeTile ? { chrome } : {}),
+        ...(t.id === hudTile ? { hud: hud?.content } : {}),
       },
       draggable: false,
       connectable: false,
       selected: selected.tile === t.id,
-      className: `nopan${pullClass(t.id)}`,
+      className: `nopan${tileClass(t.id)}`,
       width: t.w,
       height: t.h,
       measured: { width: t.w, height: t.h },
@@ -497,8 +548,9 @@ function Inner({
       selectLine: (id: string) => {
         if (!hand) onSelectLine(id);
       },
+      ...(!hand && onRemoveLine ? { removeLine: onRemoveLine } : {}),
     }),
-    [shown, hand, onSelectLine],
+    [shown, hand, onSelectLine, onRemoveLine],
   );
 
   return (

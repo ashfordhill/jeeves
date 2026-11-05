@@ -30,7 +30,8 @@ lane, with no islands and no cycles.
   is every link that continues after one. A lane's entry line carries a download or upload chip.
   Action, protocol and the rest are in the inspector.
 - Click a tile, a line or a chip to select it and open the inspector; click empty paper to clear.
-  The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)).
+  The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
+  a red X; a selected line shows a red X too ([Removing](#removing)).
   Modules (components) are not drawn, and C1 people, external systems and packages are not shown.
 
 ## Layout and navigation
@@ -51,7 +52,8 @@ at 0.78 zoom at 1440×900 with the chat rail closed (0.61 with it open), and at 
 
 ## Creating and connecting
 
-Only the selected tile shows controls: tabs on its sides, for what the lane rules allow there.
+Only the selected tile shows controls: tabs on its sides, for what the lane rules allow there, and
+the red X on its top edge ([Removing](#removing)).
 
 - **`+`** adds or links with a request (a solid line); **`---`** with an asynchronous link (a
   dashed line).
@@ -85,6 +87,33 @@ per lane; a tile starts at most one lane. An edit that breaks one of these rules
 notice and changes nothing, whether it comes from the canvas, the inspector, chat or the API.
 
 Optional shortcuts: V selects, H pans, Escape cancels a pull. Every action works by mouse alone.
+
+## Removing
+
+The selected tile has a red **X** centred on its top edge (faint until the pointer is on it); the
+user has none. The X removes the tile and links each tile before it to each tile after it, wherever
+the [link table](../CATALOG.md#lanes-and-links) allows, unless the first already reaches the
+second another way. A restitched link is asynchronous when either link it replaces was, and a lane
+entry passes on in its lane. Removing the CDN in TinyURL makes the Redirect service the download
+lane's entry.
+
+When the restitching can't reach some tiles (a resource doesn't link onward, so nothing replaces
+the links through it), a small panel opens under the tile instead. It lists the tiles that would be
+cut off, with their icons, and marks them, and the tile itself, with a red dashed ring on the
+board. **Remove N tiles** removes them all; **Cancel**, Escape, or selecting anything else changes
+nothing. Removing the Redirect service in TinyURL takes Click events, the Analytics worker and the
+Analytics store with it ("Remove 4 tiles"), since the CDN can't link to a queue.
+
+A selected line has a red X at its middle (an entry line's sits above its chip). It removes that
+connection or entry, unless a tile would be cut off; then nothing changes and the notice names the
+tiles ("Removing the link from CDN to Redirect service would cut off Redirect service, …").
+
+After removing a tile, the tile before it is selected (the first one, in lane order; often the
+user); after removing a line, nothing is. The modules, module links and settings that named what
+went are removed with it; a database, cache, storage or queue whose owner went belongs to the
+first application that still links to it. Each removal is one batch and one undo step.
+
+Optional shortcuts: Delete or Backspace does what the selected tile's or line's X does.
 
 ## Inspector
 
@@ -154,15 +183,18 @@ external, nine connections and all eleven components, with nothing omitted and n
 
 ## Limits
 
-- Tiles and lines are not removed by mouse yet; chat removes them (`removeTile`, `removeLink`).
-- The fan and the tabs are drawn at the board's zoom and screen size: at low zoom the tabs are small
-  and the fan can cover nearby tiles. A tile under a fan icon is linked by entering it where no icon
-  covers it (or after zooming in).
+- The fan, the tabs and the X are drawn at the board's zoom and screen size: at low zoom they are
+  small and the fan can cover nearby tiles. A tile under a fan icon is linked by entering it where
+  no icon covers it (or after zooming in).
+- A removal's confirmation panel sits under the tile at screen size and can cover the tiles below
+  it; the tiles it would remove stay visible through their rings.
 - Modules (components) are neither drawn nor listed in the inspector yet; chat and the blueprint
   carry them.
 - Where two services fork to the same tiles, their lines share one bus. In TinyURL, Redirect
   service and Shorten API both reach Link cache and Links database, so the lines alone don't show
-  which of them reaches Click events; selecting a line does.
+  which of them reaches Click events; selecting a line does. A click on a shared stretch selects one
+  of the lines on it; to select (or remove) a particular one, click its row in the tile's
+  Connections list.
 - An unload flush is an attempt, not a durability guarantee.
 - Live chat quality has not been evaluated.
 
