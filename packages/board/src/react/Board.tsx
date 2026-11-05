@@ -1,13 +1,15 @@
 // Ported from automation-illustrator src/board/Board.tsx and src/board/controls/PathHostFrame.tsx
 // (0803c4a).
-// The board: React Flow showing tiles and lines where ELK put them. Nothing is dragged or
-// connected; dragging the paper pans, the wheel zooms, a click selects. The first non-empty
-// layout takes a one-time camera (a fit, or a sole tile centred); `fit()` refits on demand.
+// The board: React Flow showing tiles and lines where ELK put them. Tiles are never dragged;
+// dragging the paper pans, the wheel zooms, a click selects. The first non-empty layout takes a
+// one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. The selected tile
+// shows the caller's pull tabs (`TileChrome`): a picked fan item becomes a new tile, which docks
+// at the next slot beside its source until ELK lands and the layout animates.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
-// insert previews or departing tiles. Tiles and lines come in as props, with caller content on
-// each tile face and line chip. In hand mode tiles and lines let the pointer through, so every
-// drag pans and nothing is selected.
+// insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
+// on each tile face, line chip and fan item. In hand mode tiles and lines let the pointer
+// through, so every drag pans and nothing is selected.
 import "@xyflow/react/dist/base.css";
 import "./board.css";
 import {
@@ -24,6 +26,7 @@ import {
 import {
   type ReactNode,
   type Ref,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
@@ -35,7 +38,15 @@ import { ANIMATE_MS } from "../layout/animate.ts";
 import type { LayoutInput } from "../layout/elkGraph.ts";
 import type { BoardLayout } from "../layout/elkLayout.ts";
 import type { LayoutEngine } from "../layout/engine.ts";
-import { GRID, type Point, type Size } from "../layout/metrics.ts";
+import {
+  type DockSide,
+  GRID,
+  newTileHint,
+  type Point,
+  type Rect,
+  type Size,
+  type SlotOrder,
+} from "../layout/metrics.ts";
 import { BoardLine, type BoardLineEdge } from "./BoardLine.tsx";
 import {
   boardNeedsCover,
@@ -59,6 +70,7 @@ import {
   ZOOM_BOUNDS_PAD,
 } from "./camera.ts";
 import { BoardContext } from "./context.ts";
+import { type PullState, type TabSpec, TileChrome } from "./TileChrome.tsx";
 import { prefersReducedMotion, useAnimatedLayout } from "./useAnimatedLayout.ts";
 import { useBoardLayout } from "./useBoardLayout.ts";
 
@@ -102,19 +114,81 @@ export type BoardProps = {
   mode: BoardMode;
   /** Positions for tiles that have none shown yet (a new tile's slot); shown positions win. */
   hints?: Record<string, Point>;
+  /** The selected tile's pull tabs (select mode only); none shows no chrome. */
+  tabs?: readonly TabSpec[];
+  /** Whether a tab of `tile` may drop on `target`: the target shows through the scrim. */
+  canDrop?: (tile: string, tab: string, target: string) => boolean;
+  /**
+   * A fan item released on: returns, or resolves to, the new tile's ID (undefined when nothing is
+   * added). Return it synchronously so the tile docks at the next slot as soon as it appears.
+   */
+  onPick?: (
+    tile: string,
+    tab: string,
+    item: string,
+  ) => string | undefined | Promise<string | undefined>;
+  /** A release over a tile `canDrop` allows. */
+  onDrop?: (tile: string, tab: string, target: string) => void;
+  /** A release over a tile `canDrop` refuses; the pull springs back. */
+  onDropRefused?: (tile: string, tab: string, target: string) => void;
   ref?: Ref<BoardHandle>;
 };
 
-type TileData = { shape: TileShape; content: ReactNode };
+type TileData = { shape: TileShape; content: ReactNode; chrome?: ReactNode };
 type TileNode = Node<TileData, "tile">;
 
 function Tile({ data, selected }: NodeProps<TileNode>) {
   return (
-    <div className="board-tile" data-shape={data.shape} data-selected={selected || undefined}>
-      <Handle type="target" position={Position.Left} isConnectable={false} />
-      {data.content}
-      <Handle type="source" position={Position.Right} isConnectable={false} />
+    <div className="board-tile-host">
+      <div className="board-tile" data-shape={data.shape} data-selected={selected || undefined}>
+        <Handle type="target" position={Position.Left} isConnectable={false} />
+        {data.content}
+        <Handle type="source" position={Position.Right} isConnectable={false} />
+      </div>
+      {data.chrome}
     </div>
+  );
+}
+
+/** A picked tile waiting to appear: where it docks, worked out once it is in `tiles`. */
+type Dock = {
+  source: string;
+  side: DockSide;
+  port: number;
+  order?: SlotOrder;
+  hint?: { at: Point; show: boolean };
+};
+
+function rectOf(id: string, at: Record<string, Point>, sizes: Record<string, Size>) {
+  const p = at[id];
+  const size = sizes[id];
+  return p && size ? { ...p, ...size } : undefined;
+}
+
+/** The new tile's hint beside its source's shown rect, among the shown tiles. */
+function dockFor(
+  dock: Dock,
+  size: Size,
+  shown: Record<string, Point>,
+  sizes: Record<string, Size>,
+): Dock["hint"] {
+  const source = rectOf(dock.source, shown, sizes);
+  if (!source) return undefined;
+  const others = Object.keys(shown).flatMap((id) => {
+    const rect = rectOf(id, shown, sizes);
+    return rect ? [rect] : ([] as Rect[]);
+  });
+  const neighbourId = dock.order && ("after" in dock.order ? dock.order.after : dock.order.before);
+  const neighbour = neighbourId ? rectOf(neighbourId, shown, sizes) : undefined;
+  return newTileHint(
+    source,
+    size,
+    dock.port,
+    others,
+    dock.side,
+    neighbour && dock.order
+      ? { rect: neighbour, place: "after" in dock.order ? "after" : "before" }
+      : undefined,
   );
 }
 
@@ -157,21 +231,44 @@ function Inner({
   onClear,
   mode,
   hints,
+  tabs,
+  canDrop,
+  onPick,
+  onDrop,
+  onDropRefused,
   handle,
 }: Omit<BoardProps, "ref"> & { handle?: Ref<BoardHandle> }) {
   const rf = useReactFlow<TileNode, BoardLineEdge>();
   const hostRef = useRef<HTMLDivElement>(null);
   const input = layoutInput(tiles, lines);
-  const { layout, phase, error } = useBoardLayout(engine, input, hints);
-  const shown = useAnimatedLayout(layout);
-  const display = shown?.positions;
 
   const sizes: Record<string, Size> = {};
   for (const t of tiles) sizes[t.id] = { w: t.w, h: t.h };
   const sizesRef = useRef(sizes);
   sizesRef.current = sizes;
-  const shownRef = useRef<BoardLayout | null>(shown);
+  const shownRef = useRef<BoardLayout | null>(null);
+
+  /* Picked tiles dock beside their source, worked out against the positions shown when they
+     first appear. The hint orders them for ELK and, when the slot is free, shows them there. */
+  const docks = useRef(new Map<string, Dock>());
+  const [, setDocked] = useState(0);
+  const dockOrder: Record<string, Point> = {};
+  const dockShow: Record<string, Point> = {};
+  for (const [id, dock] of docks.current) {
+    const size = sizes[id];
+    const before = shownRef.current?.positions;
+    if (!size || !before) continue;
+    dock.hint ??= dockFor(dock, size, before, sizes);
+    if (!dock.hint) continue;
+    dockOrder[id] = dock.hint.at;
+    if (dock.hint.show) dockShow[id] = dock.hint.at;
+  }
+
+  const { layout, phase, error } = useBoardLayout(engine, input, { ...hints, ...dockOrder });
+  const shown = useAnimatedLayout(layout);
   shownRef.current = shown;
+  const display = shown?.positions;
+  for (const id of docks.current.keys()) if (display?.[id]) docks.current.delete(id);
   const lastZoomRef = useRef(1);
 
   /* First non-empty layout: hold the board until ELK and the camera land, then fit once. A sole
@@ -291,7 +388,60 @@ function Inner({
   }, [rf]);
 
   const hand = mode === "hand";
-  const placed = (id: string): Point | undefined => display?.[id] ?? hints?.[id];
+  const placed = (id: string): Point | undefined => display?.[id] ?? dockShow[id] ?? hints?.[id];
+
+  /* The selected tile's pull: which tiles it may drop on, and the one under the pointer. */
+  const [pull, setPull] = useState<PullState | null>(null);
+  const onPull = useCallback((next: PullState | null) => {
+    setPull((current) =>
+      current === next ||
+      (current &&
+        next &&
+        current.tab === next.tab &&
+        current.targets === next.targets &&
+        current.over === next.over)
+        ? current
+        : next,
+    );
+  }, []);
+  const source = selected.tile;
+  const chromeTile = !hand && !covering && source && tabs?.length && placed(source) ? source : null;
+  const chrome = chromeTile ? (
+    <TileChrome
+      tile={chromeTile}
+      size={sizes[chromeTile] ?? { w: 128, h: 128 }}
+      tabs={tabs ?? []}
+      host={hostRef}
+      others={() => tiles.map((t) => t.id).filter((id) => id !== chromeTile && placed(id))}
+      canDrop={(tab, target) => canDrop?.(chromeTile, tab, target) ?? false}
+      onPull={onPull}
+      onPick={(tab, item) => {
+        const port = lines.filter((l) =>
+          tab.side === "after" ? l.source === chromeTile : l.target === chromeTile,
+        ).length;
+        const record = (id: string | undefined) => {
+          if (!id || shownRef.current?.positions[id]) return;
+          docks.current.set(id, {
+            source: chromeTile,
+            side: tab.side,
+            port,
+            ...(tab.order ? { order: tab.order } : {}),
+          });
+          setDocked((n) => n + 1);
+        };
+        const result = onPick?.(chromeTile, tab.id, item);
+        if (result instanceof Promise) void result.then(record, () => {});
+        else record(result);
+      }}
+      onDrop={(tab, target) => onDrop?.(chromeTile, tab, target)}
+      onRefused={(tab, target) => onDropRefused?.(chromeTile, tab, target)}
+    />
+  ) : null;
+  /* Tiles the pull may drop on are outlined; the one under the pointer more strongly. */
+  const pullClass = (id: string): string => {
+    if (!pull?.targets?.has(id) || !chromeTile) return "";
+    return pull.over === id ? " is-drop-target is-drop-over" : " is-drop-target";
+  };
 
   const nodes: TileNode[] = tiles.map((t) => {
     const at = placed(t.id);
@@ -300,11 +450,15 @@ function Inner({
       type: "tile",
       position: at ?? { x: 0, y: 0 },
       hidden: !at,
-      data: { shape: t.shape, content: t.content },
+      data: {
+        shape: t.shape,
+        content: t.content,
+        ...(t.id === chromeTile ? { chrome } : {}),
+      },
       draggable: false,
       connectable: false,
       selected: selected.tile === t.id,
-      className: "nopan",
+      className: `nopan${pullClass(t.id)}`,
       width: t.w,
       height: t.h,
       measured: { width: t.w, height: t.h },

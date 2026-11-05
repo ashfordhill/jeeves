@@ -2,8 +2,9 @@
    src/app/styles/tokens.css (0803c4a).
    The theme is a set of --board-* variables with automation-illustrator's light values as
    defaults. `:where()` keeps the defaults at zero specificity, so an app sets its own on `.board`
-   (light and dark) without fighting the order of stylesheets. */
-:where(.board) {
+   and `.board-overlay` (the pull layer, which lives on <body>), light and dark, without fighting
+   the order of stylesheets. */
+:where(.board, .board-overlay) {
   --board-paper: #e8f4fa;
   --board-dot: #aabec8;
   --board-line: #123a50;
@@ -13,6 +14,13 @@
   --board-select: #1a8fd4;
   --board-plus: #1e8a62;
   --board-dash: color-mix(in srgb, #1db8a8 55%, color-mix(in srgb, #e8f4fa 88%, #0c3349));
+  /* Pull tabs: glyph ink on the plus and dash fills, size and how far they peek off the tile. */
+  --board-plus-ink: #f4fff6;
+  --board-dash-ink: #071c28;
+  --board-tab-size: 40px;
+  --board-tab-peek: 18px;
+  --board-scrim: rgba(7, 28, 40, 0.38);
+  --board-refuse: #b23a30;
   /* Windows has no native grab cursor; a white hand with a black outline matches the OS pointer. */
   --board-grab-cursor:
     url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath fill='%23fff' stroke='%23fff' stroke-width='3.25' stroke-linejoin='round' stroke-linecap='round' d='M8.2 16.2V8.6a1.85 1.85 0 0 1 3.7 0v5.6h.35V6.8a1.85 1.85 0 0 1 3.7 0v7.4h.35V8.2a1.75 1.75 0 0 1 3.5 0v6.8h.3v-4.4a1.6 1.6 0 0 1 3.2 0v7.8a5.5 5.5 0 0 1-5.5 5.5h-3.6A5.5 5.5 0 0 1 8.2 19.6v-2.2c-1.6-.5-3.2-1.5-3.8-2.1a1.7 1.7 0 0 1 2.35-2.45c.7.55 1.7 1.4 2.65 1.95z'/%3E%3Cpath fill='%23fff' stroke='%23111' stroke-width='1.35' stroke-linejoin='round' stroke-linecap='round' d='M8.2 16.2V8.6a1.85 1.85 0 0 1 3.7 0v5.6h.35V6.8a1.85 1.85 0 0 1 3.7 0v7.4h.35V8.2a1.75 1.75 0 0 1 3.5 0v6.8h.3v-4.4a1.6 1.6 0 0 1 3.2 0v7.8a5.5 5.5 0 0 1-5.5 5.5h-3.6A5.5 5.5 0 0 1 8.2 19.6v-2.2c-1.6-.5-3.2-1.5-3.8-2.1a1.7 1.7 0 0 1 2.35-2.45c.7.55 1.7 1.4 2.65 1.95z'/%3E%3C/svg%3E")
@@ -124,4 +132,208 @@
 .board[data-mode="hand"] .react-flow__edge,
 .board[data-mode="hand"] .board-chip {
   pointer-events: none;
+}
+
+/* Ported from automation-illustrator src/app/styles/tokens.css, the tile chrome rules (0803c4a).
+   The selected tile's pull tabs, and the pull layer: scrim, band, fan and the tab ghost. */
+.board-tile-host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.board-chrome {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* 40px tabs peeking 18px off the face; `+` above `---`. */
+.board-tabs {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  pointer-events: none;
+}
+
+.board-tabs[data-side="after"] {
+  right: calc(-1 * var(--board-tab-peek));
+}
+
+.board-tabs[data-side="before"] {
+  left: calc(-1 * var(--board-tab-peek));
+}
+
+.board-tab,
+.board-tab-ghost {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--board-tab-size);
+  height: var(--board-tab-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 12px;
+  border: 3px solid var(--board-line);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 27px;
+  line-height: 1;
+  box-shadow: 0 3px 0 var(--board-shadow);
+}
+
+.board-tab {
+  cursor: var(--board-grab-cursor);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.board-tab:active {
+  cursor: var(--board-grabbing-cursor);
+}
+
+.board-tab[data-glyph="plus"],
+.board-tab-ghost[data-glyph="plus"] {
+  background: var(--board-plus);
+  color: var(--board-plus-ink);
+}
+
+.board-tab[data-glyph="dash"],
+.board-tab-ghost[data-glyph="dash"] {
+  background: var(--board-dash);
+  color: var(--board-dash-ink);
+}
+
+.board-tab:focus-visible {
+  outline: 3px solid var(--board-select);
+  outline-offset: 2px;
+}
+
+/* While one tab is pulled, the tile's tabs hide; the ghost stands in for the pulled one. */
+.board-tab[data-hidden],
+.board-chrome[data-pulling] .board-tab {
+  visibility: hidden;
+}
+
+/* A lane mark (download or upload) on the tab's corner. */
+.board-tab-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--board-line);
+  border-radius: 999px;
+  background: var(--board-tile);
+  color: var(--board-ink);
+}
+
+.board-tab-badge svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+}
+
+.board-pull {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  pointer-events: none;
+}
+
+.board-scrim,
+.board-ribbon {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.board-scrim-fill {
+  fill: var(--board-scrim);
+}
+
+.board-tab-ghost {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Over a tile the tab can't link to. */
+.board-tab-ghost[data-refused] {
+  border-color: var(--board-refuse);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--board-refuse) 45%, transparent);
+}
+
+/* Fan items: icons only; the name shows under the one the pointer is on. Data tiles are round. */
+.board-fan-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 3px solid var(--board-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--board-tile) 82%, transparent);
+  box-shadow: 0 4px 0 var(--board-shadow);
+  color: var(--board-ink);
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 120ms ease;
+}
+
+/* On a tile, the fan steps back. */
+.board-pull[data-on-tile] .board-fan-item {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.board-fan-item[data-shape="pill"] {
+  border-radius: 999px;
+}
+
+.board-fan-item[data-hover] {
+  background: var(--board-tile);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.board-fan-tip {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--board-line);
+  color: var(--board-tile);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Drop targets show through the scrim; the one under the pointer gets the dashed ring. */
+.board .react-flow__node.is-drop-target .board-tile {
+  outline: 3px dashed color-mix(in srgb, var(--board-select) 55%, transparent);
+  outline-offset: 6px;
+}
+
+.board .react-flow__node.is-drop-target.is-drop-over .board-tile {
+  outline: 4px dashed var(--board-select);
+  outline-offset: 8px;
 }

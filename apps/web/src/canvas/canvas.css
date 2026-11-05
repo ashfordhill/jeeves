@@ -1,6 +1,8 @@
 /* The lane canvas: the board's --board-* theme mapped to Jeeves tokens, which follow the light
-   and dark theme on :root, and the tile and actor faces. */
-.board {
+   and dark theme on :root, and the tile and actor faces. `.board-overlay` is the pull layer
+   (scrim, band and fan), which the board puts on <body>. */
+.board,
+.board-overlay {
   --board-paper: var(--paper);
   --board-dot: var(--grid-dot);
   --board-line: var(--line);
@@ -12,6 +14,7 @@
   --board-dash: color-mix(in srgb, var(--data) 55%, var(--paper-deep));
   --board-grab-cursor: var(--grab-cursor);
   --board-grabbing-cursor: var(--grabbing-cursor);
+  --board-refuse: var(--minus);
   /* automation-illustrator's empty-actor pastel and the figure ink that stays dark on it. */
   --actor-fill: #cfe8f2;
   --figure-ink: #122836;
@@ -21,6 +24,10 @@
 :root[data-theme="dark"] .board {
   --actor-fill: #2a4554;
   --figure-ink: #e8f4fa;
+}
+
+:root[data-theme="dark"] :is(.board, .board-overlay) {
+  --board-scrim: rgba(0, 0, 0, 0.45);
 }
 
 .lane-canvas {
@@ -97,6 +104,12 @@
 
 .board-chip svg {
   display: block;
+}
+
+/* A fan item's tile-type icon, in the colour of the kind it adds. */
+.lane-fan-icon {
+  display: flex;
+  color: var(--type-color);
 }
 
 /* React Flow's attribution stays, without its light box on dark paper. */

@@ -34,12 +34,51 @@ export const dashedLines = (page: Page) => page.locator(".board .react-flow__edg
 export const tile = (page: Page, name: string): Locator =>
   page.locator(".board").getByRole("group", { name, exact: true });
 
+/** The element's box once the camera and layout have stopped moving it. */
+async function settledBox(target: Locator) {
+  let last = "";
+  for (let i = 0; i < 40; i += 1) {
+    const box = await target.boundingBox();
+    const key = JSON.stringify(box);
+    if (box && key === last) return box;
+    last = key;
+    await target.page().waitForTimeout(50);
+  }
+  throw new Error("The element is not drawn, or never stops moving.");
+}
+
+/**
+ * Presses one of the selected tile's pull tabs (by its accessible name, such as "Request after")
+ * and pulls it past the 36px threshold, so the fan opens. The mouse stays down.
+ */
+export async function pull(page: Page, name: string, tab: string, by = { x: 60, y: 12 }) {
+  const handle = await settledBox(tile(page, name).getByRole("button", { name: tab, exact: true }));
+  const x = handle.x + handle.width / 2;
+  const y = handle.y + handle.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + by.x, y + by.y, { steps: 6 });
+}
+
+/** Moves the pressed mouse to the middle of `target` in small steps. */
+export async function moveOnto(page: Page, target: Locator) {
+  const box = await settledBox(target);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 12 });
+}
+
 export async function design(page: Page, id: string) {
   const res = await page.request.get(`/api/projects/${id}/design`);
   expect(res.ok(), `${res.status()} ${await res.text()}`).toBe(true);
   return (await res.json()).design as {
     revision: number;
     elements: { id: string; name: string }[];
+    connections: {
+      id: string;
+      kind: string;
+      from: { element: string };
+      to: { element: string };
+      planned: { label: string; interaction: string };
+    }[];
     architecture: {
       studio: {
         elements: { element: string; settings: Record<string, unknown> }[];

@@ -30,14 +30,18 @@ lane, with no islands and no cycles.
   is every link that continues after one. A lane's entry line carries a download or upload chip.
   Action, protocol and the rest are in the inspector.
 - Click a tile, a line or a chip to select it and open the inspector; click empty paper to clear.
+  The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)).
   Modules (components) are not drawn, and C1 people, external systems and packages are not shown.
 
 ## Layout and navigation
 
 The layout is automatic and never stored: ELK layered, left to right, on a 32px grid, with
-automation-illustrator's options. A fork is centred on its tile, and links that meet at the same
-tiles share one bus. The positions on screen are stability hints for the next layout, so forks keep
-their rows when the design changes, and changes animate for 200ms. The canvas writes no layout.
+automation-illustrator's options. Each tile sits one column right of its furthest predecessor (the
+user's entries share the first column), a fork is centred on its tile, and links that meet at the
+same tiles share one bus. The positions on screen are stability hints for the next layout, so forks
+keep their rows and columns when the design changes, and changes animate for 200ms. The first
+layout already follows these rules, so the first edit moves only what it changes. The canvas writes
+no layout.
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and
@@ -47,15 +51,40 @@ at 0.78 zoom at 1440×900 with the chat rail closed (0.61 with it open), and at 
 
 ## Creating and connecting
 
-The canvas is read-only for now: tiles and lines are not added, linked or removed by mouse. Chat
-edits the design through the studio commands, and the inspector edits settings.
+Only the selected tile shows controls: tabs on its sides, for what the lane rules allow there.
+
+- **`+`** adds or links with a request (a solid line); **`---`** with an asynchronous link (a
+  dashed line).
+- The right side works after the tile. The left side works before it: a new tile takes over every
+  link into the tile (and its lane entry) and then links to it.
+- The user has one `+` per lane on its right, marked with the download or upload icon. A project
+  with no tiles opens with the user selected, so both lane tabs show.
+- A side or mode with nothing to offer has no tab: databases, caches, storage and search indexes
+  have no right-side tabs, and a queue has only `---`.
+
+Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer, the
+rest of the board dims, and a fan of tile-type icons opens around the tab, offering only the types
+the rules accept there (the name shows under the icon the pointer is on).
+
+- **Release on an icon** to add a tile of that type. It is named after the type ("Cache", then
+  "Cache 2"), docks at the next slot beside its source while the layout animates around it, and is
+  selected with its Name field ready to type over. A Service added after a queue is a worker; a new
+  database, cache, storage or queue belongs to the application it is added next to.
+- **Release on another tile** to link to it (a merge): from the right side the tile links to it,
+  from the left side it links to the tile, and from a lane tab it becomes an entry of that lane.
+  Tiles the tab can link to stay bright with a dashed outline; on a tile, the fan steps back and the
+  outline thickens. A dimmed tile can't be linked: releasing on it changes nothing and the notice
+  says why ("Shorten API already starts the upload lane; a tile can start only one lane.").
+- **Release anywhere else**, or press Escape, and the band springs back.
+
+Each add or link is one batch and one undo step.
 
 Every tile must hang off the user through a lane, with no cycles, links the
 [link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 3 entries
-per lane. An edit that breaks one of these rules is refused with a notice and changes nothing,
-whether it comes from the inspector, chat or the API.
+per lane; a tile starts at most one lane. An edit that breaks one of these rules is refused with a
+notice and changes nothing, whether it comes from the canvas, the inspector, chat or the API.
 
-Optional shortcuts: V selects, H pans. Every action works by mouse alone.
+Optional shortcuts: V selects, H pans, Escape cancels a pull. Every action works by mouse alone.
 
 ## Inspector
 
@@ -125,13 +154,15 @@ external, nine connections and all eleven components, with nothing omitted and n
 
 ## Limits
 
-- The canvas does not add, link or remove tiles by mouse yet. A **Blank architecture** project
-  shows only the user; its first tile has to come from chat (`addTile`).
+- Tiles and lines are not removed by mouse yet; chat removes them (`removeTile`, `removeLink`).
+- The fan and the tabs are drawn at the board's zoom and screen size: at low zoom the tabs are small
+  and the fan can cover nearby tiles. A tile under a fan icon is linked by entering it where no icon
+  covers it (or after zooming in).
 - Modules (components) are neither drawn nor listed in the inspector yet; chat and the blueprint
   carry them.
 - Where two services fork to the same tiles, their lines share one bus. In TinyURL, Redirect
   service and Shorten API both reach Link cache and Links database, so the lines alone don't show
-  which of them reaches Click events or the URL reputation API; selecting a line does.
+  which of them reaches Click events; selecting a line does.
 - An unload flush is an attempt, not a durability guarantee.
 - Live chat quality has not been evaluated.
 

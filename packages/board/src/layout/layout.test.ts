@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { buildElkGraph, graphKey, type LayoutInput, usedOptionIds } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import { createLayoutEngine, LayoutSuperseded } from "./engine.ts";
-import { dockHint, type Point, type Rect } from "./metrics.ts";
+import { dockHint, newTileHint, type Point, type Rect } from "./metrics.ts";
 
 const elk = new ELK();
 const ENTRY_CHIP = { w: 32, h: 32 };
@@ -198,5 +198,37 @@ describe("dockHint", () => {
     const taken = { x: 224, y: 32, w: 128, h: 128 };
     expect(dockHint(source, size, 1, [source, taken])).toEqual({ x: 416, y: 32 });
     expect(dockHint(source, size, 0, [source], "before")).toEqual({ x: -160, y: 32 });
+  });
+});
+
+describe("newTileHint", () => {
+  // The user with a download entry above an upload entry, as ELK lays them out.
+  const actor = { x: 32, y: 80, w: 128, h: 160 };
+  const download = { x: 224, y: 0, w: 128, h: 128 };
+  const upload = { x: 224, y: 160, w: 128, h: 128 };
+  const size = { w: 128, h: 128 };
+
+  it("puts a new lane tile next to its lane's last tile, so the lanes keep their order", () => {
+    // Below the last upload tile the slot is free: the tile shows there straight away.
+    expect(
+      newTileHint(actor, size, 2, [actor, download, upload], "after", {
+        rect: upload,
+        place: "after",
+      }),
+    ).toEqual({ at: { x: 224, y: 320 }, show: true });
+    // Below the last download tile sits the upload lane: the hint only orders the new tile
+    // between them, and it waits for ELK unseen.
+    const between = newTileHint(actor, size, 2, [actor, download, upload], "after", {
+      rect: download,
+      place: "after",
+    });
+    expect(between.show).toBe(false);
+    expect(between.at.y).toBeGreaterThan(download.y);
+    expect(between.at.y).toBeLessThan(upload.y);
+    // Without a neighbour it docks beside its source (`dockHint`).
+    expect(newTileHint(download, size, 0, [actor, download, upload], "after")).toEqual({
+      at: dockHint(download, size, 0, [actor, download, upload]),
+      show: true,
+    });
   });
 });

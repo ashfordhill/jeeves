@@ -38,8 +38,9 @@ the application or package it was created from.
 
 ## Tile types (lane canvas)
 
-The lane canvas groups kinds into seven tile types, offered as picker icons once tiles can be
-created by mouse (not yet). The first kind is the default and the others are variants.
+The lane canvas groups kinds into seven tile types, offered as icons in a pulled tab's fan (only
+the types the link table accepts there). The first kind is the default and the others are
+variants.
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
@@ -94,6 +95,11 @@ to Geo lookup. A cache can't link onward."):
 | `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
+
+On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
+([studio guide](docs/studio.md#creating-and-connecting)). A new tile is named after its type and
+numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
+`lane-target` for an entry.
 
 A **package** groups two or more independent applications; it has no language, provider or
 runtime, and the lane canvas does not show it. The **Service and worker** preset (offered to chat)

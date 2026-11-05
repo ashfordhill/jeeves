@@ -1,11 +1,12 @@
 // The lane canvas: the design's lane graph (`laneGraph`) on the board. The actor and every tile
 // become board tiles; entries and connections become lines, dashed when asynchronous or after an
 // asynchronous link. Entry lines carry a download or upload chip. Lines carry no words; their
-// accessible names say what they join.
+// accessible names say what they join. The selected tile's pull tabs come from `creation`.
 import {
   Board,
   type BoardHandle,
   type BoardMode,
+  type BoardProps,
   type BoardSelection,
   type LineSpec,
   type TileSpec,
@@ -35,6 +36,7 @@ export function LaneCanvas({
   onSelectTile,
   onSelectLine,
   onClear,
+  creation,
   ref,
 }: {
   design: DesignDocument;
@@ -45,6 +47,8 @@ export function LaneCanvas({
   onSelectTile: (id: string) => void;
   onSelectLine: (id: string) => void;
   onClear: () => void;
+  /** Pull tabs, fans and drops for the selected tile (`useLaneCreation`). */
+  creation?: Pick<BoardProps, "tabs" | "canDrop" | "onPick" | "onDrop" | "onDropRefused">;
   ref?: Ref<BoardHandle>;
 }) {
   const { tiles, lines } = useMemo(() => {
@@ -86,6 +90,7 @@ export function LaneCanvas({
         onSelectTile={onSelectTile}
         onSelectLine={onSelectLine}
         onClear={onClear}
+        {...creation}
       />
     </div>
   );

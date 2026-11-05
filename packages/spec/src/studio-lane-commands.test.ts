@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import { type DesignDocument, emptyDesign } from "./design.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
-import { laneChoices, laneTabs, planRemoveTile } from "./studio-lane-commands.ts";
+import {
+  laneChoices,
+  laneLinkRefusal,
+  laneTabs,
+  newLinkId,
+  newTileIdentity,
+  planRemoveTile,
+} from "./studio-lane-commands.ts";
 import { LANE_ACTOR, laneFindings, laneGraph } from "./studio-lanes.ts";
 import { createStudioSettings, type StudioModel } from "./studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
@@ -353,5 +360,49 @@ describe("lane choices", () => {
       { lane: "download" },
       { lane: "upload" },
     ]);
+  });
+});
+
+describe("canvas helpers", () => {
+  it("say which drops link and why the others don't", () => {
+    const design = tinyurl();
+    // A merge the canvas offers: Shorten API publishes to Click events.
+    expect(laneLinkRefusal(design, { tile: "shorten-api" }, "click-events", "async")).toBe(
+      undefined,
+    );
+    // A tile starts only one lane.
+    expect(laneLinkRefusal(design, { lane: "download" }, "shorten-api", "sync")).toBe(
+      "Shorten API already starts the upload lane; a tile can start only one lane.",
+    );
+    expect(laneLinkRefusal(design, { tile: "redirect" }, "cdn", "sync")).toMatch(/loop/);
+    // The user is reached only through its lane tabs.
+    expect(laneLinkRefusal(design, { tile: "redirect" }, LANE_ACTOR, "sync")).toMatch(
+      /back to the user/,
+    );
+    expect(laneLinkRefusal(design, { tile: LANE_ACTOR }, "redirect", "sync")).toMatch(
+      /download or upload tab/,
+    );
+  });
+
+  it("name a new tile after its type and give it and its link free IDs", () => {
+    const design = emptyDesign();
+    expect(newTileIdentity(design, "cache")).toEqual({ id: "cache", name: "Cache" });
+    const next = run(design, {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      link: "sync",
+      tile: { ...newTileIdentity(design, "service"), kind: "service" },
+      linkId: newLinkId(design, { lane: "download" }, "service"),
+      system: { name: "Shop" },
+    }).design;
+    expect(studioOf(next).entries).toEqual([
+      { id: "download-service", lane: "download", element: "service" },
+    ]);
+    expect(newTileIdentity(next, "service")).toEqual({ id: "service-2", name: "Service 2" });
+    expect(newLinkId(next, { lane: "download" }, "service")).toBe("download-service-2");
+    expect(
+      newLinkId(tinyurl(), { tile: "redirect" }, "click-events", ["redirect-click-events"]),
+    ).toBe("redirect-click-events-2");
   });
 });

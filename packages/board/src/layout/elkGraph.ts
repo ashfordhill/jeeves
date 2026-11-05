@@ -5,7 +5,8 @@
 //
 // Changes from automation-illustrator: horizontal only and no word-web mode; tiles and lines come
 // in as plain sizes, and a line's chip is an icon box with no text; there are no stored
-// positions, so a tile without a previous position is hinted beside its first placed source.
+// positions, so a tile without a previous position is hinted beside its first placed source, and
+// the first layout already uses the stability layering (see `STABILITY_OPTIONS`).
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { BRANCH_GAP, dockHint, GRID, type Point, type Size, TILE_GAP } from "./metrics.ts";
 
@@ -44,7 +45,12 @@ export const ROOT_OPTIONS: Record<string, string> = {
   "elk.aspectRatio": "1.6",
 };
 
-/** After the first layout: keep source-rank layers and the row order seeded from positions. */
+/**
+ * Source-rank layers and the row order seeded from the input (positions, once shown). Every
+ * layout uses them, the first one too: automation-illustrator always has stored positions, so its
+ * boards are always laid out this way, while a first NETWORK_SIMPLEX layout here would move tiles
+ * to other columns on the first edit.
+ */
 export const STABILITY_OPTIONS: Record<string, string> = {
   "elk.layered.layering.strategy": "LONGEST_PATH_SOURCE",
   "elk.layered.crossingMinimization.forceNodeModelOrder": "true",
@@ -185,7 +191,7 @@ export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNo
   });
   return {
     id: "root",
-    layoutOptions: hints ? { ...ROOT_OPTIONS, ...STABILITY_OPTIONS } : { ...ROOT_OPTIONS },
+    layoutOptions: { ...ROOT_OPTIONS, ...STABILITY_OPTIONS },
     children,
     edges,
   };

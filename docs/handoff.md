@@ -819,3 +819,125 @@ Notes for LG09:
 Notes for LG11: the C3 component icons were `studioComponentVisuals` in
 `git show 9850e30:packages/spec/src/studio-view.ts` (lines 100–112); their `shield`, `repeat`,
 `plug-connected` and `puzzle` icons were dropped from `StudioIcon` and need adding back with them.
+
+## 2026-11-04 — LG09: spawn and link by mouse (complete)
+
+The selected tile now shows automation-illustrator's pull tabs, and a pull adds or links a tile.
+
+Board (`packages/board`, still no Jeeves imports):
+
+- `react/TileChrome.tsx` (ported `TileChrome.tsx`, without tile pickup, insert silhouette or X):
+  tabs per side from props (`TabSpec`: `side` after/before, `glyph` plus/dash, label, title,
+  optional `badge` and `order`, fan `items`). A pull uses pointer capture; past 36px the taffy band
+  (ported `taffyRibbon`, `+` green with a solid outline, `---` teal with a dashed outline), a scrim
+  with a hole for the tile and the fan open; the tab ghost follows the pointer. Release on an item →
+  `onPick`; on a tile `canDrop` allows → `onDrop`; on a refused tile → `onDropRefused` and spring
+  back; elsewhere or Escape → a 200ms spring back to the resting tab (reduced motion: none).
+  Tiles the tab may drop on are holes in the scrim (clipped to the board, so rails stay covered)
+  with a faint dashed outline (`is-drop-target`); the one under the pointer gets
+  automation-illustrator's 4px dashed ring (`is-drop-over`). The pull layer is portalled to
+  `<body>` with class `board-overlay`, so apps theme it with the same `--board-*` variables.
+- `react/fan.ts` (ported `plusPreviewLayout.ts`): `fanCenters` — N items on an arc around the
+  resting tab, radius 104 + 24 per item beyond two, spread 56° per gap up to 150°.
+- `react/overlay.ts` (ported `tileOverlay.ts` plus TileChrome's geometry), `react/DashGlyph.tsx`
+  (ported `PathKnotIcon`, ink `currentColor`). Chrome CSS ported into `board.css` (tab size 40,
+  peek 18, `--board-scrim`, `--board-plus-ink`, `--board-dash-ink`, `--board-refuse`).
+- `Board.tsx`: new props `tabs`, `canDrop`, `onPick`, `onDrop`, `onDropRefused`. The chrome renders
+  inside the selected tile's node (select mode, once laid out). `onPick` returns (or resolves to)
+  the new tile ID; the board records a dock (source, side, port index, `order`) and, when the
+  tile first appears in `tiles`, computes `newTileHint` against the positions shown at that
+  moment: the hint orders it for ELK and shows it at the slot until the layout lands and animates.
+- `layout/metrics.ts`: `newTileHint` — `dockHint` beside the source, or, with an `order`
+  neighbour, the slot right below/above that tile; when that slot is taken the hint only orders the
+  tile (half a pixel past the neighbour) and the tile waits unseen for ELK.
+- `layout/elkGraph.ts`: **the first layout now uses `STABILITY_OPTIONS` too** (LONGEST_PATH_SOURCE
+  layering, forced model order). Before, the first NETWORK_SIMPLEX layout put Shorten API in
+  column 2 and the first add re-layered it to column 1, moving half the board.
+  automation-illustrator always has stored positions, so its boards are always laid out this way.
+  TinyURL now has both entries (CDN, Shorten API) in column 1; fit zooms are unchanged (0.78 / 0.61
+  with chat at 1440×900, 0.69 / 0.53 at 1280×800).
+
+Spec (`studio-lane-commands.ts`): `laneLinkRefusal(design, from, to, mode)` (the `linkTiles`
+check as a pure helper, now shared with the command), `newTileIdentity(design, type)` ("Cache",
+"Cache 2"… with IDs `cache`, `cache-2`, free as name and ID), `newLinkId(design, from, to,
+reserved)` (`source-target`, `lane-target` for entries, as the study names them). `linkTiles`
+refuses in plain words a link to the user ("Links don't lead back to the user; …") and a tile
+link from the user without a lane.
+
+Web:
+
+- `canvas/creation.tsx`: `useLaneCreation` builds the tabs from `laneTabs` and the fan from
+  `laneChoices` (tile-type icon in the resolved kind's family colour; data types round; type name
+  as label and hover tip). Tab IDs `lane-download`, `after-sync`, …; labels "Download lane",
+  "Upload lane", "Request after", "Async after", "Request before", "Async before". The user's tabs
+  carry `LaneIcon` badges and an `order` (after the lane's last entry; a first download entry
+  before the first upload entry), so download stays above upload. `onPick` picks the identity
+  now, commits `addTile` through `commitAction` (with `system` when the design has no
+  architecture), returns the ID, and on success selects the tile. `onDrop` commits `linkTiles`
+  (left side: target → tile; lane tab: an entry) and selects the target, as automation-illustrator
+  does. `onDropRefused` puts `laneLinkRefusal`'s words in the error notice.
+- `Workspace.tsx`: an empty design starts with the user selected (`startsSelected`); a new tile's
+  Name field is focused with its text selected; tabs only in select mode.
+- `canvas.css`: `.board-overlay` gets the theme mapping; dark scrim; `.lane-fan-icon`.
+
+Deviation (mine, for the plan's one-tab-fans-and-drops design): the fan is screen-space around
+the resting tab, so it often covers the next column's tiles. Once the pointer is on a tile it
+stays "on the tile" until it leaves that tile, and the fan fades and stops taking the pointer
+(`data-on-tile`), so an icon over a tile can't steal a drop; on an icon, the icon wins. A drop on
+the user from a tile tab is refused (it has no lane); use the user's lane tabs.
+
+E2E: `spawn.spec.ts` is back (2 tests): Redirect's `Request after` onto the Cache icon → 11 tiles,
+12 lines, Cache selected, Name focused, revision 2, `redirect → cache`; Shorten API's `Async
+after` onto Click events (after Fit, since the inspector opened) → the target shows
+`is-drop-over`, 4 dashed lines, a `Publishes`/Asynchronous connection. `studio.ts` gained `pull`,
+`moveOnto` (both wait for a settled box) and connections in `design()`.
+
+Tests: `fan.test.ts` (two-item arc, seven-item radius and 150° spread, left fan), `newTileHint`
+(lane order with a free and a taken slot), spec helpers (one-lane rule, loop, user as target or
+source, fresh names and IDs).
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 185 files, all type checks, 20 test files / 113 tests passed).
+- `pnpm test:e2e`: 6 passed, first run (twice: before and after the docs and last tidy-up).
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (Playwright Chromium driven by mouse, my own API on 4312 and web on 4302 against
+  `jeeves_e2e`, both stopped afterwards; the owner's 4300/4310 and `jeeves` untouched, though tsx
+  watch and Vite reloaded them with this code; every throwaway project deleted): on TinyURL,
+  Redirect's right `+` → Cache (docked on Redirect's row, then the fork re-centred), Redirect's
+  left `+` → Service (inserted between CDN and Redirect), Link cache's left `+` → Service (Link
+  cache moved right; Undo → 10 tiles, Redo → 11), Shorten API's `---` onto Click events (4 dashed,
+  publish), the user's download tab onto Shorten API (refused: "Shorten API already starts the
+  upload lane; a tile can start only one lane.", revision unchanged), Escape mid-pull on CDN
+  (springs back, no overlay left, revision unchanged). From **Blank architecture**: the user opens
+  selected with both lane tabs; download → API, upload → Service, API `+` → Service 2, Service 2
+  `+` → Cache, Service `---` → Queue, Queue `---` → Service 3 (a worker), Service `+` → Database,
+  then Service 2's `+` dropped on Database (merge): two lanes, entries `download-api` and
+  `upload-service`, 2 dashed lines. Light and dark; no console errors or warnings.
+- Feel against the automation-illustrator frames: the tabs (green `+`, teal `---`, 40px, peeking
+  18px), the thick band from under the tile, the dimmed board with the tile's hole and the dashed
+  ring on a target match closely. The fan differs by design (icons only, 2–7 of them), and with 4–6
+  icons at 0.4–0.8 zoom it is busier than automation-illustrator's two big previews and covers
+  neighbouring tiles; the on-tile fade keeps drops reliable. The new tile shows at its dock slot
+  at once (the commit is ~30ms locally) and jumps to its ELK slot while the rest animates, as in
+  automation-illustrator (new tiles don't tween there either).
+
+Docs: studio guide (Creating and connecting rewritten; Layout: column rule and first layout; the
+lane canvas; Limits: removal not by mouse yet, fan and tab size at low zoom, bus note), CATALOG
+(tile types offered in the fan; canvas → `addTile`/`linkTiles`, naming), PLAN (`creation.tsx`,
+`TileChrome`, new helpers, layout hints).
+
+Notes for LG10:
+
+- The X belongs in `TileChrome` (`.board-chrome`); automation-illustrator's `.node-remove-x-btn`
+  and `.tile-remove-x` rules are not ported yet. Hide it while pulling (`.board-chrome[data-pulling]`
+  already hides every tab). Board renders the chrome only when `tabs?.length` (`chromeTile` in
+  `Board.tsx`); widen that to "tabs or removable", or a tab-less tile gets no X.
+- Lines: `BoardLine` has no X yet; a selected line's midpoint is `pointAtLength(points, length/2)`
+  (used for chip fallback).
+- `canvas/creation.tsx` is the place for the Jeeves side (it already has the notice and
+  `commitAction` pattern); `Workspace.select` re-selects, and `liveSelection` drops a selection
+  whose tile is gone.
+- E2E helpers: `pull(page, tile, tab)` and `moveOnto(page, locator)`; after selecting a tile the
+  inspector opens and nothing refits, so click Fit before acting on tiles at the right edge. At
+  Fit with both rails open the zoom is ~0.44 and tabs are ~17px.

@@ -1,6 +1,6 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
-// rail toggles in the app header and Select, Hand and Fit on the canvas. The canvas is read-only
-// here: tiles and lines are selected and inspected; settings are edited in the inspector.
+// rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
+// tabs add and link tiles (`creation.tsx`); settings are edited in the inspector.
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
   type DesignDocument,
@@ -33,6 +33,7 @@ import { TargetInspector } from "../studio/InspectorForm.tsx";
 import { useStudioPreferences } from "../studio/preferences.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
+import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { LaneCanvas, LaneIcon, laneNames } from "./LaneCanvas.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { ACTOR_NAME } from "./tiles/ActorTile.tsx";
@@ -68,10 +69,11 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const notice = useProject((state) => state.notice);
   const [preferences, setPreferences] = useStudioPreferences(projectId);
   const [mode, setMode] = useState<BoardMode>("select");
-  const [pick, setPick] = useState<BoardSelection>({});
-  const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
-  const board = useRef<BoardHandle>(null);
   const graph = useMemo(() => laneGraph(loaded.design), [loaded.design]);
+  const [pick, setPick] = useState<BoardSelection>(() => startsSelected(graph));
+  const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
+  const [focusName, setFocusName] = useState<string>();
+  const board = useRef<BoardHandle>(null);
   const selection = liveSelection(graph, pick);
 
   useEffect(() => {
@@ -87,6 +89,17 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     useProject.setState({ architectureSelection: ids });
   }, [selection.tile, selection.line]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
+  useEffect(() => {
+    // A new tile opens with its Name field focused, ready to rename.
+    if (!focusName || focusName !== selection.tile) return;
+    const field = document.querySelector<HTMLInputElement>(
+      '.studio-inspector input[id$="-element.name"]',
+    );
+    if (!field) return;
+    field.focus();
+    field.select();
+    setFocusName(undefined);
+  });
   useEffect(() => {
     // Optional V/H shortcuts mirror the Select and Hand buttons (mouse remains sufficient).
     const shortcut = (event: KeyboardEvent) => {
@@ -113,6 +126,18 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         current.inspectorOpen ? current : { ...current, inspectorOpen: true },
       );
   };
+  const creation = useLaneCreation({
+    projectId,
+    projectName: loaded.project.name,
+    design: loaded.design,
+    graph,
+    tile: mode === "select" ? selection.tile : undefined,
+    onCreated: (tile) => {
+      select({ tile });
+      setFocusName(tile);
+    },
+    onLinked: (tile) => select({ tile }),
+  });
   const toggle = (rail: "chatOpen" | "inspectorOpen") => {
     if (rail === "inspectorOpen") void formDrafts.flushProject(projectId, true);
     setPreferences((current) => ({ ...current, [rail]: !current[rail] }));
@@ -194,6 +219,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           onSelectTile={(tile) => select({ tile })}
           onSelectLine={(line) => select({ line })}
           onClear={() => select({})}
+          creation={creation}
         />
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button

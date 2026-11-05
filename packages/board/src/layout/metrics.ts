@@ -79,3 +79,32 @@ export function dockHint(
   const maxY = Math.max(0, ...others.map((o) => o.y + o.h));
   return { x: baseX, y: snapToGrid(maxY + TILE_GAP) };
 }
+
+/** The row a new tile takes among the tiles it sits beside: just below or just above one. */
+export type SlotOrder = { after: string } | { before: string };
+
+/**
+ * A new tile's layout hint and whether to show it there until ELK lands. Without `neighbour` it
+ * docks beside its source (`dockHint`). With one, it takes the slot right below (`after`) or
+ * above (`before`) that tile, so the stability ordering puts it next to it; when that slot is
+ * taken, the hint only orders the tile (half a pixel past the neighbour) and the tile waits for
+ * ELK unseen, rather than covering another. (Jeeves addition: a lane keeps its rows.)
+ */
+export function newTileHint(
+  source: Rect,
+  size: Size,
+  portIndex: number,
+  others: readonly Rect[],
+  side: DockSide,
+  neighbour?: { rect: Rect; place: "after" | "before" },
+): { at: Point; show: boolean } {
+  if (!neighbour) return { at: dockHint(source, size, portIndex, others, side), show: true };
+  const { rect, place } = neighbour;
+  const after = place === "after";
+  const slot = {
+    x: rect.x,
+    y: after ? rect.y + rect.h + BRANCH_GAP : rect.y - size.h - BRANCH_GAP,
+  };
+  if (!overlapsAny(slot, size, others)) return { at: slot, show: true };
+  return { at: { x: rect.x, y: rect.y + (after ? 0.5 : -0.5) }, show: false };
+}

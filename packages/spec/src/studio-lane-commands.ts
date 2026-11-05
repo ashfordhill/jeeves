@@ -221,6 +221,25 @@ function linkRefusal(
   return undefined;
 }
 
+/** Why a `linkTiles` from `from` to the existing tile `to` is refused, or `undefined`. */
+function linkTilesRefusal(
+  view: Lanes,
+  from: LaneFrom,
+  to: string,
+  async: boolean,
+): string | undefined {
+  const source = "lane" in from ? LANE_ACTOR : from.tile;
+  if (source === LANE_ACTOR && !("lane" in from))
+    return "A link from the user starts a lane; pull from the user's download or upload tab.";
+  if (to === LANE_ACTOR)
+    return "Links don't lead back to the user; pull from the user's download or upload tab to start a lane.";
+  for (const id of [source, to]) if (!view.has(id)) return `There is no tile "${id}".`;
+  return (
+    linkRefusal(view, source, to, async, "lane" in from ? from.lane : undefined) ??
+    refusalOf(view, link(view.graph, source, to, { id: "@new-link", async }, view.rules))
+  );
+}
+
 /** Why adding `tile` is refused, or `undefined`. `view` must already know the tile. */
 function addTileRefusal(
   view: Lanes,
@@ -479,15 +498,10 @@ export function buildLaneCommand(
       const { from, to } = input;
       requireFree(draft, [input.linkId]);
       const view = at();
-      const source = "lane" in from ? LANE_ACTOR : from.tile;
-      for (const id of [source, to]) if (!view.has(id)) refuse(`There is no tile "${id}".`);
-      const async = input.link === "async";
-      const why =
-        linkRefusal(view, source, to, async, "lane" in from ? from.lane : undefined) ??
-        refusalOf(view, link(view.graph, source, to, { id: input.linkId, async }, view.rules));
+      const why = linkTilesRefusal(view, from, to, input.link === "async");
       if (why) refuse(why);
       if ("lane" in from) addEntry(out, { id: input.linkId, lane: from.lane, element: to });
-      else connect(out, linkConnection(view, input.linkId, source, to, input.link));
+      else connect(out, linkConnection(view, input.linkId, from.tile, to, input.link));
       break;
     }
     case "removeLink": {
@@ -705,4 +719,63 @@ export function planRemoveTile(
     requireLanes(design);
     return { strands: removal(lanes(design)(), design, id).strands };
   });
+}
+
+/**
+ * Why linking `from` (a lane or a tile) to the existing tile `to` is refused, in plain words, or
+ * `undefined` when a `linkTiles` would be accepted. The canvas lights up drop targets with it and
+ * explains a refused drop.
+ */
+export function laneLinkRefusal(
+  design: DesignDocument,
+  from: LaneFrom,
+  to: string,
+  mode: StudioLinkMode,
+): string | undefined {
+  const result = attempt(() => {
+    requireLanes(design);
+    return linkTilesRefusal(lanes(design)(), from, to, mode === "async");
+  });
+  return result.ok ? result.value : result.message;
+}
+
+const slug = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/**
+ * A name and ID for a new tile of this type: the type's name ("Cache"), then "Cache 2", "Cache 3"…,
+ * whichever is free as both a name and an ID ("cache", "cache-2"…).
+ */
+export function newTileIdentity(
+  design: DesignDocument,
+  type: StudioTileType,
+): { id: string; name: string } {
+  const names = new Set(design.elements.map((element) => element.name.toLowerCase()));
+  const used = usedIds(design);
+  const base = studioTileDefinitions[type].name;
+  for (let n = 1; ; n += 1) {
+    const name = n === 1 ? base : `${base} ${n}`;
+    const id = slug(name);
+    if (!names.has(name.toLowerCase()) && !used.has(id)) return { id, name };
+  }
+}
+
+/**
+ * A free ID for a new link from `from` to `to`: `source-target`, or `lane-target` for an entry
+ * (as the TinyURL study names them). `reserved` are IDs about to be used in the same batch.
+ */
+export function newLinkId(
+  design: DesignDocument,
+  from: LaneFrom,
+  to: string,
+  reserved: readonly string[] = [],
+): string {
+  const used = usedIds(design);
+  return freshId(
+    `${"lane" in from ? from.lane : from.tile}-${to}`,
+    (id) => used.has(id) || reserved.includes(id),
+  );
 }
