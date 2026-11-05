@@ -53,3 +53,7 @@ if (!document.fonts) {
     value: { addEventListener() {}, removeEventListener() {}, ready: Promise.resolve() },
   });
 }
+
+// jsdom has no canvas; label measuring falls back to an estimate when there is no 2D context.
+HTMLCanvasElement.prototype.getContext = (() =>
+  null) as typeof HTMLCanvasElement.prototype.getContext;

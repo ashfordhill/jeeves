@@ -11680,3 +11680,64 @@ Notes for CL3:
 - Leftover for CL4: `draw/` naming (store, api, form-drafts and `draw.css` now serve only the
   studio), `scripts/references.ts` and `docs/reference` (benchmark source references), docs for
   benchmarks/P73a, and README/AGENTS/PLAN/CATALOG.
+
+## CL3 — a smaller, current test suite and an E2E smoke set (2026-11-04)
+
+Scope: [cleanup plan](cleanup-plan.md) phase CL3. From here on `pnpm check` must pass.
+
+Unit tests (Vitest; no Docker, Postgres or network): **11 files / 51 tests (1 failing) → 15 files /
+93 tests, all passing.**
+
+- **Deleted:** `apps/web/src/shell/views.test.ts` (2 tests of a hash-parsing one-liner, now covered
+  by the App test's tab switch).
+- **Repaired:** `App.test.tsx` now expects the Design tab, the project menu and a Settings round
+  trip (view switches flush edits first, so it waits for the hash).
+- **Added, `packages/spec` (32 tests, it had none):** `apply.test.ts` (all-or-nothing batches,
+  revision conflict, malformed ops with their index, each operation's key rule, ownership never
+  cascading on delete, `validateDesign` structural findings); `studio-operations.test.ts`
+  (`buildStudioCommand` for create/system bootstrap, edit/editSystem, connect with redirect
+  lookup, editConnection incl. the request/response-only retry rule, packages, components,
+  delete, rejection of commands outside the vocabulary; every built batch is applied);
+  `studio-view.test.ts` (C1/C2/C3 projection counts 4/3, 12/11, 21/17, package frames, queues
+  summarised at C2, merged lines, C3 host frames, order independence; blueprint schema parse,
+  determinism, revision, JSON Schema; `pruneLayout` row order).
+- **Added, server:** `chat/tools.test.ts` (6: finite toolset, reads, working-copy preparation,
+  refused calls change nothing, bootstrap from empty, askUser); `chat.test.ts` gained a fake-model
+  turn whose studio commands commit as one chat edit and undo in one step; `projects.test.ts`
+  asserts blueprint `no-store`, contents and 404.
+- **Added, web:** `studio/studio.test.ts` (5: ELK layout determinism and 32px grid snapping, saved
+  row order within a column, `+` spawn choices per level, a spawn batch that applies, C1 person
+  spawn). Kept unchanged: providers (fake, OpenAI, Codex), settings, health, web draw and chat
+  stores, server projects/chat files.
+- Config: root `vitest.config.ts` lost `passWithNoTests`; `vitest.setup.ts` stubs canvas
+  `getContext` (silences jsdom's "Not implemented" noise; measuring already falls back).
+
+E2E (`apps/web/e2e/`, 5 specs, Playwright on 4301/4311, database `jeeves_e2e`, scripted chat):
+`studio-levels` (create TinyURL via the project menu, C1/C2/C3 counts), `spawn` (`+` drag from
+Shorten API → Search index, 13/12, revision 2), `edit-history` (Link writer pool size 20 → 32
+autosave, Undo/Redo via API state, reload keeps it), `blueprint-chat` (blueprint GET 200
+`no-store`; a fake-model chat turn renames Redirect). A shared `tinyurl` fixture creates the
+project, fails on page errors, and deletes the project afterwards. `fixtures/chat/e2e-script.json`
+was rewritten to that one turn. `playwright.preview.config.ts`, `fixtures/briefs` (unused) and
+`@axe-core/playwright` (unused) were removed.
+
+Checks (Node 24.21.0):
+
+- `pnpm check`: exit 0 — biome "Checked 556 files … No fixes applied", all four typechecks done,
+  "Test Files 15 passed (15), Tests 93 passed (93)".
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- `pnpm test:e2e` (local Chromium, no Docker image needed): "5 passed (11.5s)". Also
+  `--repeat-each=3` three times in parallel: 15/15 each run. The first parallel run exposed a race
+  (the app opens the most recent project, which can be another test's); the fixture now waits for
+  the URL's project to change.
+- The owner's "TinyURL · studio study" (`7d19609c…`, revision 1) was not touched; unit tests use
+  PGlite and E2E uses `jeeves_e2e`. Dev servers 4300/4310 were not restarted.
+
+Notes for CL4:
+
+- README and AGENTS still carry the "tests deferred" profile and mention the old suite; the
+  current rule is `pnpm check` plus `pnpm test:e2e`. `scripts/e2e-docker.sh` still works for
+  machines without Chromium libraries.
+- `jeeves_e2e` may still hold junk projects from the old suite; the new specs clean up after
+  themselves.
+- `trace: "on-first-retry"` in `playwright.config.ts` is inert with `retries: 0`.

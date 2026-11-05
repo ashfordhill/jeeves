@@ -5,7 +5,7 @@ import {
   type ModelRequest,
   type Script,
 } from "@jeeves/providers";
-import type { DesignDocument } from "@jeeves/spec";
+import { createStudioSettings, type DesignDocument } from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
@@ -128,6 +128,47 @@ describe("design chat", () => {
       /One question first\.\n\[Asked: Do people need accounts\? Choices: No accounts \| Email login\]/,
     );
     expect(history.at(-1)).toBe("No accounts");
+  });
+
+  it("commits a turn's studio commands as one chat edit and one undo step", async () => {
+    const service = (id: string, name: string) => ({
+      type: "create",
+      elements: [{ id, name, settings: createStudioSettings("service") }],
+    });
+    const h = harness([
+      {
+        toolCalls: [
+          {
+            name: "applyStudioCommands",
+            arguments: {
+              baseRevision: 0,
+              commands: [{ ...service("links", "Links"), system: { name: "Shortener" } }],
+            },
+          },
+          {
+            name: "applyStudioCommands",
+            arguments: { baseRevision: 0, commands: [service("redirect", "Redirect")] },
+          },
+          // Refused: nothing from this call is kept, the rest of the turn still commits.
+          {
+            name: "applyStudioCommands",
+            arguments: { baseRevision: 0, commands: [{ type: "edit", element: "ghost" }] },
+          },
+        ],
+      },
+      { text: "Added two services." },
+    ]);
+    const id = await h.project();
+    const { turn, state } = await h.chat(id, "Add a link service and a redirect");
+    expect(turn).toMatchObject({ status: "done", reply: "Added two services." });
+    expect(turn.operationId).toEqual(expect.any(Number));
+    expect(turn.changed).toEqual(expect.arrayContaining(["links", "redirect"]));
+    expect(turn.activity.map((a) => a.ok)).toEqual(expect.arrayContaining([true, false]));
+    expect(state.design.revision).toBe(1);
+    expect(state.design.elements.map((e) => e.id)).toEqual(["links", "redirect"]);
+
+    const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+    expect(undone.body.design.elements).toEqual([]);
   });
 
   it("fails the turn without changing anything when the provider fails or isn't set up", async () => {

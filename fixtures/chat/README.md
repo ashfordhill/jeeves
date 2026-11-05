@@ -1,11 +1,9 @@
 # Chat fixtures
 
-`e2e-script.json` is the scripted fake model used by the Playwright suite. `playwright.config.ts`
-points the server at it with `JEEVES_FAKE_MODEL_SCRIPT`, so the chat never calls a real provider.
+`e2e-script.json` is the scripted fake model used by the Playwright smoke set.
+`playwright.config.ts` points the server at it with `JEEVES_FAKE_MODEL_SCRIPT`, so chat never
+calls a real provider.
 
 The format is `scriptByMessage` from `@jeeves/providers`: the first turn whose `match` appears in
-the person's latest message (case-insensitive) is replayed, one step per model round. Turns are
-tried in order, so put more specific matches first.
-
-The first turn (`Refine the seed plan`) answers the Runs planner (S11): its request starts with
-that phrase, and it calls `submitPlan` with a plan for the link-shortener fixture.
+the person's latest message (case-insensitive) is replayed, one step per model round. The one
+turn renames Redirect in a freshly created TinyURL project (revision 1).
