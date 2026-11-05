@@ -18,7 +18,6 @@ import {
   studioModelSchema,
   studioProtocolSchema,
 } from "./studio-model.ts";
-import { resolveStudioPackagePreset } from "./studio-presets.ts";
 
 /** Package identities cannot shadow any existing graph or architecture declaration. */
 function occupiedDesignIds(design: DesignDocument): Set<string> {
@@ -85,12 +84,6 @@ export function validateStudio(design: DesignDocument): Finding[] {
           `Package member ${id} must be an application; resources are owned separately.`,
         );
     });
-    if (item.preset && !resolveStudioPackagePreset(item.preset))
-      report(
-        "NEEDS_TEMPLATE",
-        [...path, "preset"],
-        `Package preset ${item.preset.id}@${item.preset.version} has no exact local definition; no version substitution is permitted.`,
-      );
   });
   studio.elements.forEach((binding, index) => {
     const path = ["elements", index];

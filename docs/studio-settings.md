@@ -53,13 +53,12 @@ Notifications and Identity are Presets with ordinary service semantics plus the 
 plain service can be named Catalog or Orders without gaining a business-rule form.
 
 A lookup shortcut names an existing connection and never duplicates its endpoints. The inspector
-lists the redirect's connections to a database or cache; a `connect` command with `lookup` (chat)
-creates the connection and sets the shortcut in one batch. Clearing it removes the setting, not
+lists the redirect's connections to a database or cache; chat sets it with an `edit` whose
+settings name one (after a `linkTiles` when the link is new). Clearing it removes the setting, not
 the connection; deleting the connection clears the shortcut in the same operation.
 
-A **package** has name, purpose and members only: no language, provider or runtime. The **Service
-and worker** preset creates a service, a worker and a package-owned work queue as one batch, which
-the lane rules refuse while nothing links to the service.
+A **package** has name, purpose and members only: no language, provider or runtime. Packages stay
+in the format; neither the canvas nor chat creates or changes them.
 
 ### Performance intent
 

@@ -21,7 +21,6 @@ export * from "./studio-links.ts";
 export * from "./studio-model.ts";
 export * from "./studio-modules.ts";
 export * from "./studio-operations.ts";
-export * from "./studio-presets.ts";
 export * from "./studio-prune.ts";
 export * from "./studio-tiles.ts";
 export * from "./studio-validation.ts";

@@ -166,12 +166,24 @@ panning, zooming and Fit add none. The history survives reloads.
 
 ## Chat
 
-Chat (left rail, open by default in a fresh project) uses the same finite command vocabulary,
-validation and history as manual edits: a chat turn is one undo step. It reads the design and the
-studio definitions, applies commands against the saved revision, and can ask one focused
-question with clickable choices. It accepts Markdown, text and images (PNG, JPEG, WebP, SVG).
-Token counts and provider-reported cost appear only when complete. The model and provider are
-chosen in **Settings**. Chat and the inspector collapse and resize independently.
+Chat (left rail, open by default in a fresh project) edits the design with the canvas's own
+commands, validation and history: a chat turn is one undo step, however many commands it ran.
+Tiles and links change only through the lane commands: `addTile` (after a tile or a lane, or
+before a tile), `linkTiles`, `removeTile`, `removeLink` and `changeKind`. So chat, like the mouse,
+can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
+command changes nothing and comes back in the same plain words as the canvas notice ("Link cache
+can't link to URL reputation API. A cache can't link onward."); the turn's activity list shows
+it. Names, purposes, the goal, settings, link details and modules go through `edit`,
+`editSystem`, `editConnection` and the module commands.
+
+Chat reads the design as the canvas draws it: both lanes with their entries and tiles in lane
+order, then each tile with its kind, settings, links (sync or async) and modules, and the caps.
+It lists the seven tile types with their kinds. The selected tile, line or entry is sent with
+each message, so "Add a cache after the selected service" works. It can ask one focused question
+with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP, SVG). An empty
+project starts with an `addTile` from a lane that names the system. Token counts and
+provider-reported cost appear only when complete. The model and provider are chosen in
+**Settings**. Chat and the inspector collapse and resize independently.
 
 ## The TinyURL study
 

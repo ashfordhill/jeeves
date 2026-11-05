@@ -1,32 +1,28 @@
-import { createStudioSettings, emptyDesign, studioArchitectureExample } from "@jeeves/spec";
+import {
+  buildStudioCommand,
+  emptyDesign,
+  laneChoices,
+  newLinkId,
+  newTileIdentity,
+  studioArchitectureExample,
+} from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { toolDefinitions, Workspace } from "./tools.ts";
 
 const tinyurl = () => ({ ...studioArchitectureExample("studio-tinyurl").design, revision: 3 });
 const run = (workspace: Workspace, name: string, args: unknown = {}) =>
   JSON.parse(workspace.run(name, JSON.stringify(args)));
+/** A cache after the Redirect service, as the canvas names it (`redirect-cache` is taken). */
 const addCache = (baseRevision: number) => ({
   baseRevision,
   commands: [
     {
-      type: "create",
-      elements: [{ id: "edge-cache", name: "Edge cache", settings: createStudioSettings("cache") }],
-      // Every tile hangs off a lane: the cache is reached through the Redirect service.
-      connections: [
-        {
-          id: "redirect-edge-cache",
-          from: "redirect",
-          to: "edge-cache",
-          kind: "uses-database",
-          planned: {
-            label: "Reads",
-            protocol: "Redis",
-            interaction: "Request / response",
-            security: "Service identity",
-          },
-          settings: {},
-        },
-      ],
+      type: "addTile",
+      from: { tile: "redirect" },
+      side: "after",
+      link: "sync",
+      tile: { id: "cache", name: "Cache", kind: "cache" },
+      linkId: "redirect-cache-2",
     },
   ],
 });
@@ -43,19 +39,74 @@ describe("studio chat tools", () => {
     ]);
   });
 
-  it("reads the catalog, a definition and the design", () => {
+  it("reads the tile types, a definition and the design in lane order", () => {
     const workspace = new Workspace(tinyurl());
-    const kinds = run(workspace, "listStudioDefinitions").definitions.map(
-      (d: { kind: string }) => d.kind,
-    );
-    expect(kinds).toEqual(expect.arrayContaining(["service", "database", "cache", "queue"]));
+    const catalog = run(workspace, "listStudioDefinitions");
+    expect(catalog.tileTypes.map((t: { type: string }) => t.type)).toEqual([
+      "service",
+      "api",
+      "database",
+      "cache",
+      "queue",
+      "storage",
+      "external",
+    ]);
+    expect(catalog.caps).toEqual({ linksPerTile: 4, entriesPerLane: 3 });
     expect(run(workspace, "describeStudioDefinition", { kind: "cache" }).settingsSchema).toBeTypeOf(
       "object",
     );
     const design = run(workspace, "getDesign");
     expect(design.baseRevision).toBe(3);
-    expect(design.elements).toHaveLength(9);
+    expect(design.lanes).toEqual([
+      {
+        lane: "download",
+        entries: [{ id: "download-cdn", tile: "cdn" }],
+        tiles: [
+          "cdn",
+          "redirect",
+          "link-cache",
+          "links-db",
+          "click-events",
+          "analytics",
+          "analytics-store",
+        ],
+      },
+      {
+        lane: "upload",
+        entries: [{ id: "upload-shorten-api", tile: "shorten-api" }],
+        tiles: ["shorten-api", "links-db", "link-cache", "reputation"],
+      },
+    ]);
+    expect(design.tiles).toHaveLength(9);
+    const redirect = design.tiles.find((t: { id: string }) => t.id === "redirect");
+    expect(redirect).toMatchObject({ type: "service", kind: "redirect" });
+    expect(redirect.links.map((l: { to: string; mode: string }) => `${l.to} ${l.mode}`)).toEqual([
+      "link-cache sync",
+      "links-db sync",
+      "click-events async",
+    ]);
+    expect(redirect.modules).toHaveLength(4);
     expect(design.findings).toEqual([]);
+  });
+
+  it("adds a tile through chat with the same batch as the canvas", () => {
+    const base = tinyurl();
+    // What the canvas sends for Redirect's right + dropped on Cache (canvas/creation.tsx).
+    const from = { tile: "redirect" };
+    const choice = laneChoices(base, from, "after", "sync").find((c) => c.type === "cache");
+    const tile = newTileIdentity(base, "cache");
+    const canvas = {
+      type: "addTile" as const,
+      from,
+      side: "after" as const,
+      link: "sync" as const,
+      tile: { ...tile, kind: choice?.kind ?? "cache" },
+      linkId: newLinkId(base, from, tile.id, [tile.id]),
+    };
+    expect(canvas).toEqual(addCache(3).commands[0]);
+    const workspace = new Workspace(base);
+    expect(run(workspace, "applyStudioCommands", addCache(3))).toMatchObject({ ok: true });
+    expect(workspace.pending).toEqual(buildStudioCommand(base, canvas).ops);
   });
 
   it("prepares accepted commands on the working copy without committing them", () => {
@@ -65,70 +116,73 @@ describe("studio chat tools", () => {
       ok: true,
       commands: 1,
     });
-    expect(workspace.working.elements.map((e) => e.id)).toContain("edge-cache");
-    expect(base.elements.map((e) => e.id)).not.toContain("edge-cache");
+    expect(workspace.working.elements.map((e) => e.id)).toContain("cache");
+    expect(base.elements.map((e) => e.id)).not.toContain("cache");
     expect(workspace.pending.map((op) => op.op)).toEqual(["addElement", "connect", "setStudio"]);
     // A second call builds on the working copy, still against the saved base revision.
     expect(
       run(workspace, "applyStudioCommands", {
         baseRevision: 3,
-        commands: [{ type: "edit", element: "edge-cache", name: "CDN cache" }],
+        commands: [{ type: "edit", element: "cache", name: "Redirect cache" }],
       }).ok,
     ).toBe(true);
     expect(workspace.pending).toHaveLength(5);
   });
 
-  it("changes nothing for a refused call", () => {
+  it("changes nothing for a refused call, and says why in plain words", () => {
     const workspace = new Workspace(tinyurl());
     const before = workspace.working;
-    const refusals = [
-      ["applyStudioCommands", addCache(2)],
-      ["applyStudioCommands", { baseRevision: 3, commands: [{ type: "addRoute", path: "/x" }] }],
-      [
-        "applyStudioCommands",
-        { baseRevision: 3, commands: [{ type: "edit", element: "ghost", name: "Ghost" }] },
-      ],
-      // Removing an owner without its resources breaks ownership.
-      [
-        "applyStudioCommands",
-        { baseRevision: 3, commands: [{ type: "delete", elements: ["redirect"] }] },
-      ],
-      ["editEntity", {}],
-    ] as const;
-    for (const [name, args] of refusals) expect(run(workspace, name, args).ok).toBe(false);
+    const apply = (...commands: unknown[]) =>
+      run(workspace, "applyStudioCommands", { baseRevision: 3, commands });
+    expect(run(workspace, "applyStudioCommands", addCache(2)).ok).toBe(false);
+    expect(apply({ type: "addRoute", path: "/x" }).error).toMatch(/no "addRoute" command/);
+    // The old island-making commands are gone; tiles hang off lanes.
+    expect(apply({ type: "create", elements: [] }).error).toMatch(
+      /no "create" command\. The commands are addTile, linkTiles/,
+    );
+    expect(apply({ type: "edit", element: "ghost", name: "Ghost" }).error).toBe(
+      'There is no tile "ghost".',
+    );
+    // The second command would cut off the click path and the new cache; neither is kept.
+    expect(apply(addCache(3).commands[0], { type: "removeTile", tile: "redirect" }).error).toBe(
+      "Command 2 (removeTile): Removing Redirect service would cut off Click events, Cache, Analytics worker and Analytics store; list them in alsoRemove to remove them too.",
+    );
+    const link = (from: string, to: string) =>
+      apply({ type: "linkTiles", from: { tile: from }, to, link: "sync", linkId: `${from}-${to}` });
+    expect(link("analytics", "redirect").error).toBe(
+      "Redirect service already leads to Analytics worker; linking them would make a loop.",
+    );
+    expect(link("link-cache", "reputation").error).toBe(
+      "Link cache can't link to URL reputation API. A cache can't link onward.",
+    );
+    expect(run(workspace, "editEntity", {}).ok).toBe(false);
     expect(JSON.parse(workspace.run("getDesign", "{not json")).ok).toBe(false);
     expect(workspace.working).toBe(before);
     expect(workspace.pending).toEqual([]);
     expect(workspace.activity.every((a) => !a.ok)).toBe(true);
   });
 
-  it("starts a design from nothing when the command names the system", () => {
+  it("starts a design from nothing with a first tile on a lane that names the system", () => {
     const workspace = new Workspace(emptyDesign());
-    const island = {
-      type: "create",
-      system: { name: "Shortener" },
-      elements: [{ id: "api", name: "API", settings: createStudioSettings("service") }],
+    const first = {
+      type: "addTile",
+      from: { lane: "upload" },
+      side: "after",
+      link: "sync",
+      tile: { id: "api", name: "API", kind: "service" },
+      linkId: "upload-api",
     };
-    // A first box that no lane reaches is an island; the first tile starts a lane instead.
-    expect(run(workspace, "applyStudioCommands", { baseRevision: 0, commands: [island] }).ok).toBe(
-      false,
-    );
-    const result = run(workspace, "applyStudioCommands", {
-      baseRevision: 0,
-      commands: [
-        {
-          type: "addTile",
-          system: { name: "Shortener" },
-          from: { lane: "upload" },
-          side: "after",
-          link: "sync",
-          tile: { id: "api", name: "API", kind: "service" },
-          linkId: "upload-api",
-        },
-      ],
-    });
+    const apply = (command: unknown) =>
+      run(workspace, "applyStudioCommands", { baseRevision: 0, commands: [command] });
+    expect(apply(first).error).toMatch(/^This design has no system yet\./);
+    const result = apply({ ...first, system: { name: "Shortener" } });
     expect(result).toMatchObject({ ok: true, findings: [] });
     expect(workspace.working.architecture?.system.name).toBe("Shortener");
+    expect(run(workspace, "getDesign").lanes[1]).toEqual({
+      lane: "upload",
+      entries: [{ id: "upload-api", tile: "api" }],
+      tiles: ["api"],
+    });
   });
 
   it("records an askUser question for the turn", () => {

@@ -5,5 +5,11 @@
 calls a real provider.
 
 The format is `scriptByMessage` from `@jeeves/providers`: the first turn whose `match` appears in
-the person's latest message (case-insensitive) is replayed, one step per model round. The one
-turn renames Redirect in a freshly created TinyURL project (revision 1).
+the person's latest message (case-insensitive) is replayed, one step per model round. Both turns
+edit a freshly created TinyURL project (revision 1); sent to any other revision, the command is
+refused as a revision conflict and nothing changes (the scripted reply still follows).
+
+| Message contains | Steps |
+| --- | --- |
+| "Rename the redirect service to Redirector" | `applyStudioCommands` with an `edit` renaming `redirect`, then a reply. |
+| "Add a cache after the redirect service" | `getDesign`, then `applyStudioCommands` with an `addTile` after `redirect` (tile `cache`, "Cache", link `redirect-cache-2`: what Redirect's `+` → Cache makes on the canvas), then a reply. |

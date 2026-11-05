@@ -16,6 +16,33 @@
         },
         { "text": "Renamed Redirect to Redirector." }
       ]
+    },
+    {
+      "match": "Add a cache after the redirect service",
+      "steps": [
+        { "toolCalls": [{ "name": "getDesign", "arguments": {} }] },
+        {
+          "toolCalls": [
+            {
+              "name": "applyStudioCommands",
+              "arguments": {
+                "baseRevision": 1,
+                "commands": [
+                  {
+                    "type": "addTile",
+                    "from": { "tile": "redirect" },
+                    "side": "after",
+                    "link": "sync",
+                    "tile": { "id": "cache", "name": "Cache", "kind": "cache" },
+                    "linkId": "redirect-cache-2"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        { "text": "Added a cache after the Redirect service on the download lane." }
+      ]
     }
   ]
 }

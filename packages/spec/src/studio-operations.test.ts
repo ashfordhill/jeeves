@@ -4,11 +4,7 @@ import { type DesignDocument, emptyDesign } from "./design.ts";
 import { createStudioComponentSettings } from "./studio-components.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import { createStudioSettings } from "./studio-model.ts";
-import {
-  buildStudioCommand,
-  type StudioCommand,
-  type StudioConnectionCreation,
-} from "./studio-operations.ts";
+import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
 
 const tinyurl = () => studioArchitectureExample("studio-tinyurl").design;
 
@@ -25,72 +21,25 @@ const studio = (design: DesignDocument) => {
   if (!model) throw new Error("No studio model.");
   return model;
 };
-const call = (id: string, from: string, to: string): StudioConnectionCreation => ({
-  id,
-  from,
-  to,
-  kind: "calls",
-  planned: {
-    label: "Calls",
-    protocol: "HTTPS",
-    interaction: "Request / response",
-    security: "Service identity",
-  },
-  settings: { retry: { mode: "unspecified" } },
-});
-const sql = (id: string, from: string, to: string): StudioConnectionCreation => ({
-  ...call(id, from, to),
-  kind: "uses-database",
-  planned: { ...call(id, from, to).planned, label: "Reads", protocol: "SQL" },
-  // Timeouts and retries belong to request/response protocols only.
-  settings: {},
-});
-
 describe("buildStudioCommand", () => {
-  it("creates the system with the first box, and refuses studio commands before that", () => {
-    const service = { id: "links", name: "Links", settings: createStudioSettings("service") };
+  it("refuses studio commands before the system exists, except a first addTile", () => {
+    const first = {
+      type: "addTile",
+      from: { lane: "upload" },
+      side: "after",
+      link: "sync",
+      tile: { id: "links", name: "Links", kind: "service" },
+      linkId: "upload-links",
+    } as const;
+    expect(() => buildStudioCommand(emptyDesign(), first)).toThrow(/no system yet/);
     expect(() =>
-      buildStudioCommand(emptyDesign(), { type: "create", elements: [service] }),
-    ).toThrow(/architecture system/);
-    const batch = buildStudioCommand(emptyDesign(), {
-      type: "create",
-      system: { name: "Shortener" },
-      elements: [service],
-    });
-    expect(batch.ops.map((op) => op.op)).toEqual(["setArchitecture", "addElement", "setStudio"]);
-    expect(batch.ops[2]).toMatchObject({
-      studio: {
-        elements: [{ element: "links", settings: createStudioSettings("service") }],
-      },
-    });
-    // A box no lane reaches is an island, which the lane rules refuse (addTile starts a lane).
-    expect(applyOperations(emptyDesign(), batch.ops)).toMatchObject({
-      ok: false,
-      errors: [{ code: "LANE_INVALID" }],
-    });
-  });
-
-  it("creates boxes, their connections and a package in one batch", () => {
-    const { design } = run(tinyurl(), {
-      type: "create",
-      elements: [
-        { id: "admin", name: "Admin API", settings: createStudioSettings("service") },
-        { id: "audit-db", name: "Audit DB", settings: createStudioSettings("database") },
-      ],
-      connections: [
-        call("shorten-admin", "shorten-api", "admin"),
-        sql("admin-audit", "admin", "audit-db"),
-      ],
-      package: {
-        id: "link-platform",
-        name: "Link platform",
-        description: "",
-        members: ["shorten-api", "redirect", "admin"],
-      },
-    });
-    expect(design.connections.at(-1)?.id).toBe("admin-audit");
-    expect(studio(design).connections.at(-1)?.connection).toBe("admin-audit");
-    expect(studio(design).packages[0]?.members).toEqual(["shorten-api", "redirect", "admin"]);
+      buildStudioCommand(emptyDesign(), { type: "edit", element: "links", name: "x" }),
+    ).toThrow(/no system yet/);
+    const { ops, design } = run(emptyDesign(), { ...first, system: { name: "Shortener" } });
+    expect(ops).toEqual(["setArchitecture", "addElement", "setStudio"]);
+    expect(studio(design).entries).toEqual([
+      { id: "upload-links", lane: "upload", element: "links" },
+    ]);
   });
 
   it("edits a box's text and settings, and the system text in place", () => {
@@ -115,28 +64,8 @@ describe("buildStudioCommand", () => {
     ]);
   });
 
-  it("connects, records a redirect lookup, and edits the relationship", () => {
-    const base = run(tinyurl(), {
-      type: "create",
-      elements: [{ id: "replica", name: "Replica", settings: createStudioSettings("database") }],
-      connections: [sql("analytics-replica", "analytics", "replica")],
-    }).design;
-    const connected = run(base, {
-      type: "connect",
-      connection: sql("redirect-replica", "redirect", "replica"),
-      lookup: { element: "redirect", resource: "database" },
-    }).design;
-    const redirect = studio(connected).elements.find((b) => b.element === "redirect");
-    expect(redirect?.settings).toMatchObject({ lookupStoreConnection: "redirect-replica" });
-    expect(() =>
-      buildStudioCommand(base, {
-        type: "connect",
-        connection: sql("shorten-replica", "shorten-api", "replica"),
-        lookup: { element: "shorten-api", resource: "database" },
-      }),
-    ).toThrow(/Redirect/);
-
-    const edited = run(connected, {
+  it("edits a link's details and settings", () => {
+    const edited = run(tinyurl(), {
       type: "editConnection",
       connection: "shorten-reputation",
       planned: { label: "Screens links" },
@@ -150,46 +79,21 @@ describe("buildStudioCommand", () => {
       studio(edited.design).connections.find((b) => b.connection === "shorten-reputation")
         ?.settings,
     ).toEqual({ timeoutMs: 500 });
-    // The same settings on a SQL relationship are refused.
+    // The same settings on a SQL link are refused.
     expect(
       applyOperations(
-        connected,
-        buildStudioCommand(connected, {
+        tinyurl(),
+        buildStudioCommand(tinyurl(), {
           type: "editConnection",
-          connection: "redirect-replica",
+          connection: "redirect-db",
           settings: { timeoutMs: 500 },
         }).ops,
       ).ok,
     ).toBe(false);
-  });
-
-  it("groups, removes members (dissolving below two) and ungroups", () => {
-    const grouped = run(tinyurl(), {
-      type: "group",
-      package: {
-        id: "link-platform",
-        name: "Link platform",
-        description: "",
-        members: ["shorten-api", "redirect"],
-      },
-    }).design;
-    expect(studio(grouped).packages.map((p) => p.id)).toEqual(["link-platform"]);
-    expect(
-      studio(
-        run(grouped, { type: "removeMembers", package: "link-platform", members: ["redirect"] })
-          .design,
-      ).packages,
-    ).toEqual([]);
+    // An entry is a link without settings.
     expect(() =>
-      buildStudioCommand(grouped, {
-        type: "removeMembers",
-        package: "link-platform",
-        members: ["analytics"],
-      }),
-    ).toThrow(/only members/);
-    expect(
-      studio(run(grouped, { type: "ungroup", package: "link-platform" }).design).packages,
-    ).toEqual([]);
+      buildStudioCommand(tinyurl(), { type: "editConnection", connection: "download-cdn" }),
+    ).toThrow(/lane entry/);
   });
 
   it("adds, edits, links and removes components", () => {
@@ -204,7 +108,7 @@ describe("buildStudioCommand", () => {
         type: "createComponent",
         component: { ...component, host: "ghost" },
       }),
-    ).toThrow(/no editable studio binding/);
+    ).toThrow(/no tile "ghost"/);
     let design = run(tinyurl(), {
       type: "createComponent",
       component,
@@ -226,7 +130,7 @@ describe("buildStudioCommand", () => {
         component: "analytics-guard",
         settings: createStudioComponentSettings("custom"),
       }),
-    ).toThrow(/kind cannot change/);
+    ).toThrow(/kind can't change/);
     design = run(design, {
       type: "editComponent",
       component: "analytics-guard",
@@ -250,36 +154,12 @@ describe("buildStudioCommand", () => {
     expect(design.connections.some((c) => c.id === "redirect-cache")).toBe(true);
   });
 
-  it("deletes a package with its members in one batch", () => {
-    const grouped = run(tinyurl(), {
-      type: "group",
-      package: {
-        id: "click-path",
-        name: "Click path",
-        description: "",
-        members: ["redirect", "analytics"],
-      },
-    }).design;
-    const { ops, design } = run(grouped, {
-      type: "delete",
-      package: "click-path",
-      packageAction: "delete-members",
-      elements: ["link-cache", "click-events", "analytics-store"],
-    });
-    expect(ops.filter((op) => op === "removeElement")).toHaveLength(5);
-    expect(design.elements.map((e) => e.id).sort()).toEqual([
-      "cdn",
-      "links-db",
-      "reputation",
-      "shorten-api",
-    ]);
-    expect(studio(design).packages).toEqual([]);
-  });
-
   it("rejects commands outside the finite vocabulary", () => {
-    expect(() =>
-      buildStudioCommand(tinyurl(), { type: "addRoute", path: "/x" } as unknown as StudioCommand),
-    ).toThrow();
+    // Tiles and links change only through the lane commands, so nothing can make an island.
+    for (const type of ["addRoute", "create", "connect", "delete", "group", "ungroup"])
+      expect(() =>
+        buildStudioCommand(tinyurl(), { type, elements: [] } as unknown as StudioCommand),
+      ).toThrow();
     expect(() =>
       buildStudioCommand(tinyurl(), {
         type: "edit",

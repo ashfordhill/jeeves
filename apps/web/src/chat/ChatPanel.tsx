@@ -21,7 +21,7 @@ import { ACCEPT_ATTRIBUTE, type LiveTurn, useChat } from "./store.ts";
 
 const EXAMPLES = [
   "Make me a link shortener like bit.ly",
-  "Add a web app that calls the selected service",
+  "Add a cache after the selected service",
   "What is still undecided in this design?",
 ];
 

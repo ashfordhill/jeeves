@@ -542,7 +542,6 @@ export const studioPackageSchema = z.strictObject({
   name: z.string().trim().min(1).max(studioLimits.name),
   description: z.string().trim().max(studioLimits.description),
   members: z.array(idSchema).min(studioLimits.members.min).max(studioLimits.members.max),
-  preset: definitionRefSchema.optional(),
 });
 export type StudioPackage = z.infer<typeof studioPackageSchema>;
 export const studioConnectionBindingSchema = z.strictObject({

@@ -44,8 +44,7 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
-modules, are in `studio-modules.ts`) and one package preset (`studio-presets.ts`). The only
-study is TinyURL in lanes (`studio-examples/`).
+modules, are in `studio-modules.ts`). The only study is TinyURL in lanes (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
 reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-blueprint.ts`
@@ -65,11 +64,13 @@ Every change, from the canvas, chat or API, is an **operation batch** posted to
 `POST /projects/:id/operations` with a `baseRevision` (`operations.ts`): `setArchitecture`,
 `updateArchitectureSystem`, `setStudio`, `addElement`, `updateElement`, `removeElement`,
 `connect`, `updatePlannedConnection`, `disconnect`. The UI and chat build batches from
-higher-level **studio commands** (`buildStudioCommand` in `studio-operations.ts`: create, edit,
-connect, group, components, delete and so on), so both share one rule set. The **lane commands**
-(`studio-lane-commands.ts`: `addTile`, `linkTiles`, `removeTile`, `removeLink`, `changeKind`)
-are studio commands too: each is checked with the board edits under the lane rules and refused in
-plain words with tile names. Pure helpers answer the canvas and chat: `laneTabs`, `laneChoices`,
+higher-level **studio commands** (`buildStudioCommand` in `studio-operations.ts`), so both share
+one rule set. Tiles and links are added and removed only by the **lane commands**
+(`studio-lane-commands.ts`: `addTile`, `linkTiles`, `removeTile`, `removeLink`, `changeKind`):
+each is checked with the board edits under the lane rules and refused in plain words with tile
+names. The other studio commands edit in place: `edit`, `editSystem`, `editConnection` and the
+module commands (`createComponent`, `editComponent`, `connectComponent`, `disconnectComponent`,
+`removeComponent`). Pure helpers answer the canvas and chat: `laneTabs`, `laneChoices`,
 `laneLinkRefusal`, `planRemoveTile`, and `newTileIdentity` and `newLinkId` for fresh names and
 IDs.
 
@@ -97,11 +98,19 @@ layout), but the web app neither reads nor writes it.
 ## Chat
 
 `POST /projects/:id/chat` streams a turn as NDJSON. The server loop (`chat/service.ts`) calls the
-chosen model with a finite toolset (`chat/tools.ts`): `listStudioDefinitions`,
-`describeStudioDefinition`, `getDesign`, `applyStudioCommands`, `validateDesign` and `askUser`.
-Commands run against a working copy with the same builder and validation as the canvas; the whole
-turn commits as one operation, so it is one undo step. A concurrent edit stops the turn rather
-than overwriting it. Attached files (Markdown, text, PNG, JPEG, WebP; SVG rasterized with resvg)
+chosen model with a finite toolset (`chat/tools.ts`): `listStudioDefinitions` (the tile types
+with their kinds, the module kinds and the caps), `describeStudioDefinition` (one kind's
+settings), `getDesign` (both lanes with their entries and tiles in lane order, then each tile's
+kind, settings, links with their modes and modules, the caps and the findings),
+`applyStudioCommands`, `validateDesign` and `askUser`. The instructions (`INSTRUCTIONS`) describe
+the actor, the two lanes, the link table, async forks, end tiles and the caps. The same summary
+and the selection go with each message as `[Jeeves]` context. `applyStudioCommands` takes the
+studio commands, so tiles and links change only through the lane commands, as on the canvas;
+commands run against a working copy with the same builder and validation, and a refusal returns
+its plain-words reason (naming the command when a call has several) and changes nothing for that
+call. An unknown command type (such as the retired `create`) is refused with the list of
+commands. The whole turn commits as one operation, so it is one undo step. A concurrent edit
+stops the turn rather than overwriting it. Attached files (Markdown, text, PNG, JPEG, WebP; SVG rasterized with resvg)
 are stored in `files`. Turns, replies, questions, activity and token usage are kept in
 `chat_turns`; turns interrupted by a restart are marked failed on start.
 

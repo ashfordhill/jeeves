@@ -1121,3 +1121,98 @@ Notes for LG12:
   added. If "change this module" should work, `TileInspector`'s `open` state is where to report it.
 - `changeKind` is a mouse action now; the chat's instructions should mention it next to the other
   lane commands.
+
+## 2026-11-04 — LG12: chat on the lane commands (complete)
+
+Chat now edits the lane canvas through the same lane commands as the mouse.
+
+Spec:
+
+- `studioCommandSchema` is the lane commands first (`addTile`, `linkTiles`, `removeTile`,
+  `removeLink`, `changeKind`), then `edit`, `editSystem`, `editConnection` and the five component
+  commands, unchanged. **Removed** from the spec (nothing but chat and tests used them): `create`,
+  `connect` (and its `lookup` shortcut), `group`, `removeMembers`, `ungroup`, `delete`, with
+  `reassignOwners`/`StudioOwnerReassignment`. `edit` sets or clears `owner` directly. Only
+  `addTile` can now create the system of an empty design ("This design has no system yet. Start it
+  with addTile from the download or upload lane, giving the system a name."; `editSystem` still
+  creates one too). `studioElementCreationSchema` stays as the study's tile type.
+- The builder's own refusals are in plain words: `There is no tile "ghost".`, `There is no
+  module …`, `There is no link …` (or "… is a lane entry; entries have no settings."), "A module's
+  kind can't change; remove it and add another."
+- `studio-presets.ts` is deleted, with the package `preset` field (`studioPackageSchema`) and its
+  `NEEDS_TEMPLATE` check. Before dropping the field I read the owner's projects through the running
+  API on 4310 (GET only): one project, TinyURL `41bbd268-…`, revision 1, no packages, so nothing
+  stored used it.
+
+Server (`chat/tools.ts`):
+
+- `INSTRUCTIONS` rewritten around the lane canvas: one actor (the user, never a tile), the
+  download and upload lanes, every tile hangs off a lane (no islands, no cycles), sync and async
+  links and async forks, resources as end tiles, the link table in one line per rule, the caps
+  (from `laneLimits`), each command including `changeKind` ("as the inspector's kind row does"),
+  canvas-style IDs (`source-target`, `lane-target`), and "never work around a lane rule".
+- `listStudioDefinitions` → `{tileTypes: [{type, name, kinds: [{kind, name, description}]}],
+  modules: [{kind, name, description, uses}], caps}`; no presets, definition refs or creation
+  scopes. `describeStudioDefinition` is unchanged.
+- `getDesign` (and the `[Jeeves]` turn context) → `{baseRevision, system, lanes: [{lane, entries:
+  [{id, tile}], tiles}] (each lane's tiles breadth-first from its entries), tiles (lane order:
+  id, name, description, type, kind, owner, settings, links [{id, to, mode sync|async, planned,
+  settings}], modules [{id, name, description, settings, links}]), caps, findings}`. C1 context and
+  packages are no longer sent.
+- Refusals: an `applyOperations` failure returns `error` as the findings' messages joined (was an
+  `errors` array); with several commands in a call the error starts "Command 2 (removeTile): ";
+  an unknown command type (`create`, `addRoute`…) gets `There is no "create" command. The commands
+  are addTile, linkTiles, …`. The activity line is `Refused: <reason>`, so the person sees it too.
+
+Web: the chat rail's stale suggestion is now "Add a cache after the selected service".
+
+Fixture: `e2e-script.json` gained "Add a cache after the redirect service": `getDesign`, then
+`addTile` after `redirect` (tile `cache` "Cache", link `redirect-cache-2`, exactly what Redirect's
+`+` → Cache makes; `redirect-cache` is taken), then a reply. Both scripted turns expect a fresh
+TinyURL at revision 1.
+
+Tests: `tools.test.ts` (7): the tile types, caps and `getDesign` lanes in lane order (Redirect's
+links `sync, sync, async`, 4 modules); **`addTile` through chat equals the canvas batch** (built
+from `laneChoices`, `newTileIdentity` and `newLinkId` as `creation.tsx` does; `pending` equals
+`buildStudioCommand(…).ops`); plain-words refusals (unknown `addRoute` and `create`, a ghost tile,
+command 2 of a call stranding the click path and the new cache, a loop, a cache linking onward);
+an empty design refused without `system`, accepted with it. `studio-operations.test.ts` lost the
+create, package, group and delete tests (6 left; editConnection now runs on TinyURL's own links;
+the retired types are refused). E2E: `blueprint-chat` gained "adds a tile through chat with the
+lane commands": 11 tiles, 12 lines, revision 2, `redirect → cache`, the header's Undo → 10 tiles.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 191 files, all type checks, 21 test files / 114 tests passed;
+  −3 spec command tests, +1 tools test).
+- `pnpm test:e2e`: 8 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser (Playwright Chromium by mouse at 1440×900; my own API on 4312 with
+  `JEEVES_FAKE_MODEL_SCRIPT` and web on 4302 against `jeeves_e2e`, both stopped afterwards; the
+  owner's 4300/4310 and `jeeves` untouched apart from the read-only GETs above, though tsx watch
+  reloaded the owner's API with this code and it reports healthy): a TinyURL study made through
+  the project menu shows 10 tiles and 11 lines and the three suggestions. Redirect service
+  selected, then "Add a cache after the redirect service" sent: the reply, activity "Read the
+  studio design / Prepared 1 studio command / Applied 3 changes as one undo step", Changed: Cache
+  and Redirect service → Cache; 11 tiles, 12 lines, revision 2, link `redirect-cache-2`, the
+  turn's selection `["redirect"]`. Header Undo → 10 tiles, 11 lines (revision 3); Redo → 11, 12
+  (revision 4). Sending it again at revision 4 is refused as a revision conflict and changes
+  nothing. No console errors or warnings. The throwaway project was deleted (204).
+
+Docs: studio guide (Chat rewritten), PLAN (data model without presets, studio commands, Chat
+toolset and refusals), CATALOG (new resources' owner, chat uses the lane commands, packages are
+neither shown nor changed), studio settings (lookup shortcut through `edit`, packages),
+`fixtures/chat/README.md` (both turns). No cap was hit or raised.
+
+Not done (optional per LG11): an open module is still not part of the selection chat receives.
+
+Notes for LG13:
+
+- Live chat quality on the new instructions is unevaluated (no provider calls); "Repeat one edit
+  through chat" in LG13 needs a real provider and the owner's say-so, or the scripted turn.
+- Stale definition metadata the canvas and chat no longer use: CATALOG's "Library group" and
+  "Created at" columns (`libraryGroup`, `creationScopes` in `studio-definitions.ts`; "C3 only,
+  owner required" for queues) and studio settings' "Queues are created at C3 only." and
+  "Presets" group wording. `describeStudioDefinition` still returns those fields.
+- The scripted turns hard-code `baseRevision: 1`; a new scripted turn should too, on its own
+  fresh project.

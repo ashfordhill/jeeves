@@ -33,8 +33,7 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 | `cdn` | CDN | Integrations | C2 or C3 | Content delivery in front of an application or object store. |
 | `external-api` | External API | Integrations | C2 or C3 | An external integration boundary, named for the provider. |
 
-Applications can also be created as members of a package. A resource created at C3 is owned by
-the application or package it was created from.
+A new database, cache, storage or queue tile is owned by the application it is added next to.
 
 ## Tile types (lane canvas)
 
@@ -102,12 +101,12 @@ On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
 `removeLink` ([removing](docs/studio.md#removing)); the inspector's kind row runs `changeKind`
 (a kind it would refuse is disabled, with the reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
-`lane-target` for an entry.
+`lane-target` for an entry. Chat sends the same commands, and these are the only commands that
+add or remove tiles and links ([studio guide](docs/studio.md#chat)).
 
 A **package** groups two or more independent applications; it has no language, provider or
-runtime, and the lane canvas does not show it. The **Service and worker** preset (offered to chat)
-creates a service, a worker and a package-owned work queue in one step; nothing links to the
-service, so the lane rules refuse it.
+runtime. Packages stay in the format, but neither the canvas nor chat shows, creates or changes
+them.
 
 ## Components (C3)
 
