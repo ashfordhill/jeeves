@@ -1,7 +1,7 @@
 # Jeeves architecture
 
-Jeeves is a local, single-user web app for designing a software system at C1/C2/C3 and exposing
-the result as a versioned blueprint. This page describes how it is built. What the studio does
+Jeeves is a local, single-user web app for designing a software system on a lane canvas and
+exposing the result as a versioned blueprint. This page describes how it is built. What the studio does
 for a user is in the [studio guide](docs/studio.md); field values are in
 [studio settings](docs/studio-settings.md).
 
@@ -18,10 +18,10 @@ GET /projects/:id/blueprint ──▶ future code generator (separate service, n
 
 | Path | Holds |
 | --- | --- |
-| `apps/web` | Vite + React 19 + Mantine. `App.tsx` is the shell (Design and Settings tabs, project menu, status bar). `project/` holds the project store (zustand), API client, form drafts, project menu, chooser and browser. `studio/` holds the canvas (React Flow), ELK layout (in a worker), routing, `+` spawning, inspector forms and Library. `chat/` the chat rail and its store; `settings/` the Settings view; `shell/` and `theme/` the chrome. |
+| `apps/web` | Vite + React 19 + Mantine. `App.tsx` is the shell (Design and Settings tabs, project menu, status bar). `project/` holds the project store (zustand), API client, form drafts, project menu, chooser and browser. `canvas/` holds the lane canvas: `Workspace.tsx` (the Design tab: header actions, chat rail, canvas toolbar, inspector rail), `LaneCanvas.tsx` (the design's lane graph on the board), the tile and actor faces, the ELK worker client and the app's one layout engine (`elk.ts`), and `canvas.css` (the board's colours from the theme). `studio/` holds the inspector forms and drafts, and the old C1/C2/C3 canvas (no longer mounted; to be deleted). `chat/` the chat rail and its store; `settings/` the Settings view; `shell/` and `theme/` the chrome. |
 | `apps/server` | Fastify 5 with Zod type providers, Drizzle ORM on `pg`, migrations in `drizzle/`. `routes/` (projects, chat, settings), `design/service.ts` (projects, revisions, history, layout, blueprint), `chat/` (turn loop, tools, files, model wiring), `settings.ts` (provider keys and the chosen model). |
 | `packages/spec` | The design format and every pure function over it (no I/O). |
-| `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap) and edits (add after, insert before, link, plan and apply a removal with restitching, remove a link). The root export adds the layout core: ELK layered left to right on a 32px grid with stability hints, a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; select and hand modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The app does not mount it yet. |
+| `packages/board` | The lane-grid board, ported from automation-illustrator; it imports no Jeeves code (Biome enforces this). `@jeeves/board/graph` is pure: graph rules (rooted reachability, cycles, link rules and a fan-out cap) and edits (add after, insert before, link, plan and apply a removal with restitching, remove a link). The root export adds the layout core: ELK layered left to right on a 32px grid with stability hints, a cached and debounced layout engine, dock hints for new tiles, line polylines with world-locked dashes, and layout interpolation, plus the React layer: `Board` (React Flow with no dragging or connecting; tiles and lines from props, each tile face and line chip the caller's content; pan by drag, wheel zoom, a one-time fit and `fit()` through a ref; select and hand modes), `BoardLine` (ELK routes, solid or dashed, 44px hit band), `useBoardLayout`, `useAnimatedLayout` and `board.css` (`--board-*` theme variables). React, React DOM and React Flow are peer dependencies. The web app's lane canvas mounts it. |
 | `packages/providers` | A provider-neutral model interface with OpenAI Responses and Codex adapters and a scripted fake. |
 | `apps/web/e2e`, `fixtures/chat` | The Playwright smoke set and its scripted chat model. |
 | `docker/`, `Dockerfile`, `compose.yaml` | The single-container image (nginx, API, Postgres 17) and the dev/E2E Postgres. |
@@ -85,10 +85,12 @@ applies migrations on start.
 
 ## Layout
 
-Positions are never stored. The web app lays out each view with ELK (`studio/layout.ts`, layered,
-left to right, 32px grid, frames as compound nodes) in a worker. The **layout document**
-(`layout.ts`, `PUT /projects/:id/layout`) holds only a per-view row `order` and an optional
-`viewport`; it never changes the design revision. The live camera is a browser preference.
+Positions are never stored. The lane canvas projects the design with `laneGraph` and lays it out
+with the board's ELK engine (layered, left to right, 32px grid, automation-illustrator's options),
+running ELK in a Web Worker with a main-thread fallback (`canvas/elk.ts`). The positions on screen
+are the stability hints for the next layout. The **layout document** (`layout.ts`,
+`PUT /projects/:id/layout`) holds a per-view row `order` and an optional `viewport` and never
+changes the design revision; the lane canvas neither reads nor writes it.
 
 ## Chat
 

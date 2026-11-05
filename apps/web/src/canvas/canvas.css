@@ -1,0 +1,158 @@
+/* The lane canvas: the board's --board-* theme mapped to Jeeves tokens, which follow the light
+   and dark theme on :root, and the tile and actor faces. */
+.board {
+  --board-paper: var(--paper);
+  --board-dot: var(--grid-dot);
+  --board-line: var(--line);
+  --board-ink: var(--ink);
+  --board-tile: var(--cream);
+  --board-shadow: var(--btn-shadow);
+  --board-select: var(--blue);
+  --board-plus: var(--plus);
+  --board-dash: color-mix(in srgb, var(--data) 55%, var(--paper-deep));
+  --board-grab-cursor: var(--grab-cursor);
+  --board-grabbing-cursor: var(--grabbing-cursor);
+  /* automation-illustrator's empty-actor pastel and the figure ink that stays dark on it. */
+  --actor-fill: #cfe8f2;
+  --figure-ink: #122836;
+  font-family: inherit;
+}
+
+:root[data-theme="dark"] .board {
+  --actor-fill: #2a4554;
+  --figure-ink: #e8f4fa;
+}
+
+.lane-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* Tile face (StepTile task card proportions): icon pinned near the top, name below. */
+.lane-tile {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 22px 8px 8px;
+  text-align: center;
+}
+
+.lane-tile-icon {
+  display: flex;
+  flex: 0 0 40px;
+  color: var(--type-color);
+}
+
+.lane-tile-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--board-ink);
+}
+
+/* Actor face (ActorColumn proportions): figure on the pastel strip, name plate at the bottom. */
+.lane-actor {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px 8px 8px;
+  background: var(--actor-fill);
+}
+
+.lane-actor-figure {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.lane-actor-name {
+  flex: 0 0 auto;
+  padding: 4px 6px;
+  border: 1.5px solid color-mix(in srgb, var(--board-line) 22%, transparent);
+  border-radius: 8px;
+  background: var(--board-tile);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--board-ink);
+}
+
+.board-chip svg {
+  display: block;
+}
+
+/* React Flow's attribution stays, without its light box on dark paper. */
+.board .react-flow__attribution {
+  background: transparent;
+}
+
+.board .react-flow__attribution a {
+  color: var(--ink-soft);
+}
+
+/* Workspace chrome around the canvas. */
+.lane-header-actions {
+  margin-left: auto;
+}
+
+.lane-inspector-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.lane-inspector-title > svg {
+  flex: 0 0 auto;
+  color: var(--type-color, var(--ink));
+}
+
+.studio-selection-summary .lane-inspector-kind {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.lane-entry {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.lane-entry button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.lane-entry button > svg {
+  color: var(--type-color, var(--ink));
+}

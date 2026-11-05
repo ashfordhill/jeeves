@@ -1,9 +1,7 @@
-/** Loads the current project into the default studio and flushes pending writes on leave. */
+/** Loads the current project into the lane canvas workspace and flushes pending writes on leave. */
 import { Button, Loader } from "@mantine/core";
-import { ReactFlowProvider } from "@xyflow/react";
-import "@xyflow/react/dist/base.css";
 import { useEffect } from "react";
-import { StudioWorkspace } from "../studio/StudioWorkspace.tsx";
+import { Workspace } from "../canvas/Workspace.tsx";
 import "./design-view.css";
 import { projectFromUrl, useDraw } from "./store.ts";
 
@@ -47,9 +45,5 @@ export function DesignView() {
       </div>
     );
   }
-  return (
-    <ReactFlowProvider key={projectId}>
-      <StudioWorkspace key={projectId} />
-    </ReactFlowProvider>
-  );
+  return <Workspace key={projectId} />;
 }

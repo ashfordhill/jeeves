@@ -1,11 +1,12 @@
 # Jeeves
 
-Jeeves is a local architecture design studio for web-based systems. You draw a system at three
-[C4](https://c4model.com/)-inspired levels (C1 context, C2 applications and resources, C3
-components), configure each box from a finite catalog of settings and provider choices, and talk
-to a chat assistant that edits the same diagram with the same rules. Every design is exposed as a
-read-only, versioned **blueprint** (`GET /projects/:id/blueprint`). Code generation is not part of
-Jeeves: a future, separate service will read the blueprint and generate from it.
+Jeeves is a local architecture design studio for web-based systems. You draw a system on one lane
+canvas: the user starts a download lane and an upload lane, and every service, API, database,
+cache, queue, storage or external tile hangs off them, laid out automatically with no islands and
+no cycles. You configure each tile from a finite catalog of settings and provider choices, and
+talk to a chat assistant that edits the same design with the same rules. Every design is exposed
+as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`). Code generation is not
+part of Jeeves: a future, separate service will read the blueprint and generate from it.
 
 The intention is to **reduce the amount of non-deterministic code and behaviour** when designing
 the foundations of web-based software systems. By keeping a diagram-based source of truth, we can
@@ -14,8 +15,8 @@ helps when designing new systems at a high level with LLMs, which often produce 
 looking output that only looks right at first glance. AI is better suited to well-defined small
 to medium tasks with a clearly defined outcome.
 
-- [The studio](docs/studio.md): levels, layout, creating and connecting boxes, the inspector,
-  history, chat and the TinyURL study.
+- [The studio](docs/studio.md): the lane canvas, layout, the lane rules, the inspector, history,
+  chat and the TinyURL study.
 - [Studio settings](docs/studio-settings.md): every configurable field and its values.
 - [Studio blueprint](docs/studio-blueprint.md): the code-generation boundary.
 - [Catalog](CATALOG.md): tile kinds, components, providers.

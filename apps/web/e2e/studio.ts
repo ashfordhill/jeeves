@@ -1,8 +1,11 @@
 /** Shared steps for the studio smoke specs. Each spec works on its own new TinyURL project. */
 import { test as base, expect, type Locator, type Page } from "@playwright/test";
 
+/** The lane canvas has laid out and taken its camera. */
 export const ready = (page: Page) =>
-  expect(page.locator('.studio-graph[data-layout="ready"]')).toBeVisible({ timeout: 20_000 });
+  expect(page.locator('.board[data-layout="ready"][data-board="ready"]')).toBeVisible({
+    timeout: 20_000,
+  });
 
 /** Creates a TinyURL study project through the project menu and returns its ID. */
 async function createTinyUrl(page: Page, name = "E2E TinyURL"): Promise<string> {
@@ -24,20 +27,12 @@ async function createTinyUrl(page: Page, name = "E2E TinyURL"): Promise<string> 
   return id;
 }
 
-export async function level(page: Page, name: "C1" | "C2" | "C3") {
-  await page
-    .getByRole("navigation", { name: "Architecture depth" })
-    .getByRole("button", { name, exact: true })
-    .click();
-  await ready(page);
-}
-
-export const boxes = (page: Page) => page.locator(".react-flow__node");
-export const lines = (page: Page) => page.locator(".react-flow__edge");
-export const box = (page: Page, name: string): Locator =>
-  boxes(page)
-    .filter({ has: page.locator(`strong:text-is("${name}")`) })
-    .last();
+export const tiles = (page: Page) => page.locator(".board .react-flow__node");
+export const lines = (page: Page) => page.locator(".board .react-flow__edge");
+export const dashedLines = (page: Page) => page.locator(".board .react-flow__edge-path.is-dashed");
+/** A tile by its accessible name (the tile name, or "User" for the actor). */
+export const tile = (page: Page, name: string): Locator =>
+  page.locator(".board").getByRole("group", { name, exact: true });
 
 export async function design(page: Page, id: string) {
   const res = await page.request.get(`/api/projects/${id}/design`);
@@ -46,7 +41,10 @@ export async function design(page: Page, id: string) {
     revision: number;
     elements: { id: string; name: string }[];
     architecture: {
-      studio: { components: { name: string; settings: Record<string, unknown> }[] };
+      studio: {
+        elements: { element: string; settings: Record<string, unknown> }[];
+        components: { name: string; settings: Record<string, unknown> }[];
+      };
     };
   };
 }

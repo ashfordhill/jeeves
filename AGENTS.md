@@ -29,7 +29,7 @@ Before handing off:
 2. `pnpm test:e2e` (or `pnpm test:e2e:docker` when Chromium's system libraries are missing).
 3. `pnpm --filter @jeeves/web build`.
 4. A browser check of the running app for anything user-visible: it loads, the TinyURL study
-   renders at C1/C2/C3, and the changed behaviour works by mouse.
+   renders on the lane canvas, and the changed behaviour works by mouse.
 
 Unit tests must not need Docker, Postgres or network access (the server uses PGlite). E2E tests
 live in `apps/web/e2e/`, use the `jeeves_e2e` database and a scripted chat model, and delete the

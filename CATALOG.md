@@ -8,7 +8,8 @@ the source is [`studio-definitions.ts`](packages/spec/src/studio-definitions.ts)
 ## C1 context
 
 The **system** (name and goal), **people** and **external systems**, with relationships between
-them. Created from `+` handles on the C1 tab.
+them. The lane canvas shows only the system: its name and goal are in the inspector when the user
+or nothing is selected. People, external systems and their relationships stay in the format.
 
 ## Tile kinds (C2)
 
@@ -37,8 +38,8 @@ the application or package it was created from.
 
 ## Tile types (lane canvas)
 
-The lane canvas (being built; the C1/C2/C3 canvas is still the one shown) offers seven tile types
-as picker icons. Each groups kinds; the first kind is the default and the others are variants.
+The lane canvas groups kinds into seven tile types, offered as picker icons once tiles can be
+created by mouse (not yet). The first kind is the default and the others are variants.
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
@@ -95,7 +96,7 @@ to Geo lookup. A cache can't link onward."):
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
 
 A **package** groups two or more independent applications into an open frame at C2; it has no
-language, provider or runtime. The **Service and worker** preset (Library → Presets) creates a
+language, provider or runtime. The **Service and worker** preset (offered to chat) creates a
 service, a worker and a package-owned work queue in one step; nothing links to the service, so the
 lane rules refuse it.
 

@@ -9,6 +9,7 @@ import {
   type StudioElementField,
   type StudioFieldGroup,
   type StudioPerformanceField,
+  type StudioSemanticRef,
   type StudioSettings,
   type StudioViewNode,
   studioComponentDefinitions,
@@ -490,33 +491,70 @@ export function InspectorForm({
         onComponent={onComponent}
       />
     );
-  if (!spec) return node.description ? <p>{node.description}</p> : null;
+  if (!spec || !ref) return node.description ? <p>{node.description}</p> : null;
   return (
     <TargetForm
       spec={spec}
       design={design}
-      node={node}
-      onElement={onElement}
+      target={ref}
       onConnection={onConnection}
-      onCreate={onCreate}
+      actions={{ node, onElement, onCreate }}
     />
   );
 }
 
+/**
+ * The lane canvas inspector for an element tile, or for the system when `element` is undefined:
+ * General, Options and Connections, with no package, membership or dependency actions.
+ */
+export function TargetInspector({
+  projectId,
+  element,
+  label,
+  design,
+  onConnection,
+}: {
+  projectId: string;
+  element?: string;
+  /** The system's name when the design has no architecture yet. */
+  label: string;
+  design: DesignDocument;
+  onConnection: (id: string) => void;
+}) {
+  const target = useMemo<StudioSemanticRef>(
+    () => (element ? { kind: "element", id: element } : { kind: "system" }),
+    [element],
+  );
+  const spec = useMemo(
+    () => inspectorSpec(projectId, target, label, design),
+    [projectId, target, label, design],
+  );
+  if (!spec) return null;
+  return <TargetForm spec={spec} design={design} target={target} onConnection={onConnection} />;
+}
+
+/** The system's description reads as its goal. */
+const systemFields = canonical.map((field) =>
+  field.path === "element.description" ? { ...field, label: "Goal" } : field,
+);
+
 function TargetForm({
   spec,
   design,
-  node,
-  onElement,
+  target: ref,
   onConnection,
-  onCreate,
+  actions,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
-  node: StudioViewNode;
-  onElement: (id: string) => void;
+  target: StudioSemanticRef;
   onConnection: (id: string) => void;
-  onCreate: (draft: ConnectionDraft) => void;
+  /** The old studio canvas's package, membership, dependency and disconnect actions. */
+  actions?: {
+    node: StudioViewNode;
+    onElement: (id: string) => void;
+    onCreate: (draft: ConnectionDraft) => void;
+  };
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
@@ -531,7 +569,7 @@ function TargetForm({
         // Provider choices are narrowed per engine, so they widen to plain string choices here.
         fields: [...item.fields] as unknown as InspectorField[],
       }))
-    : [{ group: "General", fields: canonical }];
+    : [{ group: "General", fields: ref.kind === "system" ? systemFields : canonical }];
   // Service and resource performance intent joins Options (after the definition fields).
   const performance = definition ? studioPerformanceFields[settings.kind] : [];
   if (performance.length) {
@@ -539,16 +577,16 @@ function TargetForm({
     if (options) options.fields = [...options.fields, ...performance];
     else groups.splice(1, 0, { group: "Options", fields: [...performance] });
   }
-  const ref = node.refs[0];
   const memberIds =
-    ref?.kind === "package"
+    ref.kind === "package"
       ? (design.architecture?.studio?.packages.find((item) => item.id === ref.id)?.members ?? [])
       : [];
-  const ids = ref?.kind === "element" ? [ref.id] : memberIds;
+  const ids = ref.kind === "element" ? [ref.id] : memberIds;
   const connections = design.connections.filter(
     (item) => ids.includes(item.from.element) || ids.includes(item.to.element),
   );
-  const canConnect = ref?.kind === "element" && applicationKind(endpointKind(design, ref.id));
+  const canConnect =
+    !!actions && ref.kind === "element" && applicationKind(endpointKind(design, ref.id));
   if ((connections.length || canConnect) && !groups.some((group) => group.group === "Connections"))
     groups.push({ group: "Connections", fields: [] });
   const active = groups.some((group) => group.group === selectedTab) ? selectedTab : "General";
@@ -556,7 +594,7 @@ function TargetForm({
   const applications = design.elements.filter(
     (item) =>
       containerClassification(item).kind === "Application" &&
-      !(ref?.kind === "element" && ref.id === item.id),
+      !(ref.kind === "element" && ref.id === item.id),
   );
   const optionsFor = (field: InspectorField) => {
     if (field.control !== "reference") return [];
@@ -564,7 +602,7 @@ function TargetForm({
     if (field.reference.target === "origin") return originChoices(design);
     if (field.reference.target === "application")
       return applications.map((item) => ({ value: item.id, label: item.name }));
-    if (field.reference.target !== "connection" || ref?.kind !== "element") return [];
+    if (field.reference.target !== "connection" || ref.kind !== "element") return [];
     const kind = field.reference.resource;
     return connections
       .filter(
@@ -582,7 +620,7 @@ function TargetForm({
   return (
     <form
       className="studio-inspector-form"
-      aria-label={`${definition?.name ?? (ref?.kind === "package" ? "Package" : "General")} settings`}
+      aria-label={`${definition?.name ?? (ref.kind === "package" ? "Package" : ref.kind === "system" ? "System" : "General")} settings`}
       onSubmit={(event) => {
         event.preventDefault();
         void formDrafts.flush(entry.key);
@@ -633,20 +671,20 @@ function TargetForm({
             }
           />
         ))}
-        {active === "General" && ref ? (
+        {active === "General" && actions ? (
           <MembershipActions
             projectId={spec.projectId}
             design={design}
             target={ref}
-            onElement={onElement}
+            onElement={actions.onElement}
           />
         ) : null}
-        {active === "Connections" ? (
+        {active === "Connections" && actions ? (
           <DependencyActions
             projectId={spec.projectId}
             design={design}
-            node={node}
-            onCreate={onCreate}
+            node={actions.node}
+            onCreate={actions.onCreate}
             onConnection={onConnection}
           />
         ) : null}
@@ -667,7 +705,8 @@ function TargetForm({
                       {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
                     </span>
                   </button>
-                  {design.architecture?.studio?.connections.some(
+                  {actions &&
+                  design.architecture?.studio?.connections.some(
                     (binding) => binding.connection === item.id,
                   ) ? (
                     <button

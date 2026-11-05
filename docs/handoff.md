@@ -611,3 +611,120 @@ Notes for LG07:
   still create their own project per test.
 - The study's C1 is just the system and the canvas will not show C1, so nothing on the lane
   canvas needs C1 context. Packages remain in the format; the study has none.
+
+## 2026-11-04 — LG07: the lane canvas replaces the studio canvas (complete)
+
+The Design tab now shows the lane canvas, read-only. `@jeeves/web` depends on `@jeeves/board`
+(`workspace:*`). New `apps/web/src/canvas/`:
+
+- `elk.ts` (ported `elkClient.ts`): the resilient ELK (elkjs Web Worker through `?url`, falling
+  back to `elk.bundled.js` on the main thread, which is what jsdom unit tests get) behind the app's
+  one `layoutEngine`. No export engine.
+- `tiles/human-figure.svg`, `svgInner.ts`, `HumanFigure.tsx` (ported; no head crop or
+  accessories). `tiles/ActorTile.tsx`: 128×160, the figure on automation-illustrator's empty-actor
+  pastel with a "User" name plate (ActorColumn proportions). `tiles/Tile.tsx`: 128×128, the kind's
+  icon (40px, `StudioIcon`) in its `data-family` colour and the name in up to two lines (StepTile
+  task-card proportions: icon pinned 22px from the top); `tileShape(kind)` from the tile types.
+- `LaneCanvas.tsx`: `laneGraph` → `<Board>`: actor and tiles; entries and connections as lines,
+  dashed per `edge.dashed`; entry chips 32×32 with `IconDownload`/`IconUpload`. Accessible names:
+  tiles by name (the actor is "User"); lines "Redirect service to Link cache", entries "Download
+  lane: User to CDN".
+- `canvas.css`: `--board-*` mapped to the theme tokens on `.board` (they follow `data-theme`, so
+  light and dark come from the tokens), the actor pastel and figure ink per theme, the tile and
+  actor faces, the inspector heading, and a transparent React Flow attribution (it was a light box
+  on dark paper).
+- `Workspace.tsx` (mounted by `DesignView` instead of `StudioWorkspace`; no outer
+  `ReactFlowProvider`, the board has its own): Undo, Redo and the chat and inspector toggles in the
+  header; Select, Hand and Fit (`IconFocusCentered`, name "Fit") on the canvas toolbar; V/H
+  shortcuts; the chat rail; notices and draft feedback. Selection is `{tile}` or `{line}`; a
+  selection that no longer exists falls back to none. Selecting a tile or line opens the
+  inspector. The inspector shows a tile (icon, name, kind name, then `TargetInspector`), a
+  connection ("A → B" and `ConnectionForm`), an entry (lane icon and name, then "User → target" as
+  buttons that select those tiles), or for the actor and no selection the system's Name and Goal.
+  `architectureSelection` (sent with chat) is the selected element, connection or entry ID.
+- `RailResize.tsx`: moved out of `StudioWorkspace.tsx` (which now imports it).
+
+`studio/InspectorForm.tsx`: `TargetForm` takes `target: StudioSemanticRef` and optional `actions`
+(node, `onElement`, `onCreate`). The old node-based `InspectorForm` passes `actions`, so the old
+canvas keeps its package, membership, dependency and Disconnect actions. The new
+`TargetInspector({ projectId, element?, label, design, onConnection })` passes none: General,
+Options and Connections only, Connections rows select the line, no Disconnect, and no Connections
+tab for an application without links. The system's description is labelled **Goal**.
+
+E2E: `studio.ts` helpers are `ready` (`.board[data-layout="ready"][data-board="ready"]`), `tiles`,
+`lines`, `dashedLines` (`.react-flow__edge-path.is-dashed`) and `tile(page, name)`
+(`getByRole("group", { name, exact: true })` inside `.board`); `design()` types the element
+settings. `canvas.spec.ts` replaces `studio-levels` (10 tiles, 11 lines, 3 dashed, the User tile,
+2 chips). `edit-history` edits Shorten API's request timeout 3000 → 4500 (autosave, undo, redo,
+reload). `blueprint-chat` uses `tile`. `spawn.spec.ts` is removed (LG09 brings it back).
+
+Departures, all small: the human figure's port comment sits inside `<svg>` and the source SVG has
+`aria-hidden="true"` (Biome's `noSvgWithoutTitle`; `svgInner` drops the outer tag and a `<title>`
+would become a tooltip). `ready` also waits for `data-board="ready"` (the camera has landed). The
+selection is not kept in the URL; the old `studioScope`/`studioTarget` parameters are ignored. No
+cap was hit or raised; `FIT_PADDING` is unchanged.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 197 files, all type checks, 20 test files / 122 tests passed;
+  `App.test` mounts the new workspace on an empty design).
+- `pnpm test:e2e`: 4 passed, first run, despite this unit's lockfile change; 4 passed again after
+  the last CSS and doc edits.
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory; the old layout worker
+  is no longer in the bundle).
+- Browser (Playwright Chromium by mouse, my own API on 4312 and web on 4302 against `jeeves_e2e`,
+  both stopped afterwards; the owner's 4300/4310 and the `jeeves` database untouched): a TinyURL
+  study made through the project menu shows 10 tiles, 11 lines, 3 dashed and 2 chips, with no
+  console errors or warnings. Fit zoom: **0.78** at 1440×900 with the chat rail closed (target
+  ≥ 0.75 met), 0.61 with it open; 0.69 closed and 0.53 open at 1280×800. Clicking Redirect
+  service, an entry chip, the User, the Click events → Analytics worker line and empty paper
+  selects each and shows the matching inspector. Switching Shorten API → URL reputation API to
+  Asynchronous in its form saves revision 2 and dashes that line (4 dashed); Undo restores 3. Hand
+  mode pans from a tile and selects nothing. A Blank architecture project shows only the User,
+  centred. Both throwaway projects were deleted.
+- What I saw (1440×900 and 1280×800, light and dark): the board reads cleanly. The user sits left
+  with the two entry chips on its fork, download above and upload below; CDN → Redirect service on
+  the download row, Shorten API below; the click path runs dashed along the top row. Redirect's
+  dashed line to Click events shares Redirect's first short stretch with its solid lines, and the
+  solid lines cover it there, so the dash starts exactly where it forks upward; it reads well, so I
+  left it. The weak spot is the bus: Redirect service and Shorten API both reach Link cache and
+  Links database, so ELK merges both fans into one vertical bus, and the lines alone don't show
+  that only Redirect reaches Click events and only Shorten API reaches the URL reputation API
+  (selecting a line shows it). That is the ported layout's merge behaviour (`mergeEdges`); I
+  recorded it in the studio guide's Limits rather than change board options. With the chat rail
+  open, names are small (0.61 zoom) but legible; at 1280 with chat open (0.53) they are hard to
+  read. Opening the inspector does not refit.
+
+Docs: the studio guide (new The lane canvas, Layout and navigation, Creating and connecting
+(read-only plus the lane rules), Inspector, History, the TinyURL table as tiles and modules,
+Limits), PLAN (intro, `apps/web` and `packages/board` rows, Layout), README (first paragraph and
+the studio link), AGENTS (verification step 4), CATALOG (C1 context is not shown, tile types not
+yet creatable by mouse, the preset is offered to chat).
+
+Notes for LG08:
+
+- Unreachable now: `studio/StudioWorkspace.tsx` and what only it uses (`StudioGraph`, layout,
+  worker, client, `use-layout`, `use-settle`, routing, spawn, creation, Library,
+  `ConnectionCreator`, `MembershipActions`, `DependencyActions`, `card-appearance`). Remove
+  `TargetForm`'s `actions` prop and the node-based `InspectorForm` wrapper with them.
+- **Keep `ComponentForm`/`ComponentDraftForm`** in `InspectorForm.tsx`: only the old wrapper
+  reaches them now, but LG11's Modules list opens them.
+- `TargetInspector`, `inspectorSpec` and `ConnectionForm`'s `RelationshipTarget` use
+  `StudioSemanticRef` from `studio-view.ts`. When that file goes, move the ref type (or a narrower
+  `{kind: "system"} | {kind: "element", id}`) next to `inspectorSpec`. The new canvas only uses
+  `{kind: "connection"}` targets.
+- `studio.css` rules the workspace still uses: `.studio-app-header`, `#studio-header-controls`,
+  `.studio-header-actions`, `.studio-workspace`, `.studio-rail*`, `.studio-center`,
+  `.studio-tools`, `.studio-notice`, `.studio-draft-feedback`, `.studio-selection-summary`,
+  `.studio-inspector-tabs`, `.studio-inspector-form`, `.studio-form-field`, `.studio-field-error`,
+  `.studio-field-help`, `.studio-dependencies`, `.studio-dependency-row` and the focus rule; LG11
+  needs `.studio-component-meta`, `.studio-readiness`, `.studio-membership` and `.studio-danger`.
+- `preferences.ts` still carries `scope` and `cameras` (unused); `DesignView` still calls
+  `flushLayout` on `pagehide`.
+
+Notes for LG09:
+
+- Plan §4's empty project has the actor selected with its two lane tabs; today it is only centred.
+- `Workspace.select({ tile })` is where `onPick` should land the new tile; `LaneCanvas` passes no
+  `hints` yet. The chat rail's suggestion "Add a web app that calls the selected service" is stale
+  (no browser tile); that is LG12's.
