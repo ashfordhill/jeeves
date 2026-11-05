@@ -2,11 +2,14 @@
 // (0803c4a).
 // The board: React Flow showing tiles and lines where ELK put them. Tiles are never dragged;
 // dragging the paper pans, the wheel zooms, a click selects. The first non-empty layout takes a
-// one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. The selected tile
-// shows the caller's pull tabs (`TileChrome`): a picked fan item becomes a new tile, which docks
-// at the next slot beside its source until ELK lands and the layout animates. A removable
+// one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. A fitted camera
+// refits when the board changes size (a rail opens or closes); once the user pans or zooms, the
+// camera is theirs and stays. The selected tile shows the caller's pull tabs (`TileChrome`): a
+// picked fan item becomes a new tile, which docks at the next slot beside its source until ELK
+// lands and the layout animates, and the camera pans just enough to show it. The selected line
+// and the selected tile's lines take the selection colour, drawn over the rest. A removable
 // selected tile, and a selected line, show a red X; a caller's panel (`hud`, a confirmation)
-// sits under a tile at screen size.
+// sits at the bottom centre of the board.
 //
 // Changes from automation-illustrator: no store, lanes, compare camera, word-web, present mode,
 // insert previews or departing tiles. Tiles, lines and tabs come in as props, with caller content
@@ -20,7 +23,6 @@ import {
   Handle,
   type Node,
   type NodeProps,
-  NodeToolbar,
   Position,
   ReactFlow,
   ReactFlowProvider,
@@ -53,6 +55,8 @@ import {
 import { BoardLine, type BoardLineEdge } from "./BoardLine.tsx";
 import {
   boardNeedsCover,
+  type CameraOrigin,
+  cameraOriginAfterMove,
   canApplyFirstLayoutCamera,
   clampWheelZoom,
   firstLayoutCentersAtCurrentZoom,
@@ -66,8 +70,10 @@ import {
   shouldZoomTowardBounds,
   unionTileBounds,
   type Viewport,
+  viewportOnResize,
   viewportToCenterRect,
   viewportToFitRect,
+  viewportToReveal,
   viewportZoomAround,
   wheelZoomFactor,
   ZOOM_BOUNDS_PAD,
@@ -103,8 +109,8 @@ export type LineSpec = {
 
 export type BoardSelection = { tile?: string; line?: string };
 /**
- * A panel under a tile, at screen size (such as a confirmation). While it shows, that tile has no
- * chrome and the `marked` tiles get a warning ring.
+ * A panel about a tile (such as a removal's confirmation), at the bottom centre of the board at
+ * screen size. While it shows, that tile has no chrome and the `marked` tiles get a warning ring.
  */
 export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
 export type BoardMode = "select" | "hand";
@@ -149,11 +155,8 @@ export type BoardProps = {
   ref?: Ref<BoardHandle>;
 };
 
-type TileData = { shape: TileShape; content: ReactNode; chrome?: ReactNode; hud?: ReactNode };
+type TileData = { shape: TileShape; content: ReactNode; chrome?: ReactNode };
 type TileNode = Node<TileData, "tile">;
-
-/** Room between a tile and the panel under it. */
-const HUD_OFFSET = 18;
 
 function Tile({ data, selected }: NodeProps<TileNode>) {
   return (
@@ -164,17 +167,6 @@ function Tile({ data, selected }: NodeProps<TileNode>) {
         <Handle type="source" position={Position.Right} isConnectable={false} />
       </div>
       {data.chrome}
-      {data.hud ? (
-        <NodeToolbar
-          isVisible
-          position={Position.Bottom}
-          offset={HUD_OFFSET}
-          className="board-hud nopan nowheel"
-          onClick={(event) => event.stopPropagation()}
-        >
-          {data.hud}
-        </NodeToolbar>
-      ) : null}
     </div>
   );
 }
@@ -298,11 +290,19 @@ function Inner({
   }
 
   const { layout, phase, error } = useBoardLayout(engine, input, { ...hints, ...dockOrder });
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
   const shown = useAnimatedLayout(layout);
   shownRef.current = shown;
   const display = shown?.positions;
   for (const id of docks.current.keys()) if (display?.[id]) docks.current.delete(id);
   const lastZoomRef = useRef(1);
+  /* Where the current pan or zoom gesture started. */
+  const moveFrom = useRef<Viewport | null>(null);
+  /* Whether the camera came from a fit (the first layout or Fit) or from the user's pan or zoom. */
+  const originRef = useRef<CameraOrigin>("fit");
+  /* A picked tile to bring into view once ELK has placed it. */
+  const revealRef = useRef<string | null>(null);
 
   /* First non-empty layout: hold the board until ELK and the camera land, then fit once. A sole
      tile is centred at the current zoom instead. */
@@ -328,6 +328,7 @@ function Inner({
     let cancelled = false;
     const finish = (next: Viewport) => {
       lastZoomRef.current = next.zoom;
+      originRef.current = "fit";
       void rf.setViewport(next, { duration: 0 }).finally(() => {
         if (cancelled) return;
         cameraApplied.current = true;
@@ -364,11 +365,52 @@ function Inner({
         if (!pane || !layoutBoundsAreUsable(box)) return;
         const next = viewportToFitRect(pane, box);
         lastZoomRef.current = next.zoom;
+        originRef.current = "fit";
         void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
       },
     }),
     [rf],
   );
+
+  /* The board changed size (a rail opened or closed, the window resized): a fitted camera refits
+     the laid-out tiles at once; the user's camera stays. */
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host || typeof ResizeObserver === "undefined") return;
+    let last: Pane | null = null;
+    const observer = new ResizeObserver(() => {
+      const pane = paneOf(host);
+      if (!pane) return;
+      const before = last;
+      last = { width: pane.width, height: pane.height };
+      if (!before || !cameraApplied.current) return;
+      if (Math.abs(before.width - pane.width) < 1 && Math.abs(before.height - pane.height) < 1)
+        return;
+      const positions = (layoutRef.current ?? shownRef.current)?.positions;
+      const next = viewportOnResize(
+        originRef.current,
+        pane,
+        positions ? unionTileBounds(positions, sizesRef.current) : undefined,
+      );
+      if (!next) return;
+      lastZoomRef.current = next.zoom;
+      void rf.setViewport(next, { duration: 0 });
+    });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [rf]);
+
+  /* A picked tile ELK has placed outside the view: pan just enough to show it, at the same zoom. */
+  useEffect(() => {
+    const id = revealRef.current;
+    const at = id ? layout?.positions[id] : undefined;
+    const size = id ? sizesRef.current[id] : undefined;
+    if (!id || phase !== "ready" || !at || !size || !cameraApplied.current) return;
+    revealRef.current = null;
+    const pane = paneOf(hostRef.current);
+    const next = pane && viewportToReveal(rf.getViewport(), pane, { ...at, ...size });
+    if (next) void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
+  }, [layout, phase, rf]);
 
   /* Wheel zoom: finer steps than React Flow's, with a floor a little below fit. Zooming in on
      empty paper aims at the graph. */
@@ -377,6 +419,7 @@ function Inner({
     if (!host) return;
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey || e.deltaY === 0) return;
+      if (e.target instanceof Element && e.target.closest(".board-hud")) return;
       e.preventDefault();
       e.stopPropagation();
       const pane = paneOf(host);
@@ -389,6 +432,7 @@ function Inner({
       );
       if (Math.abs(nextZoom - vp.zoom) < 1e-6) return;
       lastZoomRef.current = nextZoom;
+      originRef.current = "user";
       const flowPointer = rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
       const bounds = shownRef.current?.bounds;
       const toward =
@@ -468,6 +512,7 @@ function Inner({
           tab.side === "after" ? l.source === chromeTile : l.target === chromeTile,
         ).length;
         const record = (id: string | undefined) => {
+          if (id) revealRef.current = id;
           if (!id || shownRef.current?.positions[id]) return;
           docks.current.set(id, {
             source: chromeTile,
@@ -504,7 +549,6 @@ function Inner({
         shape: t.shape,
         content: t.content,
         ...(t.id === chromeTile ? { chrome } : {}),
-        ...(t.id === hudTile ? { hud: hud?.content } : {}),
       },
       draggable: false,
       connectable: false,
@@ -523,8 +567,12 @@ function Inner({
     };
   });
 
-  /* Draw order at crossings: dashed first, solid next, the selected line on top. */
-  const rank = (l: LineSpec) => (selected.line === l.id ? 2 : l.dashed ? 0 : 1);
+  /* Draw order at crossings: dashed under solid; the selected tile's lines over the rest, and the
+     selected line on top. */
+  const linked = (l: LineSpec) =>
+    selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile);
+  const rank = (l: LineSpec) =>
+    (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
   const edges: BoardLineEdge[] = [...lines]
     .sort((a, b) => rank(a) - rank(b))
     .map((l) => ({
@@ -537,6 +585,7 @@ function Inner({
       ...(l.label ? { ariaLabel: l.label } : {}),
       data: {
         dashed: l.dashed,
+        ...(linked(l) ? { linked: true } : {}),
         ...(l.label ? { label: l.label } : {}),
         ...(l.chip ? { chip: l.chip.content } : {}),
       },
@@ -587,7 +636,17 @@ function Inner({
           maxZoom={MAX_ZOOM}
           snapToGrid
           snapGrid={[GRID, GRID]}
+          onMoveStart={(_, viewport) => {
+            moveFrom.current = viewport;
+          }}
           onMove={(event, viewport) => {
+            // A drag, the wheel or a pinch makes the camera the user's; the board's moves don't.
+            originRef.current = cameraOriginAfterMove(
+              originRef.current,
+              Boolean(event),
+              moveFrom.current ?? viewport,
+              viewport,
+            );
             const previous = lastZoomRef.current;
             lastZoomRef.current = viewport.zoom;
             // Pinch zoom-out stops a little below fit, like the wheel. Programmatic moves pass.
@@ -621,6 +680,11 @@ function Inner({
           />
         </ReactFlow>
       </BoardContext.Provider>
+      {hudTile ? (
+        <div className="board-hud" data-tile={hudTile}>
+          {hud?.content}
+        </div>
+      ) : null}
       {covering ? (
         <div className="board-loading" role="status">
           Loading…

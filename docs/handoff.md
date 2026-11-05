@@ -1342,3 +1342,117 @@ Notes for whoever picks up the canvas next:
   tests' expectations would change with it.
 - `creationName` in the definitions is the last metadata nothing but `describeStudioDefinition`
   reads.
+
+## 2026-11-05 — PL01: canvas polish (complete)
+
+The five canvas problems in the studio guide's Limits are fixed, without layout options or data
+model changes, and the one-lane-per-tile rule is unchanged.
+
+Board (`packages/board`, still no Jeeves imports):
+
+- `camera.ts`: `CameraOrigin` ("fit" or "user"), `cameraOriginAfterMove`, `viewportOnResize` and
+  `viewportToReveal` (`REVEAL_MARGIN` 48px, for the tabs and X). `Board.tsx` keeps the origin: the
+  first-layout camera and Fit set "fit"; a wheel zoom, or a React Flow move with an event that
+  changed the view (drag, Hand, pinch), sets "user". A `ResizeObserver` on the board refits a
+  fitted camera at once (duration 0) on any size change, against the ELK target layout; the user's
+  camera stays. A picked tile's ID is remembered and, when ELK has placed it, the camera pans just
+  enough to show it (200ms, same zoom). No reference mechanism exists for this in
+  automation-illustrator (its cameras are stored), so it is new.
+- `Board.tsx`/`BoardLine.tsx`: the selected tile's lines (in and out) get `linked` and are drawn
+  in `--board-select` at the normal width, over the rest; the selected line on top, 4px, same
+  colour. Its X goes to `ownStretchMidpoint` (new in `layout/polyline.ts`): the middle of the
+  longest straight run of at least 8px that no other route runs along, else the midpoint. An
+  entry line's X stays above its chip.
+- `fan.ts`: `placeFan` clamps every item 16px inside the board's screen rect (`FAN_ITEM_SIZE` 60,
+  `FAN_EDGE_MARGIN` 16), pushes clamped items apart where they would stack, and nudges any item
+  whose centre is on a drop target's hole just off it (preferring spots clear of targets and other
+  items). `TileChrome` passes the board rect and the target holes.
+- `TileChrome.tsx`: only a tile the tab may drop on is "sticky" and makes the fan step back
+  (`data-on-tile`); over a refused tile a fan item under the pointer wins.
+- `hud` is no longer a `NodeToolbar` under the tile: it is a `.board-hud` at the board's bottom
+  centre (ported `.remove-picker-hud`: bottom 16px, centred, `min(420px, 100% - 32px)`, z-index
+  10), outside React Flow, so clicks on it never reach the paper; the wheel over it doesn't zoom.
+  The chrome-less tile and the `marked` rings are unchanged.
+- `board.css`: the HUD rule, the hovered fan item on top (its name was covered by a clamped
+  neighbour).
+
+Web: `creation.tsx` has no `onLinked`; a drop on a tile commits `linkTiles` and leaves the
+selection alone, so the source stays selected (a pick still selects the new tile and focuses its
+Name). `canvas.css`: the board's dark-theme `--board-select` is `#3d9cf0` (the theme's dark
+`--blue` #7eb6e0 is almost the dark `--line` #7eabc0, so highlighted lines didn't show); the
+removal list is a row of icon pills.
+
+Deviations from the plan, all found in the walkthrough:
+
+- The nudge applies to every fan item centred on a drop target, not only clamped ones, and the
+  sticky rule is limited to drop targets. Building TinyURL from Blank at 100% (which the new camera
+  keeps longer), Redirect's `---` fan put the Queue icon entirely inside Links database (not a
+  target); the pointer had to cross the tile, which then stuck, so the icon couldn't be picked at
+  all. LG13 escaped this only because its Fit clicks changed the zoom.
+- The dark-mode selection colour and the hovered-item z-index (above).
+- Tests: besides the camera test, one `placeFan` test in `fan.test.ts` (clamp, no stacking,
+  nudge). In `spawn.spec.ts` the second test no longer clicks Fit (the fitted camera refits when
+  the inspector opens) and asserts that Shorten API stays selected after the merge and Click
+  events is not selected.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 192 files, all type checks, 22 test files / 116 tests passed).
+- `pnpm test:e2e`: 8 passed, first run, twice (before and after the docs and the last fixes).
+- `pnpm --filter @jeeves/web build`: exit 0 (existing chunk-size advisory).
+- Browser: Playwright Chromium driven by mouse. My own API on 4312 (`JEEVES_FAKE_MODEL_SCRIPT`, a
+  scratch `JEEVES_HOME`) and web on 4302 against `jeeves_e2e`, both stopped afterwards. Every
+  throwaway project was deleted (204), leaving the one study already there. The owner's 4300/4310,
+  the `jeeves` database and `~/.jeeves/` were not touched. No console errors or warnings.
+
+TinyURL from **Blank architecture**: **11 drags and 6 clicks** (LG13: 11 and 9) at 1440×900 with
+chat open, 1440×900 with chat closed first, and 1280×800 with chat open. The 6 clicks are 2
+kind-row clicks (API → CDN, Service → Redirect), 3 selections (Redirect twice before its second
+and third forks, the User before the upload lane) and 1 Fit. The Fit is needed because the User has
+scrolled off the left by then: each new tile was panned into view at 100%, and the chain is wider
+than the board. Every new tile was in view when it landed. Both merges left Shorten API selected.
+The result has the study's entries and 9 links in the same order per tile, and identical tile
+positions (relative to the user). Note: the worker → store link is a `+` (a request drawn dashed),
+not a `---`.
+
+The five items:
+
+| # | Item | Result |
+| --- | --- | --- |
+| 1 | Camera follows the canvas | Fixed. Toggling rails on a fitted TinyURL refits to the guide's table at both sizes (1440: 0.78 / 0.61 / 0.60 / 0.44; 1280: 0.69 / 0.53 / 0.52 / 0.35). Selecting with the inspector closed refits, with all tiles in view. After a paper drag, a wheel zoom or a Hand drag, a rail toggle leaves the camera exactly as it was; Fit makes it follow again. |
+| 2 | A merge keeps the source | Fixed. Shorten API stayed selected after both merges in all three builds (E2E asserts it). |
+| 3 | Selection shows who reaches what | Fixed, with a caveat. Selecting Redirect turns exactly its 4 lines blue (rgb 26,143,212 at 2.75px), and the other 7 stay navy. In the screenshots its bus branches to Link cache and Links database and its dashed branch to Click events now read as Redirect's, light and dark. The X goes to the line's own stretch where one exists (Redirect → Click events, Shorten API → URL reputation API). TinyURL's three bus lines (Redirect → Link cache / Links database, Shorten API → Link cache) share every stretch, so their X falls back to the midpoint on the bus. The highlight makes clear which line it belongs to. |
+| 4 | The fan stays inside the canvas | Fixed. Both rails open, at 0.44 and 0.35: for Analytics worker `+` (6 items), CDN `+` before, the User's upload tab, Shorten API `+` (6) and URL reputation API `+`, 0 items left the board's 16px margin and 0 sat centred on a drop target. At the right edge the items line up along it without overlapping. |
+| 5 | Removal panel as a HUD | Fixed. Redirect's X: the panel is centred on the board (offset 0px), 16px from its bottom, 420px wide, "Remove 4 tiles" focused, 4 rings. Cancel, Escape and a paper click each close it with nothing changed. Confirm → 6 tiles and 5 lines; Undo → 10. |
+
+What the screenshots show (light and dark, both sizes): the canvas now keeps itself framed when
+rails change. During a build at 100% the newest tile always sits in view near the edge it grew
+towards. A selected tile's reach is visible at a glance, which fixes LG13's "who reaches what" on
+the bus. The fan never covers a rail. Still rough:
+
+- At 0.35–0.44 the clamped fan is a tidy column at the board's edge, but its 60px icons still
+  cover the tiles near that edge (non-targets), and the source tile's right edge when the tile
+  sits near the board edge.
+- With a user camera, the bottom HUD can cover the bottom row of tiles (it covered part of
+  Shorten API once). Fitted, it sat over empty paper.
+- Building at 100% pans the start of the chain out of view (the remaining Fit click).
+
+The guide's Limits now hold the fan at low zoom, the panning at 100% and the bus click (rewritten).
+The one-lane rule and the other limits are unchanged.
+
+Docs: studio guide (the lane canvas: selection colour; layout and navigation: how the camera
+follows; creating: fan placement, the source staying selected, the pan to a new tile; removing:
+the bottom-centre panel and the X on its own stretch; Limits), PLAN (`packages/board` row), the
+polish plan's status line. CATALOG, the settings and blueprint docs needed no change.
+
+Notes for PL02:
+
+- After a drop the selection doesn't change. A user's lane-tab drop onto the other lane's entry
+  tile (the `both` upgrade) will leave the User selected with its tabs. `canDrop` (via
+  `laneLinkRefusal`) must allow that drop. Otherwise the tile stays dimmed and refused, and since
+  only drop targets are sticky, a fan icon over it still wins.
+- Entry lines highlight when the User or their target is selected. The entry chip is
+  `CHIP = 32×32` in `LaneCanvas.tsx`, and the line's X sits above the chip using the chip's ELK
+  height. A wider two-icon chip only needs its `w` changed there.
+- `ownStretchMidpoint` treats any shared collinear run as shared, so two entry lines leaving the
+  User's port share their first stub, as before.

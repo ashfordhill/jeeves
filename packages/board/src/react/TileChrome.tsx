@@ -8,9 +8,11 @@
 //
 // Changes from automation-illustrator: the tabs, fan items and drop rules come from props; one
 // tab both fans and drops (there, `+` only fans and the path tab only drops); a `---` tab's band
-// is dashed; tiles the tab may drop on show through the scrim and the others stay dimmed; a
-// refused drop is reported; Escape cancels and a cancelled pull springs back. The red X shows
-// only when the caller lets the tile go (`remove`). No tile pickup or insert silhouette.
+// is dashed; tiles the tab may drop on show through the scrim and the others stay dimmed; on a
+// drop target the fan steps back, elsewhere a fan item wins over the tile under it; a refused
+// drop is reported; Escape cancels and a cancelled pull springs back. The fan stays inside the
+// board (`placeFan`). The red X shows only when the caller lets the tile go (`remove`). No tile
+// pickup or insert silhouette.
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -23,7 +25,7 @@ import {
 import { createPortal } from "react-dom";
 import type { DockSide, Size, SlotOrder } from "../layout/metrics.ts";
 import { DashGlyph } from "./DashGlyph.tsx";
-import { fanCenters } from "./fan.ts";
+import { fanCenters, placeFan } from "./fan.ts";
 import {
   fallbackTileRect,
   RIBBON_BORDER,
@@ -181,12 +183,12 @@ function PullTab({
   );
 
   /**
-   * What the pointer is on. Once it is on a tile it stays there until it leaves that tile, and
-   * the fan steps back (faded, not hit), so a fan item over the tile can't take the release; on a
-   * fan item, the item wins.
+   * What the pointer is on. Once it is on a tile the tab may drop on, it stays there until it
+   * leaves that tile, and the fan steps back (faded, not hit), so a fan item over the tile can't
+   * take the release; otherwise a fan item under the pointer wins, even over a tile.
    */
   const hitAt = (x: number, y: number, previous: Hover): Hover => {
-    if (previous && "tile" in previous) {
+    if (previous && "tile" in previous && targets().has(previous.tile)) {
       const r = tileScreenRect(host.current, previous.tile);
       if (r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return previous;
     }
@@ -347,6 +349,7 @@ function PullTab({
                 : []
             }
             refused={over !== null && !targets().has(over)}
+            onTarget={over !== null && targets().has(over)}
           />,
           document.body,
         )
@@ -385,6 +388,7 @@ function PullOverlay({
   board,
   holes,
   refused,
+  onTarget,
 }: {
   ids: string;
   tab: TabSpec;
@@ -394,22 +398,27 @@ function PullOverlay({
   board: DOMRect | undefined;
   holes: ReturnType<typeof holeRect>[];
   refused: boolean;
+  /** The pointer is on a tile the tab may drop on: the fan steps back. */
+  onTarget: boolean;
 }) {
   const before = tab.side === "before";
   const origin = underTileOrigin(drag.tile, drag.restY, before);
   const ribbon = taffyRibbon(origin.x, origin.y, drag.x, drag.y);
-  const centers = fanCenters(drag.restX, drag.restY, tab.items.length, before);
+  const centers = placeFan(
+    fanCenters(drag.restX, drag.restY, tab.items.length, before),
+    board && { x: board.x, y: board.y, w: board.width, h: board.height },
+    holes.map((hole) => ({ x: hole.x, y: hole.y, w: hole.width, h: hole.height })),
+  );
   const exit = holeRect(drag.tile, 0);
   const scrimMask = `${ids}-scrim`;
   const boardClip = `${ids}-board`;
   const exitMask = `${ids}-exit`;
   const hovered = drag.hover && "item" in drag.hover ? drag.hover.item : null;
-  const over = drag.hover && "tile" in drag.hover ? drag.hover.tile : null;
   return (
     <div
       className="board-overlay board-pull"
       data-glyph={tab.glyph}
-      data-on-tile={over !== null || undefined}
+      data-on-tile={onTarget || undefined}
       aria-hidden={!open}
     >
       {open ? (

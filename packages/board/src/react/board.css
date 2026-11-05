@@ -195,11 +195,16 @@
   visibility: hidden;
 }
 
-/* A panel under a tile at screen size (a removal's confirmation). */
+/* A panel about a tile (a removal's confirmation): a HUD at the bottom centre of the board, as
+   automation-illustrator's `.remove-picker-hud` (no status bar under it here). */
 .board-hud {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
   box-sizing: border-box;
-  width: max-content;
-  max-width: 320px;
+  width: min(420px, calc(100% - 32px));
   background: var(--board-tile);
   color: var(--board-ink);
   border: 3px solid var(--board-line);
@@ -361,7 +366,8 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--board-refuse) 45%, transparent);
 }
 
-/* Fan items: icons only; the name shows under the one the pointer is on. Data tiles are round. */
+/* Fan items: icons only; the name shows under the one the pointer is on. Data tiles are round.
+   The 60px box is `FAN_ITEM_SIZE` in fan.ts, which keeps the items on the board. */
 .board-fan-item {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -395,6 +401,7 @@
 }
 
 .board-fan-item[data-hover] {
+  z-index: 1;
   background: var(--board-tile);
   transform: translate(-50%, -50%) scale(1.06);
 }

@@ -1,7 +1,7 @@
 // Removal on the lane canvas, as in automation-illustrator: the selected tile's red X removes it and
 // links its predecessors to its successors wherever the lane rules allow (`removeTile`). When that
-// would cut tiles off, a small panel under the tile lists them (marked on the board) with
-// **Remove N tiles** and **Cancel**. A selected line's X removes that link (`removeLink`). Each
+// would cut tiles off, a panel at the bottom centre of the canvas lists them (marked on the board)
+// with **Remove N tiles** and **Cancel**. A selected line's X removes that link (`removeLink`). Each
 // removal is one batch and one undo step; a refusal goes to the studio notice in plain words.
 // Afterwards the removed tile's first predecessor is selected (a removed line leaves nothing
 // selected).

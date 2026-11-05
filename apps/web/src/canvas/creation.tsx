@@ -2,7 +2,8 @@
 // is a side and a mode with something to offer (`laneTabs`): `+` adds or links with a request,
 // `---` asynchronously; the user has one `+` per lane. Its fan offers the tile types the rules
 // accept there (`laneChoices`), as icons. A picked type becomes a new tile (`addTile`, named after
-// its type); a drop on a tile links to it (`linkTiles`). Each is one batch and one undo step; a
+// its type) and is selected; a drop on a tile links to it (`linkTiles`) and leaves the tile you
+// pulled from selected, ready for its next fork or merge. Each is one batch and one undo step; a
 // refusal goes to the studio notice in plain words.
 import type { BoardProps, FanItem, TabSpec } from "@jeeves/board";
 import {
@@ -85,7 +86,6 @@ export function useLaneCreation({
   graph,
   tile,
   onCreated,
-  onLinked,
 }: {
   projectId: string;
   projectName: string;
@@ -95,8 +95,6 @@ export function useLaneCreation({
   tile: string | undefined;
   /** A new tile was saved. */
   onCreated: (id: string) => void;
-  /** A link to this existing tile was saved. */
-  onLinked: (target: string) => void;
 }): Creation {
   const lanes = useMemo(() => {
     const tabs = new Map<string, LaneTab>();
@@ -139,13 +137,12 @@ export function useLaneCreation({
       if (!tab) return;
       const { from, to } = dropLink(tab, target);
       const linkId = newLinkId(design, from, to);
+      // The source stays selected (unlike a pick), so its next fork or merge needs no click back.
       void commitAction(
         projectId,
         (latest) =>
           buildStudioCommand(latest, { type: "linkTiles", from, to, link: tab.mode, linkId }).ops,
-      ).then((ok) => {
-        if (ok) onLinked(target);
-      });
+      );
     },
     onPick: (_tile, id, item) => {
       const tab = lanes.tabs.get(id);

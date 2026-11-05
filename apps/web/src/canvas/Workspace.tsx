@@ -144,7 +144,6 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
       select({ tile });
       setFocusName(tile);
     },
-    onLinked: (tile) => select({ tile }),
   });
   const { remove, ...removal } = useLaneRemoval({
     projectId,

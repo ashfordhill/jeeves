@@ -143,3 +143,55 @@ export function polylineDrawSegments(points: readonly Point[], period: number): 
   }
   return out;
 }
+
+/** Shorter free runs than this don't count as a line's own stretch. */
+const OWN_STRETCH_MIN = 8;
+
+/**
+ * The middle of the longest straight run of `points` that no polyline in `others` runs along
+ * (crossings don't count, only shared runs), or undefined when every run of at least 8px is
+ * shared. A line on a shared bus places its X there, on a stretch that is its alone.
+ */
+export function ownStretchMidpoint(
+  points: readonly Point[],
+  others: readonly (readonly Point[])[],
+): Point | undefined {
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+  let best: { length: number; at: Point } | undefined;
+  for (const [a, b] of segments(points)) {
+    const horizontal = near(a.y, b.y);
+    if (!horizontal && !near(a.x, b.x)) continue;
+    // Along the run: its span on the moving axis and its fixed coordinate on the other.
+    const along = (p: Point) => (horizontal ? p.x : p.y);
+    const across = (p: Point) => (horizontal ? p.y : p.x);
+    const lo = Math.min(along(a), along(b));
+    const hi = Math.max(along(a), along(b));
+    const shared: [number, number][] = [];
+    for (const other of others) {
+      for (const [c, d] of segments(other)) {
+        if (!near(across(c), across(d)) || !near(across(c), across(a))) continue;
+        const start = Math.max(lo, Math.min(along(c), along(d)));
+        const end = Math.min(hi, Math.max(along(c), along(d)));
+        if (end - start > 0.5) shared.push([start, end]);
+      }
+    }
+    shared.sort((p, q) => p[0] - q[0]);
+    const free: [number, number][] = [];
+    let cursor = lo;
+    for (const [start, end] of shared) {
+      if (start > cursor) free.push([cursor, start]);
+      cursor = Math.max(cursor, end);
+    }
+    if (hi > cursor) free.push([cursor, hi]);
+    for (const [start, end] of free) {
+      const length = end - start;
+      if (length < OWN_STRETCH_MIN || (best && length <= best.length)) continue;
+      const mid = (start + end) / 2;
+      best = {
+        length,
+        at: horizontal ? { x: mid, y: across(a) } : { x: across(a), y: mid },
+      };
+    }
+  }
+  return best?.at;
+}

@@ -4,6 +4,8 @@
 //
 // Changes from automation-illustrator: no compare, present or word-web cameras, and a fit never
 // magnifies past 100% (`FIT_MAX_ZOOM`), so a small design does not fill the screen with tiles.
+// The camera remembers whether it came from a fit or from the user: a fitted camera refits when
+// the board changes size, a user's camera stays; a new tile out of view is panned in.
 import type { Point, Rect, Size } from "../layout/metrics.ts";
 
 export type Viewport = { x: number; y: number; zoom: number };
@@ -94,6 +96,68 @@ export function unionTileBounds(
   }
   if (!Number.isFinite(minX)) return undefined;
   return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+// Following the canvas -----------------------------------------------------------------------
+
+/** Where the camera came from: a fit (the first layout or Fit) or the user (a pan or zoom). */
+export type CameraOrigin = "fit" | "user";
+
+/**
+ * The camera's origin after a move. A move the user made (`byUser`, such as a drag, the wheel or a
+ * pinch) that changed the view makes it the user's; the board's own moves keep the origin.
+ */
+export function cameraOriginAfterMove(
+  origin: CameraOrigin,
+  byUser: boolean,
+  from: Viewport,
+  to: Viewport,
+): CameraOrigin {
+  const moved =
+    Math.abs(from.x - to.x) > 0.5 ||
+    Math.abs(from.y - to.y) > 0.5 ||
+    Math.abs(from.zoom - to.zoom) > 1e-4;
+  return byUser && moved ? "user" : origin;
+}
+
+/**
+ * The camera after the board changes size (a rail opens or closes): a fitted camera refits
+ * `tiles` in the new pane; a camera the user set is left alone (undefined).
+ */
+export function viewportOnResize(
+  origin: CameraOrigin,
+  pane: Pane,
+  tiles: Rect | undefined,
+): Viewport | undefined {
+  if (origin !== "fit" || !layoutBoundsAreUsable(tiles)) return undefined;
+  return viewportToFitRect(pane, tiles);
+}
+
+/** Room a revealed tile keeps from the pane's edges (screen pixels), for its tabs and X. */
+export const REVEAL_MARGIN = 48;
+
+/**
+ * The smallest pan, at the same zoom, that brings `rect` (flow coordinates) into the pane with
+ * `margin` to spare; undefined when it is already in view. A tile larger than the room lines up
+ * with the top or left edge.
+ */
+export function viewportToReveal(
+  viewport: Viewport,
+  pane: Pane,
+  rect: Rect,
+  margin = REVEAL_MARGIN,
+): Viewport | undefined {
+  const shift = (start: number, size: number, room: number) => {
+    const lo = margin;
+    const hi = room - margin;
+    if (start < lo || size > hi - lo) return lo - start;
+    if (start + size > hi) return hi - (start + size);
+    return 0;
+  };
+  const dx = shift(viewport.x + rect.x * viewport.zoom, rect.w * viewport.zoom, pane.width);
+  const dy = shift(viewport.y + rect.y * viewport.zoom, rect.h * viewport.zoom, pane.height);
+  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return undefined;
+  return { x: viewport.x + dx, y: viewport.y + dy, zoom: viewport.zoom };
 }
 
 // Wheel zoom ---------------------------------------------------------------------------------

@@ -19,8 +19,7 @@ test("pulls a + tab onto the fan to add a tile", async ({ page, tinyurl: id }) =
 
 test("pulls a --- tab onto a tile to link it asynchronously", async ({ page, tinyurl: id }) => {
   await tile(page, "Shorten API").click();
-  // The inspector opened beside the canvas; Fit brings every tile back into view.
-  await page.getByRole("button", { name: "Fit", exact: true }).click();
+  // The inspector opened beside the canvas, and the fitted camera refitted, so no Fit is needed.
   const dashed = page.locator(".board .react-flow__edge-path.is-dashed");
   await expect(dashed).toHaveCount(3);
   await pull(page, "Shorten API", "Async after");
@@ -30,6 +29,9 @@ test("pulls a --- tab onto a tile to link it asynchronously", async ({ page, tin
 
   await ready(page);
   await expect(dashed).toHaveCount(4);
+  // A merge leaves the source selected, ready for its next fork or merge.
+  await expect(tile(page, "Shorten API")).toHaveClass(/selected/);
+  await expect(tile(page, "Click events")).not.toHaveClass(/selected/);
   const publish = (await design(page, id)).connections.find(
     (c) => c.from.element === "shorten-api" && c.to.element === "click-events",
   );

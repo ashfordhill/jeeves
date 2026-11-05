@@ -2,7 +2,9 @@
 // One line: the ELK route from the shown layout (a right-angle fallback until ELK has routed
 // it), solid or dashed, a 44px hit band, and an optional chip at the rect ELK kept clear for it.
 // The dashes are drawn per segment with their phase locked to the world, so shared trunks keep
-// the same gaps. A selected line shows a red X at its midpoint (above its chip, when it has one).
+// the same gaps. The selected line, and the selected tile's own lines, take the selection colour.
+// A selected line shows a red X on a stretch no other line shares (its midpoint when it has none,
+// above its chip when it has one).
 //
 // Changes from automation-illustrator: no restitch preview, stretch, insert hover, label editor
 // or context menu (removal is the X). The chip holds caller content (an icon) instead of
@@ -14,6 +16,7 @@ import {
   DASH_LENGTH,
   DASH_PERIOD,
   orthogonalPolyline,
+  ownStretchMidpoint,
   pathLength,
   pointAtLength,
   polylineDrawSegments,
@@ -32,6 +35,8 @@ const REMOVE_GAP = 8;
 
 export type BoardLineData = {
   dashed: boolean;
+  /** A line into or out of the selected tile: the selection colour at the normal width. */
+  linked?: boolean;
   /** Accessible name of the line and its chip; never drawn. */
   label?: string;
   chip?: ReactNode;
@@ -55,6 +60,7 @@ export function BoardLine({
     route && route.length >= 2 ? route : orthogonalPolyline(sourceX, sourceY, targetX, targetY);
   const path = polylineToSvg(points);
   const width = selected ? LINE_WIDTH_SELECTED : LINE_WIDTH;
+  const ink = selected || data?.linked ? "var(--board-select)" : "var(--board-line)";
   const segments = dashed ? polylineDrawSegments(points, DASH_PERIOD) : [];
 
   const rect = layout?.chips[id];
@@ -62,10 +68,18 @@ export function BoardLine({
   const chip = rect
     ? { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2, w: rect.w, h: rect.h }
     : { x: mid.x, y: mid.y, w: undefined, h: undefined };
-  // The X sits on the line's midpoint, or just above its chip so both stay clickable.
+  // The X sits just above the chip, so both stay clickable; otherwise on a stretch of the line
+  // that no other line shares (on a bus, the line's own branch), else at its midpoint.
   const remove = data?.chip
     ? { x: chip.x, y: chip.y - (chip.h ?? REMOVE_SIZE) / 2 - REMOVE_GAP - REMOVE_SIZE / 2 }
-    : mid;
+    : selected && removeLine
+      ? (ownStretchMidpoint(
+          points,
+          Object.entries(layout?.routes ?? {}).flatMap(([line, route]) =>
+            line === id ? [] : [route],
+          ),
+        ) ?? mid)
+      : mid;
 
   return (
     <>
@@ -75,7 +89,7 @@ export function BoardLine({
         className={dashed ? "board-line is-dashed" : "board-line"}
         interactionWidth={LINE_HIT_WIDTH}
         style={{
-          stroke: dashed ? "transparent" : "var(--board-line)",
+          stroke: dashed ? "transparent" : ink,
           strokeWidth: width,
           strokeLinecap: "butt",
           strokeLinejoin: "miter",
@@ -89,7 +103,7 @@ export function BoardLine({
           fill="none"
           pointerEvents="none"
           style={{
-            stroke: "var(--board-line)",
+            stroke: ink,
             strokeWidth: width,
             strokeDasharray: `${DASH_LENGTH} ${DASH_GAP}`,
             strokeDashoffset: seg.dashOffset,

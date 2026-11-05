@@ -30,6 +30,9 @@
 
 :root[data-theme="dark"] :is(.board, .board-overlay) {
   --board-scrim: rgba(0, 0, 0, 0.45);
+  /* The dark theme's blue is too close to its line colour for a selected tile's lines to stand
+     out; the board selects in a more saturated blue. */
+  --board-select: #3d9cf0;
 }
 
 .lane-canvas {
@@ -172,7 +175,8 @@
   color: var(--type-color, var(--ink));
 }
 
-/* A removal's confirmation, under the tile: what else goes, Cancel and Remove N tiles. */
+/* A removal's confirmation, in the board's bottom-centre HUD: what else goes, Cancel and Remove N
+   tiles. */
 .lane-remove {
   display: grid;
   gap: 8px;
@@ -185,8 +189,9 @@
 }
 
 .lane-remove-list {
-  display: grid;
-  gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -196,6 +201,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 3px 10px 3px 6px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-weight: 800;
+  font-size: 12px;
 }
 
 .lane-remove-list li > svg {

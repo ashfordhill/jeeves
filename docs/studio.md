@@ -31,7 +31,9 @@ lane, with no islands and no cycles.
   Action, protocol and the rest are in the inspector.
 - Click a tile, a line or a chip to select it and open the inspector; click empty paper to clear.
   The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
-  a red X; a selected line shows a red X too ([Removing](#removing)).
+  a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
+  see which tiles it reaches where lines share a bus. A selected line is drawn on top, thicker, in
+  the same blue, with a red X ([Removing](#removing)).
   Modules (components) are not drawn; they are listed in their tile's inspector
   ([Inspector](#inspector)). C1 people, external systems and packages are not shown.
 
@@ -47,9 +49,18 @@ no layout.
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and
-**Fit**. The canvas fits once when it opens; Fit refits, and never zooms in past 100%. Opening or
-closing a rail, selecting (which opens the inspector) and adding tiles do not refit. TinyURL fits
-at these zooms:
+**Fit**. The canvas fits when it opens; Fit refits, and never zooms in past 100%. The camera
+follows the canvas:
+
+- While the camera is fitted (since the canvas opened, or since Fit), it refits at once whenever
+  the canvas changes size: a rail opens or closes (selecting opens the inspector), a rail is
+  resized, or the window is.
+- Once you pan or zoom, the camera is yours: rails opening and closing leave it alone until you
+  click Fit.
+- A new tile that lands outside the view is brought in: the canvas pans just enough to show it,
+  with room for its tabs, at the same zoom. Merges and chat edits don't move the camera.
+
+TinyURL fits at these zooms, which the canvas takes by itself as the rails open and close:
 
 | Window | Both rails closed | Chat open | Inspector open | Both open |
 | --- | --- | --- | --- | --- |
@@ -72,18 +83,22 @@ the red X on its top edge ([Removing](#removing)).
 
 Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer, the
 rest of the board dims, and a fan of tile-type icons opens around the tab, offering only the types
-the rules accept there (the name shows under the icon the pointer is on).
+the rules accept there (the name shows under the icon the pointer is on). The fan stays on the
+canvas, at least 16px inside its edges, so it never covers a rail or the header; near an edge its
+icons line up along it, and an icon that would sit on a tile you can link to moves just off it.
 
 - **Release on an icon** to add a tile of that type. It is named after the type ("Cache", then
   "Cache 2"), docks at the next slot beside its source while the layout animates around it, and is
-  selected with its Name field ready to type over. A Service added after a queue is a worker; a new
+  selected with its Name field ready to type over (the canvas pans to it if it landed out of
+  view). A Service added after a queue is a worker; a new
   database, cache, storage or queue belongs to the application it is added next to.
 - **Release on another tile** to link to it (a merge): from the right side the tile links to it,
   from the left side it links to the tile, and from a lane tab it becomes an entry of that lane.
-  The tile it links to is then selected.
-  Tiles the tab can link to stay bright with a dashed outline; on a tile, the fan steps back and the
-  outline thickens. A dimmed tile can't be linked: releasing on it changes nothing and the notice
-  says why ("Shorten API already starts the upload lane; a tile can start only one lane.").
+  The tile you pulled from stays selected, so its next fork or merge starts at once.
+  Tiles the tab can link to stay bright with a dashed outline; on one of them, the fan steps back
+  and the outline thickens. A dimmed tile can't be linked: releasing on it changes nothing and the
+  notice says why ("Shorten API already starts the upload lane; a tile can start only one
+  lane."). An icon over a dimmed tile can still be picked.
 - **Release anywhere else**, or press Escape, and the band springs back.
 
 Each add or link is one batch and one undo step.
@@ -105,13 +120,14 @@ entry passes on in its lane. Removing the CDN in TinyURL makes the Redirect serv
 lane's entry.
 
 When the restitching can't reach some tiles (a resource doesn't link onward, so nothing replaces
-the links through it), a small panel opens under the tile instead. It lists the tiles that would be
-cut off, with their icons, and marks them, and the tile itself, with a red dashed ring on the
-board. **Remove N tiles** removes them all; **Cancel**, Escape, or selecting anything else changes
-nothing. Removing the Redirect service in TinyURL takes Click events, the Analytics worker and the
+the links through it), a panel opens at the bottom centre of the canvas instead. It lists the tiles
+that would be cut off, with their icons, and marks them, and the tile itself, with a red dashed
+ring on the board. **Remove N tiles** removes them all; **Cancel**, Escape, clicking empty paper or selecting
+anything else changes nothing. Removing the Redirect service in TinyURL takes Click events, the Analytics worker and the
 Analytics store with it ("Remove 4 tiles"), since the CDN can't link to a queue.
 
-A selected line has a red X at its middle (an entry line's sits above its chip). It removes that
+A selected line has a red X on a stretch of it that no other line shares, or at its middle when
+every stretch is shared (an entry line's sits above its chip). It removes that
 connection or entry, unless a tile would be cut off; then nothing changes and the notice names the
 tiles ("Removing the link from CDN to Redirect service would cut off Redirect service, …").
 
@@ -222,23 +238,17 @@ external, nine connections and all eleven components, with nothing omitted and n
 
 ## Limits
 
-- The fan, the tabs and the X are drawn at screen size beside tiles drawn at the board's zoom.
-  With both rails open (zoom 0.44 at 1440×900, 0.35 at 1280×800) the tabs are 18px or 14px, tile
-  names are hard to read, and the fan's icons cover nearby tiles and can spill over the rails. A
-  tile under a fan icon is linked by entering it where no icon covers it. Closing a rail and
-  clicking Fit helps.
-- The canvas does not refit when the inspector opens or the design grows, so tiles near the right
-  edge can leave the view until Fit is clicked.
-- After adding or linking, the new or linked tile is selected, so a second link from the same tile
-  starts with a click on it.
-- A removal's confirmation panel sits under the tile at screen size and can cover the tiles below
-  it; the tiles it would remove stay visible through their rings.
-- Where two services fork to the same tiles, their lines share one bus. In TinyURL, Redirect
-  service and Shorten API both reach Link cache and Links database, and Redirect's dashed link to
-  Click events leaves from the top of the same bus, so the lines alone don't show which service
-  reaches which tile; selecting a line does. A click on a shared stretch selects one of the lines
-  on it (its thicker stroke is hard to tell apart on the bus, and its X sits at that line's own
-  middle); to select or remove a particular one, click its row in the tile's Connections list.
+- The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
+  scale with the board. With both rails open (zoom 0.44 at 1440×900, 0.35 at 1280×800) the tabs
+  are 18px or 14px, tile names are hard to read, and the fan's icons can still cover nearby tiles
+  (only drop targets are kept clear). Closing a rail helps; a fitted camera refits by itself.
+- Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
+  and the first tiles can leave the view; Fit brings everything back.
+- Where two services fork to the same tiles, their lines share one bus (TinyURL: Redirect service
+  and Shorten API both reach Link cache and Links database). Selecting a tile colours its own lines,
+  which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
+  when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
+  remove a particular one, click its row in the tile's Connections list.
 - A tile starts at most one lane. Whether one tile may start both lanes is an open question for
   the owner.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource

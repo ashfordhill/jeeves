@@ -1,5 +1,8 @@
 # Lane grid polish units
 
+**Status:** PL01 complete (2026-11-05); PL02 next. Each unit's record is in the
+[handoff](../../handoff.md).
+
 Follow-ups to the completed [lane-grid plan](../../build-plan-lane-grid.md), proposed 2026-11-05
 from the LG13 acceptance findings and the owner's answers. There are two sequential units,
 PL01 → PL02. A fresh agent runs one at a time on primary `main`. The
