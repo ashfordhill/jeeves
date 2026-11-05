@@ -203,11 +203,17 @@ Device differentiation on the actor, admins and other personas, links back to th
 insert it (automation-illustrator's tile drag), vertical mode, package UI, removing C1 context and
 packages from the format, and a C4 export.
 
-## 8. Assumptions made without asking
+## 8. Assumptions (accepted by the owner, 2026-11-04)
+
+The owner's guidance: the canvas does not need to show every detail of the data model. The
+blueprint and the future code generator carry those details. What matters is that the design makes
+enough sense to build a real system from, without overwhelming the person drawing it.
 
 - Resources are end tiles (existing rule), so lanes fork at services instead of chaining through
   caches.
 - The caps are 4 outgoing links per tile and 3 entries per lane. They are one constant in the spec.
+  If TinyURL or another realistic design hits a cap and there is no good alternative, raise the cap
+  minimally and say so in the handoff.
 - Picker items are icons only; the name is in the tooltip and accessible label.
 - C1 nodes and relationships and packages stay in the format, but the canvas neither shows nor
   creates them. The server's layout route stays but the canvas no longer writes row order.
