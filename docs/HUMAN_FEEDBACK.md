@@ -194,3 +194,75 @@ handoff entry.
   line that comes back no longer widens a gap where it would stretch two lanes' meeting before a
   shared store past 32px) and three doc fixes; the owner's open points above are unchanged and
   listed with SD05's questions in [the handoff](handoff.md).
+
+## 2026-11-06 — Three-study review and reliable code foundations
+
+The owner supplied three current-view screenshots, preserved without modification:
+
+- [YouTube](human-feedback/2026-11-06-foundations-review-youtube.png)
+- [Marketplace](human-feedback/2026-11-06-foundations-review-marketplace.png)
+- [TinyURL](human-feedback/2026-11-06-foundations-review-tinyurl.png)
+
+**What the owner raised:**
+
+- YouTube's architecture still feels wrong or incomplete for a future enterprise foundation.
+  The paths are disorienting despite the small number of connections.
+- Original videos appears to have no reader. Perhaps Upload service should connect only to the
+  Upload jobs/Transcoder path.
+- Completion events and Completion handler do not communicate what they do.
+- Review Marketplace as a general shopping system and TinyURL as a smaller, apparently
+  near-complete design, rather than assuming either is sound.
+- Help the in-app chat model create better designs with reference material, tools or an improved
+  harness; it will use a less capable reasoning model.
+- Prepare a build plan suitable for later development agents using Sol at xhigh effort.
+- Preserve Jeeves' goal: software developers can understand and modify the diagram, which should
+  become the source of truth for a separate backend assembling tested deterministic templates.
+  Keep application-specific custom behavior explicit. A reliable foundation is preferable to
+  asking agents to invent a large system from scratch.
+- “60+%” describes the hoped-for reliable foundation; it is not existing measured code coverage
+  or a claim of enterprise readiness.
+
+**Questions and review answers:**
+
+These are the assistant's findings and recommendations, not new owner approvals.
+
+- **Does Original videos have a reader?** Yes. The saved YouTube design and source contain
+  `transcoder-read`: Transcoder → Original videos, Reads originals. Keep durable originals;
+  show the dependency clearly. Jobs carry references to the bytes.
+- **What is completion?** The topic announces processed assets; the handler records playable
+  video metadata. The responsibilities make sense, but lifecycle ownership and names need
+  improvement. A completion consumer can belong to the same logical Video service as its API.
+- **What is missing in YouTube?** Durable pre-publication state, failure/retry/reconciliation
+  contracts, visibility and publication ordering. Current sibling metadata/search consumers can
+  expose search results before their authoritative records are available.
+- **Is Marketplace complete?** No. It deliberately omits reservation/shipping and records orders
+  only after payment. Recommend pending orders, authoritative pricing/availability, owned data
+  boundaries and explicit payment/recovery transitions for a narrow checkout profile.
+- **Is TinyURL complete?** Its basic structure is a good starting point. The owner's saved
+  2.0.0 copy has CDN redirect caching enabled and no Stats API; cache hits bypass its click
+  publisher. The current 3.2.0 preset already removes the CDN and adds Stats API. Do not replace
+  the saved project or its custom edits as part of a review.
+- **Does chat learn from the playbook now?** No runtime path currently supplies that document or
+  a pattern lookup tool to Jeeves chat. Recommend a curated, versioned subset plus deterministic
+  review and evaluations on the actual intended model.
+- **What should generation trust?** Typed, versioned behavior and interface contracts with
+  explicit support/evidence. Current blueprint v2 is topology and design intent, not enough to
+  infer all code and business behavior reliably.
+
+**Decision for this unit:** preserve the evidence, review source and saved designs, write the
+[architecture review](plans/reliable-foundations/review.md) and
+[proposed build plan](plans/reliable-foundations/units.md), and append the lessons to the
+[playbook](design-playbook.md#2026-11-06-review-addendum-reliable-foundations).
+No application/study implementation or generator is included. No development subagents have
+been launched. Revised ownership, runtime relationships and contract semantics remain proposals.
+
+**Resolution:**
+
+- RF00, local commit titled **RF00: review architecture and plan reliable foundations**:
+  screenshots, source-backed review, primary references, seven bounded first-milestone units
+  (ending in review), and later contract/generator milestones recorded.
+- Open: implementation and owner review of the recommendations; full-overview readability;
+  business-service ownership and asynchronous return representation; exact first-generation
+  contract/profile; backend project location; measured performance of the intended chat model.
+- Earlier feedback entries retain their own history. This review does not mark their unresolved
+  routing or architecture concerns fixed.

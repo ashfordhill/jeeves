@@ -20,6 +20,8 @@ to medium tasks with a clearly defined outcome.
 - [Studio settings](docs/studio-settings.md): every configurable field and its values.
 - [Studio blueprint](docs/studio-blueprint.md): the code-generation boundary.
 - [Catalog](CATALOG.md): tile kinds and types, the lane link table, components, providers.
+- [Architecture review and proposed foundations plan](docs/plans/reliable-foundations/review.md):
+  the three studies, design-chat guidance and the contract work needed before a separate generator.
 - [Architecture overview](PLAN.md): apps, packages, data model and how they fit.
 - [C4 notes](docs/c4-modeling.md) and [Docker](docs/docker.md).
 

@@ -595,3 +595,80 @@ DesignGurus' Grokking (TinyURL; YouTube or Netflix) and crash course (YouTube), 
 Primer (Bit.ly), ByteByteGo (URL shortener, payment system), Dub, Educative and System Design
 Handbook (e-commerce), Google's Online Boutique, Microsoft's eShop, Stripe Connect, Cloudflare's
 and AWS's image delivery, AWS multipart uploads, Vitess and Cloudflare R2 pricing.
+
+## 2026-11-06 review addendum: reliable foundations
+
+The owner's next [three-study review](HUMAN_FEEDBACK.md#2026-11-06--three-study-review-and-reliable-code-foundations)
+exposed limits in the earlier guidance. This addendum qualifies those recommendations without
+rewriting their history. See the [full review and sources](plans/reliable-foundations/review.md)
+and [proposed units](plans/reliable-foundations/units.md). These lessons do not change the current
+schema, lane rules or runtime capabilities.
+
+### Preserve the architecture when simplifying its picture
+
+- A dependency graph, a user journey and deployment units describe different things. Keep stable
+  service/resource identities; let views select or repeat references to them. Do not invent a
+  second independent service simply to prevent a return path in the drawing.
+- A long-running workflow can return a result to the service that initiated it. Distinguish
+  asynchronous completion from accidental recursive execution. The current no-cycle rule is a
+  modeling restriction, not a universal software-architecture rule.
+- Own data at a logical business-service boundary. APIs and background consumers inside that
+  boundary can share its schema and deployment contract. Existing package ownership is a partial
+  mechanism. Multiple instances of a service are not competing business owners.
+- Other services should use the owner's contract or a deliberate projection. “One writer and
+  everyone else reads its tables” alone does not establish independently deployable services.
+  Physical database infrastructure can still be shared with separate owned schemas.
+- Treat store ownership, permitted access and a particular operation's read/write behavior as
+  separate concepts. Today's derived access is an approximation; do not interpret it as proof
+  that a free-text module respects ownership.
+
+### Model state and recovery, not just the successful path
+
+- Work queues distribute work among competing consumers; they do **not** generally guarantee a
+  job executes only once. Topics need independently defined subscriptions/consumer groups.
+  Both require an explicit duplicate-delivery and recovery policy.
+- An outbox atomically records a database change and the intent to publish within that database
+  transaction. Delivery can be retried/duplicated and consumers must handle it. It does not
+  make object storage, a remote payment and a local database one transaction.
+- A resumable upload's list of parts is transport state. It does not replace the application's
+  durable upload/video record, permission state, processing attempts, cancellation or failure.
+- A TranscodeSucceeded event says outputs exist. A VideoPublished event says the authoritative
+  owner committed a publication decision. Those are different events. Prefer downstream search
+  updates after that decision; define replica/cache freshness as well.
+- Pending orders/checkout attempts precede payment in the proposed retail foundation.
+  Price/availability, duplicate notifications, unknown payment outcomes and compensation need
+  contracts. A successful-payment-to-order projection alone is a narrower demo.
+- Every proposed foundation states its scope. Finite-stock checkout, public-only media or
+  approximate analytics can be valid profiles; they do not silently imply all enterprise needs.
+
+### Make relationship meaning visible
+
+- The screenshots show that a reader can miss a dependency that exists: the Transcoder reads
+  Original videos, but the route obscures it. Verify both the model and the drawing before
+  deleting a resource that appears unused.
+- Recommend solid/dashed style based on each relationship's interaction, with direction and
+  read/write/publish/consume labels. The current inheritance of dashes after a queue is a drawing
+  convention, not a claim that all worker dependencies are asynchronous.
+- A storage access and a job publication leaving one service are different responsibilities,
+  not necessarily two user journeys. Label/focus them instead of deleting one.
+- Signed upload control and byte transfer differ. The service-first overview can remain, but
+  inspectors/contracts must disclose that a signed URL authorizes direct client-to-storage bytes.
+- Measure whether a newcomer can trace the named flow, alongside line length and crossings.
+  Return lines that look like frames and unrelated lines that look like a bus fail that check.
+- A focused view must make hidden relationships discoverable. Do not improve apparent simplicity
+  by silently omitting dependencies from the source of truth.
+
+### Separate guidance, support and evidence
+
+- A pattern or a component's “template” paragraph describes a possible implementation. It is not
+  proof that a compatible template exists. A catalog definition marked known is not verified code.
+- A generic service shell supplies infrastructure behavior; domain behavior needs a narrower
+  capability contract or an explicit custom extension. Prose cannot be compiled deterministically.
+- Tested components do not imply every composition is tested. Evidence must identify the exact
+  contracts, templates, versions, settings, output and scenarios that were exercised.
+- Prefer one narrow end-to-end foundation before many languages/providers. Measure supported
+  behaviors and recovery cases, rather than a promised percentage of generated source lines.
+- Repository playbooks are not automatically input to the in-app chat model. Supply curated
+  pattern records through its real context/tools, mark unrepresentable variants, and evaluate
+  the resulting designs. Structured arguments and deterministic review complement the model;
+  they do not prove that its architectural judgment is correct.

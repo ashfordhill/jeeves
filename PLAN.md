@@ -204,3 +204,10 @@ back read as boxes; two long reads remain); SD05 reviewed SD01–SD04, fixed wha
 and left questions for the owner. The next work is the owner's answers to the SD05, LA05 and open
 DP10 questions in [the handoff](docs/handoff.md), and to the open points of the last
 [human feedback](docs/HUMAN_FEEDBACK.md) entry.
+
+The owner's subsequent three-study review is recorded in the
+[reliable foundations review](docs/plans/reliable-foundations/review.md). Its
+[proposed plan](docs/plans/reliable-foundations/units.md) starts with relationship clarity,
+traceable paths and a pattern-backed, evaluated design assistant; later milestones define
+behavior contracts and a separate generator beginning with TinyURL. These are proposals, not
+implemented changes. The current studio and blueprint remain as described above.

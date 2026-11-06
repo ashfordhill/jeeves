@@ -3741,3 +3741,69 @@ over the store and down into it (zoomed with the wheel, it reads cleanly). Three
 marks. Six projects created over two runs, all deleted (204); `jeeves_e2e` again holds just
 "TinyURL · studio study". No page errors, console errors or warnings. I did not touch 4300, 4304,
 4310 or the `jeeves` database.
+
+## 2026-11-06 — RF00: architecture review and reliable foundations plan (complete)
+
+Review/planning only, on `5caefc2`; no application, preset, schema or generator changes.
+Preserved the owner's three screenshots byte-for-byte in
+`docs/human-feedback/2026-11-06-foundations-review-{youtube,marketplace,tinyurl}.png` and appended
+the owner's points, review answers, decisions and open implementation work to HUMAN_FEEDBACK.
+Earlier feedback and handoff entries were not edited.
+
+Added `docs/plans/reliable-foundations/review.md`: source-backed review of all three diagrams,
+primary architecture/OpenAI references, why routing and model constraints obscure behavior,
+recommendations for the in-app agent, and the separate generator's contract/evidence boundary.
+Added `units.md`: proposed RF01–RF07 for relationship clarity, path tracing, curated pattern
+tools, deterministic preview/review, strict tool schemas, actual model evaluations and a final
+review. Later contract and generator milestones are explicitly not yet dispatchable coding
+units; refine those interfaces using the first milestone's evidence. The suggested execution
+model is the owner's Sol xhigh, one unit per fresh agent, sequentially on primary main.
+No subagents were launched.
+
+Appended qualifications to the design playbook rather than erasing earlier lessons: work queues
+do not imply once-only execution; an outbox does not atomically commit storage/provider effects;
+multipart progress is not video lifecycle state; a business owner can include API and consumer
+roles; asynchronous completion can return to its initiator; access intent differs from ownership;
+and tested bricks do not establish tested compositions. README and PLAN link the review/plan.
+
+Key findings for the next unit:
+
+- `transcoder-read` exists in source and the saved YouTube project. Original videos should stay;
+  the owner could not recognize its reader from the drawing.
+- YouTube records metadata only after processing, with sibling metadata/search projections;
+  recommend durable pre-publication state and explicit publication/recovery contracts.
+- Marketplace records orders only after payment and directly reads Catalog from Payments;
+  recommend a narrow pending-order/finite-stock checkout profile with deliberate ownership.
+- Saved TinyURL is 2.0.0 revision 41; its CDN has `cacheRedirects: enabled` and only forwards
+  cache misses, bypassing the click publisher on hits. Current preset 3.2.0 already removes
+  CDN and adds Stats API. Do not replace the owner's custom project.
+- Saved Marketplace is 1.2.0, source is 1.3.0; YouTube is 2.1.0 in both. Owner projects were
+  read through GET only; this unit sent no semantic edits to them. A final read observed the
+  owner's TinyURL had advanced to revision 53 during the review; findings above refer to the
+  earlier revision 41 snapshot. Do not overwrite those intervening edits. The isolated E2E API
+  was checked separately and held only its own default project after cleanup.
+- Chat currently receives no playbook/pattern tool; OpenAI tool serialization is explicitly
+  non-strict. Existing server validation, working copy, revision protection and undo are valuable
+  and should be extended.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: pass, 206 Biome files, type checks, 24 test files / 171 tests.
+- `pnpm test:e2e`: 18 passed.
+- `pnpm --filter @jeeves/web build`: pass, existing chunk-size advisory.
+- Local doc link targets exist; feedback/playbook/PLAN edits are append-only; image hashes match
+  the attachments; `git diff --check` passes.
+
+Browser: the owner's already-running 4300 session returned an empty page and a missing export
+error for `studioStoreAccessLabels` from the Vite-served spec module. It was left running; this
+was not reproduced by the fresh E2E servers. Used isolated 4302/4312 servers, scripted chat,
+scratch JEEVES_HOME and `jeeves_e2e` for the visual review. Fresh TinyURL (11 tiles / 12 lines),
+YouTube (21 / 25) and Marketplace (20 / 23) rendered at 1440×900. Selected Redirect service,
+Transcoder and Payments by mouse, inspected screenshots and their inspectors. No page errors
+on these successful checks. The first scratch walkthrough used an incomplete study option
+label; corrected it to the full label and completed the remaining studies. All three created
+projects were deleted (204). Screenshots are in
+`/tmp/jeeves-foundations-review-g2gut0rt/`. Only the isolated review servers were stopped.
+
+Local commit: **RF00: review architecture and plan reliable foundations**. Implementation and
+owner discussion of the proposed semantic changes remain open. Keep the generator outside Jeeves.
