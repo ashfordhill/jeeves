@@ -40,7 +40,7 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
   `relationships`, plus `studio` (`studio-model.ts`): a binding per element (definition ref,
   typed settings, optional owner), packages, per-connection settings, C3 `components` and
   `componentConnections`, lane `entries` (`{id, lane, element}`: the user's links to tiles, `lane`
-  being `download`, `upload` or `both`; a tile has at most one) and an optional study origin.
+  being `download` or `upload`; a tile has at most one; a stored `both` loads as `download`) and an optional study origin.
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
@@ -102,10 +102,10 @@ layout), but the web app neither reads nor writes it.
 `POST /projects/:id/chat` streams a turn as NDJSON. The server loop (`chat/service.ts`) calls the
 chosen model with a finite toolset (`chat/tools.ts`): `listStudioDefinitions` (the tile types
 with their kinds, the module kinds and the caps), `describeStudioDefinition` (one kind's
-settings), `getDesign` (both lanes with their entries, a shared entry listed in both, and their
+settings), `getDesign` (both lanes with their entries and their
 tiles in lane order, then each tile's kind, settings, links with their modes and modules, the caps
 and the findings), `applyStudioCommands`, `validateDesign` and `askUser`. The instructions
-(`INSTRUCTIONS`) describe the actor, the two lanes and shared (both-lane) entries, the link table,
+(`INSTRUCTIONS`) describe the actor, the two lanes (a tile has one entry), the link table,
 async forks, end tiles and the caps. The same summary and the selection go with each message as `[Jeeves]` context. `applyStudioCommands` takes the
 studio commands, so tiles and links change only through the lane commands, as on the canvas;
 commands run against a working copy with the same builder and validation, and a refusal returns
@@ -147,8 +147,7 @@ The web app reaches these under `/api` (Vite proxy in development, nginx in the 
 The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
 [execution units](docs/plans/lane-grid/execution-units.md), then
 [polish units](docs/plans/lane-grid/polish-units.md) PL01–PL02) is complete; the build plan's §7
-lists what was left for later. Whether the links after a shared entry tile should be tagged as
-reads or writes is a later owner decision; today they are ordinary forks. Code generation will be
+lists what was left for later. Code generation will be
 a separate service that reads the blueprint.
 
 Next are the [design polish units](docs/plans/design-polish/units.md), DP01–DP09:

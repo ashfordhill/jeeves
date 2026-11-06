@@ -1660,3 +1660,80 @@ Notes for the next units:
   nearest grid line, so a fork's parent can sit 16px off its children's midpoint.
 - `alignLayout` runs inside the engine, so anything calling `toBoardLayout` directly (only the
   tests) must add it.
+
+## 2026-11-05 — DP02: remove both-lane entries (complete)
+
+Owner, 2026-11-05: "both" goes. Each entry is in the download or the upload lane, and a tile has at
+most one entry. PL02's additions were removed by hand (no `git revert`); `setEntryLane` stays for
+download ↔ upload.
+
+Spec:
+
+- `studio-model.ts`: `studioEntryLanes`, `studioEntryLaneSchema`, `StudioEntryLane` and
+  `entryLanes` are gone; an entry's `lane` is `studioLaneSchema` again. **Normalisation:** the one
+  place designs are parsed is `studioEntrySchema` (inside `designSchema`, which the server uses for
+  every stored revision and undo snapshot); its `lane` is a `z.preprocess` that reads a stored
+  `both` as `download`. Anything written back is then `download`. A `setEntryLane` with `both` is
+  rejected by the command schema.
+- `studio-lanes.ts`: `laneGraph` orders download entries, then upload; `LaneEdge.lane` is a
+  `StudioLane`; `laneWords` is gone; caps count one lane per entry.
+- `studio-lane-commands.ts`: a lane tab onto a tile that already has an entry, in either lane, is
+  refused again: "CDN already starts the download lane; a tile has one entry." (same wording for a
+  drop from the same lane). `linkTiles` from a lane always adds an entry. `setEntryLane` takes
+  `download`/`upload` and is refused for an unknown entry, the same lane, or a full target lane
+  (`laneFull`, kept, now one lane per entry). `laneEntryRefusal` takes a `StudioLane`. `removeLink`
+  and `removeTile` lost their both-lane branches.
+- `studio-blueprint.ts`: one row per entry again.
+
+Web: `LaneCanvas.tsx` back to one 32×32 chip and `laneNames` = "Download"/"Upload" (labels add
+" lane"); `BOTH_CHIP`, `.lane-icon-both` and `LaneIcon`'s `both` are gone. `creation.tsx`: the
+middle lane-order group is gone. `Workspace.tsx`: the entry inspector's lane row is the two icons
+(`studioLanes`), title "Download lane"/"Upload lane", a full lane disabled with the cap reason.
+
+Chat (`tools.ts`): the instructions say a tile has at most one entry, in one lane; `setEntryLane`
+"moves an entry to the other lane"; `getDesign` lists each entry in its one lane with no `lane`
+marker.
+
+Tests (122; −3 both-lane tests, +1): dropped the laneGraph both-lane order test, the blueprint
+two-rows test and the `linkTiles` upgrade test. `setEntryLane` now moves upload → download, keeps
+the cap tests (a full download lane refuses the move and removes the user's download tab). The
+canvas helper test checks both refusals in plain words. New: a stored `both` entry parses as
+`download` with no findings. `tools.test.ts`: `setEntryLane` with `both` is refused, `download`
+moves the entry. E2E `spawn.spec.ts`: the user's upload `+` over the CDN leaves it without the drop
+outline (dimmed; Redirect service has it), and after release still 11 lines, the two one-lane
+chips, revision 1.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 122 tests).
+- `pnpm test:e2e`: 9 passed, first run (load average about 3). No `Project:` menu flake seen.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium driven by mouse at 1440×900, my own API on 4312 (scratch
+`JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, both stopped afterwards; the one
+throwaway project deleted (204), leaving the study already there. The owner's 4300/4310 and the
+`jeeves` database were not touched. No console errors or warnings.
+
+- TinyURL: 10 tiles, 11 lines, two one-icon chips.
+- User selected, upload `+` pulled over the CDN: the CDN has no drop outline (Redirect service
+  does); released: nothing changed (revision 1) and the notice reads "CDN already starts the
+  download lane; a tile has one entry."
+- The CDN's chip: inspector "Download lane", lane row of two icons (download pressed). Upload →
+  revision 2, the CDN entry in upload, title "Upload lane", chip icon switched; Undo → back.
+- Normalisation: I set that project's current revision's Shorten API entry to `"both"` directly in
+  `jeeves_e2e` (psql). `GET /projects/:id/design` returned it as `download` with no findings; the
+  page loaded with chips "Download lane: User to CDN" and "Download lane: User to Shorten API" and
+  the inspector showed "Download lane".
+
+Docs: studio guide (lines, layout order, the drop refusal and its example, the rule paragraph,
+removing, the entry inspector's lane row, chat; the Limits note about links after a shared tile is
+gone), CATALOG (entries, caps, `linkTiles` refusal, `removeTile`, `removeLink`, `setEntryLane`, the
+lane row), studio settings (lane entries, with the `both` → `download` note), blueprint doc (one row
+per entry), PLAN (data model, chat; the read/write-tags note removed from Next).
+
+Notes for the next unit:
+
+- The normalisation lives in the stored schema, so it also applies to `setStudio` operations; it
+  can be dropped once no stored design has `both` (the owner's `jeeves` database was not scanned).
+- `studioEntrySchema`'s input type for `lane` is now `unknown` (preprocess); nothing relies on it.
+- A full lane's tooltip in the lane row was checked by unit test, not in the browser.

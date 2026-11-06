@@ -2,7 +2,7 @@
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
 // tabs add and link tiles (`creation.tsx`), the red X on a tile or line removes it
 // (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`),
-// and an entry's lanes in its own inspector (`EntrySummary`).
+// and an entry's lane in its own inspector (`EntrySummary`).
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
   buildStudioCommand,
@@ -12,8 +12,9 @@ import {
   type LaneGraph,
   laneEntryRefusal,
   laneGraph,
-  type StudioEntryLane,
+  type StudioLane,
   studioDefinitions,
+  studioLanes,
 } from "@jeeves/spec";
 import {
   IconArrowBackUp,
@@ -384,13 +385,10 @@ function Inspector({
   );
 }
 
-/** The entry inspector's lane row, in this order. */
-const entryLaneChoices: readonly StudioEntryLane[] = ["download", "upload", "both"];
-
 /**
- * An entry line: its lanes, the lane row (download, upload or both; a click is `setEntryLane`, a
- * choice that would break a cap is disabled with the reason as its tooltip) and the tile the user
- * reaches directly.
+ * An entry line: its lane, the lane row (download or upload; a click is `setEntryLane`, a lane
+ * whose cap is full is disabled with the reason as its tooltip) and the tile the user reaches
+ * directly.
  */
 function EntrySummary({
   projectId,
@@ -404,7 +402,7 @@ function EntrySummary({
   projectId: string;
   design: DesignDocument;
   edge: LaneEdge;
-  lane: StudioEntryLane;
+  lane: StudioLane;
   name: (id: string) => string;
   graph: LaneGraph;
   onSelect: (next: BoardSelection) => void;
@@ -413,7 +411,7 @@ function EntrySummary({
   const visual = kind ? studioDefinitions[kind].visual : undefined;
   const choices = useMemo(
     () =>
-      entryLaneChoices.map((choice) => ({
+      studioLanes.map((choice) => ({
         lane: choice,
         refusal: choice === lane ? undefined : laneEntryRefusal(design, edge.id, choice),
       })),
@@ -423,7 +421,7 @@ function EntrySummary({
     <div className="studio-selection-summary">
       <h2 className="lane-inspector-title">
         <LaneIcon lane={lane} size={22} />
-        {laneNames[lane]}
+        {laneNames[lane]} lane
       </h2>
       <p className="lane-inspector-kind">Lane entry</p>
       <fieldset className="lane-kinds" aria-label="Lanes">
@@ -434,9 +432,9 @@ function EntrySummary({
               key={choice.lane}
               type="button"
               className="lane-kind"
-              aria-label={laneNames[choice.lane]}
+              aria-label={`${laneNames[choice.lane]} lane`}
               aria-pressed={current}
-              title={choice.refusal ?? laneNames[choice.lane]}
+              title={choice.refusal ?? `${laneNames[choice.lane]} lane`}
               disabled={!!choice.refusal}
               onClick={() => {
                 if (current) return;
@@ -451,7 +449,7 @@ function EntrySummary({
                 );
               }}
             >
-              <LaneIcon lane={choice.lane} size={choice.lane === "both" ? 18 : 22} />
+              <LaneIcon lane={choice.lane} size={22} />
             </button>
           );
         })}

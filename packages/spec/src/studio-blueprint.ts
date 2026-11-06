@@ -18,7 +18,6 @@ import {
 } from "./studio-components.ts";
 import {
   definitionRefSchema,
-  entryLanes,
   type StudioElementBinding,
   studioApplicationKinds,
   studioChannelUseSchema,
@@ -130,7 +129,7 @@ export const blueprintComponentLinkSchema = z.strictObject({
   ]),
   label: text.optional(),
 });
-/** A tile the user reaches directly, and in which lane (a tile that starts both: one per lane). */
+/** A tile the user reaches directly, and in which lane. */
 export const blueprintEntrySchema = z.strictObject({ lane: studioLaneSchema, element: idSchema });
 export const blueprintOmissionSchema = z.strictObject({
   kind: z.enum(["element", "connection", "component", "component-link", "entry"]),
@@ -142,7 +141,7 @@ export const designBlueprintSchema = z.strictObject({
   /** Semantic design revision the blueprint was read from. */
   revision: z.int().nonnegative(),
   system: z.strictObject({ name: text, description: text }),
-  /** The user's lane entries (a both-lane entry once per lane), sorted by lane then element. */
+  /** The user's lane entries, sorted by lane then element. */
   entries: z.array(blueprintEntrySchema),
   services: z.array(blueprintServiceSchema),
   resources: z.array(blueprintResourceSchema),
@@ -331,8 +330,7 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
       omitted.push({ kind: "entry", id: entry.id, reason: "endpoint-outside-blueprint" });
       continue;
     }
-    // A both-lane entry is listed once per lane.
-    for (const lane of entryLanes(entry.lane)) entries.push({ lane, element: entry.element });
+    entries.push({ lane: entry.lane, element: entry.element });
   }
   const order = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
   entries.sort((a, b) => order(a.lane, b.lane) || order(a.element, b.element));

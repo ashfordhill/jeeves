@@ -111,14 +111,6 @@
   display: block;
 }
 
-/* An entry that starts both lanes: the download and upload icons side by side. */
-.lane-icon-both {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 2px;
-}
-
 /* A fan item's tile-type icon, in the colour of the kind it adds. */
 .lane-fan-icon {
   display: flex;

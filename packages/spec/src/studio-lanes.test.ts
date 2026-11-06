@@ -1,7 +1,7 @@
 import { addAfter } from "@jeeves/board/graph";
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
-import type { DesignDocument } from "./design.ts";
+import { type DesignDocument, designSchema } from "./design.ts";
 import { isStructural } from "./findings.ts";
 import { designBlueprint, designBlueprintSchema } from "./studio-blueprint.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
@@ -255,46 +255,16 @@ describe("laneGraph", () => {
     ]);
   });
 
-  it("puts a both-lane entry between the download-only and upload-only entries", () => {
-    // Stored upload first: the order comes from the lanes, not the list.
-    const design = edit(tinyurl(), (draft) => {
-      studioOf(draft).entries = [
-        { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
-        { id: "both-cdn", lane: "both", element: "cdn" },
-        { id: "download-reputation", lane: "download", element: "reputation" },
-      ];
-    });
-    const graph = laneGraph(design);
-    expect(graph.nodes.map((node) => node.id)).toEqual([
-      LANE_ACTOR,
-      "reputation",
-      "cdn",
-      "redirect",
-      "link-cache",
-      "links-db",
-      "click-events",
-      "analytics",
-      "analytics-store",
-      "shorten-api",
-    ]);
-    expect(graph.edges.slice(0, 3).map((edge) => [edge.id, edge.lane])).toEqual([
-      ["download-reputation", "download"],
-      ["both-cdn", "both"],
-      ["upload-shorten-api", "upload"],
+  it("reads an entry stored with both lanes as a download entry", () => {
+    // Entries could start both lanes for a while; such a design loads with that entry in download.
+    const stored = JSON.parse(JSON.stringify(tinyurl()));
+    stored.architecture.studio.entries[1].lane = "both";
+    const design = designSchema.parse(stored);
+    expect(studioOf(design).entries).toEqual([
+      { id: "download-cdn", lane: "download", element: "cdn" },
+      { id: "upload-shorten-api", lane: "download", element: "shorten-api" },
     ]);
     expect(laneFindings(design)).toEqual([]);
-
-    // A both-lane entry counts in each lane's cap; a tile still has one entry.
-    const crowded = edit(design, (draft) => {
-      studioOf(draft).entries?.push(
-        { id: "download-redirect", lane: "download", element: "redirect" },
-        { id: "download-shorten", lane: "download", element: "shorten-api" },
-      );
-    });
-    expect(messages(crowded)).toEqual([
-      "The download lane has 4 entries; the most is 3.",
-      "Shorten API is already a lane entry.",
-    ]);
   });
 });
 
