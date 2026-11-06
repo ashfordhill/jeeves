@@ -21,6 +21,7 @@ import {
   studioLanes,
   studioStoreAccess,
   studioStoreAccessLabels,
+  studioWarnings,
 } from "@jeeves/spec";
 import {
   IconArrowBackUp,
@@ -52,6 +53,7 @@ import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { TileInspector } from "./TileInspector.tsx";
+import { WarningList } from "./Warnings.tsx";
 
 type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
 
@@ -421,6 +423,7 @@ function Inspector({
     <div className="studio-selection-summary">
       <h2>{design.architecture?.system.name ?? project.name}</h2>
       <p className="lane-inspector-kind">System</p>
+      <WarningList warnings={studioWarnings(design)} name={name} onSelect={onSelect} />
       <TargetInspector
         projectId={project.id}
         label={project.name}
@@ -503,6 +506,7 @@ function ActionInspector({
         {studioActionDefaults[lane]} action: what the user does in the{" "}
         {laneNames[lane].toLowerCase()} lane
       </p>
+      <WarningList warnings={studioWarnings(design).filter((item) => item.node === node)} />
       <ActionForm projectId={projectId} lane={lane} design={design} />
       <dl className="lane-facts">
         <dt>Lane</dt>

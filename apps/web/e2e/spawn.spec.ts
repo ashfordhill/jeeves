@@ -206,12 +206,24 @@ test("builds both actions from a blank design", async ({ page }) => {
     await name.fill("Watch");
     await name.blur();
     await expect(tile(page, "Watch")).toBeVisible();
+    // An action with no entries is a warning, never a refusal: a mark on the tile, a line in its
+    // inspector.
+    const nothing =
+      "Watch has no entries: nothing handles it yet. Add the service or API that handles it after it, or remove the action.";
+    await expect(tile(page, "Watch").locator(".lane-warning-mark")).toHaveAttribute(
+      "title",
+      nothing,
+    );
+    await expect(
+      page.locator(".studio-inspector").getByRole("list", { name: "Warnings" }),
+    ).toHaveText(nothing);
 
     await pull(page, "Watch", "Add after");
     await moveOnto(page, fanItem(page, "API"));
     await page.mouse.up();
     await ready(page);
     await expect(tile(page, "API")).toHaveClass(/selected/);
+    await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
 
     // The user's `+` greys the action the design already has.
     await tile(page, "User").click();
@@ -226,6 +238,13 @@ test("builds both actions from a blank design", async ({ page }) => {
     await ready(page);
     await expect(tiles(page)).toHaveCount(4);
     await expect(lines(page)).toHaveCount(3);
+    await expect(tile(page, "Produce").locator(".lane-warning-mark")).toHaveCount(1);
+    // The system inspector lists every warning; its button selects the action.
+    await page.locator(".board .react-flow__pane").click({ position: { x: 20, y: 20 } });
+    const all = page.locator(".studio-inspector").getByRole("list", { name: "Warnings" });
+    await expect(all.getByRole("listitem")).toHaveCount(1);
+    await all.getByRole("button", { name: "Produce" }).click();
+    await expect(tile(page, "Produce")).toHaveClass(/selected/);
     const saved = await design(page, id);
     expect(saved.architecture.studio.actions).toEqual([
       { lane: "download", name: "Watch" },

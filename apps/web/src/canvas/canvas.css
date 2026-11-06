@@ -502,3 +502,60 @@
   display: flex;
   color: var(--type-color, var(--ink));
 }
+
+/* A design warning's mark in a tile's top-right corner (inside a pill's curve too); its tooltip
+   is the message. Warnings never block an edit. */
+.lane-tile,
+.lane-action {
+  position: relative;
+}
+.lane-warning-mark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  box-shadow: 0 0 0 2px var(--board-tile);
+}
+
+/* The inspector's list of warnings: the yellow of the mark, the message in plain words. */
+.lane-warnings {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.lane-warnings li {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--yellow);
+  background: color-mix(in srgb, var(--yellow) 14%, transparent);
+  color: var(--ink);
+}
+.lane-warnings li > svg {
+  flex: 0 0 14px;
+  margin-top: 1px;
+}
+.lane-warnings button {
+  display: block;
+  margin: 0 0 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue-deep);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

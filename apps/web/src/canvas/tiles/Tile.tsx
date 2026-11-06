@@ -9,6 +9,7 @@ import {
   tileTypeOf,
 } from "@jeeves/spec";
 import { StudioIcon } from "../../studio/StudioIcon.tsx";
+import { WarningMark } from "../Warnings.tsx";
 
 export const TILE_SIZE = { w: 128, h: 128 } as const;
 
@@ -17,7 +18,16 @@ export function tileShape(kind: StudioKind | undefined): "rect" | "pill" {
   return type ? studioTileDefinitions[type].shape : "rect";
 }
 
-export function Tile({ kind, name }: { kind?: StudioKind; name: string }) {
+export function Tile({
+  kind,
+  name,
+  warnings,
+}: {
+  kind?: StudioKind;
+  name: string;
+  /** Its design warnings, shown as a mark in the corner. */
+  warnings?: readonly string[];
+}) {
   const visual = kind ? studioDefinitions[kind].visual : undefined;
   return (
     <div className="lane-tile" data-family={visual?.color ?? "generic"}>
@@ -25,6 +35,7 @@ export function Tile({ kind, name }: { kind?: StudioKind; name: string }) {
         <StudioIcon name={visual?.icon} size={40} />
       </span>
       <span className="lane-tile-name">{name}</span>
+      <WarningMark messages={warnings} />
     </div>
   );
 }

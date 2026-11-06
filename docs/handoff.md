@@ -2702,3 +2702,90 @@ Notes for the next units:
   before the action column existed.
 - `LineSpec.chip` stays in the board (generic) but Jeeves no longer uses it; board layout tests
   still use chips in their own fixture.
+
+## 2026-11-06 — LA02: design warnings (complete)
+
+What changed:
+
+- **Spec** (`packages/spec/src/studio-warnings.ts`, new): `studioWarnings(design)` returns
+  `{ rule, node, message }`, `node` being the tile's ID or the action's `laneActionNode`. Rules
+  (`studioWarningRules`): `store-without-writer` (no owner, or no link into the store has
+  `studioStoreAccess` `write`; package owners included), `output-unread` (a store, not a cache,
+  whose every lane-graph line in comes from its owner, and the owner is a worker),
+  `queue-without-publisher`, `queue-without-consumer`, `action-without-entries`. Messages name
+  the tiles and say what to do ("URL database has no writer: its owner Shorten service doesn't
+  link to it. Link Shorten service to it, or choose another owner."). `studioWarningSummaries`
+  and `studioWarningSentence` (the chat sentence, generated from the list).
+- **How warnings are kept apart from errors:** a new finding code `DESIGN_WARNING` in a new
+  catalog category `warning` (severity `warning`), with `isDesignWarning`. `validateStudio`
+  appends `studioWarningFindings` last. `isStructural` is false for it, so `applyOperations`
+  (which rejects on structural studio findings) ignores it. The lane commands' gate ("Fix the
+  lanes first.", `requireLanes`, `laneOptions`, `laneActionOptions`, `attachOptions`) reads
+  `laneFindings` only, which never includes warnings. Errors are unchanged. A target is
+  `{ element }` for a store or queue and `{ path: [architecture, studio, actions, i] }` for an
+  action.
+- **Canvas:** `canvas/Warnings.tsx`: `WarningMark` (a 22px yellow circle with a triangle in the
+  tile's top-right corner, inside a pill's curve; its `title` is the message) on `Tile` and
+  `ActionTile` (LaneCanvas maps warnings by node); `WarningList` (yellow rows) in the tile
+  inspector below its kind, in the action inspector, and in the system inspector (no selection),
+  which lists every warning with a button that selects its tile or action. CSS `.lane-warning-mark`,
+  `.lane-warnings`. The canvas showed no studio findings before (only a module's Readiness list),
+  so this is the new place.
+- **Chat** (`tools.ts`): `getDesign` and every accepted `applyStudioCommands` return `findings`
+  (warnings filtered out) and `warnings` (messages). The instructions gain one bullet,
+  `studioWarningSentence`: the four warnings in words, "They never block a command; before you
+  finish, resolve the warnings your edits caused, or say why one stays."
+- **Blueprint:** shape unchanged (still `blueprint: 2`); `findings` may now hold
+  `DESIGN_WARNING`. Doc comment updated.
+
+Tests (151; +7 in `studio-warnings.test.ts`): the three studies have no warnings and no findings;
+DP10's reproduction both ways (Add before URL database; remove `shorten-db`) gives warning 1, it is
+non-structural, and relinking clears it; a store with no owner; `output-unread` firing (remove
+`stats-read`) and not firing for a worker's own cache or a service's own database; a queue added
+after Shorten (no consumer, still accepted, the worker still offered after it) and cleared by a
+worker; a queue with no publisher; an action with no entries (blank + addAction) and its path
+target, cleared by an entry; the chat sentence contains every summary. Chat test: two empty
+actions come back as `warnings` with `findings: []`, and `INSTRUCTIONS` contains the sentence.
+E2E: the Blank test checks the mark and inspector text on a new action, its clearing after an
+API, the Produce mark and the system list's button selecting Produce; the three study tests check
+no marks.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 201 files; type checks; 23 files / 151 tests).
+- `pnpm test:e2e`: 17 passed (twice; the second on the final code).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse at 1440×900, my API on 4312 (scratch `JEEVES_HOME`,
+scripted model, `jeeves_e2e`) and web on 4302, both stopped by PID afterwards. Each project's URL
+was awaited before acting; I deleted only mine (all 204; two from a first run that timed out
+were deleted through the API); `jeeves_e2e` again holds just "TinyURL · studio study". I did not
+touch 4300, 4304, 4310 or the `jeeves` database. No console errors or warnings.
+
+- Blank: User `+` → Consume: the action shows the mark and its inspector the yellow row
+  ("Consume has no entries: …"). Consume `+` → Service: mark gone. User `+` → Produce: Produce
+  marked; clicking empty paper lists it in the system inspector; its "Produce" button selects the
+  action. Produce `+` → Service: no marks.
+- TinyURL (no marks): clicking the Shorten service → URL database line and its X leaves URL
+  database marked; its inspector shows "URL database has no writer: its owner Shorten service
+  doesn't link to it. …" above Writes (owner) Shorten service. Undo: no marks, 12 lines.
+- Dark mode (the app's toggle), TinyURL with the Stats API → Analytics store line removed:
+  Analytics store marked; "Nothing reads Analytics store: only its owner Analytics worker links to
+  it. …"; the yellow rows and the link-styled tile button read clearly.
+
+Docs: studio guide (new Warnings section; inspector: tile, action and system lists; Chat; Limits:
+the mark's size at fit), CATALOG (design warnings table under Lanes and links), blueprint doc
+(`findings` and `DESIGN_WARNING`), PLAN (validation, chat, Next: LA02 done).
+
+Notes for the next units:
+
+- Rough: at TinyURL's both-rails fit (0.48) the mark is about 11px; the system inspector is the
+  readable place.
+- Rough: `queue-without-publisher` can only appear on a design that already has a lane error (a
+  queue with no link in is unreachable); it is there for stored designs and for completeness.
+- `output-unread` counts every line into the store, entries included, so a legacy entry into a
+  store counts as a reader.
+- Chat sees warnings, but whether a live model resolves them is untested (only the scripted model
+  ran), as for the rest of the chat instructions.
+- LA04: "a warning appearing and clearing" is quickest from Blank (a new action) or by removing
+  the Shorten service → URL database line in TinyURL.

@@ -254,12 +254,40 @@ for an application tile, **Modules**; empty ones are hidden.
   "Watch already has 4 entries; the most is 4."). Below, the action and the tile it reaches, each
   a button that selects it.
 - The user's line to an action: the action, and the user and the action as buttons.
-- The user, or nothing: the system's Name and Goal.
+- The user, or nothing: the system's Name and Goal, below the list of every
+  [warning](#warnings), each with a button that selects its tile or action.
+
+A tile or action with a warning lists it, in yellow, below its kind.
 
 Valid text autosaves after 500ms or on blur; selects commit at once. Selecting, switching tabs and
 navigating flush pending valid edits; invalid unsent drafts are discarded. A rejected write stays
 visible with Retry/Discard. A revision conflict adopts the fresh design with "Changed elsewhere;
 reopen to edit."
+
+## Warnings
+
+A **warning** is a design that looks wrong but is allowed. A design is built step by step, so a
+queue with no consumer yet or a new action with no entries must be accepted while you build it.
+Warnings never refuse an edit: no command, pull, attach or chat call is blocked by one, and they
+are not "Fix the lanes first" problems (those are lane errors). There are four:
+
+- **A store with no writer**: a database, search index, cache or storage with no owner, or whose
+  owner doesn't link to it, for example after **Add before** the store or removing the owner's
+  link ("URL database has no writer: its owner Shorten service doesn't link to it. Link Shorten
+  service to it, or choose another owner.").
+- **A worker's output nobody reads**: a store whose only links come from its owner, a worker
+  ("Nothing reads Analytics store: only its owner Analytics worker links to it. Link the service
+  or API that reads it."). A cache only its owner uses is normal and is not flagged.
+- **A queue with no publisher, or no consumer** ("Link events has no consumer: nothing takes its
+  messages. Add a worker after it.").
+- **An action with no entries** ("Watch has no entries: nothing handles it yet. Add the service or
+  API that handles it after it, or remove the action.").
+
+On the canvas, a tile or action with a warning has a small yellow mark in its top-right corner;
+the pointer on it shows the message. Its inspector lists its warnings, and the system's inspector
+(click empty paper) lists them all. The mark goes as soon as the design is fixed, or with Undo.
+The blueprint reports warnings as findings (`DESIGN_WARNING`, severity `warning`), and chat sees
+them. The three studies have none. The rules live in `studio-warnings.ts`.
 
 ## History
 
@@ -288,6 +316,9 @@ it. Names, purposes, the goal, settings, link details and modules go through `ed
 Chat reads the design as the canvas draws it: the actions, each with its lane, name, entries and
 the tiles its lane reaches, then each tile in lane order with its kind, settings, links (sync or
 async; a link into a store also says whether it writes or reads) and modules, and the caps.
+It also sees the findings and, separately, the [warnings](#warnings), in `getDesign` and after
+each accepted command; its instructions list the warnings (generated from the spec) and say to
+resolve the ones its edits caused before it finishes, or say why one stays.
 It lists the seven tile types with their kinds. The selected tile, line or entry is sent with
 each message, so "Add a cache after the selected service" works; the user, an action and the
 user's line to it have no design ID, so selecting one sends nothing. It can ask one focused
@@ -642,5 +673,7 @@ sixteen components, with nothing omitted and no findings.
   loads unchanged and reports it ("Produce can't link to Original videos; an action reaches a
   service (not a worker), an API or the CDN."). Until that entry is removed (select its line and
   click its X), every other lane command on the design is refused with "Fix the lanes first."
+- A warning's mark scales with the board: at TinyURL's both-rails fit (0.48) it is about 11px
+  across. The system's inspector lists every warning at full size.
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).

@@ -18,6 +18,7 @@ import {
   studioModelSchema,
   studioProtocolSchema,
 } from "./studio-model.ts";
+import { studioWarningFindings } from "./studio-warnings.ts";
 
 /** Package identities cannot shadow any existing graph or architecture declaration. */
 function occupiedDesignIds(design: DesignDocument): Set<string> {
@@ -246,6 +247,8 @@ export function validateStudio(design: DesignDocument): Finding[] {
   validateStudioComponents(design, report, kind, application);
   // Lane rules: every tile hangs off the actor, no cycles, the link table and the caps.
   findings.push(...laneFindings(design));
+  // Design warnings come last: they are reported, never refusals (`studioWarnings`).
+  findings.push(...studioWarningFindings(design));
   return findings;
 }
 

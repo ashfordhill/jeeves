@@ -21,6 +21,7 @@ import {
   studioLinkRole,
   studioStoreAccess,
   studioTileDefinitions,
+  studioWarnings,
   tileTypeOf,
 } from "@jeeves/spec";
 import { Menu } from "@mantine/core";
@@ -29,6 +30,7 @@ import { useEffect, useMemo, useState } from "react";
 import { commitAction } from "../studio/actions.ts";
 import { ComponentForm, type InspectorTab, TargetInspector } from "../studio/InspectorForm.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
+import { WarningList } from "./Warnings.tsx";
 
 const kindOf = (design: DesignDocument, id: string): StudioKind | undefined =>
   design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
@@ -317,6 +319,7 @@ export function TileInspector({
         {name}
       </h2>
       {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
+      <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
       <TypeList projectId={projectId} design={design} element={id} />
       {kind && studioLinkRole(kind) === "store" ? <StoreAccess design={design} store={id} /> : null}
       <TargetInspector

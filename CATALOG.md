@@ -139,6 +139,27 @@ upload lane has sign-in, the seller's shop, payments and the cart. A broken rule
 these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
 C1 people, external systems and relationships are not tiles and are not checked.
 
+**Design warnings** ([`studio-warnings.ts`](packages/spec/src/studio-warnings.ts)) are designs
+that look wrong but are allowed, because a design is built step by step. `studioWarnings(design)`
+returns `{ rule, node, message }` (the node is the tile's ID or the action's `laneActionNode`);
+validation includes them as `DESIGN_WARNING` findings (category `warning`, severity `warning`),
+which `applyOperations`, the lane commands and their "Fix the lanes first." gate (`laneFindings`)
+never look at, so no warning refuses an edit:
+
+| Rule | When | Example message |
+| --- | --- | --- |
+| `store-without-writer` | A store has no owner, or no link into it comes from its owner | "URL database has no writer: its owner Shorten service doesn't link to it. Link Shorten service to it, or choose another owner." |
+| `output-unread` | A store (not a cache) whose only links come from its owner, a worker | "Nothing reads Analytics store: only its owner Analytics worker links to it. Link the service or API that reads it." |
+| `queue-without-publisher` | No link into a queue | "Click events has no publisher: nothing sends it messages. Link the service that publishes them to it." |
+| `queue-without-consumer` | No link out of a queue | "Link events has no consumer: nothing takes its messages. Add a worker after it." |
+| `action-without-entries` | An action with no entries | "Watch has no entries: nothing handles it yet. Add the service or API that handles it after it, or remove the action." |
+
+`studioWarningSummaries` describes each in a few words and `studioWarningSentence` is the chat
+instructions' sentence, generated from them. The canvas marks a warned tile or action and lists
+warnings in the inspector ([studio guide](docs/studio.md#warnings)); chat's `getDesign` and each
+accepted command return `warnings` beside `findings`; the blueprint's `findings` include them. The
+three studies have none.
+
 Lane commands ([`studio-lane-commands.ts`](packages/spec/src/studio-lane-commands.ts)) edit a
 design that keeps these rules, and refuse in plain words with tile and action names ("URL cache
 can't link to Geo lookup. A cache can't link onward."):

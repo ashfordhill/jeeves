@@ -10,6 +10,8 @@ test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => 
   await expect(dashedLines(page)).toHaveCount(3);
   await expect(tile(page, "User")).toBeVisible();
   await expect(page.locator(".board-chip")).toHaveCount(0);
+  // No design warnings in a study.
+  await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
   await expect(tile(page, "Open link").locator(".lane-action-name")).toHaveText("Open link");
   await expect(tile(page, "Shorten").locator(".lane-action-name")).toHaveText("Shorten");
   for (const name of [
@@ -35,6 +37,8 @@ test("New project offers the marketplace study", async ({ page }) => {
     await expect(lines(page)).toHaveCount(23);
     await expect(dashedLines(page)).toHaveCount(6);
     await expect(page.locator(".board-chip")).toHaveCount(0);
+    // No design warnings in a study.
+    await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
     for (const name of [
       "Browse",
       "Buy & sell",
@@ -72,6 +76,8 @@ test("New project offers the YouTube study", async ({ page }) => {
     await expect(lines(page)).toHaveCount(21);
     await expect(dashedLines(page)).toHaveCount(9);
     await expect(page.locator(".board-chip")).toHaveCount(0);
+    // No design warnings in a study.
+    await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
     for (const name of [
       "Watch",
       "Publish",

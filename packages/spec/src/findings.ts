@@ -8,6 +8,9 @@ import { idSchema } from "./ids.ts";
  *   rejected.
  * - `readiness` findings are saved with the design and shown in the studio.
  * - `operation` codes only ever come back from `applyOperations`.
+ * - `warning` findings (`DESIGN_WARNING`) are designs that look wrong but are allowed, such as a
+ *   queue nobody consumes yet (`studioWarnings`). Like readiness findings they never reject a
+ *   batch, and no command or lane check refuses because of one.
  */
 export const findingCatalog = {
   DUPLICATE_ID: { category: "structural", severity: "error" },
@@ -19,12 +22,14 @@ export const findingCatalog = {
   NEEDS_TEMPLATE: { category: "readiness", severity: "error" },
   CONFIG_REQUIRED: { category: "readiness", severity: "error" },
   ARCHITECTURE_UNBOUND: { category: "readiness", severity: "warning" },
+  /** A design that looks wrong but is allowed: a store with no writer, a queue with no consumer… */
+  DESIGN_WARNING: { category: "warning", severity: "warning" },
   INVALID_OPERATION: { category: "operation", severity: "error" },
   REVISION_CONFLICT: { category: "operation", severity: "error" },
 } as const satisfies Record<
   string,
   {
-    category: "structural" | "readiness" | "operation";
+    category: "structural" | "readiness" | "operation" | "warning";
     severity: "error" | "warning" | "info";
   }
 >;
@@ -56,4 +61,9 @@ export function finding(code: FindingCode, message: string, target: FindingTarge
 
 export function isStructural(f: Finding): boolean {
   return findingCatalog[f.code].category === "structural";
+}
+
+/** A design warning (`DESIGN_WARNING`): reported, never a refusal. */
+export function isDesignWarning(f: Finding): boolean {
+  return findingCatalog[f.code].category === "warning";
 }

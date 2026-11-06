@@ -3,7 +3,7 @@
 // become lines, dashed when asynchronous or after an asynchronous link. The user's line to an
 // action goes with the action, so it has no X. Lines carry no words; their accessible names say
 // what they join. The selected tile's pull tabs come from `creation`, its X and the selected
-// line's from `removal`.
+// line's from `removal`. A tile or action with a design warning carries a mark (`Warnings.tsx`).
 import {
   Board,
   type BoardHandle,
@@ -13,7 +13,13 @@ import {
   type LineSpec,
   type TileSpec,
 } from "@jeeves/board";
-import { type DesignDocument, LANE_ACTOR, type LaneGraph, laneActionName } from "@jeeves/spec";
+import {
+  type DesignDocument,
+  LANE_ACTOR,
+  type LaneGraph,
+  laneActionName,
+  studioWarnings,
+} from "@jeeves/spec";
 import { type Ref, useMemo } from "react";
 import { layoutEngine } from "./elk.ts";
 import { ACTION_SIZE, ActionTile } from "./tiles/ActionTile.tsx";
@@ -57,6 +63,9 @@ export function LaneCanvas({
 }) {
   const { tiles, lines } = useMemo(() => {
     const name = (id: string) => laneNodeName(design, graph, id);
+    const warnings = new Map<string, string[]>();
+    for (const item of studioWarnings(design))
+      warnings.set(item.node, [...(warnings.get(item.node) ?? []), item.message]);
     const tiles: TileSpec[] = graph.nodes.map((node) =>
       node.id === LANE_ACTOR
         ? { id: node.id, ...ACTOR_SIZE, shape: "rect", label: ACTOR_NAME, content: <ActorTile /> }
@@ -66,14 +75,22 @@ export function LaneCanvas({
               ...ACTION_SIZE,
               shape: "rect",
               label: name(node.id),
-              content: <ActionTile lane={node.action} name={name(node.id)} />,
+              content: (
+                <ActionTile
+                  lane={node.action}
+                  name={name(node.id)}
+                  warnings={warnings.get(node.id)}
+                />
+              ),
             }
           : {
               id: node.id,
               ...TILE_SIZE,
               shape: tileShape(node.kind),
               label: name(node.id),
-              content: <Tile kind={node.kind} name={name(node.id)} />,
+              content: (
+                <Tile kind={node.kind} name={name(node.id)} warnings={warnings.get(node.id)} />
+              ),
             },
     );
     const lines: LineSpec[] = graph.edges.map((edge) => ({

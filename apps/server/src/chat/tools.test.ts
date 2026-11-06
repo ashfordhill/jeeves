@@ -6,6 +6,7 @@ import {
   newTileIdentity,
   studioArchitectureExample,
   studioLinkRules,
+  studioWarningSentence,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.ts";
@@ -186,11 +187,22 @@ describe("studio chat tools", () => {
         { type: "renameAction", lane: "download", name: "Watch" },
         { type: "addAction", lane: "upload", name: "Publish" },
       ),
-    ).toMatchObject({ ok: true, findings: [] });
-    expect(run(workspace, "getDesign").actions).toEqual([
+    ).toMatchObject({
+      ok: true,
+      findings: [],
+      // Actions with no entries are warnings, not refusals: the design is being built.
+      warnings: [
+        "Watch has no entries: nothing handles it yet. Add the service or API that handles it after it, or remove the action.",
+        "Publish has no entries: nothing handles it yet. Add the service or API that handles it after it, or remove the action.",
+      ],
+    });
+    const design = run(workspace, "getDesign");
+    expect(design.actions).toEqual([
       { lane: "download", name: "Watch", entries: [], tiles: [] },
       { lane: "upload", name: "Publish", entries: [], tiles: [] },
     ]);
+    expect(design.findings).toEqual([]);
+    expect(design.warnings).toHaveLength(2);
     // One action per lane; the name is a word, not a sentence.
     expect(apply({ type: "addAction", lane: "upload" }).error).toBe(
       "This design already has a Produce action; each lane has one.",
@@ -258,6 +270,8 @@ describe("studio chat tools", () => {
       ]),
     );
     expect(INSTRUCTIONS).not.toMatch(/User -> (object-store|external|service)/);
+    // So is the warnings sentence, from the spec's warning list.
+    expect(INSTRUCTIONS).toContain(studioWarningSentence);
 
     // Without a link (the schema leaves it optional), each link takes its pair's default.
     const workspace = new Workspace(tinyurl());

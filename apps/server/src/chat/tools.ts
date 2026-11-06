@@ -11,6 +11,7 @@ import {
   buildStudioCommand,
   type DesignDocument,
   type Finding,
+  isDesignWarning,
   LANE_ACTOR,
   type LaneGraph,
   laneGraph,
@@ -33,6 +34,7 @@ import {
   studioStoreAccess,
   studioTileDefinitions,
   studioTileTypes,
+  studioWarningSentence,
   tileTypeOf,
   validateDesign,
 } from "@jeeves/spec";
@@ -75,8 +77,9 @@ The lane canvas:
 - One writer per store: a database, cache, storage or search index is written only by its owner; every other link into it reads (getDesign shows each such link's access). To change who writes, edit the store's owner.
 - ${linkTable}
 - Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per action.
+- ${studioWarningSentence}
 
-Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules) and the findings.
+Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
@@ -119,7 +122,7 @@ const descriptions: Record<ToolName, string> = {
   describeStudioDefinition:
     "Read a kind's exact settings JSON Schema, defaults, inspector fields and implementation obligations.",
   getDesign:
-    "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, and the current findings.",
+    "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, the current findings and the design warnings.",
   applyStudioCommands:
     "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
@@ -259,7 +262,9 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
         };
       }),
     caps,
-    findings,
+    findings: findings.filter((item) => !isDesignWarning(item)),
+    /** Designs that look wrong but are allowed; resolve the ones this turn caused. */
+    warnings: findings.filter(isDesignWarning).map((item) => item.message),
     availability: "Studio definitions describe design intent only.",
   };
 }
@@ -417,10 +422,12 @@ export class Workspace {
       true,
       `Prepared ${commands.length} studio command${commands.length === 1 ? "" : "s"}`,
     );
+    const findings = validateDesign(working);
     return {
       ok: true,
       commands: commands.length,
-      findings: validateDesign(working),
+      findings: findings.filter((item) => !isDesignWarning(item)),
+      warnings: findings.filter(isDesignWarning).map((item) => item.message),
       note: "Prepared for one atomic turn commit, not saved yet.",
     };
   }

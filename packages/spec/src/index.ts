@@ -24,4 +24,5 @@ export * from "./studio-operations.ts";
 export * from "./studio-prune.ts";
 export * from "./studio-tiles.ts";
 export * from "./studio-validation.ts";
+export * from "./studio-warnings.ts";
 export * from "./validate.ts";

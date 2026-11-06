@@ -164,7 +164,10 @@ export const designBlueprintSchema = z.strictObject({
   componentLinks: z.array(blueprintComponentLinkSchema),
   /** Design parts that exist but are outside the finite studio model, so nothing vanishes silently. */
   omitted: z.array(blueprintOmissionSchema),
-  /** Studio findings at this revision; readiness gaps are `CONFIG_REQUIRED`. */
+  /**
+   * Studio findings at this revision; readiness gaps are `CONFIG_REQUIRED`, and design warnings
+   * (allowed, never refusals) are `DESIGN_WARNING` with severity `warning`.
+   */
   findings: z.array(findingSchema),
 });
 export type DesignBlueprint = z.output<typeof designBlueprintSchema>;
