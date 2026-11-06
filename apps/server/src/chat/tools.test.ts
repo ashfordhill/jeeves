@@ -63,31 +63,38 @@ describe("studio chat tools", () => {
     expect(design.lanes).toEqual([
       {
         lane: "download",
-        entries: [{ id: "download-cdn", tile: "cdn" }],
+        entries: [
+          { id: "download-stats-api", tile: "stats-api" },
+          { id: "download-redirect", tile: "redirect" },
+        ],
         tiles: [
-          "cdn",
+          "stats-api",
           "redirect",
-          "link-cache",
-          "links-db",
+          "analytics-store",
+          "url-cache",
+          "url-db",
           "click-events",
           "analytics",
-          "analytics-store",
         ],
       },
       {
         lane: "upload",
-        entries: [{ id: "upload-shorten-api", tile: "shorten-api" }],
-        tiles: ["shorten-api", "links-db", "link-cache", "reputation"],
+        entries: [{ id: "upload-shorten", tile: "shorten" }],
+        tiles: ["shorten", "url-db"],
       },
     ]);
-    expect(design.tiles).toHaveLength(9);
+    expect(design.tiles).toHaveLength(8);
     const redirect = design.tiles.find((t: { id: string }) => t.id === "redirect");
     expect(redirect).toMatchObject({ type: "service", kind: "redirect" });
-    expect(redirect.links.map((l: { to: string; mode: string }) => `${l.to} ${l.mode}`)).toEqual([
-      "link-cache sync",
-      "links-db sync",
-      "click-events async",
-    ]);
+    // A link into a store says whether it writes (from the store's owner) or reads.
+    expect(
+      redirect.links.map(
+        (l: { to: string; mode: string; access?: string }) =>
+          `${l.to} ${l.mode}${l.access ? ` ${l.access}` : ""}`,
+      ),
+    ).toEqual(["url-cache sync write", "url-db sync read", "click-events async"]);
+    const shorten = design.tiles.find((t: { id: string }) => t.id === "shorten");
+    expect(shorten.links).toMatchObject([{ to: "url-db", access: "write" }]);
     expect(redirect.modules).toHaveLength(4);
     expect(design.findings).toEqual([]);
   });
@@ -147,15 +154,15 @@ describe("studio chat tools", () => {
     );
     // The second command would cut off the click path and the new cache; neither is kept.
     expect(apply(addCache(3).commands[0], { type: "removeTile", tile: "redirect" }).error).toBe(
-      "Command 2 (removeTile): Removing Redirect service would cut off Click events, Cache, Analytics worker and Analytics store; list them in alsoRemove to remove them too.",
+      "Command 2 (removeTile): Removing Redirect service would cut off URL cache, Click events, Cache and Analytics worker; list them in alsoRemove to remove them too.",
     );
     const link = (from: string, to: string) =>
       apply({ type: "linkTiles", from: { tile: from }, to, link: "sync", linkId: `${from}-${to}` });
     expect(link("analytics", "redirect").error).toBe(
       "Redirect service already leads to Analytics worker; linking them would make a loop.",
     );
-    expect(link("link-cache", "reputation").error).toBe(
-      "Link cache can't link to URL reputation API. A cache can't link onward.",
+    expect(link("url-cache", "shorten").error).toBe(
+      "URL cache can't link to Shorten service. A cache can't link onward.",
     );
     expect(run(workspace, "editEntity", {}).ok).toBe(false);
     expect(JSON.parse(workspace.run("getDesign", "{not json")).ok).toBe(false);
@@ -212,10 +219,10 @@ describe("studio chat tools", () => {
       commands: [
         {
           type: "addTile",
-          from: { tile: "shorten-api" },
+          from: { tile: "shorten" },
           side: "after",
           tile: { id: "link-events", name: "Link events", kind: "queue" },
-          linkId: "shorten-api-link-events",
+          linkId: "shorten-link-events",
         },
         {
           type: "linkTiles",
@@ -228,7 +235,7 @@ describe("studio chat tools", () => {
     expect(result).toMatchObject({ ok: true, findings: [] });
     const planned = (id: string) =>
       workspace.working.connections.find((item) => item.id === id)?.planned;
-    expect(planned("shorten-api-link-events")).toMatchObject({
+    expect(planned("shorten-link-events")).toMatchObject({
       label: "Publishes",
       interaction: "Asynchronous",
     });

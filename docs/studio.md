@@ -52,8 +52,9 @@ On the grid (`alignLayout` in `packages/board`, run on every ELK result):
 - Every port sits on a grid line, and the paper's dots mark the grid's crossings. A tile's top-left
   corner sits on a dot; the user, 160px tall, has its centre on a grid line instead.
 - A line whose ends ELK left within 16px of each other is straight. ELK centres a merge between
-  its predecessors, which used to leave small jogs; in TinyURL, Redirect service → Link cache and
-  Shorten API → Links database are now straight.
+  its predecessors, which would leave small jogs; in TinyURL the Shorten service's line into the
+  URL database (a merge) is straight, as are the user's line into the Redirect service and the
+  click path after it.
 - Other lines bend by whole grid steps, so no bend is shorter than 32px. A merge exactly between
   two equally distant tiles takes the nearer grid line, so its two lines bend by different
   amounts (Blank with two services that both link to one database: 96px and 64px).
@@ -78,8 +79,8 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 
 | Window | Both rails closed | Chat open | Inspector open | Both open |
 | --- | --- | --- | --- | --- |
-| 1440×900 | 0.78 | 0.61 | 0.60 | 0.44 |
-| 1280×800 | 0.69 | 0.53 | 0.52 | 0.35 |
+| 1440×900 | 0.93 | 0.73 | 0.72 | 0.52 |
+| 1280×800 | 0.83 | 0.63 | 0.62 | 0.42 |
 
 ## Creating and connecting
 
@@ -106,7 +107,7 @@ and the pull stays open until you let go.
 
 - **A `+`** opens a fan of all seven tile types around the tab, always in the same order and the
   same places. The name shows under the icon the pointer is on. A type the rules refuse on that
-  side is greyed, and its name adds why ("A queue can't link to Links database. A queue feeds only
+  side is greyed, and its name adds why ("A queue can't link to URL database. A queue feeds only
   an application, not a database."). The fan stays on the canvas, at least 16px inside its edges,
   so it never covers a rail or the header; near an edge its icons line up along it, sometimes right
   beside the tab. **Release on an icon** to add a tile of that type. It is named after the type
@@ -121,8 +122,8 @@ and the pull stays open until you let go.
   Attaching Analytics store to Redirect service makes Redirect service → Analytics store, since a
   store links onward to nothing. From one of the user's link tabs, the tile becomes an entry of
   that lane. The tile you pulled from stays selected, so its next fork or merge starts at once. A
-  dimmed tile can't be attached: releasing on it changes nothing, and the notice says why ("CDN
-  already starts the download lane; a tile has one entry."). Nothing attaches onto the user; a
+  dimmed tile can't be attached: releasing on it changes nothing, and the notice says why
+  ("Redirect service already starts the download lane; a tile has one entry."). Nothing attaches onto the user; a
   lane starts only from the user's own tabs.
 - **Release anywhere else**, or press Escape, and the band springs back.
 
@@ -141,20 +142,22 @@ The selected tile has a red **X** centred on its top edge (faint until the point
 user has none. The X removes the tile and links each tile before it to each tile after it, wherever
 the [link table](../CATALOG.md#lanes-and-links) allows, unless the first already reaches the
 second another way. A restitched link is asynchronous when either link it replaces was, and a lane
-entry passes on in its lane. Removing the CDN in TinyURL makes the Redirect service the download
-lane's entry.
+entry passes on in its lane. Removing Click events in TinyURL links the Redirect service to the
+Analytics worker directly, asynchronously.
 
 When the restitching can't reach some tiles (a resource doesn't link onward, so nothing replaces
 the links through it), a panel opens at the bottom centre of the canvas instead. It lists the tiles
 that would be cut off, with their icons, and marks them, and the tile itself, with a red dashed
 ring on the board. **Remove N tiles** removes them all; **Cancel**, Escape, clicking empty paper or selecting
-anything else changes nothing. Removing the Redirect service in TinyURL takes Click events, the Analytics worker and the
-Analytics store with it ("Remove 4 tiles"), since the CDN can't link to a queue.
+anything else changes nothing. Removing the Redirect service in TinyURL takes the URL cache, Click
+events and the Analytics worker with it ("Remove 4 tiles"), since a lane can't start at a cache or
+a queue. The URL database stays: the Shorten service still writes it.
 
 A selected line has a red X on a stretch of it that no other line shares, or at its middle when
 every stretch is shared (an entry line's sits above its chip). It removes that
 connection or entry, unless a tile would be cut off; then nothing changes and the notice names
-the tiles ("Removing the link from CDN to Redirect service would cut off Redirect service, …").
+the tiles ("Removing the link from Redirect service to Click events would cut off Click events and
+Analytics worker.").
 
 After removing a tile, the tile before it is selected (the first one, in lane order; often the
 user); after removing a line, nothing is. The modules, module links and settings that named what
@@ -176,9 +179,13 @@ for an application tile, **Modules**; empty ones are hidden.
   its settings start over from the new kind's defaults, which are preconfigured: Billing starts
   with Stripe, Notifications with Resend, Identity with OpenID Connect, Gateway with Traefik and
   CDN with Cloudflare (the other choices stay selectable). A kind the lane rules refuse is faded
-  and its tooltip says why ("Shorten API can't become a worker. A lane starts at a service (not a
-  worker), …"; "ID generator in Shorten API can't use a search index; remove its link to Links
-  database first.").
+  and its tooltip says why ("Shorten service can't become a worker. A lane starts at a service
+  (not a worker), …"; "Link reader in Redirect service can't use a search index; remove its link
+  to URL database first.").
+- A store (database, search index, cache, storage) shows, below the Type list, who writes it and
+  who reads it: **Writes (owner)** names its owner, its only writer; **Reads** names every other
+  tile that links to it. Changing the **Owner** field changes who writes
+  ([one writer per store](studio-settings.md#relationships)).
 - **Language** offers the kind's two languages, its default first: TypeScript or Go, and Go or
   TypeScript for Redirect. Gateway and CDN are products, not code, and have no Language
   ([studio settings](studio-settings.md#languages)).
@@ -188,7 +195,8 @@ for an application tile, **Modules**; empty ones are hidden.
   optional performance intent (replicas, autoscale signal, request timeout, concurrency limit;
   read replicas and partition key for databases; topology and eviction for caches; partitions for
   queues; redirect caching for the CDN). An empty input or **Unspecified** removes an optional
-  value. Connections lists the tile's links; clicking one selects that line.
+  value. Connections lists the tile's links, a link into a store marked "Writes (owner)" or
+  "Reads"; clicking one selects that line.
 - **Modules** (services and the gateway, not the CDN or resources): the tile's modules, each with
   its kind's icon and its name. The dashed **`+`** below opens the ten module kinds as icons
   (names in the tooltips); picking one adds a module named after its kind ("Data access", then
@@ -200,8 +208,8 @@ for an application tile, **Modules**; empty ones are hidden.
   it) and **Link to**, the tiles its tile links to whose kind it may use, through that link (an
   event publisher reaches a queue only through a publish link, a consumer only through a consume
   link).
-- A line: its two tiles, then Action, Protocol, Interaction, Access, and timeout/retry where the
-  protocol allows. Switching Interaction between Request / response and Asynchronous changes the
+- A line: its two tiles, "Writes (owner)" or "Reads" for a link into a store, then Action,
+  Protocol, Interaction, Security, and timeout/retry where the protocol allows. Switching Interaction between Request / response and Asynchronous changes the
   dash where the link table allows both.
 - A lane entry (its line or chip): its lane, then the **lane row**: download and upload as icons
   (the name is the tooltip), the current one filled yellow. Clicking the other moves the entry to
@@ -232,13 +240,14 @@ an entry to the other lane). A new link's mode is optional: left out, it is the 
 from the [link table](../CATALOG.md#lanes-and-links) (async for queue links, sync otherwise),
 and the instructions' copy of that table is generated from it. So chat, like the mouse,
 can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
-command changes nothing and comes back in the same plain words as the canvas notice ("Link cache
-can't link to URL reputation API. A cache can't link onward."); the turn's activity list shows
+command changes nothing and comes back in the same plain words as the canvas notice ("URL cache
+can't link to Shorten service. A cache can't link onward."); the turn's activity list shows
 it. Names, purposes, the goal, settings, link details and modules go through `edit`,
 `editSystem`, `editConnection` and the module commands.
 
 Chat reads the design as the canvas draws it: both lanes with their entries and tiles
-in lane order, then each tile with its kind, settings, links (sync or async) and modules, and the caps.
+in lane order, then each tile with its kind, settings, links (sync or async; a link into a store
+also says whether it writes or reads) and modules, and the caps.
 It lists the seven tile types with their kinds. The selected tile, line or entry is sent with
 each message, so "Add a cache after the selected service" works. It can ask one focused question
 with clickable choices, and accepts Markdown, text and images (PNG, JPEG, WebP, SVG). An empty
@@ -248,32 +257,60 @@ provider-reported cost appear only when complete. The model and provider are cho
 
 ## The TinyURL study
 
-The single study, `studio-tinyurl@2.0.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
-is a read-heavy, low-latency URL shortener: about 100 reads per write. It is laid out in lanes
-from the user:
+The single study, `studio-tinyurl@3.0.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
+is a read-heavy URL shortener built from four published designs and one open-source shortener:
 
-- **Download** (following a short link): the user enters at the CDN, which forwards misses to the
-  Redirect service. Redirect reads the Link cache and the Links database, and publishes clicks
-  asynchronously: Click events → Analytics worker → Analytics store.
-- **Upload** (creating a link): the user enters at the Shorten API, which writes the Links
-  database, counts requests in the Link cache and checks destinations with the URL reputation
-  API.
+- HelloInterview, [Design Bit.ly](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly)
+- System Design Primer, [Pastebin / Bit.ly](https://github.com/donnemartin/system-design-primer/tree/master/solutions/system_design/pastebin)
+- DesignGurus (Grokking), [TinyURL](https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-a-url-shortening-service-like-tinyurl)
+- ByteByteGo (Alex Xu), [Design a URL Shortener](https://bytebytego.com/courses/system-design-interview/design-a-url-shortener)
+- [Dub](https://github.com/dubinc/dub), an open-source link shortener (AGPL)
 
-The Links database and the Link cache are reached from both lanes. In all: the user and nine
-tiles, and eleven links (two lane entries and nine connections), three of which are asynchronous or
-follow an asynchronous link (the click path). The study has no C1 people or relationships and no
-package.
+All four designs have a create path, a redirect path with a cache in front of the database, and
+one URL database written by create and read by redirect. Three of the four split redirect and
+create into separate services. DesignGurus reads click analytics through a stats API (queue →
+consumers → store → analytics API). ID generation is a module-level detail; the URL safety check
+and the expiry cleanup job are left out for the developer to add.
+
+It is laid out in lanes from the user:
+
+```text
+DOWNLOAD (reads)
+  User ⇣ Stats API → Analytics store                     (reads)
+  User ⇣ Redirect service → URL cache
+                          → URL database                 (reads on a cache miss)
+                          ⇢ Click events ⇢ Analytics worker → Analytics store
+UPLOAD (writes)
+  User ⇡ Shorten service → URL database                  (the only writer)
+```
+
+Each store has one writer, its owner: the Shorten service writes the URL database, the Redirect
+service the URL cache (it fills it on a miss) and Click events, and the Analytics worker the
+Analytics store. In all: the user and eight tiles, and ten links (three lane entries and seven
+connections), three of which are asynchronous or follow an asynchronous link (the click path).
+The Stats API's entry comes first, so it is drawn on the top row; its read of the Analytics store
+then runs along the top, and the user's line into the Redirect service and the click path are
+straight. The study has no C1 people or relationships and no package.
 
 | Part | Content |
 | --- | --- |
-| Tiles | CDN, Redirect service, Shorten API, Analytics worker, Click events (topic), Links database (PostgreSQL, two read replicas, partitioned by `short_code`), Link cache (Redis cluster, LRU), Analytics store (ClickHouse) and the URL reputation API. |
-| Modules | Shorten API: rate limiter (token bucket, 100/min per API key, Redis), reputation check (external call with a circuit breaker), ID generator (range allocation in blocks of 1,000, base62, at least 7 characters) and link writer. Redirect service: link cache reader (cache-aside, in-process L1 plus Redis, negative caching, single-flight), replica link reader, redirect responder (302, 60-second edge max-age) and batched click publisher. Analytics worker: click consumer (batches of 1,000, bounded retries), custom aggregation and aggregate writer. |
+| Tiles | Redirect service (Go, public, Docker), URL cache (Redis cluster, LRU), URL database (PostgreSQL, two read replicas, partitioned by `short_code`), Click events (topic), Analytics worker (TypeScript), Analytics store (ClickHouse), Stats API (TypeScript) and Shorten service (TypeScript). |
+| Modules | Redirect service: cache reader (cache-aside, in-process L1 plus Redis, negative caching, single-flight), link reader (replica, on a miss), redirect responder (302, no edge caching) and batched click publisher. Analytics worker: click consumer (batches of 1,000, bounded retries), custom aggregation and aggregate writer. Stats API: stats reader. Shorten service: link writer, which generates the short code. |
 
-The CDN caches redirects briefly, the Redirect service scales on requests per second and clicks
-leave the request path through the queue. A 302 rather than a 301 keeps every click reaching
-analytics once the edge entry expires. The study stores no layout. Its
-[blueprint](studio-blueprint.md#example) has both entries, three services, five resources, one
-external, nine connections and all eleven components, with nothing omitted and no findings.
+**Why there is no CDN.** What is cached is the lookup, not the redirect response. All four
+designs put a cache in front of the database. Caching the 302 at a CDN or in the browser stops
+clicks reaching the service: ByteByteGo's 301-versus-302 discussion and HelloInterview make that
+trade explicitly, and Grokking answers 302 with `Cache-Control: no-store` so every click counts.
+Dub shows how it is done in practice: its redirect runs as code on every request (Next.js
+Middleware), reads link data from Redis, answers 302 and records the click after responding
+(`apps/web/lib/middleware/link.ts`); only its static pages get CDN cache headers. So the user
+enters at the Redirect service directly. Running the redirect near users is a setting of the
+Redirect service (Execution **Managed**, Host **Cloudflare Workers**), not a CDN tile.
+
+The study stores no layout. Its [blueprint](studio-blueprint.md#example) has three entries, four
+services, four resources, no externals, seven connections (each link into a store marked `write`
+or `read`) and all nine components, with nothing omitted and no findings. Projects made from
+earlier versions keep their own design; only new copies are v3.
 
 ## Limits
 
@@ -284,13 +321,15 @@ external, nine connections and all eleven components, with nothing omitted and n
   column along it. Closing a rail helps; a fitted camera refits by itself.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back.
-- Where two services fork to the same tiles, their lines share one bus (TinyURL: Redirect service
-  and Shorten API both reach Link cache and Links database). Selecting a tile colours its own lines,
+- Where two services fork to the same tiles, their lines share one bus (TinyURL: the Redirect
+  service and the Shorten service both reach the URL database). Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
   remove a particular one, click its row in the tile's Connections list.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
-  belongs to the application it was first added next to; both are changed in the inspector.
+  belongs to the application it was first added next to; both are changed in the inspector. The
+  action is a label only: a link from a tile that doesn't own the store still says "Reads &
+  writes" until renamed, though it reads.
 - Modules are not drawn. The inspector links a module only to tiles; a link between two modules
   of the same tile ("Supplies code") is made through chat.
 - An unload flush is an attempt, not a durability guarantee.

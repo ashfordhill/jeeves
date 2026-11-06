@@ -16,6 +16,7 @@ import {
   studioComponentRequirements,
   studioComponentSettingsSchema,
 } from "./studio-components.ts";
+import { studioStoreAccess, studioStoreAccessValues } from "./studio-links.ts";
 import {
   definitionRefSchema,
   type StudioElementBinding,
@@ -31,7 +32,7 @@ import {
 } from "./studio-model.ts";
 import { validateStudio } from "./studio-validation.ts";
 
-export const blueprintVersion = 1 as const;
+export const blueprintVersion = 2 as const;
 const text = z.string();
 const definition = z.strictObject({
   ...definitionRefSchema.shape,
@@ -113,7 +114,10 @@ export const blueprintConnectionSchema = z.strictObject({
   action: text,
   protocol: text,
   interaction: relationshipInteractionSchema.optional(),
-  access: text.optional(),
+  /** The planned security of the call (for example "Service identity"). */
+  security: text.optional(),
+  /** A link into a store: `write` from the store's owner, `read` from any other tile. */
+  access: z.enum(studioStoreAccessValues).optional(),
   channelUse: studioChannelUseSchema.optional(),
   timeoutMs: z.int().optional(),
   retry: studioRetrySchema.optional(),
@@ -286,6 +290,7 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
     }
     const shown = connectionPresentation(connection);
     const settings = connectionSettings.get(connection.id);
+    const access = studioStoreAccess(design, connection.id);
     connections.push({
       id: connection.id,
       source: "design",
@@ -294,7 +299,8 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
       action: shown.description,
       protocol: shown.protocol,
       interaction: shown.interaction,
-      access: connection.planned.security,
+      security: connection.planned.security,
+      ...(access && { access }),
       ...(settings?.channelUse && { channelUse: settings.channelUse }),
       ...(settings?.timeoutMs !== undefined && { timeoutMs: settings.timeoutMs }),
       ...(settings?.retry && { retry: { ...settings.retry } }),

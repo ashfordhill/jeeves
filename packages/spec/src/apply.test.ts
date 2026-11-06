@@ -53,7 +53,7 @@ describe("applyOperations", () => {
   });
 
   it("refuses a stale baseRevision", () => {
-    const result = applyOperations(tinyurl(), [{ op: "removeElement", id: "cdn" }], {
+    const result = applyOperations(tinyurl(), [{ op: "removeElement", id: "url-cache" }], {
       baseRevision: 7,
     });
     expect(result).toMatchObject({ ok: false, errors: [{ code: "REVISION_CONFLICT" }] });
@@ -96,7 +96,7 @@ describe("applyOperations", () => {
 
   it("addElement refuses taken IDs and elements without studio settings", () => {
     expect(
-      codes(rejected(tinyurl(), [{ op: "addElement", element: { id: "cdn", name: "Again" } }])),
+      codes(rejected(tinyurl(), [{ op: "addElement", element: { id: "url-db", name: "Again" } }])),
     ).toEqual(["DUPLICATE_ID"]);
     expect(
       codes(rejected(tinyurl(), [{ op: "addElement", element: { id: "loose", name: "Loose" } }])),
@@ -110,7 +110,7 @@ describe("applyOperations", () => {
   });
 
   it("removeElement never cascades resource ownership", () => {
-    // Redirect owns the link cache and the click queue; they must be removed or reassigned too.
+    // Redirect owns the URL cache and the click queue; they must be removed or reassigned too.
     // Removing it also cuts the click path off from the user.
     expect(codes(rejected(tinyurl(), [{ op: "removeElement", id: "redirect" }]))).toEqual([
       "UNKNOWN_REFERENCE",
@@ -127,10 +127,10 @@ describe("applyOperations", () => {
       id: "link-platform",
       name: "Link platform",
       description: "",
-      members: ["shorten-api", "redirect"],
+      members: ["shorten", "redirect"],
     });
     const next = accepted(design, [
-      { op: "removeElement", id: "link-cache" },
+      { op: "removeElement", id: "url-cache" },
       { op: "removeElement", id: "click-events" },
       { op: "removeElement", id: "analytics-store" },
       { op: "removeElement", id: "analytics" },
@@ -146,7 +146,7 @@ describe("applyOperations", () => {
     expect(studio?.componentConnections?.some((l) => l.from.startsWith("redirect-"))).toBe(false);
     // The two-member package falls below two members and dissolves.
     expect(studio?.packages).toEqual([]);
-    expect(studio?.components?.some((c) => c.host === "shorten-api")).toBe(true);
+    expect(studio?.components?.some((c) => c.host === "shorten")).toBe(true);
   });
 
   it("connect refuses taken IDs, missing ends and self-connections", () => {
@@ -161,9 +161,9 @@ describe("applyOperations", () => {
       },
     });
     expect(
-      codes(rejected(tinyurl(), [connection("cdn-redirect", "shorten-api", "redirect")])),
+      codes(rejected(tinyurl(), [connection("redirect-cache", "shorten", "redirect")])),
     ).toEqual(["DUPLICATE_ID"]);
-    expect(codes(rejected(tinyurl(), [connection("c1", "shorten-api", "ghost")]))).toContain(
+    expect(codes(rejected(tinyurl(), [connection("c1", "shorten", "ghost")]))).toContain(
       "UNKNOWN_REFERENCE",
     );
     expect(codes(rejected(tinyurl(), [connection("c2", "redirect", "redirect")]))).toContain(
@@ -173,11 +173,11 @@ describe("applyOperations", () => {
 
   it("updatePlannedConnection changes only the given fields of an existing connection", () => {
     const next = accepted(tinyurl(), [
-      { op: "updatePlannedConnection", id: "shorten-reputation", label: "Screens links" },
+      { op: "updatePlannedConnection", id: "stats-read", label: "Reads counts" },
     ]);
-    expect(next.connections.find((c) => c.id === "shorten-reputation")?.planned).toMatchObject({
-      label: "Screens links",
-      protocol: "HTTPS",
+    expect(next.connections.find((c) => c.id === "stats-read")?.planned).toMatchObject({
+      label: "Reads counts",
+      protocol: "SQL",
     });
     expect(
       codes(rejected(tinyurl(), [{ op: "updatePlannedConnection", id: "x", label: "y" }])),
@@ -185,11 +185,12 @@ describe("applyOperations", () => {
   });
 
   it("disconnect removes the connection, its binding and the component links tracing it", () => {
-    const next = accepted(tinyurl(), [{ op: "disconnect", id: "redirect-cache" }]);
-    expect(next.connections.some((c) => c.id === "redirect-cache")).toBe(false);
+    // The URL database stays reachable through the Shorten service.
+    const next = accepted(tinyurl(), [{ op: "disconnect", id: "redirect-db" }]);
+    expect(next.connections.some((c) => c.id === "redirect-db")).toBe(false);
     const studio = next.architecture?.studio;
-    expect(studio?.connections.some((b) => b.connection === "redirect-cache")).toBe(false);
-    expect(studio?.componentConnections?.some((l) => l.id === "cache-reader-redis")).toBe(false);
+    expect(studio?.connections.some((b) => b.connection === "redirect-db")).toBe(false);
+    expect(studio?.componentConnections?.some((l) => l.id === "redirect-data-reads")).toBe(false);
     expect(codes(rejected(tinyurl(), [{ op: "disconnect", id: "nope" }]))).toEqual([
       "UNKNOWN_REFERENCE",
     ]);
@@ -205,7 +206,7 @@ describe("validateDesign", () => {
     const design = tinyurl();
     const first = design.connections[0];
     if (!first) throw new Error("TinyURL has connections.");
-    design.elements.push({ id: "cdn", name: "Copy" }, { id: "loose", name: "Loose" });
+    design.elements.push({ id: "url-db", name: "Copy" }, { id: "loose", name: "Loose" });
     design.connections.push(
       { ...first, id: "dangling", to: { element: "ghost" } },
       { ...first, id: "loop", to: first.from },
@@ -213,7 +214,7 @@ describe("validateDesign", () => {
     const findings = validateDesign(design).map((f) => [f.code, f.target]);
     expect(findings).toEqual(
       expect.arrayContaining([
-        ["DUPLICATE_ID", { element: "cdn" }],
+        ["DUPLICATE_ID", { element: "url-db" }],
         ["CONFIG_INVALID", { element: "loose" }],
         ["UNKNOWN_REFERENCE", { connection: "dangling" }],
         ["CONFIG_INVALID", { connection: "loop" }],

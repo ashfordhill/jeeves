@@ -33,34 +33,34 @@ const gaps = (design: DesignDocument, id: string) => {
 describe("modules", () => {
   it("are offered only on applications and get free names and IDs per host", () => {
     const design = tinyurl();
-    expect(moduleKinds(design, "shorten-api")).toHaveLength(10);
-    expect(moduleKinds(design, "links-db")).toEqual([]);
-    expect(moduleKinds(design, "cdn")).toEqual([]);
-    // Shorten API already has an "ID generator"; the Redirect service has none.
-    expect(newModuleIdentity(design, "shorten-api", "id-generator")).toEqual({
-      id: "shorten-api-id-generator-2",
-      name: "ID generator 2",
-    });
-    expect(newModuleIdentity(design, "redirect", "id-generator")).toEqual({
-      id: "redirect-id-generator",
+    expect(moduleKinds(design, "shorten")).toHaveLength(10);
+    expect(moduleKinds(design, "url-db")).toEqual([]);
+    expect(moduleKinds(design, "click-events")).toEqual([]);
+    // Neither service has an ID generator yet; the second one on a host is numbered.
+    expect(newModuleIdentity(design, "shorten", "id-generator")).toEqual({
+      id: "shorten-id-generator",
       name: "ID generator",
     });
-    const first = addModule(design, "redirect", "id-generator");
-    expect(newModuleIdentity(first.design, "redirect", "id-generator")).toEqual({
-      id: "redirect-id-generator-2",
+    const first = addModule(design, "shorten", "id-generator");
+    expect(newModuleIdentity(first.design, "shorten", "id-generator")).toEqual({
+      id: "shorten-id-generator-2",
       name: "ID generator 2",
+    });
+    expect(newModuleIdentity(first.design, "redirect", "id-generator")).toEqual({
+      id: "redirect-id-generator",
+      name: "ID generator",
     });
   });
 
   it("link to the tiles their host links to, through that link, and become ready", () => {
-    const added = addModule(tinyurl(), "shorten-api", "data-access");
+    const added = addModule(tinyurl(), "shorten", "data-access");
     expect(gaps(added.design, added.id)).toEqual(["Data access needs a database connection."]);
     const [choice, ...others] = moduleLinkChoices(added.design, added.id);
     expect(others).toEqual([]);
     expect(choice).toEqual({
-      element: "links-db",
+      element: "url-db",
       via: "shorten-db",
-      id: "shorten-api-data-access-links-db",
+      id: "shorten-data-access-url-db",
     });
     if (!choice) return;
     const linked = run(added.design, {
@@ -83,6 +83,6 @@ describe("modules", () => {
     expect(moduleLinkChoices(consumer.design, consumer.id)).toEqual([]);
     expect(
       moduleLinkChoices(tinyurl(), "redirect-click-publisher").map((item) => item.element),
-    ).toEqual(["links-db"]);
+    ).toEqual(["url-db"]);
   });
 });

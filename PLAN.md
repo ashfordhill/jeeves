@@ -38,13 +38,14 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
   interaction, security}}`.
 - `architecture` (`architecture.ts`): the C1 `system`, `nodes` (people, external systems) and
   `relationships`, plus `studio` (`studio-model.ts`): a binding per element (definition ref,
-  typed settings, optional owner), packages, per-connection settings, C3 `components` and
+  typed settings, optional owner; a store's owner is its only writer), packages, per-connection settings, C3 `components` and
   `componentConnections`, lane `entries` (`{id, lane, element}`: the user's links to tiles, `lane`
   being `download` or `upload`; a tile has at most one; a stored `both` loads as `download`) and an optional study origin.
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
-modules, are in `studio-modules.ts`). The only study is TinyURL in lanes (`studio-examples/`).
+modules, are in `studio-modules.ts`). The only study is TinyURL v3 in lanes, built from published
+designs (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
 reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-blueprint.ts`
@@ -129,7 +130,9 @@ scripted model.
 
 `GET /projects/:id/blueprint` returns `designBlueprint(design, projectName)`: services with
 settings and components, resources, externals, groups, resolved connections, component links,
-omissions and findings, at `blueprint: 1`. It is derived per request, `no-store`, and is the only
+omissions and findings, at `blueprint: 2`. Each connection into a store says whether it writes
+(from the store's owner) or reads (one writer per store, derived from the owner). It is derived
+per request, `no-store`, and is the only
 interface a future code generator should read. See [studio blueprint](docs/studio-blueprint.md).
 
 ## API

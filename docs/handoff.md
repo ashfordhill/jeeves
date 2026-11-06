@@ -2012,3 +2012,108 @@ Notes for the next units:
   is dragged narrow; at the default width every name fits.
 - `studioLanguageSchema` is now just the union of the pairs; a study needing another language for
   a new kind (DP08/DP09) adds it there and to `studioKindLanguages` together.
+
+## 2026-11-05 — DP06: TinyURL v3 from published designs; one writer per store (complete)
+
+What changed:
+
+- **TinyURL v3** (`studio-tinyurl@3.0.0`, `studio-examples/tinyurl.ts`), exactly the plan's
+  design: Stats API, Redirect service, URL cache, URL database, Click events, Analytics worker,
+  Analytics store, Shorten service; owners URL database → Shorten, URL cache and Click events →
+  Redirect, Analytics store → Analytics worker; 8 tiles, 10 links (3 entries, 7 connections), 9
+  modules (Redirect 4, worker 3, Stats API 1, Shorten 1). Removed: CDN, URL reputation API, rate
+  limiter, ID generator, reputation check. The doc comment cites the four designs and Dub. IDs:
+  `redirect` and the click path keep theirs (so the chat fixture is unchanged); new ones are
+  `stats-api`, `shorten`, `url-cache`, `url-db`, `stats-read`, `stats-data`, entries
+  `download-stats-api`, `download-redirect`, `upload-shorten`. The analytics worker is now
+  TypeScript; the redirect responder has `edgeMaxAgeSeconds: 0` ("no edge caching").
+  `goalManifestSha256` is now the SHA-256 of the study's description (the manifest files it once
+  hashed are long gone; nothing reads it but the schema's hex check).
+- **Entry order (a decision):** the Stats API's entry comes before the Redirect service's. With
+  Redirect first, ELK routed Stats API → Analytics store below every tile, along the URL
+  database's bottom edge (20 bends in all); with Stats first it runs along the top row and the
+  user → Redirect line and the click path are straight (12 bends). All 12 orderings of entries
+  and Redirect's links were compared with real ELK; Redirect's links stay in the plan's order
+  (cache, database, click events).
+- **One writer per store** (`studioStoreAccess(design, connection)` in `studio-links.ts`):
+  `"write"` from the store's owner (or a member of the owning package), `"read"` otherwise, a store
+  with no owner only read, `undefined` for links that don't end at a database, search index,
+  cache or object storage (queues keep publish/consume). Derived, never stored.
+  `studioStoreAccessLabels` give "Writes (owner)" / "Reads". Shown in: the line inspector (under
+  the two tiles), the store's tile inspector (a "Writes (owner) / Reads" list under the Type list,
+  `.lane-store-access`), each store link's row in the Connections tab, chat's `getDesign` links
+  (`access`) and the instructions (one line), and the blueprint.
+- **Blueprint is now `blueprint: 2`.** Version 1 already had `access` on connections holding the
+  planned security ("Service identity"). The plan's `access: "write" | "read"` changes that
+  field's meaning, which the blueprint doc calls breaking, so: the old value moved to `security`,
+  `access` is the read/write enum, and `blueprintVersion` is 2. To match, the line inspector's
+  "Access" field (`planned.security`) is now labelled **Security**, and chat's `editConnection`
+  line says "security".
+- E2E fixture (`e2e/studio.ts`): it now opens a project no test deletes (the first one not named
+  "E2E TinyURL") before New project. With v3's faster tests, `/` sometimes opened another test's
+  most recent project as it was being deleted ("Couldn't load the design", no Project menu). Before
+  the change: 2 of 3 full runs had one failure (one confirmed as this; the other, in the queue
+  attach test, wasn't captured) and a 3× spawn run had one (this). After: 4 full runs, no failure.
+
+Tests (135; spec +1): blueprint counts, IDs, entries and every connection's access/channel use;
+`studioStoreAccess` owner writes, others read, `edit` owner → Redirect flips both, owner `null` →
+read. Every TinyURL-based unit test moved to v3 (apply, operations, modules, lanes, lane commands,
+chat tools, projects route, board layout). Where v2 had what a test needed and v3 doesn't, the test
+builds it: a CDN inserted before Redirect for the restitch case, an External after Shorten for a
+tile with no entry (in v3 every tile that could start a lane already does), a fourth service for
+the entry cap, a Shorten → Stats API link for HTTPS request policies. The board layout fixture is
+v3 in canvas order: straight `actor-redirect`, `redirect-events`, `events-worker`, `shorten-db`;
+the Analytics store one layer after the worker. E2E (14, +1): counts 9 tiles / 10 lines / 3
+chips, no CDN; a new canvas test reads URL database's writer and readers, the "Reads" line, then
+changes the owner and checks both the list and the blueprint; remove now removes Click events
+(restitched as Redirect → Analytics worker, async) and undoes; the user's tabs test shows no
+attach tabs until an External is added after Shorten, then refuses Redirect service in the upload
+lane; the Type list test makes its API tile from the user's upload `+` (Gateway → CDN → Gateway).
+The chat fixture is unchanged: `redirect` and `redirect-cache-2` still fit.
+
+Checks (Node 24.21.0 first in PATH), on the final code:
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 135 tests).
+- `pnpm test:e2e`: 14 passed (and 14 passed on three more full runs after the fixture change).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse, my own API on 4312 (scratch `JEEVES_HOME`, scripted model,
+`jeeves_e2e`) and web on 4302, both stopped afterwards. Each script waited for its new project's
+URL and deleted only its projects (three, all 204); `jeeves_e2e` again holds just "TinyURL ·
+studio study" (still v2: it predates this change). 4300/4310 and the `jeeves` database were not
+touched. No console errors or warnings.
+
+- v3 renders as planned: Stats API top row, Redirect service on the user's row with the click path
+  straight after it, URL cache above and URL database below, Shorten service bottom. No vertical
+  segment under 32px. Straight: user → Redirect, Redirect → Click events → Analytics worker,
+  Shorten → URL database. Bent by whole steps: the other two entries, Redirect → cache and → database
+  (a fork), Stats API → Analytics store and the worker's write (a merge).
+- Fit zoom 1440×900: 0.93 rails closed, 0.73 chat, 0.72 inspector, 0.52 both; 1280×800: 0.83,
+  0.63, 0.62, 0.42 (the studio guide's table).
+- Stores: URL database "Writes (owner) Shorten service · Reads Redirect service"; URL cache
+  "Redirect service · nobody else"; Analytics store "Analytics worker · Stats API". Click events has
+  no list. Connections rows end "· Reads" / "· Writes (owner)"; the lines say "Reads" and
+  "Writes (owner)", and a click on the Stats API → Analytics store line on the canvas says "Reads".
+  Owner → Redirect service (the native select, set with `selectOption`): the list flips to
+  "Redirect service · Shorten service"; Undo flips it back. Dark mode (the app's toggle) reads
+  clearly.
+
+Docs: studio guide (TinyURL section rewritten with sources, the lane diagram, owners and "Why there
+is no CDN"; layout, fit zooms, removal, notices, Inspector store list and line, chat, Limits),
+studio settings (Security row, one-writer paragraph, owner note), blueprint doc (`blueprint: 2`,
+`security`/`access`, regenerated example, versioning note), CATALOG (one-writer paragraph, v3
+examples, Study), PLAN (blueprint 2, owner as writer, v3).
+
+Notes for the next units:
+
+- Rough: a new link into a store still gets the action "Reads & writes" from the link table even
+  when its source isn't the owner (so it reads). The label is free text and the derived access is
+  right; changing the table's default by ownership would need the owner in `studioLinkDefaults`.
+  Noted in Limits.
+- Rough: removing a tile restitches its lane entry under a new free ID when the old ID was the
+  removed tile's (a CDN inserted before Redirect and removed again gives `download-redirect-2`).
+  Pre-existing; the unit test records it.
+- The owner's existing projects (and `jeeves_e2e`'s default) stay v2: designs are stored, not
+  regenerated. Only new copies are v3.
+- DP08/DP09: `studioStoreAccess` covers object storage and search too, so a marketplace's catalog
+  owner writes and search readers read; the CDN → object storage link reads.

@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { design, expect, ready, test, tile } from "./studio.ts";
+import { design, expect, moveOnto, pull, ready, test, tile } from "./studio.ts";
 
 const poolSize = async (page: Page, id: string) =>
   (await design(page, id)).architecture.studio.components.find((c) => c.name === "Link writer")
@@ -12,7 +12,7 @@ test("autosaves a module setting, undoes and redoes it, and keeps it after reloa
   const inspector = page.locator(".studio-inspector");
   const pool = inspector.getByLabel("Pool size", { exact: true });
   const open = async () => {
-    await tile(page, "Shorten API").click();
+    await tile(page, "Shorten service").click();
     await inspector.getByRole("tab", { name: "Modules", exact: true }).click();
     await inspector.getByRole("button", { name: "Link writer", exact: true }).click();
     await inspector.getByRole("tab", { name: "Options", exact: true }).click();
@@ -44,7 +44,7 @@ test("the Type list switches a tile's kind to its presets and two languages", as
     (await design(page, id)).architecture.studio.elements.find((b) => b.element === element)
       ?.settings;
 
-  await tile(page, "Shorten API").click();
+  await tile(page, "Shorten service").click();
   // Each kind of the Service type by name; the current one pressed.
   await expect(types.getByRole("button")).toHaveText([
     "Microservice",
@@ -60,7 +60,7 @@ test("the Type list switches a tile's kind to its presets and two languages", as
   );
   await types.getByRole("button", { name: "Billing" }).click();
   await expect
-    .poll(() => settings("shorten-api"))
+    .poll(() => settings("shorten"))
     .toMatchObject({
       kind: "billing",
       provider: "stripe",
@@ -77,10 +77,24 @@ test("the Type list switches a tile's kind to its presets and two languages", as
   await inspector.getByRole("tab", { name: "Options", exact: true }).click();
   await expect(inspector.getByLabel("Payment provider", { exact: true })).toHaveValue("stripe");
 
-  await tile(page, "CDN").click();
+  // An API tile from the user's upload `+` starts as a Gateway; switch it to CDN and back.
+  await tile(page, "User").click();
+  await pull(page, "User", "Add to upload lane");
+  await moveOnto(
+    page,
+    page.locator(".board-pull").getByRole("button", { name: "API", exact: true }),
+  );
+  await page.mouse.up();
+  await ready(page);
+  await expect(types.getByRole("button", { name: "Gateway" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await types.getByRole("button", { name: "CDN" }).click();
+  await expect.poll(() => settings("api")).toMatchObject({ kind: "cdn", provider: "cloudflare" });
   await types.getByRole("button", { name: "Gateway" }).click();
-  await expect.poll(() => settings("cdn")).toMatchObject({ kind: "gateway", provider: "traefik" });
-  expect(await settings("cdn")).not.toHaveProperty("language");
+  await expect.poll(() => settings("api")).toMatchObject({ kind: "gateway", provider: "traefik" });
+  expect(await settings("api")).not.toHaveProperty("language");
   await inspector.getByRole("tab", { name: "General", exact: true }).click();
   await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
   await inspector.getByRole("tab", { name: "Options", exact: true }).click();

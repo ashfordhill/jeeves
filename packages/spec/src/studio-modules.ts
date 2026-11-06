@@ -64,7 +64,7 @@ export function moduleKinds(design: DesignDocument, host: string): StudioCompone
 
 /**
  * A name and ID for a new module of this kind in `host`: the kind's name ("Data access"), then
- * "Data access 2"… (free among the host's modules), with an ID such as `shorten-api-data-access`.
+ * "Data access 2"… (free among the host's modules), with an ID such as `shorten-data-access`.
  */
 export function newModuleIdentity(
   design: DesignDocument,

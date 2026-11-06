@@ -61,7 +61,7 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
     return state ?? notFound(reply);
   });
 
-  /** Read-only generation blueprint (`blueprint: 1`); the studio keeps writing via operations. */
+  /** Read-only generation blueprint (`blueprint: 2`); the studio keeps writing via operations. */
   app.get("/projects/:id/blueprint", { schema: { params: projectParams } }, async (req, reply) => {
     reply.header("Cache-Control", "no-store");
     return (await service.blueprint(req.params.id)) ?? notFound(reply);

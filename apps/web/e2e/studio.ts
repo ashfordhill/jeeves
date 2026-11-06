@@ -9,8 +9,14 @@ export const ready = (page: Page) =>
 
 /** Creates a TinyURL study project through the project menu and returns its ID. */
 async function createTinyUrl(page: Page, name = "E2E TinyURL"): Promise<string> {
-  await page.goto("/");
-  // The app first opens the most recent project, which may be another test's.
+  // Without a project in the URL the app opens the most recent one, which may be another test's
+  // and be deleted as it loads. So open a project no test deletes, when there is one.
+  const listed = await page.request.get("/api/projects");
+  const projects = listed.ok()
+    ? ((await listed.json()).projects as { id: string; name: string }[])
+    : [];
+  const stable = projects.find((item) => item.name !== name);
+  await page.goto(stable ? `/?project=${stable.id}` : "/");
   const menu = page.getByRole("button", { name: /^Project:/ });
   await expect(menu).toBeVisible();
   const previous = new URL(page.url()).searchParams.get("project");

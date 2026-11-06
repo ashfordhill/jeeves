@@ -99,7 +99,15 @@ its security is Service identity.
 | `cdn` → `object-store` | sync | sync | depends-on, "Uses", HTTPS |
 
 So stores are end tiles (no row has a store as its source); a queue sits between applications;
-a CDN fronts an application or object storage; `browser` has no role and takes no links. The
+a CDN fronts an application or object storage; `browser` has no role and takes no links.
+
+**One writer per store.** A link into a store (database, search index, cache, object storage)
+writes when it comes from the store's owner and reads otherwise (`studioStoreAccess(design,
+connection)`: `"write" | "read"`, or `undefined` for a link that doesn't end at a store). It is
+derived from the owner, never stored; changing the owner changes who writes. The line inspector
+shows "Writes (owner)" or "Reads", the store's inspector lists its writer and readers, chat's
+`getDesign` gives each such link its `access`, and the blueprint gives the connection `access`.
+Queue links keep publish and consume. The
 entry kinds (`studioEntryKinds`) are the user rows' targets. A link given without a mode takes its
 pair's default: async for queue links, sync otherwise (`studioDefaultLinkMode`;
 `studioLinkDefaults(source, target, mode?)`). `studioLinkRefusal` gives the reason a pair or mode
@@ -116,13 +124,13 @@ these, so any batch that leaves a broken lane rule is rejected, from the canvas,
 C1 people, external systems and relationships are not tiles and are not checked.
 
 Lane commands ([`studio-lane-commands.ts`](packages/spec/src/studio-lane-commands.ts)) edit a
-design that keeps these rules, and refuse in plain words with tile names ("Link cache can't link
+design that keeps these rules, and refuse in plain words with tile names ("URL cache can't link
 to Geo lookup. A cache can't link onward."):
 
 | Command | What it does |
 | --- | --- |
 | `addTile` | A new tile after a tile, after a lane (an entry; always a request) or before a tile. `link` (the mode) is optional and defaults to the pair's. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
-| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge), in `link` mode or the pair's default. A lane onto a tile that already has an entry, in either lane, is refused ("CDN already starts the download lane; a tile has one entry."). |
+| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge), in `link` mode or the pair's default. A lane onto a tile that already has an entry, in either lane, is refused ("Redirect service already starts the download lane; a tile has one entry."). |
 | `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
@@ -134,12 +142,12 @@ Two pure helpers answer what a tile can do, for the canvas and chat:
   side of a tile (`after` adds on the right, `before` inserts on the left) or a lane. Each is
   `{ type, kind }`, the kind an `addTile` would add (the type's default, a worker after a queue,
   else its first kind the rules accept), or `{ type, refusal }`, the plain-words reason the type's
-  preferred kind is refused ("A queue can't link to Links database. A queue feeds only an
+  preferred kind is refused ("A queue can't link to URL database. A queue feeds only an
   application, not a database."). A create links with the pair's default mode.
 - `attachOptions(design, node)` is the link tool. For a tile it lists every other tile in lane
   order with the `linkTiles` an attach would make, in the pair's default mode: selected → target
   when the rules allow it, else target → selected, else the forward direction's refusal. With
-  Links database selected, dropping on Analytics worker makes Analytics worker → Links database.
+  URL database selected, dropping on Analytics worker makes Analytics worker → URL database.
   For the user (`LANE_ACTOR`) it lists, per lane, every tile that lane could take as an entry, or
   why not.
 
@@ -182,7 +190,7 @@ Icons: `studioComponentVisuals` in [`studio-modules.ts`](packages/spec/src/studi
 
 Browser apps host only auth guard, external call and custom components. The inspector adds a
 module with `createComponent` (`moduleKinds` lists the kinds the tile may hold; `newModuleIdentity`
-names it after its kind, numbered within the tile, with an ID such as `shorten-api-data-access`),
+names it after its kind, numbered within the tile, with an ID such as `shorten-data-access`),
 links it with `connectComponent` to one of `moduleLinkChoices` (the tiles its host links to whose
 kind it may use, through that link), unlinks it with `disconnectComponent` and removes it with
 `removeComponent`.
@@ -220,7 +228,11 @@ The design chat uses one provider and model chosen in Settings
 
 ## Study
 
-**TinyURL** (`studio-tinyurl@2.0.0`) is the one study: a read-heavy URL shortener with a CDN,
-cache-aside redirects, range-allocated IDs and asynchronous click analytics, using eleven
-components. The user downloads through the CDN and uploads through the Shorten API: nine tiles
-and eleven links. It is described in the [studio guide](docs/studio.md#the-tinyurl-study).
+**TinyURL** (`studio-tinyurl@3.0.0`) is the one study, built from published designs
+(HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
+redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
+front of one URL database that only the Shorten service writes, and click analytics through a
+queue into a store read by a Stats API. No CDN tile. The user downloads through the Stats API
+and the Redirect service and uploads through the Shorten service: eight tiles, ten links (three
+entries and seven connections) and nine components. It is described in the
+[studio guide](docs/studio.md#the-tinyurl-study).

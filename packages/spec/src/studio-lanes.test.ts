@@ -19,6 +19,7 @@ import {
   studioLinkRuleTargets,
 } from "./studio-links.ts";
 import { type StudioKind, type StudioModel, studioKinds } from "./studio-model.ts";
+import { buildStudioCommand } from "./studio-operations.ts";
 import { defaultKind, studioTileDefinitions, studioTileTypes, tileTypeOf } from "./studio-tiles.ts";
 import { validateDesign } from "./validate.ts";
 
@@ -49,7 +50,10 @@ const connection = (id: string, from: string, to: string): DesignDocument["conne
   },
 });
 
-/** The TinyURL study: the user enters at the CDN (download) and the Shorten API (upload). */
+/**
+ * The TinyURL study: the user enters at the Stats API and the Redirect service (download) and the
+ * Shorten service (upload).
+ */
 const tinyurl = (): DesignDocument => studioArchitectureExample("studio-tinyurl").design;
 const messages = (design: DesignDocument) =>
   laneFindings(design).map((item) => {
@@ -288,23 +292,19 @@ describe("tile types and entries", () => {
       errors: [{ code: "UNKNOWN_REFERENCE" }],
     });
 
-    // Redirect also starts the download lane, so removing the CDN strands nothing.
-    const twoDoors = edit(design, (draft) => {
-      studioOf(draft).entries?.push({
-        id: "download-redirect",
-        lane: "download",
-        element: "redirect",
-      });
-    });
-    const withoutCdn = applied(applyOperations(twoDoors, [{ op: "removeElement", id: "cdn" }]));
-    expect(studioOf(withoutCdn).entries).toEqual([
-      { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
+    // The Analytics store is also reached through the click path, so removing the Stats API (and
+    // its entry with it) strands nothing.
+    const withoutStats = applied(
+      applyOperations(design, [{ op: "removeElement", id: "stats-api" }]),
+    );
+    expect(studioOf(withoutStats).entries).toEqual([
       { id: "download-redirect", lane: "download", element: "redirect" },
+      { id: "upload-shorten", lane: "upload", element: "shorten" },
     ]);
     // Validation enforces the lane rules: a batch that strands tiles is rejected.
-    const stranding = applyOperations(design, [{ op: "removeElement", id: "cdn" }]);
+    const stranding = applyOperations(design, [{ op: "disconnect", id: "redirect-clicks" }]);
     expect(stranding.ok ? [] : stranding.errors.map((item) => item.code)).toEqual(
-      Array(4).fill("LANE_INVALID"),
+      Array(2).fill("LANE_INVALID"),
     );
 
     const blueprint = designBlueprint(
@@ -313,8 +313,9 @@ describe("tile types and entries", () => {
     );
     expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
     expect(blueprint.entries).toEqual([
-      { lane: "download", element: "cdn" },
-      { lane: "upload", element: "shorten-api" },
+      { lane: "download", element: "redirect" },
+      { lane: "download", element: "stats-api" },
+      { lane: "upload", element: "shorten" },
     ]);
     expect(blueprint.omitted).toEqual([]);
   });
@@ -325,36 +326,30 @@ describe("laneGraph", () => {
     const graph = laneGraph(tinyurl());
     expect(graph.nodes.map((node) => node.id)).toEqual([
       LANE_ACTOR,
-      "cdn",
+      "stats-api",
       "redirect",
-      "link-cache",
-      "links-db",
+      "analytics-store",
+      "url-cache",
+      "url-db",
       "click-events",
       "analytics",
-      "analytics-store",
-      "shorten-api",
-      "reputation",
+      "shorten",
     ]);
     expect(graph.nodes[0]).toEqual({ id: LANE_ACTOR });
-    expect(graph.nodes[1]).toEqual({ id: "cdn", kind: "cdn" });
-    expect(graph.edges).toHaveLength(11);
-    expect(graph.edges.slice(0, 2)).toEqual([
-      {
-        id: "download-cdn",
-        source: LANE_ACTOR,
-        target: "cdn",
-        async: false,
-        dashed: false,
-        lane: "download",
-      },
-      {
-        id: "upload-shorten-api",
-        source: LANE_ACTOR,
-        target: "shorten-api",
-        async: false,
-        dashed: false,
-        lane: "upload",
-      },
+    expect(graph.nodes[1]).toEqual({ id: "stats-api", kind: "service" });
+    expect(graph.edges).toHaveLength(10);
+    const entry = (id: string, target: string, lane: string) => ({
+      id,
+      source: LANE_ACTOR,
+      target,
+      async: false,
+      dashed: false,
+      lane,
+    });
+    expect(graph.edges.slice(0, 3)).toEqual([
+      entry("download-stats-api", "stats-api", "download"),
+      entry("download-redirect", "redirect", "download"),
+      entry("upload-shorten", "shorten", "upload"),
     ]);
     const ids = (pick: (edge: (typeof graph.edges)[0]) => boolean) =>
       graph.edges.filter(pick).map((edge) => edge.id);
@@ -381,11 +376,12 @@ describe("laneGraph", () => {
   it("reads an entry stored with both lanes as a download entry", () => {
     // Entries could start both lanes for a while; such a design loads with that entry in download.
     const stored = JSON.parse(JSON.stringify(tinyurl()));
-    stored.architecture.studio.entries[1].lane = "both";
+    stored.architecture.studio.entries[2].lane = "both";
     const design = designSchema.parse(stored);
     expect(studioOf(design).entries).toEqual([
-      { id: "download-cdn", lane: "download", element: "cdn" },
-      { id: "upload-shorten-api", lane: "download", element: "shorten-api" },
+      { id: "download-stats-api", lane: "download", element: "stats-api" },
+      { id: "download-redirect", lane: "download", element: "redirect" },
+      { id: "upload-shorten", lane: "download", element: "shorten" },
     ]);
     expect(laneFindings(design)).toEqual([]);
   });
@@ -399,9 +395,9 @@ describe("laneFindings", () => {
     const noUpload = edit(design, (draft) => {
       studioOf(draft).entries = studioOf(draft).entries?.filter((item) => item.lane !== "upload");
     });
+    // The URL database is still read by the Redirect service; its writer is cut off.
     expect(messages(noUpload)).toEqual([
-      "Shorten API can't be reached from the user; every tile hangs off a lane.",
-      "URL reputation API can't be reached from the user; every tile hangs off a lane.",
+      "Shorten service can't be reached from the user; every tile hangs off a lane.",
     ]);
 
     const loop = edit(design, (draft) => {
@@ -411,27 +407,36 @@ describe("laneFindings", () => {
     expect(laneFindings(loop)[0]?.target.element).toBeDefined();
 
     const refused = edit(design, (draft) => {
-      draft.connections.push(connection("store-reputation", "analytics-store", "reputation"));
-      studioOf(draft).entries?.push({ id: "download-db", lane: "download", element: "links-db" });
+      draft.connections.push(connection("store-shorten", "analytics-store", "shorten"));
+      studioOf(draft).entries?.push({ id: "download-db", lane: "download", element: "url-db" });
     });
     expect(messages(refused)).toEqual([
-      "Links database can't start the download lane. A lane starts at a service (not a worker), an API, storage or an external API.",
-      "Analytics store → URL reputation API: A database can't link onward.",
+      "URL database can't start the download lane. A lane starts at a service (not a worker), an API, storage or an external API.",
+      "Analytics store → Shorten service: A database can't link onward.",
     ]);
     expect(laneFindings(refused).map((item) => item.target)).toEqual([
-      { path: ["architecture", "studio", "entries", 2] },
-      { connection: "store-reputation" },
+      { path: ["architecture", "studio", "entries", 3] },
+      { connection: "store-shorten" },
     ]);
 
-    const crowded = edit(design, (draft) => {
-      studioOf(draft).entries = ["cdn", "redirect", "reputation", "shorten-api"].map((element) => ({
+    // A fourth service, after the Shorten service, gives the download lane a fourth entry.
+    const batch = buildStudioCommand(design, {
+      type: "addTile",
+      from: { tile: "shorten" },
+      side: "after",
+      tile: { id: "admin", name: "Admin API", kind: "service" },
+      linkId: "shorten-admin",
+    });
+    const fourth = applied(applyOperations(design, batch.ops));
+    const crowded = edit(fourth, (draft) => {
+      studioOf(draft).entries = ["redirect", "stats-api", "shorten", "admin"].map((element) => ({
         id: `entry-${element}`,
         lane: "download" as const,
         element,
       }));
       draft.connections.push(
-        connection("redirect-reputation", "redirect", "reputation"),
-        connection("redirect-shorten", "redirect", "shorten-api"),
+        connection("redirect-stats", "redirect", "stats-api"),
+        connection("redirect-shorten", "redirect", "shorten"),
       );
     });
     expect(messages(crowded)).toEqual([
@@ -450,9 +455,9 @@ describe("laneRules", () => {
       true,
     );
     expect(
-      addAfter(graph, "link-cache", { id: "new" }, { id: "to-new" }, rules("service")),
+      addAfter(graph, "url-cache", { id: "new" }, { id: "to-new" }, rules("service")),
     ).toMatchObject({ ok: false, code: "refused-link" });
-    expect(rules("service").refusal("link-cache", "new", false)).toBe("A cache can't link onward.");
+    expect(rules("service").refusal("url-cache", "new", false)).toBe("A cache can't link onward.");
     expect(rules("worker").refusal(LANE_ACTOR, "new", false)).toMatch(/^A lane starts at/);
   });
 });

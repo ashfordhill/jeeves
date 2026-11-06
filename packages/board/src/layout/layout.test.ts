@@ -90,32 +90,24 @@ function expectClean(input: LayoutInput, layout: BoardLayout) {
   }
 }
 
-/** TinyURL in lanes (plan §4): 10 tiles, 11 lines, entry chips on the actor's two lines. */
+/**
+ * TinyURL v3 in lanes, in the canvas's order: 9 tiles, 10 lines, entry chips on the actor's three
+ * lines. Two merges: the URL database (Redirect and Shorten) and the Analytics store (Stats API
+ * and worker).
+ */
 const tinyUrl = board(
+  ["actor:128x160", "stats", "redirect", "store", "cache", "db", "events", "worker", "shorten"],
   [
-    "actor:128x160",
-    "cdn",
-    "redirect",
-    "cache",
-    "db",
-    "events",
-    "worker",
-    "store",
-    "shorten",
-    "rep",
-  ],
-  [
-    "actor>cdn*",
+    "actor>stats*",
+    "actor>redirect*",
     "actor>shorten*",
-    "cdn>redirect",
+    "stats>store",
     "redirect>cache",
     "redirect>db",
     "redirect>events",
     "events>worker",
     "worker>store",
     "shorten>db",
-    "shorten>cache",
-    "shorten>rep",
   ],
 );
 
@@ -133,7 +125,8 @@ describe("ELK layout", () => {
     expect(b).toEqual(a);
     expectClean(tinyUrl, a);
     // Download is the actor's first line, so its tiles sit above the upload lane's.
-    expect(a.positions.cdn?.y).toBeLessThan(a.positions.shorten?.y ?? 0);
+    expect(a.positions.stats?.y).toBeLessThan(a.positions.redirect?.y ?? 0);
+    expect(a.positions.redirect?.y).toBeLessThan(a.positions.shorten?.y ?? 0);
   });
 
   it("keeps a chain on one row", async () => {
@@ -175,8 +168,8 @@ describe("ELK layout", () => {
         if (a.x === b.x) expect(Math.abs(b.y - a.y), `${id} jogs`).toBeGreaterThanOrEqual(GRID);
       }
     }
-    // ELK left both merges 8px off their source: they are straight now.
-    for (const id of ["redirect-cache", "shorten-db"]) {
+    // The user's line into Redirect, the click path and the Shorten service's write are straight.
+    for (const id of ["actor-redirect", "redirect-events", "events-worker", "shorten-db"]) {
       const route = layout.routes[id] ?? [];
       expect(route, id).toHaveLength(2);
       expect(route[0]?.y, id).toBe(route[1]?.y);
@@ -199,9 +192,8 @@ describe("ELK layout", () => {
     expect(next.positions.report?.y).toBe(first.positions.store?.y);
   });
 
-  it("keeps the merges straight after a fork moves the board", async () => {
-    // Forking Analytics worker moves most tiles. Click events then lands on a half step and would
-    // push Link cache off Redirect's row; it takes the grid line above instead.
+  it("keeps straight lines straight after a fork moves the board", async () => {
+    // Forking the Analytics worker moves tiles; the straight lines stay straight.
     const first = await layoutOf(tinyUrl);
     const forked = board(
       tinyUrl.tiles.map((t) => `${t.id}:${t.w}x${t.h}`).concat("report"),
@@ -211,7 +203,8 @@ describe("ELK layout", () => {
     );
     const next = await layoutOf(forked, first.positions);
     expectClean(forked, next);
-    for (const id of ["redirect-cache", "shorten-db"]) expect(next.routes[id], id).toHaveLength(2);
+    for (const id of ["actor-redirect", "redirect-events", "events-worker", "shorten-db"])
+      expect(next.routes[id], id).toHaveLength(2);
   });
 
   it("pushes a column's lower tiles down to keep the gap, and bends a line that was straight", () => {
@@ -251,11 +244,13 @@ describe("ELK layout", () => {
       (x, y) => x - y,
     );
     const column = (id: string) => columns.indexOf(layout.positions[id]?.x ?? -1);
-    // Cache and Links database are reached from Redirect (after CDN) and from Shorten API.
-    expect(column("redirect")).toBe(2);
-    expect(column("shorten")).toBeLessThanOrEqual(column("redirect"));
-    expect(column("cache")).toBe(3);
-    expect(column("db")).toBe(3);
+    // The URL database is reached from Redirect and Shorten; the Analytics store from the Stats
+    // API and, three layers on, the Analytics worker.
+    expect(column("redirect")).toBe(1);
+    expect(column("shorten")).toBe(1);
+    expect(column("db")).toBe(2);
+    expect(column("worker")).toBe(3);
+    expect(column("store")).toBe(4);
   });
 });
 

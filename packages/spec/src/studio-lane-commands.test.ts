@@ -25,7 +25,10 @@ const applied = (result: ReturnType<typeof applyOperations>) => {
   if (!result.ok) throw new Error(JSON.stringify(result.errors));
   return result.design;
 };
-/** The TinyURL study: the user enters at the CDN (download) and the Shorten API (upload). */
+/**
+ * The TinyURL study: the user enters at the Stats API and the Redirect service (download) and the
+ * Shorten service (upload). Every tile that could start a lane already does.
+ */
 const tinyurl = (): DesignDocument => studioArchitectureExample("studio-tinyurl").design;
 /** Builds the command and applies its batch; the result keeps every lane rule. */
 function run(design: DesignDocument, command: StudioCommand) {
@@ -34,6 +37,15 @@ function run(design: DesignDocument, command: StudioCommand) {
   expect(laneFindings(next)).toEqual([]);
   return { ops: batch.ops.map((op) => op.op), design: next };
 }
+/** TinyURL with an external Geo lookup after the Shorten service: a tile with no entry yet. */
+const withGeo = () =>
+  run(tinyurl(), {
+    type: "addTile",
+    from: { tile: "shorten" },
+    side: "after",
+    tile: { id: "geo", name: "Geo lookup", kind: "external-api" },
+    linkId: "shorten-geo",
+  }).design;
 const refusal = (design: DesignDocument, command: StudioCommand) => {
   try {
     buildStudioCommand(design, command);
@@ -57,7 +69,7 @@ describe("addTile", () => {
     const design = tinyurl();
     const queue = run(design, {
       type: "addTile",
-      from: { tile: "shorten-api" },
+      from: { tile: "shorten" },
       side: "after",
       link: "async",
       tile: tile("link-events", "Link events", "queue"),
@@ -67,10 +79,10 @@ describe("addTile", () => {
     expect(binding(queue.design, "link-events")).toMatchObject({
       definition: { id: "studio-queue" },
       settings: createStudioSettings("queue"),
-      owner: { kind: "element", id: "shorten-api" },
+      owner: { kind: "element", id: "shorten" },
     });
     expect(connection(queue.design, "shorten-events")).toMatchObject({
-      from: { element: "shorten-api" },
+      from: { element: "shorten" },
       to: { element: "link-events" },
       planned: { label: "Publishes", interaction: "Asynchronous" },
     });
@@ -78,15 +90,16 @@ describe("addTile", () => {
     // Before an entry tile: the entry moves to the new tile and keeps its ID and lane.
     const gateway = run(design, {
       type: "addTile",
-      from: { tile: "shorten-api" },
+      from: { tile: "shorten" },
       side: "before",
       link: "sync",
       tile: tile("edge", "API gateway", "gateway"),
       linkId: "edge-shorten",
     }).design;
     expect(studioOf(gateway).entries).toEqual([
-      { id: "download-cdn", lane: "download", element: "cdn" },
-      { id: "upload-shorten-api", lane: "upload", element: "edge" },
+      { id: "download-stats-api", lane: "download", element: "stats-api" },
+      { id: "download-redirect", lane: "download", element: "redirect" },
+      { id: "upload-shorten", lane: "upload", element: "edge" },
     ]);
     expect(connection(gateway, "edge-shorten")).toMatchObject({ kind: "calls" });
 
@@ -94,7 +107,7 @@ describe("addTile", () => {
     // link table's defaults. Redirect's lookup no longer reaches a database, so it is cleared.
     const reader = run(design, {
       type: "addTile",
-      from: { tile: "links-db" },
+      from: { tile: "url-db" },
       side: "before",
       link: "sync",
       tile: tile("link-store", "Link store", "service"),
@@ -149,8 +162,8 @@ describe("addTile", () => {
         linkId: "redirect-geo",
         ...command,
       });
-    expect(add({ from: { tile: "link-cache" } })).toBe(
-      "Link cache can't link to Geo lookup. A cache can't link onward.",
+    expect(add({ from: { tile: "url-cache" } })).toBe(
+      "URL cache can't link to Geo lookup. A cache can't link onward.",
     );
     expect(add({ from: { lane: "download" }, side: "before" })).toBe(
       "Nothing goes before the user.",
@@ -180,16 +193,15 @@ describe("addTile", () => {
       }),
     ).toBe("Redirect service already has 4 links; the most is 4.");
 
-    let full = design;
-    for (const id of ["one", "two"])
-      full = run(full, {
-        type: "addTile",
-        from: { lane: "download" },
-        side: "after",
-        link: "sync",
-        tile: tile(id, `Service ${id}`, "service"),
-        linkId: `download-${id}`,
-      }).design;
+    // The download lane has two entries; a third fills it.
+    const full = run(design, {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      link: "sync",
+      tile: tile("one", "Service one", "service"),
+      linkId: "download-one",
+    }).design;
     expect(
       refusal(full, {
         type: "addTile",
@@ -209,7 +221,7 @@ describe("linkTiles", () => {
     const merged = run(design, {
       type: "linkTiles",
       from: { tile: "analytics" },
-      to: "link-cache",
+      to: "url-cache",
       link: "sync",
       linkId: "analytics-cache",
     }).design;
@@ -217,14 +229,14 @@ describe("linkTiles", () => {
       kind: "uses-database",
       planned: { protocol: "Redis" },
     });
-    const entered = run(design, {
+    const entered = run(withGeo(), {
       type: "linkTiles",
       from: { lane: "upload" },
-      to: "reputation",
+      to: "geo",
       link: "sync",
-      linkId: "upload-reputation",
+      linkId: "upload-geo",
     }).design;
-    expect(studioOf(entered).entries?.at(-1)).toMatchObject({ element: "reputation" });
+    expect(studioOf(entered).entries?.at(-1)).toMatchObject({ element: "geo" });
 
     const link = (from: string, to: string, mode: "sync" | "async" = "sync") =>
       refusal(design, {
@@ -237,19 +249,19 @@ describe("linkTiles", () => {
     expect(link("analytics", "redirect")).toBe(
       "Redirect service already leads to Analytics worker; linking them would make a loop.",
     );
-    expect(link("redirect", "link-cache")).toBe("Redirect service already links to Link cache.");
-    expect(link("analytics", "links-db", "async")).toBe(
-      "Analytics worker can't link to Links database. A link to a database is a request; it can't be asynchronous.",
+    expect(link("redirect", "url-cache")).toBe("Redirect service already links to URL cache.");
+    expect(link("analytics", "url-db", "async")).toBe(
+      "Analytics worker can't link to URL database. A link to a database is a request; it can't be asynchronous.",
     );
     expect(
       refusal(design, {
         type: "linkTiles",
         from: { lane: "download" },
-        to: "cdn",
+        to: "redirect",
         link: "sync",
-        linkId: "download-cdn-2",
+        linkId: "download-redirect-2",
       }),
-    ).toBe("CDN already starts the download lane; a tile has one entry.");
+    ).toBe("Redirect service already starts the download lane; a tile has one entry.");
   });
 });
 
@@ -258,28 +270,27 @@ describe("setEntryLane", () => {
     const design = tinyurl();
     const moved = run(design, {
       type: "setEntryLane",
-      entry: "upload-shorten-api",
+      entry: "upload-shorten",
       lane: "download",
     });
     expect(moved.ops).toEqual(["setStudio"]);
     expect(studioOf(moved.design).entries?.map((entry) => entry.lane)).toEqual([
       "download",
       "download",
+      "download",
     ]);
 
     // Three download entries fill the lane: the upload entry can't move there.
-    let full = design;
-    for (const tile of ["redirect", "reputation"])
-      full = run(full, {
-        type: "linkTiles",
-        from: { lane: "download" },
-        to: tile,
-        link: "sync",
-        linkId: `download-${tile}`,
-      }).design;
+    const full = run(design, {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      tile: tile("one", "Service one", "service"),
+      linkId: "download-one",
+    }).design;
     const cap = "The download lane already has 3 entries; the most is 3.";
-    expect(laneEntryRefusal(full, "upload-shorten-api", "download")).toBe(cap);
-    expect(laneEntryRefusal(full, "download-cdn", "upload")).toBeUndefined();
+    expect(laneEntryRefusal(full, "upload-shorten", "download")).toBe(cap);
+    expect(laneEntryRefusal(full, "download-redirect", "upload")).toBeUndefined();
     // The full lane offers nothing to add or attach, so the user shows only the upload lane's
     // `+` (every tile that could start a lane already has an entry, so there is no attach tab).
     expect(laneOptions(full, { lane: "download" }, "after")[0]).toEqual({
@@ -289,23 +300,37 @@ describe("setEntryLane", () => {
     expect(laneOptions(full, { lane: "download" }, "after").some((o) => "kind" in o)).toBe(false);
     expect(laneOptions(full, { lane: "upload" }, "after").some((o) => "kind" in o)).toBe(true);
     expect(attachOptions(full, LANE_ACTOR).some((o) => "link" in o)).toBe(false);
-    expect(refusal(design, { type: "setEntryLane", entry: "download-cdn", lane: "download" })).toBe(
-      "CDN already starts the download lane.",
-    );
-    expect(refusal(design, { type: "setEntryLane", entry: "cdn", lane: "upload" })).toBe(
-      'There is no lane entry "cdn".',
+    expect(
+      refusal(design, { type: "setEntryLane", entry: "download-redirect", lane: "download" }),
+    ).toBe("Redirect service already starts the download lane.");
+    expect(refusal(design, { type: "setEntryLane", entry: "redirect", lane: "upload" })).toBe(
+      'There is no lane entry "redirect".',
     );
   });
 });
 
 describe("removeTile and removeLink", () => {
-  it("restitch: removing the CDN moves the download entry to Redirect", () => {
+  it("restitch: removing a CDN in front of Redirect moves the download entry back to it", () => {
     const design = tinyurl();
-    const removed = run(design, { type: "removeTile", tile: "cdn" });
+    const fronted = run(design, {
+      type: "addTile",
+      from: { tile: "redirect" },
+      side: "before",
+      tile: tile("cdn", "CDN", "cdn"),
+      linkId: "cdn-redirect",
+    }).design;
+    expect(studioOf(fronted).entries?.[1]).toEqual({
+      id: "download-redirect",
+      lane: "download",
+      element: "cdn",
+    });
+    const removed = run(fronted, { type: "removeTile", tile: "cdn" });
     expect(removed.ops).toEqual(["removeElement", "setStudio"]);
+    // The restitched entry gets a free ID: "download-redirect" was the CDN's entry until now.
     expect(studioOf(removed.design).entries).toEqual([
-      { id: "download-redirect", lane: "download", element: "redirect" },
-      { id: "upload-shorten-api", lane: "upload", element: "shorten-api" },
+      { id: "download-stats-api", lane: "download", element: "stats-api" },
+      { id: "download-redirect-2", lane: "download", element: "redirect" },
+      { id: "upload-shorten", lane: "upload", element: "shorten" },
     ]);
     expect(connection(removed.design, "cdn-redirect")).toBeUndefined();
 
@@ -319,27 +344,28 @@ describe("removeTile and removeLink", () => {
       true,
     );
 
-    const unlinked = run(design, { type: "removeLink", link: "shorten-cache" }).design;
-    expect(connection(unlinked, "shorten-cache")).toBeUndefined();
-    expect(refusal(design, { type: "removeLink", link: "upload-shorten-api" })).toBe(
-      "Removing the upload entry to Shorten API would cut off Shorten API and URL reputation API.",
+    // The URL database stays reachable through the Shorten service.
+    const unlinked = run(design, { type: "removeLink", link: "redirect-db" }).design;
+    expect(connection(unlinked, "redirect-db")).toBeUndefined();
+    expect(refusal(design, { type: "removeLink", link: "upload-shorten" })).toBe(
+      "Removing the upload entry to Shorten service would cut off Shorten service.",
     );
   });
 
   it("names every stranded tile, and needs them in alsoRemove", () => {
     const design = tinyurl();
-    const strands = ["click-events", "analytics", "analytics-store"];
+    const strands = ["url-cache", "click-events", "analytics"];
     expect(planRemoveTile(design, "redirect")).toEqual({ ok: true, value: { strands } });
     expect(refusal(design, { type: "removeTile", tile: "redirect" })).toBe(
-      "Removing Redirect service would cut off Click events, Analytics worker and Analytics store; list them in alsoRemove to remove them too.",
+      "Removing Redirect service would cut off URL cache, Click events and Analytics worker; list them in alsoRemove to remove them too.",
     );
     expect(
       refusal(design, {
         type: "removeTile",
         tile: "redirect",
-        alsoRemove: [...strands, "link-cache"],
+        alsoRemove: [...strands, "url-db"],
       }),
-    ).toBe("Removing Redirect service doesn't cut off Link cache; remove it separately.");
+    ).toBe("Removing Redirect service doesn't cut off URL database; remove it separately.");
 
     const removed = run(design, {
       type: "removeTile",
@@ -347,13 +373,16 @@ describe("removeTile and removeLink", () => {
       alsoRemove: strands,
     }).design;
     expect(removed.elements.map((element) => element.id).sort()).toEqual(
-      ["cdn", "link-cache", "links-db", "reputation", "shorten-api"].sort(),
+      ["analytics-store", "shorten", "stats-api", "url-db"].sort(),
     );
-    // The cache Redirect owned passes to the application still using it; settings and modules
-    // that named the removed tiles go with them.
-    expect(binding(removed, "link-cache")?.owner).toEqual({ kind: "element", id: "shorten-api" });
-    expect(binding(removed, "cdn")?.settings).not.toHaveProperty("origin");
+    // The store the Analytics worker owned passes to the application still using it, which now
+    // writes it; modules that named the removed tiles go with them.
+    expect(binding(removed, "analytics-store")?.owner).toEqual({
+      kind: "element",
+      id: "stats-api",
+    });
     expect(studioOf(removed).components?.map((item) => item.host)).not.toContain("redirect");
+    expect(studioOf(removed).components?.map((item) => item.host)).not.toContain("analytics");
   });
 });
 
@@ -369,14 +398,14 @@ describe("changeKind", () => {
 
     const change = (element: string, kind: StudioModel["elements"][0]["settings"]["kind"]) =>
       refusal(design, { type: "changeKind", element, kind });
-    expect(change("shorten-api", "worker")).toBe(
-      "Shorten API can't become a worker. A lane starts at a service (not a worker), an API, storage or an external API.",
+    expect(change("shorten", "worker")).toBe(
+      "Shorten service can't become a worker. A lane starts at a service (not a worker), an API, storage or an external API.",
     );
-    expect(change("links-db", "cache")).toBe(
-      "Links database can switch only to another Database kind: a search index.",
+    expect(change("url-db", "cache")).toBe(
+      "URL database can switch only to another Database kind: a search index.",
     );
-    expect(change("links-db", "search")).toBe(
-      "ID generator in Shorten API can't use a search index; remove its link to Links database first.",
+    expect(change("url-db", "search")).toBe(
+      "Link reader in Redirect service can't use a search index; remove its link to URL database first.",
     );
     expect(change("redirect", "redirect")).toBe("Redirect service is already a redirect service.");
   });
@@ -388,7 +417,7 @@ describe("modes from the pair", () => {
     // After a service, a queue is published to asynchronously; a cache is a request.
     const queue = run(design, {
       type: "addTile",
-      from: { tile: "shorten-api" },
+      from: { tile: "shorten" },
       side: "after",
       tile: tile("link-events", "Link events", "queue"),
       linkId: "shorten-events",
@@ -407,7 +436,7 @@ describe("modes from the pair", () => {
     expect(connection(worker, "events-indexer")).toMatchObject({
       planned: { label: "Consumes", interaction: "Asynchronous" },
     });
-    // Before the queue, a new service publishes to it; Shorten API's publish moves to it.
+    // Before the queue, a new service publishes to it; the Shorten service's publish moves to it.
     const before = run(queue, {
       type: "addTile",
       from: { tile: "link-events" },
@@ -442,10 +471,10 @@ describe("modes from the pair", () => {
     }).design;
     expect(studioOf(entry).entries?.at(-1)).toMatchObject({ lane: "download", element: "media" });
 
-    // linkTiles: Shorten API publishes to Click events; the user enters at the redirect.
+    // linkTiles: the Shorten service publishes to Click events; the user enters at Geo lookup.
     const merged = run(design, {
       type: "linkTiles",
-      from: { tile: "shorten-api" },
+      from: { tile: "shorten" },
       to: "click-events",
       linkId: "shorten-clicks",
     }).design;
@@ -455,27 +484,27 @@ describe("modes from the pair", () => {
     });
     expect(
       studioOf(
-        run(design, {
+        run(withGeo(), {
           type: "linkTiles",
           from: { lane: "upload" },
-          to: "redirect",
-          linkId: "upload-redirect",
+          to: "geo",
+          linkId: "upload-geo",
         }).design,
       ).entries?.at(-1),
-    ).toEqual({ id: "upload-redirect", lane: "upload", element: "redirect" });
+    ).toEqual({ id: "upload-geo", lane: "upload", element: "geo" });
     // A mode given explicitly still wins, and is still checked.
     expect(
       refusal(design, {
         type: "linkTiles",
-        from: { tile: "shorten-api" },
+        from: { tile: "shorten" },
         to: "click-events",
         link: "sync",
         linkId: "shorten-clicks",
       }),
     ).toBe(
-      "Shorten API can't link to Click events. Publishing to a queue is asynchronous, not a request.",
+      "Shorten service can't link to Click events. Publishing to a queue is asynchronous, not a request.",
     );
-    expect(laneLinkRefusal(design, { tile: "shorten-api" }, "click-events")).toBeUndefined();
+    expect(laneLinkRefusal(design, { tile: "shorten" }, "click-events")).toBeUndefined();
   });
 });
 
@@ -485,8 +514,8 @@ describe("lane options", () => {
     const sides = [
       [{ tile: "redirect" }, "after"],
       [{ tile: "redirect" }, "before"],
-      [{ tile: "links-db" }, "after"],
-      [{ tile: "links-db" }, "before"],
+      [{ tile: "url-db" }, "after"],
+      [{ tile: "url-db" }, "before"],
       [{ tile: "click-events" }, "after"],
       [{ lane: "download" }, "after"],
       [{ lane: "upload" }, "before"],
@@ -508,30 +537,30 @@ describe("lane options", () => {
       { type: "external", kind: "external-api" },
     ]);
     // Before a database, only applications fit; the reasons name the preferred kind.
-    expect(laneOptions(design, { tile: "links-db" }, "before")).toEqual([
+    expect(laneOptions(design, { tile: "url-db" }, "before")).toEqual([
       { type: "service", kind: "service" },
       { type: "api", kind: "gateway" },
       {
         type: "database",
-        refusal: "A database can't link to Links database. A database can't link onward.",
+        refusal: "A database can't link to URL database. A database can't link onward.",
       },
       {
         type: "cache",
-        refusal: "A cache can't link to Links database. A cache can't link onward.",
+        refusal: "A cache can't link to URL database. A cache can't link onward.",
       },
       {
         type: "queue",
         refusal:
-          "A queue can't link to Links database. A queue feeds only an application, not a database.",
+          "A queue can't link to URL database. A queue feeds only an application, not a database.",
       },
       {
         type: "storage",
-        refusal: "Object storage can't link to Links database. Object storage can't link onward.",
+        refusal: "Object storage can't link to URL database. Object storage can't link onward.",
       },
       {
         type: "external",
         refusal:
-          "An external API can't link to Links database. An external API can only call an application, not a database.",
+          "An external API can't link to URL database. An external API can only call an application, not a database.",
       },
     ]);
     // After a queue: a Service is a worker, consuming asynchronously.
@@ -559,26 +588,25 @@ describe("lane options", () => {
 describe("attach options", () => {
   it("attach a tile either way: forward when allowed, else backward, else the forward reason", () => {
     const design = tinyurl();
-    const options = attachOptions(design, "links-db");
+    const options = attachOptions(design, "url-db");
     expect(options.map((option) => option.tile)).toEqual([
-      "cdn",
+      "stats-api",
       "redirect",
-      "link-cache",
+      "analytics-store",
+      "url-cache",
       "click-events",
       "analytics",
-      "analytics-store",
-      "shorten-api",
-      "reputation",
+      "shorten",
     ]);
-    // Links database dropped on Analytics worker: Analytics worker → Links database.
+    // URL database dropped on Analytics worker: Analytics worker → URL database.
     expect(options.find((option) => option.tile === "analytics")).toEqual({
       tile: "analytics",
-      link: { from: { tile: "analytics" }, to: "links-db", mode: "sync" },
+      link: { from: { tile: "analytics" }, to: "url-db", mode: "sync" },
     });
     // Redirect already reads it, so neither way works: the forward reason.
     expect(options.find((option) => option.tile === "redirect")).toEqual({
       tile: "redirect",
-      refusal: "Links database can't link to Redirect service. A database can't link onward.",
+      refusal: "URL database can't link to Redirect service. A database can't link onward.",
     });
     // Forward from Redirect service: a merge into Analytics worker; a second link is refused.
     const redirect = attachOptions(design, "redirect");
@@ -586,14 +614,14 @@ describe("attach options", () => {
       tile: "analytics",
       link: { from: { tile: "redirect" }, to: "analytics", mode: "sync" },
     });
-    expect(redirect.find((option) => option.tile === "link-cache")).toEqual({
-      tile: "link-cache",
-      refusal: "Redirect service already links to Link cache.",
+    expect(redirect.find((option) => option.tile === "url-cache")).toEqual({
+      tile: "url-cache",
+      refusal: "Redirect service already links to URL cache.",
     });
     // A queue link takes the async default.
-    expect(attachOptions(design, "click-events").find((o) => o.tile === "shorten-api")).toEqual({
-      tile: "shorten-api",
-      link: { from: { tile: "click-events" }, to: "shorten-api", mode: "async" },
+    expect(attachOptions(design, "click-events").find((o) => o.tile === "shorten")).toEqual({
+      tile: "shorten",
+      link: { from: { tile: "click-events" }, to: "shorten", mode: "async" },
     });
     // Accepted options run as given.
     const link = options.find((option) => option.tile === "analytics");
@@ -603,33 +631,30 @@ describe("attach options", () => {
       from: link.link.from,
       to: link.link.to,
       link: link.link.mode,
-      linkId: "analytics-links-db",
+      linkId: "analytics-url-db",
     }).design;
-    expect(connection(next, "analytics-links-db")).toMatchObject({ kind: "uses-database" });
+    expect(connection(next, "analytics-url-db")).toMatchObject({ kind: "uses-database" });
     expect(attachOptions(design, "nope")).toEqual([]);
   });
 
   it("attach the user per lane: the tiles each lane could take as an entry", () => {
-    const design = tinyurl();
+    // In TinyURL every tile that could start a lane already does.
+    expect(attachOptions(tinyurl(), LANE_ACTOR).some((option) => "link" in option)).toBe(false);
+    const design = withGeo();
     const options = attachOptions(design, LANE_ACTOR);
     expect(options).toHaveLength(2 * 9);
     const download = options.filter((option) => option.lane === "download");
     expect(download.filter((option) => "link" in option)).toEqual([
       {
-        tile: "redirect",
+        tile: "geo",
         lane: "download",
-        link: { from: { lane: "download" }, to: "redirect", mode: "sync" },
-      },
-      {
-        tile: "reputation",
-        lane: "download",
-        link: { from: { lane: "download" }, to: "reputation", mode: "sync" },
+        link: { from: { lane: "download" }, to: "geo", mode: "sync" },
       },
     ]);
-    expect(download.find((option) => option.tile === "shorten-api")).toEqual({
-      tile: "shorten-api",
+    expect(download.find((option) => option.tile === "shorten")).toEqual({
+      tile: "shorten",
       lane: "download",
-      refusal: "Shorten API already starts the upload lane; a tile has one entry.",
+      refusal: "Shorten service already starts the upload lane; a tile has one entry.",
     });
     expect(
       options.find((option) => option.lane === "upload" && option.tile === "analytics"),
@@ -645,18 +670,16 @@ describe("attach options", () => {
 describe("canvas helpers", () => {
   it("say which drops link and why the others don't", () => {
     const design = tinyurl();
-    // A merge the canvas offers: Shorten API publishes to Click events.
-    expect(laneLinkRefusal(design, { tile: "shorten-api" }, "click-events", "async")).toBe(
-      undefined,
-    );
+    // A merge the canvas offers: Shorten service publishes to Click events.
+    expect(laneLinkRefusal(design, { tile: "shorten" }, "click-events", "async")).toBe(undefined);
     // A tile has one entry: a lane tab onto the other lane's entry tile is refused too.
-    expect(laneLinkRefusal(design, { lane: "download" }, "shorten-api", "sync")).toBe(
-      "Shorten API already starts the upload lane; a tile has one entry.",
+    expect(laneLinkRefusal(design, { lane: "download" }, "shorten", "sync")).toBe(
+      "Shorten service already starts the upload lane; a tile has one entry.",
     );
-    expect(laneLinkRefusal(design, { lane: "upload" }, "cdn", "sync")).toBe(
-      "CDN already starts the download lane; a tile has one entry.",
+    expect(laneLinkRefusal(design, { lane: "upload" }, "redirect", "sync")).toBe(
+      "Redirect service already starts the download lane; a tile has one entry.",
     );
-    expect(laneLinkRefusal(design, { tile: "redirect" }, "cdn", "sync")).toMatch(/loop/);
+    expect(laneLinkRefusal(design, { tile: "analytics" }, "redirect", "sync")).toMatch(/loop/);
     // The user is reached only through its lane tabs.
     expect(laneLinkRefusal(design, { tile: "redirect" }, LANE_ACTOR, "sync")).toMatch(
       /back to the user/,

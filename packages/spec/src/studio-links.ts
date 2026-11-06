@@ -5,7 +5,7 @@
  * a pair with no row is refused, and so is a mode the row does not allow, in plain words.
  * Stores are end tiles. Browser apps take no links: the user is the client.
  */
-import type { ConnectionKind } from "./design.ts";
+import type { ConnectionKind, DesignDocument } from "./design.ts";
 import type { StudioKind } from "./studio-model.ts";
 import type { StudioConnectionCreation } from "./studio-operations.ts";
 import { studioTileDefinitions } from "./studio-tiles.ts";
@@ -280,4 +280,37 @@ export function studioLinkDefaults(
       settings: { ...settings },
     },
   };
+}
+
+/** How a link into a store uses it: the store's owner writes, every other tile reads. */
+export type StudioStoreAccess = "write" | "read";
+export const studioStoreAccessValues = ["write", "read"] as const satisfies StudioStoreAccess[];
+/** How the inspector names a link's access. */
+export const studioStoreAccessLabels: Record<StudioStoreAccess, string> = {
+  write: "Writes (owner)",
+  read: "Reads",
+};
+
+/**
+ * One writer per store, derived and never stored: a link into a database, search index, cache or
+ * object storage writes when it comes from the store's owner (the binding's `owner`, or a member
+ * of the owning package) and reads otherwise; a store with no owner is only read. `undefined` for
+ * a link that does not end at a store; queues keep publish and consume.
+ */
+export function studioStoreAccess(
+  design: DesignDocument,
+  connection: string,
+): StudioStoreAccess | undefined {
+  const studio = design.architecture?.studio;
+  const link = design.connections.find((item) => item.id === connection);
+  const store = studio?.elements.find((item) => item.element === link?.to.element);
+  if (!studio || !link || !store || studioLinkRole(store.settings.kind) !== "store") return;
+  const owner = store.owner;
+  const from = link.from.element;
+  const writes =
+    owner?.kind === "element"
+      ? owner.id === from
+      : owner?.kind === "package" &&
+        studio.packages.some((pkg) => pkg.id === owner.id && pkg.members.includes(from));
+  return writes ? "write" : "read";
 }

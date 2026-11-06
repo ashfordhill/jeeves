@@ -17,6 +17,8 @@ import {
   studioFieldGroups,
   studioPerformanceFields,
   studioProviderChoices,
+  studioStoreAccess,
+  studioStoreAccessLabels,
   validateStudio,
 } from "@jeeves/spec";
 import { type ReactNode, useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
@@ -704,6 +706,7 @@ function TargetForm({
               )?.name;
               const to = design.elements.find((element) => element.id === item.to.element)?.name;
               const protocol = item.planned.protocol;
+              const access = studioStoreAccess(design, item.id);
               return (
                 <div className="studio-dependency-row" key={item.id}>
                   <button type="button" onClick={() => onConnection(item.id)}>
@@ -711,6 +714,7 @@ function TargetForm({
                     <span>
                       {item.planned.label}
                       {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
+                      {access ? ` · ${studioStoreAccessLabels[access]}` : ""}
                     </span>
                   </button>
                 </div>

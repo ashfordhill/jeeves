@@ -179,9 +179,9 @@ describe("operations", () => {
     const blueprint = await app.inject({ method: "GET", url: `/projects/${id}/blueprint` });
     expect(blueprint.statusCode).toBe(200);
     expect(blueprint.headers["cache-control"]).toBe("no-store");
-    expect(blueprint.json()).toMatchObject({ blueprint: 1, revision: 1, findings: [] });
-    expect(blueprint.json().services).toHaveLength(3);
-    expect(blueprint.json().entries).toHaveLength(2);
+    expect(blueprint.json()).toMatchObject({ blueprint: 2, revision: 1, findings: [] });
+    expect(blueprint.json().services).toHaveLength(4);
+    expect(blueprint.json().entries).toHaveLength(3);
   });
 
   it("returns 409 with the current design for a stale baseRevision", async () => {
@@ -299,7 +299,7 @@ describe("layout", () => {
     await client.edit(id, 0, tinyurlOps());
     const layout = {
       schemaVersion: 1,
-      architecture: { "studio:containers": { order: ["studio:element:cdn"] } },
+      architecture: { "studio:containers": { order: ["studio:element:redirect"] } },
     };
     expect((await client.call("PUT", `/projects/${id}/layout`, layout)).status).toBe(200);
     expect((await client.call("GET", `/projects/${id}/layout`)).body.layout).toEqual(layout);

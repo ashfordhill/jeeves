@@ -28,6 +28,7 @@ import {
   studioKindSchema,
   studioLanes,
   studioLinkRules,
+  studioStoreAccess,
   studioTileDefinitions,
   studioTileTypes,
   tileTypeOf,
@@ -66,6 +67,7 @@ The lane canvas:
 - Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
 - A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
 - Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
+- One writer per store: a database, cache, storage or search index is written only by its owner; every other link into it reads (getDesign shows each such link's access). To change who writes, edit the store's owner.
 - ${linkTable}
 - Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per lane.
 
@@ -79,7 +81,7 @@ Commands (applyStudioCommands, with getDesign's baseRevision):
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.
 - changeKind: switches a tile to another kind of its tile type, as the inspector's Type list does; its settings start from that kind's defaults.
-- edit (a tile's name, purpose, settings or owner), editSystem (the system name and goal), editConnection (a link's label, protocol, interaction, access and settings). Settings are complete values, not patches.
+- edit (a tile's name, purpose, settings or owner), editSystem (the system name and goal), editConnection (a link's label, protocol, interaction, security and settings). Settings are complete values, not patches.
 - createComponent, editComponent, connectComponent, disconnectComponent, removeComponent: modules inside an application tile. A module reaches other tiles only through its tile's own links.
 IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
 
@@ -187,6 +189,11 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
   const bindings = new Map(studio?.elements.map((item) => [item.element, item]));
   const connections = new Map(design.connections.map((item) => [item.id, item]));
   const linkSettings = new Map(studio?.connections.map((item) => [item.connection, item.settings]));
+  /** A link into a store: `write` from its owner, `read` otherwise (one writer per store). */
+  const accessOf = (id: string) => {
+    const access = studioStoreAccess(design, id);
+    return access ? { access } : {};
+  };
   const modules = (host: string) =>
     (studio?.components ?? [])
       .filter((item) => item.host === host)
@@ -237,6 +244,7 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
               id: edge.id,
               to: edge.target,
               mode: edge.async ? "async" : "sync",
+              ...accessOf(edge.id),
               planned: connections.get(edge.id)?.planned,
               settings: linkSettings.get(edge.id),
             })),

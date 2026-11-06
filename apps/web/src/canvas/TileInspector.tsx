@@ -18,6 +18,8 @@ import {
   studioComponentDefinitions,
   studioComponentVisuals,
   studioDefinitions,
+  studioLinkRole,
+  studioStoreAccess,
   studioTileDefinitions,
   tileTypeOf,
 } from "@jeeves/spec";
@@ -30,6 +32,32 @@ import { StudioIcon } from "../studio/StudioIcon.tsx";
 
 const kindOf = (design: DesignDocument, id: string): StudioKind | undefined =>
   design.architecture?.studio?.elements.find((item) => item.element === id)?.settings.kind;
+
+/**
+ * A store's writer and readers: its owner writes, every other tile linking to it reads (one
+ * writer per store, derived from the owner). Changing the Owner field changes who writes.
+ */
+function StoreAccess({ design, store }: { design: DesignDocument; store: string }) {
+  const studio = design.architecture?.studio;
+  const owner = studio?.elements.find((item) => item.element === store)?.owner;
+  const name = (id: string) => design.elements.find((item) => item.id === id)?.name ?? id;
+  const ownerName = !owner
+    ? "no owner yet"
+    : owner.kind === "element"
+      ? name(owner.id)
+      : (studio?.packages.find((item) => item.id === owner.id)?.name ?? owner.id);
+  const readers = design.connections
+    .filter((item) => item.to.element === store && studioStoreAccess(design, item.id) === "read")
+    .map((item) => name(item.from.element));
+  return (
+    <dl className="lane-store-access" aria-label="Access">
+      <dt>Writes (owner)</dt>
+      <dd>{ownerName}</dd>
+      <dt>Reads</dt>
+      <dd>{readers.length ? [...new Set(readers)].join(", ") : "nobody else"}</dd>
+    </dl>
+  );
+}
 
 /** Why switching this tile to `kind` is refused (the command's words, or apply's), if it is. */
 function changeKindRefusal(
@@ -290,6 +318,7 @@ export function TileInspector({
       </h2>
       {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
       <TypeList projectId={projectId} design={design} element={id} />
+      {kind && studioLinkRole(kind) === "store" ? <StoreAccess design={design} store={id} /> : null}
       <TargetInspector
         projectId={projectId}
         element={id}

@@ -693,7 +693,7 @@ function laneOption(
   const kinds = [preferred, ...studioTileDefinitions[type].kinds.filter((k) => k !== preferred)];
   let reason: string | undefined;
   for (const kind of kinds) {
-    // The new tile is named by its kind in refusals: "Link cache can't link to a queue. …"
+    // The new tile is named by its kind in refusals: "URL cache can't link to a queue. …"
     const tile = { id: "@new", kind, name: noun(kind) };
     const view = at(tile);
     const async = pairMode(view, ...addedLink(from, side, tile.id)) === "async";

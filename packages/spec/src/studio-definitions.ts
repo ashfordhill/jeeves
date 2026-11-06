@@ -974,7 +974,7 @@ export const studioConnectionFields: readonly StudioConnectionField[] = freeze([
   },
   {
     path: "planned.security",
-    label: "Access",
+    label: "Security",
     group: "Options",
     control: "select",
     choices: choices(studioAccessSchema.options),

@@ -15,6 +15,8 @@ import {
   type StudioLane,
   studioDefinitions,
   studioLanes,
+  studioStoreAccess,
+  studioStoreAccessLabels,
 } from "@jeeves/spec";
 import {
   IconArrowBackUp,
@@ -361,16 +363,24 @@ function Inspector({
         onSelect={onSelect}
       />
     );
-  if (edge)
+  if (edge) {
+    // A link into a store writes when it comes from the store's owner and reads otherwise.
+    const access = studioStoreAccess(design, edge.id);
     return (
       <div className="studio-selection-summary">
         <h2>Connection</h2>
         <p>
           {name(edge.source)} → {name(edge.target)}
         </p>
+        {access ? (
+          <p className="lane-inspector-kind" data-access={access}>
+            {studioStoreAccessLabels[access]}
+          </p>
+        ) : null}
         <ConnectionForm projectId={project.id} connection={edge.id} design={design} />
       </div>
     );
+  }
   return (
     <div className="studio-selection-summary">
       <h2>{design.architecture?.system.name ?? project.name}</h2>

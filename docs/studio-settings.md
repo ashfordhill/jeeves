@@ -121,7 +121,8 @@ Minimum replicas may not exceed maximum, and `autoscaleOn` needs a maximum above
 ## Resources and integrations
 
 A resource can have an optional logical owner (an application or package), stored in the
-binding's `owner`, not in `S`; a queue requires one. Ownership provisions nothing.
+binding's `owner`, not in `S`; a queue requires one. Ownership provisions nothing. A store's owner
+is its only writer ([one writer per store](#relationships)).
 
 | Kind | Settings beyond `kind` (default first) | Not offered |
 | --- | --- | --- |
@@ -158,13 +159,21 @@ plus a topic does not mean SQS); only the named products above carry a product i
 | Action | `planned.label`, 1–60 characters | Default from the endpoint kinds: Calls, Reads & writes, Publishes, Consumes, Uses. |
 | Protocol | Unspecified, HTTPS, HTTP, gRPC, WebSocket, SSE, SQL, Redis, Messaging, Native binding | — |
 | Interaction | Request / response, Asynchronous, Streaming | Queue links are Asynchronous. Asynchronous dashes the line and is accepted only where the [link table](../CATALOG.md#lanes-and-links) has an async mode; Streaming counts as a request. |
-| Access | Service identity, User identity, Public, Private network | Intent only. |
+| Security / `planned.security` | Service identity, User identity, Public, Private network | Intent only. |
 | Timeout / `settings.timeoutMs?` | 1–300000 | HTTP, HTTPS or gRPC request/response only. |
 | Retry / `settings.retry` | `mode` unspecified / none / fixed; fixed adds `attempts` 1–10 and `delayMs` 1–60000 | Same protocols. Attempts are additional attempts. |
 | Channel role / `settings.channelUse?` | publish / consume | Queue links only; set by the connection's direction. |
 
 When a protocol or interaction change makes timeout or retry inapplicable, they are removed in
 the same edit. A C1 relationship has only its action and endpoints.
+
+**One writer per store.** A link into a database, search index, cache or object storage *writes*
+when it comes from the store's owner (the resource's **Owner**, or a member of the owning package)
+and *reads* otherwise; a store with no owner is only read. This is derived, never stored: the line
+inspector shows "Writes (owner)" or "Reads", the store's inspector lists its writer and readers,
+and the [blueprint](studio-blueprint.md) gives the connection `access: "write" | "read"`.
+Changing a store's owner changes who writes. Queue links keep their channel role (publish or
+consume) instead.
 
 ## Lane entries
 

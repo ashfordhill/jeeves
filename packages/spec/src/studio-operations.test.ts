@@ -46,15 +46,15 @@ describe("buildStudioCommand", () => {
     const settings = { ...createStudioSettings("service"), language: "go" as const };
     const edited = run(tinyurl(), {
       type: "edit",
-      element: "shorten-api",
+      element: "shorten",
       name: "Create API",
       settings,
     });
     expect(edited.ops).toEqual(["updateElement", "setStudio"]);
-    expect(edited.design.elements.find((e) => e.id === "shorten-api")?.name).toBe("Create API");
-    expect(
-      studio(edited.design).elements.find((b) => b.element === "shorten-api")?.settings,
-    ).toEqual(settings);
+    expect(edited.design.elements.find((e) => e.id === "shorten")?.name).toBe("Create API");
+    expect(studio(edited.design).elements.find((b) => b.element === "shorten")?.settings).toEqual(
+      settings,
+    );
 
     const system = run(tinyurl(), { type: "editSystem", description: "Short links." });
     expect(system.ops).toEqual(["updateArchitectureSystem"]);
@@ -65,19 +65,25 @@ describe("buildStudioCommand", () => {
   });
 
   it("edits a link's details and settings", () => {
-    const edited = run(tinyurl(), {
+    // An HTTPS call between two services takes request policies.
+    const linked = run(tinyurl(), {
+      type: "linkTiles",
+      from: { tile: "shorten" },
+      to: "stats-api",
+      linkId: "shorten-stats-api",
+    }).design;
+    const edited = run(linked, {
       type: "editConnection",
-      connection: "shorten-reputation",
-      planned: { label: "Screens links" },
+      connection: "shorten-stats-api",
+      planned: { label: "Seeds counters" },
       settings: { timeoutMs: 500 },
     });
     expect(edited.ops).toEqual(["updatePlannedConnection", "setStudio"]);
     expect(
-      edited.design.connections.find((c) => c.id === "shorten-reputation")?.planned,
-    ).toMatchObject({ label: "Screens links", protocol: "HTTPS" });
+      edited.design.connections.find((c) => c.id === "shorten-stats-api")?.planned,
+    ).toMatchObject({ label: "Seeds counters", protocol: "HTTPS" });
     expect(
-      studio(edited.design).connections.find((b) => b.connection === "shorten-reputation")
-        ?.settings,
+      studio(edited.design).connections.find((b) => b.connection === "shorten-stats-api")?.settings,
     ).toEqual({ timeoutMs: 500 });
     // The same settings on a SQL link are refused.
     expect(
@@ -92,7 +98,7 @@ describe("buildStudioCommand", () => {
     ).toBe(false);
     // An entry is a link without settings.
     expect(() =>
-      buildStudioCommand(tinyurl(), { type: "editConnection", connection: "download-cdn" }),
+      buildStudioCommand(tinyurl(), { type: "editConnection", connection: "download-redirect" }),
     ).toThrow(/lane entry/);
   });
 
@@ -203,10 +209,10 @@ describe("preconfigured kinds and languages", () => {
   it("changeKind starts from the new kind's presets", () => {
     const { design } = run(tinyurl(), {
       type: "changeKind",
-      element: "shorten-api",
+      element: "shorten",
       kind: "billing",
     });
-    expect(studio(design).elements.find((b) => b.element === "shorten-api")?.settings).toEqual({
+    expect(studio(design).elements.find((b) => b.element === "shorten")?.settings).toEqual({
       kind: "billing",
       execution: "docker",
       exposure: "internal",
@@ -233,7 +239,7 @@ describe("preconfigured kinds and languages", () => {
     expect(() =>
       buildStudioCommand(tinyurl(), {
         type: "edit",
-        element: "shorten-api",
+        element: "shorten",
         settings: { ...createStudioSettings("service"), language: "csharp" },
       } as unknown as StudioCommand),
     ).toThrow(/this kind offers no other language/);
@@ -244,22 +250,22 @@ describe("preconfigured kinds and languages", () => {
     const setting = (id: string) =>
       stored.architecture.studio.elements.find((b: { element: string }) => b.element === id)
         .settings;
-    setting("shorten-api").language = "csharp";
+    setting("shorten").language = "csharp";
     setting("redirect").language = "unspecified";
-    setting("analytics").language = "go";
+    setting("analytics").language = "python";
     const settings = (design: DesignDocument, id: string) =>
       studio(design).elements.find((b) => b.element === id)?.settings;
     const design = designSchema.parse(stored);
-    expect(settings(design, "shorten-api")).toMatchObject({ language: "typescript" });
+    expect(settings(design, "shorten")).toMatchObject({ language: "typescript" });
     expect(settings(design, "redirect")).toMatchObject({ language: "go" });
-    expect(settings(design, "analytics")).toMatchObject({ language: "go" });
+    expect(settings(design, "analytics")).toMatchObject({ language: "typescript" });
 
     const gateway = JSON.parse(JSON.stringify(tinyurl()));
     const binding = gateway.architecture.studio.elements.find(
-      (b: { element: string }) => b.element === "shorten-api",
+      (b: { element: string }) => b.element === "shorten",
     );
     binding.definition.id = "studio-gateway";
     binding.settings = { ...createStudioSettings("gateway"), language: "unspecified" };
-    expect(settings(designSchema.parse(gateway), "shorten-api")).not.toHaveProperty("language");
+    expect(settings(designSchema.parse(gateway), "shorten")).not.toHaveProperty("language");
   });
 });

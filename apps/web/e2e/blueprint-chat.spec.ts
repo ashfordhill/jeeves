@@ -6,12 +6,18 @@ test("serves the read-only blueprint", async ({ page, tinyurl: id }) => {
   expect(res.status()).toBe(200);
   expect(res.headers()["cache-control"]).toBe("no-store");
   const blueprint = await res.json();
-  expect(blueprint).toMatchObject({ blueprint: 1, revision: 1, findings: [], omitted: [] });
+  expect(blueprint).toMatchObject({ blueprint: 2, revision: 1, findings: [], omitted: [] });
   expect(blueprint.services.map((s: { id: string }) => s.id)).toEqual([
     "analytics",
     "redirect",
-    "shorten-api",
+    "shorten",
+    "stats-api",
   ]);
+  // One writer per store: the Shorten service writes the URL database, Redirect reads it.
+  const access = (id: string) =>
+    blueprint.connections.find((c: { id: string }) => c.id === id)?.access;
+  expect(access("shorten-db")).toBe("write");
+  expect(access("redirect-db")).toBe("read");
 });
 
 /** Sends a chat message that `fixtures/chat/e2e-script.json` answers. */
@@ -38,8 +44,8 @@ test("adds a tile through chat with the lane commands", async ({ page, tinyurl: 
   await send(page, "Add a cache after the redirect service");
   await expect(page.getByText("Added a cache after the Redirect service")).toBeVisible();
   await ready(page);
-  await expect(tiles(page)).toHaveCount(11);
-  await expect(lines(page)).toHaveCount(12);
+  await expect(tiles(page)).toHaveCount(10);
+  await expect(lines(page)).toHaveCount(11);
   await expect(tile(page, "Cache")).toBeVisible();
   const saved = await design(page, id);
   expect(saved.revision).toBe(2);
@@ -48,5 +54,5 @@ test("adds a tile through chat with the lane commands", async ({ page, tinyurl: 
   // The turn is one undo step (the header's Undo; the turn has its own Undo button too).
   await page.locator(".lane-header-actions").getByRole("button", { name: "Undo" }).click();
   await ready(page);
-  await expect(tiles(page)).toHaveCount(10);
+  await expect(tiles(page)).toHaveCount(9);
 });
