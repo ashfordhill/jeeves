@@ -2117,3 +2117,93 @@ Notes for the next units:
   regenerated. Only new copies are v3.
 - DP08/DP09: `studioStoreAccess` covers object storage and search too, so a marketplace's catalog
   owner writes and search readers read; the CDN → object storage link reads.
+
+## 2026-11-05 — DP07: design polish acceptance and documentation (complete)
+
+A mouse walkthrough of DP01–DP06 and a docs sweep. No code changed: the walkthrough found no
+defect small enough to fix here, only rough edges (below).
+
+Browser: Playwright Chromium driven by mouse (names typed), my own API on 4312 (scratch
+`JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, both stopped afterwards. Each
+script waited for its new project's URL and deleted only its projects (seven: TinyURL v3 copies and
+two Blank rebuilds, all 204); `jeeves_e2e` again holds just "TinyURL · studio study" (v2). I did not
+touch 4300/4310 or the `jeeves` database. No console errors or warnings in any run.
+
+- **TinyURL v3** (new copy): 8 tiles + user, 10 lines, 3 chips; entries download Stats API,
+  download Redirect, upload Shorten (Stats API's entry first, as DP06 decided; the blueprint sorts
+  entries by lane then element). Fit zooms match the guide's table exactly: 1440×900 0.93 / 0.73 /
+  0.72 / 0.52, 1280×800 0.83 / 0.63 / 0.62 / 0.42 (closed / chat / inspector / both). Straight:
+  user → Redirect, Redirect → Click events → Analytics worker, Shorten → URL database.
+- **Tabs per tile**: User: Add to download lane, Add to upload lane (no attach tabs: every tile
+  that could start a lane already does). Stats API, Redirect service, Click events, Analytics
+  worker, Shorten service: Add before, Add after, Attach. URL cache, URL database, Analytics
+  store: Add before, Attach.
+- **Store access**: URL database "Writes (owner) Shorten service · Reads Redirect service"; URL
+  cache "Redirect service · nobody else"; Analytics store "Analytics worker · Stats API"; Click
+  events none.
+- **Attach both ways**: Analytics store's Attach targets Redirect service and Shorten service;
+  onto Redirect → `redirect → analytics-store` (request); Undo. Shorten's Attach onto Click events
+  → Publishes / Asynchronous; Undo. URL cache's Attach targets Stats API, Analytics worker, Shorten
+  service; released on Click events (dimmed): "URL cache can't link to Click events. A cache can't
+  link onward.", nothing changed.
+- **Greyed fan**: URL database's Add before: Service, API, then Database, Cache, Queue, Storage,
+  External greyed; Queue's tip "A queue can't link to URL database. A queue feeds only an
+  application, not a database."; release: nothing. Analytics worker's Add after: seven, none grey.
+- **Type list and presets**: Shorten service lists Microservice (pressed), Worker service
+  (disabled, reason in the title), Redirect, Identity, Notifications, Billing. Billing: Payment
+  provider Stripe (Unspecified, Stripe, External), Language TypeScript (TypeScript, Go). A new API
+  from the user's download `+` is a Gateway with `traefik` and no Language; CDN → `cloudflare`.
+- **Lane entries**: that API's chip → lane row Download (pressed), Upload; Upload moved it
+  (entries download Stats API, Redirect; upload Shorten, API), chips relabelled.
+- Both sizes, rails open and closed (selecting opens the inspector, as documented), light and dark
+  (the app's toggle): everything reads; the dimmed attach board and the greyed fan are clear in
+  dark mode.
+- **Rebuilding TinyURL v3 from Blank** (1440×900 and 1280×800, both rails open, the same count at
+  both): **10 drags and 9 clicks**, plus 8 names typed. Drags: user download `+` → Service (Stats
+  API) and → Service (Redirect service); Redirect `+` → Cache, → Database, → Queue; Click events `+`
+  → Service (a worker); Analytics worker `+` → Database; user upload `+` → Service (Shorten);
+  Shorten `Attach` → URL database; Stats API `Attach` → Analytics store. Clicks: Fit (the user had
+  left the view once the chain grew), the user twice, kind Redirect, Redirect reselected twice,
+  Stats API, URL database, and its Owner select → Shorten service (it starts as Redirect's,
+  added next to it). The result matches the study: same kinds (Redirect Go, the rest TypeScript,
+  the worker a worker), entries in the same order, the same 7 connections and modes, and an
+  identical layout. Blueprint 2, no findings, access `write` for Redirect → cache, Shorten → URL
+  database and worker → Analytics store, `read` for Redirect → URL database and Stats API →
+  Analytics store, publish/consume on the queue.
+
+Docs:
+
+- Studio guide, Limits: the both-rails zooms were v2's (0.44/0.35); now TinyURL v3's 0.52/0.42
+  with the tab sizes they give (about 21px/17px), the edge fan can sit over the tile's own tabs,
+  and a new bullet: a notice stays until dismissed, Undo/Redo or another project, so a fan opened
+  near the bottom after a refusal can sit over it.
+- CATALOG: the tile-type intro said the fan shows "only the types the link table accepts" (now all
+  seven, refused ones greyed); Settings said connections carry "access" (now security, with the
+  derived read/write access on store links).
+- PLAN Next: DP01–DP07 done; DP08–DP10 next. Plan status: a Progress line (DP01–DP07 done,
+  DP08–DP10 remain).
+- Checked and already right: blueprint doc (`blueprint: 2`, `security`/`access`, example), studio
+  settings (Security row, one-writer paragraph, languages, defaults, `both` note), the guide's
+  TinyURL section (Stats API first, why no CDN), README, docker and C4 notes.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 135 tests).
+- `pnpm test:e2e`: 14 passed (also 14 passed before the walkthrough).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Follow-ups (not fixed here):
+
+- Rough: a refusal's notice stays across later successful edits and pulls; near the bottom edge
+  the fan and its tip overlap it (1280×800, URL database's Add before right after a refused
+  attach). Clearing the notice when a pull starts, or on the next successful edit, would fix it;
+  that is a behaviour choice for the owner.
+- Rough (DP04's, still true): near the canvas's edge the seven-icon fan lines up in a column,
+  sometimes over the tile's own tabs; a fan that flips to the open side would look better.
+- Rough (DP06's, still true): a new link into a store says "Reads & writes" even when it reads
+  (Redirect → URL database in the rebuild).
+- Rebuilding needs the URL database's owner changed by hand: a store belongs to the application
+  it was first added next to. Adding it from the Shorten service instead would fix the owner but
+  not the order of Redirect's links.
+- The owner's API on 4310 was listening when this unit started and was not by the end; I did not
+  stop it (I stopped only my own two PIDs) and did not restart it.

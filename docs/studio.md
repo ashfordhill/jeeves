@@ -315,10 +315,14 @@ earlier versions keep their own design; only new copies are v3.
 ## Limits
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
-  scale with the board. With both rails open (zoom 0.44 at 1440×900, 0.35 at 1280×800) the tabs
-  are 18px or 14px, tile names are hard to read, and the fan's seven icons cover nearby tiles (a
-  `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up in a
-  column along it. Closing a rail helps; a fitted camera refits by itself.
+  scale with the board. With both rails open (TinyURL fits at 0.52 at 1440×900, 0.42 at 1280×800)
+  the tabs are about 21px or 17px, tile names are small, and the fan's seven icons cover nearby
+  tiles (a `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up
+  in a column along it, sometimes over the tile's own tabs. Closing a rail helps; a fitted camera
+  refits by itself.
+- A notice stays at the bottom of the canvas until you dismiss it, Undo or Redo, or open another
+  project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
+  can sit over it.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back.
 - Where two services fork to the same tiles, their lines share one bus (TinyURL: the Redirect

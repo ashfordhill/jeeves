@@ -46,9 +46,10 @@ covers.** The chat instructions say the same.
 
 ## Tile types (lane canvas)
 
-The lane canvas groups kinds into seven tile types, offered as icons in a pulled tab's fan (only
-the types the link table accepts there). The first kind is the default and the others are
-variants, switched by the Type list in the tile's inspector (`changeKind`).
+The lane canvas groups kinds into seven tile types, offered as icons in a pulled `+` tab's fan
+(always all seven; the ones the link table refuses there are greyed, with the reason). The first
+kind is the default and the others are variants, switched by the Type list in the tile's
+inspector (`changeKind`).
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
@@ -200,8 +201,9 @@ kind it may use, through that link), unlinks it with `disconnectComponent` and r
 Applications carry execution (Docker or managed), language, host, exposure and kind-specific
 choices; resources carry engine, provider and technical options; every application and several
 resources take optional performance intent (replicas, autoscaling, timeouts, concurrency,
-partitions). Connections carry action, protocol, interaction, access, and timeout/retry where
-applicable. All of it is listed in [studio settings](docs/studio-settings.md).
+partitions). Connections carry action, protocol, interaction, security, and timeout/retry where
+applicable; a link into a store also has its derived read or write access. All of it is listed
+in [studio settings](docs/studio-settings.md).
 
 ## Provider choices
 

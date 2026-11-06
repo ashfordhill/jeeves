@@ -157,12 +157,14 @@ The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
 lists what was left for later. Code generation will be
 a separate service that reads the blueprint.
 
-Next are the [design polish units](docs/plans/design-polish/units.md), DP01–DP09:
+The [design polish units](docs/plans/design-polish/units.md) DP01–DP07 are done:
 
 - lines aligned on the grid
 - no both-lane entries
 - link rules as one table
 - `+` creates and a link tool attaches
 - a labelled Type list with preconfigured kinds and two languages each
-- TinyURL v3 from published designs
-- marketplace and YouTube studies
+- TinyURL v3 from published designs, with one writer per store
+- an acceptance walkthrough and docs sweep
+
+Next are DP08 (a marketplace study), DP09 (a YouTube study) and DP10 (a review of DP01–DP09).

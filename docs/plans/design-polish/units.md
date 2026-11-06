@@ -3,6 +3,7 @@
 **Status: approved 2026-11-05.** All units are approved, including DP08 (the marketplace study,
 which replaces Etsy) and DP09 (the YouTube study), after the owner's answers of 2026-11-05.
 The owner added DP10 (a review of DP01–DP09) later the same day.
+**Progress:** DP01–DP07 are done (see [the handoff](../../handoff.md)); DP08–DP10 remain.
 
 The owner reviewed the lane canvas after PL02 (2026-11-05) and decided the following:
 
