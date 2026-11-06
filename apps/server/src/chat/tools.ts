@@ -17,12 +17,15 @@ import {
   laneLimits,
   type OperationInput,
   type StudioLane,
+  type StudioLinkRole,
+  type StudioLinkRule,
   studioCommandSchema,
   studioComponentDefinitions,
   studioComponentKinds,
   studioDefinitions,
   studioKindSchema,
   studioLanes,
+  studioLinkRules,
   studioTileDefinitions,
   studioTileTypes,
   tileTypeOf,
@@ -30,6 +33,28 @@ import {
 } from "@jeeves/spec";
 import { z } from "zod";
 import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
+
+const roleWords: Record<StudioLinkRole, string> = {
+  user: "user",
+  application: "application",
+  cdn: "CDN",
+  external: "external API",
+  queue: "queue",
+  store: "store",
+};
+const sentenceCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+/** One row of the link table in words: "Application -> queue: async (Publishes)." */
+export function linkRuleText(rule: StudioLinkRule): string {
+  const targets = rule.targets ? rule.targets.join(", ") : roleWords[rule.target];
+  const modes =
+    rule.modes.length > 1
+      ? `${rule.modes.join(" or ")}, default ${rule.defaultMode}`
+      : rule.defaultMode;
+  const what = rule.source === "user" ? "a lane entry" : rule.connection?.label;
+  return `${sentenceCase(roleWords[rule.source])} -> ${targets}: ${modes}${what ? ` (${what})` : ""}.`;
+}
+/** The link table paragraph, generated from `studioLinkRules` so the two can't drift. */
+const linkTable = `Link table (source -> target: modes; a pair not listed is refused). An application is a Service or API kind other than the CDN; a store is a database, search index, cache or storage. ${studioLinkRules.map(linkRuleText).join(" ")}`;
 
 export const INSTRUCTIONS = `You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.
 
@@ -39,14 +64,15 @@ The lane canvas:
 - Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
 - A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
 - Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
-- Link table (source -> target: modes). User -> a service (not a worker), API, storage or external API: sync (a lane entry). Application (a Service or API kind other than the CDN) -> database, cache, storage, search, CDN: sync. Application -> application or external API: sync or async. Application -> queue: async (publish). Queue -> application: async (consume). External API -> application: sync or async. CDN -> application or storage: sync.
+- ${linkTable}
 - Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per lane.
 
 Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the lanes (each with its entries), every tile in lane order (kind, settings, links with their modes, modules) and the findings.
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
-- addTile: a new tile after a tile, after a lane (from {"lane": "download"} or {"lane": "upload"}, side "after", link "sync"), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addTile from a lane that passes system {name}.
+- addTile: a new tile after a tile, after a lane (from {"lane": "download"} or {"lane": "upload"}, side "after"), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addTile from a lane that passes system {name}.
 - linkTiles: links a lane or a tile to a tile already on the canvas (a merge).
+- link ("sync" or "async") is optional on addTile and linkTiles: leave it out for the pair's default from the link table; give it only to choose the other mode where the table allows both.
 - setEntryLane: moves an entry to the other lane ("download" or "upload"), within that lane's cap.
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.

@@ -7,7 +7,17 @@ import { designBlueprint, designBlueprintSchema } from "./studio-blueprint.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import { LANE_ACTOR, laneFindings, laneGraph, laneRules } from "./studio-lanes.ts";
-import { type StudioLinkMode, studioEntryKinds, studioLinkDefaults } from "./studio-links.ts";
+import {
+  type StudioLinkMode,
+  studioDefaultLinkMode,
+  studioEntryKinds,
+  studioLinkDefaults,
+  studioLinkRefusal,
+  studioLinkRole,
+  studioLinkRule,
+  studioLinkRules,
+  studioLinkRuleTargets,
+} from "./studio-links.ts";
 import { type StudioKind, type StudioModel, studioKinds } from "./studio-model.ts";
 import { defaultKind, studioTileDefinitions, studioTileTypes, tileTypeOf } from "./studio-tiles.ts";
 import { validateDesign } from "./validate.ts";
@@ -113,6 +123,119 @@ describe("link rules", () => {
     expect(link("service", "queue", "sync")).toMatch(/queue is asynchronous/);
     expect(link("service", "database", "async")).toMatch(/request/);
     expect(link("external-api", "queue", "async")).toMatch(/Only an application publishes/);
+  });
+});
+
+describe("link table", () => {
+  const rows = studioLinkRules.map(
+    (rule) =>
+      `${rule.source}>${rule.targets?.join(",") ?? rule.target}: ${rule.modes.join("|")} (${rule.defaultMode})`,
+  );
+
+  it("holds the owner's rules as rows with allowed and default modes", () => {
+    expect(rows).toEqual([
+      "user>service,redirect,identity,notification,billing,gateway: sync (sync)",
+      "user>cdn: sync (sync)",
+      "user>object-store: sync (sync)",
+      "user>external: sync (sync)",
+      "application>application: sync|async (sync)",
+      "application>external: sync|async (sync)",
+      "application>queue: async (async)",
+      "application>database: sync (sync)",
+      "application>cache: sync (sync)",
+      "application>object-store,search: sync (sync)",
+      "application>cdn: sync (sync)",
+      "queue>application: async (async)",
+      "external>application: sync|async (sync)",
+      "cdn>application: sync (sync)",
+      "cdn>object-store: sync (sync)",
+    ]);
+    // Each pair has at most one row, and every row's default is one of its modes.
+    for (const rule of studioLinkRules) {
+      expect(rule.modes).toContain(rule.defaultMode);
+      expect(rule.connection === undefined).toBe(rule.source === "user");
+    }
+    const pairs = studioLinkRules.flatMap((rule) =>
+      studioLinkRuleTargets(rule).map((kind) => `${rule.source}>${kind}`),
+    );
+    expect(new Set(pairs).size).toBe(pairs.length);
+    // Stores are end tiles; queue rows join only applications.
+    expect(studioLinkRules.some((rule) => rule.source === "store")).toBe(false);
+    for (const rule of studioLinkRules)
+      if (rule.source === "queue" || rule.target === "queue")
+        expect([rule.source, rule.target].filter((role) => role !== "queue")).toEqual([
+          "application",
+        ]);
+    expect(studioLinkRole("browser")).toBeUndefined();
+    expect(studioLinkRole("gateway")).toBe("application");
+    expect(studioLinkRole("search")).toBe("store");
+  });
+
+  it("give every pair its default mode: async for queue links, sync otherwise", () => {
+    for (const source of [...studioKinds, "user" as const])
+      for (const target of studioKinds) {
+        // A refused pair defaults to sync; the refusal is what matters there.
+        const queue = source === "queue" || target === "queue";
+        const mode = studioDefaultLinkMode(source, target);
+        expect(mode).toBe(queue && studioLinkRule(source, target) ? "async" : "sync");
+        if (source === "user") continue;
+        // No mode means the pair's default.
+        expect(studioLinkDefaults(source, target)).toEqual(
+          studioLinkDefaults(source, target, mode),
+        );
+      }
+    expect(studioLinkDefaults("redirect", "queue")).toMatchObject({
+      ok: true,
+      value: { planned: { interaction: "Asynchronous" }, settings: { channelUse: "publish" } },
+    });
+    expect(studioLinkDefaults("queue", "worker")).toMatchObject({
+      ok: true,
+      value: { settings: { channelUse: "consume" } },
+    });
+    expect(studioLinkDefaults("service", "worker")).toMatchObject({
+      ok: true,
+      value: { planned: { interaction: "Request / response" } },
+    });
+  });
+
+  it("refuse each rule in plain words", () => {
+    expect(studioLinkRefusal("user", "worker")).toBe(
+      "A lane starts at a service (not a worker), an API, storage or an external API.",
+    );
+    expect(studioLinkRefusal("user", "gateway", "async")).toBe(
+      "A lane entry is a request; it can't be asynchronous.",
+    );
+    expect(studioLinkRefusal("user", "gateway")).toBeUndefined();
+    expect(studioLinkRefusal("search", "service")).toBe("A search index can't link onward.");
+    expect(studioLinkRefusal("service", "browser")).toBe(
+      "Browser apps take no links; the user is the client.",
+    );
+    expect(studioLinkRefusal("queue", "database")).toBe(
+      "A queue feeds only an application, not a database.",
+    );
+    expect(studioLinkRefusal("queue", "worker", "sync")).toBe(
+      "A queue feeds an application asynchronously, not by request.",
+    );
+    expect(studioLinkRefusal("cdn", "queue")).toBe(
+      "Only an application publishes to a queue, not a CDN.",
+    );
+    expect(studioLinkRefusal("worker", "queue", "sync")).toBe(
+      "Publishing to a queue is asynchronous, not a request.",
+    );
+    expect(studioLinkRefusal("external-api", "cache")).toBe(
+      "An external API can only call an application, not a cache.",
+    );
+    expect(studioLinkRefusal("external-api", "billing", "async")).toBeUndefined();
+    expect(studioLinkRefusal("cdn", "database")).toBe(
+      "A CDN fronts only an application or object storage, not a database.",
+    );
+    expect(studioLinkRefusal("cdn", "object-store", "async")).toBe(
+      "A link to object storage is a request; it can't be asynchronous.",
+    );
+    expect(studioLinkRefusal("gateway", "search", "async")).toBe(
+      "A link to a search index is a request; it can't be asynchronous.",
+    );
+    expect(studioLinkRefusal("billing", "external-api", "async")).toBeUndefined();
   });
 });
 

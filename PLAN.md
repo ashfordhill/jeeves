@@ -51,7 +51,8 @@ reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `stud
 projects the design into the blueprint.
 
 The lane model: `studio-tiles.ts` groups kinds into seven tile types; `studio-links.ts` is the
-link table (which kinds link, sync or async, and the connection each link gets) with the caps;
+link table (`studioLinkRules`: rows by source and target role, with each row's modes, default mode
+and the connection a link gets) with the caps;
 `studio-lanes.ts` projects a design into the board graph (`laneGraph`: the `@actor` root, lane
 order, async and dashed links) and checks it with `@jeeves/board/graph` (`laneRules` for
 `checkGraph` and the board edits; `laneFindings`, `LANE_INVALID`, which `validateStudio` includes,
@@ -70,7 +71,9 @@ one rule set. Tiles and links are added and removed only by the **lane commands*
 `setEntryLane`): each is checked with the board edits under the lane rules and refused in plain words with tile
 names. The other studio commands edit in place: `edit`, `editSystem`, `editConnection` and the
 module commands (`createComponent`, `editComponent`, `connectComponent`, `disconnectComponent`,
-`removeComponent`). Pure helpers answer the canvas and chat: `laneTabs`, `laneChoices`,
+`removeComponent`). A link's mode is optional and defaults to its pair's. Pure helpers answer
+the canvas and chat: `laneOptions` (all seven tile types per side, each with its kind or the
+reason), `attachOptions` (the link tool's targets, either direction), `laneTabs`, `laneChoices`,
 `laneLinkRefusal`, `laneEntryRefusal`, `planRemoveTile`, and `newTileIdentity` and `newLinkId`
 for fresh names and IDs.
 
@@ -105,7 +108,8 @@ with their kinds, the module kinds and the caps), `describeStudioDefinition` (on
 settings), `getDesign` (both lanes with their entries and their
 tiles in lane order, then each tile's kind, settings, links with their modes and modules, the caps
 and the findings), `applyStudioCommands`, `validateDesign` and `askUser`. The instructions
-(`INSTRUCTIONS`) describe the actor, the two lanes (a tile has one entry), the link table,
+(`INSTRUCTIONS`) describe the actor, the two lanes (a tile has one entry), the link table (generated from
+`studioLinkRules`),
 async forks, end tiles and the caps. The same summary and the selection go with each message as `[Jeeves]` context. `applyStudioCommands` takes the
 studio commands, so tiles and links change only through the lane commands, as on the canvas;
 commands run against a working copy with the same builder and validation, and a refusal returns

@@ -1737,3 +1737,84 @@ Notes for the next unit:
   can be dropped once no stored design has `both` (the owner's `jeeves` database was not scanned).
 - `studioEntrySchema`'s input type for `lane` is now `unknown` (preprocess); nothing relies on it.
 - A full lane's tooltip in the lane row was checked by unit test, not in the browser.
+
+## 2026-11-05 — DP03: link rules as one table, with reasons; mode from the pair (complete)
+
+Spec:
+
+- `studio-links.ts`: the link rules are data. `studioLinkRules` (exported, for a later blueprint
+  version) has 15 rows by source role and target role (`studioLinkRoles`: user, application, cdn,
+  external, queue, store; `studioLinkRole(kind)`, `undefined` for `browser`). Each row has
+  `modes` (default first), `defaultMode`, optional `targets` (a subset of the target role's kinds)
+  and `connection` (kind, label, protocol, settings; entries have none). The interaction follows
+  the mode, security is Service identity. `studioEntryKinds` is now derived from the user rows
+  (same nine kinds; its type is `readonly StudioKind[]`). New: `studioLinkRule`,
+  `studioLinkRuleTargets`, `studioDefaultLinkMode`, `studioLinkRefusal(source | "user", target,
+  mode?)`. `studioLinkDefaults(source, target, mode?)`: no mode → the pair's default (async for
+  queue links, sync otherwise). Refusal words are today's; the actor's two refusals moved here
+  from `laneRules`, which now just calls `studioLinkRefusal`. One order change: a user → non-entry
+  kind is refused with "A lane starts at…" even when async (was the async reason).
+- `studio-lane-commands.ts`: `addTile.link` and `linkTiles.link` are optional (pair default;
+  before a tile, the default of new → host). New `laneOptions(design, from, side)` (seven
+  `{type, kind}` / `{type, refusal}`; probe tiles are named by their kind noun, so a reason reads
+  "A queue can't link to Links database. A queue feeds only an application, not a database.") and
+  `attachOptions(design, node)` (`{tile, lane?, link: {from, to, mode}}` or `{tile, lane?,
+  refusal}`; tiles in lane order; the user gets each lane in turn, 2 × tiles). `laneChoices` and
+  `laneTabs` keep their signatures and results, built on the same `laneOption` core with a fixed
+  mode. `laneLinkRefusal`'s mode is optional.
+- Two refusal-order changes so the reasons name the rule rather than the board: `linkRefusal`
+  checks the link table before the loop check (Links database → CDN now says "A database can't
+  link onward.", not "would make a loop"); `addTile` before a tile checks the new tile's own link
+  to the host before the moved incoming links.
+
+Chat (`tools.ts`): the link-table paragraph is generated from `studioLinkRules` (`linkRuleText`,
+one sentence per row, e.g. "Application -> queue: async (Publishes)."). The instructions say
+`link` is optional; the tool schema already follows `studioCommandSchema`.
+
+Tests (130; +5): `studio-lanes.test.ts` "link table" (the 15 rows with modes and defaults, one row
+per pair, no store sources, queue rows only with applications; every pair's default mode and
+`studioLinkDefaults` without a mode; every refusal sentence). `studio-lane-commands.test.ts`:
+"modes from the pair" (addTile after/before/lane and linkTiles without `link`; an explicit `sync`
+to a queue still refused), "lane options" (seven types in order on seven sides, exact options
+after Redirect and before Links database, after a queue, from a lane), "attach options" (Links
+database → Analytics worker becomes Analytics worker → Links database; forward reason when both
+are refused; Redirect's second link; a queue's async default; running an option; the user per
+lane). `tools.test.ts`: every row's sentence is in `INSTRUCTIONS`; a chat turn without `link`
+publishes and consumes asynchronously. The existing 15×15×2 table test still passes unchanged.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 130 tests).
+- `pnpm test:e2e`: 9 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium driven by mouse at 1440×900, my own API on 4312 (scratch
+`JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, both stopped afterwards. The canvas
+looks and behaves as before, as intended until DP04: TinyURL 10 tiles / 11 lines; tabs User
+(Download, Upload lane), Redirect (four), Links database and Link cache (Request before), Click
+events (Async before/after); Redirect's Request-after fan shows six types (no Queue) and its
+Async-after fan Service, API, Queue, External. Async after → Queue added a Publishes /
+Asynchronous link; Undo removed it. Shorten API's Async after onto Click events made a Publishes
+link. Links database's Request before onto Analytics worker made a `uses-database` link; onto the
+CDN it was dimmed and the notice read "CDN can't link to Links database. A CDN fronts only an
+application or object storage, not a database." No console errors or warnings. Housekeeping: my
+first script runs read the project ID before the new project's URL had loaded, so they edited and
+then deleted the previously open project in `jeeves_e2e` (the auto-created default study) and left
+two of mine; I deleted mine (204), and the next page load recreated the default study, so
+`jeeves_e2e` again holds just "TinyURL · studio study". The owner's 4300/4310 and the `jeeves`
+database were not touched.
+
+Docs: CATALOG "Lanes and links" (roles, the table with modes, defaults and connections, the
+default-mode rule, `studioLinkRefusal`, the future generator's badge-and-finding note, `link`
+optional on `addTile`/`linkTiles`, `laneOptions` and `attachOptions`); PLAN (the lane model, the
+helpers, generated chat table); the studio guide's Chat (optional mode).
+
+Notes for DP04:
+
+- `laneOptions` and `attachOptions` are ready to drive the `+` fan (disabled items with reasons)
+  and the link tool; `attachOptions(design, LANE_ACTOR)` filtered by `lane` gives each lane's
+  attach tab. Run an accepted option as `linkTiles` with `link: option.link.mode` (or omit it).
+- DP04's E2E expectation "A database's left `+` greys Database, Cache, Storage and Queue" is
+  incomplete: External is greyed too (an external API can only call an application).
+- The web's `connection-drafts.ts` still has its own "Queue connections require Asynchronous"
+  check for the line inspector; it agrees with the table but isn't derived from it.

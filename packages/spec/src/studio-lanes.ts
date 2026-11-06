@@ -7,7 +7,7 @@
 import { type BoardEdge, checkGraph, type Rules, reachableFrom } from "@jeeves/board/graph";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
-import { laneLimits, studioEntryKinds, studioLinkDefaults } from "./studio-links.ts";
+import { laneLimits, studioLinkRefusal } from "./studio-links.ts";
 import { type StudioKind, type StudioLane, studioLanes } from "./studio-model.ts";
 
 /** The actor's graph key. `idSchema` can never produce it, so it never meets a design ID. */
@@ -109,16 +109,9 @@ export function laneRules(kindOf: (id: string) => StudioKind | undefined): LaneR
   const refusal = (source: string, target: string, async: boolean) => {
     const to = kindOf(target);
     if (!to) return "The target has no studio settings.";
-    if (source === LANE_ACTOR) {
-      if (async) return "A lane entry is a request; it can't be asynchronous.";
-      return studioEntryKinds.some((kind) => kind === to)
-        ? undefined
-        : "A lane starts at a service (not a worker), an API, storage or an external API.";
-    }
-    const from = kindOf(source);
+    const from = source === LANE_ACTOR ? "user" : kindOf(source);
     if (!from) return "The source has no studio settings.";
-    const link = studioLinkDefaults(from, to, async ? "async" : "sync");
-    return link.ok ? undefined : link.message;
+    return studioLinkRefusal(from, to, async ? "async" : "sync");
   };
   return {
     root: LANE_ACTOR,

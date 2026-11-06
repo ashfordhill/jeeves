@@ -61,22 +61,45 @@ has a distinct one.
 Every lane design starts from one **actor**, the user, which is not stored. Its **entries**
 (`architecture.studio.entries`) are links to the tiles the user reaches directly, each in the
 **download** or **upload** lane. A tile has at most one entry. Every tile must be reachable from the actor, with no cycles.
-Which kinds may link, and how, is one table
-([`studio-links.ts`](packages/spec/src/studio-links.ts)). "Application" means the Service and API
-kinds except `cdn`. A sync link is a request (solid line); an async link does not wait (dashed
-line, as is every link that continues after one).
+Which tiles may link, and how, is one table, `studioLinkRules` in
+[`studio-links.ts`](packages/spec/src/studio-links.ts), exported so a later blueprint version can
+publish it. Its rows are by source role and target role: **user** (the actor's entries),
+**application** (the Service and API kinds except `cdn`), **CDN**, **external API**, **queue** and
+**store** (`database`, `search`, `cache`, `object-store`). Each row has its allowed modes, its
+default mode and the connection a new link gets; a pair with no row is refused. A sync link is a
+request (solid line); an async link does not wait (dashed line, as is every link that continues
+after one). The connection's interaction follows the mode (Request / response or Asynchronous);
+its security is Service identity.
 
-| Source → target | Sync | Async |
-| --- | --- | --- |
-| actor → `service`, `redirect`, `identity`, `notification`, `billing`, `gateway`, `cdn`, `object-store`, `external-api` (an entry) | yes | no |
-| application → `database`, `cache` | yes (uses-database) | no |
-| application → `object-store`, `search`, `cdn` | yes (depends-on) | no |
-| application → application, `external-api` | yes (calls) | yes (calls, Asynchronous) |
-| application → `queue` | no | yes (publish) |
-| `queue` → application | no | yes (consume) |
-| `external-api` → application | yes | yes |
-| `cdn` → application, `object-store` | yes | no |
-| `database`, `cache`, `object-store`, `search` → anything | no (end tiles) | no |
+| Source → target | Modes | Default | Connection |
+| --- | --- | --- | --- |
+| user → `service`, `redirect`, `identity`, `notification`, `billing`, `gateway` | sync | sync | an entry |
+| user → `cdn` | sync | sync | an entry |
+| user → `object-store` | sync | sync | an entry |
+| user → `external-api` | sync | sync | an entry |
+| application → application | sync, async | sync | calls, "Calls", HTTPS |
+| application → `external-api` | sync, async | sync | calls, "Calls", HTTPS |
+| application → `queue` | async | async | depends-on, "Publishes", Messaging, `channelUse: publish` |
+| application → `database` | sync | sync | uses-database, "Reads & writes", SQL |
+| application → `cache` | sync | sync | uses-database, "Reads & writes", Redis |
+| application → `object-store`, `search` | sync | sync | depends-on, "Uses", HTTPS |
+| application → `cdn` | sync | sync | depends-on, "Uses", HTTPS |
+| `queue` → application | async | async | depends-on, "Consumes", Messaging, `channelUse: consume` |
+| `external-api` → application | sync, async | sync | calls, "Calls", HTTPS |
+| `cdn` → application | sync | sync | calls, "Calls", HTTPS |
+| `cdn` → `object-store` | sync | sync | depends-on, "Uses", HTTPS |
+
+So stores are end tiles (no row has a store as its source); a queue sits between applications;
+a CDN fronts an application or object storage; `browser` has no role and takes no links. The
+entry kinds (`studioEntryKinds`) are the user rows' targets. A link given without a mode takes its
+pair's default: async for queue links, sync otherwise (`studioDefaultLinkMode`;
+`studioLinkDefaults(source, target, mode?)`). `studioLinkRefusal` gives the reason a pair or mode
+is refused, in plain words ("A cache can't link onward.", "Publishing to a queue is asynchronous,
+not a request."). Switching an existing link's mode is the line inspector's Interaction field.
+
+The table records design intent only. No template-support state is kept: a future code generator
+will mark the tiles and links it has no template for (a badge and a blueprint finding) and never
+refuse them, keeping design intent and template availability apart.
 
 Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane, and a tile has
 at most one entry. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
@@ -89,12 +112,30 @@ to Geo lookup. A cache can't link onward."):
 
 | Command | What it does |
 | --- | --- |
-| `addTile` | A new tile after a tile, after a lane (an entry; always a request) or before a tile. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
-| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge). A lane onto a tile that already has an entry, in either lane, is refused ("CDN already starts the download lane; a tile has one entry."). |
+| `addTile` | A new tile after a tile, after a lane (an entry; always a request) or before a tile. `link` (the mode) is optional and defaults to the pair's. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
+| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge), in `link` mode or the pair's default. A lane onto a tile that already has an entry, in either lane, is refused ("CDN already starts the download lane; a tile has one entry."). |
 | `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
 | `setEntryLane` | Moves an entry to the other lane (`download` or `upload`), unless that lane already has 3 entries. |
+
+Two pure helpers answer what a tile can do, for the canvas and chat:
+
+- `laneOptions(design, from, side)` returns all seven tile types in `studioTileTypes` order for one
+  side of a tile (`after` adds on the right, `before` inserts on the left) or a lane. Each is
+  `{ type, kind }`, the kind an `addTile` would add (the type's default, a worker after a queue,
+  else its first kind the rules accept), or `{ type, refusal }`, the plain-words reason the type's
+  preferred kind is refused ("A queue can't link to Links database. A queue feeds only an
+  application, not a database."). A create links with the pair's default mode.
+- `attachOptions(design, node)` is the link tool. For a tile it lists every other tile in lane
+  order with the `linkTiles` an attach would make, in the pair's default mode: selected → target
+  when the rules allow it, else target → selected, else the forward direction's refusal. With
+  Links database selected, dropping on Analytics worker makes Analytics worker → Links database.
+  For the user (`LANE_ACTOR`) it lists, per lane, every tile that lane could take as an entry, or
+  why not.
+
+The canvas still uses `laneTabs` and `laneChoices` (its sync `+` and async `---` tabs), built on
+the same option code with a fixed mode.
 
 On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
 ([studio guide](docs/studio.md#creating-and-connecting)); a tile's X runs `removeTile` (after

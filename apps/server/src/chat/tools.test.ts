@@ -5,9 +5,10 @@ import {
   newLinkId,
   newTileIdentity,
   studioArchitectureExample,
+  studioLinkRules,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
-import { toolDefinitions, Workspace } from "./tools.ts";
+import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.ts";
 
 const tinyurl = () => ({ ...studioArchitectureExample("studio-tinyurl").design, revision: 3 });
 const run = (workspace: Workspace, name: string, args: unknown = {}) =>
@@ -190,6 +191,50 @@ describe("studio chat tools", () => {
       { lane: "download", entries: [{ id: "upload-api", tile: "api" }], tiles: ["api"] },
       { lane: "upload", entries: [], tiles: [] },
     ]);
+  });
+
+  it("states the link table from the rules, and leaves the link mode optional", () => {
+    // The instructions' table is generated from studioLinkRules, row by row.
+    for (const rule of studioLinkRules) expect(INSTRUCTIONS).toContain(linkRuleText(rule));
+    expect(studioLinkRules.map(linkRuleText)).toEqual(
+      expect.arrayContaining([
+        "Application -> queue: async (Publishes).",
+        "External API -> application: sync or async, default sync (Calls).",
+        "User -> object-store: sync (a lane entry).",
+      ]),
+    );
+
+    // Without a link (the schema leaves it optional), each link takes its pair's default.
+    const workspace = new Workspace(tinyurl());
+    const result = run(workspace, "applyStudioCommands", {
+      baseRevision: 3,
+      commands: [
+        {
+          type: "addTile",
+          from: { tile: "shorten-api" },
+          side: "after",
+          tile: { id: "link-events", name: "Link events", kind: "queue" },
+          linkId: "shorten-api-link-events",
+        },
+        {
+          type: "linkTiles",
+          from: { tile: "link-events" },
+          to: "analytics",
+          linkId: "link-events-analytics",
+        },
+      ],
+    });
+    expect(result).toMatchObject({ ok: true, findings: [] });
+    const planned = (id: string) =>
+      workspace.working.connections.find((item) => item.id === id)?.planned;
+    expect(planned("shorten-api-link-events")).toMatchObject({
+      label: "Publishes",
+      interaction: "Asynchronous",
+    });
+    expect(planned("link-events-analytics")).toMatchObject({
+      label: "Consumes",
+      interaction: "Asynchronous",
+    });
   });
 
   it("records an askUser question for the turn", () => {

@@ -3,8 +3,10 @@
  * move an entry to the other lane.
  * The canvas, chat and API share them through `buildStudioCommand`. Each one is checked with the
  * board edits (`@jeeves/board/graph`) under the lane rules, and a refusal names the rule in plain
- * words with tile names. The pure helpers tell the canvas and chat which tabs a tile shows, which
- * tile types its fan offers, and what removing a tile strands.
+ * words with tile names. A link without a mode takes its pair's default from the link table. The
+ * pure helpers tell the canvas and chat which tile types a tile can add on each side
+ * (`laneOptions`), which tiles it can attach to (`attachOptions`), and what removing a tile
+ * strands.
  */
 import {
   addAfter,
@@ -32,6 +34,7 @@ import { LANE_ACTOR, laneFindings, laneGraph, laneRules } from "./studio-lanes.t
 import {
   laneLimits,
   type StudioLinkMode,
+  studioDefaultLinkMode,
   studioKindNoun,
   studioLinkDefaults,
 } from "./studio-links.ts";
@@ -76,13 +79,14 @@ const laneLinkSchema = z.enum(["sync", "async"]);
 export const laneCommandSchemas = [
   /**
    * A new tile after a tile or a lane (an entry), or before a tile. A lane is always `after` and
-   * `sync`. `system` creates the system with the first tile of a new project.
+   * `sync`. Without `link`, the new link takes its pair's default mode (async for queue links,
+   * sync otherwise). `system` creates the system with the first tile of a new project.
    */
   z.strictObject({
     type: z.literal("addTile"),
     from: laneFromSchema,
     side: laneSideSchema,
-    link: laneLinkSchema,
+    link: laneLinkSchema.optional(),
     tile: z.strictObject({
       id: idSchema,
       name: tileName,
@@ -92,12 +96,15 @@ export const laneCommandSchemas = [
     linkId: idSchema,
     system: z.strictObject({ name: tileName, description: tileDescription.optional() }).optional(),
   }),
-  /** Links a lane or a tile to a tile already on the board (a merge). */
+  /**
+   * Links a lane or a tile to a tile already on the board (a merge). Without `link`, the link
+   * takes its pair's default mode.
+   */
   z.strictObject({
     type: z.literal("linkTiles"),
     from: laneFromSchema,
     to: idSchema,
-    link: laneLinkSchema,
+    link: laneLinkSchema.optional(),
     linkId: idSchema,
   }),
   /** Removes a tile and restitches its links; `alsoRemove` names every tile that strands. */
@@ -117,6 +124,16 @@ export type LaneCommand = z.infer<(typeof laneCommandSchemas)[number]>;
 
 export type LaneTab = { from: LaneFrom; side: LaneSide; mode: StudioLinkMode };
 export type LaneChoice = { type: StudioTileType; kind: StudioKind };
+/** A tile type a side offers: the kind it would add, or why it can't, in plain words. */
+export type LaneOption = LaneChoice | { type: StudioTileType; refusal: string };
+/**
+ * Another tile the link tool can attach to: the `linkTiles` it would run (`from`, `to` and the
+ * pair's default mode), or why it can't. From the user, `lane` names the lane the entry joins.
+ */
+export type AttachOption = { tile: string; lane?: StudioLane } & (
+  | { link: { from: LaneFrom; to: string; mode: StudioLinkMode } }
+  | { refusal: string }
+);
 export type LaneResult<T> = { ok: true; value: T } | { ok: false; message: string };
 
 /** A lane command refused, with the reason in plain words. */
@@ -208,13 +225,14 @@ function linkRefusal(
       return `${sentence(name(target))} already starts the ${entry.lane} lane; a tile has one entry.`;
   } else if (view.graph.edges.some((edge) => edge.source === source && edge.target === target))
     return `${sentence(name(source))} already links to ${name(target)}.`;
-  if (wouldCreateCycle(view.graph.edges, source, target))
-    return `${sentence(name(target))} already leads to ${name(source)}; linking them would make a loop.`;
+  // The link table first: its reason holds whatever else is on the board.
   const reason = view.rules.refusal(source, target, async);
   if (reason)
     return source === LANE_ACTOR
       ? `${sentence(name(target))} can't start the ${lane} lane. ${reason}`
       : `${sentence(name(source))} can't link to ${name(target)}. ${reason}`;
+  if (wouldCreateCycle(view.graph.edges, source, target))
+    return `${sentence(name(target))} already leads to ${name(source)}; linking them would make a loop.`;
   if (source === LANE_ACTOR) {
     const full = lane && laneFull(view.entries, lane);
     if (full) return full;
@@ -288,7 +306,10 @@ function addTileRefusal(
       linkRefusal(view, host, tile.id, async) ??
       refusalOf(view, addAfter(view.graph, host, node, edge, view.rules))
     );
-  // Every link into the host moves to the new tile and keeps its mode; an entry keeps its lane.
+  // The new tile's own link to the host first, then every link into the host, which moves to the
+  // new tile and keeps its mode; an entry keeps its lane.
+  const own = linkRefusal(view, tile.id, host, async);
+  if (own) return own;
   for (const item of view.graph.edges) {
     if (item.target !== host) continue;
     const reason = view.rules.refusal(item.source, tile.id, item.async);
@@ -297,10 +318,7 @@ function addTileRefusal(
         ? `${sentence(view.name(tile.id))} can't start the ${item.lane} lane. ${reason}`
         : `${sentence(view.name(item.source))} can't link to ${view.name(tile.id)}. ${reason}`;
   }
-  return (
-    linkRefusal(view, tile.id, host, async) ??
-    refusalOf(view, insertBefore(view.graph, host, node, edge, view.rules))
-  );
+  return refusalOf(view, insertBefore(view.graph, host, node, edge, view.rules));
 }
 
 /**
@@ -397,6 +415,15 @@ function linkConnection(
   return { id, from, to, ...defaults.value };
 }
 const modeOf = (edge: { async?: boolean }): StudioLinkMode => (edge.async ? "async" : "sync");
+/** The mode a new `source → target` link gets when none is given: its pair's default. */
+function pairMode(view: Lanes, source: string, target: string): StudioLinkMode {
+  const from = source === LANE_ACTOR ? "user" : view.kindOf(source);
+  const to = view.kindOf(target);
+  return from && to ? studioDefaultLinkMode(from, to) : "sync";
+}
+/** The new link's ends for an `addTile`: `from` → tile, or tile → host before a tile. */
+const addedLink = (from: LaneFrom, side: LaneSide, tile: string): [string, string] =>
+  "lane" in from ? [LANE_ACTOR, tile] : side === "after" ? [from.tile, tile] : [tile, from.tile];
 const addEntry = (out: Draft, entry: { id: string; lane: StudioLane; element: string }) => {
   out.studio.entries = [...(out.studio.entries ?? []), entry];
 };
@@ -443,14 +470,8 @@ export function buildLaneCommand(
       const { from, tile } = input;
       requireFree(draft, [tile.id, input.linkId]);
       const view = at(tile);
-      const why = addTileRefusal(
-        view,
-        from,
-        input.side,
-        input.link === "async",
-        tile,
-        input.linkId,
-      );
+      const mode = input.link ?? pairMode(view, ...addedLink(from, input.side, tile.id));
+      const why = addTileRefusal(view, from, input.side, mode === "async", tile, input.linkId);
       if (why) refuse(why);
       if ("lane" in from) {
         addElement(out, tile);
@@ -463,7 +484,7 @@ export function buildLaneCommand(
       if (tile.kind === "queue" && !owner) refuse("A queue needs an application next to it.");
       addElement(out, tile, owner);
       if (input.side === "after") {
-        connect(out, linkConnection(view, input.linkId, host, tile.id, input.link));
+        connect(out, linkConnection(view, input.linkId, host, tile.id, mode));
         break;
       }
       // Before: every link into the host now enters the new tile. A moved connection keeps its
@@ -474,17 +495,18 @@ export function buildLaneCommand(
         disconnect(out, edge.id);
         connect(out, linkConnection(view, edge.id, edge.source, tile.id, modeOf(edge)));
       }
-      connect(out, linkConnection(view, input.linkId, tile.id, host, input.link));
+      connect(out, linkConnection(view, input.linkId, tile.id, host, mode));
       break;
     }
     case "linkTiles": {
       const { from, to } = input;
       requireFree(draft, [input.linkId]);
       const view = at();
-      const why = linkTilesRefusal(view, from, to, input.link === "async");
+      const mode = input.link ?? pairMode(view, "lane" in from ? LANE_ACTOR : from.tile, to);
+      const why = linkTilesRefusal(view, from, to, mode === "async");
       if (why) refuse(why);
       if ("lane" in from) addEntry(out, { id: input.linkId, lane: from.lane, element: to });
-      else connect(out, linkConnection(view, input.linkId, from.tile, to, input.link));
+      else connect(out, linkConnection(view, input.linkId, from.tile, to, mode));
       break;
     }
     case "setEntryLane": {
@@ -656,8 +678,85 @@ function changeKind(
 }
 
 /**
+ * One tile type on this side: the kind it would add (the type's default, where a Service after a
+ * queue is a worker, else its first kind the rules accept), or the reason its default is refused.
+ * The new link takes `mode`, or its pair's default when `mode` is left out.
+ */
+function laneOption(
+  at: ReturnType<typeof lanes>,
+  from: LaneFrom,
+  side: LaneSide,
+  type: StudioTileType,
+  mode?: StudioLinkMode,
+): LaneOption {
+  const host = "tile" in from ? at().kindOf(from.tile) : undefined;
+  const preferred = defaultKind(type, side === "after" && host ? { after: host } : {});
+  const kinds = [preferred, ...studioTileDefinitions[type].kinds.filter((k) => k !== preferred)];
+  let reason: string | undefined;
+  for (const kind of kinds) {
+    // The new tile is named by its kind in refusals: "Link cache can't link to a queue. …"
+    const tile = { id: "@new", kind, name: noun(kind) };
+    const view = at(tile);
+    const async = (mode ?? pairMode(view, ...addedLink(from, side, tile.id))) === "async";
+    const why = addTileRefusal(view, from, side, async, tile, "@new-link");
+    if (!why) return { type, kind };
+    reason ??= why;
+  }
+  return { type, refusal: reason ?? "Nothing fits here." };
+}
+
+/**
+ * All seven tile types on this side of a tile or lane, in `studioTileTypes` order. Each is the
+ * kind an `addTile` would add (its link takes the pair's default mode), or the plain-words reason
+ * the type's preferred kind is refused.
+ */
+export function laneOptions(design: DesignDocument, from: LaneFrom, side: LaneSide): LaneOption[] {
+  const [broken] = laneFindings(design);
+  if (broken)
+    return studioTileTypes.map((type) => ({
+      type,
+      refusal: `Fix the lanes first. ${broken.message}`,
+    }));
+  const at = lanes(design);
+  return studioTileTypes.map((type) => laneOption(at, from, side, type));
+}
+
+/**
+ * The tiles the link tool can attach `node` to, in lane order, each with the `linkTiles` it
+ * would run in the pair's default mode, or why not. For a tile, every other tile: `node → tile`
+ * when the rules allow it, else `tile → node`, else the forward direction's reason. For the user
+ * (`LANE_ACTOR`), each lane in turn: every tile that lane could take as an entry, or why not.
+ */
+export function attachOptions(design: DesignDocument, node: string): AttachOption[] {
+  const view = lanes(design)();
+  if (!view.has(node)) return [];
+  const [broken] = laneFindings(design);
+  const tiles = view.graph.nodes.flatMap((item) =>
+    item.kind && item.id !== node ? [item.id] : [],
+  );
+  const tryLink = (from: LaneFrom, to: string) => {
+    const source = "lane" in from ? LANE_ACTOR : from.tile;
+    const mode = pairMode(view, source, to);
+    const refusal = broken
+      ? `Fix the lanes first. ${broken.message}`
+      : linkTilesRefusal(view, from, to, mode === "async");
+    return refusal === undefined ? { link: { from, to, mode } } : { refusal };
+  };
+  if (node === LANE_ACTOR)
+    return studioLanes.flatMap((lane) =>
+      tiles.map((tile) => ({ tile, lane, ...tryLink({ lane }, tile) })),
+    );
+  return tiles.map((tile) => {
+    const forward = tryLink({ tile: node }, tile);
+    if ("link" in forward) return { tile, ...forward };
+    const backward = tryLink({ tile }, node);
+    return { tile, ...("link" in backward ? backward : forward) };
+  });
+}
+
+/**
  * The tile types the fan offers on this side and in this mode, each with the kind it adds: the
- * type's default (a Service after a queue is a worker), else its first kind the rules accept.
+ * accepted entries of `laneOptions` with the link in `mode`. Used by the canvas's per-mode tabs.
  */
 export function laneChoices(
   design: DesignDocument,
@@ -667,15 +766,9 @@ export function laneChoices(
 ): LaneChoice[] {
   if (laneFindings(design).length) return [];
   const at = lanes(design);
-  const host = "tile" in from ? at().kindOf(from.tile) : undefined;
   return studioTileTypes.flatMap((type) => {
-    const preferred = defaultKind(type, side === "after" && host ? { after: host } : {});
-    const kinds = [preferred, ...studioTileDefinitions[type].kinds.filter((k) => k !== preferred)];
-    const kind = kinds.find((candidate) => {
-      const tile = { id: "@new", kind: candidate };
-      return !addTileRefusal(at(tile), from, side, mode === "async", tile, "@new-link");
-    });
-    return kind ? [{ type, kind }] : [];
+    const option = laneOption(at, from, side, type, mode);
+    return "kind" in option ? [option] : [];
   });
 }
 
@@ -713,18 +806,20 @@ export function planRemoveTile(
 
 /**
  * Why linking `from` (a lane or a tile) to the existing tile `to` is refused, in plain words, or
- * `undefined` when a `linkTiles` would be accepted. The canvas lights up drop targets with it and
- * explains a refused drop.
+ * `undefined` when a `linkTiles` would be accepted (in `mode`, else the pair's default). The canvas
+ * lights up drop targets with it and explains a refused drop.
  */
 export function laneLinkRefusal(
   design: DesignDocument,
   from: LaneFrom,
   to: string,
-  mode: StudioLinkMode,
+  mode?: StudioLinkMode,
 ): string | undefined {
   const result = attempt(() => {
     requireLanes(design);
-    return linkTilesRefusal(lanes(design)(), from, to, mode === "async");
+    const view = lanes(design)();
+    const chosen = mode ?? pairMode(view, "lane" in from ? LANE_ACTOR : from.tile, to);
+    return linkTilesRefusal(view, from, to, chosen === "async");
   });
   return result.ok ? result.value : result.message;
 }

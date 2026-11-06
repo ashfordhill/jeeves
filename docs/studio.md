@@ -211,7 +211,9 @@ Chat (left rail, open by default in a fresh project) edits the design with the c
 commands, validation and history: a chat turn is one undo step, however many commands it ran.
 Tiles and links change only through the lane commands: `addTile` (after a tile or a lane, or
 before a tile), `linkTiles`, `removeTile`, `removeLink`, `changeKind` and `setEntryLane` (moves
-an entry to the other lane). So chat, like the mouse,
+an entry to the other lane). A new link's mode is optional: left out, it is the pair's default
+from the [link table](../CATALOG.md#lanes-and-links) (async for queue links, sync otherwise),
+and the instructions' copy of that table is generated from it. So chat, like the mouse,
 can't leave a tile off the lanes, close a loop, link a resource onward or break a cap. A refused
 command changes nothing and comes back in the same plain words as the canvas notice ("Link cache
 can't link to URL reputation API. A cache can't link onward."); the turn's activity list shows
