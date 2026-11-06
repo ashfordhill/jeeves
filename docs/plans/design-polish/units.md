@@ -2,6 +2,7 @@
 
 **Status: approved 2026-11-05.** All units are approved, including DP08 (the marketplace study,
 which replaces Etsy) and DP09 (the YouTube study), after the owner's answers of 2026-11-05.
+The owner added DP10 (a review of DP01–DP09) later the same day.
 
 The owner reviewed the lane canvas after PL02 (2026-11-05) and decided the following:
 
@@ -12,7 +13,7 @@ The owner reviewed the lane canvas after PL02 (2026-11-05) and decided the follo
 - Service and API types become clearly labelled, preconfigured choices with two languages each.
 - TinyURL is rebuilt from published designs.
 
-There are nine units, run in order: DP01 → DP09. A fresh agent runs one unit at a time on primary
+There are ten units, run in order: DP01 → DP10. A fresh agent runs one unit at a time on primary
 `main`.
 
 ## Why this matters
@@ -580,3 +581,45 @@ Expect to test:
 
 **Tests, Browser, Docs** as DP08.
 **Commit:** `DP09: YouTube study`
+
+## DP10 — Review of DP01–DP09
+
+Owner, 2026-11-05: a plan split into units ends with a unit that reviews what the earlier units
+added. Each unit's agent saw only its own unit. This review looks for what falls between units.
+It is not a second acceptance pass: DP07 did the walkthrough and the docs sweep.
+
+**Read:** every DP handoff entry; this plan; `git log --oneline 2b9eff5..HEAD`. Read the combined
+diff (`git diff 2b9eff5..HEAD`) only where the steps below point to it.
+
+**Do:**
+
+1. **Rough-edge ledger.** List every rough edge, deviation and next-unit note in the DP handoff
+   entries. Give each one a status: fixed (by which unit), still open, or no longer applies. Say
+   in one line how you checked.
+2. **Correctness review.** Run the `/code-review` skill at `high` on `2b9eff5..HEAD`; if it isn't
+   available, review by hand. Then check these seams yourself:
+   - **Rules in more than one place.** A rule enforced in the spec should not be restated by hand
+     in the canvas, inspector, chat or blueprint. A known case: the queue-must-be-async check in
+     `apps/web/src/studio/connection-drafts.ts` versus DP03's link table.
+   - **Load-time normalisation.** DP02 (`both`), DP05 (languages) and anything DP06–DP09 added
+     run where stored designs are parsed. Check that they compose, that commands still validate
+     strictly, and that each one is listed in the docs.
+   - **Removed features.** Nothing still refers to `both`, `laneChoices`, `laneTabs`, `DashGlyph`,
+     `unspecified` or the `---` tabs: code, exports, CSS, tests, chat instructions or docs.
+   - **The studies.** DP08 and DP09 validate under the final rules, and any option they added has
+     its schema, form, validation, blueprint output and docs (AGENTS.md).
+3. **Fix confirmed defects only.** A defect is confirmed when you can show it: a failing test, a
+   reproduction, or a statement in the docs that the code contradicts. Each fix comes with a test
+   that fails before it and passes after (or the corrected sentence, for docs).
+
+**Don't:** rename, refactor, reformat or reword anything that isn't wrong. Don't add tests for
+behaviour that is already covered. Don't change decisions recorded in a handoff entry (for example
+DP01's dot offset, or DP04's fan latch and no dimming on a `+` pull); list doubts about them as
+questions for the owner. Don't add features.
+
+**Handoff:** the ledger; a findings table (severity, `file:line`, what goes wrong, how to
+reproduce, fixed or follow-up); questions for the owner. Keep it short: a finding you can't show is
+not a finding.
+**Checks:** as every unit. The browser check covers only what you changed.
+**Docs:** only false statements. Mark this plan's status as complete.
+**Commit:** `DP10: review of the design polish units`
