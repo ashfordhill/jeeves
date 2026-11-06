@@ -48,6 +48,41 @@ test("New project offers the marketplace study", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("New project offers the YouTube study", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await createStudy(page, "E2E YouTube", "YouTube · studio study");
+  try {
+    // The user and fourteen tiles; six lane entries (one straight into Original videos) and
+    // fourteen connections, nine of them dashed (the view and upload-job paths).
+    await expect(tiles(page)).toHaveCount(15);
+    await expect(lines(page)).toHaveCount(20);
+    await expect(dashedLines(page)).toHaveCount(9);
+    await expect(page.locator(".board-chip")).toHaveCount(6);
+    for (const name of [
+      "Video CDN",
+      "Watch API",
+      "Search API",
+      "Upload service",
+      "Video processor",
+    ])
+      await expect(tile(page, name)).toBeVisible();
+
+    const inspector = page.locator(".studio-inspector");
+    await tile(page, "Original videos").click();
+    await expect(inspector.locator(".lane-store-access")).toHaveText(
+      "Writes (owner)Upload serviceReadsVideo processor",
+    );
+    await tile(page, "Metadata database").click();
+    await expect(inspector.locator(".lane-store-access")).toHaveText(
+      "Writes (owner)Video processorReadsWatch API",
+    );
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
+});
+
 test("shows each store's writer and readers, from its owner", async ({ page, tinyurl: id }) => {
   const inspector = page.locator(".studio-inspector");
   const access = inspector.locator(".lane-store-access");

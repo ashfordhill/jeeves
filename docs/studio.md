@@ -11,9 +11,9 @@ The project menu (top right) lists recent projects and opens **New project**, th
 (search, rename, delete) and rename. New project offers:
 
 - **Architecture study**: a copy of a study, chosen in the **Study** list: the
-  [TinyURL study](#the-tinyurl-study) (the default; a fresh installation starts with one) or the
-  [marketplace study](#the-marketplace-study). The project name follows the chosen study until you
-  type over it.
+  [TinyURL study](#the-tinyurl-study) (the default; a fresh installation starts with one), the
+  [marketplace study](#the-marketplace-study) or the [YouTube study](#the-youtube-study). The
+  project name follows the chosen study until you type over it.
 - **Blank architecture**: an empty design.
 
 The last opened project reopens on the next visit; its ID is in the URL.
@@ -85,7 +85,8 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 | 1280×800 | 0.83 | 0.63 | 0.62 | 0.42 |
 
 The marketplace study is taller than it is wide (seven lane entries), so it fits by height at
-0.42 at 1440×900 and 0.36 at 1280×800, whichever rails are open.
+0.42 at 1440×900 and 0.36 at 1280×800, whichever rails are open. The YouTube study fits at 0.65
+at 1440×900 and 0.57 at 1280×800 with at most one rail open, and 0.52 and 0.42 with both.
 
 ## Creating and connecting
 
@@ -445,6 +446,127 @@ The study stores no layout. Its blueprint has seven entries, eight services, nin
 externals, fourteen connections (each link into a store marked `write` or `read`) and all sixteen
 components, with nothing omitted and no findings.
 
+## The YouTube study
+
+`studio-youtube@1.0.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
+video-sharing site with YouTube's core functionality, designed as clean microservices rather than
+copied from YouTube. Its core flows, and the tiles that carry them:
+
+- A creator uploads a video: the Upload service starts a multipart upload in Original videos and
+  signs a URL for each part; the creator's app sends the parts straight to storage (the upload
+  entry into Original videos) and can resume, and the Upload service completes the upload and
+  queues an upload job.
+- The video is processed: the Video processor takes each job from Upload jobs, reads the original,
+  encodes it at several resolutions and bitrates in segments of a few seconds, writes the
+  segments, HLS playlists and thumbnails to Encoded videos, then records the playable video in the
+  Metadata database and adds it to the Search index.
+- A viewer watches: the Watch API gives the player the video's details, playlist and view count;
+  the Video CDN serves the playlists and segments from Encoded videos, and the player picks each
+  segment's bitrate (adaptive bitrate streaming). Thumbnails come through the same CDN, resized
+  on request.
+- Views are counted: the Watch API publishes each view the player reports to View events; the
+  View counter sums them per video and adds them to View counts in batches.
+- A viewer finds videos: the Search API reads the Search index.
+- Creators and viewers sign in through Identity (OpenID Connect).
+
+Comments, likes, recommendations, subscriptions, monetisation and live streaming are left out:
+the plan keeps them out unless every source treats them as core, and none does (Grokking counts
+comments, Grokking and the crash course likes; HelloInterview leaves all of them out).
+
+Sources:
+
+- ByteByteGo (Alex Xu), [Design YouTube](https://bytebytego.com/courses/system-design-interview/design-youtube)
+- HelloInterview, [YouTube](https://www.hellointerview.com/learn/system-design/problem-breakdowns/youtube)
+- DesignGurus (Grokking), [Designing YouTube or Netflix](https://www.designgurus.io/course-play/grokking-the-system-design-interview/doc/designing-youtube-or-netflix)
+- DesignGurus, System Design Interview Crash Course, [Design YouTube](https://www.designgurus.io/course-play/system-design-interview-crash-course/doc/design-youtube)
+- Vitess, [History](https://vitess.io/docs/overview/history/) (it came from YouTube's MySQL)
+- AWS, [Uploading large objects to Amazon S3 using multipart upload and transfer acceleration](https://aws.amazon.com/blogs/compute/uploading-large-objects-to-amazon-s3-using-multipart-upload-and-transfer-acceleration/)
+  and [Uploading and copying objects using multipart upload](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html)
+- Cloudflare, [R2 pricing](https://developers.cloudflare.com/r2/pricing/) and the
+  [CDN's service-specific terms](https://www.cloudflare.com/service-specific-terms-application-services/)
+
+What the sources agree on: originals go to object storage in parts that can resume, and
+ByteByteGo, HelloInterview and the crash course send them straight from the client with
+pre-signed URLs (AWS's pattern: the backend starts the multipart upload, signs a URL per part and
+completes it). Processing is asynchronous behind a queue and encodes several resolutions and
+bitrates; ByteByteGo, HelloInterview and the crash course split it into segments with HLS or DASH
+playlists that a CDN serves while the player picks the bitrate. Grokking and ByteByteGo make
+thumbnails in the pipeline. HelloInterview's processing service writes the playlist's address
+back into the video's metadata. Grokking and the crash course keep metadata in MySQL sharded by
+video ID with replicas for reads. The crash course has a separate search service over an index
+filled when a video becomes playable, and keeps view counts in their own store, eventually
+consistent. HelloInterview leaves search and view counts out; ByteByteGo doesn't design them.
+
+It is laid out in lanes from the user:
+
+```text
+DOWNLOAD (reads)
+  User ⇣ Search API → Search index                                   (reads)
+  User ⇣ Watch API → View counts, Metadata database                  (reads)
+                   ⇢ View events ⇢ View counter → View counts        (the only writer)
+  User ⇣ Video CDN → Encoded videos                                  (reads; resizes thumbnails)
+UPLOAD (writes)
+  User ⇡ Upload service → Original videos                            (starts, signs, completes)
+                        ⇢ Upload jobs ⇢ Video processor → Original videos   (reads)
+                                                        → Encoded videos, Metadata database,
+                                                          Search index      (the only writer)
+  User ⇡ Original videos                                             (the parts, signed URLs)
+  User ⇡ Identity                                                    (sign-in)
+```
+
+Each store has one writer, its owner: the Upload service writes Original videos and Upload jobs;
+the Video processor writes Encoded videos, the Metadata database and the Search index; the Watch
+API publishes View events; the View counter writes View counts. Every other link into a store
+reads. In all: the user and fourteen tiles, and 20 links (six lane entries, three of them upload,
+and fourteen connections), nine of which are asynchronous or follow an asynchronous link (the view
+and upload-job paths). Every service is TypeScript on Docker; the study has no C1 people or
+relationships and no package. The Video processor has four links out, the most a tile can have.
+Of the 36 orders that keep the download entries above the upload entries, this one has no
+crossing lines and is the shortest (800px tall, so it fits at 0.65 at 1440×900); six orders also
+avoid the one stretch two unrelated lines share here (the Video CDN's and the Upload service's
+lines run together into the store column), but are 1,024px tall.
+
+| Part | Content |
+| --- | --- |
+| Tiles | Search API, Watch API and Upload service (microservices, public); Identity (OpenID Connect); View counter and Video processor (workers, scaled on queue lag; the processor takes one job at a time per replica, up to 50); Video CDN (Cloudflare, origin Encoded videos, image resizing on request); Encoded videos (Cloudflare R2, public through the CDN) and Original videos (Cloudflare R2, private); Search index (OpenSearch); Metadata database and View counts (MySQL, partitioned by `video_id`, with read replicas); View events (a topic, 12 partitions, a day's retention) and Upload jobs (a work queue, a week's retention). |
+| Modules | Search API: video search. Watch API: details reader (from a replica), view count reader, view publisher (batched). View counter: view consumer, view summer, count writer. Upload service: creator check (Identity's token), multipart uploads (start, sign each part, list the parts that arrived, complete), job publisher. Video processor: job consumer, segmenter and encoder (ffmpeg), packager (HLS playlists), thumbnailer, video writer and index writer. |
+
+Design decisions, where the sources leave a choice:
+
+- **One writer per store.** The designs write a video's metadata twice: the API when the upload
+  starts, the pipeline when it finishes. Here the Video processor writes it once, when the video
+  can be played, from the title and description the upload job carries, and indexes it at the
+  same time. The Upload service keeps no database: the multipart upload is the upload's state, and
+  resuming asks storage which parts arrived.
+- **One Video processor with modules**, not ByteByteGo's DAG of task workers and separate
+  completion queue and handler: how the work is split inside the worker is the developer's.
+- **Views are summed before they are written**, so a popular video's count is not written on
+  every view (the reason the crash course reaches for a wide-column store).
+- **Thumbnails are stored once**, at full size, beside the segments, and the Video CDN resizes
+  them on request (the CDN's Image resizing, added for the marketplace study).
+- **Cloudflare R2 behind the Cloudflare CDN.** R2 charges no egress, and ByteByteGo names CDN
+  traffic the largest cost. Cloudflare's terms want video on its CDN served through a paid
+  product such as its developer platform, of which R2 is part. Amazon S3 and CloudFront are the
+  other choice in the same fields.
+- **MySQL with a partition key** for the metadata (Grokking, the crash course; YouTube built
+  Vitess to shard its MySQL).
+- **No line to Identity**: the Upload service checks Identity's signed token itself.
+- **Left out** for the developer to add: editing a video after upload, custom thumbnails, a
+  metadata cache (the database's replicas serve reads) and a gateway (it would hide which
+  services a viewer and a creator reach).
+
+**Where YouTube differs.** YouTube is far larger (its own pipeline stages, recommendations, ads)
+and grew from one MySQL database to replicas, then to shards behind Vitess, which it built.
+
+**Nothing was added to the canvas for this study.** Every tile, setting and link uses existing
+options, including the user's upload entry into object storage (the link table already allows
+it), the CDN's Image resizing and the queue's work-queue and topic modes. Three entries per lane
+are within the cap of four.
+
+The study stores no layout. Its blueprint has six entries, six services, eight resources, no
+externals, fourteen connections (each link into a store marked `write` or `read`) and all
+sixteen components, with nothing omitted and no findings.
+
 ## Limits
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
@@ -463,7 +585,10 @@ components, with nothing omitted and no findings.
   and the first tiles can leave the view; Fit brings everything back.
 - Where two services fork to the same tiles, their lines share one bus (TinyURL: the Redirect
   service and the Shorten service both reach the URL database; the marketplace: the Image CDN and
-  the Shop service reach Product images, and the Shop service and Payments the Catalog database). Selecting a tile colours its own lines,
+  the Shop service reach Product images, and the Shop service and Payments the Catalog database;
+  YouTube: every store sits in the last column, so the lines into all five stores share one
+  vertical bus, and the Video CDN's line runs with the Upload service's before it). Selecting a
+  tile colours its own lines,
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
   remove a particular one, click its row in the tile's Connections list.

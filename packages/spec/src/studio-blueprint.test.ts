@@ -12,6 +12,7 @@ import { validateDesign } from "./validate.ts";
 
 const tinyurl = () => studioArchitectureExample("studio-tinyurl").design;
 const marketplace = () => studioArchitectureExample("studio-marketplace").design;
+const youtube = () => studioArchitectureExample("studio-youtube").design;
 
 describe("designBlueprint", () => {
   it("exports TinyURL as a schema-valid, deterministic blueprint", () => {
@@ -129,6 +130,69 @@ describe("designBlueprint", () => {
     expect(blueprint.services.find((s) => s.id === "payments")?.settings).toMatchObject({
       kind: "billing",
       provider: "stripe",
+    });
+  });
+
+  it("exports the YouTube study with no findings and one writer per store", () => {
+    const design = youtube();
+    expect(validateDesign(design)).toEqual([]);
+    const blueprint = designBlueprint(design, "YouTube");
+    expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
+    expect(blueprint).toMatchObject({ blueprint: 2, findings: [], externals: [], omitted: [] });
+    expect(blueprint.services.map((s) => [s.id, s.kind, s.components.length])).toEqual([
+      ["identity", "identity", 0],
+      ["processor", "worker", 6],
+      ["search", "service", 1],
+      ["upload", "service", 3],
+      ["view-counter", "worker", 3],
+      ["watch", "service", 3],
+    ]);
+    expect(blueprint.resources.map((r) => [r.id, r.kind])).toEqual([
+      ["encoded", "object-store"],
+      ["metadata-db", "database"],
+      ["originals", "object-store"],
+      ["search-index", "search"],
+      ["upload-queue", "queue"],
+      ["video-cdn", "cdn"],
+      ["view-counts", "database"],
+      ["view-events", "queue"],
+    ]);
+    // The user uploads the parts straight into object storage (an entry), with the URLs the
+    // Upload service signs.
+    expect(blueprint.entries).toEqual([
+      { lane: "download", element: "search" },
+      { lane: "download", element: "video-cdn" },
+      { lane: "download", element: "watch" },
+      { lane: "upload", element: "identity" },
+      { lane: "upload", element: "originals" },
+      { lane: "upload", element: "upload" },
+    ]);
+    expect(blueprint.componentLinks).toHaveLength(23);
+    // Each store's owner is its only writer; queues keep publish and consume.
+    expect(
+      Object.fromEntries(blueprint.connections.map((c) => [c.id, c.access ?? c.channelUse])),
+    ).toEqual({
+      "cdn-encoded": "read",
+      "counter-write": "write",
+      "jobs-processor": "consume",
+      "processor-index-write": "write",
+      "processor-metadata": "write",
+      "processor-read": "read",
+      "processor-write": "write",
+      "search-read": "read",
+      "upload-originals": "write",
+      "upload-publish": "publish",
+      "views-counter": "consume",
+      "watch-counts-read": "read",
+      "watch-metadata": "read",
+      "watch-views-publish": "publish",
+    });
+    // The CDN serves the encoded videos and resizes thumbnails on request.
+    expect(blueprint.resources.find((r) => r.id === "video-cdn")?.settings).toEqual({
+      kind: "cdn",
+      provider: "cloudflare",
+      origin: "encoded",
+      imageResizing: "on-request",
     });
   });
 

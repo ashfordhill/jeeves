@@ -44,8 +44,8 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
 
 The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
-modules, are in `studio-modules.ts`). The studies, TinyURL v3 (the default) and the marketplace,
-are built in lanes from published designs (`studio-examples/`).
+modules, are in `studio-modules.ts`). The studies, TinyURL v3 (the default), the marketplace and
+YouTube, are built in lanes from published designs (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
 reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported. `studio-blueprint.ts`
@@ -157,7 +157,7 @@ The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
 lists what was left for later. Code generation will be
 a separate service that reads the blueprint.
 
-The [design polish units](docs/plans/design-polish/units.md) DP01–DP08 are done:
+The [design polish units](docs/plans/design-polish/units.md) DP01–DP09 are done:
 
 - lines aligned on the grid
 - no both-lane entries
@@ -167,5 +167,6 @@ The [design polish units](docs/plans/design-polish/units.md) DP01–DP08 are don
 - TinyURL v3 from published designs, with one writer per store
 - an acceptance walkthrough and docs sweep
 - a marketplace study, with a CDN image-resizing setting and four entries per lane
+- a YouTube study, built from the existing options
 
-Next are DP09 (a YouTube study) and DP10 (a review of DP01–DP09).
+Next is DP10 (a review of DP01–DP09).

@@ -2337,3 +2337,117 @@ Notes for the next units:
 - DP09: the cap is now 4 entries per lane; the CDN has `imageResizing` (thumbnails could use it;
   video segments don't need it); `createStudy(page, name, study)` makes a study project in E2E.
   Scoring entry orders with real ELK before fixing a study's entry order paid off here.
+
+## 2026-11-05 — DP09: YouTube study (complete)
+
+What changed:
+
+- **YouTube study** (`studio-youtube@1.0.0`, `studio-examples/youtube.ts`), offered by New project
+  after TinyURL and the marketplace. A video-sharing site with YouTube's core flows as clean
+  microservices: 14 tiles, 20 links (6 entries: download Search API, Watch API, Video CDN; upload
+  Upload service, Original videos, Identity; 14 connections, 9 dashed), 16 modules. Every service
+  TypeScript on Docker. Validates with no findings; blueprint 2 has 6 services, 8 resources, no
+  externals, 14 connections, 23 component links, nothing omitted.
+  ```text
+  DOWNLOAD  User ⇣ Search API → Search index                         (reads)
+            User ⇣ Watch API → View counts, Metadata database        (reads)
+                             ⇢ View events ⇢ View counter → View counts
+            User ⇣ Video CDN → Encoded videos                        (reads; resizes thumbnails)
+  UPLOAD    User ⇡ Upload service → Original videos                  (starts, signs, completes)
+                                  ⇢ Upload jobs ⇢ Video processor → Original videos (reads),
+                                    Encoded videos, Metadata database, Search index (writes)
+            User ⇡ Original videos                                   (the parts, signed URLs)
+            User ⇡ Identity
+  ```
+- **Research** (cited in the factory's doc comment and the guide): ByteByteGo *Design YouTube*,
+  HelloInterview *YouTube*, DesignGurus' Grokking *Designing YouTube or Netflix* and its crash
+  course *Design YouTube*, Vitess history, AWS's multipart-upload docs and its presigned
+  multipart blog, Cloudflare R2 pricing and the CDN's service terms. Educative's YouTube lesson
+  shows only its intro and AlgoMaster's is paywalled, so neither is cited. ByteByteGo and
+  HelloInterview leave search and view counts out; the crash course covers both (a search service
+  over Elasticsearch filled when a video becomes playable; view counts in their own store).
+- **Design decisions** (each in the guide): one writer per store, so the Video processor writes
+  a video's metadata once, when playable, from the title and description the upload job carries,
+  and indexes it (the sources write metadata from both the API and the pipeline; HelloInterview's
+  processing service writes it back, which this follows); the Upload service keeps no database
+  (the multipart upload is the state); one Video processor with modules instead of ByteByteGo's
+  DAG workers and completion queue and handler; views summed per video and added in batches;
+  thumbnails stored once and resized on request by the Video CDN; Cloudflare R2 behind the
+  Cloudflare CDN (no egress fees; the CDN terms want video through the developer platform);
+  MySQL with `video_id` as partition key (Grokking, the crash course, Vitess); no line to
+  Identity; left out: comments, likes, recommendations, subscriptions, monetisation, live
+  streaming, editing after upload, custom thumbnails, a metadata cache and a gateway.
+- **How the layout was chosen.** A first design followed ByteByteGo closely (a Ready videos
+  completion queue and a Catalog writer worker after the transcoder, 16 tiles): with real ELK
+  plus `alignLayout` it drew 1,376px wide, with the Watch API's line looping round the far right
+  to the Metadata database and every line into storage sharing one bus. Folding the catalog write
+  into the Video processor (HelloInterview's shape) took it to 992px. I then scored the 36 entry
+  orders that keep download above upload, crossed with every order of the Video processor's,
+  Watch API's and Upload service's links (10,368 layouts; a scratch script, not committed):
+  crossings, stretches shared by unrelated lines, height. The shipped order draws no crossing and
+  is the shortest (992×800); six orders also avoid its one shared stretch (the Video CDN's and
+  the Upload service's lines run together into the store column) but are 1,024px tall and put
+  two pairs of unrelated lines 7px apart, which reads the same at fit. Dropping the user's entry
+  into Original videos made it worse (2–7 crossings), so it stays.
+- **Extension ladder.** Nothing added (steps 2–5 all unused). Existing options covered it: the
+  user → object-store entry (the link table already allows it) for presigned part uploads, the
+  CDN's Image resizing (DP08) for thumbnails, work-queue and topic modes, MySQL with partition key
+  and read replicas, the auth-guard module for Identity's token. Three entries per lane, within
+  the cap of four.
+
+Tests (139; +1): the YouTube study validates with no findings, its blueprint's services, kinds,
+module counts, resources, entries, component-link count, every connection's access or channel
+use, and the CDN's settings (`studio-blueprint.test.ts`). E2E (16, +1, `canvas.spec.ts`): New
+project → Study YouTube → 15 tiles, 20 lines, 9 dashed, 6 chips; Original videos "Writes (owner)
+Upload service · Reads Video processor"; Metadata database "Writes (owner) Video processor ·
+Reads Watch API"; deletes its project in `finally`.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 195 files; type checks; 22 files / 139 tests).
+- `pnpm test:e2e`: 16 passed (three runs; the first failed on my own wrong tile count, 17 for 15,
+  which I fixed in the test).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse (the native Study select set with `selectOption`), my API on
+4312 (scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, both stopped by PID
+afterwards. Two YouTube projects created and deleted (both 204); `jeeves_e2e` again holds just
+"TinyURL · studio study". No console errors or warnings.
+
+- The chooser lists TinyURL, Marketplace and YouTube; choosing YouTube renames the project and
+  shows its description.
+- Renders as designed, no crossings; readable at fit. Fit zooms: 1440×900 0.65 (closed, chat or
+  inspector) / 0.52 (both); 1280×800 0.57 / 0.42.
+- Every tile's inspector: services TypeScript (TypeScript|Go), Docker, public; Identity OpenID
+  Connect; workers on queue lag (Video processor concurrency 1, up to 50 replicas); Video CDN
+  Cloudflare, Image resizing On request; Encoded videos R2 public, Original videos R2 private;
+  Search index OpenSearch; Metadata database and View counts MySQL, partition key `video_id`,
+  read replicas 3 and 2; View events a topic (12 partitions, retention 86400), Upload jobs a work
+  queue (604800). Store lists: Search index, Metadata database and Encoded videos "Video processor
+  · …", View counts "View counter · Watch API", Original videos "Upload service · Video
+  processor". Modules as listed in the guide. The Video processor's Connections list says Reads
+  for Original videos and Writes (owner) for the other three. Dark mode reads clearly.
+
+Delivery: the owner's API on 4310 was not running, so I started one on 4313 against the `jeeves`
+database (scratch `JEEVES_HOME`, no model) and a web on 4303, created the study through New
+project by mouse, reloaded it (15 tiles, 20 lines; blueprint 2, revision 1, no findings) and
+stopped both by PID. The project: **`7eef33c4-b6a5-4e80-8bd7-72cbf7e78b1b`, "YouTube · studio
+study"** (revision 1). The owner's other projects (`4222440b-…` Marketplace revision 1,
+`41bbd268-…` TinyURL revision 39) are unchanged. I did not touch 4300 or 4310.
+
+Docs: studio guide (Projects, the YouTube fit zooms, a new "The YouTube study" section with flows,
+sources, what they agree on, lanes, owners, tiles and modules, decisions, where YouTube differs
+and "nothing added"; Limits: YouTube's store-column bus), CATALOG (three studies, YouTube),
+studio settings (Image resizing also for thumbnails), PLAN (studies; DP01–DP09 done; next DP10),
+README, the plan's Progress line (DP01–DP09 done).
+
+Notes for the next unit (DP10):
+
+- Rough: every store sits in the last column, so all lines into the five stores share one
+  vertical bus, and the Video CDN's line runs with the Upload service's for 384px before it.
+  Selecting a tile colours its lines; the Connections list is exact. A layout question for the
+  owner, as DP08's buses were.
+- The Video processor is at the 4-link cap, so its right `+` is hidden; adding (say) a
+  notifications step after it means another worker behind a queue, or dropping a link.
+- The guide's claim that download entries draw above upload entries held for all 36 YouTube
+  orders I scored with download entries first (DP08 found it doesn't always hold).

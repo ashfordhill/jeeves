@@ -2,11 +2,13 @@
 
 import { MARKETPLACE_STUDIO_EXAMPLE, marketplaceStudioExample } from "./marketplace.ts";
 import { TINYURL_STUDIO_EXAMPLE, tinyurlStudioExample } from "./tinyurl.ts";
+import { YOUTUBE_STUDIO_EXAMPLE, youtubeStudioExample } from "./youtube.ts";
 
 /** The studies New project offers, TinyURL first (the default). Earlier studies live in git history. */
 export const studioArchitectureExamples = Object.freeze([
   TINYURL_STUDIO_EXAMPLE,
   MARKETPLACE_STUDIO_EXAMPLE,
+  YOUTUBE_STUDIO_EXAMPLE,
 ]);
 
 export function studioArchitectureExample(id: string) {
@@ -15,6 +17,8 @@ export function studioArchitectureExample(id: string) {
       return tinyurlStudioExample();
     case MARKETPLACE_STUDIO_EXAMPLE.id:
       return marketplaceStudioExample();
+    case YOUTUBE_STUDIO_EXAMPLE.id:
+      return youtubeStudioExample();
     default:
       throw new Error(`Unknown studio example ${id}.`);
   }

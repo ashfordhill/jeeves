@@ -139,7 +139,7 @@ means the CDN resizes images from its origin per request (the size in the URL) a
 size, so the origin keeps only originals (Cloudflare's image transformations; AWS's Dynamic Image
 Transformation in front of CloudFront). It names no sizes or formats; those belong to the pages
 that ask for them. The [marketplace study](studio.md#the-marketplace-study) uses it for product
-photos.
+photos, the [YouTube study](studio.md#the-youtube-study) for video thumbnails.
 
 A new queue is owned by the application it is added next to (its links are always asynchronous);
 one with no application next to it is refused. Database and cache providers depend on the engine:

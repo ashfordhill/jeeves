@@ -231,7 +231,7 @@ The design chat uses one provider and model chosen in Settings
 
 ## Studies
 
-New project offers two studies, described in the [studio guide](docs/studio.md).
+New project offers three studies, described in the [studio guide](docs/studio.md).
 
 **TinyURL** (`studio-tinyurl@3.0.0`, the default) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
@@ -252,3 +252,14 @@ Connect, and publishes paid orders that a worker records for the Orders service;
 keeps carts in Redis; Identity signs everyone in. Seventeen tiles, 21 links (seven entries, four
 of them upload, and fourteen connections) and sixteen components
 ([guide](docs/studio.md#the-marketplace-study)).
+
+**YouTube** (`studio-youtube@1.0.0`) is a video-sharing site with YouTube's core functionality as
+clean microservices (ByteByteGo, HelloInterview, DesignGurus' Grokking and crash course, AWS's
+multipart uploads, Cloudflare R2). Creators upload straight into object storage in resumable parts
+with URLs the Upload service signs (a user entry into Original videos); an upload job queue feeds
+a Video processor (a worker) that encodes streamable segments, playlists and thumbnails, records
+the playable video in a MySQL metadata database and indexes it; a Video CDN serves segments and
+resizes thumbnails on request; a Watch API reads a video's details and view count and publishes
+views, which a View counter adds in batches; a Search API reads the index; Identity signs everyone
+in. Fourteen tiles, 20 links (six entries and fourteen connections) and sixteen components,
+built from the existing options ([guide](docs/studio.md#the-youtube-study)).

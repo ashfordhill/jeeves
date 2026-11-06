@@ -16,7 +16,7 @@ looking output that only looks right at first glance. AI is better suited to wel
 to medium tasks with a clearly defined outcome.
 
 - [The studio](docs/studio.md): the lane canvas, layout, creating and removing tiles, the lane
-  rules, the inspector, history, chat, the TinyURL and marketplace studies and the current limits.
+  rules, the inspector, history, chat, the TinyURL, marketplace and YouTube studies and the current limits.
 - [Studio settings](docs/studio-settings.md): every configurable field and its values.
 - [Studio blueprint](docs/studio-blueprint.md): the code-generation boundary.
 - [Catalog](CATALOG.md): tile kinds and types, the lane link table, components, providers.
