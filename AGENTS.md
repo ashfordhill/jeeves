@@ -16,6 +16,14 @@ add it here unless the owner asks.
 - When the checks below pass and the handoff entry is written, create one local commit for the
   unit. Local commits are authorized; do not ask. Stage only the unit's changes and preserve
   unrelated work (for example the untracked `.jeeves-feedback/`). Push only when asked.
+- **Owner feedback is a paper trail.** When the owner sends feedback with images (screenshots,
+  marked-up diagrams, sketches), save each image in `docs/human-feedback/` and add an entry to
+  [HUMAN_FEEDBACK](docs/HUMAN_FEEDBACK.md): the date, the images, the owner's points, the
+  questions and answers, and the decision. A unit that resolves an entry appends what changed,
+  the commits and what is still open to that entry's Resolution. Never rewrite earlier sections.
+- **Design lessons go in the [design playbook](docs/design-playbook.md)** (once it exists): when
+  a study, research or an owner review shows how a kind of system should be designed, or what
+  looks wrong on the canvas, add it there. Read it before designing a study.
 - Keep docs current with the code: [studio guide](docs/studio.md),
   [studio settings](docs/studio-settings.md), [blueprint](docs/studio-blueprint.md) and
   [CATALOG](CATALOG.md) when kinds, lane rules, settings, components or providers change.
