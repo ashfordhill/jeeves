@@ -33,7 +33,8 @@ Before handing off:
 
 Unit tests must not need Docker, Postgres or network access (the server uses PGlite). E2E tests
 live in `apps/web/e2e/`, use the `jeeves_e2e` database and a scripted chat model, and delete the
-projects they create. Never touch the owner's projects in the `jeeves` database or `~/.jeeves/`.
+projects they create. Agents may create, change and delete projects in the owner's `jeeves`
+database when their work calls for it.
 
 ## Conventions
 

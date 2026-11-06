@@ -1,7 +1,7 @@
 # Design polish units
 
-**Status: approved 2026-11-05, not started.** DP01–DP07 are approved as written. DP08 and DP09
-(the Etsy and YouTube studies) wait on the owner's answers listed under them.
+**Status: approved 2026-11-05.** All units are approved, including DP08 (the marketplace study,
+which replaces Etsy) and DP09 (the YouTube study), after the owner's answers of 2026-11-05.
 
 The owner reviewed the lane canvas after PL02 (2026-11-05) and decided the following:
 
@@ -359,6 +359,17 @@ The owner asked for a design based on the published interview-prep designs. The 
   analytics API).
 - **Owner decisions:** ID generation is a module-level detail. The URL safety check and the expiry
   cleanup job are left out; the developer can add them later.
+- **No CDN tile** (owner, 2026-11-05, after the question below was researched). What gets cached
+  is the lookup, not the redirect response. All four sources put a cache in front of the database.
+  Caching the 302 at a CDN or in the browser stops clicks reaching the service. ByteByteGo's 301
+  vs 302 discussion and HelloInterview make that trade explicitly, and Grokking sends 302 with
+  `Cache-Control: no-store` so every click counts. Dub, an open-source shortener (AGPL), shows
+  how this is done in practice: its redirect runs as code on every request (Next.js Middleware),
+  reads link data from Redis, answers 302, and records the click after responding
+  (`ev.waitUntil(recordClick(...))` into Tinybird/ClickHouse). Only its static pages get CDN
+  cache headers (`apps/web/lib/middleware/link.ts`). So the user enters at the Redirect service
+  directly. Running the redirect near users is the existing Execution → Managed → Cloudflare
+  Workers setting, not a CDN tile.
 
 Sources:
 
@@ -393,18 +404,17 @@ Sources:
 
    ```
    DOWNLOAD (reads)
-     User ⇣ CDN → Redirect service → URL cache
-                                   → URL database      (reads)
-                                   ⇢ Click events ⇢ Analytics worker → Analytics store
-     User ⇣ Stats API → Analytics store                (reads)
+     User ⇣ Redirect service → URL cache
+                             → URL database      (reads on a cache miss)
+                             ⇢ Click events ⇢ Analytics worker → Analytics store
+     User ⇣ Stats API → Analytics store          (reads)
 
    UPLOAD (writes)
-     User ⇡ Shorten service → URL database             (the only writer)
+     User ⇡ Shorten service → URL database       (the only writer)
    ```
 
    - **Tiles:**
-     - CDN (`cdn`, Cloudflare)
-     - Redirect service (`redirect`, Go)
+     - Redirect service (`redirect`, Go, public, Docker)
      - URL cache (`cache`, Redis-compatible, LRU)
      - URL database (`database`, PostgreSQL, read replicas)
      - Click events (`queue`, topic)
@@ -416,18 +426,16 @@ Sources:
      - URL database → Shorten service
      - URL cache and Click events → Redirect service
      - Analytics store → Analytics worker
-   - **Totals:** 9 tiles; 11 links (3 entries and 8 connections).
+   - **Totals:** 8 tiles; 10 links (3 entries and 7 connections).
    - **Modules** (inspector only):
-     - Redirect: cache reader, link reader, redirect responder (302), click publisher
+     - Redirect: cache reader (cache-aside), link reader, redirect responder (302, no edge
+       caching), click publisher
      - Analytics worker: click consumer, aggregation, aggregate writer
      - Stats API: stats reader
      - Shorten service: link writer
    - **Removed:** the URL reputation API, the rate limiter, the ID generator and the reputation
      check.
-   - **The CDN:** depends on the owner's answer to DP06's question below. Until then, keep the CDN
-     with redirect caching off and the responder sending `Cache-Control: no-store`, because every
-     click must reach analytics.
-   - **Sources:** cite them in the study's doc comment.
+   - **Sources:** cite them, Dub included, in the study's doc comment.
    - **Where it appears:** the fresh-install default and **Architecture study** use v3. The owner's
      existing projects are not touched.
 3. Regenerate the blueprint example in docs/studio-blueprint.md.
@@ -440,11 +448,9 @@ Sources:
 
 Update every E2E spec and the chat fixture that names TinyURL tiles or counts.
 **Browser:** v3 renders with straight lines (DP01). Selecting each store shows who writes.
-**Docs:** the studio guide's TinyURL section, CATALOG Study, the blueprint doc.
+**Docs:** the studio guide's TinyURL section (including the paragraph on why there is no CDN),
+CATALOG Study, the blueprint doc.
 **Commit:** `DP06: TinyURL v3 from published designs; one writer per store`
-
-Open question for the owner (asked 2026-11-05): with click analytics in scope, the CDN can't cache
-redirects. Should it stay at the edge with caching off, or be dropped?
 
 ## DP07 — Acceptance and documentation
 
@@ -465,36 +471,112 @@ redirects. Should it stay at the edge with caching off, or be dropped?
 
 **Commit:** `DP07: design polish acceptance and documentation`
 
-## DP08 — Etsy study (waits on owner answers)
+## Rules for the studies (DP08, DP09)
 
-## DP09 — YouTube study (waits on owner answers)
+The owner wants more studies, made like TinyURL. Their purpose is to test Jeeves's design options
+against real-world systems instead of deciding in a vacuum. Owner answers of 2026-11-05:
 
-The owner wants two more studies, made like TinyURL: research each system's architecture on the
-web, build it on the canvas, and make it available for the owner to review as a project. If the
-design can't be expressed, the agent adds options to the canvas, within the lane model and the
-template goal above, so that the proper design can continue.
+- **Same functionality, clean microservices.** A study doesn't copy the real company's
+  architecture, which carries legacy code and business history. It designs the same core
+  functionality as clean microservices, using the published reference designs: interview-prep
+  write-ups, open-source reference apps and company engineering blogs. Note where the real company
+  differs. No PHP. Every generated service uses its kind's two languages (DP05).
+- **Core flows only.** What the sources agree a system must do. Extra and "fun" features are left
+  out. One project per system; split into two or three only if one clean diagram can't hold the
+  core, and say why in the handoff.
+- **When the design doesn't fit, extend the canvas.** Prefer, in this order:
+  1. existing options
+  2. a new kind or preset within an existing tile type, with its two languages, its provider and
+     the template it implies
+  3. a new setting (schema, form, validation and blueprint together, per AGENTS.md)
+  4. raising a cap in `laneLimits`
+  5. a new tile type or a lane-rule change: stop and ask the owner first
 
-Questions put to the owner on 2026-11-05, to be answered before DP08 starts:
+  Record each addition in the handoff: the design need, the template it implies (a ready-made
+  backend to deploy and configure, or a generated skeleton) and why the existing options didn't
+  fit. Keep the template goal and the readability goal in "Why this matters" in view.
+- **Delivery.** Add each study to **New project**, which then offers TinyURL and the new ones.
+  Also create one project of each in the owner's `jeeves` database so the owner can review it.
+  The owner allows this; AGENTS.md now says so. Use the app's normal create path. If the owner's
+  API on 4310 is running, use it; otherwise start the API briefly against the `jeeves` database
+  and stop it afterwards.
+- **Sources.** Cite them in the study's doc comment and the studio guide. Research first, then
+  design. Every tile must trace to a source or to a stated design decision.
 
-1. Real company or reference design? Etsy's own engineering talks describe a largely PHP monolith
-   on sharded MySQL, which would be one big tile. Proposal: follow the published reference design
-   for that kind of system, cross-checked against the company's engineering blog, and note where
-   the real company differs.
-2. How the studies reach the owner. AGENTS.md forbids agents touching the owner's `jeeves`
-   database. Proposal: **New project** offers each study (TinyURL, Etsy, YouTube), so the owner
-   creates each with one click.
-3. Scope. Each system has several big features. Proposal: one project per system, covering the
-   core flows the sources agree on. Split into two or three projects only if a clean diagram can't
-   hold them, and say why.
-4. What the agent may add without asking. Proposed ladder, in order of preference:
-   1. existing options
-   2. a new kind or preset within an existing tile type, with its default and alternative
-      language, its provider and the template it implies
-   3. a new setting (schema, form, validation and blueprint together)
-   4. raising a cap in `laneLimits`
-   5. a new tile type or lane-rule change, only after asking the owner
+## DP08 — Marketplace study
 
-   Each addition is recorded in the handoff with the design need, the template it implies and why
-   the existing options didn't fit.
+The owner first picked Etsy, expecting a clean microservice architecture. Etsy's own engineering
+talks describe a largely PHP monolith on sharded MySQL (High Scalability; The Next Platform,
+2015). So this study is a **multi-seller marketplace** with Etsy's core functionality, designed as
+clean microservices. The owner also wants it as a reference for a dropshipping site they are
+building (`~/github/dropshipping`, Cloudflare Workers with Drizzle). That site is a storefront
+where sellers open a shop and upload products, and buyers browse a grid of large thumbnails with
+prices and buy.
 
-The units are written out once the owner answers.
+**Core flows:**
+
+- A seller opens a shop and lists products with images.
+- A buyer browses and searches listings (thumbnails, prices) and opens a product.
+- A buyer puts items in a cart and checks out.
+- Payment goes through a provider, sellers get paid, and orders are recorded.
+- Buyers and sellers see their orders.
+
+**Research:**
+
+- interview-prep "design an e-commerce marketplace / Amazon / Etsy" write-ups
+- Google's Online Boutique microservices demo (its service split: catalog, cart, checkout,
+  payment, shipping, email, recommendation; ignore its mixed languages)
+- marketplace payments with seller payouts (for example Stripe Connect)
+- serving product images (object storage, image resizing, a CDN in front)
+
+Questions to settle from the sources, not by guessing:
+
+- where search lives (a search index fed from the catalog)
+- how thumbnails are produced (on upload by a worker, or resized on request at the edge)
+- whether the cart is its own service with a cache-like store
+
+Expect to test:
+
+- object storage plus a CDN for images, where a CDN genuinely belongs
+- the Billing kind with Stripe for payments and payouts
+- a search index
+- an upload-triggered worker
+- one writer per store across catalog, orders and shops
+- identity for buyers and sellers
+
+**Tests:** the study validates with no findings; the blueprint counts. Unit tests for any option
+added.
+**Browser:** the study renders, both window sizes; every tile's inspector shows sensible presets.
+**Docs:** the studio guide (a section per study, beside TinyURL), CATALOG Study, and any doc an
+added option touches.
+**Commit:** `DP08: marketplace study`
+
+## DP09 — YouTube study
+
+**Core flows:**
+
+- A creator uploads a video, and it is processed: stored, transcoded into streamable renditions,
+  thumbnailed.
+- A viewer watches a video, streamed through a CDN at an adaptive bitrate.
+- A viewer finds videos (search) and sees a video's details and view count.
+
+Comments, recommendations, monetisation and live streaming are out unless every source treats
+them as core.
+
+**Research:**
+
+- ByteByteGo / Alex Xu, *Design YouTube*
+- HelloInterview and DesignGurus equivalents
+- YouTube or Google engineering material where it describes the same flows (for example Vitess
+  came from YouTube)
+
+Expect to test:
+
+- large uploads (object storage, resumable or presigned uploads)
+- a processing pipeline of queues and workers
+- a CDN serving segments from storage
+- metadata and view counts with one writer per store
+- a search index
+
+**Tests, Browser, Docs** as DP08.
+**Commit:** `DP09: YouTube study`

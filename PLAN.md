@@ -157,4 +157,4 @@ Next are the [design polish units](docs/plans/design-polish/units.md), DP01–DP
 - `+` creates and a link tool attaches
 - a labelled Type list with preconfigured kinds and two languages each
 - TinyURL v3 from published designs
-- Etsy and YouTube studies
+- marketplace and YouTube studies
