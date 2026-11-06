@@ -3372,3 +3372,152 @@ Rough edges and questions (not fixed):
   follow-up for the owner, not changed here.
 - SD04: the owner's YouTube copy (`7ec5980c…`) is still 1.2; the walkthrough should include the
   Transfer choice and the Uploads Type button.
+
+## 2026-11-06 — SD03: stores beside their users (complete)
+
+What changed:
+
+- **Board** (generic; `packages/board` still imports no Jeeves code). `endColumns(input, column)`
+  in `layout/bands.ts`: an end tile (lines in, none out) that several tiles use takes the first
+  column, from `max(earliest user + 1, last user − 1)` to `last user + 1`, where its band has fewer
+  tiles than in its tallest column (else the one with the fewest); end tiles with one possible
+  column are counted first. Every other tile keeps its longest-path column, so a store with one
+  user sits right after it. New `layout/returns.ts`: `comesBack(line, column)`, `widenAt` and
+  `routeReturns`: each line whose target is in its source's column or before it is routed after
+  ELK as a U (east port, right 32px or more, a free row at least 16px from the tiles it passes, the
+  gap before the target, west port). Slots on the grid; no shared run except the source's own lines
+  as it leaves and lines into the target on the last stretch (another band's only in the last
+  32px); no touch elsewhere; fewest crossings, then shortest, counting what widening a gap (a grid
+  step, at most two per side) adds; a non-strict fallback so every line gets a route. `layoutBands`
+  uses `endColumns`, keeps lines that come back out of the band layouts and the ELK routing pass,
+  and routes them after `meetAtPorts`. `index.ts` exports `returns.ts`.
+- **Studies** (orders re-chosen, versions bumped as LA03 did; doc comments say how):
+  TinyURL 3.2.0 (the Redirect service links to Click events first), marketplace 1.3.0 (Payments
+  links to Order events before its Payments database), YouTube 2.1.0 (the Upload service links to
+  Upload jobs before Original videos). Entries unchanged.
+
+Why this approach, by measurement (real ELK through the engine, scratch scripts not committed;
+lengths are Manhattan lengths of the routes, SD02's metric). Baselines, measured on HEAD: LA03 for
+TinyURL and the marketplace (their layout code and orders are unchanged since 6419be9) and SD02 for
+YouTube, matching the coordinator's numbers.
+
+| Variant | TinyURL total / longest | Marketplace | YouTube |
+| --- | --- | --- | --- |
+| Before (HEAD) | 2,848 / 608, 0 crossings | 7,712 / 1,024, 1 | 9,120 / 1,472, 1 |
+| ELK draws the lines that come back (interactive cycle breaking), right after the earliest user | 3,168 / 928 | 9,312 / 1,376 | 12,384 / 1,792 (staircases) |
+| The plan's literal rule (right after the earliest user) with the U router | 2,912 / 768 | 8,800 / 1,312 | 10,656 / 1,536 |
+| Final rule, current orders | 2,848 / 544 | 7,072 / 896 | 9,184 / 1,056 |
+| Final rule, re-chosen orders (shipped) | 2,752 / 416, 0 | 6,912 / 896, 1 | 8,864 / 1,056, 1 |
+
+- ELK with bend points does follow a U, but widened the gap before the stores to 192px and ended
+  some lines with 160px runs into the port, so the U's are routed by our own step.
+- **The plan's literal rule can't meet its own acceptance.** A line that comes back one column is
+  at least 448px across (32 out, back past both columns, 32 in) plus 160px up or down (adjacent
+  rows), so at least 608px, exactly TinyURL's LA03 longest: TinyURL can only tie. In YouTube the
+  Completion handler and the Search indexer came back three columns (1,472px and 1,536px) and the
+  three shared stores stacked in one column. The two limits come from an exhaustive search (every
+  multi-user store's column from its earliest user's next to its last user's next, all LA03/DP01
+  checks): with Transcoded videos and Original videos at column 3 (the acceptance), YouTube's best
+  needs the Metadata database at 5 and the Search index at 6, one column before or at their
+  writers and never stacked; TinyURL's store right after the Stats API never beats 608px.
+- Orders: TinyURL's 12 (six without a crossing; the Click events link first is shortest), the
+  marketplace's 5,184 (all keep the rules, every one crosses at least once), YouTube's 6,912 (half
+  leave a jog under 32px; every other one crosses at least once). Each study keeps LA03's crossing
+  count: TinyURL 0, marketplace 1 (now the Storefront API's read passing the Orders service's),
+  YouTube 1 (the Watch API's read of the Metadata database passing the Search API's).
+
+Measurements, before → after:
+
+| Study | Board | Total | Longest | Crossings | Bends | Fit 1440×900 (closed / chat / inspector / both) | Fit 1280×800 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TinyURL | 1,184×800 → 1,024×832 | 2,848 → 2,752 | 608 Stats API → 416 Analytics worker | 0 → 0 | 20 → 20 | 0.70/0.65/0.64/0.46 → 0.67/0.67/0.67/0.56 | 0.62/0.56/0.55/0.37 → 0.59/0.59/0.59/0.45 |
+| Marketplace | 1,248×1,632 → 1,280×1,472 | 7,712 → 6,912 | 1,024 → 896 Orders service | 1 → 1 | 34 → 36 | 0.33 → 0.37 | 0.29 → 0.32 |
+| YouTube | 1,632×1,440 → 1,504×1,376 | 9,120 → 8,864 | 1,472 Watch API → 1,056 Search API | 1 → 1 | 44 → 54 | 0.38/0.38/0.38/0.33 → 0.39/0.39/0.39/0.38 | 0.33/0.33/0.33/0.27 → 0.35/0.35/0.35/0.30 |
+
+YouTube's lines: Video CDN → Transcoded videos 736 → 256px (one column gap); Upload service →
+Original videos 576 → 192px (stays in the gap before them); Watch API → Metadata database 1,472 →
+1,024px; Search API → Search index 1,408 → 1,056px. The boards got smaller except TinyURL's height
+(+32px; it is 160px narrower), so the fits are larger except TinyURL with both rails closed (0.70 →
+0.67). Layout time, warm, in Node: 21 / 25 / 26ms (U routing 0.5 / 0.3 / 4ms, after skipping
+widenings that can't win; 25ms for YouTube before that, same drawings).
+
+Tests (170; +6 in board and web, and expectations of TinyURL's lane order):
+
+- Board (`layout.test.ts`, +2): `endColumns` (one user right after it; two users right after the
+  earliest; a crowded column moves the store to the first that doesn't grow the band; a user
+  three columns later keeps it one column before); a fixture whose worker's lines to a store of
+  its own band and a shared store come back: `expectClean`, no cross-band shared run, `bandClashes`
+  0 and 0 crossings, each U's shape (32px out, a level run 16px or more from every tile it passes,
+  32px in), the two bands meeting only in the last 32px, and relayout identical.
+- Web (`laneLayout.test.ts`, +4): per study, a store with one user right after it and the total
+  and longest line shorter than LA03's (constants: 2,848/608, 7,712/1,024, 9,120/1,472); YouTube's
+  CDN line within one column gap, the Upload service's line staying in the gap before Original
+  videos (Upload jobs in the same column), and the Transcoder's two lines coming back. LA03's
+  per-study checks (bands, no cross-band shared runs, grid, no jog under 32px, no line through a
+  tile, crossings 0/1/1) pass unchanged. **One fixture changed:** the YouTube edit test now adds
+  its tile after the View counter instead of after View counts. A link out of a store can't be
+  made in Jeeves; under the new rule it turns View counts into an ordinary tile, which moves back
+  to its longest-path column. The assertions (relayout identical, nothing else moves, the new tile
+  takes its source's row) are the same.
+- Spec and server: the TinyURL lane order now lists Click events before the URL cache
+  (`studio-lanes.test.ts`, `studio-lane-commands.test.ts` ×3, `chat/tools.test.ts` ×3): the same
+  assertions on the new link order.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 206 files; type checks; 24 files / 170 tests).
+- `pnpm test:e2e`: 18 passed (three times; the last on the final tree).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse (the native Study select with `selectOption`), my API on 4312
+(scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, stopped by PID after each
+round. The before screenshot ran HEAD's layout and YouTube study (my versions copied aside in the
+scratchpad, HEAD's written in place, then restored; no stash). Thirteen projects created, each URL
+awaited, all deleted (204); `jeeves_e2e` again holds just "TinyURL · studio study". No console
+errors or warnings. I did not touch 4300, 4304, 4310 or the `jeeves` database.
+
+- The three studies render with no warning marks (21/25/12, 20/23/6, 11/12/3 tiles/lines/dashed)
+  and fit at the zooms above at both window sizes, in every rail state.
+- `docs/human-feedback/2026-11-06-youtube-sd03-before.png` and `-after.png` (1440×900, fitted).
+  After: the Upload service's fork is Upload jobs and Original videos side by side; Transcoded
+  videos sit right after the Video CDN; the Watch API's cache, View counts and View events right
+  after it. Zoomed with the wheel, the U's draw cleanly, dashed where they follow an async link.
+- Selecting the Transcoder colours its three lines, the U's included.
+- By mouse, `+` → Database: after the Transcoder (YouTube), the store lands right after it, and the
+  Transcoder, now a fork, is recentred with the upload chain (as any new fork does); after the
+  Stats API (TinyURL), right after it, the download band growing a row; after the Orders service
+  (marketplace) and the View counter (YouTube, final code), nothing else moves. Undo restored
+  every position exactly each time. Dark mode reads clearly.
+
+Docs: studio guide (Layout: the store rule, lines that come back, why the two limits, sizes and
+fits; the three studies' versions, lane diagrams and orders; Limits: fits, the remaining long
+lines, U routing's limits, what moves a shared store, a U joining a store's other lines), CATALOG
+(study versions; stores in the lane bands paragraph), PLAN (Layout, the board row, Next), the
+playbook (the fork and long-line smells, now describing YouTube 2.1), the plan's Progress (SD01–
+SD03), HUMAN_FEEDBACK's Resolution (an SD03 bullet and the two images).
+
+Notes for SD04:
+
+- **A deviation from the plan to confirm with the owner:** the plan says a store with several
+  users sits right after the earliest one unless lines are shorter elsewhere; the shipped rule
+  adds "no more than one column before its last user" and "where its band doesn't grow", because
+  the literal rule measured longer in every study (table above). YouTube's Metadata database and
+  Search index therefore sit one column before (or at) their writers, and the Watch API's and the
+  Search API's reads still cross the board (1,024px and 1,056px), the first past View events and
+  the View counter. That part of the owner's Watch API complaint is only partly resolved.
+- The walkthrough should click the U's (their X sits on their own stretch) and try an edit plus
+  Undo next to one (the Transcoder, the View counter).
+- The owner's YouTube copy (`7ec5980c…`) is still 1.2; a new copy from New project is 2.1.0.
+
+Rough edges (not fixed):
+
+- Between two bands there is one free row (32px), so when two lines come back across the same band
+  gap the second goes round: YouTube's Search indexer's write rises past the Completion handler and
+  over the Search index to come down into it (800px).
+- A store in its writer's own column (TinyURL's Analytics store, the marketplace's Search index)
+  gets a U that hooks round its corner.
+- U's add bends (YouTube 44 → 54, the marketplace 34 → 36) and are routed one at a time, greedily.
+  `meetAtPorts` doesn't see them (they come after it); the router keeps the cross-band rule itself.
+- A shared store's column depends on its band's tiles per column, so an edit that crowds a column
+  can move it; a store that gains a link out (not possible in Jeeves) goes back to its longest-path
+  column.

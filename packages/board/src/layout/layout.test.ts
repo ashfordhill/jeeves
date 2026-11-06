@@ -4,7 +4,7 @@
 import ELK from "elkjs/lib/elk.bundled.js";
 import { describe, expect, it, vi } from "vitest";
 import { alignLayout } from "./align.ts";
-import { BAND_OPTIONS, ROUTE_OPTIONS, usesBands } from "./bands.ts";
+import { BAND_OPTIONS, bandColumns, endColumns, ROUTE_OPTIONS, usesBands } from "./bands.ts";
 import { buildElkGraph, graphKey, type LayoutInput, usedOptionIds } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import { createLayoutEngine, LayoutSuperseded } from "./engine.ts";
@@ -388,6 +388,61 @@ describe("bands", () => {
     for (const [id, at] of Object.entries(first.positions))
       expect(next.positions[id], id).toEqual(at);
     expect(next.positions.z?.y).toBe(first.positions.n?.y);
+  });
+
+  /* As `lanes`, but the bottom lane's worker `w` (column 3) also uses two end tiles that sit
+     right after an earlier user: `o` after `p`, which writes it, and the shared `s` after `d`,
+     which reads it. So `w`'s lines to them come back. */
+  const back = banded(
+    ["!u", "d@0", "p@2", "i@2", "c@0", "s@1", "o@2", "q@2", "w@2", "e@2", "h@2"],
+    ["u>d", "u>p", "u>i", "d>c", "d>s", "p>o", "p>q", "q>w", "w>o", "w>s", "w>e", "e>h"],
+  );
+
+  it("put an end tile several tiles use next to the earliest, unless its band would grow", () => {
+    const at = (input: LayoutInput) => endColumns(input, bandColumns(input) ?? new Map());
+    // One user: right after it. Two users: right after the earliest (`o` after `p`, `s` after
+    // `d`), the later one coming back one column.
+    expect(Object.fromEntries(at(back))).toMatchObject({ c: 2, o: 2, s: 2, q: 2, w: 3, e: 4 });
+    // With a second tile beside `q`, `o` there would make the bottom band taller (three rows
+    // where its tallest column has two): it goes to the first column that doesn't, `w`'s own.
+    const crowded = {
+      tiles: [...back.tiles, { id: "r", w: 128, h: 128, band: 2 }],
+      lines: [...back.lines, { id: "p-r", source: "p", target: "r", band: 2 }],
+    };
+    expect(at(crowded).get("o")).toBe(3);
+    // A user three columns later: never more than one column before it, so `s` waits until 3.
+    const far = banded(
+      ["!u", "d@0", "p@2", "a@2", "b@2", "w@2", "s@1"],
+      ["u>d", "u>p", "p>a", "a>b", "b>w", "d>s", "w>s"],
+    );
+    expect(at(far).get("w")).toBe(4);
+    expect(at(far).get("s")).toBe(3);
+  });
+
+  it("route a line that comes back as a U, out of its source and into its target", async () => {
+    const layout = await bandsOf(back);
+    expectClean(back, layout);
+    expect(sharedRuns(back, layout)).toEqual([]);
+    expect(bandClashes(layout, back)).toEqual({ clashes: 0, crossings: 0 });
+    for (const id of ["w-o", "w-s"]) {
+      const route = layout.routes[id] ?? [];
+      const [s, t] = [rect(back, layout, "w"), rect(back, layout, id.slice(2))];
+      // Right 32px, up, back past both columns, and the last 32px into the target.
+      expect(route).toHaveLength(6);
+      expect(route[1]).toEqual({ x: s.x + s.w + GRID, y: centreY(s) });
+      expect(route[4]?.x).toBe(t.x - GRID);
+      expect(route[2]?.y).toBe(route[3]?.y);
+      // Its level run passes between the tiles, 16px or more from each.
+      const y = route[2]?.y ?? 0;
+      for (const tile of back.tiles) {
+        const r = rect(back, layout, tile.id);
+        if (r.x + r.w < (route[4]?.x ?? 0) || r.x > (route[1]?.x ?? 0)) continue;
+        expect(y <= r.y - 16 || y >= r.y + r.h + 16, `${id} by ${tile.id}`).toBe(true);
+      }
+    }
+    // The store's two lines meet only in the 32px before it.
+    expect(layout.routes["d-s"]?.at(-2)?.x).toBe(rect(back, layout, "s").x - 2 * GRID);
+    expect(await bandsOf(back, layout.positions)).toEqual(layout);
   });
 
   it("move a bus next to a shared tile so different bands meet only by its port", () => {

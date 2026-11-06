@@ -8,17 +8,21 @@
 // pass with the bands in model order kept them in order within each column only, and shifting its
 // result apart left lines routed for the old rows. So:
 //
-// 1. Columns: each tile one column right of its furthest predecessor (ELK's LONGEST_PATH_SOURCE).
+// 1. Columns: each tile one column right of its furthest predecessor (ELK's LONGEST_PATH_SOURCE),
+//    except an end tile several tiles use, which sits beside one of them (`endColumns`). A line
+//    whose target is then in its source's column or before it comes back.
 // 2. Each band is laid out alone by ELK with those columns (forks centred, chains straight, rows in
 //    model order or the shown order) and put on the grid (`alignLayout`). A long line that leaves
 //    its band ends at a stub in its target's column, so the band keeps a track for it.
 // 3. The bands are stacked on the grid, `BAND_GAP` apart, and each long line's track is kept clear
 //    of the tiles in the columns it passes.
-// 4. One more ELK pass routes every line with the tiles and tracks fixed (interactive crossing
-//    minimisation and node placement; a track goes in as bend points). A tile entered by lines of
-//    several bands gets one input port per band, so ELK never bundles different bands into one
-//    bus; the same for a tile whose lines out have several bands.
-// 5. `alignLayout` as for any layout, then `meetAtPorts`.
+// 4. One more ELK pass routes every line that runs forward with the tiles and tracks fixed
+//    (interactive crossing minimisation and node placement; a track goes in as bend points). A
+//    tile entered by lines of several bands gets one input port per band, so ELK never bundles
+//    different bands into one bus; the same for a tile whose lines out have several bands.
+// 5. `alignLayout` as for any layout, then `meetAtPorts`, then the lines that come back are routed
+//    as U's (`routeReturns`). ELK draws a line that comes back as a staircase through the columns
+//    it passes, and longer (measured on the studies, SD03).
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { alignLayout } from "./align.ts";
 import {
@@ -37,6 +41,7 @@ import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import type { ElkLike } from "./engine.ts";
 import { meetAtPorts } from "./junctions.ts";
 import { BRANCH_GAP, GRID, type Point, snapToGrid } from "./metrics.ts";
+import { comesBack, routeReturns } from "./returns.ts";
 
 /** Space between two bands' strips. */
 export const BAND_GAP = GRID;
@@ -99,6 +104,73 @@ export function bandColumns(input: LayoutInput): Map<string, number> | undefined
 }
 
 /**
+ * `column` with each end tile (lines in, none out) that several tiles use moved beside them, so a
+ * fork is short branches rather than a long line to a far column. Its column is the first, from
+ * right after its earliest user (the first line into it), that doesn't make its band taller:
+ * where its band already has fewer tiles than in its tallest column. It sits no more than one
+ * column before its last user, whose line comes back to it as a U (`returns.ts`): a U back past
+ * more columns is longer than the line it saves. If every column up to the one right after its
+ * last user would make the band taller, the one with the fewest tiles. Every other tile keeps its
+ * column, so a store with one user sits right after it.
+ *
+ * Chosen by measurement on the three studies (SD03): right after the earliest user every time
+ * made every study's lines longer than with the stores in the last column (YouTube 10,656px
+ * against 9,120px, its Search indexer's line coming back across four columns, 1,536px) and the
+ * shared band taller; with these two limits every study's lines are shorter.
+ */
+export function endColumns(input: LayoutInput, column: Map<string, number>): Map<string, number> {
+  const out = new Map(column);
+  const sources = new Set(input.lines.map((l) => l.source));
+  const users = new Map<string, string[]>();
+  for (const line of input.lines) {
+    if (sources.has(line.target)) continue;
+    const list = users.get(line.target) ?? [];
+    if (!list.includes(line.source)) list.push(line.source);
+    users.set(line.target, list);
+  }
+  // The columns an end tile may take: from right after its earliest user (or one before its last
+  // user, if later) to right after its last user.
+  const range = (id: string) => {
+    const at = (users.get(id) ?? []).map((u) => column.get(u) ?? 0);
+    if (at.length < 2) return undefined;
+    const last = Math.max(...at);
+    const first = Math.max((at[0] as number) + 1, last - 1);
+    return first <= last ? { first, last: last + 1 } : undefined;
+  };
+  const shared = (id: string) => range(id) !== undefined;
+  const band = new Map(input.tiles.map((t) => [t.id, t.band]));
+  const count = new Map<string, number>();
+  const slot = (b: number | undefined, c: number) => `${b ?? "-"}:${c}`;
+  const add = (id: string, c: number) => {
+    const key = slot(band.get(id), c);
+    count.set(key, (count.get(key) ?? 0) + 1);
+  };
+  for (const t of input.tiles) if (!shared(t.id)) add(t.id, column.get(t.id) ?? 0);
+  const tallest = (b: number | undefined) => {
+    let n = 1;
+    for (const [key, k] of count) if (key.startsWith(`${b ?? "-"}:`)) n = Math.max(n, k);
+    return n;
+  };
+  for (const t of input.tiles) {
+    const span = range(t.id);
+    if (!span) continue;
+    let best = span.first;
+    let fewest = Number.POSITIVE_INFINITY;
+    for (let k = span.first; k <= span.last; k++) {
+      const n = count.get(slot(t.band, k)) ?? 0;
+      if (n + 1 <= tallest(t.band)) {
+        best = k;
+        break;
+      }
+      if (n < fewest) [best, fewest] = [k, n];
+    }
+    out.set(t.id, best);
+    add(t.id, best);
+  }
+  return out;
+}
+
+/**
  * Whether `input` is laid out in bands: some tile has a band, every tile without one has no lines
  * in, no line has a chip, and the lines form no loop. Otherwise it is laid out as one graph.
  */
@@ -153,7 +225,9 @@ async function layoutBand(
   const own = input.tiles.filter((t) => t.band === band);
   const ids = new Set(own.map((t) => t.id));
   const long = (l: LayoutLine) => col(l.target) - col(l.source) >= 2;
-  let lines = input.lines.filter((l) => ids.has(l.source) && (ids.has(l.target) || long(l)));
+  let lines = input.lines.filter(
+    (l) => !comesBack(l, column) && ids.has(l.source) && (ids.has(l.target) || long(l)),
+  );
   let tiles = own;
   if (hints) {
     tiles = [...own].sort((a, b) => byHint(a.id, b.id, hints));
@@ -309,9 +383,14 @@ export async function layoutBands(
   input: LayoutInput,
   previous?: PositionMap,
 ): Promise<BoardLayout> {
-  const column = bandColumns(input) ?? new Map<string, number>();
+  const column = endColumns(input, bandColumns(input) ?? new Map<string, number>());
   const col = (id: string) => column.get(id) ?? 0;
   const hints = stabilityHints(input, previous);
+  // ELK routes the lines that run forward; the ones that come back are routed last.
+  const forward: LayoutInput = {
+    tiles: input.tiles,
+    lines: input.lines.filter((l) => !comesBack(l, column)),
+  };
   const bands = [...new Set(input.tiles.flatMap((t) => (t.band === undefined ? [] : [t.band])))];
   bands.sort((a, b) => a - b);
 
@@ -339,15 +418,15 @@ export async function layoutBands(
     const w = widths.get(c) ?? [0];
     return c * COLUMN_HINT + w.reduce((sum, n) => sum + n, 0) / w.length / 2;
   };
-  const ins = portIds(input.lines, "target");
-  const outs = portIds(input.lines, "source");
+  const ins = portIds(forward.lines, "target");
+  const outs = portIds(forward.lines, "source");
   const children: ElkNode[] = input.tiles.map((t: LayoutTile) => ({
     ...elkTile(t, ins.all(t.id), outs.all(t.id)),
     x: col(t.id) * COLUMN_HINT,
     y: tops.get(t.id) ?? 0,
   }));
   const portY = (id: string) => (tops.get(id) ?? 0) + (size.get(id)?.h ?? 0) / 2;
-  const edges: ElkExtendedEdge[] = input.lines.map((l) => {
+  const edges: ElkExtendedEdge[] = forward.lines.map((l) => {
     const edge: ElkExtendedEdge = {
       id: l.id,
       sources: [outs.id(l.source, l.band)],
@@ -375,5 +454,6 @@ export async function layoutBands(
     children,
     edges,
   });
-  return meetAtPorts(alignLayout(toBoardLayout(key, laidOut), input), input, column);
+  const routed = meetAtPorts(alignLayout(toBoardLayout(key, laidOut), forward), forward, column);
+  return routeReturns(routed, input, column);
 }

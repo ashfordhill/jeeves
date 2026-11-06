@@ -130,7 +130,7 @@ describe("actions", () => {
       "Removing Shorten would cut off Shorten service.",
     );
     expect(refusal(design, { type: "removeAction", lane: "download" })).toBe(
-      "Removing Open link would cut off Stats API, Redirect service, Analytics store, URL cache, Click events and Analytics worker.",
+      "Removing Open link would cut off Stats API, Redirect service, Analytics store, Click events, URL cache and Analytics worker.",
     );
     const linked = run(design, {
       type: "linkTiles",
@@ -540,10 +540,10 @@ describe("removeTile and removeLink", () => {
 
   it("names every stranded tile, and needs them in alsoRemove", () => {
     const design = tinyurl();
-    const strands = ["url-cache", "click-events", "analytics"];
+    const strands = ["click-events", "url-cache", "analytics"];
     expect(planRemoveTile(design, "redirect")).toEqual({ ok: true, value: { strands } });
     expect(refusal(design, { type: "removeTile", tile: "redirect" })).toBe(
-      "Removing Redirect service would cut off URL cache, Click events and Analytics worker; list them in alsoRemove to remove them too.",
+      "Removing Redirect service would cut off Click events, URL cache and Analytics worker; list them in alsoRemove to remove them too.",
     );
     expect(
       refusal(design, {
@@ -789,8 +789,8 @@ describe("attach options", () => {
       "stats-api",
       "redirect",
       "analytics-store",
-      "url-cache",
       "click-events",
+      "url-cache",
       "analytics",
       "shorten",
     ]);

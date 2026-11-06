@@ -73,9 +73,9 @@ describe("studio chat tools", () => {
           "stats-api",
           "redirect",
           "analytics-store",
+          "click-events",
           "url-cache",
           "url-db",
-          "click-events",
           "analytics",
         ],
       },
@@ -95,7 +95,7 @@ describe("studio chat tools", () => {
         (l: { to: string; mode: string; access?: string }) =>
           `${l.to} ${l.mode}${l.access ? ` ${l.access}` : ""}`,
       ),
-    ).toEqual(["url-cache sync write", "url-db sync read", "click-events async"]);
+    ).toEqual(["click-events async", "url-cache sync write", "url-db sync read"]);
     const shorten = design.tiles.find((t: { id: string }) => t.id === "shorten");
     expect(shorten.links).toMatchObject([{ to: "url-db", access: "write" }]);
     expect(redirect.modules).toHaveLength(4);
@@ -157,7 +157,7 @@ describe("studio chat tools", () => {
     );
     // The second command would cut off the click path and the new cache; neither is kept.
     expect(apply(addCache(3).commands[0], { type: "removeTile", tile: "redirect" }).error).toBe(
-      "Command 2 (removeTile): Removing Redirect service would cut off URL cache, Click events, Cache and Analytics worker; list them in alsoRemove to remove them too.",
+      "Command 2 (removeTile): Removing Redirect service would cut off Click events, URL cache, Cache and Analytics worker; list them in alsoRemove to remove them too.",
     );
     const link = (from: string, to: string) =>
       apply({ type: "linkTiles", from: { tile: from }, to, link: "sync", linkId: `${from}-${to}` });

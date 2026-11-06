@@ -175,17 +175,91 @@ describe("lane bands on the studies", () => {
     const input = laneLayoutInput(laneGraph(studioArchitectureExample("studio-youtube").design));
     const first = await layoutOf(input);
     expect(await layoutOf(input, first.positions)).toEqual(first);
-    // A tile after View counts (a download store) takes its row; nothing else moves.
+    // A tile after the View counter (the end of the view-counting chain, now that View counts
+    // sits beside the Watch API) takes its row; nothing else moves.
     const longer: LayoutInput = {
       tiles: [...input.tiles, { id: "report", w: 128, h: 128, band: 0 }],
       lines: [
         ...input.lines,
-        { id: "counts-report", source: "view-counts", target: "report", band: 0 },
+        { id: "counter-report", source: "view-counter", target: "report", band: 0 },
       ],
     };
     const next = await layoutOf(longer, first.positions);
     for (const [id, at] of Object.entries(first.positions))
       expect(next.positions[id], id).toEqual(at);
-    expect(next.positions.report?.y).toBe(first.positions["view-counts"]?.y);
+    expect(next.positions.report?.y).toBe(first.positions["view-counter"]?.y);
+  });
+});
+
+/** Each tile's column: the index of its x among the tiles' distinct x positions. */
+function columnsOf(input: LayoutInput, layout: BoardLayout): Map<string, number> {
+  const xs = [...new Set(input.tiles.map((t) => layout.positions[t.id]?.x ?? 0))].sort(
+    (a, b) => a - b,
+  );
+  return new Map(input.tiles.map((t) => [t.id, xs.indexOf(layout.positions[t.id]?.x ?? 0)]));
+}
+
+const lengthOf = (route: Point[]) =>
+  route.slice(1).reduce((n, p, i) => {
+    const q = route[i] as Point;
+    return n + Math.abs(p.x - q.x) + Math.abs(p.y - q.y);
+  }, 0);
+
+/** LA03's lines (6419be9, the studies' orders then): total and longest, in px. */
+const la03: [string, number, number][] = [
+  ["studio-tinyurl", 2848, 608],
+  ["studio-marketplace", 7712, 1024],
+  ["studio-youtube", 9120, 1472],
+];
+
+describe("stores beside their users", () => {
+  for (const [id, total, longest] of la03) {
+    it(`${id}: a store with one user right after it, and shorter lines than LA03's`, async () => {
+      const input = laneLayoutInput(laneGraph(studioArchitectureExample(id).design));
+      const layout = await layoutOf(input);
+      const column = columnsOf(input, layout);
+      const sources = new Set(input.lines.map((l) => l.source));
+      for (const t of input.tiles.filter((x) => !sources.has(x.id))) {
+        const users = [
+          ...new Set(input.lines.filter((l) => l.target === t.id).map((l) => l.source)),
+        ];
+        if (users.length !== 1) continue;
+        expect(column.get(t.id), t.id).toBe((column.get(users[0] as string) ?? 0) + 1);
+      }
+      const lengths = input.lines.map((l) => lengthOf(layout.routes[l.id] ?? []));
+      expect(lengths.reduce((a, b) => a + b, 0)).toBeLessThan(total);
+      expect(Math.max(...lengths)).toBeLessThan(longest);
+    });
+  }
+
+  it("keep YouTube's CDN and upload branches short", async () => {
+    const input = laneLayoutInput(laneGraph(studioArchitectureExample("studio-youtube").design));
+    const layout = await layoutOf(input);
+    const column = columnsOf(input, layout);
+    // The Video CDN's line to Transcoded videos spans one column gap.
+    expect(column.get("transcoded")).toBe((column.get("video-cdn") ?? 0) + 1);
+    const cdn = box(input, layout, "video-cdn");
+    const transcoded = box(input, layout, "transcoded");
+    for (const p of layout.routes["cdn-transcoded"] ?? []) {
+      expect(p.x).toBeGreaterThanOrEqual(cdn.x + cdn.w);
+      expect(p.x).toBeLessThanOrEqual(transcoded.x);
+    }
+    // The Upload service's line to Original videos stays in the gap before them: it doesn't
+    // run under Upload jobs and the Transcoder, which follow in the same columns.
+    expect(column.get("originals")).toBe((column.get("upload") ?? 0) + 1);
+    expect(column.get("upload-queue")).toBe(column.get("originals"));
+    const originals = box(input, layout, "originals");
+    for (const p of layout.routes["upload-originals"] ?? []) {
+      expect(p.x).toBeLessThanOrEqual(originals.x);
+    }
+    // The Transcoder's lines to both come back to them, one column.
+    expect(column.get("transcoder")).toBe((column.get("originals") ?? 0) + 1);
+    for (const id of ["transcoder-read", "transcoder-write"]) {
+      const route = layout.routes[id] ?? [];
+      expect(
+        route.some((p, i) => i > 0 && p.x < (route[i - 1] as Point).x),
+        id,
+      ).toBe(true);
+    }
   });
 });

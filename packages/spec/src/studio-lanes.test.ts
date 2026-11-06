@@ -360,9 +360,9 @@ describe("laneGraph", () => {
       "stats-api",
       "redirect",
       "analytics-store",
+      "click-events",
       "url-cache",
       "url-db",
-      "click-events",
       "analytics",
       "shorten",
     ]);

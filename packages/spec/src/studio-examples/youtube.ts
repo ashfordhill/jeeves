@@ -109,7 +109,7 @@ const description =
 
 export const YOUTUBE_STUDIO_EXAMPLE = {
   id: "studio-youtube",
-  version: "2.0.0",
+  version: "2.1.0",
   name: "YouTube · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -350,12 +350,13 @@ const actions: StudioLaneAction[] = [
 /**
  * Watch reaches the Watch API, the Search API and the Video CDN; Publish reaches Identity and the
  * Upload service. Of the 6,912 entry and link orders (entries, and the links of the Watch API, the
- * Transcoder, the Upload service and Completion events), laid out with real ELK under the lane
- * bands, half leave a bend shorter than the grid; of the rest this order draws the fewest
- * crossings (one, where the Completion handler's write rises past the Search API's read into the
- * Search index) and 44 bends, with the shortest lines among them (9,120px in all). Completion
- * events must feed the Completion handler before the Search indexer (the other way adds a
- * crossing); the Transcoder's and the Upload service's link orders don't change the drawing.
+ * Transcoder, the Upload service and Completion events), laid out with real ELK with the stores
+ * beside their users, half leave a bend shorter than the grid; of the rest every one crosses at
+ * least once, and this order crosses once (the Watch API's read of the Metadata database passing
+ * the Search API's) with the shortest lines (8,864px in all, the longest the Search API's read,
+ * 1,056px) and 54 bends. The Upload service links to Upload jobs before Original videos (connections below), so
+ * Original videos sit below Upload jobs and the Transcoder's read comes back under them. The Watch
+ * API's, the Transcoder's and Completion events' link orders don't change the drawing.
  */
 const entries: StudioEntry[] = [
   { id: "download-watch", lane: "download", element: "watch" },
@@ -637,20 +638,20 @@ export function youtubeStudioExample() {
       },
       // Upload service: the original, then the job.
       {
-        id: "upload-originals",
-        from: "upload",
-        to: "originals",
-        kind: "depends-on",
-        planned: call("Starts, signs and completes uploads", "HTTPS"),
-        settings: {},
-      },
-      {
         id: "upload-publish",
         from: "upload",
         to: "upload-queue",
         kind: "depends-on",
         planned: messaging("Publishes upload jobs"),
         settings: { channelUse: "publish" },
+      },
+      {
+        id: "upload-originals",
+        from: "upload",
+        to: "originals",
+        kind: "depends-on",
+        planned: call("Starts, signs and completes uploads", "HTTPS"),
+        settings: {},
       },
       {
         id: "jobs-transcoder",

@@ -146,9 +146,10 @@ C1 people, external systems and relationships are not tiles and are not checked.
 a tile only the Consume action reaches is in the `download` band, one only Produce reaches in
 `upload`, and one both reach in `shared`; an action is in its own lane's band, a line in its
 source's, and the user in none. The canvas stacks them in `laneBandOrder` (download, shared,
-upload) and keeps lines of different bands apart except in the last 32px before a shared tile
-([studio guide](docs/studio.md#layout-and-navigation)). Bands are layout only: they add no rule,
-finding or blueprint field.
+upload) and keeps lines of different bands apart except in the last 32px before a shared tile;
+it puts each store beside the tiles that use it, a later user's line coming back to it
+([studio guide](docs/studio.md#layout-and-navigation)). Bands and store placement are layout only:
+they add no rule, finding or blueprint field.
 
 **Design warnings** ([`studio-warnings.ts`](packages/spec/src/studio-warnings.ts)) are designs
 that look wrong but are allowed, because a design is built step by step. `studioWarnings(design)`
@@ -288,7 +289,7 @@ The design chat uses one provider and model chosen in Settings
 
 New project offers three studies, described in the [studio guide](docs/studio.md).
 
-**TinyURL** (`studio-tinyurl@3.1.0`, the default) is built from published designs
+**TinyURL** (`studio-tinyurl@3.2.0`, the default) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
 redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
 front of one URL database that only the Shorten service writes, and click analytics through a
@@ -298,7 +299,7 @@ eight tiles, twelve links (the user's two lines, three entries and seven connect
 components
 ([guide](docs/studio.md#the-tinyurl-study)).
 
-**Marketplace** (`studio-marketplace@1.2.0`) is a multi-seller marketplace with Etsy's core
+**Marketplace** (`studio-marketplace@1.3.0`) is a multi-seller marketplace with Etsy's core
 functionality as clean microservices (Educative, System Design Handbook, ByteByteGo's payment
 system, Online Boutique, eShop, Stripe Connect, and Cloudflare's and AWS's image delivery). The
 Shop service is the only writer of the catalog and its photos, and publishes listing changes that a
@@ -310,7 +311,7 @@ tiles, 23 links (the user's two lines, seven entries, four of them upload, and f
 connections) and sixteen components
 ([guide](docs/studio.md#the-marketplace-study)).
 
-**YouTube** (`studio-youtube@2.0.0`) is a video-sharing site with YouTube's core functionality as
+**YouTube** (`studio-youtube@2.1.0`) is a video-sharing site with YouTube's core functionality as
 clean microservices, after Alex Xu's "Design YouTube" (ByteByteGo) mapped to templates, with
 HelloInterview, DesignGurus' Grokking and crash course, AWS's multipart uploads, tus, and
 Cloudflare R2. The Upload service (an Uploads service, transfer signed URLs) writes Original videos

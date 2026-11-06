@@ -76,7 +76,7 @@ const description =
 
 export const MARKETPLACE_STUDIO_EXAMPLE = {
   id: "studio-marketplace",
-  version: "1.2.0",
+  version: "1.3.0",
   name: "Marketplace · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -268,12 +268,14 @@ const actions: StudioLaneAction[] = [
 ];
 /**
  * Browse reaches the Storefront API, the Orders service and the Image CDN; Buy & sell reaches the
- * Shop service, Identity, Payments and the Cart service. Of the 5,184 entry and link orders,
- * scored with real ELK under the lane bands, this entry order draws the fewest crossings (one,
- * where the Orders service's read passes the Search indexer's write into the Search index above
- * it) and 34 bends; the Storefront API's read runs along the top row into the Search index, and
- * the Image CDN sits just above Product images. The Shop service's and Payments' link orders
- * don't change the drawing.
+ * Shop service, Identity, Payments and the Cart service. Of the 5,184 entry and link orders
+ * (entries, and the Shop service's and Payments' links), laid out with real ELK with the stores
+ * beside their users, every one crosses at least once; this entry order crosses once (the
+ * Storefront API's read passing the Orders service's) with 36 bends, the Search index right
+ * above the Search indexer that writes it and the Orders database right after the Order
+ * recorder. Payments' link to Order events comes before its Payments database (connections
+ * below), which keeps the lines shortest (6,912px in all, the longest the Orders service's read,
+ * 896px). The Shop service's link order doesn't change the drawing.
  */
 const entries: StudioEntry[] = [
   { id: "download-storefront", lane: "download", element: "storefront" },
@@ -536,20 +538,20 @@ export function marketplaceStudioExample() {
         settings: {},
       },
       {
-        id: "payments-write",
-        from: "payments",
-        to: "payments-db",
-        kind: "uses-database",
-        planned: call("Writes payments and payout accounts", "SQL"),
-        settings: {},
-      },
-      {
         id: "payments-paid",
         from: "payments",
         to: "order-events",
         kind: "depends-on",
         planned: messaging("Publishes paid orders"),
         settings: { channelUse: "publish" },
+      },
+      {
+        id: "payments-write",
+        from: "payments",
+        to: "payments-db",
+        kind: "uses-database",
+        planned: call("Writes payments and payout accounts", "SQL"),
+        settings: {},
       },
       {
         id: "paid-recorder",

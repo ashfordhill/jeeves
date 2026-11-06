@@ -44,7 +44,7 @@ const description =
 
 export const TINYURL_STUDIO_EXAMPLE = {
   id: "studio-tinyurl",
-  version: "3.1.0",
+  version: "3.2.0",
   name: "TinyURL · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -210,10 +210,14 @@ const actions: StudioLaneAction[] = [
 ];
 /**
  * Open link reads click counts through the Stats API and follows short links through the
- * Redirect service; Shorten creates links through the Shorten service. The Stats API's entry
- * comes first so the canvas draws it on the top row: its read of the Analytics store then runs
- * along the top. Of the 12 entry and link orders, scored with real ELK under the lane bands, the
- * six with this entry order draw no crossing (20 bends); the other six cross once.
+ * Redirect service; Shorten creates links through the Shorten service. Of the 12 entry and link
+ * orders (entries, and the Redirect service's links), laid out with real ELK with the stores
+ * beside their users, the six with the Stats API's entry first draw no crossing (20 bends). The
+ * Analytics store then sits on the top row above the Analytics worker that fills it, and the
+ * Stats API's read runs straight along that row; the worker's line comes back up to the store.
+ * The Redirect service's click link comes first (connections below), so Click events and the
+ * worker sit one row below the store: its lines are shortest that way (2,752px in all, the longest
+ * the worker's 416px).
  */
 const entries: StudioEntry[] = [
   { id: "download-stats-api", lane: "download", element: "stats-api" },
@@ -333,6 +337,14 @@ export function tinyurlStudioExample() {
     ],
     [
       {
+        id: "redirect-clicks",
+        from: "redirect",
+        to: "click-events",
+        kind: "depends-on",
+        planned: messaging("Publishes clicks"),
+        settings: { channelUse: "publish" },
+      },
+      {
         id: "redirect-cache",
         from: "redirect",
         to: "url-cache",
@@ -347,14 +359,6 @@ export function tinyurlStudioExample() {
         kind: "uses-database",
         planned: call("Reads links on a cache miss", "SQL"),
         settings: {},
-      },
-      {
-        id: "redirect-clicks",
-        from: "redirect",
-        to: "click-events",
-        kind: "depends-on",
-        planned: messaging("Publishes clicks"),
-        settings: { channelUse: "publish" },
       },
       {
         id: "click-events-analytics",

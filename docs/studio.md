@@ -55,8 +55,9 @@ future generator's frontend templates) which user flow each service serves.
 
 The layout is automatic and never stored: ELK layered, left to right, with automation-illustrator's
 options, in three bands, then put on the 32px grid. Each tile sits one column right of its furthest
-predecessor (the user's actions share the first column after it, and their entries the next), a
-fork is centred on its tile as nearly as the grid allows, and links of one lane that meet at the
+predecessor (the user's actions share the first column after it, and their entries the next),
+except a store several tiles use, which sits beside them (below); a fork is centred on its tile
+as nearly as the grid allows, and links of one lane that meet at the
 same tiles share one bus. The positions on screen are stability hints for the next layout, so
 forks keep their rows and columns when the design changes, and changes animate for 200ms. The
 first layout already follows these rules, so the first edit moves only what it changes. The canvas
@@ -75,13 +76,38 @@ them):
 - A line belongs to its source's band. Lines of different bands share no run (but see
   [Limits](#limits)): they meet only in the last 32px before a shared tile, the download line joining from above and the upload line
   from below. Where one of them joins a bus that goes on past the tile, the meeting is drawn as a
-  crossing (YouTube: the Completion handler's write rises past the Search API's read of the Search
-  index on its way to the Metadata database above it).
+  crossing.
 - How: ELK lays out each band alone with the board's columns (forks and chains look as they did),
   the bands are stacked, and one more ELK pass routes every line with the tiles fixed. A shared
   tile gets one input port per band, so ELK never bundles two lanes into one bus, and a last step
   moves a bus in the gap before a shared tile when two lanes' lines would otherwise run together
   for more than 32px.
+
+**Stores beside their users** (`endColumns` and `routeReturns` in `packages/board`). A store (on
+the board, any tile with links in and none out) sits next to the tiles that use it, so a tile's
+links to its stores are short branches, not long lines beside the pipeline it also feeds:
+
+- A store with one user sits in the column right after it.
+- A store several tiles use sits in the first column, from right after its earliest user (its
+  first link in, so a download user comes before an upload one), that doesn't make its band
+  taller: where the band has fewer tiles than in its tallest column. It never sits more than one
+  column before its last user, and at most right after it. YouTube: Original videos sit right
+  after the Upload service, beside Upload jobs, and Transcoded videos right after the Video CDN;
+  View counts sit with the Metadata cache and View events right after the Watch API.
+- A later user's link then **comes back** to the store, drawn as a U like every other line: out of
+  the tile's right side, back along a free row between the tiles (at least 16px from them, on the
+  grid when it can be) and into the store's left side. Its two upright runs take free slots in
+  the gaps it turns in (a gap with none is widened a grid step, moving everything right of it). It
+  shares no run with another line, except its own tile's lines as it leaves and lines into the
+  store on the last stretch (another lane's only in the last 32px), and touches no other line. Of
+  those routes it takes the one with the fewest crossings, then the shortest. YouTube: the
+  Transcoder's read of Original videos and its write of Transcoded videos come back one column;
+  so does the View counter's write of View counts.
+- Why the two limits (measured on the studies): a store right after its earliest user every time
+  made every study's lines longer, because a U back past several columns is longer than the line
+  it saves (YouTube's Search indexer's line came back across four columns, 1,536px, and all its
+  lines came to 10,656px against 9,120px with the stores in the last column), and a store that
+  adds a row to its band pushes every band below it down.
 
 On the grid (`alignLayout` in `packages/board`, run on every layout):
 
@@ -116,13 +142,13 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 
 | Window | Both rails closed | Chat open | Inspector open | Both open |
 | --- | --- | --- | --- | --- |
-| 1440×900 | 0.70 | 0.65 | 0.64 | 0.46 |
-| 1280×800 | 0.62 | 0.56 | 0.55 | 0.37 |
+| 1440×900 | 0.67 | 0.67 | 0.67 | 0.56 |
+| 1280×800 | 0.59 | 0.59 | 0.59 | 0.45 |
 
-TinyURL draws 1,184×800px. The marketplace study (1,248×1,632px) is taller than it is wide, so
-it fits by height whichever rails are open: 0.33 at 1440×900 and 0.29 at 1280×800. The YouTube
-study (1,632×1,440px) fits by height with at most one rail open, at 0.38 and 0.33, and by width
-with both open, at 0.33 and 0.27.
+TinyURL draws 1,024×832px and fits by height unless both rails are open. The marketplace study
+(1,280×1,472px) is taller than it is wide, so it fits by height whichever rails are open: 0.37 at
+1440×900 and 0.32 at 1280×800. The YouTube study (1,504×1,376px) fits by height with at most one
+rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
 
 ## Creating and connecting
 
@@ -353,7 +379,7 @@ provider-reported cost appear only when complete. The model and provider are cho
 
 ## The TinyURL study
 
-The default study, `studio-tinyurl@3.1.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
+The default study, `studio-tinyurl@3.2.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
 is a read-heavy URL shortener built from four published designs and one open-source shortener:
 
 - HelloInterview, [Design Bit.ly](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly)
@@ -373,9 +399,9 @@ It is laid out in lanes from the user, through its two actions, **Open link** an
 ```text
 DOWNLOAD (reads)
   User → Open link ⇣ Stats API → Analytics store                     (reads)
-                   ⇣ Redirect service → URL cache
+                   ⇣ Redirect service ⇢ Click events ⇢ Analytics worker → Analytics store
+                                      → URL cache
                                       → URL database                 (reads on a cache miss)
-                                      ⇢ Click events ⇢ Analytics worker → Analytics store
 UPLOAD (writes)
   User → Shorten   ⇡ Shorten service → URL database                  (the only writer)
 ```
@@ -385,10 +411,12 @@ service the URL cache (it fills it on a miss) and Click events, and the Analytic
 Analytics store. In all: the user, two actions and eight tiles, and twelve links (the user's two
 lines to its actions, three lane entries and seven connections), three of which are asynchronous
 or follow an asynchronous link (the click path). The URL database, which both lanes reach, sits in
-the shared band between them. The Stats API's entry comes first, so it is drawn on the top row and
-its read of the Analytics store runs along the top; of the twelve entry and link orders, scored
-with real ELK under the lane bands, the six with this entry order draw no crossing (20 bends). The
-study has no C1 people or relationships and no package.
+the shared band between them. The Analytics store sits on the top row, right above the Analytics
+worker that fills it: the Stats API's read runs straight along that row, and the worker's write
+comes back up to it ([Layout](#layout-and-navigation)). Of the twelve entry and link orders, laid
+out with real ELK, the six with the Stats API's entry first draw no crossing (20 bends); of those,
+the Redirect service's link to Click events first draws the shortest lines (2,752px in all, the
+longest the worker's write, 416px). The study has no C1 people or relationships and no package.
 
 | Part | Content |
 | --- | --- |
@@ -409,11 +437,11 @@ The study stores no layout. Its [blueprint](studio-blueprint.md#example) has two
 entries, four services, four resources, no externals, seven connections (each link into a store
 marked `write` or `read`) and all nine components, with nothing omitted and no findings. Projects
 made from earlier versions keep their own design (a lane with entries reads with its default
-action, Consume or Produce); only new copies are v3.1.
+action, Consume or Produce); only new copies are v3.2.
 
 ## The marketplace study
 
-`studio-marketplace@1.2.0` ([factory](../packages/spec/src/studio-examples/marketplace.ts)) is a
+`studio-marketplace@1.3.0` ([factory](../packages/spec/src/studio-examples/marketplace.ts)) is a
 multi-seller marketplace with Etsy's core functionality, designed as clean microservices rather
 than copied from Etsy. Its core flows, and the tiles that carry them:
 
@@ -472,8 +500,8 @@ UPLOAD (writes)
                                    ⇢ Listing events ⇢ Search indexer → Search index
                     ⇡ Identity                                          (sign-in)
                     ⇡ Payments → Catalog database                       (reads prices)
-                               → Payments database
                                ⇢ Order events ⇢ Order recorder → Orders database
+                               → Payments database
                     ⇡ Cart service → Cart store
 ```
 
@@ -485,10 +513,13 @@ tiles, and 23 links (the user's two lines, seven lane entries, four of them uplo
 connections), six of which are asynchronous or follow an asynchronous link (the listing and
 paid-order paths). Every service is TypeScript on Docker; the study has no C1 people or
 relationships and no package. The Search index, the Orders database and Product images, which both
-lanes reach, sit in the shared band. Of its 5,184 entry and link orders, scored with real ELK under
-the lane bands, this entry order draws the fewest crossings: one, where the Orders service's read
-of the Orders database crosses the Search indexer's write into the Search index above it (34
-bends). The Shop service's and Payments' link orders don't change the drawing.
+lanes reach, sit in the shared band, one row: Product images right after the Image CDN and the
+Shop service, the Search index right above the Search indexer that writes it, and the Orders
+database right after the Order recorder ([Layout](#layout-and-navigation)). Every one of its 5,184
+entry and link orders, laid out with real ELK, crosses at least once; this entry order crosses
+once, where the Storefront API's read passes the Orders service's (36 bends), and Payments' link
+to Order events before its Payments database draws the shortest lines (6,912px in all, the longest
+the Orders service's read, 896px). The Shop service's link order doesn't change the drawing.
 
 | Part | Content |
 | --- | --- |
@@ -542,7 +573,7 @@ components, with nothing omitted and no findings.
 
 ## The YouTube study
 
-`studio-youtube@2.0.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
+`studio-youtube@2.1.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
 video-sharing site with YouTube's core functionality, designed as clean microservices rather than
 copied from YouTube. Version 2 follows Alex Xu's "Design YouTube" (ByteByteGo), mapped to Jeeves
 tiles and templates, after the owner's review of 1.2 (the
@@ -621,12 +652,12 @@ DOWNLOAD (reads)
                  ⇣ Video CDN → Transcoded videos                    (reads; resizes thumbnails)
 UPLOAD (writes)
   User → Publish ⇡ Identity                                         (sign-in)
-                 ⇡ Upload service → Original videos                 (signed URLs; the only writer)
-                                  ⇢ Upload jobs ⇢ Transcoder → Original videos     (reads)
+                 ⇡ Upload service ⇢ Upload jobs ⇢ Transcoder → Original videos     (reads)
                                                              → Transcoded videos   (the only writer)
                                                              ⇢ Completion events
                                                                  ⇢ Completion handler → Metadata database
                                                                  ⇢ Search indexer → Search index
+                                  → Original videos                 (signed URLs; the only writer)
 ```
 
 Each store has one writer, its owner: the Upload service writes Original videos and Upload jobs;
@@ -638,11 +669,18 @@ entries, two of them upload, and eighteen connections), twelve of which are asyn
 an asynchronous link (the view path, and the pipeline after Upload jobs). Every service is
 TypeScript on Docker; the study has no C1 people or relationships and no package. The Watch API
 has four links out, the most a tile can have; the Transcoder three. Transcoded videos, the
-Metadata database and the Search index, which both lanes reach, sit in the shared band; the
-Metadata cache, the Watch API's own, sits in the download band beside it. Of its 6,912 entry and
-link orders, scored with real ELK under the lane bands, this one draws the fewest crossings, one
-(the Completion handler's write rising past the Search API's read into the Search index), with 44
-bends and the shortest lines among them.
+Metadata database and the Search index, which both lanes reach, sit in the shared band, one row;
+the Metadata cache, the Watch API's own, sits in the download band. The stores sit beside their
+users ([Layout](#layout-and-navigation)): Original videos right after the Upload service, beside
+Upload jobs; Transcoded videos right after the Video CDN; the Metadata cache, View counts and View
+events right after the Watch API. The Transcoder's read and write and the View counter's write come
+back to them one column. The Metadata database and the Search index sit one column before their
+writers (the Completion handler, the Search indexer), so the Watch API's and the Search API's
+reads still cross the board to them. Half of its 6,912 entry and link orders, laid out with real
+ELK, leave a bend shorter than the grid; every other one crosses at least once, and this one
+crosses once (the Watch API's read of the Metadata database passing the Search API's), with 54
+bends and the shortest lines (8,864px in all, the longest the Search API's read, 1,056px). The
+Upload service's link to Upload jobs comes before Original videos.
 
 | Part | Content |
 | --- | --- |
@@ -718,13 +756,29 @@ and all twenty components, with nothing omitted and no findings.
   in a column along it, sometimes over the tile's own tabs. Closing a rail helps; a fitted camera
   refits by itself.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
-  marketplace study (seventeen tiles, 1,632px tall) fits at 0.33 at 1440×900 and 0.29 at
-  1280×800, and YouTube (1,440px) at 0.38 and 0.33. At those zooms the action words (about 9px)
+  marketplace study (seventeen tiles, 1,472px tall) fits at 0.37 at 1440×900 and 0.32 at
+  1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
   and the bands read, but tile names are about 5px and need the wheel to read.
 - The lane bands cost height. A band's rows hold only its own tiles, so a column the shared band
   leaves empty stays empty between the lanes (YouTube: the space between the Video CDN and
-  Identity, beside the three shared stores). The studies grew taller with the bands (YouTube 1.2
-  from 928px to 1,376px, the marketplace from 1,312px to 1,632px).
+  Identity, beside Transcoded videos). A store with several users goes where its band doesn't grow
+  ([Layout](#layout-and-navigation)), which keeps the shared band one row tall in the studies.
+- A store read at the start of one lane and written at the end of the other still has one long
+  line. It sits no more than one column before its writer, so the reader's line crosses the
+  columns between: YouTube's Search API → Search index (1,056px) and Watch API → Metadata database
+  (1,024px, past View events and the View counter), the marketplace's Orders service → Orders
+  database (896px) and Storefront API → Search index (800px). Right after the reader instead, the
+  writer's line would come back just as far.
+- Lines that come back are routed one at a time, in order, each the best it can be with the ones
+  before it. Between two bands there is one free row (they are 32px apart), so when two lines come
+  back across the same band gap the second goes round: YouTube's Search indexer's write goes up
+  past the Completion handler and over the Search index to come down into it. A line that comes
+  back to a store in its own tile's column (TinyURL's Analytics worker into the Analytics store
+  above it, the marketplace's Search indexer into the Search index) hooks round the store's corner.
+- Which column a store with several users takes depends on how many tiles its band has per
+  column, so an edit elsewhere in a band can move it, and a store that gains a link out (only a
+  board outside Jeeves allows it; Jeeves stores are end tiles) goes back to the column after its
+  last user.
 - A notice stays at the bottom of the canvas until you dismiss it, Undo or Redo, or open another
   project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
   can sit over it.
@@ -732,9 +786,10 @@ and all twenty components, with nothing omitted and no findings.
   and the first tiles can leave the view; Fit brings everything back. A link tab's drop target
   must be on screen, so attaching to a tile that has left the view needs Fit (or a pan) first.
 - Where two services of one lane fork to the same tiles, their lines share one bus (the
-  marketplace: the Shop service and Payments into the Catalog database; YouTube: the Upload
-  service's write of Original videos joins the Transcoder's read). Lines of different lanes
-  meet only in the last 32px before a shared tile. Selecting a tile colours its own lines,
+  marketplace: the Shop service and Payments into the Catalog database). A line that comes back to
+  a store joins its other lines just before it (YouTube: the Transcoder's read joins the Upload
+  service's write of Original videos). Lines of different lanes meet only in the last 32px before
+  a shared tile. Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
   remove a particular one, click its row in the tile's Connections list.

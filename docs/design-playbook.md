@@ -446,22 +446,25 @@ API's reads and its View events looked the same.
 **Why wrong:** one service seems to split into two lanes, when every request goes through it.
 **Fix:** design: keep a tile's own store links few, and its asynchronous continuation dashed (the
 link mode, never a second tile). Layout: a store sits beside the tile that uses it, so the fork is
-two short branches (SD03). YouTube 2.0 still has both forks under today's layout: the Upload
-service's write runs under Upload jobs and the Transcoder to Original videos, and the Watch API
-forks to its cache, two read stores and View events (four links, the cap).
+two short branches, and a later user's line comes back to it
+([guide](studio.md#layout-and-navigation)). In YouTube 2.1 the Upload service's fork is Upload jobs
+and Original videos side by side, and the Watch API's cache, View counts and View events sit right
+after it; its fourth link, the Metadata database read, is still long (next smell).
 
 ### A long line to a far store
 
 **Looks like:** a reader's line running the board's width to a store in the last column. YouTube
 1.2's Video CDN → Encoded videos; TinyURL's Stats API → Analytics store.
 **Why wrong:** the eye follows the long line and reads it as part of the flows it passes.
-**Fix:** layout first (stores beside their users, SD03). In design, check the reader belongs to the
-lane it is in and reads that store directly; never add a tile just to shorten a line. A shared
-store sits after its writer, so the longer the writer's pipeline, the further a reader in the other
-lane stretches: YouTube 2.0's Video CDN line got shorter (736px; the Transcoder sits earlier than
-1.2's processor did), but the Watch API's line to the Metadata database, written at the end of the
-pipeline by the Completion handler, is now the longest (1,472px), with the Search API's to the
-Search index (1,408px).
+**Fix:** layout first: a store sits beside its users, at most one column before its last user
+([guide](studio.md#layout-and-navigation)). In design, check the reader belongs to the lane it is
+in and reads that store directly; never add a tile just to shorten a line. A store read at the
+start of one lane and written at the end of the other keeps one long line, whichever side it
+sits: the longer the writer's pipeline, the further the reader stretches. YouTube 2.1's Video CDN
+line spans one column gap (256px) now that Transcoded videos sit right after the CDN, but the
+Search API's line to the Search index (1,056px) and the Watch API's to the Metadata database
+(1,024px), both written at the end of the pipeline, still cross the board (they were 1,408px and
+1,472px with the stores in the last column).
 
 ### A store nobody reads
 

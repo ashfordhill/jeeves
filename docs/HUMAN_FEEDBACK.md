@@ -139,3 +139,20 @@ handoff entry.
   jobs and the Transcoder), the Watch API's four-way fork, and the long lines (Watch API →
   Metadata database 1,472px and Search API → Search index 1,408px; the Video CDN's is down from
   1,024px to 736px).
+- SD03: stores sit beside the tiles that use them ([guide](studio.md#layout-and-navigation)).
+  **Orange:** Original videos sit right after the Upload service, beside Upload jobs, so its fork
+  is two short branches (576px → 192px); the Transcoder's read comes back to them one column.
+  **Placement:** the Video CDN's line to Transcoded videos spans one column gap (736px → 256px);
+  the Watch API's cache, View counts and View events sit right after it; the stores no longer
+  stack in the last column, and the shared band is one row. The rule: a store several tiles use
+  sits from right after its earliest user, where its band doesn't grow, no more than one column
+  before its last user, whose line comes back to it. Every study's lines got shorter: YouTube
+  9,120 → 8,864px in all, the longest 1,472 → 1,056px, the board 1,632×1,440 → 1,504×1,376px
+  (fitted at 0.39 instead of 0.38 at 1440×900). Still open: the Watch API's read of the Metadata
+  database (1,024px) and the Search API's of the Search index (1,056px) still cross the board,
+  because the end of the upload pipeline writes those stores; always placing a store right after
+  its earliest user, as first planned, measured longer in every study.
+
+  ![YouTube before SD03, fitted at 1440×900](human-feedback/2026-11-06-youtube-sd03-before.png)
+
+  ![YouTube after SD03, fitted at 1440×900](human-feedback/2026-11-06-youtube-sd03-after.png)
