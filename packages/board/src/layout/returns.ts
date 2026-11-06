@@ -8,7 +8,7 @@
 //
 // - The U's two upright runs take free slots, on the grid, in the gap after the source's column
 //   and the gap before the target's. When a gap has no free slot, it is widened by a grid step,
-//   moving every tile and line right of it.
+//   moving every tile and line right of it, unless that makes lines of two bands run together.
 // - Its level run takes a free row: at least 16px from every tile in the columns it passes, on the
 //   grid when it can be.
 // - It shares no run with another line, except its source's own lines where they leave the source
@@ -18,7 +18,7 @@
 //   (counting what a widening adds to the lines it stretches), then on the grid.
 import type { LayoutInput, LayoutLine } from "./elkGraph.ts";
 import type { BoardLayout } from "./elkLayout.ts";
-import { JUNCTION_PX } from "./junctions.ts";
+import { bandClashes, JUNCTION_PX } from "./junctions.ts";
 import { GRID, type Point } from "./metrics.ts";
 
 /** How far a line coming back stays from the tiles it passes. */
@@ -261,6 +261,14 @@ export function routeReturns(
     const total = (l: BoardLayout) =>
       input.lines.reduce((n, x) => n + (x.id === line.id ? 0 : length(l.routes[x.id] ?? [])), 0);
     const base = total(current);
+    // Widening stretches the lines that cross the cut, among them the last runs into a shared tile
+    // where two bands meet within `JUNCTION_PX` of its port (`meetAtPorts`, which has already run),
+    // so a widening that makes two bands run together is never taken.
+    const drawn = (l: BoardLayout): LayoutInput => ({
+      tiles: input.tiles,
+      lines: input.lines.filter((x) => (l.routes[x.id] ?? []).length > 1),
+    });
+    const clashes = bandClashes(current, drawn(current)).clashes;
     let choice: { layout: BoardLayout; candidate: Candidate } | undefined;
     for (let before = 0; before <= MAX_WIDEN; before++) {
       for (let after = 0; after <= MAX_WIDEN; after++) {
@@ -275,6 +283,7 @@ export function routeReturns(
               .reduce((a, b) => Math.max(a, b), Number.NEGATIVE_INFINITY) + 1;
           next = widenAt(next, cut, after * GRID);
         }
+        if ((before || after) && bandClashes(next, drawn(next)).clashes > clashes) continue;
         const extra = total(next) - base;
         // No U is shorter than 32px out, back past both tiles and 32px in, plus the rise.
         const s = next.positions[line.source];

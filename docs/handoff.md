@@ -3604,3 +3604,140 @@ Owner questions already raised (not acted on):
 - Identity sits under Publish though viewers sign in too.
 - The chat preset sentence is written by hand.
 - The fit's padding (studies fit at about 0.35–0.39).
+
+## 2026-11-06 — SD05: review of the system design units (complete)
+
+A review of what SD01–SD04 left between them, on `6616c74..HEAD`, not a second acceptance pass.
+`/code-review` ran at `high` (ten candidates); I kept only what I could show. Code changed: one
+guard in `packages/board/src/layout/returns.ts` (finding 1) with a board test that failed before
+it. Docs changed: the playbook's notation (finding 2), two sentences in the guide's Limits
+(findings 3 and 4) and one in its Layout (finding 1), the plan's status (complete), PLAN's Next,
+and an SD05 line in the last HUMAN_FEEDBACK entry's Resolution (not marked resolved).
+
+### Ledger
+
+How checked: the current code and docs re-read; real ELK through the board's engine in scratch
+vitest files (deleted) where a number is quoted; the canvas by mouse where named.
+
+| From | Item | Status |
+| --- | --- | --- |
+| SD01 | TinyURL's Stats API → Analytics store ran the top row | Fixed by SD03 (288px; the longest is now the Analytics worker's U, 416px) |
+| SD01 | TinyURL's Redirect service forks three ways; measure under SD03 | Fixed by SD03 (Click events first; 0 crossings) |
+| SD01 | TinyURL's "Open link" also reaches the Stats API | Open (owner question, SD04's list) |
+| SD01 | The URL cache needs pattern 7 if links ever change | Stands (note; nothing edits a link) |
+| SD01 | Marketplace long lines and shared buses | Partly fixed by SD03 (7,712 → 6,912px, longest 1,024 → 896); the Orders service's and the Storefront API's reads remain (guide Limits) |
+| SD01 | Marketplace forks (Shop service, Payments) | Fixed by SD03 (stores and topics right after them, column 3) |
+| SD01 | Payments reads the Shop service's Catalog database | Open (owner question, SD04's list) |
+| SD01 | The marketplace's photo upload transfer isn't stated | Open (follow-up for the owner; SD02 kept it) |
+| SD01→SD02 | Choose one metadata cache shape; the transfer choice; update the playbook's gaps and pattern 1; the Transcoder's 3 links; no loops | Done by SD02 (the Watch API's own cache-aside; Uploads kind; playbook matches the study, checked below) |
+| SD02 | Uploads kind at ladder step 2 | Done; complete per AGENTS.md (seam below) |
+| SD02 | Orders measured under 2.0's layout | Superseded by SD03's re-chosen orders (YouTube 2.1.0) |
+| SD02→SD03 | The orange fork; the CDN's line; the long reads; the Watch API's four-way fork | Fork and CDN fixed by SD03 (192px, 256px); the long reads partly (1,024 and 1,056px); the four-way fork open (SD04, HUMAN_FEEDBACK) |
+| SD02→SD03 | Keep Completion events' order (handler first) | Kept (`completions-handler` before `completions-indexer`; 1 crossing) |
+| SD02→SD03 | The relayout check adds a tile after View counts | Changed by SD03; checked below (seam) |
+| SD02 | Identity sits under Publish though viewers sign in | Open (owner question, SD04's list) |
+| SD02 | The chat's preset sentence is hand-written (DP10 finding 3) | Open (SD04's list) |
+| SD02→SD04 | The owner's YouTube copy was 1.2 | Fixed by SD04 (`0a12f132…`, 2.1.0) |
+| SD03 | Store rule differs from the plan's literal one | Stands, recorded and measured; owner confirmation open (HUMAN_FEEDBACK) |
+| SD03 | Two U's across one band gap: the second goes round (Search indexer 800px) | Still applies (800px measured) |
+| SD03 | A store in its writer's column gets a U round its corner (TinyURL, marketplace) | Still applies (guide Limits) |
+| SD03 | U's add bends, are routed greedily and after `meetAtPorts` | Still applies; widening after `meetAtPorts` broke the 32px meeting: finding 1, fixed |
+| SD03 | A shared store's column depends on its band's tiles per column | Still applies (guide Limits) |
+| SD03 | Non-strict fallback so every U gets a route | Still applies; the guide said a U never shares a run: finding 3, doc fixed |
+| SD03→SD04 | Click the U's; edit plus Undo next to one | Done by SD04 |
+| SD04 | U's read as boxes (dashed, no arrowheads) | Open (owner question, SD04 and HUMAN_FEEDBACK) |
+| SD04 | The camera keeps the both-rails fit after Undo | Stands (not a defect) |
+| SD04 | Guide Limits' fit numbers refreshed | Missed one: finding 4, fixed |
+
+### Findings
+
+| # | Severity | Where | What goes wrong | Reproduce | Status |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Medium | `packages/board/src/layout/returns.ts:269` (`routeReturns`) | A U that finds no free slot widens the gap before its store's column after `meetAtPorts` has run. Every tile right of the cut moves, but a bus 32px before a shared tile in that column doesn't, so two lanes' lines into it now run together for 64px, against LA03's rule. 30 of 250 random banded boards gained such a run from the U router | TinyURL, by commands or mouse: Shorten service `+` → Queue, its `+` → Service, attach that Service to the URL database (no lane findings). Redirect's read and Shorten's write share y 576 from x 608 to 672 (`bandClashes` 1) | **Fixed**: a widening that adds a band clash is skipped. Board test "widen a gap for a line that comes back only where the bands stay apart" failed before (`r-s and w-s at y 608`), passes after. The three studies lay out byte-identically; random boards with a cross-band shared run 46 → 25 (the rest are LA03's documented `meetAtPorts` limit or finding 3); YouTube layout 25 → 31ms warm. In the canvas the two lines now meet at 608–640 only |
+| 2 | Low | `docs/design-playbook.md:33` | The notation said `→` is "a request (solid line)", but every link after an asynchronous one is dashed (`studio-lanes.ts:113`; the guide and CATALOG say so): the Transcoder's request to Original videos is dashed | YouTube: 12 dashed lines, including `transcoder-read`, `transcoder-write`, `handler-metadata`, `indexer-write`, `counter-write` | **Fixed** (docs): the notation says what the canvas draws |
+| 3 | Low | `docs/studio.md` (Layout: a U "touches no other line") vs `returns.ts` `bestU(..., strict = false)` | When no route keeps all its rules, a U takes the one that breaks the fewest, and can touch or run along another lane's line | 7 of 250 random banded boards (three or more shared stores), for example tiles `u d@0 p@2 a00–a03@0 a20–a23@2 s0@1 s1@2 s2@1 s3@1`, lines `u>d u>p d>a00 a00>a01 d>a02 a02>a03 p>a20 a20>a21 a20>a22 a22>a23 a03>s0 a20>s0 a21>s0 a21>s1 a00>s2 a21>s2 a02>s3 a22>s3 a20>s3`: `a21-s2` and `a02-s3` share x 576 for 160px | **Fixed** (docs, guide Limits); the routing itself is a follow-up (none of the studies does it) |
+| 4 | Low | `docs/studio.md` Limits | "at TinyURL's both-rails fit (0.46) it is about 10px": the fit is 0.56 since SD03 (the guide's own table), so the 22px mark is about 12px | Guide's fit table vs Limits | **Fixed** (docs) |
+
+Code-review candidates dropped:
+
+- `endColumns` takes the first link's user as the earliest, not the leftmost (`bands.ts:137`). The
+  guide documents it ("its first link in, so a download user comes before an upload one") and
+  the plan asked for lane order; listed as owner question 2.
+- The non-strict fallback tries only the unwidened layout and could leave a U unrouted when a gap
+  has no slot: gaps are at least 64px (`TILE_GAP`), so there is always a slot; no route was
+  missing on 250 random boards.
+- `routeReturns`' cost, duplicated length/segment helpers, the inline cut, a dead guard
+  (`x2 >= x1 && cs === ct` can't hold): efficiency or refactors, not defects (layout 22–31ms).
+- Studies reordered to tune the layout: a recorded decision (LA03 did the same).
+- The guide's "Added to the canvas for this study" paragraph is history: the marketplace section
+  has the same record of the ladder step, which the design-polish rules ask for.
+- An Uploads service with no object storage gets no finding: nothing in the plan asks for one;
+  owner question 1.
+
+Seams checked:
+
+- **The playbook against YouTube v2 and the guide.** Every pattern's Jeeves mapping matches the
+  study's tiles, settings and modules (dumped from `studioArchitectureExample`): the Upload
+  service's creator check, multipart module and job publisher; the Transcoder's one-job
+  concurrency and five modules; Completion events a topic with two consumers; the Watch API's
+  cache-aside module (an hour, single-flight) and replica reads; View counts MySQL; Transcoded
+  videos public R2 behind the CDN's origin; the Search API's query module. Caps are `laneLimits`
+  (4 and 4). The fork, long-line and U smells quote the layout's numbers, which I measured again
+  (8,864px, 1,056 and 1,024px, CDN 256px, Upload service 192px, Search indexer 800px). Only the
+  notation disagreed (finding 2).
+- **The Uploads kind** is complete per AGENTS.md: schema (`studioUploadsSettingsSchema`, in the
+  discriminated union and `studioApplicationKinds`), defaults (`createStudioSettings`: public,
+  `signed-url`), form (definition with the Transfer select, labels, performance fields), the
+  Service tile's kinds, the link table's action row and `studioEntryKinds`, the noun, the icon,
+  blueprint (`kind` from `studioApplicationKinds`, settings carried), chat (the preset sentence and
+  `studioKindSchema`), docs (settings, CATALOG, blueprint doc, guide) and tests (operations,
+  blueprint, lanes, E2E).
+- **The layout tests are not loosened.** LA03's per-study checks (bands, no cross-band shared run,
+  grid, no jog under 32px, no line through a tile) are unchanged; YouTube's crossings went 3 → 1,
+  stricter. The TinyURL order changes in spec and server tests only follow its new link order.
+  The one changed fixture: the old edit (a tile after View counts) is a link out of a store,
+  which Jeeves refuses; at HEAD it turns View counts into an ordinary tile and moves 20 tiles,
+  while the new edit (after the View counter) moves none and keeps the same three assertions.
+  Edits after the Search indexer or the Completion handler move nothing; after the Transcoder or
+  Upload jobs (a new fork) four tiles move down, as any new fork does.
+- **Line style.** Code (`laneGraph`: dashed when async or not reachable from the user by
+  requests), the guide ("so is every link that continues after one") and CATALOG agree; the
+  playbook didn't (finding 2). Whether a request after a queue should be solid is SD04's owner
+  question, carried below.
+- **HUMAN_FEEDBACK's Resolution** matches the commits: SD01 `1331f58`, SD02 `122ef82`, SD03
+  `413b96b`, SD04 `e0c02d5`, with the numbers the handoff entries measured (9,120 → 8,864px,
+  576 → 192px, 736 → 256px, 1,632×1,440 → 1,504×1,376px, the owner's copy `0a12f132…`).
+
+### Questions for the owner
+
+New:
+
+1. An Uploads service with no object storage link has no finding or warning, though its
+   Transfer says how bytes reach storage. Add a design warning (like "a store with no writer"), or
+   leave it to the reader?
+2. A store several tiles use takes its column from its first link in (lane order), not its
+   leftmost user, so when a download tile further right links first, an upload tile further
+   left keeps a long line to it. Keep lane order, or prefer the leftmost user?
+
+Carried (not repeated in full): SD04's list (TinyURL's "Open link" reaching the Stats API;
+Payments reading the Catalog database; Identity under Publish; the hand-written chat preset
+sentence; the fit's padding), SD04's Notes (the plan's literal store rule vs SD03's; how lines
+that come back should look: arrowheads, a solid U for a request after a queue, or a store after
+its writer), the marketplace's unstated photo transfer (SD01, SD02), and LA05's nine questions.
+
+### Checks (Node 24.21.0 first in PATH), on the final tree
+
+- `pnpm check`: exit 0 (Biome 206 files; type checks; 24 files / 171 tests, +1).
+- `pnpm test:e2e`: 18 passed.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse at 1440×900, my API on 4312 (scratch `JEEVES_HOME`,
+scripted model, `jeeves_e2e`) and web on 4302, both stopped by PID afterwards. A new TinyURL
+project (URL awaited): Shorten service `+` → Queue, Queue `+` → Service, that Service's attach tab
+onto the URL database: 13 tiles, 15 lines, 6 dashed, no marks, revision 4; Redirect's and
+Shorten's lines into the URL database meet only from x 608 to 640, and the new worker's U goes
+over the store and down into it (zoomed with the wheel, it reads cleanly). Three Undos restored
+11 / 12 / 3. New YouTube (21 / 25 / 12) and marketplace (20 / 23 / 6) projects render with no
+marks. Six projects created over two runs, all deleted (204); `jeeves_e2e` again holds just
+"TinyURL · studio study". No page errors, console errors or warnings. I did not touch 4300, 4304,
+4310 or the `jeeves` database.

@@ -30,9 +30,10 @@ ones that shape every pattern below:
 - No loops: a line never runs back to an earlier tile.
 - Caps (`laneLimits`): 4 links out of a tile, 4 entries per action.
 
-Notation, as in the [studio guide](studio.md): `→` a request (solid line), `⇢` asynchronous
-(dashed), `⇣`/`⇡` an entry from the download or upload action. "(owner)" marks a store's one
-writer.
+Notation, as in the [studio guide](studio.md): `→` a request, `⇢` asynchronous, `⇣`/`⇡` an entry
+from the download or upload action. "(owner)" marks a store's one writer. On the canvas a request
+is a solid line and an asynchronous link a dashed one, and so is every link that continues after
+an asynchronous link: a worker's requests after its queue are dashed too.
 
 ## Real-world boxes in Jeeves
 

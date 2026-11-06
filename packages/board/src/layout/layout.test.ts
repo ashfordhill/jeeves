@@ -445,6 +445,23 @@ describe("bands", () => {
     expect(await bandsOf(back, layout.positions)).toEqual(layout);
   });
 
+  it("widen a gap for a line that comes back only where the bands stay apart", async () => {
+    // The shared store `s` is read by `r` (top lane) and written by `w` (bottom lane), whose lines
+    // meet in the 32px before it; the worker `k`, after `w`'s queue, comes back to it. Widening
+    // the gap before `s` for `k`'s U would stretch that meeting to 64px.
+    const input = banded(
+      ["!u", "d@0", "p@2", "r@0", "w@2", "q@2", "k@2", "s@1"],
+      ["u>d", "u>p", "d>r", "p>w", "r>s", "w>s", "w>q", "q>k", "k>s"],
+    );
+    const layout = await bandsOf(input);
+    expectClean(input, layout);
+    expect(sharedRuns(input, layout)).toEqual([]);
+    expect(bandClashes(layout, input).clashes).toBe(0);
+    const route = layout.routes["k-s"] ?? [];
+    expect(route.some((p, i) => i > 0 && p.x < (route[i - 1] as Point).x)).toBe(true);
+    expect(await bandsOf(input, layout.positions)).toEqual(layout);
+  });
+
   it("move a bus next to a shared tile so different bands meet only by its port", () => {
     // `a` (band 0, above) and `b` (band 2, below) both enter `s`; ELK left both buses more than
     // 32px from it, so their last runs share 64px.

@@ -200,4 +200,7 @@ completion topic feeding a Completion handler and a Search indexer, the Watch AP
 cache) and added the Uploads kind; SD03 put stores beside the tiles that use them (a later user's
 line comes back to the store), which made every study's lines shorter; SD04 walked them through
 by mouse, replaced the owner's YouTube copy and recorded what still reads oddly (lines that come
-back read as boxes; two long reads remain). SD05 (a review of SD01–SD04) is next.
+back read as boxes; two long reads remain); SD05 reviewed SD01–SD04, fixed what it could show
+and left questions for the owner. The next work is the owner's answers to the SD05, LA05 and open
+DP10 questions in [the handoff](docs/handoff.md), and to the open points of the last
+[human feedback](docs/HUMAN_FEEDBACK.md) entry.

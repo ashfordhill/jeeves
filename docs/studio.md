@@ -97,7 +97,8 @@ links to its stores are short branches, not long lines beside the pipeline it al
 - A later user's link then **comes back** to the store, drawn as a U like every other line: out of
   the tile's right side, back along a free row between the tiles (at least 16px from them, on the
   grid when it can be) and into the store's left side. Its two upright runs take free slots in
-  the gaps it turns in (a gap with none is widened a grid step, moving everything right of it). It
+  the gaps it turns in (a gap with none is widened a grid step, moving everything right of it,
+  unless that would stretch where two lanes' lines meet before a shared tile). It
   shares no run with another line, except its own tile's lines as it leaves and lines into the
   store on the last stretch (another lane's only in the last 32px), and touches no other line. Of
   those routes it takes the one with the fewest crossings, then the shortest. YouTube: the
@@ -815,11 +816,13 @@ and all twenty components, with nothing omitted and no findings.
   click its X), every other lane command on the design is refused with "Fix the lanes first."
   Removing it is saved only when that leaves no lane error, so a design with two such entries, or
   one whose entry is its tile's only way in ("would cut off"), can't be edited at all.
-- A warning's mark scales with the board: at TinyURL's both-rails fit (0.46) it is about 10px
+- A warning's mark scales with the board: at TinyURL's both-rails fit (0.56) it is about 12px
   across. The system's inspector lists every warning at full size.
 - Keeping the lanes' lines apart is checked on the three studies and the board's own test cases.
   The last step before a shared tile moves or swaps one bus at a time, so an unusual design could
-  still leave two lanes' lines running together for more than 32px there. A design whose links
-  loop (only a broken stored one can) is laid out without bands.
+  still leave two lanes' lines running together for more than 32px there. A line that comes back
+  takes, when no route keeps all its rules, the one that breaks the fewest, so on a crowded board
+  it can touch or run along another lane's line. A design whose links loop (only a broken stored
+  one can) is laid out without bands.
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).

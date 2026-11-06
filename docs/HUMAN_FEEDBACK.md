@@ -190,3 +190,7 @@ handoff entry.
   ![YouTube 2.1 at 100%: the Watch API's reads and the View counter's U](human-feedback/2026-11-06-youtube-sd04-views.png)
 
   ![YouTube 2.1 at 100%: the Transcoder's U's and the nested U's round the Search index](human-feedback/2026-11-06-youtube-sd04-pipeline.png)
+- SD05 (review, "SD05: review of the system design units"; SD04 was `e0c02d5`): one layout fix (a
+  line that comes back no longer widens a gap where it would stretch two lanes' meeting before a
+  shared store past 32px) and three doc fixes; the owner's open points above are unchanged and
+  listed with SD05's questions in [the handoff](handoff.md).
