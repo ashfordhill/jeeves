@@ -4,9 +4,11 @@
 import ELK from "elkjs/lib/elk.bundled.js";
 import { describe, expect, it, vi } from "vitest";
 import { alignLayout } from "./align.ts";
+import { BAND_OPTIONS, ROUTE_OPTIONS, usesBands } from "./bands.ts";
 import { buildElkGraph, graphKey, type LayoutInput, usedOptionIds } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import { createLayoutEngine, LayoutSuperseded } from "./engine.ts";
+import { bandClashes, JUNCTION_PX, meetAtPorts } from "./junctions.ts";
 import { dockHint, GRID, newTileHint, type Point, type Rect } from "./metrics.ts";
 
 const elk = new ELK();
@@ -118,7 +120,8 @@ describe("ELK layout", () => {
         (o.id ?? "").replace(/^org\.eclipse\.elk\./, "elk."),
       ),
     );
-    for (const id of usedOptionIds()) expect(known.has(id), id).toBe(true);
+    const ids = [...usedOptionIds(), ...Object.keys(BAND_OPTIONS), ...Object.keys(ROUTE_OPTIONS)];
+    for (const id of ids) expect(known.has(id), id).toBe(true);
 
     const a = await layoutOf(tinyUrl);
     const b = await layoutOf(structuredClone(tinyUrl));
@@ -251,6 +254,176 @@ describe("ELK layout", () => {
     expect(column("db")).toBe(2);
     expect(column("worker")).toBe(3);
     expect(column("store")).toBe(4);
+  });
+});
+
+/**
+ * Tiles as `id@band` (128×128; no `@` for none, `!` for the 128×160 user); lines as
+ * `source>target`, each in its source's band.
+ */
+function banded(tiles: string[], lines: string[]): LayoutInput {
+  const parsed = tiles.map((spec) => {
+    const [id = "", band] = spec.replace("!", "").split("@");
+    return { id, w: 128, h: spec.startsWith("!") ? 160 : 128, ...(band && { band: Number(band) }) };
+  });
+  const bandOf = new Map(parsed.map((t) => [t.id, t.band]));
+  return {
+    tiles: parsed,
+    lines: lines.map((spec) => {
+      const [source = "", target = ""] = spec.split(">");
+      const band = bandOf.get(source);
+      return { id: `${source}-${target}`, source, target, ...(band !== undefined && { band }) };
+    }),
+  };
+}
+
+/** What the engine caches for a board with bands. */
+async function bandsOf(input: LayoutInput, previous?: Record<string, Point>) {
+  return createLayoutEngine(elk, { debounceMs: 0 }).request(input, previous);
+}
+
+/**
+ * Pairs of runs from lines of different bands that lie on one line and overlap or meet end to
+ * end, other than within 32px before a tile both lines enter.
+ */
+function sharedRuns(input: LayoutInput, layout: BoardLayout): string[] {
+  const out: string[] = [];
+  const runs = (id: string) => {
+    const route = layout.routes[id] ?? [];
+    return route.slice(0, -1).map((a, i) => [a, route[i + 1] as Point] as const);
+  };
+  for (const [i, a] of input.lines.entries()) {
+    for (const b of input.lines.slice(i + 1)) {
+      if (a.band === b.band) continue;
+      const port = a.target === b.target ? rect(input, layout, a.target) : undefined;
+      for (const [a1, a2] of runs(a.id)) {
+        for (const [b1, b2] of runs(b.id)) {
+          const level = a1.y === a2.y;
+          if (level !== (b1.y === b2.y) || (level ? a1.y !== b1.y : a1.x !== b1.x)) continue;
+          const at = (p: Point) => (level ? p.x : p.y);
+          const lo = Math.max(Math.min(at(a1), at(a2)), Math.min(at(b1), at(b2)));
+          const hi = Math.min(Math.max(at(a1), at(a2)), Math.max(at(b1), at(b2)));
+          const allowed =
+            port && level && a1.y === centreY(port) && lo >= port.x - JUNCTION_PX && hi <= port.x;
+          if (hi >= lo && !allowed) out.push(`${a.id} and ${b.id} at ${level ? "y" : "x"} ${lo}`);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+describe("bands", () => {
+  /* The user starts two lanes. The top lane's chain runs to `n`; the bottom lane's `r` writes
+     three stores, two of which (`m`, `x`) the top lane reads too, so they are shared. */
+  const lanes = banded(
+    ["!u", "d@0", "p@2", "w@0", "v@0", "e@0", "k@0", "n@0", "m@1", "x@1", "q@2", "r@2", "o@2"],
+    [
+      "u>d",
+      "u>p",
+      "d>w",
+      "d>v",
+      "w>e",
+      "e>k",
+      "k>n",
+      "w>m",
+      "v>x",
+      "p>q",
+      "q>r",
+      "r>m",
+      "r>x",
+      "r>o",
+    ],
+  );
+
+  it("are used when some tile has one, every tile without one has no lines in, and nothing loops", () => {
+    expect(usesBands(lanes)).toBe(true);
+    expect(usesBands(tinyUrl)).toBe(false);
+    expect(usesBands(banded(["a@0", "b"], ["a>b"]))).toBe(false);
+    expect(usesBands(banded(["a@0", "b@0"], ["a>b", "b>a"]))).toBe(false);
+    const chipped = banded(["a", "b@0"], ["a>b"]);
+    expect(
+      usesBands({
+        ...chipped,
+        lines: [{ ...(chipped.lines[0] as LayoutInput["lines"][0]), chip: ENTRY_CHIP }],
+      }),
+    ).toBe(false);
+  });
+
+  it("stack each band in its own rows, keep different bands' lines apart and stay on the grid", async () => {
+    const layout = await bandsOf(lanes);
+    expectClean(lanes, layout);
+    const banded = lanes.tiles.filter((t) => t.band !== undefined);
+    for (const a of banded) {
+      for (const b of banded.filter((t) => (t.band ?? 0) > (a.band ?? 0))) {
+        const [ra, rb] = [rect(lanes, layout, a.id), rect(lanes, layout, b.id)];
+        expect(ra.y + ra.h, `${a.id} above ${b.id}`).toBeLessThanOrEqual(rb.y);
+      }
+    }
+    expect(sharedRuns(lanes, layout)).toEqual([]);
+    expect(bandClashes(layout, lanes).clashes).toBe(0);
+    // Each shared tile's two lines meet within 32px of its port.
+    for (const store of ["m", "x"]) {
+      const into = lanes.lines.filter((l) => l.target === store);
+      const starts = into.map((l) => layout.routes[l.id]?.at(-2)?.x ?? 0);
+      const port = rect(lanes, layout, store).x;
+      expect(Math.max(...starts), store).toBe(port - JUNCTION_PX);
+    }
+    // The user sits between its two lines' tiles, on the grid.
+    const [u, d, p] = ["u", "d", "p"].map((id) => centreY(rect(lanes, layout, id)));
+    expect(Math.abs((u ?? 0) - ((d ?? 0) + (p ?? 0)) / 2)).toBeLessThanOrEqual(16);
+    expect(d).toBeLessThan(u ?? 0);
+    expect(p).toBeGreaterThan(u ?? 0);
+  });
+
+  it("move only what an edit changes, and lay themselves out again unchanged", async () => {
+    const first = await bandsOf(lanes);
+    expect(await bandsOf(lanes, first.positions)).toEqual(first);
+    const longer = {
+      tiles: [...lanes.tiles, { id: "z", w: 128, h: 128, band: 0 }],
+      lines: [...lanes.lines, { id: "n-z", source: "n", target: "z", band: 0 }],
+    };
+    const next = await bandsOf(longer, first.positions);
+    expectClean(longer, next);
+    for (const [id, at] of Object.entries(first.positions))
+      expect(next.positions[id], id).toEqual(at);
+    expect(next.positions.z?.y).toBe(first.positions.n?.y);
+  });
+
+  it("move a bus next to a shared tile so different bands meet only by its port", () => {
+    // `a` (band 0, above) and `b` (band 2, below) both enter `s`; ELK left both buses more than
+    // 32px from it, so their last runs share 64px.
+    const input = banded(["a@0", "b@2", "s@1"], ["a>s", "b>s"]);
+    const layout: BoardLayout = {
+      key: "k",
+      positions: { a: { x: 32, y: 32 }, b: { x: 32, y: 352 }, s: { x: 448, y: 192 } },
+      routes: {
+        "a-s": [
+          { x: 160, y: 96 },
+          { x: 384, y: 96 },
+          { x: 384, y: 256 },
+          { x: 448, y: 256 },
+        ],
+        "b-s": [
+          { x: 160, y: 416 },
+          { x: 352, y: 416 },
+          { x: 352, y: 256 },
+          { x: 448, y: 256 },
+        ],
+      },
+      chips: {},
+      bounds: { x: 0, y: 0, w: 608, h: 512 },
+    };
+    expect(bandClashes(layout, input).clashes).toBe(1);
+    const column = new Map([
+      ["a", 0],
+      ["b", 0],
+      ["s", 1],
+    ]);
+    const met = meetAtPorts(layout, input, column);
+    expect(bandClashes(met, input)).toEqual({ clashes: 0, crossings: 0 });
+    expect(met.routes["b-s"]?.[1]).toEqual({ x: 416, y: 416 });
+    expect(met.routes["a-s"]).toEqual(layout.routes["a-s"]);
   });
 });
 

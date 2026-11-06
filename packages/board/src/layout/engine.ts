@@ -9,11 +9,14 @@
 // - An empty board resolves to `emptyLayout` without calling ELK.
 // - ELK errors are logged once per engine and rejected, so callers keep their previous layout.
 // - Every ELK result is put on the grid (`alignLayout`) before it is cached.
+// - A board with bands (`usesBands`) is laid out by `layoutBands`, which calls ELK once per band
+//   and once more to route.
 //
 // Changes from automation-illustrator: one request channel instead of one per lane, no
 // orientation, and a superseded request that was queued for the next microtask no longer runs.
 import type { ElkNode } from "elkjs/lib/elk-api.js";
 import { alignLayout } from "./align.ts";
+import { layoutBands, usesBands } from "./bands.ts";
 import { buildElkGraph, graphKey, type LayoutInput, type PositionMap } from "./elkGraph.ts";
 import { type BoardLayout, emptyLayout, toBoardLayout } from "./elkLayout.ts";
 
@@ -65,13 +68,18 @@ export function createLayoutEngine(
     }
   }
 
-  function run(key: string, graph: ElkNode, input: LayoutInput): Promise<BoardLayout> {
+  function lay(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {
+    if (usesBands(input)) return layoutBands(elk, key, input, previous);
+    return elk
+      .layout(buildElkGraph(input, previous))
+      .then((laidOut) => alignLayout(toBoardLayout(key, laidOut), input));
+  }
+
+  function run(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {
     const existing = inFlight.get(key);
     if (existing) return existing;
-    const job = elk
-      .layout(graph)
-      .then((laidOut) => {
-        const layout = alignLayout(toBoardLayout(key, laidOut), input);
+    const job = lay(key, input, previous)
+      .then((layout) => {
         remember(layout);
         return layout;
       })
@@ -112,7 +120,6 @@ export function createLayoutEngine(
         current.reject(new LayoutSuperseded(current.key));
       }
 
-      const graph = buildElkGraph(input, previous);
       let resolve!: (layout: BoardLayout) => void;
       let reject!: (error: unknown) => void;
       const promise = new Promise<BoardLayout>((res, rej) => {
@@ -123,7 +130,7 @@ export function createLayoutEngine(
       const fire = () => {
         if (pending !== entry) return;
         pending = null;
-        run(key, graph, input).then(resolve, reject);
+        run(key, input, previous).then(resolve, reject);
       };
       const cold = cache.size === 0 && inFlight.size === 0;
       if (debounceMs > 0 && !cold) entry.timer = setTimeout(fire, debounceMs);

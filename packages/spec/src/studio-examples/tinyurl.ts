@@ -212,7 +212,8 @@ const actions: StudioLaneAction[] = [
  * Open link reads click counts through the Stats API and follows short links through the
  * Redirect service; Shorten creates links through the Shorten service. The Stats API's entry
  * comes first so the canvas draws it on the top row: its read of the Analytics store then runs
- * along the top. Layout tuning for the action tiles waits for the lane bands (LA03).
+ * along the top. Of the 12 entry and link orders, scored with real ELK under the lane bands, the
+ * six with this entry order draw no crossing (20 bends); the other six cross once.
  */
 const entries: StudioEntry[] = [
   { id: "download-stats-api", lane: "download", element: "stats-api" },

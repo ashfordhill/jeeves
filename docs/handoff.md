@@ -2789,3 +2789,145 @@ Notes for the next units:
   ran), as for the rest of the chat instructions.
 - LA04: "a warning appearing and clearing" is quickest from Blank (a new action) or by removing
   the Shorten service → URL database line in TinyURL.
+
+## 2026-11-06 — LA03: lane bands (complete)
+
+What changed:
+
+- **Spec** (`studio-lanes.ts`): `laneBandOrder` (`download`, `shared`, `upload`), `LaneBand` and
+  `laneBands(graph)`: `nodes` (a tile only Consume reaches is `download`, only Produce `upload`,
+  both `shared`; an action is in its own lane's band; the actor and unreachable tiles have none)
+  and `edges` (each line in its source's band; the user's lines none). `laneGraph`'s doc comment
+  no longer says "usually above".
+- **Board** (generic; `packages/board` still imports no Jeeves code): `LayoutTile.band` and
+  `LayoutLine.band` (`TileSpec.band`, `LineSpec.band` pass them), included in `graphKey`. New
+  `layout/bands.ts`: `usesBands(input)` (some tile has a band, every tile without one has no
+  lines in, no chips, no loop; otherwise the old single pass), `bandColumns`, and
+  `layoutBands(elk, key, input, previous)`: (1) columns by longest path, as ELK's
+  LONGEST_PATH_SOURCE; (2) each band laid out alone by ELK with those columns (INTERACTIVE
+  layering from x hints, BK as before, rows in model order or the shown order) and put through
+  `alignLayout`; a long line leaving its band ends at a zero-size stub in its target's column, so
+  the band keeps a track for it; (3) bands stacked on the grid `BAND_GAP` (32px) apart, tracks kept
+  16px clear of the aligned tiles (and following their source onto the grid when level); a tile
+  without a band (the user) centred on the tiles it links to; (4) one routing pass over the whole
+  board with INTERACTIVE crossing minimisation and node placement and zero in-layer spacing
+  (`ROUTE_OPTIONS`), every track given as bend points, and one input port per band on a tile
+  several bands enter (and one output port per band, for generic callers); (5) `alignLayout`,
+  then `meetAtPorts` (new `layout/junctions.ts`): where two bands' lines into a shared tile run
+  together for more than `JUNCTION_PX` (32), it moves a bus onto the slot 32px left of the tile or
+  swaps it with the bus there, keeping a move only when `bandClashes` (cross-band collinear runs
+  that overlap or meet end to end, outside the 32px window; and crossings) gets better. The engine
+  calls `layoutBands` for banded input. `ROOT_OPTIONS`' `edgeEdgeBetweenLayers` is now 32 (was
+  16) for every layout, so every gap is a multiple of 32 and every column and vertical run sits on
+  a grid line. `elkTile`, `stabilityHints` and `byHint` are exported from `elkGraph.ts`.
+- **Canvas**: `canvas/laneLayout.ts` `laneLayoutInput(graph)` gives each node its size and band
+  index (`laneBandOrder`) and each line its band; `LaneCanvas` builds its tiles and lines from it.
+- **Studies** (entry orders re-chosen with real ELK under the bands; doc comments say how):
+  TinyURL unchanged (3.1.0, already best); marketplace 1.2.0: Storefront API, Orders service,
+  Image CDN | Shop service, Identity, Payments, Cart service; YouTube 1.2.0: Watch API, Search API,
+  Video CDN | Identity, Upload service. Connection orders unchanged (none changed the drawing).
+
+Why this approach, by measurement (real ELK plus `alignLayout`, scratch scripts not committed;
+sizes include the 32px padding; "row violations" are pairs of tiles of a lower band not above a
+higher band's):
+
+| Variant | TinyURL | Marketplace | YouTube |
+| --- | --- | --- | --- |
+| Before (LA02 tree) | 1152×608, 0 crossings, 18 bends, 2 row violations | 1184×1312, 2, 30, 6 rows, 48px shared across lanes | 1152×928, 2, 30, 11 rows, 480px shared (the CDN line on the processor's bus) |
+| One pass, bands in model order | same | same | 1 crossing, 9 rows, 320px shared |
+| One pass, plus a port per band | same | 6 rows, 64px shared | 5 crossings, 12 rows, 48px shared |
+| That result shifted apart by band, re-routed by ELK | 0 rows | 1824 tall | 1984 tall, 10 crossings |
+| Per-band ELK stacked, routed by ELK without tracks | 0 rows | 2 crossings | 1376 tall, 5–7 crossings, lines meander |
+| Final (tracks, 32px slots, `meetAtPorts`, re-chosen orders) | 1184×800, 0, 20 | 1248×1632, 1, 34 | 1248×1376, 3, 42 |
+
+BK aligns tiles across bands, so ordering or splitting ports in one pass can't give strips;
+shifting one pass apart keeps its spread. Per-band layouts keep BK's look inside a band and the
+stacking guarantees the rows; ELK's interactive routing kept every requested position (zero
+moved in all studies) once the long lines' tracks went in as bend points. Two things were left:
+with 16px slots a gap of four buses is 112px, so `alignLayout` snapped the next column 16px right
+and every bus ended at least 48px before the port (fixed by 32px slots); and in YouTube ELK put
+the Search API's bus next to the store column and the Video processor's further left (a tie in
+its slot order), so the CDN's and the Watch API's reads ran 64px with the processor's lines
+(fixed by `meetAtPorts`, which swaps the two). The orders: all 12 TinyURL, 5,184 marketplace and
+3,456 YouTube entry × link orders were laid out; none breaks the bands; the chosen ones have the
+fewest crossings, then bends. YouTube's three crossings are where the Search API's and the Video
+CDN's reads cross the processor's bus to the stores above theirs: with three stores fed from both
+lanes, every order has them. The marketplace's one is the Orders service's read crossing the
+Search indexer's write into the Search index above.
+
+Tests (162; +11):
+
+- Board (`layout.test.ts`, +4): `usesBands` cases; a two-lane fixture with two shared stores
+  (every lower band above every higher one, no cross-band shared run by an independent checker,
+  `bandClashes` 0, each shared store's lines meeting exactly 32px before its port, the user
+  centred between its actions, `expectClean`); relayout with its own positions identical and a
+  tile added after the chain's end moving nothing; `meetAtPorts` on a hand-made layout (moves the
+  upload bus to 32px before the tile). The known-options check covers `BAND_OPTIONS` and
+  `ROUTE_OPTIONS`.
+- Web (`canvas/laneLayout.test.ts`, +5, real ELK through `createLayoutEngine` and
+  `laneLayoutInput`): for each study every tile in its band's rows, Consume above the user's
+  centre and Produce below, no two lines of different bands sharing or touching a run outside
+  the 32px before a shared tile, tiles and ports on the grid, routes orthogonal from port to port,
+  no jog under 32px, no line through a tile, crossings 0 / 1 / 3; YouTube's Video CDN → Encoded
+  videos shares nothing with the Upload service's two lines and meets the processor's write only
+  in the last 32px; YouTube relayout identical and a tile after View counts moving nothing.
+- Spec (`studio-lanes.test.ts`, +2): TinyURL's bands node by node, the lines' bands, the shared
+  stores of the marketplace and YouTube, a store becoming shared when the Shorten service links
+  to it, no bands without actions.
+- With `meetAtPorts` disabled for a run, four of these fail (the board fixture, the hand-made
+  case, YouTube's study test and its CDN test), so they catch the junction step.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 205 files; type checks; 24 files / 162 tests).
+- `pnpm test:e2e`: 17 passed (twice; the second on the final code). No E2E change was needed.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse (the native Study select with `selectOption`), my API on
+4312 (scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, stopped by PID
+afterwards (tsx 1620927 and its node child 1620984, vite 1614677). Three projects (LA03 tinyurl,
+marketplace, youtube) created, each URL awaited, all deleted (204); `jeeves_e2e` again holds just
+"TinyURL · studio study". I did not touch 4300, 4304, 4310 or the `jeeves` database. No console
+errors or warnings.
+
+- The three studies render in bands at the fitted zoom at 1440×900 and 1280×800: download on top,
+  the shared stores between, upload below; the user at the left between its two actions.
+- Fit zooms (closed / chat / inspector / both): TinyURL 0.70 / 0.65 / 0.64 / 0.46 at 1440×900 and
+  0.62 / 0.56 / 0.55 / 0.37 at 1280×800 (was 0.85 / 0.67 / 0.66 / 0.48 and 0.75 / 0.57 / 0.56 /
+  0.38); the marketplace 0.33 and 0.29 in every rail state (was 0.42 and 0.36); YouTube 0.39 and
+  0.35 in every rail state (was 0.60 / 0.48 and 0.53 / 0.38).
+- YouTube where the owner circled, zoomed with the wheel: the Video CDN's solid line runs right
+  on its own row and comes down its own column, meeting the Video processor's dashed bus only in
+  the last 32px before Encoded videos; the Upload service's lines run along the bottom of the
+  upload band. Clicking Video CDN colours only its entry and its read; clicking the Upload
+  service only its three lines.
+- TinyURL: Redirect service → its `+` → Database by mouse: the new store (owned by the Redirect
+  service) sits in the download band above the URL database; Undo returns to 11 tiles.
+
+Docs: studio guide (lane intro: drawn above and below, the shared band; Layout: the bands, how
+they are drawn, 32px bus spacing, the merge example, the fit table and the studies' sizes and
+zooms; the three studies' lane diagrams, versions, shared tiles and how their orders were chosen;
+Limits: fit zooms, the bands' height cost, buses now within one lane, the junction step's limit
+and loops), CATALOG (lane bands paragraph, study versions), PLAN (Layout paragraph, web and board
+rows, Next: LA03 done).
+
+Notes for the next units:
+
+- Owner question (open, out of scope): the bands make the studies taller (YouTube 928 → 1,376px,
+  marketplace 1,312 → 1,632px), so the 28% fit padding costs more: YouTube now fits at 0.39 at
+  1440×900. DP08's fixed-margin idea would give back much of that (YouTube roughly 0.5).
+- Same-lane buses remain by design (the plan's rule is about different bands): the marketplace's
+  Shop service and Payments into the Catalog database; YouTube's Upload service's write joins the
+  processor's bus into Original videos. DP10's Q2 is answered for buses across lanes only.
+- `meetAtPorts` is best effort: one move or swap at a time, kept only when clashes drop. Checked
+  on the three studies and the board fixtures; an unusual design could still leave two lanes'
+  lines together for more than 32px (guide, Limits).
+- 32px bus spacing applies to every layout; gaps with several buses are wider (the studies grew
+  32–96px wider). Revert `edgeEdgeBetweenLayers` only together with a fix for the column snap.
+- A banded board with chips falls back to the single pass (Jeeves uses no chips). A tile without
+  a band must have no lines in; its lines get no track, which is fine for the user (its lines are
+  one column long).
+- Each layout is now one ELK run per band plus one to route (30–100ms per study in Node); the
+  worker keeps it off the main thread.
+- LA04: the owner's TinyURL (`41bbd268…`, v2) will lay out in bands too; its stored entries decide
+  which stores are shared. The new marketplace and YouTube copies get the 1.2.0 orders.

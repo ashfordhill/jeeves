@@ -4,6 +4,8 @@
 // action goes with the action, so it has no X. Lines carry no words; their accessible names say
 // what they join. The selected tile's pull tabs come from `creation`, its X and the selected
 // line's from `removal`. A tile or action with a design warning carries a mark (`Warnings.tsx`).
+// Every tile and line carries its lane band (`laneLayoutInput`), so the board stacks download,
+// shared and upload.
 import {
   Board,
   type BoardHandle,
@@ -22,9 +24,10 @@ import {
 } from "@jeeves/spec";
 import { type Ref, useMemo } from "react";
 import { layoutEngine } from "./elk.ts";
-import { ACTION_SIZE, ActionTile } from "./tiles/ActionTile.tsx";
-import { ACTOR_NAME, ACTOR_SIZE, ActorTile } from "./tiles/ActorTile.tsx";
-import { TILE_SIZE, Tile, tileShape } from "./tiles/Tile.tsx";
+import { laneLayoutInput } from "./laneLayout.ts";
+import { ActionTile } from "./tiles/ActionTile.tsx";
+import { ACTOR_NAME, ActorTile } from "./tiles/ActorTile.tsx";
+import { Tile, tileShape } from "./tiles/Tile.tsx";
 import "./canvas.css";
 
 /** A tile's, action's or the user's name on the canvas. */
@@ -66,13 +69,19 @@ export function LaneCanvas({
     const warnings = new Map<string, string[]>();
     for (const item of studioWarnings(design))
       warnings.set(item.node, [...(warnings.get(item.node) ?? []), item.message]);
-    const tiles: TileSpec[] = graph.nodes.map((node) =>
+    // One layout tile per node and one layout line per edge, in the graph's order.
+    const input = laneLayoutInput(graph);
+    const box = (i: number) => {
+      const { w, h, band } = input.tiles[i] ?? { w: 0, h: 0 };
+      return { w, h, ...(band !== undefined && { band }) };
+    };
+    const tiles: TileSpec[] = graph.nodes.map((node, i) =>
       node.id === LANE_ACTOR
-        ? { id: node.id, ...ACTOR_SIZE, shape: "rect", label: ACTOR_NAME, content: <ActorTile /> }
+        ? { id: node.id, ...box(i), shape: "rect", label: ACTOR_NAME, content: <ActorTile /> }
         : node.action
           ? {
               id: node.id,
-              ...ACTION_SIZE,
+              ...box(i),
               shape: "rect",
               label: name(node.id),
               content: (
@@ -85,7 +94,7 @@ export function LaneCanvas({
             }
           : {
               id: node.id,
-              ...TILE_SIZE,
+              ...box(i),
               shape: tileShape(node.kind),
               label: name(node.id),
               content: (
@@ -93,13 +102,14 @@ export function LaneCanvas({
               ),
             },
     );
-    const lines: LineSpec[] = graph.edges.map((edge) => ({
+    const lines: LineSpec[] = graph.edges.map((edge, i) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
       dashed: edge.dashed,
       label: `${name(edge.source)} to ${name(edge.target)}`,
       ...(edge.source === LANE_ACTOR && { removable: false }),
+      ...(input.lines[i]?.band !== undefined && { band: input.lines[i]?.band }),
     }));
     return { tiles, lines };
   }, [design, graph]);

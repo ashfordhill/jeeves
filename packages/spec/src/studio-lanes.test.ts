@@ -10,6 +10,7 @@ import {
   LANE_ACTOR,
   laneActionLine,
   laneActionNode,
+  laneBands,
   laneFindings,
   laneGraph,
   laneRules,
@@ -492,6 +493,50 @@ describe("laneGraph", () => {
         target: { path: ["architecture", "studio", "entries", 5] },
       },
     ]);
+  });
+});
+
+describe("laneBands", () => {
+  const shared = (id: string) => {
+    const { nodes } = laneBands(laneGraph(studioArchitectureExample(id).design));
+    return [...nodes].filter(([, band]) => band === "shared").map(([node]) => node);
+  };
+
+  it("puts what both actions reach between the lanes, and each line in its source's band", () => {
+    const graph = laneGraph(tinyurl());
+    const { nodes, edges } = laneBands(graph);
+    expect(Object.fromEntries(nodes)).toEqual({
+      "@download": "download",
+      "@upload": "upload",
+      "stats-api": "download",
+      redirect: "download",
+      "url-cache": "download",
+      "click-events": "download",
+      analytics: "download",
+      "analytics-store": "download",
+      "url-db": "shared",
+      shorten: "upload",
+    });
+    expect(nodes.has(LANE_ACTOR)).toBe(false);
+    expect(edges.has(laneActionLine("download"))).toBe(false);
+    expect(edges.get("redirect-db")).toBe("download");
+    expect(edges.get("shorten-db")).toBe("upload");
+    expect(shared("studio-marketplace").sort()).toEqual([
+      "orders-db",
+      "product-images",
+      "search-index",
+    ]);
+    expect(shared("studio-youtube").sort()).toEqual(["encoded", "metadata-db", "search-index"]);
+  });
+
+  it("follow links as they change: a store linked from both lanes becomes shared", () => {
+    // The Shorten service now also writes the Analytics store, which Open link's tiles reach.
+    const both = edit(tinyurl(), (draft) => {
+      draft.connections.push(connection("shorten-analytics", "shorten", "analytics-store"));
+    });
+    expect(laneBands(laneGraph(both)).nodes.get("analytics-store")).toBe("shared");
+    // Without actions there are no bands.
+    expect(laneBands({ nodes: [{ id: LANE_ACTOR }], edges: [] }).nodes.size).toBe(0);
   });
 });
 

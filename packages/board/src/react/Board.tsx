@@ -95,6 +95,8 @@ export type TileSpec = {
   label: string;
   /** The tile face, drawn inside the board's frame. */
   content: ReactNode;
+  /** Its band: lower bands are laid out above higher ones (`layoutBands`). */
+  band?: number;
 };
 
 export type LineSpec = {
@@ -108,6 +110,8 @@ export type LineSpec = {
   chip?: Size & { content: ReactNode };
   /** `false`: the selected line shows no X (it goes with a tile). Default true. */
   removable?: boolean;
+  /** Its band: it shares no run with lines of other bands, except next to a port (`meetAtPorts`). */
+  band?: number;
 };
 
 export type BoardSelection = { tile?: string; line?: string };
@@ -224,12 +228,18 @@ const edgeTypes = { line: BoardLine };
 
 function layoutInput(tiles: readonly TileSpec[], lines: readonly LineSpec[]): LayoutInput {
   return {
-    tiles: tiles.map((t) => ({ id: t.id, w: t.w, h: t.h })),
+    tiles: tiles.map((t) => ({
+      id: t.id,
+      w: t.w,
+      h: t.h,
+      ...(t.band !== undefined && { band: t.band }),
+    })),
     lines: lines.map((l) => ({
       id: l.id,
       source: l.source,
       target: l.target,
       ...(l.chip ? { chip: { w: l.chip.w, h: l.chip.h } } : {}),
+      ...(l.band !== undefined && { band: l.band }),
     })),
   };
 }

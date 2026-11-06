@@ -22,8 +22,9 @@ The last opened project reopens on the next visit; its ID is in the URL.
 
 There is one canvas, with no levels. It starts from the **user** (the actor, a stick figure), who is
 always there and is not stored. The user starts two **lanes**: **download** (following, viewing,
-consuming; usually drawn above) and **upload** (creating, posting; usually drawn below). Every tile
-hangs off a lane, with no islands and no cycles.
+consuming; drawn above) and **upload** (creating, posting; drawn below). Tiles both lanes reach sit
+in a band between them ([Layout](#layout-and-navigation)). Every tile hangs off a lane, with no
+islands and no cycles.
 
 The user does at most two things, each an **action** tile: it consumes (the download lane's action,
 **Consume** unless named otherwise: TinyURL's "Open link", YouTube's "Watch") or produces (the
@@ -53,29 +54,50 @@ future generator's frontend templates) which user flow each service serves.
 ## Layout and navigation
 
 The layout is automatic and never stored: ELK layered, left to right, with automation-illustrator's
-options, then put on the 32px grid. Each tile sits one column right of its furthest predecessor (the
-user's actions share the first column after it, and their entries the next; ELK gets the download
-action and entries first and usually keeps them above the upload ones, but not always: before the
-action tiles, 48 of the marketplace's 144 entry orders put a download entry among the upload
-entries), a fork is centred on its tile as nearly as the grid allows, and
-links that meet at the same tiles share one bus. The positions on screen are stability hints for
-the next layout, so forks keep their rows and columns when the design changes, and changes animate
-for 200ms. The first layout already follows these rules, so the first edit moves only what it
-changes. The canvas writes no layout.
+options, in three bands, then put on the 32px grid. Each tile sits one column right of its furthest
+predecessor (the user's actions share the first column after it, and their entries the next), a
+fork is centred on its tile as nearly as the grid allows, and links of one lane that meet at the
+same tiles share one bus. The positions on screen are stability hints for the next layout, so
+forks keep their rows and columns when the design changes, and changes animate for 200ms. The
+first layout already follows these rules, so the first edit moves only what it changes. The canvas
+writes no layout.
 
-On the grid (`alignLayout` in `packages/board`, run on every ELK result):
+The **lane bands** (`laneBands` in the spec decides them; `layoutBands` in `packages/board` draws
+them):
+
+- Every tile is in one band: **download** when only the Consume action reaches it, **upload** when
+  only the Produce action does, and **shared** when both do (TinyURL's URL database: the Redirect
+  service reads it, the Shorten service writes it). An action is in its own lane's band.
+- From top to bottom the bands are download, shared and upload, 32px apart: every download tile
+  sits above every shared tile, and every shared tile above every upload tile. Each band keeps its
+  own rows, so rows a band leaves empty stay empty. The user sits at the left, centred between its
+  actions: Consume above its centre, Produce below.
+- A line belongs to its source's band. Lines of different bands share no run (but see
+  [Limits](#limits)): they meet only in the last 32px before a shared tile, the download line joining from above and the upload line
+  from below. Where one of them joins a bus that goes on past the tile, the meeting is drawn as a
+  crossing (YouTube: the Video CDN's read of Encoded videos crosses the Video processor's bus to
+  the stores above it).
+- How: ELK lays out each band alone with the board's columns (forks and chains look as they did),
+  the bands are stacked, and one more ELK pass routes every line with the tiles fixed. A shared
+  tile gets one input port per band, so ELK never bundles two lanes into one bus, and a last step
+  moves a bus in the gap before a shared tile when two lanes' lines would otherwise run together
+  for more than 32px.
+
+On the grid (`alignLayout` in `packages/board`, run on every layout):
 
 - Every port sits on a grid line, and the paper's dots mark the grid's crossings. A tile's top-left
   corner sits on a dot; the user, 160px tall, has its centre on a grid line instead.
 - A line whose ends ELK left within 16px of each other is straight. ELK centres a merge between
-  its predecessors, which would leave small jogs; in TinyURL the Shorten service's line into the
-  URL database (a merge) is straight, as is the click path after the Redirect service.
+  its predecessors, which would leave small jogs; in TinyURL the click path after the Redirect
+  service is straight.
 - Other lines bend by whole grid steps, so no bend is shorter than 32px. A merge exactly between
   two equally distant tiles takes the nearer grid line, so its two lines bend by different
-  amounts (Blank with two services that both link to one database: 96px and 64px).
+  amounts (two services of one lane that both link to one database: 96px and 64px).
 - Tiles in one column keep their order with at least 32px between them; a tile that moves down
   pushes the tiles below it.
-- A line keeps ELK's bus columns. A line that passes a column keeps the row ELK gave it there.
+- Lines that turn in the same gap between columns run 32px apart, so every column and every
+  vertical run sits on a grid line. A line that passes a column keeps the row ELK gave it there,
+  16px from the tiles beside it (between two tiles 32px apart, half a step off the grid).
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and
@@ -94,13 +116,12 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 
 | Window | Both rails closed | Chat open | Inspector open | Both open |
 | --- | --- | --- | --- | --- |
-| 1440×900 | 0.85 | 0.67 | 0.66 | 0.48 |
-| 1280×800 | 0.75 | 0.57 | 0.56 | 0.38 |
+| 1440×900 | 0.70 | 0.65 | 0.64 | 0.46 |
+| 1280×800 | 0.62 | 0.56 | 0.55 | 0.37 |
 
-The marketplace study is taller than it is wide (seven lane entries), so it fits by height at
-0.42 at 1440×900 and 0.36 at 1280×800, whichever rails are open. The YouTube study fits at 0.60
-at 1440×900 and 0.53 at 1280×800 with at most one rail open, and 0.48 and 0.38 with both. The
-action tiles add a column; the lane bands (a later unit) will retune the studies' layouts.
+TinyURL draws 1,184×800px. The marketplace study (1,248×1,632px) and the YouTube study
+(1,248×1,376px) are taller than they are wide, so they fit by height whichever rails are open: the
+marketplace at 0.33 at 1440×900 and 0.29 at 1280×800, YouTube at 0.39 and 0.35.
 
 ## Creating and connecting
 
@@ -360,9 +381,11 @@ Each store has one writer, its owner: the Shorten service writes the URL databas
 service the URL cache (it fills it on a miss) and Click events, and the Analytics worker the
 Analytics store. In all: the user, two actions and eight tiles, and twelve links (the user's two
 lines to its actions, three lane entries and seven connections), three of which are asynchronous
-or follow an asynchronous link (the click path). The Stats API's entry comes first, so it is drawn
-on the top row and its read of the Analytics store runs along the top. The study has no C1
-people or relationships and no package.
+or follow an asynchronous link (the click path). The URL database, which both lanes reach, sits in
+the shared band between them. The Stats API's entry comes first, so it is drawn on the top row and
+its read of the Analytics store runs along the top; of the twelve entry and link orders, scored
+with real ELK under the lane bands, the six with this entry order draw no crossing (20 bends). The
+study has no C1 people or relationships and no package.
 
 | Part | Content |
 | --- | --- |
@@ -387,7 +410,7 @@ action, Consume or Produce); only new copies are v3.1.
 
 ## The marketplace study
 
-`studio-marketplace@1.1.0` ([factory](../packages/spec/src/studio-examples/marketplace.ts)) is a
+`studio-marketplace@1.2.0` ([factory](../packages/spec/src/studio-examples/marketplace.ts)) is a
 multi-seller marketplace with Etsy's core functionality, designed as clean microservices rather
 than copied from Etsy. Its core flows, and the tiles that carry them:
 
@@ -438,8 +461,8 @@ It is laid out in lanes from the user, through its two actions, **Browse** and *
 
 ```text
 DOWNLOAD (reads)
-  User → Browse     ⇣ Orders service → Orders database                  (reads)
-                    ⇣ Storefront API → Search index                     (reads)
+  User → Browse     ⇣ Storefront API → Search index                     (reads)
+                    ⇣ Orders service → Orders database                  (reads)
                     ⇣ Image CDN → Product images                        (reads; resizes on request)
 UPLOAD (writes)
   User → Buy & sell ⇡ Shop service → Product images, Catalog database   (the only writer of both)
@@ -458,9 +481,11 @@ Cart store. Every other link into a store reads. In all: the user, two actions a
 tiles, and 23 links (the user's two lines, seven lane entries, four of them upload, and fourteen
 connections), six of which are asynchronous or follow an asynchronous link (the listing and
 paid-order paths). Every service is TypeScript on Docker; the study has no C1 people or
-relationships and no package. Of the 144 orders of its entries, this one kept the download
-entries above the upload entries with the fewest crossings, bends and line length before the
-action tiles: two lines cross, where the Order recorder's line rises past the Search index's.
+relationships and no package. The Search index, the Orders database and Product images, which both
+lanes reach, sit in the shared band. Of its 5,184 entry and link orders, scored with real ELK under
+the lane bands, this entry order draws the fewest crossings: one, where the Orders service's read
+of the Orders database crosses the Search indexer's write into the Search index above it (34
+bends). The Shop service's and Payments' link orders don't change the drawing.
 
 | Part | Content |
 | --- | --- |
@@ -514,7 +539,7 @@ components, with nothing omitted and no findings.
 
 ## The YouTube study
 
-`studio-youtube@1.1.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
+`studio-youtube@1.2.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
 video-sharing site with YouTube's core functionality, designed as clean microservices rather than
 copied from YouTube. Its core flows, and the tiles that carry them:
 
@@ -568,16 +593,16 @@ It is laid out in lanes from the user, through its two actions, **Watch** and **
 
 ```text
 DOWNLOAD (reads)
-  User → Watch   ⇣ Search API → Search index                                 (reads)
-                 ⇣ Watch API → View counts, Metadata database                (reads)
+  User → Watch   ⇣ Watch API → View counts, Metadata database                (reads)
                              ⇢ View events ⇢ View counter → View counts      (the only writer)
+                 ⇣ Search API → Search index                                 (reads)
                  ⇣ Video CDN → Encoded videos                                (reads; resizes thumbnails)
 UPLOAD (writes)
-  User → Publish ⇡ Upload service → Original videos                          (starts, signs, completes)
+  User → Publish ⇡ Identity                                                  (sign-in)
+                 ⇡ Upload service → Original videos                          (starts, signs, completes)
                                   ⇢ Upload jobs ⇢ Video processor → Original videos   (reads)
                                                                   → Encoded videos, Metadata database,
                                                                     Search index      (the only writer)
-                 ⇡ Identity                                                  (sign-in)
 ```
 
 Each store has one writer, its owner: the Upload service writes Original videos and Upload jobs;
@@ -587,10 +612,12 @@ reads. In all: the user, two actions and fourteen tiles, and 21 links (the user'
 lane entries, two of them upload, and fourteen connections), nine of which are asynchronous or
 follow an asynchronous link (the view and upload-job paths). Every service is TypeScript on
 Docker; the study has no C1 people or relationships and no package. The Video processor has four
-links out, the most a tile can have. Before the action tiles, of the 36 orders that kept the
-download entries above the upload entries, this one had no crossing lines and was the shortest;
-the Video CDN's and the Upload service's lines still run together into the store column, which
-the lane bands (a later unit) address.
+links out, the most a tile can have. Encoded videos, the Metadata database and the Search index,
+which both lanes reach, sit in the shared band, so the Video CDN's read of Encoded videos comes down
+from the download band on its own line and meets the Video processor's write only in the last 32px.
+Of its 3,456 entry and link orders, scored with real ELK under the lane bands, this entry order
+draws the fewest crossings: three, where the Search API's and the Video CDN's reads cross the Video
+processor's bus to the stores above theirs (42 bends). The link orders don't change the drawing.
 
 | Part | Content |
 | --- | --- |
@@ -627,7 +654,7 @@ and grew from one MySQL database to replicas, then to shards behind Vitess, whic
 **Nothing was added to the canvas for this study.** Every tile, setting and link uses existing
 options, including the CDN's Image resizing and the queue's work-queue and topic modes. Version
 1.0.0 had the user's upload entry straight into Original videos; since the action tiles a user
-reaches storage only through a service, and 1.1.0 leaves that entry out. Three entries per
+reaches storage only through a service, and 1.1.0 left that entry out. Three entries per
 action are within the cap of four.
 
 The study stores no layout. Its blueprint has two actions, five entries, six services, eight
@@ -637,25 +664,28 @@ sixteen components, with nothing omitted and no findings.
 ## Limits
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
-  scale with the board. With both rails open (TinyURL fits at 0.48 at 1440×900, 0.38 at 1280×800)
+  scale with the board. With both rails open (TinyURL fits at 0.46 at 1440×900, 0.37 at 1280×800)
   the tabs are about 19px or 15px, tile names are small, and the fan's seven icons cover nearby
   tiles (a `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up
   in a column along it, sometimes over the tile's own tabs. Closing a rail helps; a fitted camera
   refits by itself.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
-  marketplace study (seventeen tiles, 1,312px tall) fits at 0.42 at 1440×900 and 0.36 at
-  1280×800, with tile names too small to read until you zoom in.
+  marketplace study (seventeen tiles, 1,632px tall) fits at 0.33 at 1440×900 and 0.29 at
+  1280×800, and YouTube (1,376px) at 0.39 and 0.35, with tile names too small to read until you
+  zoom in.
+- The lane bands cost height. A band's rows hold only its own tiles, so a column the shared band
+  leaves empty stays empty between the lanes (YouTube: the space between the Video CDN and
+  Identity, beside the three shared stores). The studies grew taller with the bands (YouTube from
+  928px to 1,376px, the marketplace from 1,312px to 1,632px).
 - A notice stays at the bottom of the canvas until you dismiss it, Undo or Redo, or open another
   project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
   can sit over it.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back.
-- Where two services fork to the same tiles, their lines share one bus (TinyURL: the Redirect
-  service and the Shorten service both reach the URL database; the marketplace: the Image CDN and
-  the Shop service reach Product images, and the Shop service and Payments the Catalog database;
-  YouTube: every store sits in the last column, so the lines into all five stores share one
-  vertical bus, and the Video CDN's line runs with the Upload service's before it). Selecting a
-  tile colours its own lines,
+- Where two services of one lane fork to the same tiles, their lines share one bus (the
+  marketplace: the Shop service and Payments into the Catalog database; YouTube: the Upload
+  service's write of Original videos joins the Video processor's bus). Lines of different lanes
+  meet only in the last 32px before a shared tile. Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
   remove a particular one, click its row in the tile's Connections list.
@@ -673,7 +703,11 @@ sixteen components, with nothing omitted and no findings.
   loads unchanged and reports it ("Produce can't link to Original videos; an action reaches a
   service (not a worker), an API or the CDN."). Until that entry is removed (select its line and
   click its X), every other lane command on the design is refused with "Fix the lanes first."
-- A warning's mark scales with the board: at TinyURL's both-rails fit (0.48) it is about 11px
+- A warning's mark scales with the board: at TinyURL's both-rails fit (0.46) it is about 10px
   across. The system's inspector lists every warning at full size.
+- Keeping the lanes' lines apart is checked on the three studies and the board's own test cases.
+  The last step before a shared tile moves or swaps one bus at a time, so an unusual design could
+  still leave two lanes' lines running together for more than 32px there. A design whose links
+  loop (only a broken stored one can) is laid out without bands.
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).

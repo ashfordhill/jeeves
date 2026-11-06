@@ -139,6 +139,14 @@ upload lane has sign-in, the seller's shop, payments and the cart. A broken rule
 these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
 C1 people, external systems and relationships are not tiles and are not checked.
 
+**Lane bands** (`laneBands(graph)` in [`studio-lanes.ts`](packages/spec/src/studio-lanes.ts)):
+a tile only the Consume action reaches is in the `download` band, one only Produce reaches in
+`upload`, and one both reach in `shared`; an action is in its own lane's band, a line in its
+source's, and the user in none. The canvas stacks them in `laneBandOrder` (download, shared,
+upload) and keeps lines of different bands apart except in the last 32px before a shared tile
+([studio guide](docs/studio.md#layout-and-navigation)). Bands are layout only: they add no rule,
+finding or blueprint field.
+
 **Design warnings** ([`studio-warnings.ts`](packages/spec/src/studio-warnings.ts)) are designs
 that look wrong but are allowed, because a design is built step by step. `studioWarnings(design)`
 returns `{ rule, node, message }` (the node is the tile's ID or the action's `laneActionNode`);
@@ -286,7 +294,7 @@ eight tiles, twelve links (the user's two lines, three entries and seven connect
 components
 ([guide](docs/studio.md#the-tinyurl-study)).
 
-**Marketplace** (`studio-marketplace@1.1.0`) is a multi-seller marketplace with Etsy's core
+**Marketplace** (`studio-marketplace@1.2.0`) is a multi-seller marketplace with Etsy's core
 functionality as clean microservices (Educative, System Design Handbook, ByteByteGo's payment
 system, Online Boutique, eShop, Stripe Connect, and Cloudflare's and AWS's image delivery). The
 Shop service is the only writer of the catalog and its photos, and publishes listing changes that a
@@ -298,7 +306,7 @@ tiles, 23 links (the user's two lines, seven entries, four of them upload, and f
 connections) and sixteen components
 ([guide](docs/studio.md#the-marketplace-study)).
 
-**YouTube** (`studio-youtube@1.1.0`) is a video-sharing site with YouTube's core functionality as
+**YouTube** (`studio-youtube@1.2.0`) is a video-sharing site with YouTube's core functionality as
 clean microservices (ByteByteGo, HelloInterview, DesignGurus' Grokking and crash course, AWS's
 multipart uploads, Cloudflare R2). Creators upload in resumable parts with URLs the Upload service
 signs, and the Upload service writes Original videos; an upload job queue feeds

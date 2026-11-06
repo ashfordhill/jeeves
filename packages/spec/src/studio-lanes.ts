@@ -35,9 +35,9 @@ export type LaneGraph = { nodes: LaneNode[]; edges: LaneEdge[] };
 /**
  * Nodes are the actor, the actions (download, then upload), then tiles breadth-first from the
  * download entries, then from the upload entries (children in connection order), then any
- * unreachable tiles in document order, so ELK usually lays out download above upload (it can
- * interleave them). Edges are the user's lines to its actions, the entries, then each node's
- * connections in node order. Links to elements that do not exist are left out (validation
+ * unreachable tiles in document order; within a band (`laneBands`) the canvas keeps this order
+ * top to bottom where it can. Edges are the user's lines to its actions, the entries, then each
+ * node's connections in node order. Links to elements that do not exist are left out (validation
  * reports them). A lane with entries but no stored action has its default one (`studioActions`).
  */
 export function laneGraph(design: DesignDocument): LaneGraph {
@@ -111,6 +111,44 @@ export function laneGraph(design: DesignDocument): LaneGraph {
     edges.filter((edge) => !edge.async),
   );
   for (const edge of edges) edge.dashed = edge.async || !synchronous.has(edge.source);
+  return { nodes, edges };
+}
+
+/**
+ * The lane bands, top to bottom on the canvas: what only the Consume action reaches, what both
+ * actions reach, and what only the Produce action reaches.
+ */
+export const laneBandOrder = ["download", "shared", "upload"] as const;
+export type LaneBand = (typeof laneBandOrder)[number];
+
+/**
+ * Each node's band and each line's. An action is in its own lane's band; a tile is in `download`
+ * or `upload` when only that lane's action reaches it (through any links), `shared` when both
+ * do. A line belongs to its source's band. The actor, its lines and tiles no action reaches have
+ * none. The canvas stacks the bands in `laneBandOrder`, and lines of different bands share no run
+ * except where they enter a shared tile.
+ */
+export function laneBands(graph: LaneGraph): {
+  nodes: Map<string, LaneBand>;
+  edges: Map<string, LaneBand>;
+} {
+  const from = (lane: StudioLane) => {
+    const action = laneActionNode(lane);
+    return graph.nodes.some((node) => node.id === action)
+      ? reachableFrom(action, graph.edges)
+      : new Set<string>();
+  };
+  const [download, upload] = [from("download"), from("upload")];
+  const nodes = new Map<string, LaneBand>();
+  for (const node of graph.nodes) {
+    const [d, u] = [download.has(node.id), upload.has(node.id)];
+    if (d || u) nodes.set(node.id, d && u ? "shared" : d ? "download" : "upload");
+  }
+  const edges = new Map<string, LaneBand>();
+  for (const edge of graph.edges) {
+    const band = nodes.get(edge.source);
+    if (band) edges.set(edge.id, band);
+  }
   return { nodes, edges };
 }
 

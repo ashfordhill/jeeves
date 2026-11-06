@@ -3,11 +3,11 @@
  * stream, search, view counts), designed as clean microservices from published designs. Design
  * intent only.
  *
- * In lanes: the user watches (download, the **Watch** action) through the Search API, the Watch
- * API (a video's details and view count; it also records each view) and the Video CDN (segments,
- * playlists and thumbnails), and publishes (upload, the **Publish** action) through the Upload
- * service (it starts, signs and completes a multipart upload, and writes Original videos) and
- * Identity (sign-in).
+ * In lanes: the user watches (download, the **Watch** action) through the Watch API (a video's
+ * details and view count; it also records each view), the Search API and the Video CDN (segments,
+ * playlists and thumbnails), and publishes (upload, the **Publish** action) through Identity
+ * (sign-in) and the Upload service (it starts, signs and completes a multipart upload, and writes
+ * Original videos).
  *
  * What the sources agree on, and what each tile traces to:
  * - All four: originals in object storage (Original videos), uploaded in parts that can resume;
@@ -81,7 +81,7 @@ const description =
 
 export const YOUTUBE_STUDIO_EXAMPLE = {
   id: "studio-youtube",
-  version: "1.1.0",
+  version: "1.2.0",
   name: "YouTube · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -273,18 +273,19 @@ const actions: StudioLaneAction[] = [
   { lane: "upload", name: "Publish" },
 ];
 /**
- * Watch reaches the Search API, the Watch API and the Video CDN; Publish reaches the Upload
- * service and Identity. Of the 36 orders that kept download above upload before the action
- * tiles, this one drew no crossing lines and was the shortest: the Search API's read runs along
- * the top row and the view path sits under it. Layout tuning for the action tiles waits for the
- * lane bands (LA03).
+ * Watch reaches the Watch API, the Search API and the Video CDN; Publish reaches Identity and the
+ * Upload service. Of the 3,456 entry and link orders, scored with real ELK under the lane bands,
+ * this entry order draws the fewest crossings (three, where the Search API's and the Video CDN's
+ * reads pass the Video processor's writes into the stores above them) and 42 bends: the view path
+ * runs along the top row, the three reads come down into the shared stores in order, and Identity
+ * sits above the Upload service, clear of its lines. The link orders don't change the drawing.
  */
 const entries: StudioEntry[] = [
-  { id: "download-search", lane: "download", element: "search" },
   { id: "download-watch", lane: "download", element: "watch" },
+  { id: "download-search", lane: "download", element: "search" },
   { id: "download-video-cdn", lane: "download", element: "video-cdn" },
-  { id: "upload-service", lane: "upload", element: "upload" },
   { id: "upload-identity", lane: "upload", element: "identity" },
+  { id: "upload-service", lane: "upload", element: "upload" },
 ];
 
 const service = (

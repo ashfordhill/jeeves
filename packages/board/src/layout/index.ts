@@ -3,8 +3,10 @@
 
 export * from "./align.ts";
 export * from "./animate.ts";
+export * from "./bands.ts";
 export * from "./elkGraph.ts";
 export * from "./elkLayout.ts";
 export * from "./engine.ts";
+export * from "./junctions.ts";
 export * from "./metrics.ts";
 export * from "./polyline.ts";

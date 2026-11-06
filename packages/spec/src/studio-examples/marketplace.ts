@@ -2,8 +2,8 @@
  * The marketplace study: a multi-seller marketplace with Etsy's core functionality, designed as
  * clean microservices from published designs. Design intent only.
  *
- * In lanes: the user browses (download, the **Browse** action) through the Orders service (buyers'
- * and sellers' orders), the Storefront API (the listing grid, search and product pages) and the
+ * In lanes: the user browses (download, the **Browse** action) through the Storefront API (the
+ * listing grid, search and product pages), the Orders service (buyers' and sellers' orders) and the
  * Image CDN (product photos at any size), and buys and sells (upload, the **Buy & sell** action)
  * through the Shop service (a seller opens a shop and lists products), Identity (sign-in),
  * Payments (the checkout, and sellers' payouts) and the Cart service.
@@ -76,7 +76,7 @@ const description =
 
 export const MARKETPLACE_STUDIO_EXAMPLE = {
   id: "studio-marketplace",
-  version: "1.1.0",
+  version: "1.2.0",
   name: "Marketplace · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -267,15 +267,17 @@ const actions: StudioLaneAction[] = [
   { lane: "upload", name: "Buy & sell" },
 ];
 /**
- * Browse reaches the Orders service, the Storefront API and the Image CDN; Buy & sell reaches the
- * Shop service, Identity, Payments and the Cart service. This order kept the lines from crossing
- * on the canvas before the action tiles: the Orders service's read runs along the top row, the
- * Image CDN sits next to the Shop service that writes its photos, and Payments next to the Cart.
- * Layout tuning for the action tiles waits for the lane bands (LA03).
+ * Browse reaches the Storefront API, the Orders service and the Image CDN; Buy & sell reaches the
+ * Shop service, Identity, Payments and the Cart service. Of the 5,184 entry and link orders,
+ * scored with real ELK under the lane bands, this entry order draws the fewest crossings (one,
+ * where the Orders service's read passes the Search indexer's write into the Search index above
+ * it) and 34 bends; the Storefront API's read runs along the top row into the Search index, and
+ * the Image CDN sits just above Product images. The Shop service's and Payments' link orders
+ * don't change the drawing.
  */
 const entries: StudioEntry[] = [
-  { id: "download-orders", lane: "download", element: "orders" },
   { id: "download-storefront", lane: "download", element: "storefront" },
+  { id: "download-orders", lane: "download", element: "orders" },
   { id: "download-image-cdn", lane: "download", element: "image-cdn" },
   { id: "upload-shop", lane: "upload", element: "shop" },
   { id: "upload-identity", lane: "upload", element: "identity" },
