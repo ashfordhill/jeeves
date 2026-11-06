@@ -2,6 +2,7 @@
 import type { Classification } from "./architecture-choices.ts";
 import type {
   DefinitionRef,
+  StudioCodedKind,
   StudioConnectionSettings,
   StudioKind,
   StudioSettings,
@@ -34,7 +35,7 @@ import {
   studioHostSchema,
   studioIdentityProviderSchema,
   studioInteractionSchema,
-  studioLanguageSchema,
+  studioKindLanguages,
   studioLimits,
   studioNotificationProviderSchema,
   studioObjectAccessSchema,
@@ -230,32 +231,36 @@ const general: readonly StudioCanonicalField[] = [
     optional: true,
   },
 ];
-const commonApplication = [
-  {
-    path: "settings.execution",
-    label: "Execution",
-    group: "General",
-    control: "select",
-    choices: choices(studioExecutionSchema.options),
-    help: "Execution intent; no deployment is started.",
-  },
-  {
-    path: "settings.language",
-    label: "Language",
-    group: "General",
-    control: "select",
-    choices: choices(studioLanguageSchema.options),
-    help: "Language intent only; it selects no runtime or template.",
-  },
-  {
-    path: "settings.host",
-    label: "Host",
-    group: "Options",
-    control: "select",
-    choices: choices(studioHostSchema.options),
-    when: { path: "settings.execution", equals: "managed" },
-  },
-] as const;
+const execution = {
+  path: "settings.execution",
+  label: "Execution",
+  group: "General",
+  control: "select",
+  choices: choices(studioExecutionSchema.options),
+  help: "Execution intent; no deployment is started.",
+} as const;
+const host = {
+  path: "settings.host",
+  label: "Host",
+  group: "Options",
+  control: "select",
+  choices: choices(studioHostSchema.options),
+  when: { path: "settings.execution", equals: "managed" },
+} as const;
+/** A coded kind's execution, its two languages (default first) and host. */
+const codedApplication = (kind: StudioCodedKind) =>
+  [
+    execution,
+    {
+      path: "settings.language",
+      label: "Language",
+      group: "General",
+      control: "select",
+      choices: choices(studioKindLanguages[kind]),
+      help: "Language intent only; it selects no runtime or template.",
+    },
+    host,
+  ] as const;
 const exposure = {
   path: "settings.exposure",
   label: "Exposure",
@@ -317,7 +322,7 @@ export const studioDefinitions = Object.freeze({
     classification: applicationClassification,
     role: "application",
     visual: { icon: "server", color: "api", shape: "service" },
-    fields: [...general, ...commonApplication, exposure],
+    fields: [...general, ...codedApplication("service"), exposure],
     relationships: ["calls", "uses-resource", "publish", "consume"],
     c4bObligations: applicationObligations,
   }),
@@ -368,7 +373,7 @@ export const studioDefinitions = Object.freeze({
     visual: { icon: "cpu", color: "worker", shape: "worker" },
     fields: [
       ...general,
-      ...commonApplication,
+      ...codedApplication("worker"),
       {
         path: "settings.concurrency",
         label: "Concurrency",
@@ -391,7 +396,7 @@ export const studioDefinitions = Object.freeze({
     visual: { icon: "credit-card", color: "api", shape: "service" },
     fields: [
       ...general,
-      ...commonApplication,
+      ...codedApplication("billing"),
       exposure,
       {
         path: "settings.provider",
@@ -416,7 +421,7 @@ export const studioDefinitions = Object.freeze({
     visual: { icon: "route", color: "api", shape: "service" },
     fields: [
       ...general,
-      ...commonApplication,
+      ...codedApplication("redirect"),
       exposure,
       {
         path: "settings.lookupStoreConnection",
@@ -450,7 +455,7 @@ export const studioDefinitions = Object.freeze({
     visual: { icon: "mail", color: "api", shape: "service" },
     fields: [
       ...general,
-      ...commonApplication,
+      ...codedApplication("notification"),
       exposure,
       {
         path: "settings.provider",
@@ -475,7 +480,7 @@ export const studioDefinitions = Object.freeze({
     visual: { icon: "lock", color: "api", shape: "service" },
     fields: [
       ...general,
-      ...commonApplication,
+      ...codedApplication("identity"),
       exposure,
       {
         path: "settings.provider",
@@ -500,7 +505,8 @@ export const studioDefinitions = Object.freeze({
     visual: { icon: "arrows-split", color: "api", shape: "service" },
     fields: [
       ...general,
-      ...commonApplication,
+      execution,
+      host,
       exposure,
       {
         path: "settings.routing",

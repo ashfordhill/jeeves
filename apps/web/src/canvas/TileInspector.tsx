@@ -1,5 +1,6 @@
-// A tile's inspector: its icon, name and kind; the kind row (one icon per kind of its tile type, a
-// click is `changeKind`, a kind the rules refuse is disabled with the reason as its tooltip); then
+// A tile's inspector: its icon, name and kind; the Type list (each kind of its tile type with its
+// icon and name, the current one highlighted; a click is `changeKind`, a kind the rules refuse is
+// disabled with the reason as its tooltip); then
 // General, Options, Connections and, for an application, Modules. Modules are a list with a `+`
 // icon menu (`createComponent`); a module opens its own form, with a way back to the tile. Each
 // change is one batch and one undo step. Modules are never drawn on the canvas.
@@ -45,8 +46,8 @@ function changeKindRefusal(
   }
 }
 
-/** One icon button per kind of the tile's type, the current kind pressed. Hidden for one kind. */
-function KindRow({
+/** The Type list: each kind of the tile's type by icon and name. Hidden for a one-kind type. */
+function TypeList({
   projectId,
   design,
   element,
@@ -67,7 +68,8 @@ function KindRow({
   }, [design, element]);
   if (choices.length < 2) return null;
   return (
-    <fieldset className="lane-kinds" aria-label="Kind">
+    <fieldset className="lane-kinds" aria-label="Type">
+      <legend>Type</legend>
       {choices.map(({ kind, current, refusal }) => {
         const definition = studioDefinitions[kind];
         return (
@@ -76,9 +78,8 @@ function KindRow({
             type="button"
             className="lane-kind"
             data-family={definition.visual.color}
-            aria-label={definition.name}
             aria-pressed={current}
-            title={refusal ?? definition.name}
+            title={refusal ?? definition.description}
             disabled={!!refusal}
             onClick={() => {
               if (current) return;
@@ -88,7 +89,10 @@ function KindRow({
               );
             }}
           >
-            <StudioIcon name={definition.visual.icon} size={22} />
+            <span className="lane-kind-icon">
+              <StudioIcon name={definition.visual.icon} size={18} />
+            </span>
+            <span className="lane-kind-name">{definition.name}</span>
           </button>
         );
       })}
@@ -285,7 +289,7 @@ export function TileInspector({
         {name}
       </h2>
       {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
-      <KindRow projectId={projectId} design={design} element={id} />
+      <TypeList projectId={projectId} design={design} element={id} />
       <TargetInspector
         projectId={projectId}
         element={id}

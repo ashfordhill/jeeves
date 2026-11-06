@@ -20,11 +20,11 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 | `service` | Microservice | Service (default) | One independently deployed application. |
 | `worker` | Worker service | Service | A background application; the default after a queue. |
 | `redirect` | Redirect | Service | A public redirect service with lookup store and cache shortcuts. |
-| `identity` | Identity | Service | One service integrating an existing identity provider. |
-| `notification` | Notifications | Service | One service with email delivery intent. |
-| `billing` | Billing | Service | One service with a payment provider choice. |
-| `gateway` | Gateway | API (default) | An entry point routing requests to internal services. |
-| `cdn` | CDN | API | Content delivery in front of an application or object store. |
+| `identity` | Identity | Service | One service integrating an existing identity provider (starts with OIDC). |
+| `notification` | Notifications | Service | One service with email delivery intent (starts with Resend). |
+| `billing` | Billing | Service | One service with a payment provider choice (starts with Stripe). |
+| `gateway` | Gateway | API (default) | An entry point routing requests to internal services (starts with Traefik). |
+| `cdn` | CDN | API | Content delivery in front of an application or object store (starts with Cloudflare). |
 | `database` | Database | Database (default) | A logical store; engine and provider are separate choices. |
 | `search` | Search index | Database | A derived search index. |
 | `cache` | Cache | Cache | A logical cache with an optional TTL. |
@@ -35,11 +35,20 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 
 A new database, cache, storage or queue tile is owned by the application it is added next to.
 
+Each coded kind offers two languages, default first: Microservice, Worker service, Identity,
+Notifications and Billing TypeScript or Go; Redirect Go or TypeScript. Gateway and CDN are
+products, not code, and have no language (`studioKindLanguages`, [studio
+settings](docs/studio-settings.md#languages)).
+
+A provider chosen on a kind is that service's integration, not a separate tile: Billing with
+Stripe needs no External tile for Stripe. **External API tiles are for third parties no kind
+covers.** The chat instructions say the same.
+
 ## Tile types (lane canvas)
 
 The lane canvas groups kinds into seven tile types, offered as icons in a pulled tab's fan (only
 the types the link table accepts there). The first kind is the default and the others are
-variants, switched by the kind row in the tile's inspector (`changeKind`).
+variants, switched by the Type list in the tile's inspector (`changeKind`).
 Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
@@ -140,7 +149,7 @@ there is none; a pick runs `addTile`. The link tool shows when `attachOptions` h
 drop runs that option's `linkTiles`. Both leave out `link`, so the pair's default mode applies. A
 tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
 `alsoRemove`) and a line's X runs `removeLink` ([removing](docs/studio.md#removing)); the
-inspector's kind row runs `changeKind`
+inspector's Type list runs `changeKind`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
 reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
@@ -194,10 +203,10 @@ Settings name providers as intent only: they create no box, credential, deployme
 | --- | --- |
 | Managed hosting | Cloudflare Workers, AWS, Google Cloud, external |
 | Browser hosting | Cloudflare, AWS, Google Cloud, external |
-| Payments, email, identity | Stripe; Resend, Amazon SES; OIDC; or external |
-| Gateway product | Envoy, Kong, NGINX, Traefik, Amazon API Gateway, external |
+| Payments, email, identity | Stripe; Resend, Amazon SES; OIDC; or external (Stripe, Resend and OIDC preset) |
+| Gateway product | Traefik (preset), Envoy, Kong, NGINX, Amazon API Gateway, external |
 | Databases and caches | self-hosted, AWS, Google Cloud, Neon, Supabase, Cloudflare D1, Upstash (by engine) |
-| Queues, object storage, search, CDN | self-hosted, AWS, Google Cloud, Cloudflare Queues/R2, Amazon S3/CloudFront, Google Cloud Storage/CDN, external (by kind) |
+| Queues, object storage, search, CDN | self-hosted, AWS, Google Cloud, Cloudflare Queues/R2, Amazon S3/CloudFront, Google Cloud Storage/CDN, external (by kind; a CDN starts with Cloudflare) |
 
 ## Chat model providers
 

@@ -249,8 +249,10 @@
 
 /* A tile's kind row (automation-illustrator's Type keys): one icon per kind of its tile type, the
    current kind filled yellow; a refused kind is faded, with the reason as its tooltip. */
+/* The Type list: each kind of the tile's type, icon and name, the current one highlighted. */
 .lane-kinds {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
   min-inline-size: 0;
   margin: 12px 0 0;
@@ -258,21 +260,41 @@
   border: 0;
 }
 
+.lane-kinds legend {
+  grid-column: 1 / -1;
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 13px;
+}
+
 .lane-kind {
   display: flex;
-  flex: 1 1 0;
   align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  max-width: 48px;
-  height: 40px;
-  padding: 0;
+  gap: 6px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 8px;
   border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cream);
-  color: var(--type-color, var(--ink));
+  color: var(--ink);
   box-shadow: var(--chip-shadow);
+  font: inherit;
+  font-size: 13px;
+  text-align: start;
   cursor: pointer;
+}
+
+.lane-kind-icon {
+  display: flex;
+  flex: none;
+  color: var(--type-color, var(--ink));
+}
+
+.lane-kind-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lane-kind[aria-pressed="true"] {
@@ -281,6 +303,10 @@
   color: var(--on-yellow);
   box-shadow: none;
   cursor: default;
+}
+
+.lane-kind[aria-pressed="true"] .lane-kind-icon {
+  color: inherit;
 }
 
 .lane-kind:disabled {

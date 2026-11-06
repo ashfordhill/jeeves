@@ -16,6 +16,7 @@ import {
   laneGraph,
   laneLimits,
   type OperationInput,
+  type StudioKind,
   type StudioLane,
   type StudioLinkRole,
   type StudioLinkRule,
@@ -23,6 +24,7 @@ import {
   studioComponentDefinitions,
   studioComponentKinds,
   studioDefinitions,
+  studioKindLanguages,
   studioKindSchema,
   studioLanes,
   studioLinkRules,
@@ -76,14 +78,14 @@ Commands (applyStudioCommands, with getDesign's baseRevision):
 - setEntryLane: moves an entry to the other lane ("download" or "upload"), within that lane's cap.
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.
-- changeKind: switches a tile to another kind of its tile type, as the inspector's kind row does; its settings start from that kind's defaults.
+- changeKind: switches a tile to another kind of its tile type, as the inspector's Type list does; its settings start from that kind's defaults.
 - edit (a tile's name, purpose, settings or owner), editSystem (the system name and goal), editConnection (a link's label, protocol, interaction, access and settings). Settings are complete values, not patches.
 - createComponent, editComponent, connectComponent, disconnectComponent, removeComponent: modules inside an application tile. A module reaches other tiles only through its tile's own links.
 IDs are lowercase slugs, unique across the design. Name a new link "source-target" and a new entry "lane-target", as the canvas does.
 
 Several commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.
 
-Only names and purposes, the system goal, finite settings, ownership, links and modules are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior in the goal and name it as an implementation obligation. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.
+Only names and purposes, the system goal, finite settings, ownership, links and modules are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior in the goal and name it as an implementation obligation. Kinds come preconfigured (listStudioDefinitions shows each kind's defaults): Billing starts with Stripe, Notifications with Resend, Identity with OpenID Connect, Gateway with Traefik and CDN with Cloudflare; the other provider choices stay selectable. Each coded kind offers two languages, its default first (languages in listStudioDefinitions and getDesign); any other language is refused. Gateway and CDN are products, not code, and have no language. A provider chosen on a kind (Billing with Stripe) is that service's integration: never add a separate External tile for it. External tiles are for third parties no kind covers. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.
 
 Keep designs small and readable: a few tiles per lane (at most 15 to start), short names, useful purposes. Docker is the default intent for a new service. No provider setup or credentials. Ask one focused askUser question only when the answer changes the architecture, then end the turn. Reply briefly with what changed and what remains open. Messages beginning [Jeeves] are caller context; "this" or "the selected" means its selected identities (a tile, link or entry on the canvas).`;
 
@@ -129,7 +131,17 @@ const caps = {
   entriesPerLane: laneLimits.entriesPerLane,
 };
 
-/** The tile types the canvas offers, each with its kinds (the first is the default). */
+/** A coded kind's two languages, default first; nothing for a product kind (Gateway, CDN). */
+function languagesOf(kind: StudioKind) {
+  return Object.hasOwn(studioKindLanguages, kind)
+    ? { languages: studioKindLanguages[kind as keyof typeof studioKindLanguages] }
+    : {};
+}
+
+/**
+ * The tile types the canvas offers, each with its kinds (the first is the default), each kind's
+ * languages and its preset defaults (a new tile or `changeKind` starts with them).
+ */
 function catalogSummary() {
   return {
     tileTypes: studioTileTypes.map((type) => ({
@@ -139,6 +151,8 @@ function catalogSummary() {
         kind,
         name: studioDefinitions[kind].name,
         description: studioDefinitions[kind].description,
+        ...languagesOf(kind),
+        defaults: studioDefinitions[kind].defaults,
       })),
     })),
     modules: studioComponentKinds.map((kind) => {
@@ -210,7 +224,11 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
           id: node.id,
           name: element?.name,
           ...(element?.description && { description: element.description }),
-          ...(node.kind && { type: tileTypeOf(node.kind), kind: node.kind }),
+          ...(node.kind && {
+            type: tileTypeOf(node.kind),
+            kind: node.kind,
+            ...languagesOf(node.kind),
+          }),
           ...(binding?.owner && { owner: binding.owner }),
           settings: binding?.settings,
           links: graph.edges

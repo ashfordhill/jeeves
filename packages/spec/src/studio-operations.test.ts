@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
-import { type DesignDocument, emptyDesign } from "./design.ts";
+import { type DesignDocument, designSchema, emptyDesign } from "./design.ts";
 import { createStudioComponentSettings } from "./studio-components.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
-import { createStudioSettings } from "./studio-model.ts";
+import { createStudioSettings, studioKindLanguages, studioSettingsSchema } from "./studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
 
 const tinyurl = () => studioArchitectureExample("studio-tinyurl").design;
@@ -167,5 +167,99 @@ describe("buildStudioCommand", () => {
         settings: { kind: "service", runtime: "cobol" },
       } as unknown as StudioCommand),
     ).toThrow();
+  });
+});
+
+describe("preconfigured kinds and languages", () => {
+  it("starts each kind with the owner-approved provider and its default language", () => {
+    expect(createStudioSettings("billing")).toMatchObject({
+      provider: "stripe",
+      language: "typescript",
+    });
+    expect(createStudioSettings("notification")).toMatchObject({
+      provider: "resend",
+      language: "typescript",
+    });
+    expect(createStudioSettings("identity")).toMatchObject({
+      provider: "oidc",
+      language: "typescript",
+    });
+    expect(createStudioSettings("gateway")).toMatchObject({ provider: "traefik" });
+    expect(createStudioSettings("gateway")).not.toHaveProperty("language");
+    expect(createStudioSettings("cdn")).toEqual({ kind: "cdn", provider: "cloudflare" });
+    expect(createStudioSettings("redirect").language).toBe("go");
+    expect(createStudioSettings("service").language).toBe("typescript");
+    expect(createStudioSettings("worker").language).toBe("typescript");
+    expect(studioKindLanguages).toEqual({
+      service: ["typescript", "go"],
+      worker: ["typescript", "go"],
+      redirect: ["go", "typescript"],
+      identity: ["typescript", "go"],
+      notification: ["typescript", "go"],
+      billing: ["typescript", "go"],
+    });
+  });
+
+  it("changeKind starts from the new kind's presets", () => {
+    const { design } = run(tinyurl(), {
+      type: "changeKind",
+      element: "shorten-api",
+      kind: "billing",
+    });
+    expect(studio(design).elements.find((b) => b.element === "shorten-api")?.settings).toEqual({
+      kind: "billing",
+      execution: "docker",
+      exposure: "internal",
+      language: "typescript",
+      provider: "stripe",
+    });
+  });
+
+  it("refuses a language outside the kind's pair, and any language on a gateway", () => {
+    const refusal = (settings: unknown) => {
+      const parsed = studioSettingsSchema.safeParse(settings);
+      return parsed.success ? undefined : parsed.error.issues[0]?.message;
+    };
+    for (const language of ["csharp", "python", "unspecified"])
+      expect(refusal({ ...createStudioSettings("billing"), language })).toBe(
+        "Choose TypeScript or Go; this kind offers no other language.",
+      );
+    expect(refusal({ ...createStudioSettings("redirect"), language: "rust" })).toBe(
+      "Choose Go or TypeScript; this kind offers no other language.",
+    );
+    expect(refusal({ ...createStudioSettings("gateway"), language: "go" })).toBeDefined();
+    expect(refusal({ ...createStudioSettings("billing"), language: "go" })).toBeUndefined();
+    // Commands parse strictly: an edit with another language is refused, not normalised.
+    expect(() =>
+      buildStudioCommand(tinyurl(), {
+        type: "edit",
+        element: "shorten-api",
+        settings: { ...createStudioSettings("service"), language: "csharp" },
+      } as unknown as StudioCommand),
+    ).toThrow(/this kind offers no other language/);
+  });
+
+  it("reads a stored language outside the pair as the kind's default", () => {
+    const stored = JSON.parse(JSON.stringify(tinyurl()));
+    const setting = (id: string) =>
+      stored.architecture.studio.elements.find((b: { element: string }) => b.element === id)
+        .settings;
+    setting("shorten-api").language = "csharp";
+    setting("redirect").language = "unspecified";
+    setting("analytics").language = "go";
+    const settings = (design: DesignDocument, id: string) =>
+      studio(design).elements.find((b) => b.element === id)?.settings;
+    const design = designSchema.parse(stored);
+    expect(settings(design, "shorten-api")).toMatchObject({ language: "typescript" });
+    expect(settings(design, "redirect")).toMatchObject({ language: "go" });
+    expect(settings(design, "analytics")).toMatchObject({ language: "go" });
+
+    const gateway = JSON.parse(JSON.stringify(tinyurl()));
+    const binding = gateway.architecture.studio.elements.find(
+      (b: { element: string }) => b.element === "shorten-api",
+    );
+    binding.definition.id = "studio-gateway";
+    binding.settings = { ...createStudioSettings("gateway"), language: "unspecified" };
+    expect(settings(designSchema.parse(gateway), "shorten-api")).not.toHaveProperty("language");
   });
 });

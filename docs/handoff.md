@@ -1935,3 +1935,80 @@ Notes for the next units:
   user's lane tabs, so left as is.
 - DP03's note stands: `connection-drafts.ts` has its own "Queue connections require Asynchronous"
   check.
+
+## DP05 — Inspector: type list, preconfigured kinds, two languages (2026-11-05)
+
+What changed:
+
+- **Type list.** `TileInspector.tsx`'s icon-only kind row is now a labelled **Type** list
+  (`KindRow` → `TypeList`; a fieldset with legend "Type"): each kind's icon and name in two
+  columns, the current one yellow and `aria-pressed`, a refused one disabled with the reason as
+  its title; an enabled kind's title is its one-line description. Shown for Service, API and
+  Database. `canvas.css` restyles `.lane-kind` (`.lane-kind-icon`, `.lane-kind-name`).
+- **Presets.** `createStudioSettings` (so new tiles and `changeKind`) starts Billing with
+  `stripe`, Notifications with `resend`, Identity with `oidc`, Gateway with `traefik` and CDN with
+  `cloudflare`. Other choices stay selectable.
+- **Two languages per kind.** `studioLanguageSchema` is `typescript | go` (no `unspecified`);
+  `studioKindLanguages` holds each coded kind's pair, default first (Redirect `go, typescript`,
+  the rest `typescript, go`). Each coded kind's schema takes `z.enum(pair)` with the message
+  "Choose TypeScript or Go; this kind offers no other language." Gateway's schema has no
+  `language` any more (nor its form field); CDN never had one; browser unchanged. The definition
+  fields build the Language select from the kind's pair (`codedApplication(kind)`).
+- **Normalising stored designs.** `normalizeStoredStudioSettings`, run as a `z.preprocess` on
+  `studioElementBindingSchema.settings` (the model schema, where DP02 normalises `both`): a coded
+  kind's language outside its pair, or missing, reads as the kind's default; a gateway's
+  `language` is dropped. Commands (`edit`, `addTile`, …) parse settings with the strict
+  `studioSettingsSchema`, so an out-of-pair language is refused, not normalised. Values that load
+  changed: `unspecified`, `javascript`, `python`, `java`, `csharp`, `rust` on service, worker,
+  redirect, identity, notification and billing (→ that kind's default), and any language on a
+  gateway (→ removed). Stored providers are not touched (an `unspecified` Billing stays so).
+- **Chat.** `catalogSummary` (listStudioDefinitions and the turn context) gives each kind
+  `languages` (coded kinds) and `defaults`; `getDesign` gives each coded tile its `languages`. The
+  settings JSON Schema in the tool and `describeStudioDefinition` now enumerate each kind's pair.
+  The instructions name the presets, the two-language rule, that Gateway/CDN have no language, and
+  that a provider on a kind is that service's integration (no separate External tile; External is
+  for third parties no kind covers). "kind row" → "Type list" in the `changeKind` line.
+
+Tests (134; spec +4): presets and the `studioKindLanguages` table; `changeKind` to Billing gives
+the preset settings; language refusals per kind (Billing, Redirect's own wording, a gateway with a
+language, an `edit` command refused); stored `csharp`/`unspecified` normalised to the default and a
+gateway's language dropped through `designSchema`. E2E (`edit-history.spec.ts`, 1 new): Shorten
+API's Type list names all six kinds with Microservice pressed; Billing → stored `stripe`/
+`typescript`, Language offers TypeScript and Go only, Payment provider shows Stripe; CDN →
+Gateway: stored `traefik`, no `language`, no Language field.
+
+Checks (Node 24.21.0 first in PATH), on the final code:
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 134 tests).
+- `pnpm test:e2e`: 13 passed.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium at 1440×900 by mouse (project names typed), my own API on 4312
+(scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, both stopped afterwards.
+Each script waited for the new project's URL, and deleted only its projects (three, all 204);
+`jeeves_e2e` again holds just "TinyURL · studio study". 4300/4310 and the `jeeves` database were
+not touched. No console errors or warnings.
+
+- Shorten API: Type list "Microservice (pressed), Worker service (disabled: Shorten API can't
+  become a worker. A lane starts at …), Redirect, Identity, Notifications, Billing".
+- Billing: Payment provider Stripe (choices Unspecified, Stripe, External); Language TypeScript,
+  Go only, TypeScript selected.
+- CDN → Gateway: no Language field, Gateway product Traefik; back to CDN: provider Cloudflare.
+- Links database: Database (pressed), Search index disabled ("ID generator in Shorten API can't use
+  a search index; …"). Redirect service: Language Go, TypeScript.
+- Dark mode (the app's toggle): the list reads clearly; the pressed kind is yellow with dark text.
+
+Docs: studio settings (Language row, new Languages and Defaults sections, the preset providers
+first in their rows, the "never filled on read" exception, the External rule), studio guide
+(Inspector: the Type list, presets, Language, the External rule), CATALOG (kind table presets,
+languages paragraph, the External rule, "Type list"), PLAN (`TileInspector.tsx` line).
+
+Notes for the next units:
+
+- TinyURL (v2) still has its CDN with `provider: "unspecified"` and the URL reputation API as an
+  External tile; DP06 replaces the study anyway. DP06's v3 languages (Redirect Go, the rest
+  TypeScript) all fit their pairs.
+- Rough: the Type list's two columns truncate long names with an ellipsis if the inspector rail
+  is dragged narrow; at the default width every name fits.
+- `studioLanguageSchema` is now just the union of the pairs; a study needing another language for
+  a new kind (DP08/DP09) adds it there and to `studioKindLanguages` together.

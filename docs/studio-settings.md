@@ -16,9 +16,10 @@ model has a property. The source of truth is
 - Forms come from explicit field descriptors (path, label, control, allowed values or range,
   applicability, short help), never from schema reflection. A visible default is exactly the
   stored value.
-- Stored values are machine identifiers from this page. `unspecified` is an explicit option; an
-  omitted optional number or reference means unspecified and shows an empty input. Defaults apply
-  on creation only and are never filled in on read.
+- Stored values are machine identifiers from this page. `unspecified` is an explicit option where
+  listed; an omitted optional number or reference means unspecified and shows an empty input.
+  Defaults apply on creation only and are never filled in on read (the one exception: a stored
+  language outside its kind's pair reads as the default, see [Languages](#languages)).
 - Name (1–120 characters) and purpose (0–240) are the element's own fields.
 - No credentials, URLs with credentials, account/zone/project IDs, regions, instance sizes or
   secret names.
@@ -28,30 +29,70 @@ model has a property. The source of truth is
 ## Applications
 
 `S` is `architecture.studio.elements[].settings`. "Common" means service, worker, billing,
-redirect, notification, identity and gateway. References are IDs of existing objects.
+redirect, notification, identity and gateway; "coded" means the common kinds except gateway.
+References are IDs of existing objects.
 
 | Field / path | Values (creation default first) | Applies to and effect |
 | --- | --- | --- |
 | Execution / `S.execution` | `docker`, `managed` | Common. Execution intent. Managed reveals Host. |
-| Language / `S.language` | `unspecified`, `typescript`, `javascript`, `python`, `go`, `java`, `csharp`, `rust` | Common. No framework or version. |
+| Language / `S.language` | the kind's two languages ([below](#languages)) | Coded kinds only; gateway has none. No framework or version. |
 | Host / `S.host` | `unspecified`, `cloudflare-workers`, `aws`, `google-cloud`, `external` | Only with `execution=managed`; removed when switching back to Docker. |
 | Exposure / `S.exposure` | `internal`, `public` | Common except worker. Redirect and gateway default to public. Network intent, not an auth guarantee. |
 | Delivery / `S.delivery` | `standalone`, `bundled` | Browser. How browser assets are distributed. |
 | Served by / `S.servedBy` | optional application ref | Browser, bundled. Unset is a readiness gap. |
 | Hosting provider / `S.provider` | `unspecified`, `cloudflare`, `aws`, `google-cloud`, `external` | Browser, standalone. |
 | Concurrency / `S.concurrency` | optional integer 1–1024 | Worker. Its concurrency limit. |
-| Payment provider / `S.provider` | `unspecified`, `stripe`, `external` | Billing. One service; no adapter or entitlement boxes. |
+| Payment provider / `S.provider` | `stripe`, `unspecified`, `external` | Billing. One service; no adapter or entitlement boxes. |
 | Lookup store / `S.lookupStoreConnection` | optional connection ref to a database | Redirect. Names the real service→store connection. |
 | Lookup cache / `S.lookupCacheConnection` | optional connection ref to a cache | Redirect. Same rule. |
-| Delivery provider / `S.provider` | `unspecified`, `resend`, `aws-ses`, `external` | Notification. |
-| Identity integration / `S.provider` | `unspecified`, `oidc`, `external` | Identity. No roles, grants or login screens. |
+| Delivery provider / `S.provider` | `resend`, `unspecified`, `aws-ses`, `external` | Notification. |
+| Identity integration / `S.provider` | `oidc`, `unspecified`, `external` | Identity. No roles, grants or login screens. |
 | Routing / `S.routing` | `path-prefix`, `host-name` | Gateway. No route table; downstream services are its outgoing connections. |
-| Gateway product / `S.provider` | `unspecified`, `envoy`, `kong`, `nginx`, `traefik`, `aws-api-gateway`, `external` | Gateway. |
+| Gateway product / `S.provider` | `traefik`, `unspecified`, `envoy`, `kong`, `nginx`, `aws-api-gateway`, `external` | Gateway. |
 
 Billing, Redirect, Notifications and Identity are kinds of the Service tile, like Microservice and
 Worker service: ordinary service semantics plus the fields above. Gateway is the API tile's
 default kind. Browser app stays in the format but no tile type offers it. A plain service can be
 named Catalog or Orders without gaining a business-rule form.
+
+### Languages
+
+Each coded kind offers two languages, its default first; any other value is refused (`Choose
+TypeScript or Go; this kind offers no other language.`). Gateway and CDN are products, not code,
+and have no language; the browser app has none either.
+
+| Kind | Languages (default first) |
+| --- | --- |
+| `service` (Microservice) | `typescript`, `go` |
+| `worker` | `typescript`, `go` |
+| `redirect` | `go`, `typescript` |
+| `identity` | `typescript`, `go` |
+| `notification` | `typescript`, `go` |
+| `billing` | `typescript`, `go` |
+| `gateway`, `cdn` | none |
+
+A stored design whose language is outside its kind's pair (including the old `unspecified`,
+`javascript`, `python`, `java`, `csharp` and `rust`) reads with the kind's default, and a stored
+gateway's language is dropped. Commands and the inspector still refuse such values.
+
+### Defaults
+
+A new tile and `changeKind` start from the kind's defaults (`createStudioSettings`). The
+preconfigured kinds name their usual provider; every other choice stays selectable:
+
+| Kind | Field | Starts as |
+| --- | --- | --- |
+| Billing | payment provider | `stripe` |
+| Notifications | delivery provider | `resend` |
+| Identity | integration | `oidc` |
+| Gateway | product | `traefik` |
+| CDN | provider | `cloudflare` |
+
+Applications start with `execution=docker`, the kind's default language and `exposure=internal`
+(redirect and gateway: `public`).
+
+A provider chosen on a kind is that service's integration: Billing with Stripe needs no separate
+External tile for Stripe. External API tiles are for third parties no kind covers.
 
 A lookup shortcut names an existing connection and never duplicates its endpoints. The inspector
 lists the redirect's connections to a database or cache; chat sets it with an `edit` whose
@@ -89,7 +130,7 @@ binding's `owner`, not in `S`; a queue requires one. Ownership provisions nothin
 | `queue` | `mode` work-queue / topic; `provider` unspecified / self-hosted / aws / google-cloud / cloudflare-queues / external; `retentionSeconds?` 60–1209600 | exactly-once, DLQ automation, event schemas |
 | `object-store` | `provider` unspecified / self-hosted / cloudflare-r2 / aws-s3 / google-cloud-storage / external; `access` private / public | bucket names, lifecycle rules |
 | `search` | `engine` unspecified / opensearch / elasticsearch / meilisearch / external; `provider` unspecified / self-hosted / aws / google-cloud / external | index fields, analyzers |
-| `cdn` | `provider` unspecified / cloudflare / aws-cloudfront / google-cloud-cdn / external; `origin?` application or object-store ref | cache rules, domains, WAF |
+| `cdn` | `provider` cloudflare / unspecified / aws-cloudfront / google-cloud-cdn / external; `origin?` application or object-store ref | cache rules, domains, WAF, language |
 | `external-api` | `category` generic / payments / email / identity / recognition / workflow; `provider` unspecified / cloudflare / aws / google-cloud / external | request builders, webhooks, secrets |
 
 A new queue is owned by the application it is added next to (its links are always asynchronous);

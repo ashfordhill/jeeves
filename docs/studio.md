@@ -168,14 +168,22 @@ Optional shortcuts: Delete or Backspace does what the selected tile's or line's 
 The inspector shows the selection. Its sections are **General**, **Options**, **Connections** and,
 for an application tile, **Modules**; empty ones are hidden.
 
-- A tile: its icon, name and kind, then the **kind row** when its tile type has more than one
-  kind: one icon per kind (the name is the tooltip), the current one filled yellow. Clicking
-  another switches the tile to it (Service: microservice, worker, redirect, identity,
-  notifications, billing; API: gateway or CDN; Database: database or search index). The tile keeps
-  its name, purpose, links and modules; its settings start over from the new kind's defaults. A
-  kind the lane rules refuse is faded and its tooltip says why ("Shorten API can't become a worker.
-  A lane starts at a service (not a worker), …"; "ID generator in Shorten API can't use a search
-  index; remove its link to Links database first.").
+- A tile: its icon, name and kind, then the **Type** list when its tile type has more than one
+  kind: each kind's icon and name in two columns, the current one filled yellow (Service:
+  Microservice, Worker service, Redirect, Identity, Notifications, Billing; API: Gateway or CDN;
+  Database: Database or Search index). The pointer on a kind shows its one-line description.
+  Clicking another switches the tile to it. The tile keeps its name, purpose, links and modules;
+  its settings start over from the new kind's defaults, which are preconfigured: Billing starts
+  with Stripe, Notifications with Resend, Identity with OpenID Connect, Gateway with Traefik and
+  CDN with Cloudflare (the other choices stay selectable). A kind the lane rules refuse is faded
+  and its tooltip says why ("Shorten API can't become a worker. A lane starts at a service (not a
+  worker), …"; "ID generator in Shorten API can't use a search index; remove its link to Links
+  database first.").
+- **Language** offers the kind's two languages, its default first: TypeScript or Go, and Go or
+  TypeScript for Redirect. Gateway and CDN are products, not code, and have no Language
+  ([studio settings](studio-settings.md#languages)).
+- A provider chosen on a kind is that service's integration: Billing with Stripe needs no
+  External tile for Stripe. Add an External tile only for a third party no kind covers.
 - General, Options and Connections: name and purpose, the kind's settings, provider choices and
   optional performance intent (replicas, autoscale signal, request timeout, concurrency limit;
   read replicas and partition key for databases; topology and eviction for caches; partitions for

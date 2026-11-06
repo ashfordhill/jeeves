@@ -83,16 +83,29 @@ export function studioDefinitionStatus(ref: DefinitionRef, kind: StudioKind) {
 }
 
 export const studioExecutionSchema = z.enum(["docker", "managed"]);
-export const studioLanguageSchema = z.enum([
-  "unspecified",
-  "typescript",
-  "javascript",
-  "python",
-  "go",
-  "java",
-  "csharp",
-  "rust",
-]);
+export const studioLanguageSchema = z.enum(["typescript", "go"]);
+export type StudioLanguage = z.infer<typeof studioLanguageSchema>;
+/**
+ * The two languages each coded application kind offers, default first. Gateway and CDN are
+ * products, not code, and have no language; the browser app (not on the canvas) has none either.
+ */
+export const studioKindLanguages = {
+  service: ["typescript", "go"],
+  worker: ["typescript", "go"],
+  redirect: ["go", "typescript"],
+  identity: ["typescript", "go"],
+  notification: ["typescript", "go"],
+  billing: ["typescript", "go"],
+} as const satisfies Partial<Record<StudioKind, readonly [StudioLanguage, StudioLanguage]>>;
+export type StudioCodedKind = keyof typeof studioKindLanguages;
+const languageNames: Record<StudioLanguage, string> = { typescript: "TypeScript", go: "Go" };
+/** A coded kind's language: one of its two, refused in plain words otherwise. */
+const kindLanguageSchema = (kind: StudioCodedKind) => {
+  const pair = studioKindLanguages[kind];
+  return z.enum(pair, {
+    error: `Choose ${pair.map((value) => languageNames[value]).join(" or ")}; this kind offers no other language.`,
+  });
+};
 export const studioHostSchema = z.enum([
   "unspecified",
   "cloudflare-workers",
@@ -167,7 +180,7 @@ function checkScaling(value: Scaling, ctx: z.RefinementCtx) {
     });
 }
 function applicationSettings<K extends StudioKind, S extends z.ZodRawShape>(kind: K, fields: S) {
-  const common = { kind: z.literal(kind), language: studioLanguageSchema, ...fields };
+  const common = { kind: z.literal(kind), ...fields };
   return z
     .discriminatedUnion("execution", [
       z.strictObject({ ...common, execution: z.literal(studioExecutionSchema.enum.docker) }),
@@ -180,21 +193,25 @@ function applicationSettings<K extends StudioKind, S extends z.ZodRawShape>(kind
     .superRefine((value, ctx) => checkScaling(value as Scaling, ctx));
 }
 export const studioServiceSettingsSchema = applicationSettings("service", {
+  language: kindLanguageSchema("service"),
   exposure: studioExposureSchema,
   ...scalingFields,
   ...requestFields,
 });
 export const studioWorkerSettingsSchema = applicationSettings("worker", {
+  language: kindLanguageSchema("worker"),
   concurrency: boundedInteger(studioLimits.concurrency).optional(),
   ...scalingFields,
 });
 export const studioBillingSettingsSchema = applicationSettings("billing", {
+  language: kindLanguageSchema("billing"),
   exposure: studioExposureSchema,
   ...scalingFields,
   ...requestFields,
   provider: studioBillingProviderSchema,
 });
 export const studioRedirectSettingsSchema = applicationSettings("redirect", {
+  language: kindLanguageSchema("redirect"),
   exposure: studioExposureSchema,
   ...scalingFields,
   ...requestFields,
@@ -202,12 +219,14 @@ export const studioRedirectSettingsSchema = applicationSettings("redirect", {
   lookupCacheConnection: idSchema.optional(),
 });
 export const studioNotificationSettingsSchema = applicationSettings("notification", {
+  language: kindLanguageSchema("notification"),
   exposure: studioExposureSchema,
   ...scalingFields,
   ...requestFields,
   provider: studioNotificationProviderSchema,
 });
 export const studioIdentitySettingsSchema = applicationSettings("identity", {
+  language: kindLanguageSchema("identity"),
   exposure: studioExposureSchema,
   ...scalingFields,
   ...requestFields,
@@ -429,32 +448,45 @@ export type StudioSettingsByKind = { [K in StudioKind]: Extract<StudioSettings, 
 
 /** Fresh values only. Parsing never applies these defaults or invents an optional number/ref. */
 export function createStudioSettings<K extends StudioKind>(kind: K): StudioSettingsByKind[K] {
-  const application = {
-    execution: "docker",
-    language: "unspecified",
-    exposure: "internal",
-  } as const;
+  const application = { execution: "docker", exposure: "internal" } as const;
+  const language = <C extends StudioCodedKind>(coded: C) => studioKindLanguages[coded][0];
+  // Preconfigured kinds start with their usual provider (studio settings, "Defaults").
   const defaults: StudioSettingsByKind = {
-    service: { kind: "service", ...application },
+    service: { kind: "service", ...application, language: language("service") },
     browser: { kind: "browser", delivery: "standalone", provider: "unspecified" },
-    worker: { kind: "worker", execution: application.execution, language: application.language },
-    billing: { kind: "billing", ...application, provider: "unspecified" },
-    redirect: { kind: "redirect", ...application, exposure: "public" },
-    notification: { kind: "notification", ...application, provider: "unspecified" },
-    identity: { kind: "identity", ...application, provider: "unspecified" },
+    worker: { kind: "worker", execution: application.execution, language: language("worker") },
+    billing: { kind: "billing", ...application, language: language("billing"), provider: "stripe" },
+    redirect: {
+      kind: "redirect",
+      ...application,
+      language: language("redirect"),
+      exposure: "public",
+    },
+    notification: {
+      kind: "notification",
+      ...application,
+      language: language("notification"),
+      provider: "resend",
+    },
+    identity: {
+      kind: "identity",
+      ...application,
+      language: language("identity"),
+      provider: "oidc",
+    },
     gateway: {
       kind: "gateway",
       ...application,
       exposure: "public",
       routing: "path-prefix",
-      provider: "unspecified",
+      provider: "traefik",
     },
     database: { kind: "database", engine: "unspecified", provider: "unspecified" },
     cache: { kind: "cache", engine: "unspecified", provider: "unspecified" },
     queue: { kind: "queue", mode: "work-queue", provider: "unspecified" },
     "object-store": { kind: "object-store", provider: "unspecified", access: "private" },
     search: { kind: "search", engine: "unspecified", provider: "unspecified" },
-    cdn: { kind: "cdn", provider: "unspecified" },
+    cdn: { kind: "cdn", provider: "cloudflare" },
     "external-api": { kind: "external-api", category: "generic", provider: "unspecified" },
   };
   return defaults[kind];
@@ -509,11 +541,30 @@ export const studioOwnerSchema = z.strictObject({
   id: idSchema,
 });
 export type StudioOwner = z.infer<typeof studioOwnerSchema>;
+/**
+ * Stored settings as they read today: a coded kind's language outside its pair (or none) reads as
+ * the kind's default, and a gateway's language is dropped. The one place stored designs are
+ * normalised, beside the entry lane. Commands still parse settings strictly and refuse the rest.
+ */
+export function normalizeStoredStudioSettings(value: unknown): unknown {
+  if (!value || typeof value !== "object" || !("kind" in value)) return value;
+  const kind = value.kind;
+  if (kind === "gateway" && "language" in value) {
+    const { language: _dropped, ...rest } = value;
+    return rest;
+  }
+  if (typeof kind !== "string" || !Object.hasOwn(studioKindLanguages, kind)) return value;
+  const pair: readonly string[] = studioKindLanguages[kind as StudioCodedKind];
+  const language = "language" in value ? value.language : undefined;
+  return typeof language === "string" && pair.includes(language)
+    ? value
+    : { ...value, language: pair[0] };
+}
 export const studioElementBindingSchema = z
   .strictObject({
     element: idSchema,
     definition: definitionRefSchema,
-    settings: studioSettingsSchema,
+    settings: z.preprocess(normalizeStoredStudioSettings, studioSettingsSchema),
     owner: studioOwnerSchema.optional(),
   })
   .superRefine((value, ctx) => {
