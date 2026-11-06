@@ -750,8 +750,8 @@ and all twenty components, with nothing omitted and no findings.
 ## Limits
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
-  scale with the board. With both rails open (TinyURL fits at 0.46 at 1440×900, 0.37 at 1280×800)
-  the tabs are about 19px or 15px, tile names are small, and the fan's seven icons cover nearby
+  scale with the board. With both rails open (TinyURL fits at 0.56 at 1440×900, 0.45 at 1280×800)
+  the tabs are about 22px or 18px, tile names are small, and the fan's seven icons cover nearby
   tiles (a `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up
   in a column along it, sometimes over the tile's own tabs. Closing a rail helps; a fitted camera
   refits by itself.
@@ -775,6 +775,12 @@ and all twenty components, with nothing omitted and no findings.
   past the Completion handler and over the Search index to come down into it. A line that comes
   back to a store in its own tile's column (TinyURL's Analytics worker into the Analytics store
   above it, the marketplace's Search indexer into the Search index) hooks round the store's corner.
+- A line that comes back can read as a box. Lines have no arrowheads, and lines after a queue are
+  dashed, so a dashed U round the tiles it passes looks like a group outline, at the fitted zoom
+  and still at 100%: YouTube's View counter → View counts round View events and the View counter,
+  the Transcoder's two lines round Upload jobs and the Transcoder, and the Completion handler's
+  and the Search indexer's writes nested round the Search index. Selecting the worker colours its
+  lines, which shows where the U starts and ends.
 - Which column a store with several users takes depends on how many tiles its band has per
   column, so an edit elsewhere in a band can move it, and a store that gains a link out (only a
   board outside Jeeves allows it; Jeeves stores are end tiles) goes back to the column after its

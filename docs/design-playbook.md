@@ -499,6 +499,20 @@ reaches the Stats API, which serves the link's creator their counts).
 **Fix:** rename the action (24 characters) so its word covers its entries, or move the entry to
 the other lane if it produces rather than consumes.
 
+### A line that comes back reads as a box
+
+**Looks like:** a store's later user, drawn as a U ([guide](studio.md#layout-and-navigation)),
+wraps the tiles between it and the store in a rectangle. Lines have no arrowheads and a pipeline's
+lines are all dashed, so a dashed U reads as a group outline. YouTube 2.1 (SD04, at 100%): the
+View counter's write wraps View events and the View counter; the Transcoder's read and write wrap
+Upload jobs and the Transcoder; the Completion handler's and the Search indexer's writes nest
+round the Search index.
+**Why wrong:** the reader sees a group, not a line from a worker to its store, and can't tell
+which tile the U leaves from without selecting it.
+**Fix:** none in design yet; don't add tiles or reorder links just to avoid a U. It is a layout
+question for the owner (SD04's HUMAN_FEEDBACK entry). Until then, check a study at 100% and say
+in the handoff which U's read as boxes.
+
 ---
 
 ## Gaps

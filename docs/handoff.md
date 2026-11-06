@@ -3521,3 +3521,86 @@ Rough edges (not fixed):
 - A shared store's column depends on its band's tiles per column, so an edit that crowds a column
   can move it; a store that gains a link out (not possible in Jeeves) goes back to its longest-path
   column.
+
+## 2026-11-06 — SD04: system design acceptance and documentation (complete)
+
+A mouse walkthrough of SD02–SD03, the owner's YouTube copy replaced, an honest readability check
+at 100%, and a docs sweep. No code changed: the walkthrough found no defect, only the rough edges
+below.
+
+Browser: Playwright Chromium by mouse (the native Study and Transfer selects with
+`selectOption`), my API on 4312 (scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on
+4302, stopped by PID afterwards. Eight projects created, each URL awaited, all deleted (204);
+`jeeves_e2e` again holds just "TinyURL · studio study". No page errors, console errors or
+warnings. I did not touch 4300, 4304 or 4310.
+
+- **The three studies from New project**, no warning marks, fits matching the guide: 1440×900
+  light, chat open: TinyURL 11 tiles / 12 lines / 3 dashed at 0.67, marketplace 20 / 23 / 6 at
+  0.37, YouTube 21 / 25 / 12 at 0.39; 1280×800 dark (the app's toggle): 0.59, 0.32, 0.35. Dark mode
+  reads clearly, the U's included.
+- **An edit plus Undo on each** (click the tile, pull its `+` "Add after" onto Database): after the
+  Stats API (TinyURL), the Orders service (marketplace) and the Transcoder (YouTube). Each added
+  one tile and line (revision 2), the YouTube one with its expected mark ("Nothing reads Database:
+  only its owner Transcoder links to it …"); the toolbar's Undo (revision 3) restored the counts and
+  every tile position exactly. The camera keeps the both-rails fit after Undo because the inspector
+  stays open (not a defect).
+- **YouTube's inspectors**, all 18 tiles clicked: services Microservice / Worker service with the
+  seven-kind Type list, TypeScript or Go, Docker; Identity pressed Identity; the Upload service
+  **Uploads**; the Video CDN CDN; stores show one writer each (Original videos Upload service ·
+  Transcoder; Transcoded videos Transcoder · Video CDN; Metadata database Completion handler · Watch
+  API; Search index Search indexer · Search API; View counts View counter · Watch API; Metadata
+  cache Watch API · nobody else).
+- **The upload transfer choice:** Options → Transfer lists "Signed URLs to storage" (set) and
+  "Through the service (tus)"; choosing tus autosaved `transfer: "tus"` (revision 4); Undo
+  restored `signed-url` (revision 5).
+- **The U's by mouse** (a click at each line's midpoint): `counter-write`, `transcoder-read`,
+  `handler-metadata`, `indexer-write`, and the long reads `watch-metadata` and `search-read`;
+  each selected the right line, coloured it and showed its X and its Connection inspector.
+- **Readability at 100%** (wheel-zoomed to 0.99, rails closed; images
+  `docs/human-feedback/2026-11-06-youtube-sd04-views.png` and `-pipeline.png`). Honest judgement:
+  the U's are not yet readable to a first-time reader. They are dashed (everything after a queue
+  is), have no arrowheads, and wrap the tiles they pass, so they read as group outlines: the View
+  counter's write round View events and the View counter (traceable at 100%, since it is alone);
+  the Transcoder's read and write round Upload jobs and the Transcoder, joining the Upload
+  service's lines at both stores (you can't tell the Transcoder, not Upload jobs, reads Original
+  videos without selecting it); the Completion handler's and the Search indexer's writes nested
+  round the Search index. The Watch API's and the Search API's reads are plain long lines that
+  read as lines but still cross the board, and the Watch API's four links are one bus. Recorded in
+  HUMAN_FEEDBACK as better but still odd, and not resolved.
+
+**The owner's `jeeves` database** (my API on 4313 against `jeeves`, scratch `JEEVES_HOME`, web on
+4303; both stopped by PID; 4300, 4304 and 4310 untouched): opened "YouTube · studio study"
+`7ec5980c-6191-40a4-8688-fa2dd8821d54` (1.2: 17 tiles, 21 lines), then Project → All projects →
+its trash → Delete (204). Project → New project → Architecture study → YouTube (default name) →
+Create: **"YouTube · studio study" `0a12f132-b0f4-400d-9b94-51546911bb6b`**, version 2.1.0, 21
+tiles, 25 lines, 12 dashed, no marks, blueprint findings `[]`, fit 0.39. The Marketplace copy
+`81571ba1…` and TinyURL `41bbd268…` (revision 39) were never opened; their design JSON is
+byte-identical before and after. The database holds exactly those three.
+
+Docs: HUMAN_FEEDBACK (an SD04 Resolution bullet: fixed, better but still odd, still open, for the
+owner; two close-ups), the playbook (a new smell, "A line that comes back reads as a box"), the
+studio guide's Limits (the same, and TinyURL's both-rails fit 0.46/0.37 → 0.56/0.45 and the tab
+sizes, stale since SD03), PLAN Next, this plan's Progress (SD01–SD04 done, SD05 remains). Checked
+and current: the guide's Layout and fit table, the YouTube section (2.1.0), CATALOG (2.1.0,
+Uploads), studio settings (Uploads, Transfer), blueprint doc, README, AGENTS.md.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 206 files; type checks; 24 files / 170 tests).
+- `pnpm test:e2e`: 18 passed.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Notes for SD05:
+
+- The plan's literal store rule vs SD03's shipped rule (SD03's deviation) is unconfirmed by the
+  owner; HUMAN_FEEDBACK now says so in plain terms.
+- How lines that come back should look is a new owner question (arrowheads, a solid U for a
+  request after a queue, or a store after its writer when its reader is in the other lane).
+
+Owner questions already raised (not acted on):
+
+- TinyURL's "Open link" action also reaches the Stats API.
+- The marketplace's Payments reads the Catalog database directly.
+- Identity sits under Publish though viewers sign in too.
+- The chat preset sentence is written by hand.
+- The fit's padding (studies fit at about 0.35–0.39).

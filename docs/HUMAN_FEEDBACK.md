@@ -156,3 +156,37 @@ handoff entry.
   ![YouTube before SD03, fitted at 1440×900](human-feedback/2026-11-06-youtube-sd03-before.png)
 
   ![YouTube after SD03, fitted at 1440×900](human-feedback/2026-11-06-youtube-sd03-after.png)
+- SD04: acceptance by mouse at 1440×900 and 1280×800, light and dark, and the owner's copy. The
+  owner's YouTube is now **`0a12f132-b0f4-400d-9b94-51546911bb6b`** (2.1.0, from New project;
+  21 tiles, 25 lines, no warnings or findings), replacing `7ec5980c…`; the Marketplace copy and
+  TinyURL are unchanged. Commits: SD01 `1331f58`, SD02 `122ef82`, SD03 `413b96b`, and SD04
+  ("SD04: system design acceptance and documentation"). Judged at 100% (images below), against
+  the owner's points:
+  - **Fixed:** purple. The Transcoder writes only Transcoded videos; the Search index is fed by
+    Completion events through the Search indexer. Xu's upload path is on the board, mapped to
+    templates, with every difference recorded, and the lessons are in the
+    [design playbook](design-playbook.md).
+  - **Fixed:** the orange fork. Upload jobs and Original videos sit side by side right after the
+    Upload service, so its fork reads as two short branches, not a second lane. The Video CDN's
+    line to Transcoded videos is one short step.
+  - **Better but still odd:** the lines that come back to a store. They are dashed U's with no
+    arrowheads, and each wraps the tiles it passes, so at the fitted zoom, and still at 100%, they
+    read as group boxes rather than lines: View counter → View counts round View events and the
+    View counter; the Transcoder's read and write round Upload jobs and the Transcoder; the
+    Completion handler's and the Search indexer's writes nested round the Search index (the
+    second goes over the index and comes down into it). A first-time reader can follow the View
+    counter's single U at 100%, but can't tell from the drawing that the Transcoder, not Upload
+    jobs, reads Original videos, or which of the nested U's is which, without selecting the tile.
+    This trades the owner's long underline for a new shape that is also hard to read.
+  - **Still open:** the Watch API's read of the Metadata database (1,024px, past View events and
+    the View counter, crossing the Search API's line) and the Search API's read of the Search
+    index (1,056px) still cross the board, because the end of the upload pipeline writes those
+    stores. The Watch API still forks four ways, as a bus with four branches. The fitted view is
+    still 0.39 (0.35 at 1280×800), where tile names need the wheel.
+  - **For the owner:** how lines that come back should look (for example arrowheads, a solid U for
+    a request even after a queue, or letting a store sit after its writer when its reader is in
+    the other lane), and whether the long reads are acceptable. This entry is not resolved.
+
+  ![YouTube 2.1 at 100%: the Watch API's reads and the View counter's U](human-feedback/2026-11-06-youtube-sd04-views.png)
+
+  ![YouTube 2.1 at 100%: the Transcoder's U's and the nested U's round the Search index](human-feedback/2026-11-06-youtube-sd04-pipeline.png)

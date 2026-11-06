@@ -198,5 +198,6 @@ YouTube review: SD01 wrote the [design playbook](docs/design-playbook.md) (patte
 gaps for designing studies); SD02 rebuilt YouTube as v2 from Xu's design (a Transcoder, a
 completion topic feeding a Completion handler and a Search indexer, the Watch API's own metadata
 cache) and added the Uploads kind; SD03 put stores beside the tiles that use them (a later user's
-line comes back to the store), which made every study's lines shorter. SD04 (acceptance, docs and
-the owner's copy) is next.
+line comes back to the store), which made every study's lines shorter; SD04 walked them through
+by mouse, replaced the owner's YouTube copy and recorded what still reads oddly (lines that come
+back read as boxes; two long reads remain). SD05 (a review of SD01–SD04) is next.
