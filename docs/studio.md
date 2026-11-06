@@ -10,8 +10,10 @@ listed in [studio settings](studio-settings.md).
 The project menu (top right) lists recent projects and opens **New project**, the project browser
 (search, rename, delete) and rename. New project offers:
 
-- **Architecture study**: a copy of the [TinyURL study](#the-tinyurl-study). A fresh installation
-  starts with one.
+- **Architecture study**: a copy of a study, chosen in the **Study** list: the
+  [TinyURL study](#the-tinyurl-study) (the default; a fresh installation starts with one) or the
+  [marketplace study](#the-marketplace-study). The project name follows the chosen study until you
+  type over it.
 - **Blank architecture**: an empty design.
 
 The last opened project reopens on the next visit; its ID is in the URL.
@@ -82,6 +84,9 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 | 1440×900 | 0.93 | 0.73 | 0.72 | 0.52 |
 | 1280×800 | 0.83 | 0.63 | 0.62 | 0.42 |
 
+The marketplace study is taller than it is wide (seven lane entries), so it fits by height at
+0.42 at 1440×900 and 0.36 at 1280×800, whichever rails are open.
+
 ## Creating and connecting
 
 Only the selected tile shows controls: tabs on its sides, for what the lane rules allow there, and
@@ -130,7 +135,7 @@ and the pull stays open until you let go.
 Each add or attach is one batch and one undo step.
 
 Every tile must hang off the user through a lane, with no cycles, links the
-[link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 3 entries
+[link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 4 entries
 per lane; a tile has one entry at most. An edit that breaks one of these rules is refused with
 a notice and changes nothing, whether it comes from the canvas, the inspector, chat or the API.
 
@@ -191,7 +196,8 @@ for an application tile, **Modules**; empty ones are hidden.
   ([studio settings](studio-settings.md#languages)).
 - A provider chosen on a kind is that service's integration: Billing with Stripe needs no
   External tile for Stripe. Add an External tile only for a third party no kind covers.
-- General, Options and Connections: name and purpose, the kind's settings, provider choices and
+- General, Options and Connections: name and purpose, the kind's settings (a CDN's **Image
+  resizing**: Unspecified, Disabled or On request), provider choices and
   optional performance intent (replicas, autoscale signal, request timeout, concurrency limit;
   read replicas and partition key for databases; topology and eviction for caches; partitions for
   queues; redirect caching for the CDN). An empty input or **Unspecified** removes an optional
@@ -213,8 +219,8 @@ for an application tile, **Modules**; empty ones are hidden.
   dash where the link table allows both.
 - A lane entry (its line or chip): its lane, then the **lane row**: download and upload as icons
   (the name is the tooltip), the current one filled yellow. Clicking the other moves the entry to
-  that lane; when that lane already has 3 entries it is faded and its tooltip says why ("The
-  download lane already has 3 entries; the most is 3."). Below, the user and the tile the user
+  that lane; when that lane already has 4 entries it is faded and its tooltip says why ("The
+  download lane already has 4 entries; the most is 4."). Below, the user and the tile the user
   reaches, each a button that selects it.
 - The user, or nothing: the system's Name and Goal.
 
@@ -257,7 +263,7 @@ provider-reported cost appear only when complete. The model and provider are cho
 
 ## The TinyURL study
 
-The single study, `studio-tinyurl@3.0.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
+The default study, `studio-tinyurl@3.0.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
 is a read-heavy URL shortener built from four published designs and one open-source shortener:
 
 - HelloInterview, [Design Bit.ly](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly)
@@ -312,6 +318,133 @@ services, four resources, no externals, seven connections (each link into a stor
 or `read`) and all nine components, with nothing omitted and no findings. Projects made from
 earlier versions keep their own design; only new copies are v3.
 
+## The marketplace study
+
+`studio-marketplace@1.0.0` ([factory](../packages/spec/src/studio-examples/marketplace.ts)) is a
+multi-seller marketplace with Etsy's core functionality, designed as clean microservices rather
+than copied from Etsy. Its core flows, and the tiles that carry them:
+
+- A seller opens a shop and lists products with photos: the Shop service writes the Catalog
+  database and Product images, and publishes Listing events.
+- A buyer browses and searches listings and opens a product: the Storefront API reads the Search
+  index, which the Search indexer keeps in step with Listing events; the Image CDN serves the
+  photos at the size each page asks for.
+- A buyer keeps a cart and checks out: the Cart service and its Cart store; Payments prices the
+  cart from the Catalog database and takes one Stripe payment for it.
+- Payment goes through Stripe, sellers get paid and orders are recorded: Payments transfers each
+  seller's share to their Stripe connected account and publishes the paid order to Order events,
+  from which the Order recorder writes the Orders database.
+- Buyers and sellers see their orders: the Orders service reads the Orders database.
+- Buyers and sellers sign in through Identity (OpenID Connect).
+
+Sources:
+
+- Educative, [E-Commerce System Design](https://www.educative.io/blog/ecommerce-system-design)
+- System Design Handbook, [Design an E-commerce System](https://www.systemdesignhandbook.com/guides/design-e-commerce-system-design/)
+- ByteByteGo (Alex Xu), [Payment System](https://bytebytego.com/guides/payment-system/)
+- Google, [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo), a
+  microservices demo
+- Microsoft, [eShop](https://github.com/dotnet/eShop), a reference application
+- Stripe Connect, [separate charges and transfers](https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers)
+- Cloudflare, [Optimizing image delivery with Cloudflare image resizing and R2](https://developers.cloudflare.com/reference-architecture/diagrams/content-delivery/optimizing-image-delivery-with-cloudflare-image-resizing-and-r2/)
+- AWS, [Dynamic Image Transformation for Amazon CloudFront](https://docs.aws.amazon.com/solutions/latest/serverless-image-handler/solution-overview.html)
+- Etsy: High Scalability, [The Etsy Saga](https://highscalability.com/the-etsy-saga-from-silos-to-happy-to-billions-of-pageviews-a/);
+  Code as Craft, [Batch Processing Millions and Millions of Images](https://codeascraft.com/2010/07/09/batch-processing-millions-of-images/)
+
+What the sources agree on: a catalog service with its own database, a cart service with a
+key-value store (Online Boutique and eShop keep carts in Redis), a separate payment service and
+orders in a relational database. Educative and the System Design Handbook feed a separate search
+index asynchronously from the catalog, and the Handbook keeps catalog data for reading in search
+indexes "optimized for reads". eShop, Educative and the Handbook pass payment and order changes as
+events. ByteByteGo and Educative give the payment service its own database. The three questions
+the plan left open, settled from the sources:
+
+- **Search** lives in a search index fed from the catalog through listing events (Educative, the
+  Handbook); the Storefront API reads only the index.
+- **Thumbnails** are resized on request at the edge: Cloudflare's and AWS's image-delivery
+  reference architectures store only originals and let the CDN resize and cache each size. So
+  there is no thumbnail worker; the Image CDN has **Image resizing: On request**. (Etsy
+  pre-generated fixed sizes in batches, Code as Craft 2010.)
+- **The cart** is its own service with a Redis store (all four designs).
+
+It is laid out in lanes from the user:
+
+```text
+DOWNLOAD (reads)
+  User ⇣ Orders service → Orders database                          (reads)
+  User ⇣ Storefront API → Search index                             (reads)
+  User ⇣ Image CDN → Product images                                (reads; resizes on request)
+UPLOAD (writes)
+  User ⇡ Shop service → Product images, Catalog database           (the only writer of both)
+                      ⇢ Listing events ⇢ Search indexer → Search index
+  User ⇡ Identity                                                  (sign-in)
+  User ⇡ Payments → Catalog database                               (reads prices)
+                  → Payments database
+                  ⇢ Order events ⇢ Order recorder → Orders database
+  User ⇡ Cart service → Cart store
+```
+
+Each store has one writer, its owner: the Shop service writes the Catalog database (shops and
+listings), Product images and Listing events; the Search indexer the Search index; Payments the
+Payments database and Order events; the Order recorder the Orders database; the Cart service the
+Cart store. Every other link into a store reads. In all: the user and seventeen tiles, and 21
+links (seven lane entries, four of them upload, and fourteen connections), six of which are
+asynchronous or follow an asynchronous link (the listing and paid-order paths). Every service is
+TypeScript on Docker; the study has no C1 people or relationships and no package. Of the 144
+orders of its entries, this one keeps the download entries above the upload entries with the
+fewest crossings, bends and line length: two lines cross, where the Order recorder's line rises
+past the Search index's.
+
+| Part | Content |
+| --- | --- |
+| Tiles | Orders service, Storefront API, Shop service and Cart service (microservices, public); Identity (OpenID Connect); Payments (Billing, Stripe, public: Stripe calls its webhook); Search indexer and Order recorder (workers, scaled on queue lag); Image CDN (Cloudflare, origin Product images, image resizing on request); Product images (Cloudflare R2, public through the CDN); Search index (OpenSearch); Catalog database (PostgreSQL, partitioned by `shop_id`), Payments database and Orders database (PostgreSQL); Listing events and Order events (topics); Cart store (Redis, a cart expires a week after its last change, no eviction). |
+| Modules | Orders service: order reader. Storefront API: listing search. Shop service: listing writer, photo uploader and listing publisher (outbox in the catalog database). Search indexer: listing consumer and index writer. Payments: cart pricer, Stripe checkout (one Checkout Session per order, the order as its transfer group), webhook handler, seller payouts (Stripe Connect onboarding and transfers), payment records and order publisher (outbox in the payments database). Order recorder: paid-order consumer and order writer. Cart service: cart store client. |
+
+Design decisions, where the sources leave a choice:
+
+- **Browsing and selling are separate services**, as TinyURL's redirect and create are: the Shop
+  service is the catalog's only writer, and the Storefront API reads the search index.
+- **Checkout is Payments' job.** With Stripe Checkout the payment page is Stripe's, so Payments
+  prices the cart from the catalog and opens one session for the order. The designs' separate
+  checkout service also reserves stock and arranges shipping and emails, which are left out here.
+  Sellers set up their payouts through Payments too.
+- **Orders are recorded once paid, by one writer.** The payment webhook publishes the order, the
+  Order recorder writes it and the Orders service reads it, as TinyURL's analytics worker and
+  Stats API do. Links can't form a loop, so nothing runs back from Payments to an earlier tile.
+- **Stripe holds the sellers' balances**, which ByteByteGo's payment system keeps in a wallet and
+  a ledger.
+- **No line to Identity**: the services verify its signed tokens themselves.
+- **Left out** for the developer to add: stock reservation (the designs disagree: an inventory
+  service, a catalog field, or none), shipping (each seller ships their own orders), order emails,
+  a gateway in front of the services (every design has one, but on the lane canvas it would be a
+  lane's only entry and hide which services the buyer and the seller reach), recommendations, ads
+  and currencies.
+
+**Where Etsy differs.** Etsy runs a largely PHP monolith on sharded MySQL (High Scalability), not
+microservices, and it pre-generated fixed image sizes in batches.
+
+**Added to the canvas for this study** (the extension ladder in the
+[design-polish plan](plans/design-polish/units.md#rules-for-the-studies-dp08-dp09)):
+
+- A CDN setting, **Image resizing** (`imageResizing`: unspecified, `disabled` or `on-request`;
+  [studio settings](studio-settings.md#resources-and-integrations)). A product grid needs every
+  photo at several sizes; the existing options could only say so in a purpose. Template: the CDN
+  product's own image resizing, configured (Cloudflare Images transformations, or AWS's Dynamic
+  Image Transformation stack in front of CloudFront).
+- Four entries per lane instead of three (`laneLimits.entriesPerLane`). The upload lane has four
+  separate things a buyer or a seller does: sign in, sell, keep a cart and pay. A gateway would
+  bring it back to one entry but hide them.
+
+**On Cloudflare.** Most of the design moves to Cloudflare with settings alone: each service's
+Execution **Managed**, Host **Cloudflare Workers**; the Catalog, Payments and Orders databases as
+SQLite on **Cloudflare D1**; the topics on **Cloudflare Queues**; the Cart store on **Upstash**;
+Product images already on R2 behind the Cloudflare CDN. The Search index stays an OpenSearch (or
+Meilisearch) service.
+
+The study stores no layout. Its blueprint has seven entries, eight services, nine resources, no
+externals, fourteen connections (each link into a store marked `write` or `read`) and all sixteen
+components, with nothing omitted and no findings.
+
 ## Limits
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
@@ -320,13 +453,17 @@ earlier versions keep their own design; only new copies are v3.
   tiles (a `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up
   in a column along it, sometimes over the tile's own tabs. Closing a rail helps; a fitted camera
   refits by itself.
+- A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
+  marketplace study (seventeen tiles, 1,312px tall) fits at 0.42 at 1440×900 and 0.36 at
+  1280×800, with tile names too small to read until you zoom in.
 - A notice stays at the bottom of the canvas until you dismiss it, Undo or Redo, or open another
   project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
   can sit over it.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back.
 - Where two services fork to the same tiles, their lines share one bus (TinyURL: the Redirect
-  service and the Shorten service both reach the URL database). Selecting a tile colours its own lines,
+  service and the Shorten service both reach the URL database; the marketplace: the Image CDN and
+  the Shop service reach Product images, and the Shop service and Payments the Catalog database). Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
   remove a particular one, click its row in the tile's Connections list.

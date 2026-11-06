@@ -131,8 +131,15 @@ is its only writer ([one writer per store](#relationships)).
 | `queue` | `mode` work-queue / topic; `provider` unspecified / self-hosted / aws / google-cloud / cloudflare-queues / external; `retentionSeconds?` 60–1209600 | exactly-once, DLQ automation, event schemas |
 | `object-store` | `provider` unspecified / self-hosted / cloudflare-r2 / aws-s3 / google-cloud-storage / external; `access` private / public | bucket names, lifecycle rules |
 | `search` | `engine` unspecified / opensearch / elasticsearch / meilisearch / external; `provider` unspecified / self-hosted / aws / google-cloud / external | index fields, analyzers |
-| `cdn` | `provider` cloudflare / unspecified / aws-cloudfront / google-cloud-cdn / external; `origin?` application or object-store ref | cache rules, domains, WAF, language |
+| `cdn` | `provider` cloudflare / unspecified / aws-cloudfront / google-cloud-cdn / external; `origin?` application or object-store ref; `imageResizing?` disabled / on-request | cache rules, domains, WAF, language, image sizes or formats |
 | `external-api` | `category` generic / payments / email / identity / recognition / workflow; `provider` unspecified / cloudflare / aws / google-cloud / external | request builders, webhooks, secrets |
+
+**Image resizing** (`imageResizing`, a CDN's Options; absent means unspecified): `on-request`
+means the CDN resizes images from its origin per request (the size in the URL) and caches each
+size, so the origin keeps only originals (Cloudflare's image transformations; AWS's Dynamic Image
+Transformation in front of CloudFront). It names no sizes or formats; those belong to the pages
+that ask for them. The [marketplace study](studio.md#the-marketplace-study) uses it for product
+photos.
 
 A new queue is owned by the application it is added next to (its links are always asynchronous);
 one with no application next to it is refused. Database and cache providers depend on the engine:

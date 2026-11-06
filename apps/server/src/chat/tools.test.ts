@@ -54,7 +54,7 @@ describe("studio chat tools", () => {
       "storage",
       "external",
     ]);
-    expect(catalog.caps).toEqual({ linksPerTile: 4, entriesPerLane: 3 });
+    expect(catalog.caps).toEqual({ linksPerTile: 4, entriesPerLane: 4 });
     expect(run(workspace, "describeStudioDefinition", { kind: "cache" }).settingsSchema).toBeTypeOf(
       "object",
     );

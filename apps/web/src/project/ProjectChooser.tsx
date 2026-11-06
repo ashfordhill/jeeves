@@ -13,9 +13,11 @@ type Choice = "study" | "blank";
 export function ProjectChooser({ onClose }: { onClose: () => void }) {
   const [choice, setChoice] = useState<Choice>("study");
   const [study, setStudy] = useState<string>(DEFAULT_EXAMPLE_ID);
-  const [name, setName] = useState<string>(
-    studioArchitectureExamples[0]?.name ?? "Architecture study",
-  );
+  const studyName = (id: string) =>
+    studioArchitectureExamples.find((item) => item.id === id)?.name ?? "Architecture study";
+  const [name, setName] = useState<string>(studyName(DEFAULT_EXAMPLE_ID));
+  // The name follows the chosen study until it is typed over.
+  const [named, setNamed] = useState(false);
   const [error, setError] = useState<string>(),
     [saving, setSaving] = useState(false);
   const busy = useRef(false);
@@ -73,7 +75,7 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                 id: "study",
                 icon: <IconSitemap size={24} />,
                 title: "Architecture study",
-                description: "Start from the TinyURL design study.",
+                description: "Start from a design study built from published designs.",
               },
               {
                 id: "blank",
@@ -107,7 +109,10 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
             value={name}
             maxLength={80}
             required
-            onChange={(event) => setName(event.currentTarget.value)}
+            onChange={(event) => {
+              setName(event.currentTarget.value);
+              setNamed(true);
+            }}
           />
           {choice === "study" ? (
             <>
@@ -118,7 +123,11 @@ export function ProjectChooser({ onClose }: { onClose: () => void }) {
                   value: item.id,
                   label: item.name,
                 }))}
-                onChange={(event) => setStudy(event.currentTarget.value)}
+                onChange={(event) => {
+                  const next = event.currentTarget.value;
+                  setStudy(next);
+                  if (!named) setName(studyName(next));
+                }}
               />
               {example ? (
                 <Text size="sm">

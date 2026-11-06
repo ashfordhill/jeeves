@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "./design.ts";
 import { createStudioComponentSettings } from "./studio-components.ts";
+import { studioFieldGroups } from "./studio-definitions.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import { createStudioSettings, studioKindLanguages, studioSettingsSchema } from "./studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
@@ -267,5 +268,55 @@ describe("preconfigured kinds and languages", () => {
     binding.definition.id = "studio-gateway";
     binding.settings = { ...createStudioSettings("gateway"), language: "unspecified" };
     expect(settings(designSchema.parse(gateway), "shorten")).not.toHaveProperty("language");
+  });
+});
+
+describe("CDN image resizing", () => {
+  it("is an optional Options field: unspecified, disabled or on request", () => {
+    const cdn = createStudioSettings("cdn");
+    expect(cdn).not.toHaveProperty("imageResizing");
+    const field = studioFieldGroups(cdn)
+      .flatMap((group) => group.fields)
+      .find((item) => item.path === "settings.imageResizing");
+    expect(field).toMatchObject({
+      group: "Options",
+      label: "Image resizing",
+      control: "select",
+      optional: true,
+      choices: [
+        { value: "disabled", label: "Disabled" },
+        { value: "on-request", label: "On request" },
+      ],
+    });
+    for (const imageResizing of ["disabled", "on-request"])
+      expect(studioSettingsSchema.safeParse({ ...cdn, imageResizing }).success).toBe(true);
+    expect(studioSettingsSchema.safeParse({ ...cdn, imageResizing: "always" }).success).toBe(false);
+    // Only the CDN has it.
+    expect(
+      studioSettingsSchema.safeParse({
+        ...createStudioSettings("object-store"),
+        imageResizing: "on-request",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("is set and cleared with an edit, like any setting", () => {
+    const market = studioArchitectureExample("studio-marketplace").design;
+    const settings = (design: DesignDocument) =>
+      studio(design).elements.find((b) => b.element === "image-cdn")?.settings;
+    expect(settings(market)).toMatchObject({ imageResizing: "on-request" });
+    const { imageResizing: _dropped, ...rest } = settings(market) as Record<string, unknown>;
+    const cleared = run(market, {
+      type: "edit",
+      element: "image-cdn",
+      settings: rest,
+    } as StudioCommand).design;
+    expect(settings(cleared)).not.toHaveProperty("imageResizing");
+    const disabled = run(cleared, {
+      type: "edit",
+      element: "image-cdn",
+      settings: { ...rest, imageResizing: "disabled" },
+    } as StudioCommand).design;
+    expect(settings(disabled)).toMatchObject({ imageResizing: "disabled" });
   });
 });

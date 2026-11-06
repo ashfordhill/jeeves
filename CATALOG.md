@@ -24,7 +24,7 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 | `notification` | Notifications | Service | One service with email delivery intent (starts with Resend). |
 | `billing` | Billing | Service | One service with a payment provider choice (starts with Stripe). |
 | `gateway` | Gateway | API (default) | An entry point routing requests to internal services (starts with Traefik). |
-| `cdn` | CDN | API | Content delivery in front of an application or object store (starts with Cloudflare). |
+| `cdn` | CDN | API | Content delivery in front of an application or object store (starts with Cloudflare); can resize images on request. |
 | `database` | Database | Database (default) | A logical store; engine and provider are separate choices. |
 | `search` | Search index | Database | A derived search index. |
 | `cache` | Cache | Cache | A logical cache with an optional TTL. |
@@ -119,8 +119,9 @@ The table records design intent only. No template-support state is kept: a futur
 will mark the tiles and links it has no template for (a badge and a blueprint finding) and never
 refuse them, keeping design intent and template availability apart.
 
-Caps (`laneLimits`): at most 4 outgoing links per tile and 3 entries per lane, and a tile has
-at most one entry. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
+Caps (`laneLimits`): at most 4 outgoing links per tile and 4 entries per lane, and a tile has
+at most one entry. The entry cap was raised from 3 for the marketplace study, whose upload lane has
+sign-in, the seller's shop, payments and the cart. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
 these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
 C1 people, external systems and relationships are not tiles and are not checked.
 
@@ -135,7 +136,7 @@ to Geo lookup. A cache can't link onward."):
 | `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
-| `setEntryLane` | Moves an entry to the other lane (`download` or `upload`), unless that lane already has 3 entries. |
+| `setEntryLane` | Moves an entry to the other lane (`download` or `upload`), unless that lane already has 4 entries. |
 
 Two pure helpers answer what a tile can do, for the canvas and chat:
 
@@ -228,13 +229,26 @@ The design chat uses one provider and model chosen in Settings
 | OpenAI API | `OPENAI_API_KEY` or `openai.apiKey` in `~/.jeeves/config.json` |
 | Codex | its own CLI login (`codex login`); Jeeves never sees the credentials |
 
-## Study
+## Studies
 
-**TinyURL** (`studio-tinyurl@3.0.0`) is the one study, built from published designs
+New project offers two studies, described in the [studio guide](docs/studio.md).
+
+**TinyURL** (`studio-tinyurl@3.0.0`, the default) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
 redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
 front of one URL database that only the Shorten service writes, and click analytics through a
 queue into a store read by a Stats API. No CDN tile. The user downloads through the Stats API
 and the Redirect service and uploads through the Shorten service: eight tiles, ten links (three
-entries and seven connections) and nine components. It is described in the
-[studio guide](docs/studio.md#the-tinyurl-study).
+entries and seven connections) and nine components
+([guide](docs/studio.md#the-tinyurl-study)).
+
+**Marketplace** (`studio-marketplace@1.0.0`) is a multi-seller marketplace with Etsy's core
+functionality as clean microservices (Educative, System Design Handbook, ByteByteGo's payment
+system, Online Boutique, eShop, Stripe Connect, and Cloudflare's and AWS's image delivery). The
+Shop service is the only writer of the catalog and its photos, and publishes listing changes that a
+worker indexes for the Storefront API; an Image CDN resizes photos on request; Payments (Billing
+with Stripe) prices the cart, takes one payment per order and pays each seller through Stripe
+Connect, and publishes paid orders that a worker records for the Orders service; a Cart service
+keeps carts in Redis; Identity signs everyone in. Seventeen tiles, 21 links (seven entries, four
+of them upload, and fourteen connections) and sixteen components
+([guide](docs/studio.md#the-marketplace-study)).

@@ -2207,3 +2207,133 @@ Follow-ups (not fixed here):
   not the order of Redirect's links.
 - The owner's API on 4310 was listening when this unit started and was not by the end; I did not
   stop it (I stopped only my own two PIDs) and did not restart it.
+
+## 2026-11-05 — DP08: marketplace study (complete)
+
+What changed:
+
+- **Marketplace study** (`studio-marketplace@1.0.0`, `studio-examples/marketplace.ts`), offered by
+  New project after TinyURL (the default). A multi-seller marketplace with Etsy's core flows as
+  clean microservices: 17 tiles, 21 links (7 entries: download Orders service, Storefront API,
+  Image CDN; upload Shop service, Identity, Payments, Cart service; 14 connections, 6 dashed),
+  16 modules. Every service TypeScript on Docker. Validates with no findings; blueprint 2 has 8
+  services, 9 resources, no externals, 14 connections, 23 component links, nothing omitted.
+  ```text
+  DOWNLOAD  User ⇣ Orders service → Orders database                  (reads)
+            User ⇣ Storefront API → Search index                     (reads)
+            User ⇣ Image CDN → Product images                        (reads; resizes on request)
+  UPLOAD    User ⇡ Shop service → Product images, Catalog database   (only writer of both)
+                                ⇢ Listing events ⇢ Search indexer → Search index
+            User ⇡ Identity
+            User ⇡ Payments → Catalog database (reads prices), Payments database
+                            ⇢ Order events ⇢ Order recorder → Orders database
+            User ⇡ Cart service → Cart store
+  ```
+- **Research** (cited in the factory's doc comment and the guide): Educative and System Design
+  Handbook (e-commerce write-ups), ByteByteGo's payment system, Google's Online Boutique, Microsoft's
+  eShop (its AppHost wiring read with `gh`: Basket.API on Redis, Catalog/Ordering/Identity on their
+  own Postgres databases, RabbitMQ events, an OrderProcessor worker on the ordering database), Stripe
+  Connect's separate charges and transfers, Cloudflare's and AWS's image-delivery reference
+  architectures, and for where Etsy differs High Scalability and Code as Craft (2010). HelloInterview
+  has no written e-commerce breakdown (only a video), and DesignGurus' e-commerce pages are
+  paywalled, so neither is cited. The plan's open questions, settled from the sources: search is an
+  index fed through listing events (Educative, Handbook); thumbnails are resized on request at the
+  edge (Cloudflare, AWS: originals only), so no thumbnail worker; the cart is its own service with
+  a Redis store (all four).
+- **Design decisions** (each in the guide): browsing and selling are separate services (the
+  Storefront API reads only the index; the Handbook keeps catalog data for reading in search
+  indexes); checkout is Payments' job (Stripe Checkout; the designs' separate checkout also
+  orchestrates stock, shipping and email, all left out); orders are recorded once paid, by an Order
+  recorder, and read by the Orders service (TinyURL's analytics pattern; links can't loop back from
+  Payments); Stripe holds seller balances; no line to Identity (tokens verified locally); left out:
+  stock, shipping, emails, a gateway (every design has one; on the lanes it would be a lane's only
+  entry and hide what buyer and seller reach), recommendations, ads, currencies. One project:
+  splitting selling from buying would cut the catalog read and the payouts in two.
+- **How the layout was chosen.** A first design with a separate Checkout service, Checkout → Cart
+  service, Shop → Payments (payout setup) and Storefront → Catalog database drew one bus from
+  Product images down to Payments shared by four services (the TinyURL v2 complaint). The final
+  design leaves each service at most one shared target. I then scored all 144 entry orders with
+  real ELK plus `alignLayout` (a scratch script; crossings, bends, length): 48 of them put a
+  download entry among the upload entries; of the rest, the shipped order has the fewest crossings
+  (2, both where the Order recorder's line rises past the Search index's input), then bends (26).
+- **Extension ladder.** Step 2: nothing. Step 3: a CDN setting, **Image resizing**
+  (`imageResizing?: "disabled" | "on-request"`, absent = unspecified) — schema
+  (`studioCdnImageResizingSchema` on `studioCdnSettingsSchema`), form (an optional select in the
+  CDN definition's Options, labels Disabled / On request), validation (the enum, strict), blueprint
+  (resource `settings`, additive within `blueprint: 2`), chat (the settings JSON Schema and
+  `describeStudioDefinition` pick it up), docs. Need: a product grid wants every photo at several
+  sizes, and the existing options could only say so in a purpose. Template: the CDN product's own
+  resizing, configured (Cloudflare image transformations; AWS's Dynamic Image Transformation stack
+  in front of CloudFront). Step 4: `laneLimits.entriesPerLane` 3 → 4. Need: the upload lane has
+  sign-in, the shop, Payments (the checkout) and the cart; a gateway would hide them. Template:
+  none (a canvas rule). Step 5: nothing.
+- **New project**: the study card says "Start from a design study built from published designs.";
+  the Study list has both; the project name follows the chosen study until typed over
+  (`ProjectChooser.tsx`).
+- E2E helper: `createTinyUrl` is now `createStudy(page, name?, study?)` (exported); its "stable
+  project" is the first one whose name doesn't start with "E2E " (was: not the test's own name).
+
+Tests (138; +3): the marketplace validates and its blueprint counts, kinds, entries and every
+connection's access/channel use (`studio-blueprint.test.ts`); the CDN field (Options, optional,
+choices), accepted and refused values, set and cleared with an `edit` (`studio-operations.test.ts`).
+The cap tests now add two download entries to TinyURL (cap 4, messages "4 entries; the most is
+4", "5 entries; the most is 4"); chat's `caps` is `{4, 4}`. E2E (15, +1, `canvas.spec.ts`): New
+project → Study Marketplace → 18 tiles, 21 lines, 6 dashed, 7 chips; the Image CDN's Image resizing
+reads `on-request`; Catalog database "Writes (owner) Shop service · Reads Payments"; deletes its
+project in `finally`.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 194 files; type checks; 22 files / 138 tests).
+- `pnpm test:e2e`: 15 passed (twice).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse (project names and the native Study select set with
+`selectOption`), my API on 4312 (scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on
+4302, both stopped by PID afterwards. Five marketplace projects created and deleted (all 204; one
+script crashed on a selector and I deleted its project by ID); `jeeves_e2e` again holds just
+"TinyURL · studio study". No console errors or warnings.
+
+- The chooser lists "TinyURL · studio study" and "Marketplace · studio study"; choosing the
+  marketplace renames the project and shows its description.
+- Renders as designed, lanes in order, no vertical segment under 32px. Fit zoom is height-bound
+  (1,088 × 1,312px): 0.415 at 1440×900 and 0.364 at 1280×800 in every rail state.
+- Every tile's inspector: services TypeScript (TypeScript|Go), Docker, public; Payments Billing
+  with Payment provider Stripe; Identity with OpenID Connect; Image CDN Cloudflare, Image resizing
+  On request, Cache redirects Unspecified; Product images Cloudflare R2, public; Search index
+  OpenSearch; databases PostgreSQL (Catalog partitioned by `shop_id`); topics with retention and 6
+  partitions; Cart store Redis-compatible, TTL 604800, No eviction; workers concurrency 4 on queue
+  lag. Store lists: Orders database "Order recorder · Orders service", Search index "Search indexer
+  · Storefront API", Product images "Shop service · Image CDN", Catalog database "Shop service ·
+  Payments", Payments database and Cart store "· nobody else". Modules as listed in the guide.
+  Payments → Catalog database line: "Reads". Dark mode (the app's toggle) reads clearly.
+
+Delivery: the owner's API on 4310 was not running, so I started one on 4313 against the `jeeves`
+database (scratch `JEEVES_HOME`, no model) and a web on 4303, created the study through New
+project by mouse, reloaded it (18 tiles; blueprint 2, no findings) and stopped both by PID. The
+project: **`4222440b-cdad-47f4-897b-f36136cd452e`, "Marketplace · studio study"** (revision 1).
+The owner's other project (`41bbd268-…`, "TinyURL · studio study", revision 39) is unchanged. I did
+not touch 4300 or 4310.
+
+Docs: studio guide (Projects, the marketplace fit zooms, the 4-entry cap and its tooltip, the
+CDN's Image resizing in the Inspector, "The default study" for TinyURL, a new "The marketplace
+study" section with flows, sources, the settled questions, lanes, owners, tiles and modules,
+decisions, where Etsy differs, the two canvas additions and an "On Cloudflare" mapping; Limits:
+tall designs fit small, the marketplace's shared buses), CATALOG (CDN row, caps, `setEntryLane`,
+"Studies"), studio settings (CDN row and an Image resizing paragraph), PLAN (studies; DP01–DP08
+done; next DP09–DP10), README, the plan's Progress line (DP01–DP08 done).
+
+Notes for the next units:
+
+- Rough: at fit the marketplace's tile names are too small to read (0.42/0.36). `FIT_PADDING`
+  (0.28 of the design's size on each side, `packages/board/src/react/camera.ts`) costs a tall design
+  36% of its zoom; a fixed 64px margin would fit it at about 0.59 at 1440×900. An owner decision.
+- For DP10: the guide says download entries are drawn above upload entries, but ELK doesn't always
+  keep that. Reproduce: reorder the marketplace's entries to Storefront, Image CDN, Orders | Shop,
+  Payments, Cart, Identity; the Orders service is drawn between Payments and the Cart service (48
+  of the 144 orders interleave). The shipped order doesn't.
+- Rough: two shared buses remain (Image CDN and Shop service into Product images; Shop service
+  and Payments into the Catalog database) and two crossings at the Search index's input.
+- DP09: the cap is now 4 entries per lane; the CDN has `imageResizing` (thumbnails could use it;
+  video segments don't need it); `createStudy(page, name, study)` makes a study project in E2E.
+  Scoring entry orders with real ELK before fixing a study's entry order paid off here.

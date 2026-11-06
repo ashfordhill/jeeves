@@ -18,8 +18,12 @@ export type StudioLinkResult =
   | { ok: true; value: StudioLinkDefaults }
   | { ok: false; message: string };
 
-/** The caps on branching. Raise them here, and only here, if a realistic design needs more. */
-export const laneLimits = { entriesPerLane: 3, outgoingLinks: 4 } as const;
+/**
+ * The caps on branching. Raise them here, and only here, if a realistic design needs more. Four
+ * entries per lane: the marketplace study's upload lane has sign-in, the seller's shop, the cart
+ * and Payments (the checkout).
+ */
+export const laneLimits = { entriesPerLane: 4, outgoingLinks: 4 } as const;
 
 /**
  * The roles in the link table. `user` is the actor (lane entries); `application` is every

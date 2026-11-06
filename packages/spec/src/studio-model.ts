@@ -330,6 +330,11 @@ export const studioExternalProviderSchema = studioBrowserProviderSchema;
 export const studioCacheTopologySchema = z.enum(["standalone", "cluster"]);
 export const studioCacheEvictionSchema = z.enum(["lru", "lfu", "ttl", "none"]);
 export const studioCdnRedirectCachingSchema = z.enum(["disabled", "enabled"]);
+/**
+ * Whether the CDN resizes images from its origin per request (the width in the URL), caching each
+ * size, so the origin keeps only originals. Absent means unspecified.
+ */
+export const studioCdnImageResizingSchema = z.enum(["disabled", "on-request"]);
 /** A single column/attribute name; no table, entity or schema editor. */
 export const studioPartitionKeySchema = z
   .string()
@@ -399,6 +404,7 @@ export const studioCdnSettingsSchema = z.strictObject({
   kind: z.literal("cdn"),
   provider: studioCdnProviderSchema,
   origin: idSchema.optional(),
+  imageResizing: studioCdnImageResizingSchema.optional(),
   cacheRedirects: studioCdnRedirectCachingSchema.optional(),
 });
 export const studioExternalApiSettingsSchema = z.strictObject({

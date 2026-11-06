@@ -7,15 +7,22 @@ export const ready = (page: Page) =>
     timeout: 20_000,
   });
 
-/** Creates a TinyURL study project through the project menu and returns its ID. */
-async function createTinyUrl(page: Page, name = "E2E TinyURL"): Promise<string> {
+/**
+ * Creates a study project through the project menu (TinyURL, the default study, unless `study`
+ * names another by its label) and returns its ID.
+ */
+export async function createStudy(
+  page: Page,
+  name = "E2E TinyURL",
+  study?: string,
+): Promise<string> {
   // Without a project in the URL the app opens the most recent one, which may be another test's
   // and be deleted as it loads. So open a project no test deletes, when there is one.
   const listed = await page.request.get("/api/projects");
   const projects = listed.ok()
     ? ((await listed.json()).projects as { id: string; name: string }[])
     : [];
-  const stable = projects.find((item) => item.name !== name);
+  const stable = projects.find((item) => !item.name.startsWith("E2E "));
   await page.goto(stable ? `/?project=${stable.id}` : "/");
   const menu = page.getByRole("button", { name: /^Project:/ });
   await expect(menu).toBeVisible();
@@ -23,6 +30,7 @@ async function createTinyUrl(page: Page, name = "E2E TinyURL"): Promise<string> 
   await menu.click();
   await page.getByRole("menuitem", { name: "New project" }).click();
   await page.getByRole("button", { name: "Choose Architecture study" }).click();
+  if (study) await page.getByLabel("Study", { exact: true }).selectOption({ label: study });
   await page.getByLabel("Project name").fill(name);
   await page.getByRole("button", { name: "Create project" }).click();
   const project = () => new URL(page.url()).searchParams.get("project");
@@ -103,7 +111,7 @@ export const test = base.extend<{ tinyurl: string }>({
   tinyurl: async ({ page }, use) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
-    const id = await createTinyUrl(page);
+    const id = await createStudy(page);
     await use(id);
     await page.request.delete(`/api/projects/${id}`);
     expect(errors).toEqual([]);

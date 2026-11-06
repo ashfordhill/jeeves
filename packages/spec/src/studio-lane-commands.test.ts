@@ -193,15 +193,19 @@ describe("addTile", () => {
       }),
     ).toBe("Redirect service already has 4 links; the most is 4.");
 
-    // The download lane has two entries; a third fills it.
-    const full = run(design, {
-      type: "addTile",
-      from: { lane: "download" },
-      side: "after",
-      link: "sync",
-      tile: tile("one", "Service one", "service"),
-      linkId: "download-one",
-    }).design;
+    // The download lane has two entries; a third and a fourth fill it.
+    const full = ["one", "two"].reduce(
+      (current, id) =>
+        run(current, {
+          type: "addTile",
+          from: { lane: "download" },
+          side: "after",
+          link: "sync",
+          tile: tile(id, `Service ${id}`, "service"),
+          linkId: `download-${id}`,
+        }).design,
+      design,
+    );
     expect(
       refusal(full, {
         type: "addTile",
@@ -211,7 +215,7 @@ describe("addTile", () => {
         tile: tile("three", "Service three", "service"),
         linkId: "download-three",
       }),
-    ).toBe("The download lane already has 3 entries; the most is 3.");
+    ).toBe("The download lane already has 4 entries; the most is 4.");
   });
 });
 
@@ -280,15 +284,19 @@ describe("setEntryLane", () => {
       "download",
     ]);
 
-    // Three download entries fill the lane: the upload entry can't move there.
-    const full = run(design, {
-      type: "addTile",
-      from: { lane: "download" },
-      side: "after",
-      tile: tile("one", "Service one", "service"),
-      linkId: "download-one",
-    }).design;
-    const cap = "The download lane already has 3 entries; the most is 3.";
+    // Four download entries fill the lane: the upload entry can't move there.
+    const full = ["one", "two"].reduce(
+      (current, id) =>
+        run(current, {
+          type: "addTile",
+          from: { lane: "download" },
+          side: "after",
+          tile: tile(id, `Service ${id}`, "service"),
+          linkId: `download-${id}`,
+        }).design,
+      design,
+    );
+    const cap = "The download lane already has 4 entries; the most is 4.";
     expect(laneEntryRefusal(full, "upload-shorten", "download")).toBe(cap);
     expect(laneEntryRefusal(full, "download-redirect", "upload")).toBeUndefined();
     // The full lane offers nothing to add or attach, so the user shows only the upload lane's

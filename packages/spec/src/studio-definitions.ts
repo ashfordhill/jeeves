@@ -19,6 +19,7 @@ import {
   studioCacheEvictionSchema,
   studioCacheProviders,
   studioCacheTopologySchema,
+  studioCdnImageResizingSchema,
   studioCdnProviderSchema,
   studioCdnRedirectCachingSchema,
   studioChannelUseSchema,
@@ -207,6 +208,8 @@ const labels: Readonly<Record<string, string>> = {
   workflow: "Workflow",
   none: "None",
   fixed: "Fixed",
+  disabled: "Disabled",
+  "on-request": "On request",
   publish: "Publish",
   consume: "Consume",
 };
@@ -724,6 +727,15 @@ export const studioDefinitions = Object.freeze({
         group: "Options",
         control: "select",
         choices: choices(studioCdnProviderSchema.options),
+      },
+      {
+        path: "settings.imageResizing",
+        label: "Image resizing",
+        group: "Options",
+        control: "select",
+        optional: true,
+        choices: choices(studioCdnImageResizingSchema.options),
+        help: "On request: the CDN resizes images from the origin per request and caches each size; the origin keeps only originals.",
       },
       {
         path: "settings.origin",

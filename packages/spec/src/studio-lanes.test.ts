@@ -419,28 +419,32 @@ describe("laneFindings", () => {
       { connection: "store-shorten" },
     ]);
 
-    // A fourth service, after the Shorten service, gives the download lane a fourth entry.
-    const batch = buildStudioCommand(design, {
-      type: "addTile",
-      from: { tile: "shorten" },
-      side: "after",
-      tile: { id: "admin", name: "Admin API", kind: "service" },
-      linkId: "shorten-admin",
-    });
-    const fourth = applied(applyOperations(design, batch.ops));
-    const crowded = edit(fourth, (draft) => {
-      studioOf(draft).entries = ["redirect", "stats-api", "shorten", "admin"].map((element) => ({
-        id: `entry-${element}`,
-        lane: "download" as const,
-        element,
-      }));
+    // Two more services, after the Shorten service, give the download lane a fifth entry.
+    const fifth = ["admin", "audit"].reduce((current, id) => {
+      const batch = buildStudioCommand(current, {
+        type: "addTile",
+        from: { tile: "shorten" },
+        side: "after",
+        tile: { id, name: `${id} API`, kind: "service" },
+        linkId: `shorten-${id}`,
+      });
+      return applied(applyOperations(current, batch.ops));
+    }, design);
+    const crowded = edit(fifth, (draft) => {
+      studioOf(draft).entries = ["redirect", "stats-api", "shorten", "admin", "audit"].map(
+        (element) => ({
+          id: `entry-${element}`,
+          lane: "download" as const,
+          element,
+        }),
+      );
       draft.connections.push(
         connection("redirect-stats", "redirect", "stats-api"),
         connection("redirect-shorten", "redirect", "shorten"),
       );
     });
     expect(messages(crowded)).toEqual([
-      "The download lane has 4 entries; the most is 3.",
+      "The download lane has 5 entries; the most is 4.",
       "Redirect service has 5 links; the most is 4.",
     ]);
   });

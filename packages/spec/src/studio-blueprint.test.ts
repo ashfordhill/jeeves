@@ -8,8 +8,10 @@ import {
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import { studioStoreAccess } from "./studio-links.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
+import { validateDesign } from "./validate.ts";
 
 const tinyurl = () => studioArchitectureExample("studio-tinyurl").design;
+const marketplace = () => studioArchitectureExample("studio-marketplace").design;
 
 describe("designBlueprint", () => {
   it("exports TinyURL as a schema-valid, deterministic blueprint", () => {
@@ -58,6 +60,76 @@ describe("designBlueprint", () => {
     const shuffled = tinyurl();
     shuffled.elements.reverse();
     expect(designBlueprint(shuffled, "TinyURL")).toEqual(blueprint);
+  });
+
+  it("exports the marketplace study with no findings and one writer per store", () => {
+    const design = marketplace();
+    expect(validateDesign(design)).toEqual([]);
+    const blueprint = designBlueprint(design, "Marketplace");
+    expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
+    expect(blueprint).toMatchObject({ blueprint: 2, findings: [], externals: [], omitted: [] });
+    expect(blueprint.services.map((s) => [s.id, s.kind, s.components.length])).toEqual([
+      ["cart", "service", 1],
+      ["identity", "identity", 0],
+      ["order-recorder", "worker", 2],
+      ["orders", "service", 1],
+      ["payments", "billing", 6],
+      ["search-indexer", "worker", 2],
+      ["shop", "service", 3],
+      ["storefront", "service", 1],
+    ]);
+    expect(blueprint.resources.map((r) => [r.id, r.kind])).toEqual([
+      ["cart-store", "cache"],
+      ["catalog-db", "database"],
+      ["image-cdn", "cdn"],
+      ["listing-events", "queue"],
+      ["order-events", "queue"],
+      ["orders-db", "database"],
+      ["payments-db", "database"],
+      ["product-images", "object-store"],
+      ["search-index", "search"],
+    ]);
+    // Four entries in the upload lane: the cap (`laneLimits.entriesPerLane`) is four.
+    expect(blueprint.entries).toEqual([
+      { lane: "download", element: "image-cdn" },
+      { lane: "download", element: "orders" },
+      { lane: "download", element: "storefront" },
+      { lane: "upload", element: "cart" },
+      { lane: "upload", element: "identity" },
+      { lane: "upload", element: "payments" },
+      { lane: "upload", element: "shop" },
+    ]);
+    expect(blueprint.componentLinks).toHaveLength(23);
+    // Each store's owner is its only writer; queues keep publish and consume.
+    expect(
+      Object.fromEntries(blueprint.connections.map((c) => [c.id, c.access ?? c.channelUse])),
+    ).toEqual({
+      "cart-write": "write",
+      "cdn-images": "read",
+      "indexer-write": "write",
+      "listings-indexer": "consume",
+      "orders-read": "read",
+      "paid-recorder": "consume",
+      "payments-paid": "publish",
+      "payments-prices": "read",
+      "payments-write": "write",
+      "recorder-write": "write",
+      "shop-catalog": "write",
+      "shop-images": "write",
+      "shop-listings": "publish",
+      "storefront-search": "read",
+    });
+    // The CDN resizes photos on request; the Payments service is Billing with Stripe.
+    expect(blueprint.resources.find((r) => r.id === "image-cdn")?.settings).toEqual({
+      kind: "cdn",
+      provider: "cloudflare",
+      origin: "product-images",
+      imageResizing: "on-request",
+    });
+    expect(blueprint.services.find((s) => s.id === "payments")?.settings).toMatchObject({
+      kind: "billing",
+      provider: "stripe",
+    });
   });
 
   it("derives one writer per store from its owner; changing the owner changes who writes", () => {

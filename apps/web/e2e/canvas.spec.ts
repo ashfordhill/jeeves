@@ -1,4 +1,4 @@
-import { dashedLines, expect, lines, test, tile, tiles } from "./studio.ts";
+import { createStudy, dashedLines, expect, lines, test, tile, tiles } from "./studio.ts";
 
 test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => {
   expect(new URL(page.url()).searchParams.get("project")).toBe(tinyurl);
@@ -18,6 +18,34 @@ test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => 
   ])
     await expect(tile(page, name)).toBeVisible();
   await expect(tile(page, "CDN")).toHaveCount(0);
+});
+
+test("New project offers the marketplace study", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await createStudy(page, "E2E Marketplace", "Marketplace · studio study");
+  try {
+    // The user and seventeen tiles; seven lane entries (four upload) and fourteen connections,
+    // six of them dashed (the listing and paid-order paths).
+    await expect(tiles(page)).toHaveCount(18);
+    await expect(lines(page)).toHaveCount(21);
+    await expect(dashedLines(page)).toHaveCount(6);
+    await expect(page.locator(".board-chip")).toHaveCount(7);
+    for (const name of ["Storefront API", "Image CDN", "Shop service", "Payments", "Cart service"])
+      await expect(tile(page, name)).toBeVisible();
+
+    const inspector = page.locator(".studio-inspector");
+    await tile(page, "Image CDN").click();
+    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
+    await expect(inspector.getByLabel("Image resizing", { exact: true })).toHaveValue("on-request");
+    await tile(page, "Catalog database").click();
+    await expect(inspector.locator(".lane-store-access")).toHaveText(
+      "Writes (owner)Shop serviceReadsPayments",
+    );
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
 });
 
 test("shows each store's writer and readers, from its owner", async ({ page, tinyurl: id }) => {
