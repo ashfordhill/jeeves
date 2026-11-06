@@ -119,3 +119,8 @@ handoff entry.
   keep one writer per store, and record every difference and why.
 
 **Resolution:** in progress: the [system-design plan](plans/system-design/units.md), SD01–SD05.
+
+- SD01: the [design playbook](design-playbook.md) records the lessons: uploads through a service
+  (proxied or signed URL as the service's choice), the completion handler, search from events, who
+  writes a cache, one writer per store (Xu's two metadata writers turned into one), and the smells
+  this review found.

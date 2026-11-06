@@ -190,3 +190,7 @@ lanes' lines apart), LA04 (an acceptance walkthrough, a docs sweep and fresh cop
 marketplace and YouTube studies in the owner's database) and LA05 (a review of LA01–LA04, which
 fixed what it could show and left questions for the owner) are done. The next work is the owner's
 answers to the LA05 and open DP10 questions in [the handoff](docs/handoff.md).
+
+The [system design units](docs/plans/system-design/units.md) SD01–SD05 answer the owner's
+YouTube review: SD01 wrote the [design playbook](docs/design-playbook.md) (patterns, smells and
+gaps for designing studies); SD02 (YouTube v2) is next.

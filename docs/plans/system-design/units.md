@@ -2,6 +2,7 @@
 
 **Status: approved 2026-11-06.** Five units, run in order: SD01 → SD05. A fresh agent runs one
 unit at a time on primary `main`.
+**Progress:** SD01 is done (see [the handoff](../../handoff.md)).
 
 ## Why
 

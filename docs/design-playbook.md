@@ -1,0 +1,549 @@
+# Design playbook
+
+What agents know about designing a Jeeves study or diagram: the patterns real systems use, how each
+maps to Jeeves tiles, kinds, settings and templates, the shapes that read wrong on the canvas, and
+what Jeeves can't draw yet. Read it before you design a study or change one. When a study, research
+or an owner review teaches something new, add it here (AGENTS.md).
+
+The goal behind every rule is "Why this matters" in the
+[design-polish plan](plans/design-polish/units.md#why-this-matters):
+
+- **Every tile maps to a template**: a ready-made backend a generator deploys and configures (a
+  database engine, a CDN, a search engine, a resumable upload server), or a generated service
+  skeleton whose modules say what it does.
+- **Readable at a glance** by someone who didn't draw it.
+- **Diagram level.** Algorithms, retries, hashing, DAG scheduling and cleanup jobs are module
+  purposes or the developer's work after generation, not tiles.
+
+The canvas's own rules are in [CATALOG](../CATALOG.md#lanes-and-links); this page assumes them. The
+ones that shape every pattern below:
+
+- The user reaches only its actions, and an action reaches only a service, an API or the CDN. **A
+  user never reaches a store.**
+- Stores (database, search index, cache, object storage) are end tiles: nothing links out of a
+  store.
+- A queue sits between applications and needs an owner, its publisher. Use `work-queue` for jobs
+  (each done once) and `topic` for events (each consumer gets every event).
+- **One writer per store**: the store's owner writes, every other link into it reads
+  (`studioStoreAccess`). The canvas derives this, so it can't show a second writer: a second
+  writer is drawn as a reader.
+- No loops: a line never runs back to an earlier tile.
+- Caps (`laneLimits`): 4 links out of a tile, 4 entries per action.
+
+Notation, as in the [studio guide](studio.md): `→` a request (solid line), `⇢` asynchronous
+(dashed), `⇣`/`⇡` an entry from the download or upload action. "(owner)" marks a store's one
+writer.
+
+## Real-world boxes in Jeeves
+
+| What a source draws | Jeeves tile (kind) | Notes |
+| --- | --- | --- |
+| API servers, web servers, an app service | Service (`service`) | One per responsibility the reader should see (Watch API, Upload service). |
+| Workers, a worker pool, task workers, consumers | Service (`worker`), after a queue | A worker is never an entry; it hangs after a queue. |
+| Load balancer | none | Implied by a service's replicas and autoscaling. See the gateway smell. |
+| API gateway | API (`gateway`) | Only when the reader needs to see it (smells). |
+| Message queue for jobs | Queue (`queue`, `work-queue`) | Owned by the publisher. |
+| Event stream, completion queue, Kafka topic | Queue (`queue`, `topic`) | Owned by the publisher; several consumers. |
+| Blob storage, S3, original or transcoded storage | Storage (`object-store`) | `access` private or public is intent. |
+| CDN | API (`cdn`) | `origin` names the store or application it pulls from. |
+| Metadata DB, SQL or NoSQL database | Database (`database`) | `engine`, `readReplicas`, `partitionKey`. |
+| Search cluster (Elasticsearch, OpenSearch) | Database (`search`) | A derived index, never the source of truth. |
+| Cache (Redis, Memcached) | Cache (`cache`) | Its owner is whoever writes it (pattern 4). |
+| Sign-in, OAuth, user service | Service (`identity`) | Other services verify its tokens (`auth-guard` module); no line to it. |
+| Payment provider | Service (`billing`) | Stripe is its provider, not an External tile. |
+| Email | Service (`notification`) | Resend or SES as its provider. |
+| Any other third party | External (`external-api`) | Named for the provider. |
+| DAG scheduler, resource manager, preprocessor, orchestrator | modules of the worker | Inside the worker that runs the work (gaps). |
+
+---
+
+## Patterns
+
+Each pattern: the problem, the shape, how it maps to Jeeves, the template it implies, where
+sources differ, and the sources (full list at the end).
+
+### 1. Uploading large files through an upload service
+
+**Problem.** A creator sends a file of hundreds of megabytes or more over an unreliable link. A
+dropped connection must not restart it, and the bytes should not cost more than they need to.
+
+**Shape.** The client always asks a service first: to sign in, check the user may upload, and
+start the upload. The bytes then travel one of two ways, and the diagram is the same for both:
+
+```text
+UPLOAD  User → Publish ⇡ Upload service → Original videos (owner)
+                                        ⇢ Upload jobs
+```
+
+- **Proxied:** the client sends the bytes to the Upload service, which streams them into storage.
+  Resumable with a protocol such as tus (the server records the offset; the client resumes from
+  it).
+- **Signed URL:** the Upload service starts a multipart upload, signs a URL for each part, and the
+  client sends the parts straight to storage. Storage checks the signature, so the storage endpoint
+  is itself a service checking the request. The Upload service then verifies the parts and
+  completes the upload ("trust but verify": the client reports each part's ETag, the service checks
+  them with ListParts, then calls CompleteMultipartUpload).
+
+Either way the Upload service is the one writer of Original videos and the one that knows the
+upload finished, so it publishes the job.
+
+**In Jeeves.**
+
+- Publish ⇡ Upload service (`service`, public), its entry.
+- Upload service → Original videos (`object-store`, `access: private`, owner Upload service).
+- Upload service ⇢ Upload jobs (`queue`, `work-queue`, owner Upload service).
+- Modules: `auth-guard` (`jwt`, the creator check against Identity's token), a `custom` module
+  for the transfer ("Multipart uploads: start, sign each part, list the parts that arrived,
+  complete", or "Resumable uploads: tus"), and an `event-publisher` for the job.
+- **How the bytes travel is a choice on the Upload service, never a user → store line.** Today it
+  lives in a module's purpose. A setting or a kind for it is SD02's decision (gaps).
+- The upload's progress: with multipart, the upload itself is the state (resuming asks storage
+  which parts arrived), so the service needs no database. If it keeps per-part status
+  (HelloInterview), that is its own Uploads database, owned by the Upload service, not the
+  video's metadata store (pattern 7, "split the store").
+
+**Templates.** Proxied: a ready-made resumable upload server (tusd: S3, Google Cloud Storage, Azure
+or disk storage; a blocking `pre-create` hook authenticates the user, a `post-finish` hook tells
+the application the upload is done, which is where the job is published). Signed URL: a generated
+service skeleton with the storage SDK's multipart calls. The two imply different templates, which
+is why the choice must be recorded on the tile.
+
+**Where sources differ.**
+
+- ByteByteGo (Xu) draws the client uploading straight into original storage with a pre-signed URL,
+  and the API servers only signing. HelloInterview's YouTube and Dropbox prefer pre-signed URLs to
+  avoid uploading the file twice. The owner's rule: the diagram keeps Publish → Upload service →
+  Original videos, and the signed URL is how the bytes travel inside that service's job.
+- Who notices the upload finished: the service that completes it (AWS's pattern, HelloInterview's
+  trust-but-verify), or storage's own event notification (S3 event notifications fire on
+  `CompleteMultipartUpload`, at least once, into SQS, SNS, Lambda or EventBridge; HelloInterview's
+  YouTube starts processing from it). Jeeves can't draw storage publishing an event (gaps), so the
+  Upload service publishes the job.
+- Xu splits files into GOP-aligned chunks on the client for resumable uploads; that is client and
+  module detail, not a tile.
+
+**Sources.** ByteByteGo *Design YouTube*; HelloInterview *YouTube* and *Dropbox*; AWS presigned
+uploads, multipart upload, and the presigned multipart blog; S3 event notifications; tus and tusd
+(hooks).
+
+### 2. A media pipeline: jobs, workers, a completion event and a completion handler
+
+**Problem.** Transcoding takes minutes and fails sometimes. The upload must not wait for it, and
+the video's record must change only once the outputs exist.
+
+**Shape.**
+
+```text
+Upload service ⇢ Upload jobs ⇢ Transcoder → Original videos       (reads)
+                                          → Transcoded videos     (owner)
+                                          ⇢ Completion events ⇢ Completion handler → Metadata DB (owner)
+```
+
+The worker that does the heavy work writes only its own output. It then announces the result on a
+topic. A separate completion handler records it in the store that readers use.
+
+**In Jeeves.**
+
+- Upload jobs: `queue`, `work-queue` (each job done once), owner the Upload service.
+- Transcoder: `worker`, `autoscaleOn: queue-lag`, low `concurrency` (one heavy job per replica).
+  Modules: `event-consumer` (with `retryLimit`), `custom` modules for the stages (segment and
+  encode, package playlists, thumbnails), `event-publisher` for the completion event.
+- Transcoded videos: `object-store`, owner the Transcoder.
+- Completion events: `queue`, `topic`, owner the Transcoder, so the search indexer (pattern 3) can
+  consume the same events.
+- Completion handler: `worker`, modules `event-consumer` and `data-access`; owner of the Metadata
+  DB (and of a metadata cache if the owner writes it, pattern 4).
+- The Transcoder uses 3 of its 4 links; the handler 1–2.
+
+**Why a completion handler, and not the transcoder writing the record.**
+
+- **One concern per worker, one template each.** The transcoder is a media worker (ffmpeg stages);
+  the handler is a generic consumer with a data-access module. A transcoder that also writes the
+  record and the index is the smell "a worker writing a store for an unrelated concern".
+- **One writer for the video's record.** The handler owns the Metadata DB; everything that changes
+  a video's record arrives as an event it consumes (pattern 7).
+- **No loops.** The service that started the job can't receive its completion (Upload service ⇢
+  Upload jobs ⇢ Transcoder ⇢ … → Upload service is a loop), so the completion goes to a tile after
+  the transcoder.
+
+**Templates.** Queues and topics: the chosen provider's product, configured. The transcoder: a
+generated worker skeleton with media modules. The completion handler: a generated consumer and
+writer skeleton, close to the TinyURL analytics worker and the marketplace's Order recorder.
+
+**Where sources differ.**
+
+- ByteByteGo (Xu): transcoding servers, a completion queue and a completion handler that "updates
+  the metadata database and cache"; inside the transcoding servers a preprocessor, DAG scheduler,
+  resource manager and task workers. In Jeeves the DAG machinery is the transcoder's modules, not
+  tiles.
+- HelloInterview: one video processing service runs a DAG (an orchestrator such as Temporal) whose
+  last step marks the upload complete and writes the segment URLs into the metadata. That is the
+  transcoder writing the record; the YouTube study 1.x followed it and the owner found it unclear.
+- Xu pushes transcoded files to the CDN; Jeeves draws the CDN pulling (pattern 6).
+
+**Sources.** ByteByteGo *Design YouTube*; HelloInterview *YouTube*; the YouTube study's sources.
+
+### 3. Search fed by events through an indexer
+
+**Problem.** Search needs its own index, kept in step with the source data, without the code that
+writes the data also writing the index.
+
+**Shape.**
+
+```text
+(writer of the data) ⇢ <topic> ⇢ Search indexer → Search index (owner)
+User → Watch ⇣ Search API → Search index (reads)
+```
+
+Two ways to place the indexer:
+
+- **Sibling consumer** of the event that already exists: Completion events ⇢ Completion handler and
+  ⇢ Search indexer. Both derive their store from the same ordered events (Kleppmann: "each
+  datastore that needs to be kept in sync is an independent consumer of the log"). Use it when the
+  event carries everything the index needs.
+- **After the record's owner:** the owner writes the record and publishes a "changed" event
+  (marketplace: Shop service ⇢ Listing events ⇢ Search indexer). Use it when the index needs data
+  only the record's owner has, or when several kinds of change (create, edit, delete) must reach
+  the index. Turn on the publisher's `outbox` so the event is sent if and only if the write
+  commits.
+
+Either way the indexer is the index's only writer, and the search API only reads it. The indexer
+may also read the database to fill the document (a read link), as Netflix enriches events before
+indexing.
+
+**In Jeeves.** Topic (`queue`, `topic`), owner the publisher; Search indexer (`worker`, modules
+`event-consumer` and a `custom` index writer); Search index (`search`, `engine: opensearch`, owner
+the indexer); Search API (`service`) with a read link.
+
+**Templates.** The search engine: a ready-made backend (OpenSearch, Elasticsearch, Meilisearch)
+configured. The indexer: a generated consumer skeleton. The API: a generated service with a query
+module.
+
+**Where sources differ.** Netflix's Studio Search streams both application events and change data
+capture (CDC) events from databases into Kafka, enriches them, and an Elasticsearch sink writes the
+index. Kleppmann suggests CDC from one database as the practical route. Jeeves can draw only
+application events, because a store can't publish (gaps). The marketplace study's sources
+(Educative, System Design Handbook) feed search asynchronously from the catalog. ByteByteGo and
+HelloInterview's YouTube leave search out; the DesignGurus crash course fills it when a video
+becomes playable.
+
+**Sources.** Kleppmann, *why dual writes are a bad idea*; InfoQ on Netflix Studio Search;
+microservices.io transactional outbox; Debezium on the outbox and dual writes; the marketplace
+study's sources.
+
+### 4. The read path: an API, a cache, a database, and who writes the cache
+
+**Problem.** Reads outnumber writes by orders of magnitude, and the read API must answer fast.
+
+**Shape.**
+
+```text
+User → Watch ⇣ Watch API → Metadata cache
+                         → Metadata DB (reads, from replicas)
+```
+
+The question every design must answer: **who writes the cache?** There are two shapes, and Jeeves
+draws each differently.
+
+- **Reader owns the cache (cache-aside, lazy loading).** The read API looks in the cache, on a miss
+  reads the database and fills the cache. The cache is the reader's own copy; the database's writer
+  never touches it. Staleness is bounded by the TTL. In Jeeves the cache's owner is the reader
+  (TinyURL: URL cache owned by the Redirect service; its `cache-reader` module is `cache-aside`
+  with `single-flight`). Best when the data rarely changes after it is written (a short link, a
+  published video's title).
+- **The writer owns the cache (write-through).** Whoever writes the database also writes the cache,
+  so it is never stale; the reader only reads, and on a miss reads the database without filling.
+  In Jeeves the cache's owner is the database's writer (Xu's completion handler writes both). It
+  costs a cache miss for anything evicted or never written.
+
+Never both: a reader that fills a cache another tile writes is two writers, and the canvas will
+show the reader as "Reads". Pick one and say which in the cache's purpose and the reader's module.
+
+Database replicas carry most reads: `readReplicas` on the database, `readRouting: replica` on the
+reader's `data-access` module.
+
+**Reading another service's database.** Jeeves allows read links into a store another tile owns
+(TinyURL's Redirect reads the URL database Shorten writes). microservices.io's "database per
+service" says a service's data should be reached only through its API. Allow the read when the
+reader is the same feature's read side (create and redirect of one link); otherwise prefer a call
+to the owner (application → application) or a read model fed by its events (pattern 3). Record
+which and why.
+
+**Templates.** Cache and database: ready-made backends (Redis-compatible, PostgreSQL, MySQL)
+configured. The API: a generated service with `cache-reader` and `data-access` modules.
+
+**Where sources differ.** AWS describes lazy loading and write-through and recommends a TTL with
+either. The System Design Primer's write-through has the cache write the store, which Jeeves can't
+draw (stores are end tiles); in Jeeves write-through means the application writes both.
+HelloInterview's YouTube adds an LRU metadata cache partitioned by video ID as an enhancement; the
+YouTube study 1.x left the cache out, serving reads from replicas.
+
+**Sources.** AWS ElastiCache caching strategies; System Design Primer (cache); microservices.io
+database per service; ByteByteGo *Design YouTube*; HelloInterview *YouTube*; the TinyURL study.
+
+### 5. Counting from events
+
+**Problem.** Counting views or clicks by writing a row per event overloads the hot row and slows
+the request.
+
+**Shape.**
+
+```text
+User → Watch ⇣ Watch API ⇢ View events ⇢ View counter → View counts (owner)
+                         → View counts (reads)
+```
+
+The API publishes each event and returns. A counter worker sums events per key (and per period)
+and writes the totals in batches. The API reads the totals.
+
+**In Jeeves.** View events: `queue`, `topic` (other consumers may come), owner the API, with
+`partitions` and `retentionSeconds`. The API's `event-publisher` batches (`batchSize`,
+`lingerMs`). View counter: `worker` on `queue-lag`, modules `event-consumer`, a `custom` summer,
+`data-access`. View counts: `database` (ClickHouse for TinyURL's analytics, MySQL for YouTube's
+totals), owner the counter. Filtering bots or repeat views is a module of the counter, not a tile,
+unless the reader must see it.
+
+**Templates.** Topic and database: ready-made. The counter: a generated consumer skeleton with an
+aggregation module (TinyURL's analytics worker is the same shape).
+
+**Where sources differ.** Reddit counts unique views with two Kafka consumers: one (Nazar) decides
+whether a view counts, the other (Abacus) keeps a HyperLogLog per post in Redis and writes it to
+Cassandra periodically. One writer still owns both stores. DesignGurus' Grokking puts click
+analytics behind a queue, consumers and a store read by a stats API (TinyURL). The crash course
+keeps view counts in their own eventually consistent store. Jeeves has no wide-column engine
+(gaps).
+
+**Sources.** Reddit, *View counting at Reddit*; DesignGurus (Grokking) TinyURL; DesignGurus crash
+course *Design YouTube*; the TinyURL and YouTube studies.
+
+### 6. A CDN pulling from object storage
+
+**Problem.** Video segments, images and other large files should be served near viewers, not by
+the application.
+
+**Shape.**
+
+```text
+User → Watch ⇣ Video CDN → Transcoded videos (reads)
+```
+
+The CDN is the download action's entry. On a miss it fetches from its origin, the store the
+pipeline wrote, and caches it. The pipeline never writes to the CDN.
+
+**In Jeeves.** Video CDN: `cdn`, `provider` (Cloudflare first, or CloudFront, Google Cloud CDN),
+`origin` = the store, `imageResizing: on-request` when it also serves images at several sizes
+(thumbnails, product photos). The store: `object-store`, owner the worker that writes it; `access`
+public when the CDN reads it through the bucket's public domain (an R2 custom domain), private when
+the CDN signs its requests (CloudFront's origin access control). Signed playback URLs for private
+videos are a module of the API that hands them out.
+
+**Templates.** The CDN product and the bucket, both ready-made and configured; nothing generated.
+
+**Where sources differ.** Xu distributes transcoded videos to the CDN (push). The System Design
+Primer describes both: a push CDN receives content from you; a pull CDN fetches it on the first
+request and keeps it for a TTL. HelloInterview's Dropbox uses a pull CDN with signed URLs. Jeeves
+draws pull (`cdn → object-store`). Push would be a write from the pipeline into the CDN
+(application → `cdn`), which hides where the file lives; don't draw it.
+
+**Sources.** System Design Primer (CDN); HelloInterview *Dropbox*; ByteByteGo *Design YouTube*;
+AWS CloudFront origin access control; Cloudflare R2 public buckets; the YouTube and marketplace
+studies.
+
+### 7. One writer per store
+
+**Problem.** Two services writing one store race each other, fail halfway, and leave no one
+responsible for the data's shape. Jeeves makes the store's owner its only writer.
+
+**How to turn two writers into one.** Choose the owner: the tile whose job the data describes, or
+the last step that knows the data is final. Then route every other write to it:
+
+1. **Carry the data in the job.** The first writer's data rides in the message that already flows
+   to the owner. Example: the title and description ride in the upload job and the completion
+   event, and the completion handler writes the video's record once.
+2. **Route the write through the owner by an event.** The other writer publishes a "changed" event
+   on a topic it owns and the store's owner consumes. Example: a later edit of a video's title (not
+   in the studies) would be an event the Metadata DB's owner consumes, not a second writer.
+3. **Call the owner.** When the caller needs the result now, it calls the owner's API
+   (application → application, sync) instead of writing its store.
+4. **Split the store.** If the two writers write different things, they are two stores. Example:
+   upload progress (owned by the Upload service) is not the published video's record (owned by
+   the completion handler).
+
+When the owner both writes its database and publishes an event, enable the publisher's `outbox`, so
+the event goes out if and only if the write commits (microservices.io). Never let one service write
+the database and the index or cache of another's data directly (Kleppmann's dual writes).
+
+**Worked example: Xu's YouTube.** ByteByteGo has two writers of the metadata DB and the metadata
+cache: the API servers (flow b, the file name, size and format while the upload runs) and the
+completion handler (when transcoding completes).
+
+| Xu | Jeeves, one writer |
+| --- | --- |
+| API servers write metadata during the upload | The Upload service puts the title and description in the upload job (1). It writes no metadata. |
+| Completion handler writes the metadata DB and cache | The completion handler is their only writer, from the completion event that carries the job's data and the transcoder's output. |
+| Upload status while the upload runs | The multipart upload is the state; or the Upload service's own Uploads database (4). |
+
+The video is in the record only once it is playable, which is also when search should see it.
+
+**Sources.** microservices.io database per service and transactional outbox; Kleppmann; ByteByteGo
+*Design YouTube*; the three studies' design decisions.
+
+---
+
+## Smells
+
+Shapes that read wrong on the canvas, each with its fix. The first five are checked in every study.
+
+### The user reaches a store
+
+**Looks like:** a line from the user (or an action) into storage or a database. YouTube 1.0 had
+Produce ⇡ Original videos for the signed-URL parts.
+**Why wrong:** a user never reaches a database; a service checks every request, and the canvas
+already has an upload flow through that service.
+**Fix:** action → service → store (pattern 1); how the bytes travel is a choice on the service. The
+link table now refuses it.
+
+### A worker writes a store for an unrelated concern
+
+**Looks like:** a pipeline worker with lines into stores its name doesn't describe. YouTube 1.2's
+Video processor wrote Encoded videos, the Metadata database and the Search index, at the 4-link
+cap.
+**Why wrong:** the reader can't tell what the worker is for; the search index follows the
+transcoder's code instead of the video's data; one template does three jobs.
+**Fix:** the worker writes only its own output and publishes a completion event; a completion
+handler writes the record and an indexer writes the index (patterns 2 and 3). A worker near the
+4-link cap is a hint.
+
+### A fork that reads as a second lane
+
+**Looks like:** a tile with a request into its own store and an asynchronous branch into a
+pipeline, where the store line runs beside the pipeline as if a second flow left the tile. YouTube
+1.2's Upload service → Original videos ran under Upload jobs and the Video processor; the Watch
+API's reads and its View events looked the same.
+**Why wrong:** one service seems to split into two lanes, when every request goes through it.
+**Fix:** design: keep a tile's own store links few, and its asynchronous continuation dashed (the
+link mode, never a second tile). Layout: a store sits beside the tile that uses it, so the fork is
+two short branches (SD03).
+
+### A long line to a far store
+
+**Looks like:** a reader's line running the board's width to a store in the last column. YouTube
+1.2's Video CDN → Encoded videos; TinyURL's Stats API → Analytics store.
+**Why wrong:** the eye follows the long line and reads it as part of the flows it passes.
+**Fix:** layout first (stores beside their users, SD03). In design, check the reader belongs to the
+lane it is in and reads that store directly; never add a tile just to shorten a line.
+
+### A store nobody reads
+
+**Looks like:** a store with only its writer's line (the `output-unread` warning). TinyURL v2's
+analytics store had no reader.
+**Fix:** draw the reader (the stats API) or drop the store. A service's own private database or
+cache (a cart, payment records) is read by its owner and is not this smell.
+
+### Two writers
+
+**Looks like:** two tiles that both change a store's data. The canvas can't draw it: the
+non-owner's line says "Reads". Look instead at what the non-owner's link label and modules say it
+does: a module whose purpose writes the store (a writer, an index writer, a cache fill) or a label
+renamed to say it writes. (A new link's default label "Reads & writes" alone proves nothing; it is
+the link table's default for any link into a database or cache.)
+**Fix:** pattern 7.
+
+### A gateway that does nothing a reader needs to see
+
+**Looks like:** a Gateway as an action's only entry, in front of services the reader then can't
+see from the action. Xu's load balancer in front of the API servers.
+**Why wrong:** on the lanes a gateway hides which services handle the action; load balancing is
+implied by a service's replicas.
+**Fix:** leave it out and record why (the marketplace and YouTube studies do). Add a Gateway only
+when the reader must see what it does (one public host routing to several services with an edge
+concern such as rate limiting), accepting that it becomes the action's one entry.
+
+### An entry its action's word doesn't cover
+
+**Looks like:** an action named for one flow with an entry from another (TinyURL's Open link
+reaches the Stats API, which serves the link's creator their counts).
+**Fix:** rename the action (24 characters) so its word covers its entries, or move the entry to
+the other lane if it produces rather than consumes.
+
+---
+
+## Gaps
+
+Patterns Jeeves can't draw today, with the [extension
+ladder](plans/design-polish/units.md#rules-for-the-studies-dp08-dp09) step each would need. None is
+built; step 5 means asking the owner first.
+
+| Pattern | Today | Step it would need |
+| --- | --- | --- |
+| A store publishes its changes: a database's change stream (CDC, Debezium) or storage's event notifications (S3, R2) feeding a queue | Stores are end tiles. The service that writes publishes the event, with an `outbox`. | 5: a link-table row `store → queue` (a lane-rule change). |
+| How an upload's bytes travel (proxied with a resumable protocol, or signed URLs to storage) | A module's purpose. | 2 (an Uploads kind with two languages, a preset and a template such as tusd) or 3 (a setting on the service). SD02 decides. |
+| The server tells the user something (the video is ready; Xu's step 4) | No line runs to the user. The client polls a read API; email through a Notifications service. | 5: a line into the actor. |
+| Scheduled work (expiry cleanup, re-indexing, backfills) | A worker needs a queue in front of it and can't be an entry. Left to the developer (owner, 2026-11-05). | 5: a trigger tile or entry rule. |
+| A workflow orchestrator (Temporal; Xu's DAG scheduler and resource manager) | Modules inside the worker. | 2: a kind of Service (a workflow engine with its template) if a reader needs to see it. |
+| A reader that fills a cache another tile writes (write-through plus lazy fill) | Two writers; pick one shape (pattern 4). The `cache-reader` module has no "read only, no fill" pattern. | 3: a `cache-reader` pattern value, if a study needs write-through with readers that don't fill. |
+| A wide-column store for counters (Cassandra) | `database` engines: PostgreSQL, MySQL, SQLite, MongoDB, ClickHouse. | 3: an engine value. |
+| A CDN the pipeline pushes to | Drawable (application → `cdn`) but hides the origin. | None: draw pull (pattern 6). |
+
+---
+
+## Before you hand off a design
+
+- Every tile traces to a source or a stated decision, and maps to a template (ready-made or
+  generated). Name it in the handoff.
+- The user's lines go only to actions; every action's entries are services, APIs or the CDN.
+- Each store has one writer, its owner, and at least one reader unless it is its owner's private
+  state. No non-owner writes in disguise.
+- Each worker writes only what its name describes; results go on as events.
+- Search and caches are derived: say who writes each and from what.
+- No gateway unless the reader needs it; no load balancer tile.
+- Action words cover their entries.
+- Within `laneLimits`; the study validates with no findings and no warnings.
+- Every difference from the sources is recorded, with the reason.
+
+## Sources
+
+Read for this playbook (2026-11-06):
+
+- ByteByteGo (Alex Xu), *System Design Interview*, Design YouTube:
+  https://bytebytego.com/courses/system-design-interview/design-youtube
+- HelloInterview, YouTube:
+  https://www.hellointerview.com/learn/system-design/problem-breakdowns/youtube
+- HelloInterview, Dropbox:
+  https://www.hellointerview.com/learn/system-design/problem-breakdowns/dropbox
+- AWS, Uploading objects with presigned URLs:
+  https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html
+- AWS, Amazon S3 Event Notifications:
+  https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html
+- tus, resumable upload protocol: https://tus.io/; tusd: https://tus.github.io/tusd/; tusd hooks:
+  https://tus.github.io/tusd/advanced-topics/hooks/
+- Martin Kleppmann, Using logs to build a solid data infrastructure (or: why dual writes are a bad
+  idea), Confluent, 2015:
+  https://www.confluent.io/blog/using-logs-to-build-a-solid-data-infrastructure-or-why-dual-writes-are-a-bad-idea/
+- InfoQ, Netflix Studio Search (Eran Stiller, 2022), on the Netflix Tech Blog's "How Netflix
+  Content Engineering makes a federated graph searchable":
+  https://www.infoq.com/news/2022/04/netflix-studio-search/
+- Debezium, Event sourcing vs CDC (the outbox and dual writes):
+  https://debezium.io/blog/2020/02/10/event-sourcing-vs-cdc/
+- microservices.io (Chris Richardson): Transactional outbox
+  https://microservices.io/patterns/data/transactional-outbox.html; Database per service
+  https://microservices.io/patterns/data/database-per-service.html; API gateway
+  https://microservices.io/patterns/apigateway.html
+- AWS, ElastiCache caching strategies (lazy loading, write-through, TTL):
+  https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html
+- System Design Primer (CDN push and pull; cache-aside and write-through):
+  https://github.com/donnemartin/system-design-primer
+- Reddit, View counting at Reddit (Krishnan Chandra, 2017):
+  https://www.redditinc.com/blog/view-counting-at-reddit/ (Reddit's site refuses automated
+  fetches; read through search summaries quoting it), and the QCon talk listing
+  https://www.infoq.com/presentations/algorithms-counting-reddit/
+- AWS, Restrict access to an Amazon S3 origin (CloudFront origin access control):
+  https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
+- Cloudflare, R2 public buckets (custom domains and cache):
+  https://developers.cloudflare.com/r2/buckets/public-buckets/
+
+Used through the studies, which cite them in their doc comments and the [studio guide](studio.md):
+DesignGurus' Grokking (TinyURL; YouTube or Netflix) and crash course (YouTube), System Design
+Primer (Bit.ly), ByteByteGo (URL shortener, payment system), Dub, Educative and System Design
+Handbook (e-commerce), Google's Online Boutique, Microsoft's eShop, Stripe Connect, Cloudflare's
+and AWS's image delivery, AWS multipart uploads, Vitess and Cloudflare R2 pricing.

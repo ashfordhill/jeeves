@@ -21,7 +21,7 @@ add it here unless the owner asks.
   [HUMAN_FEEDBACK](docs/HUMAN_FEEDBACK.md): the date, the images, the owner's points, the
   questions and answers, and the decision. A unit that resolves an entry appends what changed,
   the commits and what is still open to that entry's Resolution. Never rewrite earlier sections.
-- **Design lessons go in the [design playbook](docs/design-playbook.md)** (once it exists): when
+- **Design lessons go in the [design playbook](docs/design-playbook.md)**: when
   a study, research or an owner review shows how a kind of system should be designed, or what
   looks wrong on the canvas, add it there. Read it before designing a study.
 - Keep docs current with the code: [studio guide](docs/studio.md),

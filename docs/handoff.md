@@ -3145,3 +3145,79 @@ study". No console errors or warnings. I did not touch 4300, 4304, 4310 or the `
 
 Docs: guide Limits and CATALOG (a legacy entry's removal is saved only when it leaves no lane
 error), the plan's status (complete) and PLAN's Next.
+
+## 2026-11-06 — SD01: design playbook (complete)
+
+What changed (docs only, no code):
+
+- **`docs/design-playbook.md`** (new), the design knowledge agents read before designing a study:
+  the canvas rules every pattern depends on; a table of real-world boxes to Jeeves tiles and
+  kinds; seven **patterns** (large uploads through an upload service; a media pipeline with a
+  completion event and a completion handler; search fed by events through an indexer; the read
+  path and who writes the cache; counting from events; a CDN pulling from object storage; one
+  writer per store), each with problem, shape, Jeeves tiles/kinds/settings/modules, the template
+  it implies, where sources differ, and sources; eight **smells** with fixes and the study that
+  showed each (the plan's seven plus "an entry its action's word doesn't cover"); a **gaps** table
+  with the ladder step each would need; a hand-off checklist; the sources.
+- The coordinator's two notes: the upload pattern keeps Publish → Upload service → Original
+  videos, with proxied (tus/tusd) or signed URL (multipart, trust but verify) as the service's
+  choice and the reason the two imply different templates. Pattern 7 turns Xu's two metadata
+  writers (API servers during the upload, completion handler after) into one: the title rides in
+  the upload job and the completion event, the completion handler writes the DB and cache once,
+  and upload progress is either the multipart upload itself or the Upload service's own store.
+- AGENTS.md: "(once it exists)" dropped. The plan's Progress line (SD01 done), PLAN's Next (one
+  paragraph), HUMAN_FEEDBACK's last Resolution (one bullet).
+
+Sources read (cited in the playbook): ByteByteGo *Design YouTube*; HelloInterview *YouTube* and
+*Dropbox*; AWS presigned uploads and S3 event notifications; tus, tusd and its hooks; Kleppmann's
+"why dual writes are a bad idea"; InfoQ on Netflix Studio Search; Debezium on the outbox;
+microservices.io (transactional outbox, database per service, API gateway); AWS ElastiCache
+caching strategies; System Design Primer (CDN push/pull, cache); Reddit's view counting (through
+search summaries: redditinc.com and reddit.com refuse automated fetches); CloudFront origin
+access control; Cloudflare R2 public buckets. Plus the three studies' own sources. Not used:
+DoorDash's search indexing post (its site blocks fetches, so it isn't cited).
+
+Checks (Node 24.21.0 first in PATH): `pnpm check` exit 0 (Biome 205 files; type checks; 24 files
+/ 162 tests). E2E, build and the browser check are not needed for a docs-only unit (the plan).
+
+Follow-ups: the studies checked against the smells (nothing changed):
+
+- **TinyURL.** No user → store, no unrelated writes, no unread store, no second writer, no
+  gateway. Smells: *long line*: Stats API → Analytics store runs the top row to the last column
+  (DP06 chose the entry order for it; SD03's layout should shorten it). *Fork*: the Redirect
+  service forks to URL cache, URL database and Click events; measure under SD03. *Action word*:
+  "Open link" also reaches the Stats API, which serves link creators their counts (owner question:
+  rename, e.g. "Open & track", or accept). Note: the URL cache is reader-owned cache-aside, right
+  while links never change; if editing or expiry is added, invalidation needs pattern 7 (an event
+  to the Redirect service), not Shorten writing the cache.
+- **Marketplace.** No user → store, no unrelated writes, no unread store (Payments database and
+  Cart store are their owners' own state), no second writer, no gateway (recorded). Smells:
+  *long lines and shared buses*: Image CDN and Shop service into Product images, Shop service and
+  Payments into the Catalog database, and the Orders service's read crossing the Search indexer's
+  write (guide Limits); SD03 should measure them. *Fork*: the Shop service forks to Catalog
+  database, Product images and Listing events, and Payments to Catalog database, Payments database
+  and Order events, the same shape as YouTube's Upload service. *Cross-service read*: Payments
+  reads the Shop service's Catalog database to price the cart; microservices.io's database per
+  service would call the Shop service instead (owner question: keep the read, recorded as the
+  same-feature read side, or a Payments → Shop service call). *Upload transfer*: the Shop
+  service's photo upload is implicitly proxied (its Photo uploader module); once SD02 settles the
+  transfer choice, the marketplace should state it.
+
+Notes for SD02:
+
+- Patterns 1, 2, 3, 4, 5 and 7 are the YouTube v2 building blocks; pattern 7's table is Xu's
+  two-writer case. The plan's starting point (Completion events ⇢ Completion handler and ⇢ Search
+  indexer) is the playbook's "sibling consumer" shape; it holds if the completion event carries the
+  title and description the indexer needs.
+- **The metadata cache:** choose one shape (pattern 4) and record it. Xu's is write-through by the
+  completion handler; the Watch API then reads the cache and the DB without filling. If the Watch
+  API should fill on a miss, it must own the cache (TinyURL's shape) and the handler doesn't write
+  it. The `cache-reader` module has no "read only" pattern (gaps, step 3 if needed).
+- **The transfer choice** (step 2 Uploads kind vs step 3 setting): tusd is the ready-made
+  resumable server (S3/GCS/Azure/disk; `pre-create` hook for auth, `post-finish` to publish the
+  job); signed URLs are a generated skeleton with multipart calls. Update the playbook's gaps row
+  and pattern 1 with the decision.
+- The Transcoder needs 3 of its 4 links (Original read, Transcoded write, Completion events);
+  Upload jobs is a `work-queue`, Completion events a `topic`.
+- A completion can't return to the Upload service (no loops); that is one more reason for the
+  completion handler.
