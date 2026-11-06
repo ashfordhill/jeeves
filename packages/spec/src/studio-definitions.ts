@@ -48,6 +48,7 @@ import {
   studioSearchEngineSchema,
   studioSearchProviders,
   studioSettingsSchemas,
+  studioUploadTransferSchema,
 } from "./studio-model.ts";
 
 type UnionKeys<T> = T extends unknown ? keyof T : never;
@@ -212,6 +213,8 @@ const labels: Readonly<Record<string, string>> = {
   "on-request": "On request",
   publish: "Publish",
   consume: "Consume",
+  "signed-url": "Signed URLs to storage",
+  tus: "Through the service (tus)",
 };
 const choices = <V extends string>(values: readonly V[]): StudioChoice<V>[] =>
   values.map((value) => ({ value, label: labels[value] ?? value }));
@@ -497,6 +500,33 @@ export const studioDefinitions = Object.freeze({
     c4bObligations: [
       ...applicationObligations,
       "Identity integration does not supply application authorization, role or tenant policy.",
+    ],
+  }),
+  uploads: define("uploads", {
+    name: "Uploads",
+    creationName: "Uploads",
+    description:
+      "One service that takes large uploads into object storage; its transfer says how the bytes travel.",
+    classification: applicationClassification,
+    role: "application",
+    visual: { icon: "cloud-upload", color: "api", shape: "service" },
+    fields: [
+      ...general,
+      ...codedApplication("uploads"),
+      exposure,
+      {
+        path: "settings.transfer",
+        label: "Transfer",
+        group: "Options",
+        control: "select",
+        choices: choices(studioUploadTransferSchema.options),
+        help: "Signed URLs: the client sends parts straight to storage and the service completes the multipart upload. Through the service: resumable uploads with the tus protocol (tusd or @tus/server).",
+      },
+    ],
+    relationships: ["calls", "uses-resource", "publish", "consume"],
+    c4bObligations: [
+      ...applicationObligations,
+      "Upload limits, accepted file types and who may upload remain application work; no bucket, signing key or upload server is provisioned.",
     ],
   }),
   gateway: define("gateway", {
@@ -854,6 +884,7 @@ export const studioPerformanceFields: Readonly<
   redirect: servicePerformance,
   notification: servicePerformance,
   identity: servicePerformance,
+  uploads: servicePerformance,
   gateway: servicePerformance,
   database: [
     perfInteger("readReplicas", "Read replicas", studioLimits.readReplicas),

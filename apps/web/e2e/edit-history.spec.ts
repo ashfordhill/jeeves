@@ -53,6 +53,7 @@ test("the Type list switches a tile's kind to its presets and two languages", as
     "Identity",
     "Notifications",
     "Billing",
+    "Uploads",
   ]);
   await expect(types.getByRole("button", { name: "Microservice" })).toHaveAttribute(
     "aria-pressed",

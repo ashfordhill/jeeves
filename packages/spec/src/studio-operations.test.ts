@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "./design.ts";
 import { createStudioComponentSettings } from "./studio-components.ts";
-import { studioFieldGroups } from "./studio-definitions.ts";
+import { studioDefinitions, studioFieldGroups } from "./studio-definitions.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
+import { laneFindings } from "./studio-lanes.ts";
 import { createStudioSettings, studioKindLanguages, studioSettingsSchema } from "./studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
+import { studioTileDefinitions } from "./studio-tiles.ts";
 
 const tinyurl = () => studioArchitectureExample("studio-tinyurl").design;
 
@@ -191,6 +193,13 @@ describe("preconfigured kinds and languages", () => {
       provider: "oidc",
       language: "typescript",
     });
+    expect(createStudioSettings("uploads")).toEqual({
+      kind: "uploads",
+      execution: "docker",
+      language: "typescript",
+      exposure: "public",
+      transfer: "signed-url",
+    });
     expect(createStudioSettings("gateway")).toMatchObject({ provider: "traefik" });
     expect(createStudioSettings("gateway")).not.toHaveProperty("language");
     expect(createStudioSettings("cdn")).toEqual({ kind: "cdn", provider: "cloudflare" });
@@ -204,6 +213,7 @@ describe("preconfigured kinds and languages", () => {
       identity: ["typescript", "go"],
       notification: ["typescript", "go"],
       billing: ["typescript", "go"],
+      uploads: ["typescript", "go"],
     });
   });
 
@@ -268,6 +278,51 @@ describe("preconfigured kinds and languages", () => {
     binding.definition.id = "studio-gateway";
     binding.settings = { ...createStudioSettings("gateway"), language: "unspecified" };
     expect(settings(designSchema.parse(gateway), "shorten")).not.toHaveProperty("language");
+  });
+});
+
+describe("Uploads kind", () => {
+  it("is a Service kind whose required Transfer says how the bytes travel", () => {
+    const uploads = createStudioSettings("uploads");
+    expect(studioTileDefinitions.service.kinds).toContain("uploads");
+    expect(studioDefinitions.uploads).toMatchObject({ name: "Uploads", role: "application" });
+    const fields = studioFieldGroups(uploads).flatMap((group) => group.fields);
+    expect(fields.find((item) => item.path === "settings.transfer")).toMatchObject({
+      group: "Options",
+      label: "Transfer",
+      control: "select",
+      choices: [
+        { value: "signed-url", label: "Signed URLs to storage" },
+        { value: "tus", label: "Through the service (tus)" },
+      ],
+    });
+    expect(fields.find((item) => item.path === "settings.transfer")).not.toHaveProperty("optional");
+    expect(fields.map((item) => item.path)).toContain("settings.language");
+    for (const transfer of ["signed-url", "tus"])
+      expect(studioSettingsSchema.safeParse({ ...uploads, transfer }).success).toBe(true);
+    const { transfer: _dropped, ...missing } = uploads;
+    for (const value of [{ ...uploads, transfer: "proxied" }, missing])
+      expect(studioSettingsSchema.safeParse(value).success).toBe(false);
+    // Only the Uploads kind has it.
+    expect(
+      studioSettingsSchema.safeParse({ ...createStudioSettings("service"), transfer: "tus" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("changeKind starts from its presets, and an edit switches the transfer", () => {
+    const { design } = run(tinyurl(), { type: "changeKind", element: "shorten", kind: "uploads" });
+    const settings = (from: DesignDocument) =>
+      studio(from).elements.find((b) => b.element === "shorten")?.settings;
+    expect(settings(design)).toEqual(createStudioSettings("uploads"));
+    // Still the Shorten action's entry: an action reaches an upload service.
+    expect(laneFindings(design)).toEqual([]);
+    const tus = run(design, {
+      type: "edit",
+      element: "shorten",
+      settings: { ...createStudioSettings("uploads"), transfer: "tus" },
+    } as StudioCommand).design;
+    expect(settings(tus)).toMatchObject({ kind: "uploads", transfer: "tus" });
   });
 });
 

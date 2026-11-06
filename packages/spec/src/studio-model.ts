@@ -41,6 +41,7 @@ export const studioKinds = [
   "redirect",
   "notification",
   "identity",
+  "uploads",
   "gateway",
   "database",
   "cache",
@@ -60,6 +61,7 @@ export const studioApplicationKinds = [
   "redirect",
   "notification",
   "identity",
+  "uploads",
   "gateway",
 ] as const;
 export const studioResourceKinds = [
@@ -98,6 +100,7 @@ export const studioKindLanguages = {
   identity: ["typescript", "go"],
   notification: ["typescript", "go"],
   billing: ["typescript", "go"],
+  uploads: ["typescript", "go"],
 } as const satisfies Partial<Record<StudioKind, readonly [StudioLanguage, StudioLanguage]>>;
 export type StudioCodedKind = keyof typeof studioKindLanguages;
 const languageNames: Record<StudioLanguage, string> = { typescript: "TypeScript", go: "Go" };
@@ -132,6 +135,15 @@ export const studioNotificationProviderSchema = z.enum([
   "external",
 ]);
 export const studioIdentityProviderSchema = z.enum(["unspecified", "oidc", "external"]);
+/**
+ * How an upload's bytes travel; the diagram is the same either way (the user's action reaches the
+ * upload service, which writes the store). `signed-url`: the service starts a multipart upload,
+ * signs a URL for each part, and the client sends the parts straight to storage; the service
+ * completes it (a generated service with the storage SDK's multipart calls). `tus`: the client
+ * sends the bytes to the service with the tus resumable protocol and the service streams them into
+ * storage (a ready-made tus server: tusd in Go, @tus/server in TypeScript).
+ */
+export const studioUploadTransferSchema = z.enum(["signed-url", "tus"]);
 /** Gateway routing and product intent. Third-party gateways are the intended implementation. */
 export const studioGatewayRoutingSchema = z.enum(["path-prefix", "host-name"]);
 export const studioGatewayProviderSchema = z.enum([
@@ -233,6 +245,13 @@ export const studioIdentitySettingsSchema = applicationSettings("identity", {
   ...scalingFields,
   ...requestFields,
   provider: studioIdentityProviderSchema,
+});
+export const studioUploadsSettingsSchema = applicationSettings("uploads", {
+  language: kindLanguageSchema("uploads"),
+  exposure: studioExposureSchema,
+  ...scalingFields,
+  ...requestFields,
+  transfer: studioUploadTransferSchema,
 });
 export const studioGatewaySettingsSchema = applicationSettings("gateway", {
   exposure: studioExposureSchema,
@@ -424,6 +443,7 @@ export const studioSettingsSchemas = {
   redirect: studioRedirectSettingsSchema,
   notification: studioNotificationSettingsSchema,
   identity: studioIdentitySettingsSchema,
+  uploads: studioUploadsSettingsSchema,
   gateway: studioGatewaySettingsSchema,
   database: studioDatabaseSettingsSchema,
   cache: studioCacheSettingsSchema,
@@ -442,6 +462,7 @@ export const studioSettingsSchema = z.discriminatedUnion("kind", [
   studioRedirectSettingsSchema,
   studioNotificationSettingsSchema,
   studioIdentitySettingsSchema,
+  studioUploadsSettingsSchema,
   studioGatewaySettingsSchema,
   studioDatabaseSettingsSchema,
   studioCacheSettingsSchema,
@@ -481,6 +502,13 @@ export function createStudioSettings<K extends StudioKind>(kind: K): StudioSetti
       ...application,
       language: language("identity"),
       provider: "oidc",
+    },
+    uploads: {
+      kind: "uploads",
+      ...application,
+      language: language("uploads"),
+      exposure: "public",
+      transfer: "signed-url",
     },
     gateway: {
       kind: "gateway",

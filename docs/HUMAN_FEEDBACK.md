@@ -124,3 +124,18 @@ handoff entry.
   (proxied or signed URL as the service's choice), the completion handler, search from events, who
   writes a cache, one writer per store (Xu's two metadata writers turned into one), and the smells
   this review found.
+- SD02: YouTube 2.0 from Xu's design, mapped to templates ([guide](studio.md#the-youtube-study)).
+  **Purple:** the Video processor is now a Transcoder that writes only Transcoded videos and
+  announces each video on Completion events, a topic; a Completion handler writes the Metadata
+  database and a Search indexer the Search index, each from that event. **Xu's boxes:** original
+  storage, transcoding servers, transcoded storage, completion queue and handler, metadata cache
+  and DB are all tiles; the DAG is the Transcoder's modules; no load balancer or gateway. **Direct
+  upload:** Publish → Upload service → Original videos stays; the Upload service is a new
+  **Uploads** kind whose Transfer is signed URLs (the sources' choice) or tus (a ready-made tus
+  server), ladder step 2. **One writer per store:** the title rides in the job and the completion
+  event. Differences from Xu, each recorded: the metadata cache is the Watch API's own (cache-aside;
+  a video's record never changes, and write-through never refills an evicted video), and the CDN
+  pulls. Still open for SD03: the orange fork (the Upload service's write still runs under Upload
+  jobs and the Transcoder), the Watch API's four-way fork, and the long lines (Watch API →
+  Metadata database 1,472px and Search API → Search index 1,408px; the Video CDN's is down from
+  1,024px to 736px).

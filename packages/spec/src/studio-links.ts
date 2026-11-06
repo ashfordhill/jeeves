@@ -107,7 +107,7 @@ export const studioLinkRules: readonly StudioLinkRule[] = [
   {
     source: "action",
     target: "application",
-    targets: ["service", "redirect", "identity", "notification", "billing", "gateway"],
+    targets: ["service", "redirect", "identity", "notification", "billing", "uploads", "gateway"],
     ...sync,
   },
   { source: "action", target: "cdn", ...sync },
@@ -180,6 +180,7 @@ const nouns: Record<StudioKind, string> = {
   redirect: "a redirect service",
   notification: "a notification service",
   identity: "an identity service",
+  uploads: "an upload service",
   gateway: "a gateway",
   database: "a database",
   cache: "a cache",

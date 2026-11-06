@@ -30,7 +30,7 @@ export const studioTileDefinitions: Readonly<Record<StudioTileType, StudioTileDe
     name: "Service",
     icon: "server",
     shape: "rect",
-    kinds: ["service", "worker", "redirect", "identity", "notification", "billing"],
+    kinds: ["service", "worker", "redirect", "identity", "notification", "billing", "uploads"],
   },
   api: { name: "API", icon: "api", shape: "rect", kinds: ["gateway", "cdn"] },
   database: { name: "Database", icon: "database", shape: "pill", kinds: ["database", "search"] },

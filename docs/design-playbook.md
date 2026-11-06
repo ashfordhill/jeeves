@@ -38,7 +38,8 @@ writer.
 
 | What a source draws | Jeeves tile (kind) | Notes |
 | --- | --- | --- |
-| API servers, web servers, an app service | Service (`service`) | One per responsibility the reader should see (Watch API, Upload service). |
+| API servers, web servers, an app service | Service (`service`) | One per responsibility the reader should see (Watch API, Search API). |
+| An upload API that signs URLs, a resumable upload server (tusd) | Service (`uploads`) | Its **Transfer** says how the bytes travel: `signed-url` or `tus` (pattern 1). |
 | Workers, a worker pool, task workers, consumers | Service (`worker`), after a queue | A worker is never an entry; it hangs after a queue. |
 | Load balancer | none | Implied by a service's replicas and autoscaling. See the gateway smell. |
 | API gateway | API (`gateway`) | Only when the reader needs to see it (smells). |
@@ -89,24 +90,29 @@ upload finished, so it publishes the job.
 
 **In Jeeves.**
 
-- Publish ⇡ Upload service (`service`, public), its entry.
+- Publish ⇡ Upload service (`uploads`, public), its entry.
 - Upload service → Original videos (`object-store`, `access: private`, owner Upload service).
 - Upload service ⇢ Upload jobs (`queue`, `work-queue`, owner Upload service).
 - Modules: `auth-guard` (`jwt`, the creator check against Identity's token), a `custom` module
   for the transfer ("Multipart uploads: start, sign each part, list the parts that arrived,
   complete", or "Resumable uploads: tus"), and an `event-publisher` for the job.
-- **How the bytes travel is a choice on the Upload service, never a user → store line.** Today it
-  lives in a module's purpose. A setting or a kind for it is SD02's decision (gaps).
+- **How the bytes travel is a choice on the Upload service, never a user → store line.** It is
+  the Uploads kind's **Transfer** ([studio settings](studio-settings.md#uploads)): `signed-url`
+  (the default, what the sources draw) or `tus`. SD02 added the kind at ladder step 2 rather than a
+  setting on `service` (step 3): a setting would show on every microservice, while an Uploads kind
+  is a preset like Identity or Billing, with its two languages and a template for each transfer.
+  The module's purpose still says what the service does ("start, sign each part, list, complete").
 - The upload's progress: with multipart, the upload itself is the state (resuming asks storage
   which parts arrived), so the service needs no database. If it keeps per-part status
   (HelloInterview), that is its own Uploads database, owned by the Upload service, not the
   video's metadata store (pattern 7, "split the store").
 
-**Templates.** Proxied: a ready-made resumable upload server (tusd: S3, Google Cloud Storage, Azure
-or disk storage; a blocking `pre-create` hook authenticates the user, a `post-finish` hook tells
-the application the upload is done, which is where the job is published). Signed URL: a generated
-service skeleton with the storage SDK's multipart calls. The two imply different templates, which
-is why the choice must be recorded on the tile.
+**Templates.** Proxied (`tus`): a ready-made resumable upload server (tusd in Go: S3, Google Cloud
+Storage, Azure or disk storage; a blocking `pre-create` hook authenticates the user, a
+`post-finish` hook tells the application the upload is done, which is where the job is published;
+`@tus/server` is the TypeScript one, with the same two hooks). Signed URL (`signed-url`): a
+generated service skeleton with the storage SDK's multipart calls. The two imply different
+templates, which is why the choice is recorded on the tile.
 
 **Where sources differ.**
 
@@ -153,7 +159,7 @@ topic. A separate completion handler records it in the store that readers use.
   consume the same events.
 - Completion handler: `worker`, modules `event-consumer` and `data-access`; owner of the Metadata
   DB (and of a metadata cache if the owner writes it, pattern 4).
-- The Transcoder uses 3 of its 4 links; the handler 1–2.
+- The Transcoder uses 3 of its 4 links; the handler 1–2. YouTube 2.0 is this pattern.
 
 **Why a completion handler, and not the transcoder writing the record.**
 
@@ -209,7 +215,14 @@ Two ways to place the indexer:
 
 Either way the indexer is the index's only writer, and the search API only reads it. The indexer
 may also read the database to fill the document (a read link), as Netflix enriches events before
-indexing.
+indexing, but only after the record's owner: a sibling consumer that reads the database can run
+before the record is written and find nothing.
+
+Siblings update the record and the index independently, so for a moment search can find a video
+whose record isn't written yet (the watch page then misses). That is the eventual consistency
+every derived index has; if a search hit must always open, use "after the record's owner".
+YouTube 2.0 uses the sibling shape: the completion event carries the title, description and
+channel the index needs, and nothing edits a video afterwards.
 
 **In Jeeves.** Topic (`queue`, `topic`), owner the publisher; Search indexer (`worker`, modules
 `event-consumer` and a `custom` index writer); Search index (`search`, `engine: opensearch`, owner
@@ -258,6 +271,15 @@ draws each differently.
 
 Never both: a reader that fills a cache another tile writes is two writers, and the canvas will
 show the reader as "Reads". Pick one and say which in the cache's purpose and the reader's module.
+
+**How to pick.** Write-through alone never puts back an entry the cache evicted, so for a record
+written once and then only read (a published video, a short link) an evicted entry stays a miss
+forever. Such data wants the reader's own cache-aside with a TTL; nothing goes stale because nothing
+changes. Write-through pays off when the data changes often and readers must see each change at
+once. YouTube 2.0 follows Xu's metadata cache but gives it to the Watch API (cache-aside, an hour),
+and its Completion handler writes only the database: a video's record never changes after it is
+written. A reader-owned cache also sits in its reader's band, beside it, instead of between the
+lanes.
 
 Database replicas carry most reads: `readReplicas` on the database, `readRouting: replica` on the
 reader's `data-access` module.
@@ -412,7 +434,8 @@ cap.
 transcoder's code instead of the video's data; one template does three jobs.
 **Fix:** the worker writes only its own output and publishes a completion event; a completion
 handler writes the record and an indexer writes the index (patterns 2 and 3). A worker near the
-4-link cap is a hint.
+4-link cap is a hint. YouTube 2.0 does this: the Transcoder writes Transcoded videos and publishes
+Completion events; the Completion handler and the Search indexer write the rest.
 
 ### A fork that reads as a second lane
 
@@ -423,7 +446,9 @@ API's reads and its View events looked the same.
 **Why wrong:** one service seems to split into two lanes, when every request goes through it.
 **Fix:** design: keep a tile's own store links few, and its asynchronous continuation dashed (the
 link mode, never a second tile). Layout: a store sits beside the tile that uses it, so the fork is
-two short branches (SD03).
+two short branches (SD03). YouTube 2.0 still has both forks under today's layout: the Upload
+service's write runs under Upload jobs and the Transcoder to Original videos, and the Watch API
+forks to its cache, two read stores and View events (four links, the cap).
 
 ### A long line to a far store
 
@@ -431,7 +456,12 @@ two short branches (SD03).
 1.2's Video CDN → Encoded videos; TinyURL's Stats API → Analytics store.
 **Why wrong:** the eye follows the long line and reads it as part of the flows it passes.
 **Fix:** layout first (stores beside their users, SD03). In design, check the reader belongs to the
-lane it is in and reads that store directly; never add a tile just to shorten a line.
+lane it is in and reads that store directly; never add a tile just to shorten a line. A shared
+store sits after its writer, so the longer the writer's pipeline, the further a reader in the other
+lane stretches: YouTube 2.0's Video CDN line got shorter (736px; the Transcoder sits earlier than
+1.2's processor did), but the Watch API's line to the Metadata database, written at the end of the
+pipeline by the Completion handler, is now the longest (1,472px), with the Search API's to the
+Search index (1,408px).
 
 ### A store nobody reads
 
@@ -477,7 +507,6 @@ built; step 5 means asking the owner first.
 | Pattern | Today | Step it would need |
 | --- | --- | --- |
 | A store publishes its changes: a database's change stream (CDC, Debezium) or storage's event notifications (S3, R2) feeding a queue | Stores are end tiles. The service that writes publishes the event, with an `outbox`. | 5: a link-table row `store → queue` (a lane-rule change). |
-| How an upload's bytes travel (proxied with a resumable protocol, or signed URLs to storage) | A module's purpose. | 2 (an Uploads kind with two languages, a preset and a template such as tusd) or 3 (a setting on the service). SD02 decides. |
 | The server tells the user something (the video is ready; Xu's step 4) | No line runs to the user. The client polls a read API; email through a Notifications service. | 5: a line into the actor. |
 | Scheduled work (expiry cleanup, re-indexing, backfills) | A worker needs a queue in front of it and can't be an entry. Left to the developer (owner, 2026-11-05). | 5: a trigger tile or entry rule. |
 | A workflow orchestrator (Temporal; Xu's DAG scheduler and resource manager) | Modules inside the worker. | 2: a kind of Service (a workflow engine with its template) if a reader needs to see it. |
@@ -495,7 +524,8 @@ built; step 5 means asking the owner first.
 - Each store has one writer, its owner, and at least one reader unless it is its owner's private
   state. No non-owner writes in disguise.
 - Each worker writes only what its name describes; results go on as events.
-- Search and caches are derived: say who writes each and from what.
+- Search and caches are derived: say who writes each and from what. A cache of data written once
+  is its reader's own (pattern 4).
 - No gateway unless the reader needs it; no load balancer tile.
 - Action words cover their entries.
 - Within `laneLimits`; the study validates with no findings and no warnings.

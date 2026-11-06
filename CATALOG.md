@@ -13,7 +13,7 @@ or nothing is selected. People, external systems and their relationships stay in
 
 ## Tile kinds (C2)
 
-Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
+Sixteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 
 | Kind | Name | Tile type | What it is |
 | --- | --- | --- | --- |
@@ -23,6 +23,7 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 | `identity` | Identity | Service | One service integrating an existing identity provider (starts with OIDC). |
 | `notification` | Notifications | Service | One service with email delivery intent (starts with Resend). |
 | `billing` | Billing | Service | One service with a payment provider choice (starts with Stripe). |
+| `uploads` | Uploads | Service | One service taking large uploads into object storage; its transfer is signed URLs to storage (the default) or through the service with tus. |
 | `gateway` | Gateway | API (default) | An entry point routing requests to internal services (starts with Traefik). |
 | `cdn` | CDN | API | Content delivery in front of an application or object store (starts with Cloudflare); can resize images on request. |
 | `database` | Database | Database (default) | A logical store; engine and provider are separate choices. |
@@ -36,7 +37,7 @@ Fifteen kinds, each one immutable definition `studio-<kind>@1.0.0`.
 A new database, cache, storage or queue tile is owned by the application it is added next to.
 
 Each coded kind offers two languages, default first: Microservice, Worker service, Identity,
-Notifications and Billing TypeScript or Go; Redirect Go or TypeScript. Gateway and CDN are
+Notifications, Billing and Uploads TypeScript or Go; Redirect Go or TypeScript. Gateway and CDN are
 products, not code, and have no language (`studioKindLanguages`, [studio
 settings](docs/studio-settings.md#languages)).
 
@@ -54,7 +55,7 @@ Source: [`studio-tiles.ts`](packages/spec/src/studio-tiles.ts).
 
 | Tile type | Picker icon | Kinds (default first) | Tile shape |
 | --- | --- | --- | --- |
-| Service | `server` | `service`, `worker`, `redirect`, `identity`, `notification`, `billing` | rounded rectangle |
+| Service | `server` | `service`, `worker`, `redirect`, `identity`, `notification`, `billing`, `uploads` | rounded rectangle |
 | API | `api` | `gateway`, `cdn` | rounded rectangle |
 | Database | `database` | `database`, `search` | pill |
 | Cache | `bolt` | `cache` | pill |
@@ -92,7 +93,7 @@ its security is Service identity.
 | Source → target | Modes | Default | Connection |
 | --- | --- | --- | --- |
 | user → action | sync | sync | none (the user's line to its action) |
-| action → `service`, `redirect`, `identity`, `notification`, `billing`, `gateway` | sync | sync | an entry |
+| action → `service`, `redirect`, `identity`, `notification`, `billing`, `uploads`, `gateway` | sync | sync | an entry |
 | action → `cdn` | sync | sync | an entry |
 | application → application | sync, async | sync | calls, "Calls", HTTPS |
 | application → `external-api` | sync, async | sync | calls, "Calls", HTTPS |
@@ -269,6 +270,7 @@ Settings name providers as intent only: they create no box, credential, deployme
 | Browser hosting | Cloudflare, AWS, Google Cloud, external |
 | Payments, email, identity | Stripe; Resend, Amazon SES; OIDC; or external (Stripe, Resend and OIDC preset) |
 | Gateway product | Traefik (preset), Envoy, Kong, NGINX, Amazon API Gateway, external |
+| Upload transfer | signed URLs to storage (preset), through the service with tus (a ready-made tus server) |
 | Databases and caches | self-hosted, AWS, Google Cloud, Neon, Supabase, Cloudflare D1, Upstash (by engine) |
 | Queues, object storage, search, CDN | self-hosted, AWS, Google Cloud, Cloudflare Queues/R2, Amazon S3/CloudFront, Google Cloud Storage/CDN, external (by kind; a CDN starts with Cloudflare) |
 
@@ -308,14 +310,16 @@ tiles, 23 links (the user's two lines, seven entries, four of them upload, and f
 connections) and sixteen components
 ([guide](docs/studio.md#the-marketplace-study)).
 
-**YouTube** (`studio-youtube@1.2.0`) is a video-sharing site with YouTube's core functionality as
-clean microservices (ByteByteGo, HelloInterview, DesignGurus' Grokking and crash course, AWS's
-multipart uploads, Cloudflare R2). Creators upload in resumable parts with URLs the Upload service
-signs, and the Upload service writes Original videos; an upload job queue feeds
-a Video processor (a worker) that encodes streamable segments, playlists and thumbnails, records
-the playable video in a MySQL metadata database and indexes it; a Video CDN serves segments and
-resizes thumbnails on request; a Watch API reads a video's details and view count and publishes
-views, which a View counter adds in batches; a Search API reads the index; Identity signs everyone
-in. Two actions (Watch; Publish), fourteen tiles, 21 links (the user's two lines, five entries and
-fourteen connections) and sixteen components,
-built from the existing options ([guide](docs/studio.md#the-youtube-study)).
+**YouTube** (`studio-youtube@2.0.0`) is a video-sharing site with YouTube's core functionality as
+clean microservices, after Alex Xu's "Design YouTube" (ByteByteGo) mapped to templates, with
+HelloInterview, DesignGurus' Grokking and crash course, AWS's multipart uploads, tus, and
+Cloudflare R2. The Upload service (an Uploads service, transfer signed URLs) writes Original videos
+and queues a job; a Transcoder (a worker) writes streamable segments, playlists and thumbnails to
+Transcoded videos and announces each video on Completion events, which a Completion handler
+records in a MySQL metadata database and a Search indexer adds to the Search index; a Video CDN
+serves segments and resizes thumbnails on request; a Watch API reads a video's details through its
+own Metadata cache and the database, reads its view count and publishes views, which a View
+counter adds in batches; a Search API reads the index; Identity signs everyone in. Two actions
+(Watch; Publish), eighteen tiles, 25 links (the user's two lines, five entries and eighteen
+connections) and twenty components; it added the Uploads kind
+([guide](docs/studio.md#the-youtube-study)).

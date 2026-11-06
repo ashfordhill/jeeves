@@ -45,7 +45,7 @@ A **design document** is `{schemaVersion: 2, revision, architecture?, elements, 
   being `download` or `upload`; a tile has at most one; a stored `both` loads as `download`) and an
   optional study origin.
 
-The vocabulary is finite: fifteen kinds with immutable definitions (`studio-definitions.ts`), ten
+The vocabulary is finite: sixteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
 modules, are in `studio-modules.ts`). The studies, TinyURL v3 (the default), the marketplace and
 YouTube, are built in lanes from published designs (`studio-examples/`).
@@ -193,4 +193,6 @@ answers to the LA05 and open DP10 questions in [the handoff](docs/handoff.md).
 
 The [system design units](docs/plans/system-design/units.md) SD01–SD05 answer the owner's
 YouTube review: SD01 wrote the [design playbook](docs/design-playbook.md) (patterns, smells and
-gaps for designing studies); SD02 (YouTube v2) is next.
+gaps for designing studies); SD02 rebuilt YouTube as v2 from Xu's design (a Transcoder, a
+completion topic feeding a Completion handler and a Search indexer, the Watch API's own metadata
+cache) and added the Uploads kind. SD03 (stores beside their users) is next.

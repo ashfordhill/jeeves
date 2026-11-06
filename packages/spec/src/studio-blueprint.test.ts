@@ -148,18 +148,22 @@ describe("designBlueprint", () => {
     expect(designBlueprintSchema.parse(blueprint)).toEqual(blueprint);
     expect(blueprint).toMatchObject({ blueprint: 2, findings: [], externals: [], omitted: [] });
     expect(blueprint.services.map((s) => [s.id, s.kind, s.components.length])).toEqual([
+      ["completion-handler", "worker", 2],
       ["identity", "identity", 0],
-      ["processor", "worker", 6],
       ["search", "service", 1],
-      ["upload", "service", 3],
+      ["search-indexer", "worker", 2],
+      ["transcoder", "worker", 5],
+      ["upload", "uploads", 3],
       ["view-counter", "worker", 3],
-      ["watch", "service", 3],
+      ["watch", "service", 4],
     ]);
     expect(blueprint.resources.map((r) => [r.id, r.kind])).toEqual([
-      ["encoded", "object-store"],
+      ["completion-events", "queue"],
+      ["metadata-cache", "cache"],
       ["metadata-db", "database"],
       ["originals", "object-store"],
       ["search-index", "search"],
+      ["transcoded", "object-store"],
       ["upload-queue", "queue"],
       ["video-cdn", "cdn"],
       ["view-counts", "database"],
@@ -177,31 +181,42 @@ describe("designBlueprint", () => {
       { lane: "upload", action: "Publish", element: "identity" },
       { lane: "upload", action: "Publish", element: "upload" },
     ]);
-    expect(blueprint.componentLinks).toHaveLength(23);
-    // Each store's owner is its only writer; queues keep publish and consume.
+    expect(blueprint.componentLinks).toHaveLength(30);
+    // Each store's owner is its only writer; queues keep publish and consume. The Watch API owns
+    // its cache (it fills it on a miss) and only reads the database the Completion handler writes.
     expect(
       Object.fromEntries(blueprint.connections.map((c) => [c.id, c.access ?? c.channelUse])),
     ).toEqual({
-      "cdn-encoded": "read",
+      "cdn-transcoded": "read",
+      "completions-handler": "consume",
+      "completions-indexer": "consume",
       "counter-write": "write",
-      "jobs-processor": "consume",
-      "processor-index-write": "write",
-      "processor-metadata": "write",
-      "processor-read": "read",
-      "processor-write": "write",
+      "handler-metadata": "write",
+      "indexer-write": "write",
+      "jobs-transcoder": "consume",
       "search-read": "read",
+      "transcoder-publish": "publish",
+      "transcoder-read": "read",
+      "transcoder-write": "write",
       "upload-originals": "write",
       "upload-publish": "publish",
       "views-counter": "consume",
+      "watch-cache": "write",
       "watch-counts-read": "read",
       "watch-metadata": "read",
       "watch-views-publish": "publish",
     });
-    // The CDN serves the encoded videos and resizes thumbnails on request.
+    // The Upload service is an Uploads service whose bytes travel by signed URLs.
+    expect(blueprint.services.find((s) => s.id === "upload")?.settings).toMatchObject({
+      kind: "uploads",
+      language: "typescript",
+      transfer: "signed-url",
+    });
+    // The CDN serves the transcoded videos and resizes thumbnails on request.
     expect(blueprint.resources.find((r) => r.id === "video-cdn")?.settings).toEqual({
       kind: "cdn",
       provider: "cloudflare",
-      origin: "encoded",
+      origin: "transcoded",
       imageResizing: "on-request",
     });
   });

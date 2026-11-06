@@ -69,12 +69,12 @@ test("New project offers the YouTube study", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await createStudy(page, "E2E YouTube", "YouTube · studio study");
   try {
-    // The user, Watch and Publish and fourteen tiles; the user's two lines, five lane entries
-    // (none into storage: the Upload service writes Original videos) and fourteen connections,
-    // nine of them dashed (the view and upload-job paths).
-    await expect(tiles(page)).toHaveCount(17);
-    await expect(lines(page)).toHaveCount(21);
-    await expect(dashedLines(page)).toHaveCount(9);
+    // The user, Watch and Publish and eighteen tiles; the user's two lines, five lane entries
+    // (none into storage: the Upload service writes Original videos) and eighteen connections,
+    // twelve of them dashed (the view path, and the upload pipeline after Upload jobs).
+    await expect(tiles(page)).toHaveCount(21);
+    await expect(lines(page)).toHaveCount(25);
+    await expect(dashedLines(page)).toHaveCount(12);
     await expect(page.locator(".board-chip")).toHaveCount(0);
     // No design warnings in a study.
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
@@ -85,19 +85,34 @@ test("New project offers the YouTube study", async ({ page }) => {
       "Watch API",
       "Search API",
       "Upload service",
-      "Video processor",
+      "Transcoder",
+      "Completion events",
+      "Completion handler",
+      "Search indexer",
     ])
       await expect(tile(page, name)).toBeVisible();
 
+    // One writer per store: the Upload service, the Completion handler, the Search indexer and
+    // the Watch API (its own cache).
     const inspector = page.locator(".studio-inspector");
+    const access = inspector.locator(".lane-store-access");
     await tile(page, "Original videos").click();
-    await expect(inspector.locator(".lane-store-access")).toHaveText(
-      "Writes (owner)Upload serviceReadsVideo processor",
-    );
+    await expect(access).toHaveText("Writes (owner)Upload serviceReadsTranscoder");
     await tile(page, "Metadata database").click();
-    await expect(inspector.locator(".lane-store-access")).toHaveText(
-      "Writes (owner)Video processorReadsWatch API",
-    );
+    await expect(access).toHaveText("Writes (owner)Completion handlerReadsWatch API");
+    await tile(page, "Search index").click();
+    await expect(access).toHaveText("Writes (owner)Search indexerReadsSearch API");
+    await tile(page, "Metadata cache").click();
+    await expect(access).toHaveText("Writes (owner)Watch APIReadsnobody else");
+    // The Upload service is an Uploads service; its bytes travel by signed URLs.
+    await tile(page, "Upload service").click();
+    await expect(
+      inspector.getByRole("group", { name: "Type", exact: true }).getByRole("button", {
+        name: "Uploads",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await inspector.getByRole("tab", { name: "Options", exact: true }).click();
+    await expect(inspector.getByLabel("Transfer", { exact: true })).toHaveValue("signed-url");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }

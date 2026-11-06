@@ -1,54 +1,75 @@
 /**
- * The YouTube study: a video-sharing site with YouTube's core functionality (upload, transcode,
- * stream, search, view counts), designed as clean microservices from published designs. Design
- * intent only.
+ * The YouTube study, version 2: a video-sharing site with YouTube's core functionality (upload,
+ * transcode, stream, search, view counts), designed as clean microservices from Alex Xu's "Design
+ * YouTube" (ByteByteGo) and the other published designs, mapped to Jeeves tiles and templates.
+ * Design intent only.
  *
  * In lanes: the user watches (download, the **Watch** action) through the Watch API (a video's
- * details and view count; it also records each view), the Search API and the Video CDN (segments,
- * playlists and thumbnails), and publishes (upload, the **Publish** action) through Identity
- * (sign-in) and the Upload service (it starts, signs and completes a multipart upload, and writes
- * Original videos).
+ * details from its own cache or the database, the view count, and each view), the Search API and
+ * the Video CDN (segments, playlists and thumbnails), and publishes (upload, the **Publish**
+ * action) through Identity (sign-in) and the Upload service (an Uploads service: it starts, signs
+ * and completes a multipart upload into Original videos and queues a job).
  *
- * What the sources agree on, and what each tile traces to:
- * - All four: originals in object storage (Original videos), uploaded in parts that can resume;
- *   ByteByteGo, HelloInterview and the DesignGurus crash course send them straight from the
- *   client with pre-signed URLs. AWS's multipart pattern: the backend starts the upload, signs a
- *   URL per part and completes it (Upload service, its Multipart upload module). On the canvas
- *   the Upload service writes Original videos: a user reaches storage only through a service.
- * - All four: processing is asynchronous, behind a queue (Upload jobs; HelloInterview's
- *   orchestrator has its own), and encodes each video at several resolutions and bitrates
- *   (Video processor, Encoded videos). ByteByteGo, HelloInterview and the crash course split it
+ * Xu's boxes and what each became:
+ * - Original storage, transcoding servers, transcoded storage, completion queue, completion
+ *   handler, metadata DB: Original videos, Transcoder, Transcoded videos, Completion events,
+ *   Completion handler, Metadata database.
+ * - API servers: one service per responsibility the reader should see (Watch API, Search API,
+ *   Upload service).
+ * - The upload with a pre-signed URL: the Upload service, an Uploads service whose Transfer is
+ *   signed URLs. The client asks the service first (sign-in, checks), then sends the parts
+ *   straight to storage with the URLs it signed, and the service completes the upload. A user
+ *   never reaches storage on the canvas.
+ * - The metadata cache: Metadata cache, owned and filled by the Watch API (below).
+ * - The transcoding DAG (preprocessor, DAG scheduler, resource manager, task workers, temporary
+ *   storage): the Transcoder's modules, not tiles.
+ * - The load balancer: none; a service's replicas imply it. No gateway either (it would be each
+ *   action's only entry and hide which services a viewer and a creator reach).
+ * - The CDN: the Video CDN pulls from Transcoded videos (its origin); the pipeline doesn't push.
+ *
+ * What the other sources add, and what each tile traces to:
+ * - All four: originals in object storage, uploaded in parts that can resume; ByteByteGo,
+ *   HelloInterview and the crash course send them from the client with pre-signed URLs (AWS's
+ *   multipart pattern: the backend starts the upload, signs a URL per part and completes it).
+ * - All four: processing is asynchronous, behind a queue (Upload jobs), and encodes each video at
+ *   several resolutions and bitrates. ByteByteGo, HelloInterview and the crash course split it
  *   into segments with HLS or DASH playlists, and a CDN serves them while the player picks each
- *   segment's bitrate (Video CDN). Grokking and ByteByteGo generate thumbnails in the pipeline.
- * - HelloInterview: the processing service writes the playlist's address back into the video's
- *   metadata (the Video processor writes the Metadata database).
+ *   segment's bitrate (Video CDN). Grokking and ByteByteGo make thumbnails in the pipeline.
+ * - HelloInterview: a metadata cache partitioned by video ID, least recently used evicted first
+ *   (Metadata cache).
  * - Grokking and the crash course: metadata in MySQL, sharded by video ID, with replicas for
- *   reads (Metadata database); YouTube built Vitess to shard its MySQL.
- * - The crash course: a separate search service over an index of titles and tags (Search API,
- *   Search index), filled when a video becomes playable; view counts in their own store,
- *   eventually consistent (View counts).
+ *   reads; YouTube built Vitess to shard its MySQL.
+ * - The crash course: a search service over an index filled when a video becomes playable
+ *   (Search API, Search indexer, Search index); view counts in their own store, eventually
+ *   consistent (View events, View counter, View counts; Reddit counts views from events too).
  *
  * Design decisions:
- * - One writer per store. The designs write a video's metadata twice (the API on upload, the
- *   pipeline when done). Here the Video processor writes it once, when the video can be played,
- *   from the title and description the upload job carries; it also indexes it. The Upload service
- *   keeps no database: the multipart upload is the upload's state, and resuming asks storage
- *   which parts arrived.
- * - One Video processor with modules (segmenting and encoding, packaging, thumbnails, the record
- *   and the index), not ByteByteGo's DAG of task workers and separate completion handler: the
- *   DAG is the developer's, inside the worker.
+ * - One writer per store. Xu has two writers of the metadata (the API servers during the
+ *   upload, the completion handler after). Here the title and description ride in the upload job
+ *   and the completion event, and the Completion handler writes the video's record once, when it
+ *   can be played. The Upload service keeps no database: the multipart upload is the upload's
+ *   state.
+ * - The Transcoder writes only its own output (Transcoded videos) and announces each video on
+ *   Completion events, a topic. The Completion handler and the Search indexer both consume it, so
+ *   the transcoder writes no record and no index; the event carries the title, description,
+ *   channel, duration, playlist and thumbnails both need.
+ * - The metadata cache is the Watch API's own (cache-aside, as TinyURL's URL cache): it reads
+ *   the cache, reads a replica on a miss and fills the cache for an hour. Xu's completion handler
+ *   writes the cache; here it writes only the database, because a video's record is written once
+ *   and never edited (editing is left out), a write-through cache would never refill a video it
+ *   evicted, and a reader that fills a cache another tile writes would be a second writer.
  * - Views: the Watch API publishes each view the player reports, and the View counter sums them
- *   per video and adds them in batches, so a popular video's row is not written on every view.
+ *   per video and adds them in batches.
  * - Thumbnails are stored once, at full size, beside the segments; the Video CDN resizes them on
- *   request (the CDN's Image resizing, added for the marketplace study).
+ *   request.
  * - Cloudflare R2 behind the Cloudflare CDN: R2 charges no egress, and ByteByteGo names CDN
  *   traffic the largest cost. Cloudflare's terms want video on its CDN served through a paid
  *   product such as its developer platform, of which R2 is part.
  * - Services verify Identity's signed tokens themselves (the Upload service's creator check), so
  *   no line runs to Identity.
  * - Left out: comments, likes, recommendations, subscriptions, monetisation and live streaming;
- *   editing a video after upload and custom thumbnails; a metadata cache (the database's replicas
- *   serve reads); a gateway (it would hide which services a viewer and a creator reach).
+ *   editing a video after upload and custom thumbnails; telling the creator the video is ready
+ *   (Xu's last step: no line runs to the user; the creator's app asks the Watch API).
  *
  * Where YouTube differs: it is far larger (its own pipeline stages, recommendations, ads) and grew
  * from one MySQL database to replicas, then shards behind Vitess, which it built.
@@ -67,6 +88,13 @@
  *   https://aws.amazon.com/blogs/compute/uploading-large-objects-to-amazon-s3-using-multipart-upload-and-transfer-acceleration/
  * - AWS, Uploading and copying objects using multipart upload:
  *   https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
+ * - tus, resumable upload protocol: https://tus.io/; tusd: https://tus.github.io/tusd/
+ * - AWS, ElastiCache caching strategies (lazy loading, write-through):
+ *   https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html
+ * - Martin Kleppmann, Using logs to build a solid data infrastructure (or: why dual writes are a
+ *   bad idea):
+ *   https://www.confluent.io/blog/using-logs-to-build-a-solid-data-infrastructure-or-why-dual-writes-are-a-bad-idea/
+ * - Reddit, View counting at Reddit: https://www.redditinc.com/blog/view-counting-at-reddit/
  * - Cloudflare, R2 pricing: https://developers.cloudflare.com/r2/pricing/
  * - Cloudflare, Service-specific terms (CDN):
  *   https://www.cloudflare.com/service-specific-terms-application-services/
@@ -77,18 +105,21 @@ import type { StudioConnectionCreation } from "../studio-operations.ts";
 import { createStudioStudy } from "./study.ts";
 
 const description =
-  "A video-sharing site from published designs: creators upload in resumable parts through an upload service that signs each part; a queue feeds a video processor that writes streamable segments, playlists and thumbnails for a CDN, then records and indexes each video; views are counted in batches.";
+  "A video-sharing site after Alex Xu's design: creators upload in parts with URLs an upload service signs; a transcoder writes streamable segments, playlists and thumbnails for a CDN and announces each video; a completion handler records it and an indexer adds it to search; views are counted in batches.";
 
 export const YOUTUBE_STUDIO_EXAMPLE = {
   id: "studio-youtube",
-  version: "1.2.0",
+  version: "2.0.0",
   name: "YouTube · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
-  goalManifestSha256: "8c1d2e0de25ecd135e8c7f8380886f96614abbcdeac11460f3cd13ff1534d87a",
+  goalManifestSha256: "4e8ea30c860ba3b1fa32e75ec6f293e2d65ba6646248425427012053785de312",
 } as const;
 
-const call = (label: string, protocol: "HTTPS" | "SQL"): StudioConnectionCreation["planned"] => ({
+const call = (
+  label: string,
+  protocol: "HTTPS" | "SQL" | "Redis",
+): StudioConnectionCreation["planned"] => ({
   label,
   protocol,
   interaction: "Request / response",
@@ -107,7 +138,20 @@ const dataAccess = (
 ) => ({ kind: "data-access", poolSize, readRouting, statementTimeoutMs }) as const;
 
 const components: StudioComponent[] = [
-  // Watch API: a video's details and view count, and each view.
+  // Watch API: a video's details (its own cache, then a replica), its view count, and each view.
+  {
+    id: "watch-cache-reader",
+    host: "watch",
+    name: "Details cache",
+    description:
+      "Cache-aside: looks a video up in the Metadata cache; on a miss reads a replica and fills the cache for an hour.",
+    settings: {
+      kind: "cache-reader",
+      pattern: "cache-aside",
+      l2TtlSeconds: 3600,
+      stampede: "single-flight",
+    },
+  },
   {
     id: "watch-details",
     host: "watch",
@@ -159,7 +203,7 @@ const components: StudioComponent[] = [
     description: "Queries the index by title, description and channel, a page at a time.",
     settings: { kind: "custom" },
   },
-  // Upload service: the original's only writer; no database.
+  // Upload service: Original videos' only writer, by signed URLs; no database.
   {
     id: "upload-auth",
     host: "upload",
@@ -180,50 +224,74 @@ const components: StudioComponent[] = [
     host: "upload",
     name: "Job publisher",
     description:
-      "Publishes an upload job, with the title and description, once the upload completes.",
+      "Publishes an upload job once the upload completes, with the video's ID, channel, title and description.",
     settings: { kind: "event-publisher", outbox: "disabled" },
   },
-  // Video processor: the only writer of Encoded videos, the Metadata database and the Search index.
+  // Transcoder: Transcoded videos' only writer; it announces each video and records nothing.
   {
-    id: "processor-consumer",
-    host: "processor",
+    id: "transcoder-consumer",
+    host: "transcoder",
     name: "Job consumer",
     description: "Takes one upload job at a time with bounded retries.",
     settings: { kind: "event-consumer", concurrency: 1, retryLimit: 3 },
   },
   {
-    id: "processor-encoder",
-    host: "processor",
+    id: "transcoder-encoder",
+    host: "transcoder",
     name: "Segmenter and encoder",
     description:
-      "Reads the original and encodes it, in segments of a few seconds, at each resolution and bitrate (ffmpeg).",
+      "Reads the original and encodes it, in segments of a few seconds, at each resolution and bitrate (ffmpeg); Xu's task DAG runs here.",
     settings: { kind: "custom" },
   },
   {
-    id: "processor-packager",
-    host: "processor",
+    id: "transcoder-packager",
+    host: "transcoder",
     name: "Packager",
     description: "Stores the segments with an HLS playlist per rendition and one master playlist.",
     settings: { kind: "custom" },
   },
   {
-    id: "processor-thumbnails",
-    host: "processor",
+    id: "transcoder-thumbnails",
+    host: "transcoder",
     name: "Thumbnailer",
     description: "Picks frames and stores them as the video's thumbnails, at full size.",
     settings: { kind: "custom" },
   },
   {
-    id: "processor-record",
-    host: "processor",
+    id: "transcoder-done",
+    host: "transcoder",
+    name: "Completion publisher",
+    description:
+      "Announces the playable video with the job's title and description, its duration, playlist and thumbnails.",
+    settings: { kind: "event-publisher", outbox: "disabled" },
+  },
+  // Completion handler: the Metadata database's only writer.
+  {
+    id: "handler-consumer",
+    host: "completion-handler",
+    name: "Completion consumer",
+    description: "Consumes completed videos with bounded retries.",
+    settings: { kind: "event-consumer", concurrency: 4, retryLimit: 10 },
+  },
+  {
+    id: "handler-writer",
+    host: "completion-handler",
     name: "Video writer",
     description:
       "Records the playable video once, by its ID: title, description, channel, duration, playlist and thumbnails.",
     settings: dataAccess(10, 2000),
   },
+  // Search indexer: the Search index's only writer.
   {
-    id: "processor-index",
-    host: "processor",
+    id: "indexer-consumer",
+    host: "search-indexer",
+    name: "Completion consumer",
+    description: "Consumes completed videos with bounded retries.",
+    settings: { kind: "event-consumer", concurrency: 4, batchSize: 100, retryLimit: 5 },
+  },
+  {
+    id: "indexer-writer",
+    host: "search-indexer",
     name: "Index writer",
     description: "Adds the playable video's title, description and channel to the search index.",
     settings: { kind: "custom" },
@@ -242,6 +310,8 @@ const inside = (
   label: string,
 ): StudioComponentConnection => ({ id, from, to: { kind: "component", id: to }, label });
 const componentConnections: StudioComponentConnection[] = [
+  uses("details-cache-redis", "watch-cache-reader", "metadata-cache", "watch-cache"),
+  inside("details-cache-miss", "watch-cache-reader", "watch-details", "Loads on miss"),
   uses("details-reader-db", "watch-details", "metadata-db", "watch-metadata"),
   uses("count-reader-db", "watch-counts", "view-counts", "watch-counts-read"),
   uses("view-publisher-events", "watch-views", "view-events", "watch-views-publish"),
@@ -254,17 +324,22 @@ const componentConnections: StudioComponentConnection[] = [
   uses("multipart-originals", "upload-multipart", "originals", "upload-originals"),
   inside("multipart-jobs", "upload-multipart", "upload-jobs", "On completion"),
   uses("job-publisher-queue", "upload-jobs", "upload-queue", "upload-publish"),
-  uses("job-consumer-queue", "processor-consumer", "upload-queue", "jobs-processor"),
-  inside("job-consumer-encoder", "processor-consumer", "processor-encoder", "Hands job"),
-  uses("encoder-originals", "processor-encoder", "originals", "processor-read"),
-  inside("encoder-packager", "processor-encoder", "processor-packager", "Hands segments"),
-  uses("packager-encoded", "processor-packager", "encoded", "processor-write"),
-  inside("encoder-thumbnails", "processor-encoder", "processor-thumbnails", "Hands frames"),
-  uses("thumbnails-encoded", "processor-thumbnails", "encoded", "processor-write"),
-  inside("packager-record", "processor-packager", "processor-record", "Records video"),
-  inside("record-index", "processor-record", "processor-index", "Indexes video"),
-  uses("video-writer-db", "processor-record", "metadata-db", "processor-metadata"),
-  uses("index-writer-search", "processor-index", "search-index", "processor-index-write"),
+  uses("job-consumer-queue", "transcoder-consumer", "upload-queue", "jobs-transcoder"),
+  inside("job-consumer-encoder", "transcoder-consumer", "transcoder-encoder", "Hands job"),
+  uses("encoder-originals", "transcoder-encoder", "originals", "transcoder-read"),
+  inside("encoder-packager", "transcoder-encoder", "transcoder-packager", "Hands segments"),
+  uses("packager-transcoded", "transcoder-packager", "transcoded", "transcoder-write"),
+  inside("encoder-thumbnails", "transcoder-encoder", "transcoder-thumbnails", "Hands frames"),
+  uses("thumbnails-transcoded", "transcoder-thumbnails", "transcoded", "transcoder-write"),
+  inside("packager-done", "transcoder-packager", "transcoder-done", "Hands playlist"),
+  inside("thumbnails-done", "transcoder-thumbnails", "transcoder-done", "Hands thumbnails"),
+  uses("done-events", "transcoder-done", "completion-events", "transcoder-publish"),
+  uses("handler-consumer-events", "handler-consumer", "completion-events", "completions-handler"),
+  inside("handler-consumer-writer", "handler-consumer", "handler-writer", "Records video"),
+  uses("video-writer-db", "handler-writer", "metadata-db", "handler-metadata"),
+  uses("indexer-consumer-events", "indexer-consumer", "completion-events", "completions-indexer"),
+  inside("indexer-consumer-writer", "indexer-consumer", "indexer-writer", "Hands video"),
+  uses("index-writer-search", "indexer-writer", "search-index", "indexer-write"),
 ];
 
 /** Viewers watch (download), and creators publish (upload). */
@@ -274,11 +349,13 @@ const actions: StudioLaneAction[] = [
 ];
 /**
  * Watch reaches the Watch API, the Search API and the Video CDN; Publish reaches Identity and the
- * Upload service. Of the 3,456 entry and link orders, scored with real ELK under the lane bands,
- * this entry order draws the fewest crossings (three, where the Search API's and the Video CDN's
- * reads pass the Video processor's writes into the stores above them) and 42 bends: the view path
- * runs along the top row, the three reads come down into the shared stores in order, and Identity
- * sits above the Upload service, clear of its lines. The link orders don't change the drawing.
+ * Upload service. Of the 6,912 entry and link orders (entries, and the links of the Watch API, the
+ * Transcoder, the Upload service and Completion events), laid out with real ELK under the lane
+ * bands, half leave a bend shorter than the grid; of the rest this order draws the fewest
+ * crossings (one, where the Completion handler's write rises past the Search API's read into the
+ * Search index) and 44 bends, with the shortest lines among them (9,120px in all). Completion
+ * events must feed the Completion handler before the Search indexer (the other way adds a
+ * crossing); the Transcoder's and the Upload service's link orders don't change the drawing.
  */
 const entries: StudioEntry[] = [
   { id: "download-watch", lane: "download", element: "watch" },
@@ -288,14 +365,13 @@ const entries: StudioEntry[] = [
   { id: "upload-service", lane: "upload", element: "upload" },
 ];
 
-const service = (
+const scaling = (
   minReplicas: number,
   maxReplicas: number,
   requestTimeoutMs: number,
   concurrencyLimit: number,
 ) =>
   ({
-    kind: "service",
     execution: "docker",
     language: "typescript",
     exposure: "public",
@@ -305,6 +381,8 @@ const service = (
     requestTimeoutMs,
     concurrencyLimit,
   }) as const;
+const service = (...args: Parameters<typeof scaling>) =>
+  ({ kind: "service", ...scaling(...args) }) as const;
 const worker = (concurrency: number, maxReplicas: number) =>
   ({
     kind: "worker",
@@ -321,31 +399,20 @@ const mysql = {
   provider: "self-hosted",
   partitionKey: "video_id",
 } as const;
+const topic = (partitions: number, retentionSeconds: number) =>
+  ({
+    kind: "queue",
+    mode: "topic",
+    provider: "self-hosted",
+    partitions,
+    retentionSeconds,
+  }) as const;
 
 export function youtubeStudioExample() {
   return createStudioStudy(
     YOUTUBE_STUDIO_EXAMPLE,
     [
-      {
-        id: "video-cdn",
-        name: "Video CDN",
-        description:
-          "Serves video segments, playlists and thumbnails from the edge; resizes thumbnails on request.",
-        settings: {
-          kind: "cdn",
-          provider: "cloudflare",
-          origin: "encoded",
-          imageResizing: "on-request",
-        },
-      },
-      {
-        id: "encoded",
-        name: "Encoded videos",
-        description:
-          "Each video's segments at every resolution, its HLS playlists and its thumbnails.",
-        settings: { kind: "object-store", provider: "cloudflare-r2", access: "public" },
-        owner: { kind: "element", id: "processor" },
-      },
+      // Watch: the Watch API and what it reads and publishes.
       {
         id: "watch",
         name: "Watch API",
@@ -354,12 +421,27 @@ export function youtubeStudioExample() {
         settings: service(3, 50, 1000, 2000),
       },
       {
+        id: "metadata-cache",
+        name: "Metadata cache",
+        description:
+          "Videos' details by video ID, filled by the Watch API on a miss and kept an hour.",
+        settings: {
+          kind: "cache",
+          engine: "redis-compatible",
+          provider: "self-hosted",
+          ttlSeconds: 3600,
+          topology: "cluster",
+          eviction: "lru",
+        },
+        owner: { kind: "element", id: "watch" },
+      },
+      {
         id: "metadata-db",
         name: "Metadata database",
         description:
           "Playable videos: title, description, channel, duration, playlist and thumbnails.",
         settings: { ...mysql, readReplicas: 3 },
-        owner: { kind: "element", id: "processor" },
+        owner: { kind: "element", id: "completion-handler" },
       },
       {
         id: "view-counts",
@@ -372,13 +454,7 @@ export function youtubeStudioExample() {
         id: "view-events",
         name: "View events",
         description: "Views, from the Watch API to the View counter, keyed by video.",
-        settings: {
-          kind: "queue",
-          mode: "topic",
-          provider: "self-hosted",
-          partitions: 12,
-          retentionSeconds: 86400,
-        },
+        settings: topic(12, 86400),
         owner: { kind: "element", id: "watch" },
       },
       {
@@ -387,6 +463,7 @@ export function youtubeStudioExample() {
         description: "Sums views per video and adds them to View counts.",
         settings: worker(8, 8),
       },
+      // Search.
       {
         id: "search",
         name: "Search API",
@@ -398,8 +475,30 @@ export function youtubeStudioExample() {
         name: "Search index",
         description: "Playable videos by title, description and channel.",
         settings: { kind: "search", engine: "opensearch", provider: "self-hosted" },
-        owner: { kind: "element", id: "processor" },
+        owner: { kind: "element", id: "search-indexer" },
       },
+      // Streaming.
+      {
+        id: "video-cdn",
+        name: "Video CDN",
+        description:
+          "Serves video segments, playlists and thumbnails from the edge; resizes thumbnails on request.",
+        settings: {
+          kind: "cdn",
+          provider: "cloudflare",
+          origin: "transcoded",
+          imageResizing: "on-request",
+        },
+      },
+      {
+        id: "transcoded",
+        name: "Transcoded videos",
+        description:
+          "Each video's segments at every resolution, its HLS playlists and its thumbnails.",
+        settings: { kind: "object-store", provider: "cloudflare-r2", access: "public" },
+        owner: { kind: "element", id: "transcoder" },
+      },
+      // Publish: sign-in, the upload and the pipeline after it.
       {
         id: "identity",
         name: "Identity",
@@ -419,8 +518,8 @@ export function youtubeStudioExample() {
         id: "upload",
         name: "Upload service",
         description:
-          "Lets a creator upload a video in resumable, signed parts into Original videos, then queues it for transcoding.",
-        settings: service(2, 10, 5000, 500),
+          "Lets a creator upload a video in resumable parts, with URLs it signs, into Original videos, then queues it for transcoding.",
+        settings: { kind: "uploads", ...scaling(2, 10, 5000, 500), transfer: "signed-url" },
       },
       {
         id: "originals",
@@ -432,7 +531,8 @@ export function youtubeStudioExample() {
       {
         id: "upload-queue",
         name: "Upload jobs",
-        description: "Uploaded videos waiting to be transcoded, one job each.",
+        description:
+          "Uploaded videos waiting to be transcoded, one job each, with title and description.",
         settings: {
           kind: "queue",
           mode: "work-queue",
@@ -442,20 +542,49 @@ export function youtubeStudioExample() {
         owner: { kind: "element", id: "upload" },
       },
       {
-        id: "processor",
-        name: "Video processor",
+        id: "transcoder",
+        name: "Transcoder",
         description:
-          "Encodes each upload into streamable segments at several bitrates, with playlists and thumbnails, then records and indexes the playable video.",
+          "Encodes each upload into streamable segments at several bitrates, with playlists and thumbnails, then announces the video.",
         settings: worker(1, 50),
+      },
+      {
+        id: "completion-events",
+        name: "Completion events",
+        description:
+          "Each playable video's details, from the Transcoder to the Completion handler and the Search indexer.",
+        settings: topic(6, 604800),
+        owner: { kind: "element", id: "transcoder" },
+      },
+      {
+        id: "completion-handler",
+        name: "Completion handler",
+        description: "Records each playable video in the Metadata database, once.",
+        settings: worker(4, 4),
+      },
+      {
+        id: "search-indexer",
+        name: "Search indexer",
+        description: "Adds each playable video to the Search index.",
+        settings: worker(4, 4),
       },
     ],
     [
+      // Watch API: its own cache, then a replica on a miss; view counts; each view.
       {
-        id: "cdn-encoded",
-        from: "video-cdn",
-        to: "encoded",
-        kind: "depends-on",
-        planned: call("Reads segments and thumbnails", "HTTPS"),
+        id: "watch-cache",
+        from: "watch",
+        to: "metadata-cache",
+        kind: "uses-database",
+        planned: call("Reads video details, fills on miss", "Redis"),
+        settings: {},
+      },
+      {
+        id: "watch-metadata",
+        from: "watch",
+        to: "metadata-db",
+        kind: "uses-database",
+        planned: call("Reads video details on a miss", "SQL"),
         settings: {},
       },
       {
@@ -464,14 +593,6 @@ export function youtubeStudioExample() {
         to: "view-counts",
         kind: "uses-database",
         planned: call("Reads view counts", "SQL"),
-        settings: {},
-      },
-      {
-        id: "watch-metadata",
-        from: "watch",
-        to: "metadata-db",
-        kind: "uses-database",
-        planned: call("Reads video details", "SQL"),
         settings: {},
       },
       {
@@ -507,6 +628,15 @@ export function youtubeStudioExample() {
         settings: {},
       },
       {
+        id: "cdn-transcoded",
+        from: "video-cdn",
+        to: "transcoded",
+        kind: "depends-on",
+        planned: call("Reads segments and thumbnails", "HTTPS"),
+        settings: {},
+      },
+      // Upload service: the original, then the job.
+      {
         id: "upload-originals",
         from: "upload",
         to: "originals",
@@ -523,40 +653,66 @@ export function youtubeStudioExample() {
         settings: { channelUse: "publish" },
       },
       {
-        id: "jobs-processor",
+        id: "jobs-transcoder",
         from: "upload-queue",
-        to: "processor",
+        to: "transcoder",
         kind: "depends-on",
         planned: messaging("Delivers upload jobs"),
         settings: { channelUse: "consume" },
       },
+      // Transcoder: reads the original, writes its output, announces the video.
       {
-        id: "processor-read",
-        from: "processor",
+        id: "transcoder-read",
+        from: "transcoder",
         to: "originals",
         kind: "depends-on",
         planned: call("Reads originals", "HTTPS"),
         settings: {},
       },
       {
-        id: "processor-write",
-        from: "processor",
-        to: "encoded",
+        id: "transcoder-write",
+        from: "transcoder",
+        to: "transcoded",
         kind: "depends-on",
         planned: call("Stores segments, playlists and thumbnails", "HTTPS"),
         settings: {},
       },
       {
-        id: "processor-metadata",
-        from: "processor",
+        id: "transcoder-publish",
+        from: "transcoder",
+        to: "completion-events",
+        kind: "depends-on",
+        planned: messaging("Publishes completed videos"),
+        settings: { channelUse: "publish" },
+      },
+      // Completion events: the record and the index, each by its own writer.
+      {
+        id: "completions-handler",
+        from: "completion-events",
+        to: "completion-handler",
+        kind: "depends-on",
+        planned: messaging("Delivers completed videos"),
+        settings: { channelUse: "consume" },
+      },
+      {
+        id: "completions-indexer",
+        from: "completion-events",
+        to: "search-indexer",
+        kind: "depends-on",
+        planned: messaging("Delivers completed videos"),
+        settings: { channelUse: "consume" },
+      },
+      {
+        id: "handler-metadata",
+        from: "completion-handler",
         to: "metadata-db",
         kind: "uses-database",
         planned: call("Records playable videos", "SQL"),
         settings: {},
       },
       {
-        id: "processor-index-write",
-        from: "processor",
+        id: "indexer-write",
+        from: "search-indexer",
         to: "search-index",
         kind: "depends-on",
         planned: call("Indexes playable videos", "HTTPS"),

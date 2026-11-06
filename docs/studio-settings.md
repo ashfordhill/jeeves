@@ -29,7 +29,8 @@ model has a property. The source of truth is
 ## Applications
 
 `S` is `architecture.studio.elements[].settings`. "Common" means service, worker, billing,
-redirect, notification, identity and gateway; "coded" means the common kinds except gateway.
+redirect, notification, identity, uploads and gateway; "coded" means the common kinds except
+gateway.
 References are IDs of existing objects.
 
 | Field / path | Values (creation default first) | Applies to and effect |
@@ -37,7 +38,7 @@ References are IDs of existing objects.
 | Execution / `S.execution` | `docker`, `managed` | Common. Execution intent. Managed reveals Host. |
 | Language / `S.language` | the kind's two languages ([below](#languages)) | Coded kinds only; gateway has none. No framework or version. |
 | Host / `S.host` | `unspecified`, `cloudflare-workers`, `aws`, `google-cloud`, `external` | Only with `execution=managed`; removed when switching back to Docker. |
-| Exposure / `S.exposure` | `internal`, `public` | Common except worker. Redirect and gateway default to public. Network intent, not an auth guarantee. |
+| Exposure / `S.exposure` | `internal`, `public` | Common except worker. Redirect, uploads and gateway default to public. Network intent, not an auth guarantee. |
 | Delivery / `S.delivery` | `standalone`, `bundled` | Browser. How browser assets are distributed. |
 | Served by / `S.servedBy` | optional application ref | Browser, bundled. Unset is a readiness gap. |
 | Hosting provider / `S.provider` | `unspecified`, `cloudflare`, `aws`, `google-cloud`, `external` | Browser, standalone. |
@@ -47,11 +48,12 @@ References are IDs of existing objects.
 | Lookup cache / `S.lookupCacheConnection` | optional connection ref to a cache | Redirect. Same rule. |
 | Delivery provider / `S.provider` | `resend`, `unspecified`, `aws-ses`, `external` | Notification. |
 | Identity integration / `S.provider` | `oidc`, `unspecified`, `external` | Identity. No roles, grants or login screens. |
+| Transfer / `S.transfer` | `signed-url`, `tus` | Uploads. How an upload's bytes travel ([below](#uploads)). No size limits, file types or bucket names. |
 | Routing / `S.routing` | `path-prefix`, `host-name` | Gateway. No route table; downstream services are its outgoing connections. |
 | Gateway product / `S.provider` | `traefik`, `unspecified`, `envoy`, `kong`, `nginx`, `aws-api-gateway`, `external` | Gateway. |
 
-Billing, Redirect, Notifications and Identity are kinds of the Service tile, like Microservice and
-Worker service: ordinary service semantics plus the fields above. Gateway is the API tile's
+Billing, Redirect, Notifications, Identity and Uploads are kinds of the Service tile, like
+Microservice and Worker service: ordinary service semantics plus the fields above. Gateway is the API tile's
 default kind. Browser app stays in the format but no tile type offers it. A plain service can be
 named Catalog or Orders without gaining a business-rule form.
 
@@ -69,6 +71,7 @@ and have no language; the browser app has none either.
 | `identity` | `typescript`, `go` |
 | `notification` | `typescript`, `go` |
 | `billing` | `typescript`, `go` |
+| `uploads` | `typescript`, `go` |
 | `gateway`, `cdn` | none |
 
 A stored design whose language is outside its kind's pair (including the old `unspecified`,
@@ -85,11 +88,12 @@ preconfigured kinds name their usual provider; every other choice stays selectab
 | Billing | payment provider | `stripe` |
 | Notifications | delivery provider | `resend` |
 | Identity | integration | `oidc` |
+| Uploads | transfer | `signed-url` |
 | Gateway | product | `traefik` |
 | CDN | provider | `cloudflare` |
 
 Applications start with `execution=docker`, the kind's default language and `exposure=internal`
-(redirect and gateway: `public`).
+(redirect, uploads and gateway: `public`).
 
 A provider chosen on a kind is that service's integration: Billing with Stripe needs no separate
 External tile for Stripe. External API tiles are for third parties no kind covers.
@@ -101,6 +105,27 @@ the connection; deleting the connection clears the shortcut in the same operatio
 
 A **package** has name, purpose and members only: no language, provider or runtime. Packages stay
 in the format; neither the canvas nor chat creates or changes them.
+
+### Uploads
+
+An **Uploads** service takes large files (videos, archives) into the object storage it owns, and
+**Transfer** (`transfer`, Options, required) says how the bytes travel. The diagram is the same
+either way: the user's action reaches the Uploads service, which writes the store; a user never
+reaches storage on the canvas.
+
+- `signed-url` (Signed URLs to storage, the default): the service starts a multipart upload,
+  signs a URL for each part, and the client sends the parts straight to storage; the client can
+  resume by asking which parts arrived, and the service completes the upload. Template: a
+  generated service with the storage SDK's multipart calls (AWS's presigned multipart pattern).
+- `tus` (Through the service (tus)): the client sends the bytes to the service with the tus
+  resumable-upload protocol, and the service streams them into storage. Template: a ready-made
+  tus server configured with the store as its backend (tusd in Go, `@tus/server` in TypeScript),
+  with a hook that checks the user before an upload starts and one that publishes the job when it
+  finishes.
+
+The store it writes is the object storage it links to and owns. Who may upload, size limits and
+accepted file types stay application work. The [YouTube study](studio.md#the-youtube-study)'s
+Upload service is one, with signed URLs.
 
 ### Performance intent
 

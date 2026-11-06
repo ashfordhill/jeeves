@@ -83,6 +83,7 @@ describe("link rules", () => {
       "redirect",
       "notification",
       "identity",
+      "uploads",
       "gateway",
     ];
     const expected = new Set<string>();
@@ -152,7 +153,7 @@ describe("link table", () => {
   it("holds the owner's rules as rows with allowed and default modes", () => {
     expect(rows).toEqual([
       "user>action: sync (sync)",
-      "action>service,redirect,identity,notification,billing,gateway: sync (sync)",
+      "action>service,redirect,identity,notification,billing,uploads,gateway: sync (sync)",
       "action>cdn: sync (sync)",
       "application>application: sync|async (sync)",
       "application>external: sync|async (sync)",
@@ -287,7 +288,16 @@ describe("tile types and entries", () => {
     expect(defaultKind("storage")).toBe("object-store");
 
     expect([...studioEntryKinds].sort()).toEqual(
-      ["billing", "cdn", "gateway", "identity", "notification", "redirect", "service"].sort(),
+      [
+        "billing",
+        "cdn",
+        "gateway",
+        "identity",
+        "notification",
+        "redirect",
+        "service",
+        "uploads",
+      ].sort(),
     );
   });
 
@@ -526,7 +536,7 @@ describe("laneBands", () => {
       "product-images",
       "search-index",
     ]);
-    expect(shared("studio-youtube").sort()).toEqual(["encoded", "metadata-db", "search-index"]);
+    expect(shared("studio-youtube").sort()).toEqual(["metadata-db", "search-index", "transcoded"]);
   });
 
   it("follow links as they change: a store linked from both lanes becomes shared", () => {

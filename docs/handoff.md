@@ -3221,3 +3221,154 @@ Notes for SD02:
   Upload jobs is a `work-queue`, Completion events a `topic`.
 - A completion can't return to the Upload service (no loops); that is one more reason for the
   completion handler.
+
+## 2026-11-06 — SD02: YouTube v2 from Xu's design (complete)
+
+What changed:
+
+- **YouTube study 2.0.0** (`studio-youtube@2.0.0`, `studio-examples/youtube.ts`), rebuilt from
+  Alex Xu's "Design YouTube" and the playbook (patterns 1–7), mapped to tiles and templates: 18
+  tiles, 25 links (the user's two lines, five entries, 18 connections; 12 dashed), 20 modules, 30
+  component links. Validates with no findings and no warnings; blueprint 2 has 8 services, 10
+  resources, no externals, 18 connections, nothing omitted. Every service TypeScript on Docker.
+  ```text
+  DOWNLOAD  Watch ⇣ Watch API → Metadata cache (owner: cache-aside, fills on a miss)
+                              → Metadata database, View counts (reads)
+                              ⇢ View events ⇢ View counter → View counts
+            Watch ⇣ Search API → Search index (reads)
+            Watch ⇣ Video CDN → Transcoded videos (reads; origin pull; resizes thumbnails)
+  UPLOAD    Publish ⇡ Identity
+            Publish ⇡ Upload service (Uploads, signed URLs) → Original videos
+                                     ⇢ Upload jobs ⇢ Transcoder → Original videos (reads)
+                                                                → Transcoded videos
+                                                                ⇢ Completion events
+                                                                    ⇢ Completion handler → Metadata database
+                                                                    ⇢ Search indexer → Search index
+  ```
+- **Owners (one writer each):** Upload service: Original videos, Upload jobs. Transcoder:
+  Transcoded videos, Completion events. Completion handler: Metadata database. Search indexer:
+  Search index. Watch API: Metadata cache, View events. View counter: View counts. Shared band:
+  Transcoded videos, Metadata database, Search index; the Metadata cache sits in the download band.
+- **Templates:** Watch API and Search API generated services (cache-reader, data-access, publisher;
+  a query module); Upload service the Uploads kind's signed-URL skeleton; Transcoder a generated
+  media worker (ffmpeg stages); Completion handler and Search indexer generated consumers (like
+  TinyURL's analytics worker and the marketplace's indexer); Identity OIDC; stores, topics and the
+  CDN ready-made (MySQL, Redis-compatible, OpenSearch, R2, Cloudflare CDN).
+- **Where it differs from Xu, and why** (each in the doc comment and the guide's "Xu's boxes"
+  table): the client never uploads straight to storage (Uploads service with signed URLs, owner
+  2026-11-06); Xu's API-server metadata write rides in the job and the completion event (one
+  writer); the completion queue is a topic so the Search indexer is a sibling consumer (the event
+  carries title, description and channel, so the indexer reads no database); **the metadata cache
+  is the Watch API's own, cache-aside, an hour** (SD01's "choose one shape"): a video's record is
+  written once and never edited, so Xu's write-through by the completion handler would never
+  refill an evicted video, and a filling reader beside it would be a second writer; the CDN pulls;
+  no load balancer or gateway (recorded: a gateway would be each action's only entry); the DAG
+  is the Transcoder's modules; Xu's "notify the client" isn't drawn (no line to the user). Not in
+  Xu: search, view counts, Identity (crash course, Reddit, the earlier study).
+- **Extension ladder.** Step 2: a new **Uploads** kind (`uploads`), a Service kind after Billing:
+  TypeScript or Go, exposure public by default, icon `cloud-upload`, and a required
+  **Transfer** (`transfer: "signed-url" | "tus"`, Options; labels "Signed URLs to storage" and
+  "Through the service (tus)"; new tiles start `signed-url`). Need: the owner's upload rule keeps
+  Publish → Upload service → Original videos, and how the bytes travel decides the template.
+  Templates: `signed-url` a generated skeleton with the storage SDK's multipart calls; `tus` a
+  ready-made tus server (tusd in Go, `@tus/server` in TypeScript) with pre-create and post-finish
+  hooks. Why not step 3: a setting on `service` would show on every microservice (the Search API,
+  the Watch API) and map to no template there. Wired: schema, `createStudioSettings`, definition
+  and form field, labels, performance fields, the Service tile's kinds, the action → application
+  row and `studioEntryKinds`, the noun, blueprint (`kind` enum and settings, additive within
+  `blueprint: 2`), the chat preset sentence, `StudioIcon`. Steps 3–5: nothing. Caps unchanged: the
+  Watch API uses 4 links (the cap), the Transcoder 3, three entries per action.
+- **Orders, with real ELK** (a scratch vitest file, deleted): all 6,912 entry × link orders
+  (entries; the Watch API's, Transcoder's, Upload service's and Completion events' links). 3,456
+  leave a vertical run under 32px (in the Watch API's reads or the Video CDN's) and fail DP01's check; of the rest the
+  shipped order (the same entry order as 1.2) has the fewest crossings, **1** (the Completion
+  handler's write rising past the Search API's read into the Search index; 1.2 had 3), 44 bends
+  and the shortest total among those. Completion events must feed the handler first (the other
+  way adds a crossing); the Transcoder's and the Upload service's link orders don't change the
+  drawing. Recorded in the study's `entries` comment.
+- **Under today's layout** (for SD03; my metric: Manhattan length of each route): 1,632×1,440px
+  (1.2: 1,248×1,376), total line length 9,120px (1.2: 8,736), longest Watch API → Metadata database
+  1,472px then Search API → Search index 1,408 (1.2's longest 1,024). Video CDN → Transcoded videos
+  736px (1.2: 1,024); Upload service → Original videos 576px (1.2: 640), still running under Upload
+  jobs and the Transcoder and joining the Transcoder's read 64px before the store.
+
+Tests (164; +2): `studio-operations.test.ts` (the Uploads kind: Service kind, required Transfer in
+Options with both labels, accepted and refused values, only on `uploads`; `changeKind` presets,
+still the Shorten action's entry, edit to `tus`; defaults and `studioKindLanguages`);
+`studio-blueprint.test.ts` (YouTube 2.0: services and kinds incl. `uploads`, resources, entries, 30
+component links, every connection's access or channel use, the Upload service's `transfer`, the
+CDN's origin); `studio-lanes.test.ts` (kinds, the action row, entry kinds, shared stores);
+`laneLayout.test.ts` (YouTube crossings 1; the CDN test on `cdn-transcoded`/`transcoder-write`).
+E2E (18): the YouTube test now checks 21 tiles, 25 lines, 12 dashed, no marks, four stores'
+writer and readers (Original videos, Metadata database, Search index, Metadata cache), Uploads
+pressed and Transfer `signed-url`; the Type list test includes Uploads.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 205 files; type checks; 24 files / 164 tests).
+- `pnpm test:e2e`: 18 passed (twice, the second on the final tree).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse (the native Study and Transfer selects with
+`selectOption`), my API on 4312 (scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on
+4302, both stopped by PID afterwards (tsx 2406836/2406876, vite 2406837 and their shells). Four
+YouTube projects created, each URL awaited, all deleted (204; one by ID after my script's output
+pipe cut it short); `jeeves_e2e` again holds just "TinyURL · studio study". No console errors or
+warnings. I did not touch 4300, 4304, 4310 or the `jeeves` database.
+
+- New project lists the study with its new description; it renders in bands: 21 tiles, 25 lines,
+  12 dashed, no warning marks. Fit zooms (closed / chat / inspector / both): 0.38 / 0.38 / 0.38 /
+  0.33 at 1440×900, 0.33 / 0.33 / 0.33 / 0.27 at 1280×800 (1.2: 0.39 and 0.35 in every state).
+- Every tile's inspector: services TypeScript, Docker, public; the Upload service's Type list has
+  seven kinds with **Uploads** pressed, Options Transfer "Signed URLs to storage" (choices: that and
+  "Through the service (tus)"); Identity OpenID Connect; workers on queue lag (Transcoder
+  concurrency 1, up to 50; handler and indexer 4); Metadata cache Redis-compatible, self-hosted,
+  TTL 3600, cluster, LRU; MySQL with `video_id` and replicas 3 / 2; topics 12 and 6 partitions;
+  R2 public / private; CDN Cloudflare, Image resizing On request. Store lists: Original videos
+  "Upload service · Transcoder", Transcoded videos "Transcoder · Video CDN", Metadata database
+  "Completion handler · Watch API", Search index "Search indexer · Search API", View counts "View
+  counter · Watch API", Metadata cache "Watch API · nobody else". Modules and Connections lists
+  as designed (the Watch API's cache link "Writes (owner)", its database link "Reads").
+- Transfer → tus autosaved (revision 2); the toolbar's Undo restored `signed-url` (revision 3).
+- Selecting the Upload service, the Watch API, the Video CDN and Completion events colours their
+  lines; dark mode (the app's toggle) reads clearly, including the Uploads icon and Type button.
+- The stable `jeeves_e2e` TinyURL project renders (it is a stored TinyURL 2.0.0, 12 tiles, with
+  its own Analytics-store warning; not changed).
+
+Docs: studio guide (YouTube section rewritten: flows, sources, the playbook, a "Xu's boxes" table,
+lanes, owners, counts, tiles and modules, decisions, the Uploads kind; Inspector's Type list and
+presets; Layout's crossing example, sizes and fits; Limits), studio settings (Common and Exposure
+rows, Transfer row, the Service-kinds sentence, Languages and Defaults tables, a new Uploads
+section), CATALOG (sixteen kinds, the `uploads` row, languages, tile types, the action row,
+provider choices, YouTube in Studies), blueprint doc (services' kinds), the playbook (boxes table,
+pattern 1's decision and templates, pattern 3's sibling timing, pattern 4's "how to pick", gaps
+row removed, the smells' YouTube 2.0 notes, the hand-off checklist), PLAN (sixteen kinds, Next),
+the plan's Progress (SD01–SD02), HUMAN_FEEDBACK's Resolution (an SD02 bullet).
+
+Notes for SD03:
+
+- The owner's layout complaints are still visible on 2.0 (the design part is done): the Upload
+  service's write runs under Upload jobs and the Transcoder (y 1,344); the Watch API forks four
+  ways; the Watch API's and the Search API's reads run to the last column, where the Metadata
+  database and the Search index land because their writers (Completion handler, Search indexer)
+  are the pipeline's last column. The Video CDN's line already spans less (Transcoded videos sits
+  in the Transcoder's next column).
+- A store with one user already lands in the next column when nothing else precedes it (the
+  Metadata cache sits right after the Watch API, above View events); the long lines are shared
+  stores whose writer comes late.
+- Keep Completion events' order (handler, then indexer) or re-score: it decides the one crossing.
+  Half of all orders leave a short jog (the Watch API's reads, or the Video CDN's) under today's
+  layout.
+- `laneLayout.test.ts`'s relayout check still adds a tile after View counts (download band).
+
+Rough edges and questions (not fixed):
+
+- Owner question: Identity is Publish's entry, but viewers sign in too ("an entry its action's word
+  doesn't cover"); unchanged from 1.2.
+- The chat instructions' preset sentence is still hand-written (DP10 finding 3); I added Uploads
+  and one sentence on the transfer to it.
+- The marketplace's Shop service uploads photos (proxied, in a module's purpose). It is not an
+  Uploads service (it also owns listings); whether its photo transfer should be stated is a
+  follow-up for the owner, not changed here.
+- SD04: the owner's YouTube copy (`7ec5980c…`) is still 1.2; the walkthrough should include the
+  Transfer choice and the Uploads Type button.

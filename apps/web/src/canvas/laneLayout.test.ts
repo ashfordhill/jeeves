@@ -87,7 +87,7 @@ function crossings(input: LayoutInput, layout: BoardLayout): number {
 const studies: [string, number][] = [
   ["studio-tinyurl", 0],
   ["studio-marketplace", 1],
-  ["studio-youtube", 3],
+  ["studio-youtube", 1],
 ];
 
 describe("lane bands on the studies", () => {
@@ -164,10 +164,11 @@ describe("lane bands on the studies", () => {
     const layout = await layoutOf(input);
     const upload = input.lines.filter((l) => l.source === "upload").map((l) => l.id);
     expect(upload.length).toBe(2);
-    for (const line of upload) expect(overlaps(input, layout, "cdn-encoded", line, 0)).toEqual([]);
-    // It meets the Video processor's write only in the last 32px before Encoded videos.
-    expect(overlaps(input, layout, "cdn-encoded", "processor-write", 32)).toEqual([]);
-    expect(overlaps(input, layout, "cdn-encoded", "processor-write", 0)).not.toEqual([]);
+    for (const line of upload)
+      expect(overlaps(input, layout, "cdn-transcoded", line, 0)).toEqual([]);
+    // It meets the Transcoder's write only in the last 32px before Transcoded videos.
+    expect(overlaps(input, layout, "cdn-transcoded", "transcoder-write", 32)).toEqual([]);
+    expect(overlaps(input, layout, "cdn-transcoded", "transcoder-write", 0)).not.toEqual([]);
   });
 
   it("move only what an edit changes, and lay out again unchanged", async () => {

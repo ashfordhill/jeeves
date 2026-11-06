@@ -75,8 +75,8 @@ them):
 - A line belongs to its source's band. Lines of different bands share no run (but see
   [Limits](#limits)): they meet only in the last 32px before a shared tile, the download line joining from above and the upload line
   from below. Where one of them joins a bus that goes on past the tile, the meeting is drawn as a
-  crossing (YouTube: the Video CDN's read of Encoded videos crosses the Video processor's bus to
-  the stores above it).
+  crossing (YouTube: the Completion handler's write rises past the Search API's read of the Search
+  index on its way to the Metadata database above it).
 - How: ELK lays out each band alone with the board's columns (forks and chains look as they did),
   the bands are stacked, and one more ELK pass routes every line with the tiles fixed. A shared
   tile gets one input port per band, so ELK never bundles two lanes into one bus, and a last step
@@ -119,9 +119,10 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 | 1440×900 | 0.70 | 0.65 | 0.64 | 0.46 |
 | 1280×800 | 0.62 | 0.56 | 0.55 | 0.37 |
 
-TinyURL draws 1,184×800px. The marketplace study (1,248×1,632px) and the YouTube study
-(1,248×1,376px) are taller than they are wide, so they fit by height whichever rails are open: the
-marketplace at 0.33 at 1440×900 and 0.29 at 1280×800, YouTube at 0.39 and 0.35.
+TinyURL draws 1,184×800px. The marketplace study (1,248×1,632px) is taller than it is wide, so
+it fits by height whichever rails are open: 0.33 at 1440×900 and 0.29 at 1280×800. The YouTube
+study (1,632×1,440px) fits by height with at most one rail open, at 0.38 and 0.33, and by width
+with both open, at 0.33 and 0.27.
 
 ## Creating and connecting
 
@@ -226,12 +227,14 @@ for an application tile, **Modules**; empty ones are hidden.
 
 - A tile: its icon, name and kind, then the **Type** list when its tile type has more than one
   kind: each kind's icon and name in two columns, the current one filled yellow (Service:
-  Microservice, Worker service, Redirect, Identity, Notifications, Billing; API: Gateway or CDN;
-  Database: Database or Search index). The pointer on a kind shows its one-line description.
+  Microservice, Worker service, Redirect, Identity, Notifications, Billing, Uploads; API: Gateway
+  or CDN; Database: Database or Search index). The pointer on a kind shows its one-line
+  description.
   Clicking another switches the tile to it. The tile keeps its name, purpose, links and modules;
   its settings start over from the new kind's defaults, which are preconfigured: Billing starts
-  with Stripe, Notifications with Resend, Identity with OpenID Connect, Gateway with Traefik and
-  CDN with Cloudflare (the other choices stay selectable). A kind the lane rules refuse is faded
+  with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs
+  (its **Transfer**: [studio settings](studio-settings.md#uploads)), Gateway with Traefik and CDN
+  with Cloudflare (the other choices stay selectable). A kind the lane rules refuse is faded
   and its tooltip says why ("Shorten service can't become a worker. An action reaches a service
   (not a worker), an API or the CDN."; "Link reader in Redirect service can't use a search index;
   remove its link to URL database first.").
@@ -539,23 +542,28 @@ components, with nothing omitted and no findings.
 
 ## The YouTube study
 
-`studio-youtube@1.2.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
+`studio-youtube@2.0.0` ([factory](../packages/spec/src/studio-examples/youtube.ts)) is a
 video-sharing site with YouTube's core functionality, designed as clean microservices rather than
-copied from YouTube. Its core flows, and the tiles that carry them:
+copied from YouTube. Version 2 follows Alex Xu's "Design YouTube" (ByteByteGo), mapped to Jeeves
+tiles and templates, after the owner's review of 1.2 (the
+[human feedback](HUMAN_FEEDBACK.md#2026-11-06--youtube-v2-search-feed-upload-forks-layout-xus-design)).
+Its core flows, and the tiles that carry them:
 
-- A creator publishes a video: the Upload service starts a multipart upload in Original videos and
-  signs a URL for each part, the creator's app sends the parts with those URLs and can resume, and
-  the Upload service completes the upload and queues an upload job. On the canvas the Upload
-  service writes Original videos: a user reaches storage only through a service, and the
-  signed-URL upload is the Upload service's job, described in its Multipart uploads module.
-- The video is processed: the Video processor takes each job from Upload jobs, reads the original,
+- A creator publishes a video: the Upload service (an **Uploads** service, its transfer **signed
+  URLs**) starts a multipart upload in Original videos and signs a URL for each part; the
+  creator's app sends the parts with those URLs and can resume, and the Upload service completes
+  the upload and queues an upload job carrying the title and description. A user reaches storage
+  only through a service: the signed URLs only change where the bytes travel.
+- The video is transcoded: the Transcoder takes each job from Upload jobs, reads the original,
   encodes it at several resolutions and bitrates in segments of a few seconds, writes the
-  segments, HLS playlists and thumbnails to Encoded videos, then records the playable video in the
-  Metadata database and adds it to the Search index.
-- A viewer watches: the Watch API gives the player the video's details, playlist and view count;
-  the Video CDN serves the playlists and segments from Encoded videos, and the player picks each
-  segment's bitrate (adaptive bitrate streaming). Thumbnails come through the same CDN, resized
-  on request.
+  segments, HLS playlists and thumbnails to Transcoded videos, and announces the playable video on
+  Completion events.
+- The video is recorded and indexed: the Completion handler records it in the Metadata database,
+  and the Search indexer adds it to the Search index, each from the same completion event.
+- A viewer watches: the Watch API gives the player the video's details (from its Metadata cache,
+  or a database replica on a miss, filling the cache), playlist and view count; the Video CDN serves
+  the playlists and segments from Transcoded videos, and the player picks each segment's bitrate
+  (adaptive bitrate streaming). Thumbnails come through the same CDN, resized on request.
 - Views are counted: the Watch API publishes each view the player reports to View events; the
   View counter sums them per video and adds them to View counts in batches.
 - A viewer finds videos: the Search API reads the Search index.
@@ -574,8 +582,19 @@ Sources:
 - Vitess, [History](https://vitess.io/docs/overview/history/) (it came from YouTube's MySQL)
 - AWS, [Uploading large objects to Amazon S3 using multipart upload and transfer acceleration](https://aws.amazon.com/blogs/compute/uploading-large-objects-to-amazon-s3-using-multipart-upload-and-transfer-acceleration/)
   and [Uploading and copying objects using multipart upload](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html)
+- [tus](https://tus.io/) and [tusd](https://tus.github.io/tusd/), the resumable-upload protocol and
+  its server (the Uploads kind's other transfer)
+- AWS, [ElastiCache caching strategies](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html)
+  (lazy loading and write-through)
+- Martin Kleppmann, [why dual writes are a bad idea](https://www.confluent.io/blog/using-logs-to-build-a-solid-data-infrastructure-or-why-dual-writes-are-a-bad-idea/)
+  (each store fed as its own consumer of one log)
+- Reddit, [View counting at Reddit](https://www.redditinc.com/blog/view-counting-at-reddit/)
 - Cloudflare, [R2 pricing](https://developers.cloudflare.com/r2/pricing/) and the
   [CDN's service-specific terms](https://www.cloudflare.com/service-specific-terms-application-services/)
+
+The [design playbook](design-playbook.md) has the patterns this study is built from (uploads
+through a service, the media pipeline with a completion handler, search fed by events, who writes
+a cache, counting from events, a CDN pulling from storage, one writer per store).
 
 What the sources agree on: originals go to object storage in parts that can resume, and
 ByteByteGo, HelloInterview and the crash course send them straight from the client with
@@ -583,83 +602,112 @@ pre-signed URLs (AWS's pattern: the backend starts the multipart upload, signs a
 completes it). Processing is asynchronous behind a queue and encodes several resolutions and
 bitrates; ByteByteGo, HelloInterview and the crash course split it into segments with HLS or DASH
 playlists that a CDN serves while the player picks the bitrate. Grokking and ByteByteGo make
-thumbnails in the pipeline. HelloInterview's processing service writes the playlist's address
-back into the video's metadata. Grokking and the crash course keep metadata in MySQL sharded by
-video ID with replicas for reads. The crash course has a separate search service over an index
-filled when a video becomes playable, and keeps view counts in their own store, eventually
-consistent. HelloInterview leaves search and view counts out; ByteByteGo doesn't design them.
+thumbnails in the pipeline. Xu reports the result through a completion queue to a completion
+handler that updates the metadata database and cache, which the API servers read. HelloInterview
+adds an LRU metadata cache partitioned by video ID. Grokking and the crash course keep metadata in
+MySQL sharded by video ID with replicas for reads. The crash course has a separate search service
+over an index filled when a video becomes playable, and keeps view counts in their own store,
+eventually consistent. HelloInterview leaves search and view counts out; ByteByteGo doesn't design
+them.
 
 It is laid out in lanes from the user, through its two actions, **Watch** and **Publish**:
 
 ```text
 DOWNLOAD (reads)
-  User → Watch   ⇣ Watch API → View counts, Metadata database                (reads)
-                             ⇢ View events ⇢ View counter → View counts      (the only writer)
-                 ⇣ Search API → Search index                                 (reads)
-                 ⇣ Video CDN → Encoded videos                                (reads; resizes thumbnails)
+  User → Watch   ⇣ Watch API → Metadata cache                       (its own: fills on a miss)
+                             → Metadata database, View counts       (reads)
+                             ⇢ View events ⇢ View counter → View counts   (the only writer)
+                 ⇣ Search API → Search index                        (reads)
+                 ⇣ Video CDN → Transcoded videos                    (reads; resizes thumbnails)
 UPLOAD (writes)
-  User → Publish ⇡ Identity                                                  (sign-in)
-                 ⇡ Upload service → Original videos                          (starts, signs, completes)
-                                  ⇢ Upload jobs ⇢ Video processor → Original videos   (reads)
-                                                                  → Encoded videos, Metadata database,
-                                                                    Search index      (the only writer)
+  User → Publish ⇡ Identity                                         (sign-in)
+                 ⇡ Upload service → Original videos                 (signed URLs; the only writer)
+                                  ⇢ Upload jobs ⇢ Transcoder → Original videos     (reads)
+                                                             → Transcoded videos   (the only writer)
+                                                             ⇢ Completion events
+                                                                 ⇢ Completion handler → Metadata database
+                                                                 ⇢ Search indexer → Search index
 ```
 
 Each store has one writer, its owner: the Upload service writes Original videos and Upload jobs;
-the Video processor writes Encoded videos, the Metadata database and the Search index; the Watch
-API publishes View events; the View counter writes View counts. Every other link into a store
-reads. In all: the user, two actions and fourteen tiles, and 21 links (the user's two lines, five
-lane entries, two of them upload, and fourteen connections), nine of which are asynchronous or
-follow an asynchronous link (the view and upload-job paths). Every service is TypeScript on
-Docker; the study has no C1 people or relationships and no package. The Video processor has four
-links out, the most a tile can have. Encoded videos, the Metadata database and the Search index,
-which both lanes reach, sit in the shared band, so the Video CDN's read of Encoded videos comes down
-from the download band on its own line and meets the Video processor's write only in the last 32px.
-Of its 3,456 entry and link orders, scored with real ELK under the lane bands, this entry order
-draws the fewest crossings: three, where the Search API's and the Video CDN's reads cross the Video
-processor's bus to the stores above theirs (42 bends). The link orders don't change the drawing.
+the Transcoder writes Transcoded videos and Completion events; the Completion handler writes the
+Metadata database; the Search indexer writes the Search index; the Watch API writes its Metadata
+cache and View events; the View counter writes View counts. Every other link into a store reads.
+In all: the user, two actions and eighteen tiles, and 25 links (the user's two lines, five lane
+entries, two of them upload, and eighteen connections), twelve of which are asynchronous or follow
+an asynchronous link (the view path, and the pipeline after Upload jobs). Every service is
+TypeScript on Docker; the study has no C1 people or relationships and no package. The Watch API
+has four links out, the most a tile can have; the Transcoder three. Transcoded videos, the
+Metadata database and the Search index, which both lanes reach, sit in the shared band; the
+Metadata cache, the Watch API's own, sits in the download band beside it. Of its 6,912 entry and
+link orders, scored with real ELK under the lane bands, this one draws the fewest crossings, one
+(the Completion handler's write rising past the Search API's read into the Search index), with 44
+bends and the shortest lines among them.
 
 | Part | Content |
 | --- | --- |
-| Tiles | Search API, Watch API and Upload service (microservices, public); Identity (OpenID Connect); View counter and Video processor (workers, scaled on queue lag; the processor takes one job at a time per replica, up to 50); Video CDN (Cloudflare, origin Encoded videos, image resizing on request); Encoded videos (Cloudflare R2, public through the CDN) and Original videos (Cloudflare R2, private); Search index (OpenSearch); Metadata database and View counts (MySQL, partitioned by `video_id`, with read replicas); View events (a topic, 12 partitions, a day's retention) and Upload jobs (a work queue, a week's retention). |
-| Modules | Search API: video search. Watch API: details reader (from a replica), view count reader, view publisher (batched). View counter: view consumer, view summer, count writer. Upload service: creator check (Identity's token), multipart uploads (start, sign each part, list the parts that arrived, complete), job publisher. Video processor: job consumer, segmenter and encoder (ffmpeg), packager (HLS playlists), thumbnailer, video writer and index writer. |
+| Tiles | Watch API and Search API (microservices, public); Upload service (Uploads, public, transfer signed URLs); Identity (OpenID Connect); View counter, Transcoder, Completion handler and Search indexer (workers, scaled on queue lag; the Transcoder takes one job at a time per replica, up to 50); Video CDN (Cloudflare, origin Transcoded videos, image resizing on request); Transcoded videos (Cloudflare R2, public through the CDN) and Original videos (Cloudflare R2, private); Metadata cache (Redis-compatible cluster, an hour's TTL, least recently used evicted first); Search index (OpenSearch); Metadata database and View counts (MySQL, partitioned by `video_id`, with read replicas); View events (a topic, 12 partitions, a day's retention), Upload jobs (a work queue, a week's retention) and Completion events (a topic, 6 partitions, a week's retention). |
+| Modules | Watch API: details cache (cache-aside, an hour, single-flight), details reader (from a replica), view count reader, view publisher (batched). View counter: view consumer, view summer, count writer. Search API: video search. Upload service: creator check (Identity's token), multipart uploads (start, sign each part, list the parts that arrived, complete), job publisher. Transcoder: job consumer, segmenter and encoder (ffmpeg; Xu's task DAG), packager (HLS playlists), thumbnailer, completion publisher. Completion handler: completion consumer, video writer. Search indexer: completion consumer, index writer. |
+
+**Xu's boxes**, and what each became:
+
+| Xu | Here | Why |
+| --- | --- | --- |
+| Client uploads to original storage with a pre-signed URL | Publish ⇡ Upload service (Uploads, transfer signed URLs) → Original videos | A user never reaches a store; a service checks the request first, and the signed URL only changes where the bytes travel (owner, 2026-11-06). |
+| API servers | Watch API, Search API, Upload service | One service per responsibility a reader should see. |
+| API servers update metadata while the upload runs | The title and description ride in the upload job and the completion event | One writer per store: the Completion handler writes the record once. |
+| Load balancer | none | A service's replicas imply it; no gateway either, since it would be each action's only entry and hide which services a viewer and a creator reach. |
+| Original storage, transcoding servers, transcoded storage | Original videos, Transcoder, Transcoded videos | The same. Xu's preprocessor, DAG scheduler, resource manager, task workers and temporary storage are the Transcoder's modules. |
+| Completion queue, completion handler | Completion events (a topic), Completion handler | A topic, so the Search indexer consumes the same events. |
+| Completion handler updates the metadata cache | The Watch API owns the Metadata cache (cache-aside) | A video's record is written once and never edited, so a write-through cache would never refill a video it evicted; a reader filling a cache another tile writes would be a second writer. |
+| CDN, transcoded files pushed to it | Video CDN pulling from Transcoded videos | The CDN's origin is the store the pipeline wrote; the pipeline never writes the CDN. |
+| The client is told the upload finished | not drawn | No line runs to the user; the creator's app asks the Watch API. |
+| (not in Xu) | Search API, Search indexer, Search index; View events, View counter, View counts; Identity | The crash course's search and view counts; sign-in. |
 
 Design decisions, where the sources leave a choice:
 
-- **One writer per store.** The designs write a video's metadata twice: the API when the upload
-  starts, the pipeline when it finishes. Here the Video processor writes it once, when the video
-  can be played, from the title and description the upload job carries, and indexes it at the
-  same time. The Upload service keeps no database: the multipart upload is the upload's state, and
-  resuming asks storage which parts arrived.
-- **One Video processor with modules**, not ByteByteGo's DAG of task workers and separate
-  completion queue and handler: how the work is split inside the worker is the developer's.
+- **One writer per store.** Xu writes a video's metadata twice: the API servers while the upload
+  runs, the completion handler when it finishes. Here the Upload service puts the title and
+  description in the upload job, the Transcoder copies them into the completion event, and the
+  Completion handler writes the record once, when the video can be played. The Upload service
+  keeps no database: the multipart upload is the upload's state, and resuming asks storage which
+  parts arrived.
+- **The Transcoder writes only its own output**, and announces each video on Completion events. The
+  Completion handler (the record) and the Search indexer (the index) are sibling consumers of that
+  topic, so no worker writes a store for another concern. The event carries what both need, so the
+  indexer reads no database; for a moment search can find a video whose record isn't written yet.
+- **The Watch API owns the Metadata cache** (see Xu's boxes): it reads the cache, reads a replica
+  on a miss and fills the cache for an hour.
 - **Views are summed before they are written**, so a popular video's count is not written on
   every view (the reason the crash course reaches for a wide-column store).
 - **Thumbnails are stored once**, at full size, beside the segments, and the Video CDN resizes
-  them on request (the CDN's Image resizing, added for the marketplace study).
+  them on request (the CDN's Image resizing).
 - **Cloudflare R2 behind the Cloudflare CDN.** R2 charges no egress, and ByteByteGo names CDN
   traffic the largest cost. Cloudflare's terms want video on its CDN served through a paid
   product such as its developer platform, of which R2 is part. Amazon S3 and CloudFront are the
   other choice in the same fields.
 - **MySQL with a partition key** for the metadata (Grokking, the crash course; YouTube built
   Vitess to shard its MySQL).
-- **No line to Identity**: the Upload service checks Identity's signed token itself.
-- **Left out** for the developer to add: editing a video after upload, custom thumbnails, a
-  metadata cache (the database's replicas serve reads) and a gateway (it would hide which
-  services a viewer and a creator reach).
+- **No line to Identity**: the Upload service checks Identity's signed token itself. Identity is
+  Publish's entry because creators must sign in to upload; viewers sign in through the same
+  service.
+- **Left out** for the developer to add: editing a video after upload (it would reach the record
+  as an event the Completion handler consumes, and the Watch API's cache would need it too),
+  custom thumbnails and telling the creator the video is ready.
 
 **Where YouTube differs.** YouTube is far larger (its own pipeline stages, recommendations, ads)
 and grew from one MySQL database to replicas, then to shards behind Vitess, which it built.
 
-**Nothing was added to the canvas for this study.** Every tile, setting and link uses existing
-options, including the CDN's Image resizing and the queue's work-queue and topic modes. Version
-1.0.0 had the user's upload entry straight into Original videos; since the action tiles a user
-reaches storage only through a service, and 1.1.0 left that entry out. Three entries per
-action are within the cap of four.
+**Added to the canvas for this study: the Uploads kind** (ladder step 2), a Service kind like
+Identity or Billing with TypeScript or Go and a required **Transfer**: signed URLs to storage (the
+default; a generated service with the storage SDK's multipart calls) or through the service with
+tus (a ready-made tus server: tusd or `@tus/server`). A setting on every microservice (step 3)
+would have shown on services that take no uploads. No setting, cap or lane rule was added: the
+Watch API's four links are within the cap of four, and three entries per action within four.
 
-The study stores no layout. Its blueprint has two actions, five entries, six services, eight
-resources, no externals, fourteen connections (each link into a store marked `write` or `read`) and all
-sixteen components, with nothing omitted and no findings.
+The study stores no layout. Its blueprint has two actions, five entries, eight services, ten
+resources, no externals, eighteen connections (each link into a store marked `write` or `read`)
+and all twenty components, with nothing omitted and no findings.
 
 ## Limits
 
@@ -671,12 +719,12 @@ sixteen components, with nothing omitted and no findings.
   refits by itself.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
   marketplace study (seventeen tiles, 1,632px tall) fits at 0.33 at 1440×900 and 0.29 at
-  1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
+  1280×800, and YouTube (1,440px) at 0.38 and 0.33. At those zooms the action words (about 9px)
   and the bands read, but tile names are about 5px and need the wheel to read.
 - The lane bands cost height. A band's rows hold only its own tiles, so a column the shared band
   leaves empty stays empty between the lanes (YouTube: the space between the Video CDN and
-  Identity, beside the three shared stores). The studies grew taller with the bands (YouTube from
-  928px to 1,376px, the marketplace from 1,312px to 1,632px).
+  Identity, beside the three shared stores). The studies grew taller with the bands (YouTube 1.2
+  from 928px to 1,376px, the marketplace from 1,312px to 1,632px).
 - A notice stays at the bottom of the canvas until you dismiss it, Undo or Redo, or open another
   project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
   can sit over it.
@@ -685,7 +733,7 @@ sixteen components, with nothing omitted and no findings.
   must be on screen, so attaching to a tile that has left the view needs Fit (or a pan) first.
 - Where two services of one lane fork to the same tiles, their lines share one bus (the
   marketplace: the Shop service and Payments into the Catalog database; YouTube: the Upload
-  service's write of Original videos joins the Video processor's bus). Lines of different lanes
+  service's write of Original videos joins the Transcoder's read). Lines of different lanes
   meet only in the last 32px before a shared tile. Selecting a tile colours its own lines,
   which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
   when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
