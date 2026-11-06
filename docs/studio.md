@@ -704,6 +704,8 @@ sixteen components, with nothing omitted and no findings.
   loads unchanged and reports it ("Produce can't link to Original videos; an action reaches a
   service (not a worker), an API or the CDN."). Until that entry is removed (select its line and
   click its X), every other lane command on the design is refused with "Fix the lanes first."
+  Removing it is saved only when that leaves no lane error, so a design with two such entries, or
+  one whose entry is its tile's only way in ("would cut off"), can't be edited at all.
 - A warning's mark scales with the board: at TinyURL's both-rails fit (0.46) it is about 10px
   across. The system's inspector lists every warning at full size.
 - Keeping the lanes' lines apart is checked on the three studies and the board's own test cases.

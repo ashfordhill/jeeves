@@ -3014,3 +3014,134 @@ Rough edges (not fixed; for LA05 or the owner):
 - A CDN entry is made as an API and then switched to CDN in the Type list; the action's fan has
   no CDN item. Matches the guide (API: Gateway or CDN) but takes a second click.
 - Fit padding (owner question): see readability above.
+
+## 2026-11-06 — LA05: review of the lane actions units (complete)
+
+A review of what LA01–LA04 left between them, not a second acceptance pass. `/code-review` ran at
+`high` on `2d50749..HEAD` (ten candidates); I kept only what I could show. Code changed: one
+guard (finding 1) with an E2E test that failed before it. Docs changed: one sentence each in the
+guide's Limits and CATALOG (findings 2 and 3), the plan's status and PLAN's Next.
+
+### Ledger
+
+How checked: "open" and "still applies" items re-read in the current code and docs; "fixed" items
+in the unit and test named; scratch scripts (the spec's commands and `applyOperations`, real ELK
+through the board's engine) where a number is quoted. Owner decisions are under Questions.
+
+| From | Item | Status |
+| --- | --- | --- |
+| LA01 | Refusal says "a service (not a worker), an API or the CDN" (plan had no "(not a worker)") | Stands (recorded deviation) |
+| LA01 | `linkTiles` from a lane with no action is refused, not auto-adding the action | Stands (recorded decision; chat text and refusal say so) |
+| LA01 | Selecting an action sends chat no identity | Open, documented (guide Limits) |
+| LA01 | A design broken by a stored entry into storage takes no edit but that entry's removal | Still applies, and worse in two cases: findings 2 and 3 |
+| LA01 | Owner's YouTube copy `7eef33c4…` had `upload-parts` | No longer applies (LA04 replaced it) |
+| LA01 | Owner's TinyURL `41bbd268…` should load with Consume and Produce, no finding | Fixed/checked by LA04 (findings `[]`) |
+| LA01 | An action with no entries had no finding | Fixed by LA02 (`action-without-entries`) |
+| LA01 | Board `maxOut` per tile is the action's entry cap | Stands, unit-tested |
+| LA01 | YouTube CDN/Upload bus, marketplace buses; entry orders chosen before the action column | Fixed by LA03 across lanes (CDN test); same-lane buses stand by design |
+| LA01 | `LineSpec.chip` stays in the board, unused by Jeeves | Still applies (board fixture only) |
+| LA02 | Mark about 10–11px at TinyURL's both-rails fit | Open, documented (guide Limits) |
+| LA02 | `queue-without-publisher` only fires on a design that already has a lane error | Still applies |
+| LA02 | `output-unread` counts a legacy entry into a store as a reader | Still applies |
+| LA02 | Whether a live model resolves warnings is untested | Open (guide Limits) |
+| LA03 | Bands make studies taller, so the fit padding costs more | Open (question 2) |
+| LA03 | Same-lane buses remain | Stands, documented (guide Limits) |
+| LA03 | `meetAtPorts` is best effort | Open, documented (guide Limits) |
+| LA03 | 32px bus spacing for every layout | Stands |
+| LA03 | Chips or a loop fall back to one pass; a tile with no band must have no lines in | Stands: Jeeves passes no chips; a loop only on a broken stored design (guide Limits) |
+| LA03 | One ELK run per band plus one to route, in the worker | Stands |
+| LA03 | Owner's TinyURL lays out in bands | Checked by LA04 (fit 0.55) |
+| LA04 | An attach target out of view can't be dropped on | Open, documented (question 8) |
+| LA04 | The User's fan opens over the existing action | Open (question 4) |
+| LA04 | A CDN entry takes API then the Type list | Open (question 7) |
+| LA04 | Fit padding | Open (question 2) |
+
+### Findings
+
+| # | Severity | Where | What goes wrong | Reproduce | Status |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Low | `apps/web/src/canvas/Workspace.tsx:170` → `removal.tsx:112` | The user's line to an action has no X, but Delete/Backspace on it sent `removeLink` with `@actor-download`; `idSchema` threw and the notice showed a raw Zod JSON dump | TinyURL: click the User → Open link line, press Delete: "Change not saved: [ { "origin": "string", … } ]" | **Fixed**: `onRemoveLine` ignores the user's lines. E2E `remove.spec.ts` "the user's line to an action has no X, and Delete leaves it" failed before, passes after |
+| 2 | Medium | `packages/spec/src/apply.ts:78`; `studio-lane-commands.ts:553,677` | LA01's repair (`removeLink` of a refused entry) "may leave the design's other findings", but `applyOperations` rejects any result with a studio structural finding. A design with two refused legacy entries can't remove either, and every other command says "Fix the lanes first." | YouTube with actions deleted plus stored entries `upload → originals` and `download → encoded`: removing either is rejected with the other's message (scratch script) | Follow-up (question 1); guide Limits and CATALOG now say so |
+| 3 | Medium | `studio-lane-commands.ts:641` | The repair still refuses to strand tiles, and `removeTile`/`removeAction` are gated, so a legacy entry that is its tile's only way in can't be removed by any command | YouTube plus an External API "Maps API" whose only link in is a stored `download` entry: `removeLink` "would cut off Maps API"; `removeTile`, with `alsoRemove`, and `removeAction`: "Fix the lanes first." | Follow-up (question 1); same doc sentences |
+| 4 | Low | `studio-lane-commands.ts:617` | `linkTiles` from a lane takes its default mode from `LANE_ACTOR` (no `user → kind` row, so "sync") instead of the action node; right today only because every action row is sync | — (no divergence to show) | Follow-up |
+| 5 | Low | `apps/web/src/canvas/creation.tsx:182` | The User's `+` tooltip names Consume and Produce by hand, not from `studioActionDefaults` | — (agrees with the spec today) | Follow-up |
+
+Code-review candidates dropped: `meetAtPorts` cost and serial per-band ELK runs (LA03 measured
+30–100ms per study, off the main thread in the worker; no slow case shown), repeated `laneGraph`
+builds per command and unmemoised `studioWarnings` in the inspectors (efficiency, not defects),
+the inspectors calling a renamed action "Consume action" (the action's kind, as LA01 recorded:
+"Consume action: what the user does in the download lane"), and chat's `validateDesign` tool
+returning `DESIGN_WARNING` among its findings (its code and severity say what it is; the plan asks
+for warnings in `getDesign` and after each command, which both split).
+
+Seams checked:
+
+- **Rules in the spec:** the link table, the action defaults and name limit, one action per lane,
+  the caps per action, the warnings and their chat sentence, and the bands all live in
+  `packages/spec`; the canvas, chat and blueprint read them (chat's link paragraph and warning
+  sentence are generated). Exceptions: finding 5, and DP10's finding 3 (still open). The chat
+  instructions' two sentences on actions are the plan's and take their names and limit from the
+  spec.
+- **Warnings versus errors:** `DESIGN_WARNING` is category `warning`, so `isStructural` is false
+  and `applyOperations` never rejects on it; the "Fix the lanes first." gate, `laneOptions`,
+  `laneActionOptions` and `attachOptions` read `laneFindings` only; chat's `getDesign` and each
+  accepted `applyStudioCommands` split `findings` and `warnings`; the blueprint's `findings`
+  carry them (documented).
+- **Action nodes:** removal (an action's X pre-checks `laneRemoveActionRefusal`; its line has no
+  X, and now no Delete either), undo (actions change through `setStudio`), chat selection (sends
+  nothing, documented), the blueprint (`actions` from `studioActions`, so an entry's `action` is
+  never empty).
+- **Normalisation composes:** TinyURL stored with every entry `both`, no actions and a service in
+  `csharp` parses to download entries, one Consume action and TypeScript, with no findings; a
+  second parse of the result is identical; the blueprint agrees. An unparsed draft reads both
+  default actions through `studioActions`.
+- **No stale references:** no code, CSS, test, chat text or current doc still mentions entry
+  chips, the User's attach tab or the old user rows (the board's generic `chip` stays, as LA01
+  noted).
+- **Studies:** all three validate with no findings and no warnings after a JSON round trip.
+- **Edit stability under bands:** adding a Service after every tile that can take one (26 edits
+  over the three studies, real ELK, previous positions as hints) moved 155 existing tiles in all
+  with bands against 227 for the same edits laid out without bands; every band move is vertical.
+  Edits at a band's end move nothing (TinyURL after Shorten, marketplace after Orders), but an
+  edit that grows a band upward shifts the bands below, and some shift the whole board 32–160px
+  (question 9).
+
+### Questions for the owner
+
+1. A design stored before actions with an entry the table now refuses can be stuck (findings 2
+   and 3). Should load drop such entries (listed in the blueprint's `omitted`), should
+   `applyOperations` accept a batch that only removes studio errors and the repair also remove
+   what it strands, or leave it? No stored design has one today (LA04: the owner's three projects
+   load with findings `[]`; `jeeves_e2e` holds only TinyURL).
+2. The fit's 28% padding: the studies fit at 0.33–0.39 at 1440×900. Keep, or a fixed margin?
+3. DP01's dot offset (dots on the grid crossings): keep?
+4. DP04's fan latch, and its placement: the User's fan opens over the existing action, so the
+   greyed Consume sits on Watch. Keep?
+5. Should a notice clear on the next successful edit, or when a pull starts?
+6. Blueprint 2 reuses `access` for read/write: keep, or rename (for example `storeAccess`)?
+7. Should an action's fan offer a CDN item directly, rather than API then the Type list?
+8. Should the board zoom out as a chain grows, so attach targets stay on screen?
+9. Bands keep "an edit moves only what it changes" no worse than the single pass, but an edit
+   that grows a band can shift everything below it. Accept, or anchor the board?
+
+Noticed, outside this plan: Undo on a study project before any edit undoes the study's creation
+and empties the board (it is revision 1 of the project's history).
+
+### Checks (Node 24.21.0 first in PATH), on the final tree
+
+- `pnpm check`: exit 0 (Biome 205 files; type checks; 24 files / 162 tests).
+- `pnpm test:e2e`: 18 passed (+1, the new removal test, which failed before the fix: the notice
+  was present).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse at 1440×900, my API on 4312 (scratch `JEEVES_HOME`,
+scripted model, `jeeves_e2e`) and web on 4302, both stopped by PID afterwards. A new TinyURL
+project (URL awaited): clicking the User → Open link line selects it with no X and the inspector
+says "The line goes with the action."; Delete changes nothing (12 lines, no notice, revision 1).
+The Shorten service → URL database line's X still removes it (11 lines, URL database marked);
+Undo restores it (12 lines, no marks). In dark mode, Backspace on the User → Shorten line does
+nothing. Two projects created and deleted (204); `jeeves_e2e` again holds just "TinyURL · studio
+study". No console errors or warnings. I did not touch 4300, 4304, 4310 or the `jeeves` database.
+
+Docs: guide Limits and CATALOG (a legacy entry's removal is saved only when it leaves no lane
+error), the plan's status (complete) and PLAN's Next.

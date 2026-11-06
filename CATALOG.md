@@ -113,7 +113,9 @@ storage or an external API (YouTube 1.0.0's upload entry into Original videos) l
 and reports it as a finding ("Produce can't link to Original videos; an action reaches a service
 (not a worker), an API or the CDN."); no command adds one, and until that entry is removed
 (`removeLink`, which a design broken only by refused links accepts) every other lane command is
-refused.
+refused. That removal is saved only when it leaves no lane error: a design with two such entries,
+or one whose entry is its tile's only way in (removing it would cut the tile off), takes no edit
+at all (an open owner question).
 
 **One writer per store.** A link into a store (database, search index, cache, object storage)
 writes when it comes from the store's owner and reads otherwise (`studioStoreAccess(design,

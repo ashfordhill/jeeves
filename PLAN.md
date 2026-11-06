@@ -185,7 +185,8 @@ The [design polish units](docs/plans/design-polish/units.md) DP01–DP10 are don
 
 The [lane actions units](docs/plans/lane-actions/units.md) LA01–LA05 answer three of DP10's
 questions. LA01 (action tiles: the user links only to its Consume and Produce actions, which reach
-the services), LA02 (design warnings) and LA03 (lane bands: download above shared above upload,
-lanes' lines apart) and LA04 (an acceptance walkthrough, a docs sweep and fresh copies of the
-marketplace and YouTube studies in the owner's database) are done; LA05 (a review of LA01–LA04)
-remains.
+the services), LA02 (design warnings), LA03 (lane bands: download above shared above upload,
+lanes' lines apart), LA04 (an acceptance walkthrough, a docs sweep and fresh copies of the
+marketplace and YouTube studies in the owner's database) and LA05 (a review of LA01–LA04, which
+fixed what it could show and left questions for the owner) are done. The next work is the owner's
+answers to the LA05 and open DP10 questions in [the handoff](docs/handoff.md).

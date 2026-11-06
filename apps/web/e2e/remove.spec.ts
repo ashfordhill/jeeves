@@ -1,5 +1,32 @@
 import { design, expect, lines, ready, test, tile, tiles } from "./studio.ts";
 
+test("the user's line to an action has no X, and Delete leaves it", async ({
+  page,
+  tinyurl: id,
+}) => {
+  await ready(page);
+  // Click the middle of the User → Open link line, between the two tiles.
+  const line = page.locator('.board .react-flow__edge[data-id="@actor-download"]');
+  const point = await line.locator("path.react-flow__edge-path").evaluate((path) => {
+    const svg = path as SVGPathElement;
+    const at = svg.getPointAtLength(svg.getTotalLength() / 2);
+    const matrix = svg.getScreenCTM();
+    if (!matrix) throw new Error("The line is not drawn.");
+    return { x: at.x * matrix.a + matrix.e, y: at.y * matrix.d + matrix.f };
+  });
+  await page.mouse.click(point.x, point.y);
+  await expect(line).toHaveClass(/selected/);
+  await expect(page.getByText("The line goes with the action.")).toBeVisible();
+  await expect(page.locator(".board-remove-line")).toHaveCount(0);
+
+  await page.keyboard.press("Delete");
+  // A refusal would show as a notice within a moment; give it the time to appear.
+  await page.waitForTimeout(500);
+  await expect(lines(page)).toHaveCount(12);
+  await expect(page.locator(".studio-notice")).toHaveCount(0);
+  expect((await design(page, id)).revision).toBe(1);
+});
+
 test("removes a tile with its X, restitches its links and undoes", async ({
   page,
   tinyurl: id,

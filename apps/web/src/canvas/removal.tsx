@@ -110,6 +110,8 @@ export function useLaneRemoval({
     removable: (id) => id !== LANE_ACTOR,
     onRemoveTile: remove,
     onRemoveLine: (line) => {
+      // The user's line to an action goes with the action (no X); Delete leaves it too.
+      if (graph.edges.find((edge) => edge.id === line)?.source === LANE_ACTOR) return;
       void commitAction(
         projectId,
         (latest) => buildStudioCommand(latest, { type: "removeLink", link: line }).ops,
