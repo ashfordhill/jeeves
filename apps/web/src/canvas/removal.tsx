@@ -1,17 +1,20 @@
 // Removal on the lane canvas, as in automation-illustrator: the selected tile's red X removes it and
 // links its predecessors to its successors wherever the lane rules allow (`removeTile`). When that
 // would cut tiles off, a panel at the bottom centre of the canvas lists them (marked on the board)
-// with **Remove N tiles** and **Cancel**. A selected line's X removes that link (`removeLink`). Each
-// removal is one batch and one undo step; a refusal goes to the studio notice in plain words.
-// Afterwards the removed tile's first predecessor is selected (a removed line leaves nothing
-// selected).
+// with **Remove N tiles** and **Cancel**. A selected action's X removes it with its entries
+// (`removeAction`), unless that cuts tiles off; the user has no X, and neither has its line to an
+// action. A selected line's X removes that link (`removeLink`). Each removal is one batch and one
+// undo step; a refusal goes to the studio notice in plain words. Afterwards the removed tile's
+// first predecessor is selected (a removed line leaves nothing selected).
 import { type BoardProps, nextTileAfterRemoval } from "@jeeves/board";
 import {
   buildStudioCommand,
   type DesignDocument,
   LANE_ACTOR,
   type LaneGraph,
+  laneActionOf,
   laneGraph,
+  laneRemoveActionRefusal,
   planRemoveTile,
   studioDefinitions,
 } from "@jeeves/spec";
@@ -78,6 +81,21 @@ export function useLaneRemoval({
 
   const remove = (id: string) => {
     if (id === LANE_ACTOR) return;
+    const lane = laneActionOf(id);
+    if (lane) {
+      const refusal = laneRemoveActionRefusal(design, lane);
+      if (refusal) {
+        useProject.getState().setNotice({ tone: "error", message: refusal });
+        return;
+      }
+      void commitAction(
+        projectId,
+        (latest) => buildStudioCommand(latest, { type: "removeAction", lane }).ops,
+      ).then((ok) => {
+        if (ok) onRemoved(LANE_ACTOR);
+      });
+      return;
+    }
     const planned = planRemoveTile(design, id);
     if (!planned.ok) {
       useProject.getState().setNotice({ tone: "error", message: planned.message });

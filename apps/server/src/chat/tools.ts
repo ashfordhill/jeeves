@@ -20,13 +20,15 @@ import {
   type StudioLane,
   type StudioLinkRole,
   type StudioLinkRule,
+  studioActionDefaults,
+  studioActions,
   studioCommandSchema,
   studioComponentDefinitions,
   studioComponentKinds,
   studioDefinitions,
   studioKindLanguages,
   studioKindSchema,
-  studioLanes,
+  studioLimits,
   studioLinkRules,
   studioStoreAccess,
   studioTileDefinitions,
@@ -39,6 +41,7 @@ import type { ChatActivity, ChatQuestion } from "../db/schema.ts";
 
 const roleWords: Record<StudioLinkRole, string> = {
   user: "user",
+  action: "action",
   application: "application",
   cdn: "CDN",
   external: "external API",
@@ -53,31 +56,34 @@ export function linkRuleText(rule: StudioLinkRule): string {
     rule.modes.length > 1
       ? `${rule.modes.join(" or ")}, default ${rule.defaultMode}`
       : rule.defaultMode;
-  const what = rule.source === "user" ? "a lane entry" : rule.connection?.label;
+  const what = rule.source === "action" ? "a lane entry" : rule.connection?.label;
   return `${sentenceCase(roleWords[rule.source])} -> ${targets}: ${modes}${what ? ` (${what})` : ""}.`;
 }
 /** The link table paragraph, generated from `studioLinkRules` so the two can't drift. */
 const linkTable = `Link table (source -> target: modes; a pair not listed is refused). An application is a Service or API kind other than the CDN; a store is a database, search index, cache or storage. ${studioLinkRules.map(linkRuleText).join(" ")}`;
+const actionWords = `${studioActionDefaults.download} (download) or ${studioActionDefaults.upload} (upload)`;
 
 export const INSTRUCTIONS = `You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.
 
 The lane canvas:
-- One actor, the user (a mobile and desktop user), is always there. It is not a tile; you never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post). A lane entry links the user to the first tile of that path.
+- One actor, the user (a mobile and desktop user), is always there. It is not a tile; you never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post).
+- An action is what the user does in a lane, drawn as a tile with one short word for a name (Watch, Publish): at most one per lane, named ${actionWords} unless you name it. The user links only to its actions, and each action's lane entries link it to the services that handle that action.
 - A tile has at most one entry, in one lane.
 - Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
 - A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
 - Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
 - One writer per store: a database, cache, storage or search index is written only by its owner; every other link into it reads (getDesign shows each such link's access). To change who writes, edit the store's owner.
 - ${linkTable}
-- Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per lane.
+- Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per action.
 
-Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the lanes (each with its entries), every tile in lane order (kind, settings, links with their modes, modules) and the findings.
+Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules) and the findings.
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
-- addTile: a new tile after a tile, after a lane (from {"lane": "download"} or {"lane": "upload"}, side "after"), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addTile from a lane that passes system {name}.
-- linkTiles: links a lane or a tile to a tile already on the canvas (a merge).
+- addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
+- addTile: a new tile after a tile, after a lane's action (from {"lane": "download"} or {"lane": "upload"}, side "after"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
+- linkTiles: links a lane's action or a tile to a tile already on the canvas (a merge, or a new entry).
 - link ("sync" or "async") is optional on addTile and linkTiles: leave it out for the pair's default from the link table; give it only to choose the other mode where the table allows both.
-- setEntryLane: moves an entry to the other lane ("download" or "upload"), within that lane's cap.
+- setEntryLane: moves an entry to the other lane's action ("download" or "upload"), within its cap.
 - removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.
 - removeLink: removes a link or a lane entry, unless that cuts a tile off.
 - changeKind: switches a tile to another kind of its tile type, as the inspector's Type list does; its settings start from that kind's defaults.
@@ -113,9 +119,9 @@ const descriptions: Record<ToolName, string> = {
   describeStudioDefinition:
     "Read a kind's exact settings JSON Schema, defaults, inspector fields and implementation obligations.",
   getDesign:
-    "Read the saved baseRevision, the system, both lanes, every tile in lane order with its kind, settings, links (sync or async) and modules, and the current findings.",
+    "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, and the current findings.",
   applyStudioCommands:
-    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Tiles and links change only through addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
+    "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
   askUser: "Ask a focused question with clickable choices, then end the turn.",
 };
@@ -179,8 +185,8 @@ function laneTiles(graph: LaneGraph, lane: StudioLane): string[] {
 }
 
 /**
- * The design as chat sees it: the lanes with their entries and tiles, then every tile in lane
- * order with its kind, settings, outgoing links (sync or async) and modules.
+ * The design as chat sees it: the actions with their lanes, entries and tiles, then every tile in
+ * lane order with its kind, settings, outgoing links (sync or async) and modules.
  */
 function designSummary(design: DesignDocument, findings: readonly Finding[]) {
   const studio = design.architecture?.studio;
@@ -214,15 +220,16 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
           description: design.architecture.system.description,
         }
       : null,
-    lanes: studioLanes.map((lane) => ({
+    actions: studioActions(studio).map(({ lane, name }) => ({
       lane,
+      name,
       entries: graph.edges
         .filter((edge) => edge.lane === lane)
         .map((edge) => ({ id: edge.id, tile: edge.target })),
       tiles: laneTiles(graph, lane),
     })),
     tiles: graph.nodes
-      .filter((node) => node.id !== LANE_ACTOR)
+      .filter((node) => node.id !== LANE_ACTOR && !node.action)
       .map((node) => {
         const element = elements.get(node.id);
         const binding = bindings.get(node.id);
@@ -276,7 +283,7 @@ function unknownCommand(args: unknown): string | undefined {
   for (const command of Array.isArray(commands) ? commands : []) {
     const type = command && typeof command === "object" && "type" in command && command.type;
     if (typeof type === "string" && !commandTypes.includes(type))
-      return `There is no "${type}" command. The commands are ${commandTypes.join(", ")}. Tiles and links are added and removed only with addTile, linkTiles, removeTile and removeLink, which keep every tile on a lane.`;
+      return `There is no "${type}" command. The commands are ${commandTypes.join(", ")}. Actions, tiles and links are added and removed only with addAction, removeAction, addTile, linkTiles, removeTile and removeLink, which keep every tile on a lane.`;
   }
   return undefined;
 }

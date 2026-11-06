@@ -106,6 +106,8 @@ export type LineSpec = {
   label?: string;
   /** A box drawn on the line (phrasing content, such as an icon), kept clear by ELK. */
   chip?: Size & { content: ReactNode };
+  /** `false`: the selected line shows no X (it goes with a tile). Default true. */
+  removable?: boolean;
 };
 
 export type BoardSelection = { tile?: string; line?: string };
@@ -592,6 +594,7 @@ function Inner({
         ...(linked(l) ? { linked: true } : {}),
         ...(l.label ? { label: l.label } : {}),
         ...(l.chip ? { chip: l.chip.content } : {}),
+        ...(l.removable === false ? { fixed: true } : {}),
       },
     }));
 

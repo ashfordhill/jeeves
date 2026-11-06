@@ -182,15 +182,29 @@ and the [blueprint](studio-blueprint.md) gives the connection `access: "write" |
 Changing a store's owner changes who writes. Queue links keep their channel role (publish or
 consume) instead.
 
+## Actions
+
+`architecture.studio.actions[]` (`lane` download / upload, `name`) records what the user does:
+at most one action per lane. `name` is the one large word on its action tile, 1–24 characters
+after trimming ("Use 24 characters or fewer."); the action's inspector has a **Name** field that
+autosaves through `renameAction`, and shows its lane read-only. A new action is named
+**Consume** (download) or **Produce** (upload) unless a name is given. An action has no other
+settings and no ID; commands name it by its lane. Two actions in one lane are invalid ("Each lane
+has one action; the upload lane has 2."). A design stored with entries in a lane that has no
+action (stored before actions) loads with that lane's default action, Consume or Produce; this
+composes with the `both` and language normalisation below and in [Languages](#languages). The
+[blueprint](studio-blueprint.md) lists the actions.
+
 ## Lane entries
 
-`architecture.studio.entries[]` (`id`, `lane` download / upload, `element`) records the
-tiles the user reaches directly; a tile has at most one entry. An entry has no settings form; its
-inspector's lane row sets `lane`. Its ID shares the design's ID space,
-its element must exist, and removing the element removes the entry. Every tile must be reachable
-from the user through an entry; which kinds may be entries, and the other lane rules validation
-enforces, are in the [catalog](../CATALOG.md#lanes-and-links). A design stored with an entry in `both`
-lanes (possible for a while) loads with that entry in `download`.
+`architecture.studio.entries[]` (`id`, `lane` download / upload, `element`) records the tiles
+each lane's action reaches directly; an entry needs its lane's action, and a tile has at most one
+entry. An entry has no settings form; its inspector's lane row sets `lane` (moving it to the other
+lane's action). Its ID shares the design's ID space, its element must exist, and removing the
+element removes the entry. Every tile must be reachable from the user through an action and an
+entry; which kinds may be entries, and the other lane rules validation enforces, are in the
+[catalog](../CATALOG.md#lanes-and-links). A design stored with an entry in `both` lanes
+(possible for a while) loads with that entry in `download`.
 
 ## Components
 

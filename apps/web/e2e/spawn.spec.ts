@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import {
+  createStudy,
   dashedLines,
   design,
   expect,
@@ -28,8 +29,8 @@ test("pulls a + tab onto the fan to add a tile", async ({ page, tinyurl: id }) =
   await page.mouse.up();
 
   await ready(page);
-  await expect(tiles(page)).toHaveCount(10);
-  await expect(lines(page)).toHaveCount(11);
+  await expect(tiles(page)).toHaveCount(12);
+  await expect(lines(page)).toHaveCount(13);
   await expect(tile(page, "Cache")).toHaveClass(/selected/);
   await expect(page.locator(".studio-inspector").getByLabel("Name", { exact: true })).toBeFocused();
   const saved = await design(page, id);
@@ -58,7 +59,7 @@ test("greys the types a side can't add, with the reason", async ({ page, tinyurl
   await page.mouse.up();
 
   await expect(fan(page)).toHaveCount(0);
-  await expect(tiles(page)).toHaveCount(9);
+  await expect(tiles(page)).toHaveCount(11);
   expect((await design(page, id)).revision).toBe(1);
 });
 
@@ -73,7 +74,7 @@ test("a + released on a tile changes nothing", async ({ page, tinyurl: id }) => 
   await page.mouse.up();
 
   await expect(fan(page)).toHaveCount(0);
-  await expect(lines(page)).toHaveCount(10);
+  await expect(lines(page)).toHaveCount(12);
   await expect(page.locator(".studio-notice")).toHaveCount(0);
   expect((await design(page, id)).revision).toBe(1);
 });
@@ -89,7 +90,7 @@ test("attaches a store to a service, backwards, then undoes it", async ({ page, 
   await page.mouse.up();
 
   await ready(page);
-  await expect(lines(page)).toHaveCount(11);
+  await expect(lines(page)).toHaveCount(13);
   await expect(tile(page, "Analytics store")).toHaveClass(/selected/);
   const read = (await design(page, id)).connections.find(
     (c) => c.from.element === "redirect" && c.to.element === "analytics-store",
@@ -97,7 +98,7 @@ test("attaches a store to a service, backwards, then undoes it", async ({ page, 
   expect(read).toMatchObject({ kind: "uses-database" });
 
   await page.getByRole("button", { name: "Undo" }).click();
-  await expect(lines(page)).toHaveCount(10);
+  await expect(lines(page)).toHaveCount(12);
   const undone = (await design(page, id)).connections;
   expect(
     undone.some((c) => c.from.element === "redirect" && c.to.element === "analytics-store"),
@@ -124,49 +125,117 @@ test("attaches to a queue asynchronously, the pair's default", async ({ page, ti
   expect(publish?.planned).toMatchObject({ label: "Publishes", interaction: "Asynchronous" });
 });
 
-test("refuses the user's upload attach on a tile that already starts a lane", async ({
+test("the user's + offers its actions; an action attaches a tile as its entry", async ({
   page,
   tinyurl: id,
 }) => {
-  const chip = (name: string) => page.locator(".board").getByRole("button", { name, exact: true });
-  const user = (name: string) => tile(page, "User").getByRole("button", { name, exact: true });
+  const tabs = (name: string) => tile(page, name).locator(".board-tab");
   await tile(page, "User").click();
-  // Every tile that could start a lane already does, so the user has only its two `+` tabs.
-  for (const name of ["Add to download lane", "Add to upload lane"])
-    await expect(user(name)).toBeVisible();
-  for (const name of ["Attach to download lane", "Attach to upload lane"])
-    await expect(user(name)).toHaveCount(0);
+  // TinyURL has both actions, so the user's one `+` is gone; nothing attaches onto the user.
+  await expect(tabs("User")).toHaveCount(0);
 
-  // An External after the Shorten service could start a lane: the attach tabs appear.
+  // An action has a right `+` and an attach tab, and no left `+`. Every tile that could be an
+  // entry already is one, so Open link shows only its `+`.
+  await tile(page, "Open link").click();
+  await expect(tile(page, "Open link").getByRole("button", { name: "Add after" })).toBeVisible();
+  await expect(tabs("Open link")).toHaveCount(1);
+  await pull(page, "Open link", "Add after");
+  // An action reaches a service or an API: the stores, the queue and External are greyed.
+  for (const name of ["Service", "API"])
+    await expect(fanItem(page, name)).not.toHaveAttribute("aria-disabled");
+  for (const name of ["Database", "Cache", "Queue", "Storage", "External"])
+    await expect(fanItem(page, name)).toHaveAttribute("aria-disabled", "true");
+  await moveOnto(page, fanItem(page, "Storage"));
+  await expect(page.locator(".board-fan-tip .board-fan-reason")).toHaveText(
+    "Open link can't link to object storage. An action reaches a service (not a worker), an API or the CDN.",
+  );
+  await page.mouse.up();
+
+  // A Service after the Shorten service has no entry: Shorten's attach tab can make it one.
   await tile(page, "Shorten service").click();
   await pull(page, "Shorten service", "Add after");
-  await moveOnto(page, fanItem(page, "External"));
+  await moveOnto(page, fanItem(page, "Service"));
   await page.mouse.up();
   await ready(page);
-  await expect(lines(page)).toHaveCount(11);
-  await tile(page, "User").click();
-  for (const name of ["Attach to download lane", "Attach to upload lane"])
-    await expect(user(name)).toBeVisible();
-
-  await pull(page, "User", "Attach to upload lane");
+  await expect(lines(page)).toHaveCount(13);
+  await tile(page, "Shorten").click();
+  await expect(tabs("Shorten")).toHaveCount(2);
+  await pull(page, "Shorten", "Attach");
   // A tile has one entry: Redirect service starts the download lane, so it stays dimmed.
-  await expect(tile(page, "External")).toHaveClass(/is-drop-target/);
+  await expect(tile(page, "Service")).toHaveClass(/is-drop-target/);
   await moveOnto(page, tile(page, "Redirect service"));
   await expect(tile(page, "Redirect service")).not.toHaveClass(/is-drop-target/);
   await page.mouse.up();
-
   await expect(page.locator(".studio-notice")).toHaveText(
     "Redirect service already starts the download lane; a tile has one entry.",
   );
-  await expect(lines(page)).toHaveCount(11);
-  await expect(chip("Download lane: User to Stats API")).toBeVisible();
-  await expect(chip("Download lane: User to Redirect service")).toBeVisible();
-  await expect(chip("Upload lane: User to Shorten service")).toBeVisible();
+  await expect(lines(page)).toHaveCount(13);
+  await page.getByRole("button", { name: "Dismiss notice" }).click();
+
+  await pull(page, "Shorten", "Attach");
+  await moveOnto(page, tile(page, "Service"));
+  await page.mouse.up();
+  await ready(page);
+  await expect(lines(page)).toHaveCount(14);
+  await expect(tile(page, "Shorten")).toHaveClass(/selected/);
   const saved = await design(page, id);
-  expect(saved.revision).toBe(2);
+  expect(saved.revision).toBe(3);
   expect(saved.architecture.studio.entries.map((e) => `${e.lane} ${e.element}`)).toEqual([
     "download stats-api",
     "download redirect",
     "upload shorten",
+    "upload service",
   ]);
+});
+
+test("builds both actions from a blank design", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
+  const id = await createStudy(page, "E2E Blank actions", "blank");
+  try {
+    // A blank design opens with the user selected and its one `+`.
+    await expect(tile(page, "User").locator(".board-tab")).toHaveCount(1);
+    await pull(page, "User", "Add action");
+    await expect(fan(page)).toHaveCount(2);
+    await moveOnto(page, fanItem(page, "Consume"));
+    await page.mouse.up();
+    await ready(page);
+    // The new action is selected with its Name ready to type over.
+    const name = page.locator(".studio-inspector").getByLabel("Name", { exact: true });
+    await expect(name).toBeFocused();
+    await name.fill("Watch");
+    await name.blur();
+    await expect(tile(page, "Watch")).toBeVisible();
+
+    await pull(page, "Watch", "Add after");
+    await moveOnto(page, fanItem(page, "API"));
+    await page.mouse.up();
+    await ready(page);
+    await expect(tile(page, "API")).toHaveClass(/selected/);
+
+    // The user's `+` greys the action the design already has.
+    await tile(page, "User").click();
+    await pull(page, "User", "Add action");
+    await expect(fanItem(page, "Consume")).toHaveAttribute("aria-disabled", "true");
+    await moveOnto(page, fanItem(page, "Consume"));
+    await expect(page.locator(".board-fan-tip .board-fan-reason")).toHaveText(
+      "This design already has a Consume action; each lane has one.",
+    );
+    await moveOnto(page, fanItem(page, "Produce"));
+    await page.mouse.up();
+    await ready(page);
+    await expect(tiles(page)).toHaveCount(4);
+    await expect(lines(page)).toHaveCount(3);
+    const saved = await design(page, id);
+    expect(saved.architecture.studio.actions).toEqual([
+      { lane: "download", name: "Watch" },
+      { lane: "upload", name: "Produce" },
+    ]);
+    expect(saved.architecture.studio.entries).toEqual([
+      { id: "download-api", lane: "download", element: "api" },
+    ]);
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+  expect(errors).toEqual([]);
 });

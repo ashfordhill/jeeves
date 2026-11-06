@@ -3,7 +3,8 @@
  * (`studioLinkRules`) serves the canvas, chat and validation. `sync` is a request (a solid line);
  * `async` is a call that does not wait (a dashed line). Rows are by source role and target role;
  * a pair with no row is refused, and so is a mode the row does not allow, in plain words.
- * Stores are end tiles. Browser apps take no links: the user is the client.
+ * The user links only to its actions, and an action only to the tiles that handle it (its lane
+ * entries). Stores are end tiles. Browser apps take no links: the user is the client.
  */
 import type { ConnectionKind, DesignDocument } from "./design.ts";
 import type { StudioKind } from "./studio-model.ts";
@@ -20,18 +21,19 @@ export type StudioLinkResult =
 
 /**
  * The caps on branching. Raise them here, and only here, if a realistic design needs more. Four
- * entries per lane: the marketplace study's upload lane has sign-in, the seller's shop, the cart
- * and Payments (the checkout).
+ * entries per lane (per action): the marketplace study's upload lane has sign-in, the seller's
+ * shop, the cart and Payments (the checkout).
  */
 export const laneLimits = { entriesPerLane: 4, outgoingLinks: 4 } as const;
 
 /**
- * The roles in the link table. `user` is the actor (lane entries); `application` is every
- * Service and API kind except the CDN; `store` is a database, search index, cache or object
- * storage.
+ * The roles in the link table. `user` is the actor; `action` is one of its lane actions (the
+ * action tiles); `application` is every Service and API kind except the CDN; `store` is a
+ * database, search index, cache or object storage.
  */
 export const studioLinkRoles = [
   "user",
+  "action",
   "application",
   "cdn",
   "external",
@@ -39,15 +41,18 @@ export const studioLinkRoles = [
   "store",
 ] as const;
 export type StudioLinkRole = (typeof studioLinkRoles)[number];
-/** A link's source: a tile's kind, or `"user"` for the actor's lane entries. */
-export type StudioLinkSource = StudioKind | "user";
+/** A link's end: a tile's kind, `"user"` for the actor or `"action"` for a lane action. */
+export type StudioLinkEnd = StudioKind | "user" | "action";
+/** A link's source; any end can be one. */
+export type StudioLinkSource = StudioLinkEnd;
 
 const applicationKinds: readonly StudioKind[] = [
   ...studioTileDefinitions.service.kinds,
   ...studioTileDefinitions.api.kinds,
 ].filter((kind) => kind !== "cdn");
-const roleKinds: Record<StudioLinkRole, readonly StudioKind[]> = {
-  user: [],
+const roleKinds: Record<StudioLinkRole, readonly StudioLinkEnd[]> = {
+  user: ["user"],
+  action: ["action"],
   application: applicationKinds,
   cdn: ["cdn"],
   external: ["external-api"],
@@ -55,9 +60,8 @@ const roleKinds: Record<StudioLinkRole, readonly StudioKind[]> = {
   store: ["database", "search", "cache", "object-store"],
 };
 
-/** A kind's role in the link table; `undefined` for `browser`, which takes no links. */
-export function studioLinkRole(kind: StudioLinkSource): StudioLinkRole | undefined {
-  if (kind === "user") return "user";
+/** An end's role in the link table; `undefined` for `browser`, which takes no links. */
+export function studioLinkRole(kind: StudioLinkEnd): StudioLinkRole | undefined {
   return studioLinkRoles.find((role) => roleKinds[role].includes(kind));
 }
 
@@ -77,7 +81,7 @@ export type StudioLinkRule = {
   modes: readonly [StudioLinkMode, ...StudioLinkMode[]];
   /** The mode a new link gets when none is given. */
   defaultMode: StudioLinkMode;
-  /** The connection a new link gets; a lane entry is not a connection and has none. */
+  /** The connection a new link gets; the user's and actions' links are not connections. */
   connection?: StudioLinkConnection;
 };
 
@@ -89,7 +93,8 @@ const either = { modes: ["sync", "async"], defaultMode: "sync" } as const;
 
 /**
  * The link table, by source role and target role. Exported so a blueprint can publish it.
- * - User entries: the kinds in `studioEntryKinds`, by request.
+ * - The user links only to an action, by request.
+ * - An action's links are its lane entries: the kinds in `studioEntryKinds`, by request.
  * - An application links to anything but the user: stores, search and the CDN by request; a
  *   queue asynchronously (publish); an application or external API sync or async.
  * - A queue sits between applications: it feeds only an application, asynchronously (consume).
@@ -98,15 +103,14 @@ const either = { modes: ["sync", "async"], defaultMode: "sync" } as const;
  * - Stores are end tiles: no row has a store as its source.
  */
 export const studioLinkRules: readonly StudioLinkRule[] = [
+  { source: "user", target: "action", ...sync },
   {
-    source: "user",
+    source: "action",
     target: "application",
     targets: ["service", "redirect", "identity", "notification", "billing", "gateway"],
     ...sync,
   },
-  { source: "user", target: "cdn", ...sync },
-  { source: "user", target: "store", targets: ["object-store"], ...sync },
-  { source: "user", target: "external", ...sync },
+  { source: "action", target: "cdn", ...sync },
   { source: "application", target: "application", ...either, connection: calls },
   { source: "application", target: "external", ...either, connection: calls },
   {
@@ -158,14 +162,15 @@ export const studioLinkRules: readonly StudioLinkRule[] = [
   { source: "cdn", target: "store", targets: ["object-store"], ...sync, connection: uses },
 ];
 
-/** The kinds a row covers on its target side. */
-export const studioLinkRuleTargets = (rule: StudioLinkRule): readonly StudioKind[] =>
+/** The ends a row covers on its target side. */
+export const studioLinkRuleTargets = (rule: StudioLinkRule): readonly StudioLinkEnd[] =>
   rule.targets ?? roleKinds[rule.target];
 
-/** Kinds the user may link to directly (lane entries): any Service except a worker, any API. */
+/** Kinds an action may link to (lane entries): any Service except a worker, any API. */
 export const studioEntryKinds: readonly StudioKind[] = studioLinkRules
-  .filter((rule) => rule.source === "user")
-  .flatMap(studioLinkRuleTargets);
+  .filter((rule) => rule.source === "action")
+  .flatMap(studioLinkRuleTargets)
+  .filter((end): end is StudioKind => end !== "user" && end !== "action");
 
 const nouns: Record<StudioKind, string> = {
   service: "a service",
@@ -191,8 +196,8 @@ const Noun = (kind: StudioKind) => noun(kind).charAt(0).toUpperCase() + noun(kin
 
 /** The row for `source → target`, or `undefined` when the table has none. */
 export function studioLinkRule(
-  source: StudioLinkSource,
-  target: StudioKind,
+  source: StudioLinkEnd,
+  target: StudioLinkEnd,
 ): StudioLinkRule | undefined {
   const from = studioLinkRole(source);
   const to = studioLinkRole(target);
@@ -203,10 +208,12 @@ export function studioLinkRule(
 }
 
 /** Why the table has no row for `source → target`, in plain words. */
-function pairRefusal(source: StudioLinkSource, target: StudioKind): string {
+function pairRefusal(source: StudioLinkEnd, target: StudioLinkEnd): string {
   const role = studioLinkRole(source);
-  if (source === "user")
-    return "A lane starts at a service (not a worker), an API, storage or an external API.";
+  if (source === "user") return "The user links only to its actions; each lane starts at one.";
+  if (target === "user") return "Links don't lead back to the user.";
+  if (target === "action") return "Only the user links to an action.";
+  if (source === "action") return "An action reaches a service (not a worker), an API or the CDN.";
   if (role === "store") return `${Noun(source)} can't link onward.`;
   if (source === "browser" || target === "browser")
     return "Browser apps take no links; the user is the client.";
@@ -220,8 +227,10 @@ function pairRefusal(source: StudioLinkSource, target: StudioKind): string {
 }
 
 /** Why a row refuses `mode`, in plain words. */
-function modeRefusal(rule: StudioLinkRule, target: StudioKind, mode: StudioLinkMode): string {
-  if (rule.source === "user") return "A lane entry is a request; it can't be asynchronous.";
+function modeRefusal(rule: StudioLinkRule, target: StudioLinkEnd, mode: StudioLinkMode): string {
+  if (rule.source === "user") return "The user's link to an action is a request.";
+  if (rule.source === "action") return "A lane entry is a request; it can't be asynchronous.";
+  if (target === "user" || target === "action") return "A link to an action is a request.";
   if (rule.source === "queue")
     return "A queue feeds an application asynchronously, not by request.";
   if (rule.target === "queue") return "Publishing to a queue is asynchronous, not a request.";
@@ -235,8 +244,8 @@ function modeRefusal(rule: StudioLinkRule, target: StudioKind, mode: StudioLinkM
  * queue links, sync otherwise), or sync for a pair the table refuses.
  */
 export function studioDefaultLinkMode(
-  source: StudioLinkSource,
-  target: StudioKind,
+  source: StudioLinkEnd,
+  target: StudioLinkEnd,
 ): StudioLinkMode {
   return studioLinkRule(source, target)?.defaultMode ?? "sync";
 }
@@ -246,8 +255,8 @@ export function studioDefaultLinkMode(
  * mode, the pair's default is checked.
  */
 export function studioLinkRefusal(
-  source: StudioLinkSource,
-  target: StudioKind,
+  source: StudioLinkEnd,
+  target: StudioLinkEnd,
   mode?: StudioLinkMode,
 ): string | undefined {
   const rule = studioLinkRule(source, target);

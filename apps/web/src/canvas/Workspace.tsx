@@ -2,7 +2,8 @@
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
 // tabs add tiles and attach them (`creation.tsx`), the red X on a tile or line removes it
 // (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`),
-// and an entry's lane in its own inspector (`EntrySummary`).
+// an action's name in its own (`ActionInspector`), and an entry's lane in its own
+// (`EntrySummary`).
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
   buildStudioCommand,
@@ -10,9 +11,12 @@ import {
   LANE_ACTOR,
   type LaneEdge,
   type LaneGraph,
+  laneActionNode,
+  laneActionOf,
   laneEntryRefusal,
   laneGraph,
   type StudioLane,
+  studioActionDefaults,
   studioDefinitions,
   studioLanes,
   studioStoreAccess,
@@ -34,6 +38,7 @@ import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
 import { formDrafts } from "../project/form-drafts.ts";
 import { canRedo, canUndo, useProject } from "../project/store.ts";
+import { ActionForm } from "../studio/ActionForm.tsx";
 import { commitAction } from "../studio/actions.ts";
 import { ConnectionForm } from "../studio/ConnectionForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
@@ -42,11 +47,11 @@ import { useStudioPreferences } from "../studio/preferences.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
-import { LaneCanvas, LaneIcon, laneNames } from "./LaneCanvas.tsx";
+import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
+import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { RailResize } from "./RailResize.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { TileInspector } from "./TileInspector.tsx";
-import { ACTOR_NAME } from "./tiles/ActorTile.tsx";
 
 type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
 
@@ -90,12 +95,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     setHeaderHost(document.getElementById("studio-header-controls"));
   }, []);
   useEffect(() => {
-    // Chat messages carry the selected element, connection or entry.
-    const ids = selection.line
-      ? [selection.line]
-      : selection.tile && selection.tile !== LANE_ACTOR
-        ? [selection.tile]
-        : [];
+    // Chat messages carry the selected element, connection or entry; the user, its actions and
+    // its lines to them have no design ID.
+    const id = selection.line ?? selection.tile;
+    const ids = id && !id.startsWith("@") ? [id] : [];
     useProject.setState({ architectureSelection: ids });
   }, [selection.tile, selection.line]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
@@ -103,7 +106,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     // A new tile opens with its Name field focused, ready to rename.
     if (!focusName || focusName !== selection.tile) return;
     const field = document.querySelector<HTMLInputElement>(
-      '.studio-inspector input[id$="-element.name"]',
+      '.studio-inspector :is(input[id$="-element.name"], input[id$="-action.name"])',
     );
     if (!field) return;
     field.focus();
@@ -323,10 +326,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   );
 }
 
-const elementName = (design: DesignDocument, id: string) =>
-  id === LANE_ACTOR ? ACTOR_NAME : (design.elements.find((item) => item.id === id)?.name ?? id);
-
-/** A tile, a connection, an entry, or (for the actor and no selection) the system. */
+/**
+ * A tile, an action, a connection, an entry, the user's line to an action, or (for the actor and
+ * no selection) the system.
+ */
 function Inspector({
   loaded,
   graph,
@@ -339,8 +342,20 @@ function Inspector({
   onSelect: (next: BoardSelection) => void;
 }) {
   const { design, project } = loaded;
-  const name = (id: string) => elementName(design, id);
+  const name = (id: string) => laneNodeName(design, graph, id);
   const edge = selection.line ? graph.edges.find((item) => item.id === selection.line) : undefined;
+  const action = selection.tile ? laneActionOf(selection.tile) : undefined;
+  if (action)
+    return (
+      <ActionInspector
+        projectId={project.id}
+        design={design}
+        graph={graph}
+        lane={action}
+        name={name}
+        onSelect={onSelect}
+      />
+    );
   if (selection.tile && selection.tile !== LANE_ACTOR)
     return (
       <TileInspector
@@ -350,6 +365,27 @@ function Inspector({
         name={name(selection.tile)}
         onSelect={onSelect}
       />
+    );
+  const started = edge && edge.source === LANE_ACTOR ? laneActionOf(edge.target) : undefined;
+  if (edge && started)
+    return (
+      <div className="studio-selection-summary">
+        <h2 className="lane-inspector-title">
+          <LaneIcon lane={started} size={22} />
+          {name(edge.target)}
+        </h2>
+        <p className="lane-inspector-kind">
+          The user's {studioActionDefaults[started]} action, which starts the{" "}
+          {laneNames[started].toLowerCase()} lane. The line goes with the action.
+        </p>
+        <EntryPath
+          name={name}
+          graph={graph}
+          from={LANE_ACTOR}
+          to={edge.target}
+          onSelect={onSelect}
+        />
+      </div>
     );
   if (edge?.lane)
     return (
@@ -395,10 +431,117 @@ function Inspector({
   );
 }
 
+/** Two buttons joined by an arrow, each selecting its tile: the user or an action, and a tile. */
+function EntryPath({
+  name,
+  graph,
+  from,
+  to,
+  onSelect,
+}: {
+  name: (id: string) => string;
+  graph: LaneGraph;
+  from: string;
+  to: string;
+  onSelect: (next: BoardSelection) => void;
+}) {
+  const end = (id: string) => {
+    const node = graph.nodes.find((item) => item.id === id);
+    const visual = node?.kind ? studioDefinitions[node.kind].visual : undefined;
+    return (
+      <button
+        type="button"
+        data-family={visual?.color ?? "generic"}
+        onClick={() => onSelect({ tile: id })}
+      >
+        {node?.action ? (
+          <LaneIcon lane={node.action} size={18} />
+        ) : visual ? (
+          <StudioIcon name={visual.icon} size={18} />
+        ) : null}
+        {name(id)}
+      </button>
+    );
+  };
+  return (
+    <div className="lane-entry">
+      {end(from)}
+      <IconArrowRight size={18} aria-hidden />
+      {end(to)}
+    </div>
+  );
+}
+
 /**
- * An entry line: its lane, the lane row (download or upload; a click is `setEntryLane`, a lane
- * whose cap is full is disabled with the reason as its tooltip) and the tile the user reaches
- * directly.
+ * A lane action: its name (the word on its tile), its lane (fixed) and its entries, each a
+ * button that selects the tile.
+ */
+function ActionInspector({
+  projectId,
+  design,
+  graph,
+  lane,
+  name,
+  onSelect,
+}: {
+  projectId: string;
+  design: DesignDocument;
+  graph: LaneGraph;
+  lane: StudioLane;
+  name: (id: string) => string;
+  onSelect: (next: BoardSelection) => void;
+}) {
+  const node = laneActionNode(lane);
+  const entries = graph.edges.filter((edge) => edge.source === node);
+  return (
+    <div className="studio-selection-summary">
+      <h2 className="lane-inspector-title">
+        <LaneIcon lane={lane} size={22} />
+        {name(node)}
+      </h2>
+      <p className="lane-inspector-kind">
+        {studioActionDefaults[lane]} action: what the user does in the{" "}
+        {laneNames[lane].toLowerCase()} lane
+      </p>
+      <ActionForm projectId={projectId} lane={lane} design={design} />
+      <dl className="lane-facts">
+        <dt>Lane</dt>
+        <dd>
+          <LaneIcon lane={lane} size={14} />
+          {laneNames[lane]}
+        </dd>
+      </dl>
+      <h3 className="lane-inspector-section">Entries</h3>
+      {entries.length ? (
+        <ul className="lane-action-entries">
+          {entries.map((edge) => {
+            const kind = graph.nodes.find((item) => item.id === edge.target)?.kind;
+            const visual = kind ? studioDefinitions[kind].visual : undefined;
+            return (
+              <li key={edge.id}>
+                <button
+                  type="button"
+                  data-family={visual?.color ?? "generic"}
+                  onClick={() => onSelect({ tile: edge.target })}
+                >
+                  <StudioIcon name={visual?.icon} size={18} />
+                  {name(edge.target)}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="lane-inspector-kind">None yet. Pull its + onto a Service or an API.</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * An entry line: its action, the lane row (download or upload; a click is `setEntryLane`, which
+ * moves it to that lane's action; a lane with no action or a full one is disabled with the
+ * reason as its tooltip) and the tile the action reaches.
  */
 function EntrySummary({
   projectId,
@@ -417,8 +560,6 @@ function EntrySummary({
   graph: LaneGraph;
   onSelect: (next: BoardSelection) => void;
 }) {
-  const kind = graph.nodes.find((node) => node.id === edge.target)?.kind;
-  const visual = kind ? studioDefinitions[kind].visual : undefined;
   const choices = useMemo(
     () =>
       studioLanes.map((choice) => ({
@@ -431,9 +572,9 @@ function EntrySummary({
     <div className="studio-selection-summary">
       <h2 className="lane-inspector-title">
         <LaneIcon lane={lane} size={22} />
-        {laneNames[lane]} lane
+        {name(edge.source)}
       </h2>
-      <p className="lane-inspector-kind">Lane entry</p>
+      <p className="lane-inspector-kind">Lane entry, {laneNames[lane].toLowerCase()} lane</p>
       <fieldset className="lane-kinds" aria-label="Lanes">
         {choices.map((choice) => {
           const current = choice.lane === lane;
@@ -464,20 +605,13 @@ function EntrySummary({
           );
         })}
       </fieldset>
-      <div className="lane-entry">
-        <button type="button" onClick={() => onSelect({ tile: LANE_ACTOR })}>
-          {ACTOR_NAME}
-        </button>
-        <IconArrowRight size={18} aria-hidden />
-        <button
-          type="button"
-          data-family={visual?.color ?? "generic"}
-          onClick={() => onSelect({ tile: edge.target })}
-        >
-          <StudioIcon name={visual?.icon} size={18} />
-          {name(edge.target)}
-        </button>
-      </div>
+      <EntryPath
+        name={name}
+        graph={graph}
+        from={edge.source}
+        to={edge.target}
+        onSelect={onSelect}
+      />
     </div>
   );
 }

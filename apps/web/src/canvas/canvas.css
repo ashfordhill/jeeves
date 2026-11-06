@@ -107,14 +107,65 @@
   color: var(--board-ink);
 }
 
-.board-chip svg {
-  display: block;
+/* Action face: the lane icon in a round badge, then the action's one word large, on the actor's
+   pastel, so it reads as the start of the user's flow rather than as a service. */
+.lane-action {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 8px;
+  background: var(--actor-fill);
+  text-align: center;
 }
 
-/* A fan item's tile-type icon, in the colour of the kind it adds. */
+.lane-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid color-mix(in srgb, var(--board-line) 22%, transparent);
+  border-radius: 50%;
+  background: var(--board-tile);
+  color: var(--board-ink);
+}
+
+.lane-action-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--figure-ink);
+}
+
+/* Longer names (up to 24 characters) step down so two lines still fit. */
+.lane-action[data-size="medium"] .lane-action-name {
+  font-size: 18px;
+}
+
+.lane-action[data-size="long"] .lane-action-name {
+  font-size: 15px;
+}
+
+/* A fan item's tile-type icon, in the colour of the kind it adds; an action's in plain ink. */
 .lane-fan-icon {
   display: flex;
   color: var(--type-color);
+}
+
+.lane-fan-action {
+  color: var(--board-ink);
 }
 
 /* React Flow's attribution stays, without its light box on dark paper. */
@@ -149,19 +200,42 @@
   color: var(--ink-soft);
 }
 
-/* A store's writer (its owner) and readers. */
-.lane-store-access {
+/* A store's writer (its owner) and readers; an action's lane. */
+.lane-store-access,
+.lane-facts {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 2px 10px;
   margin: 10px 0 0;
   font-size: 12px;
 }
-.lane-store-access dt {
+.lane-store-access dt,
+.lane-facts dt {
   color: var(--ink-soft);
 }
-.lane-store-access dd {
+.lane-store-access dd,
+.lane-facts dd {
   margin: 0;
+}
+.lane-facts dd {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* An action's entries: each tile it reaches, a button that selects it. */
+.studio-selection-summary .lane-inspector-section {
+  margin: 16px 0 6px;
+  font-size: 13px;
+}
+
+.lane-action-entries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .lane-entry {
@@ -172,7 +246,8 @@
   margin-top: 16px;
 }
 
-.lane-entry button {
+.lane-entry button,
+.lane-action-entries button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -186,7 +261,8 @@
   cursor: pointer;
 }
 
-.lane-entry button > svg {
+.lane-entry button > svg,
+.lane-action-entries button > svg {
   color: var(--type-color, var(--ink));
 }
 

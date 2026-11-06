@@ -3,7 +3,12 @@ import { type ArchitectureInput, architectureSchema } from "../architecture.ts";
 import { type DesignDocument, designSchema, emptyDesign } from "../design.ts";
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
 import { studioDefinitions } from "../studio-definitions.ts";
-import { type StudioEntry, type StudioPackage, studioDefinitionRef } from "../studio-model.ts";
+import {
+  type StudioEntry,
+  type StudioLaneAction,
+  type StudioPackage,
+  studioDefinitionRef,
+} from "../studio-model.ts";
 import type { StudioConnectionCreation, StudioElementCreation } from "../studio-operations.ts";
 
 export type StudioStudy = {
@@ -20,8 +25,12 @@ export function createStudioStudy(
   connections: StudioConnectionCreation[],
   /** The system, plus any C1 people, external systems and relationships. */
   context: Pick<ArchitectureInput, "system" | "nodes" | "relationships">,
-  /** Optional lane entries, group frames and modules (C3 components), stored exactly as given. */
+  /**
+   * Optional lane actions and their entries, group frames and modules (C3 components), stored
+   * exactly as given.
+   */
   parts: {
+    actions?: StudioLaneAction[];
     entries?: StudioEntry[];
     packages?: StudioPackage[];
     components?: StudioComponent[];
@@ -67,6 +76,7 @@ export function createStudioStudy(
           componentConnections: parts.componentConnections,
         }),
         ...(parts.entries?.length && { entries: parts.entries }),
+        ...(parts.actions?.length && { actions: parts.actions }),
       },
     }),
   });

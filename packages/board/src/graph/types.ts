@@ -15,14 +15,20 @@ export type NewLink = { id: string; async?: boolean };
 
 /**
  * What makes a graph valid beyond its shape: every tile is reachable from `root`, `canLink`
- * accepts every link, and no tile other than the root has more than `maxOut` outgoing links.
- * The root's own links are the caller's to limit.
+ * accepts every link, and no tile other than the root has more than `maxOut` outgoing links
+ * (one number for every tile, or a tile's own; `undefined` means no cap). The root's own links
+ * are the caller's to limit.
  */
 export type Rules = {
   root: string;
   canLink?(source: string, target: string, async: boolean): boolean;
-  maxOut?: number;
+  maxOut?: number | ((node: string) => number | undefined);
 };
+
+/** The most outgoing links `node` may have under `rules`, or `undefined` for no cap. */
+export function maxOutOf(rules: Rules, node: string): number | undefined {
+  return typeof rules.maxOut === "function" ? rules.maxOut(node) : rules.maxOut;
+}
 
 export type GraphCode =
   | "duplicate-id"

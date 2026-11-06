@@ -10,8 +10,8 @@ test("removes a tile with its X, restitches its links and undoes", async ({
     .click();
 
   await ready(page);
-  await expect(tiles(page)).toHaveCount(8);
-  await expect(lines(page)).toHaveCount(9);
+  await expect(tiles(page)).toHaveCount(10);
+  await expect(lines(page)).toHaveCount(11);
   // The first predecessor (here the Redirect service) is selected.
   await expect(tile(page, "Redirect service")).toHaveClass(/selected/);
   const removed = await design(page, id);
@@ -25,8 +25,8 @@ test("removes a tile with its X, restitches its links and undoes", async ({
   });
 
   await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect(tiles(page)).toHaveCount(9);
-  await expect(lines(page)).toHaveCount(10);
+  await expect(tiles(page)).toHaveCount(11);
+  await expect(lines(page)).toHaveCount(12);
   const restored = await design(page, id);
   expect(restored.revision).toBe(3);
   expect(restored.elements.map((e) => e.id)).toContain("click-events");

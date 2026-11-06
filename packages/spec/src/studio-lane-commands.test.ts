@@ -1,17 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { applyOperations } from "./apply.ts";
-import { type DesignDocument, emptyDesign } from "./design.ts";
+import { type DesignDocument, designSchema, emptyDesign } from "./design.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import {
   attachOptions,
+  laneActionOptions,
   laneEntryRefusal,
   laneLinkRefusal,
   laneOptions,
+  laneRemoveActionRefusal,
   newLinkId,
   newTileIdentity,
   planRemoveTile,
 } from "./studio-lane-commands.ts";
-import { LANE_ACTOR, laneFindings, laneGraph } from "./studio-lanes.ts";
+import {
+  LANE_ACTOR,
+  laneActionLine,
+  laneActionNode,
+  laneFindings,
+  laneGraph,
+} from "./studio-lanes.ts";
 import { createStudioSettings, type StudioModel } from "./studio-model.ts";
 import { buildStudioCommand, type StudioCommand } from "./studio-operations.ts";
 import { studioTileTypes } from "./studio-tiles.ts";
@@ -26,8 +34,9 @@ const applied = (result: ReturnType<typeof applyOperations>) => {
   return result.design;
 };
 /**
- * The TinyURL study: the user enters at the Stats API and the Redirect service (download) and the
- * Shorten service (upload). Every tile that could start a lane already does.
+ * The TinyURL study: the user's Open link action enters at the Stats API and the Redirect service
+ * (download), its Shorten action at the Shorten service (upload). Every tile that could start a
+ * lane already does.
  */
 const tinyurl = (): DesignDocument => studioArchitectureExample("studio-tinyurl").design;
 /** Builds the command and applies its batch; the result keeps every lane rule. */
@@ -37,13 +46,13 @@ function run(design: DesignDocument, command: StudioCommand) {
   expect(laneFindings(next)).toEqual([]);
   return { ops: batch.ops.map((op) => op.op), design: next };
 }
-/** TinyURL with an external Geo lookup after the Shorten service: a tile with no entry yet. */
+/** TinyURL with a Geo lookup service after the Shorten service: a tile with no entry yet. */
 const withGeo = () =>
   run(tinyurl(), {
     type: "addTile",
     from: { tile: "shorten" },
     side: "after",
-    tile: { id: "geo", name: "Geo lookup", kind: "external-api" },
+    tile: { id: "geo", name: "Geo lookup", kind: "service" },
     linkId: "shorten-geo",
   }).design;
 const refusal = (design: DesignDocument, command: StudioCommand) => {
@@ -62,6 +71,128 @@ const tile = (id: string, name: string, kind: StudioModel["elements"][0]["settin
   id,
   name,
   kind,
+});
+
+describe("actions", () => {
+  it("add one action per lane, rename it and remove it with its entries", () => {
+    const design = tinyurl();
+    expect(laneActionOptions(design)).toEqual([
+      {
+        lane: "download",
+        name: "Consume",
+        refusal: "This design already has a Consume action; each lane has one.",
+      },
+      {
+        lane: "upload",
+        name: "Produce",
+        refusal: "This design already has a Produce action; each lane has one.",
+      },
+    ]);
+    expect(refusal(design, { type: "addAction", lane: "upload" })).toBe(
+      "This design already has a Produce action; each lane has one.",
+    );
+
+    // A blank design starts with an action, which names the system.
+    const blank = emptyDesign();
+    expect(laneActionOptions(blank)).toEqual([
+      { lane: "download", name: "Consume" },
+      { lane: "upload", name: "Produce" },
+    ]);
+    const watch = run(blank, {
+      type: "addAction",
+      lane: "download",
+      name: "Watch",
+      system: { name: "Videos" },
+    });
+    expect(watch.ops).toEqual(["setArchitecture", "setStudio"]);
+    expect(studioOf(watch.design).actions).toEqual([{ lane: "download", name: "Watch" }]);
+    expect(laneGraph(watch.design)).toMatchObject({
+      nodes: [{ id: LANE_ACTOR }, { id: laneActionNode("download"), action: "download" }],
+      edges: [{ id: laneActionLine("download"), source: LANE_ACTOR }],
+    });
+    const both = run(watch.design, { type: "addAction", lane: "upload" }).design;
+    expect(studioOf(both).actions).toEqual([
+      { lane: "download", name: "Watch" },
+      { lane: "upload", name: "Produce" },
+    ]);
+    const renamed = run(both, { type: "renameAction", lane: "upload", name: "Publish" }).design;
+    expect(studioOf(renamed).actions?.[1]).toEqual({ lane: "upload", name: "Publish" });
+    expect(refusal(watch.design, { type: "renameAction", lane: "upload", name: "Publish" })).toBe(
+      "This design has no Produce action.",
+    );
+    // An action with no entries goes alone.
+    const removed = run(renamed, { type: "removeAction", lane: "upload" });
+    expect(removed.ops).toEqual(["setStudio"]);
+    expect(studioOf(removed.design).actions).toEqual([{ lane: "download", name: "Watch" }]);
+
+    // Removing an action takes its entries, and is refused when that cuts tiles off.
+    expect(laneRemoveActionRefusal(design, "upload")).toBe(
+      "Removing Shorten would cut off Shorten service.",
+    );
+    expect(refusal(design, { type: "removeAction", lane: "download" })).toBe(
+      "Removing Open link would cut off Stats API, Redirect service, Analytics store, URL cache, Click events and Analytics worker.",
+    );
+    const linked = run(design, {
+      type: "linkTiles",
+      from: { tile: "redirect" },
+      to: "shorten",
+      linkId: "redirect-shorten",
+    }).design;
+    expect(laneRemoveActionRefusal(linked, "upload")).toBeUndefined();
+    const downloadOnly = run(linked, { type: "removeAction", lane: "upload" }).design;
+    expect(studioOf(downloadOnly).actions).toEqual([{ lane: "download", name: "Open link" }]);
+    expect(studioOf(downloadOnly).entries?.map((entry) => entry.id)).toEqual([
+      "download-stats-api",
+      "download-redirect",
+    ]);
+    expect(planRemoveTile(design, laneActionNode("upload"))).toEqual({
+      ok: false,
+      message: 'There is no tile "@upload".',
+    });
+  });
+
+  it("load a stored entry into storage, refuse new ones and let the old one be removed", () => {
+    const youtube = () => studioArchitectureExample("studio-youtube").design;
+    // An action never reaches storage: the Upload service writes Original videos.
+    expect(
+      refusal(youtube(), {
+        type: "linkTiles",
+        from: { lane: "upload" },
+        to: "originals",
+        linkId: "upload-parts",
+      }),
+    ).toBe(
+      "Publish can't link to Original videos. An action reaches a service (not a worker), an API or the CDN.",
+    );
+    // YouTube 1.0.0 stored the user's upload entry into Original videos.
+    const stored = JSON.parse(JSON.stringify(youtube()));
+    delete stored.architecture.studio.actions;
+    stored.architecture.studio.entries.push({
+      id: "upload-parts",
+      lane: "upload",
+      element: "originals",
+    });
+    const legacy = designSchema.parse(stored);
+    const broken =
+      "Fix the lanes first. Produce can't link to Original videos; an action reaches a service (not a worker), an API or the CDN.";
+    expect(
+      refusal(legacy, {
+        type: "addTile",
+        from: { tile: "upload" },
+        side: "after",
+        tile: tile("notify", "Notify", "notification"),
+        linkId: "upload-notify",
+      }),
+    ).toBe(broken);
+    expect(laneActionOptions(legacy)[1]).toMatchObject({ refusal: broken });
+    expect(refusal(legacy, { type: "renameAction", lane: "upload", name: "Publish" })).toBe(broken);
+    // Removing the refused entry is what fixes it.
+    const fixed = run(legacy, { type: "removeLink", link: "upload-parts" }).design;
+    expect(studioOf(fixed).entries?.map((entry) => entry.id)).not.toContain("upload-parts");
+    expect(laneFindings(fixed)).toEqual([]);
+    // A repair still refuses to cut tiles off.
+    expect(refusal(legacy, { type: "removeLink", link: "upload-service" })).toBe(broken);
+  });
 });
 
 describe("addTile", () => {
@@ -127,7 +258,7 @@ describe("addTile", () => {
       from: { lane: "download" },
       side: "after",
       link: "sync",
-      tile: tile("media", "Media storage", "object-store"),
+      tile: tile("media", "Media CDN", "cdn"),
       linkId: "download-media",
     }).design;
     expect(studioOf(media).entries?.at(-1)).toEqual({
@@ -147,7 +278,23 @@ describe("addTile", () => {
       system: { name: "Notes" },
     });
     expect(first.ops).toEqual(["setArchitecture", "addElement", "setStudio"]);
-    expect(laneGraph(first.design).edges).toMatchObject([{ source: LANE_ACTOR, lane: "upload" }]);
+    // From a lane with no action, the action comes first, with its default name.
+    expect(studioOf(first.design).actions).toEqual([{ lane: "upload", name: "Produce" }]);
+    expect(laneGraph(first.design).edges).toMatchObject([
+      { source: LANE_ACTOR, target: laneActionNode("upload") },
+      { source: laneActionNode("upload"), target: "notes-api", lane: "upload" },
+    ]);
+    const second = run(first.design, {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      tile: tile("notes-cdn", "Notes CDN", "cdn"),
+      linkId: "download-notes-cdn",
+    }).design;
+    expect(studioOf(second).actions).toEqual([
+      { lane: "download", name: "Consume" },
+      { lane: "upload", name: "Produce" },
+    ]);
   });
 
   it("refuses in plain words with tile names", () => {
@@ -166,10 +313,14 @@ describe("addTile", () => {
       "URL cache can't link to Geo lookup. A cache can't link onward.",
     );
     expect(add({ from: { lane: "download" }, side: "before" })).toBe(
-      "Nothing goes before the user.",
+      "Nothing goes before an action; the user links only to it.",
     );
     expect(add({ from: { lane: "download" }, tile: tile("geo", "Geo worker", "worker") })).toBe(
-      "Geo worker can't start the download lane. A lane starts at a service (not a worker), an API, storage or an external API.",
+      "Open link can't link to Geo worker. An action reaches a service (not a worker), an API or the CDN.",
+    );
+    // A new entry into storage or an external API is refused.
+    expect(add({ from: { lane: "upload" }, tile: tile("media", "Media", "object-store") })).toBe(
+      "Shorten can't link to Media. An action reaches a service (not a worker), an API or the CDN.",
     );
     expect(add({ tile: tile("redirect", "Geo lookup", "external-api") })).toBe(
       'The ID "redirect" is already in use.',
@@ -215,7 +366,7 @@ describe("addTile", () => {
         tile: tile("three", "Service three", "service"),
         linkId: "download-three",
       }),
-    ).toBe("The download lane already has 4 entries; the most is 4.");
+    ).toBe("Open link already has 4 entries; the most is 4.");
   });
 });
 
@@ -266,6 +417,22 @@ describe("linkTiles", () => {
         linkId: "download-redirect-2",
       }),
     ).toBe("Redirect service already starts the download lane; a tile has one entry.");
+    // A lane's action reaches tiles; with no action there, there is nothing to link from.
+    const noUpload = run(withGeo(), {
+      type: "linkTiles",
+      from: { tile: "redirect" },
+      to: "shorten",
+      linkId: "redirect-shorten",
+    }).design;
+    const downloadOnly = run(noUpload, { type: "removeAction", lane: "upload" }).design;
+    expect(
+      refusal(downloadOnly, {
+        type: "linkTiles",
+        from: { lane: "upload" },
+        to: "geo",
+        linkId: "upload-geo",
+      }),
+    ).toBe("The upload lane has no action yet; add its Produce action first.");
   });
 });
 
@@ -296,18 +463,29 @@ describe("setEntryLane", () => {
         }).design,
       design,
     );
-    const cap = "The download lane already has 4 entries; the most is 4.";
+    const cap = "Open link already has 4 entries; the most is 4.";
     expect(laneEntryRefusal(full, "upload-shorten", "download")).toBe(cap);
     expect(laneEntryRefusal(full, "download-redirect", "upload")).toBeUndefined();
-    // The full lane offers nothing to add or attach, so the user shows only the upload lane's
-    // `+` (every tile that could start a lane already has an entry, so there is no attach tab).
+    // The full action offers nothing to add or attach (every tile that could start a lane
+    // already has an entry); the other action still adds.
     expect(laneOptions(full, { lane: "download" }, "after")[0]).toEqual({
       type: "service",
       refusal: cap,
     });
     expect(laneOptions(full, { lane: "download" }, "after").some((o) => "kind" in o)).toBe(false);
     expect(laneOptions(full, { lane: "upload" }, "after").some((o) => "kind" in o)).toBe(true);
-    expect(attachOptions(full, LANE_ACTOR).some((o) => "link" in o)).toBe(false);
+    expect(attachOptions(full, laneActionNode("download")).some((o) => "link" in o)).toBe(false);
+    // The other lane needs an action to move to.
+    const linked = run(design, {
+      type: "linkTiles",
+      from: { tile: "redirect" },
+      to: "shorten",
+      linkId: "redirect-shorten",
+    }).design;
+    const downloadOnly = run(linked, { type: "removeAction", lane: "upload" }).design;
+    expect(laneEntryRefusal(downloadOnly, "download-redirect", "upload")).toBe(
+      "The upload lane has no action yet; add its Produce action first.",
+    );
     expect(
       refusal(design, { type: "setEntryLane", entry: "download-redirect", lane: "download" }),
     ).toBe("Redirect service already starts the download lane.");
@@ -407,7 +585,7 @@ describe("changeKind", () => {
     const change = (element: string, kind: StudioModel["elements"][0]["settings"]["kind"]) =>
       refusal(design, { type: "changeKind", element, kind });
     expect(change("shorten", "worker")).toBe(
-      "Shorten service can't become a worker. A lane starts at a service (not a worker), an API, storage or an external API.",
+      "Shorten service can't become a worker. An action reaches a service (not a worker), an API or the CDN.",
     );
     expect(change("url-db", "cache")).toBe(
       "URL database can switch only to another Database kind: a search index.",
@@ -474,7 +652,7 @@ describe("modes from the pair", () => {
       type: "addTile",
       from: { lane: "download" },
       side: "after",
-      tile: tile("media", "Media storage", "object-store"),
+      tile: tile("media", "Media CDN", "cdn"),
       linkId: "download-media",
     }).design;
     expect(studioOf(entry).entries?.at(-1)).toMatchObject({ lane: "download", element: "media" });
@@ -584,12 +762,22 @@ describe("lane options", () => {
     expect(laneOptions(design, { lane: "upload" }, "after")[2]).toEqual({
       type: "database",
       refusal:
-        "A database can't start the upload lane. A lane starts at a service (not a worker), an API, storage or an external API.",
+        "Shorten can't link to a database. An action reaches a service (not a worker), an API or the CDN.",
     });
+    // An action adds a service or an API, never a store, a queue or an external API.
+    expect(
+      laneOptions(design, { lane: "upload" }, "after").map((o) => ("kind" in o ? o.kind : "-")),
+    ).toEqual(["service", "gateway", "-", "-", "-", "-", "-"]);
     expect(laneOptions(design, { lane: "upload" }, "before")[0]).toEqual({
       type: "service",
-      refusal: "Nothing goes before the user.",
+      refusal: "Nothing goes before an action; the user links only to it.",
     });
+    // From a lane with no action, the options are those of its new action.
+    expect(
+      laneOptions(emptyDesign(), { lane: "download" }, "after").map((o) =>
+        "kind" in o ? o.kind : "-",
+      ),
+    ).toEqual(["service", "gateway", "-", "-", "-", "-", "-"]);
   });
 });
 
@@ -645,13 +833,16 @@ describe("attach options", () => {
     expect(attachOptions(design, "nope")).toEqual([]);
   });
 
-  it("attach the user per lane: the tiles each lane could take as an entry", () => {
+  it("attach an action: the tiles its lane could take as an entry; nothing onto the user", () => {
     // In TinyURL every tile that could start a lane already does.
-    expect(attachOptions(tinyurl(), LANE_ACTOR).some((option) => "link" in option)).toBe(false);
+    for (const lane of ["download", "upload"] as const)
+      expect(
+        attachOptions(tinyurl(), laneActionNode(lane)).some((option) => "link" in option),
+      ).toBe(false);
     const design = withGeo();
-    const options = attachOptions(design, LANE_ACTOR);
-    expect(options).toHaveLength(2 * 9);
-    const download = options.filter((option) => option.lane === "download");
+    expect(attachOptions(design, LANE_ACTOR)).toEqual([]);
+    const download = attachOptions(design, laneActionNode("download"));
+    expect(download).toHaveLength(9);
     expect(download.filter((option) => "link" in option)).toEqual([
       {
         tile: "geo",
@@ -665,12 +856,12 @@ describe("attach options", () => {
       refusal: "Shorten service already starts the upload lane; a tile has one entry.",
     });
     expect(
-      options.find((option) => option.lane === "upload" && option.tile === "analytics"),
+      attachOptions(design, laneActionNode("upload")).find((option) => option.tile === "url-db"),
     ).toEqual({
-      tile: "analytics",
+      tile: "url-db",
       lane: "upload",
       refusal:
-        "Analytics worker can't start the upload lane. A lane starts at a service (not a worker), an API, storage or an external API.",
+        "Shorten can't link to URL database. An action reaches a service (not a worker), an API or the CDN.",
     });
   });
 });
@@ -688,12 +879,15 @@ describe("canvas helpers", () => {
       "Redirect service already starts the download lane; a tile has one entry.",
     );
     expect(laneLinkRefusal(design, { tile: "analytics" }, "redirect", "sync")).toMatch(/loop/);
-    // The user is reached only through its lane tabs.
-    expect(laneLinkRefusal(design, { tile: "redirect" }, LANE_ACTOR, "sync")).toMatch(
-      /back to the user/,
+    // The user links only to its actions, and nothing links back to it or into an action.
+    expect(laneLinkRefusal(design, { tile: "redirect" }, LANE_ACTOR, "sync")).toBe(
+      "Links don't lead back to the user.",
     );
-    expect(laneLinkRefusal(design, { tile: LANE_ACTOR }, "redirect", "sync")).toMatch(
-      /download or upload tab/,
+    expect(laneLinkRefusal(design, { tile: LANE_ACTOR }, "redirect", "sync")).toBe(
+      "The user links only to its actions; add one with the user's +.",
+    );
+    expect(laneLinkRefusal(design, { tile: "redirect" }, laneActionNode("upload"))).toBe(
+      "Only the user links to Shorten; pull from its attach tab to give it an entry.",
     );
   });
 

@@ -2,7 +2,7 @@
 // `validateGraphInvariants`, rooted: instead of "one weakly connected piece with a source", every
 // tile must be reachable from the root. Callers add link rules and a fan-out cap.
 import { reachableFrom } from "./reach.ts";
-import type { BoardGraph, GraphViolation, Rules } from "./types.ts";
+import { type BoardGraph, type GraphViolation, maxOutOf, type Rules } from "./types.ts";
 
 /** Every way `graph` breaks the board's invariants or `rules`; empty when it is valid. */
 export function checkGraph(graph: BoardGraph, rules: Rules): GraphViolation[] {
@@ -69,15 +69,14 @@ export function checkGraph(graph: BoardGraph, rules: Rules): GraphViolation[] {
     }
   }
 
-  if (rules.maxOut !== undefined) {
-    for (const [source, targets] of outgoing) {
-      if (source === rules.root || targets.length <= rules.maxOut) continue;
-      out.push({
-        code: "too-many-links",
-        message: `"${source}" has ${targets.length} links; the most is ${rules.maxOut}.`,
-        node: source,
-      });
-    }
+  for (const [source, targets] of outgoing) {
+    const max = maxOutOf(rules, source);
+    if (source === rules.root || max === undefined || targets.length <= max) continue;
+    out.push({
+      code: "too-many-links",
+      message: `"${source}" has ${targets.length} links; the most is ${max}.`,
+      node: source,
+    });
   }
 
   const cycle = findCycle(graph, outgoing);

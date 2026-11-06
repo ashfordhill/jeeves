@@ -159,10 +159,11 @@ export function buildStudioCommand(
   }
   const ops: OperationInput[] = [];
   if (!draft.architecture) {
-    const system = input.type === "addTile" ? input.system : undefined;
+    const system =
+      input.type === "addTile" || input.type === "addAction" ? input.system : undefined;
     if (!system)
       throw new Error(
-        "This design has no system yet. Start it with addTile from the download or upload lane, giving the system a name.",
+        "This design has no system yet. Start it with addAction, or addTile from the download or upload lane, giving the system a name.",
       );
     draft.architecture = architectureSchema.parse({ system });
     ops.push({ op: "setArchitecture", architecture: structuredClone(draft.architecture) });
@@ -274,6 +275,9 @@ export function buildStudioCommand(
       );
       break;
     }
+    case "addAction":
+    case "renameAction":
+    case "removeAction":
     case "addTile":
     case "linkTiles":
     case "removeTile":

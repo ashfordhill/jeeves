@@ -2,10 +2,11 @@
  * The marketplace study: a multi-seller marketplace with Etsy's core functionality, designed as
  * clean microservices from published designs. Design intent only.
  *
- * In lanes: the user downloads through the Orders service (buyers' and sellers' orders), the
- * Storefront API (the listing grid, search and product pages) and the Image CDN (product photos at
- * any size), and uploads through the Shop service (a seller opens a shop and lists products),
- * Identity (sign-in), Payments (the checkout, and sellers' payouts) and the Cart service.
+ * In lanes: the user browses (download, the **Browse** action) through the Orders service (buyers'
+ * and sellers' orders), the Storefront API (the listing grid, search and product pages) and the
+ * Image CDN (product photos at any size), and buys and sells (upload, the **Buy & sell** action)
+ * through the Shop service (a seller opens a shop and lists products), Identity (sign-in),
+ * Payments (the checkout, and sellers' payouts) and the Cart service.
  *
  * What the sources agree on, and what each tile traces to:
  * - Both reference apps and both write-ups: a catalog service with its own database (Shop service,
@@ -66,7 +67,7 @@
  *   https://codeascraft.com/2010/07/09/batch-processing-millions-of-images/
  */
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
-import type { StudioEntry } from "../studio-model.ts";
+import type { StudioEntry, StudioLaneAction } from "../studio-model.ts";
 import type { StudioConnectionCreation } from "../studio-operations.ts";
 import { createStudioStudy } from "./study.ts";
 
@@ -75,7 +76,7 @@ const description =
 
 export const MARKETPLACE_STUDIO_EXAMPLE = {
   id: "studio-marketplace",
-  version: "1.0.0",
+  version: "1.1.0",
   name: "Marketplace · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -260,11 +261,17 @@ const componentConnections: StudioComponentConnection[] = [
   uses("cart-client-store", "cart-repository", "cart-store", "cart-write"),
 ];
 
+/** Buyers and sellers browse (download), and buy and sell (upload). */
+const actions: StudioLaneAction[] = [
+  { lane: "download", name: "Browse" },
+  { lane: "upload", name: "Buy & sell" },
+];
 /**
- * The user downloads through the Orders service, the Storefront API and the Image CDN, and
- * uploads through the Shop service, Identity, Payments and the Cart service. This order keeps the
- * lines from crossing on the canvas: the Orders service's read runs along the top row, the Image
- * CDN sits next to the Shop service that writes its photos, and Payments next to the Cart.
+ * Browse reaches the Orders service, the Storefront API and the Image CDN; Buy & sell reaches the
+ * Shop service, Identity, Payments and the Cart service. This order kept the lines from crossing
+ * on the canvas before the action tiles: the Orders service's read runs along the top row, the
+ * Image CDN sits next to the Shop service that writes its photos, and Payments next to the Cart.
+ * Layout tuning for the action tiles waits for the lane bands (LA03).
  */
 const entries: StudioEntry[] = [
   { id: "download-orders", lane: "download", element: "orders" },
@@ -574,6 +581,6 @@ export function marketplaceStudioExample() {
           "Sellers open shops and list products with photos; buyers browse and search them, buy from several sellers in one checkout and see their orders.",
       },
     },
-    { entries, components, componentConnections },
+    { actions, entries, components, componentConnections },
   );
 }

@@ -1,8 +1,9 @@
-// The lane canvas: the design's lane graph (`laneGraph`) on the board. The actor and every tile
-// become board tiles; entries and connections become lines, dashed when asynchronous or after an
-// asynchronous link. Entry lines carry a download or upload chip. Lines carry no words; their
-// accessible names say what they join. The selected tile's pull tabs come from `creation`, its X
-// and the selected line's from `removal`.
+// The lane canvas: the design's lane graph (`laneGraph`) on the board. The actor, its actions and
+// every tile become board tiles; the user's lines to its actions, the entries and connections
+// become lines, dashed when asynchronous or after an asynchronous link. The user's line to an
+// action goes with the action, so it has no X. Lines carry no words; their accessible names say
+// what they join. The selected tile's pull tabs come from `creation`, its X and the selected
+// line's from `removal`.
 import {
   Board,
   type BoardHandle,
@@ -12,21 +13,20 @@ import {
   type LineSpec,
   type TileSpec,
 } from "@jeeves/board";
-import { type DesignDocument, LANE_ACTOR, type LaneGraph, type StudioLane } from "@jeeves/spec";
-import { IconDownload, IconUpload } from "@tabler/icons-react";
+import { type DesignDocument, LANE_ACTOR, type LaneGraph, laneActionName } from "@jeeves/spec";
 import { type Ref, useMemo } from "react";
 import { layoutEngine } from "./elk.ts";
+import { ACTION_SIZE, ActionTile } from "./tiles/ActionTile.tsx";
 import { ACTOR_NAME, ACTOR_SIZE, ActorTile } from "./tiles/ActorTile.tsx";
 import { TILE_SIZE, Tile, tileShape } from "./tiles/Tile.tsx";
 import "./canvas.css";
 
-/** Entry chips are icon boxes ELK keeps clear on the line. */
-const CHIP = { w: 32, h: 32 } as const;
-export const laneNames: Record<StudioLane, string> = { download: "Download", upload: "Upload" };
-
-export function LaneIcon({ lane, size = 18 }: { lane: StudioLane; size?: number }) {
-  const Glyph = lane === "download" ? IconDownload : IconUpload;
-  return <Glyph size={size} stroke={2.4} aria-hidden />;
+/** A tile's, action's or the user's name on the canvas. */
+export function laneNodeName(design: DesignDocument, graph: LaneGraph, id: string): string {
+  if (id === LANE_ACTOR) return ACTOR_NAME;
+  const lane = graph.nodes.find((node) => node.id === id)?.action;
+  if (lane) return laneActionName(design, lane) ?? id;
+  return design.elements.find((element) => element.id === id)?.name ?? id;
 }
 
 export function LaneCanvas({
@@ -56,28 +56,33 @@ export function LaneCanvas({
   ref?: Ref<BoardHandle>;
 }) {
   const { tiles, lines } = useMemo(() => {
-    const names = new Map(design.elements.map((element) => [element.id, element.name]));
-    const name = (id: string) => (id === LANE_ACTOR ? ACTOR_NAME : (names.get(id) ?? id));
+    const name = (id: string) => laneNodeName(design, graph, id);
     const tiles: TileSpec[] = graph.nodes.map((node) =>
       node.id === LANE_ACTOR
         ? { id: node.id, ...ACTOR_SIZE, shape: "rect", label: ACTOR_NAME, content: <ActorTile /> }
-        : {
-            id: node.id,
-            ...TILE_SIZE,
-            shape: tileShape(node.kind),
-            label: name(node.id),
-            content: <Tile kind={node.kind} name={name(node.id)} />,
-          },
+        : node.action
+          ? {
+              id: node.id,
+              ...ACTION_SIZE,
+              shape: "rect",
+              label: name(node.id),
+              content: <ActionTile lane={node.action} name={name(node.id)} />,
+            }
+          : {
+              id: node.id,
+              ...TILE_SIZE,
+              shape: tileShape(node.kind),
+              label: name(node.id),
+              content: <Tile kind={node.kind} name={name(node.id)} />,
+            },
     );
     const lines: LineSpec[] = graph.edges.map((edge) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
       dashed: edge.dashed,
-      label: edge.lane
-        ? `${laneNames[edge.lane]} lane: ${name(edge.source)} to ${name(edge.target)}`
-        : `${name(edge.source)} to ${name(edge.target)}`,
-      ...(edge.lane && { chip: { ...CHIP, content: <LaneIcon lane={edge.lane} /> } }),
+      label: `${name(edge.source)} to ${name(edge.target)}`,
+      ...(edge.source === LANE_ACTOR && { removable: false }),
     }));
     return { tiles, lines };
   }, [design, graph]);

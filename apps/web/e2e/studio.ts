@@ -9,7 +9,7 @@ export const ready = (page: Page) =>
 
 /**
  * Creates a study project through the project menu (TinyURL, the default study, unless `study`
- * names another by its label) and returns its ID.
+ * names another by its label, or is "blank" for a blank architecture) and returns its ID.
  */
 export async function createStudy(
   page: Page,
@@ -29,8 +29,12 @@ export async function createStudy(
   const previous = new URL(page.url()).searchParams.get("project");
   await menu.click();
   await page.getByRole("menuitem", { name: "New project" }).click();
-  await page.getByRole("button", { name: "Choose Architecture study" }).click();
-  if (study) await page.getByLabel("Study", { exact: true }).selectOption({ label: study });
+  if (study === "blank")
+    await page.getByRole("button", { name: "Choose Blank architecture" }).click();
+  else {
+    await page.getByRole("button", { name: "Choose Architecture study" }).click();
+    if (study) await page.getByLabel("Study", { exact: true }).selectOption({ label: study });
+  }
   await page.getByLabel("Project name").fill(name);
   await page.getByRole("button", { name: "Create project" }).click();
   const project = () => new URL(page.url()).searchParams.get("project");
@@ -44,7 +48,7 @@ export async function createStudy(
 export const tiles = (page: Page) => page.locator(".board .react-flow__node");
 export const lines = (page: Page) => page.locator(".board .react-flow__edge");
 export const dashedLines = (page: Page) => page.locator(".board .react-flow__edge-path.is-dashed");
-/** A tile by its accessible name (the tile name, or "User" for the actor). */
+/** A tile by its accessible name (the tile or action name, or "User" for the actor). */
 export const tile = (page: Page, name: string): Locator =>
   page.locator(".board").getByRole("group", { name, exact: true });
 
@@ -98,6 +102,7 @@ export async function design(page: Page, id: string) {
         elements: { element: string; settings: Record<string, unknown> }[];
         components: { name: string; settings: Record<string, unknown> }[];
         entries: { id: string; lane: string; element: string }[];
+        actions?: { lane: string; name: string }[];
       };
     };
   };

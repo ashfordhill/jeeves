@@ -77,9 +77,9 @@ test("the Type list switches a tile's kind to its presets and two languages", as
   await inspector.getByRole("tab", { name: "Options", exact: true }).click();
   await expect(inspector.getByLabel("Payment provider", { exact: true })).toHaveValue("stripe");
 
-  // An API tile from the user's upload `+` starts as a Gateway; switch it to CDN and back.
-  await tile(page, "User").click();
-  await pull(page, "User", "Add to upload lane");
+  // An API tile from the Shorten action's `+` starts as a Gateway; switch it to CDN and back.
+  await tile(page, "Shorten").click();
+  await pull(page, "Shorten", "Add after");
   await moveOnto(
     page,
     page.locator(".board-pull").getByRole("button", { name: "API", exact: true }),

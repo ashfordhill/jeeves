@@ -2553,3 +2553,152 @@ not touched.
 
 Docs: the guide's lane intro and Layout paragraph, `laneGraph`'s doc comment, the plan's status
 (complete) and PLAN's Next.
+
+## 2026-11-06 — LA01: action tiles (complete)
+
+What changed:
+
+- **Model** (`studio-model.ts`): `studio.actions` (optional), each `{ lane, name }`
+  (`studioLaneActionSchema`; `name` 1–24 characters, `studioLimits.actionName`, messages "Name the
+  action with a word." / "Use 24 characters or fewer."). Two in one lane are invalid ("Each lane has
+  one action; the upload lane has 2."). `studioActionDefaults` (Consume, Produce) and
+  `studioActions(studio)`: the stored actions in lane order plus a default one for each lane that
+  has entries but no action. The model schema's parse stores that (a `.transform` after the
+  `superRefine`), so it sits with the `both` and language normalisation; laneGraph, the blueprint
+  and chat read through `studioActions` too, so an in-memory draft behaves the same. The name
+  `studioActionSchema` was taken (a connection's action label), hence `studioLaneAction*`.
+- **Link table** (`studio-links.ts`): new `action` role; rows `user → action` and `action →`
+  today's entry kinds and `cdn` (all sync). `user → object-store`, `user → external` and the old
+  user rows are gone; `studioEntryKinds` are now the action rows' targets (no `object-store` or
+  `external-api`). Refusals: "The user links only to its actions; each lane starts at one.", "Only
+  the user links to an action.", "An action reaches a service (not a worker), an API or the CDN."
+  The chat link paragraph is generated, so it now has "User -> action: sync." and "Action -> CDN:
+  sync (a lane entry)."
+- **Lane graph** (`studio-lanes.ts`): action nodes `@download` / `@upload` (`laneActionNode`,
+  `laneActionOf`; `LaneNode.action`) after the actor, the user's lines `@actor-download` /
+  `@actor-upload` (`laneActionLine`; no design ID), and entries now run from their action node.
+  `laneRules` maps the actor to `user` and action nodes to `action`, and caps an action at
+  `entriesPerLane` through the board (below). `laneFindings`: a refused entry reads "Open link can't
+  link to URL database; an action reaches …" (the plan's form); a tile with two entries (now two
+  different source nodes) is checked explicitly; an action's cap is "Open link has 5 entries; the
+  most is 4." (path to the action). `laneActionName(design, lane)`.
+- **Commands** (`studio-lane-commands.ts`, wired in `buildStudioCommand`): `addAction { lane, name?,
+  system? }` (refused "This design already has a Produce action; each lane has one."; `system`
+  starts a blank project, like `addTile`), `renameAction { lane, name }`, `removeAction { lane }`
+  (removes the action and its entries; refused "Removing Shorten would cut off Shorten service.").
+  `addTile` from a lane stores that lane's action with its default name first. `linkTiles` from a
+  lane with no action and `setEntryLane` to a lane with no action are refused ("The upload lane has
+  no action yet; add its Produce action first."); a full action: "Open link already has 4 entries;
+  the most is 4." Before-insert, removal restitching and `changeKind` name the action as the source
+  ("Shorten service can't become a worker. An action reaches …"). Helpers: `laneActionOptions`,
+  `laneRemoveActionRefusal`; `attachOptions(design, laneActionNode(lane))` lists one action's
+  candidates and returns `[]` for the user; `laneOptions` from a lane with no action answers as if
+  the action existed.
+- **Stored entries into storage/external** (YouTube 1.0.0's `upload-parts`): they load unchanged
+  and are a `LANE_INVALID` finding ("Produce can't link to Original videos; an action reaches a
+  service (not a worker), an API or the CDN."), and commands refuse new ones. Because
+  `applyOperations` rejects any batch whose result still has a studio structural finding, such a
+  design takes no other edit until that entry goes; so `removeLink` of a link the rules refuse is
+  accepted on a broken design (a repair: it skips the board edit, still refuses to strand tiles,
+  and adds no new finding). Every other lane command says "Fix the lanes first. …".
+- **Board** (generic, no Jeeves code): `Rules.maxOut` may be a function per tile (`maxOutOf`);
+  `LineSpec.removable: false` hides a selected line's X (`BoardLineData.fixed`).
+- **Canvas**: `tiles/ActionTile.tsx` (128×128, the user's pastel, the lane icon in a round badge,
+  the name at 22px, 18px over 9 characters, 15px over 14); `LaneIcon`/`laneNames` moved to
+  `canvas/LaneIcon.tsx`; `LaneCanvas.tsx` draws action tiles, plain user→action lines with no X,
+  no entry chips, and labels lines "Open link to Redirect service" (`laneNodeName`).
+  `creation.tsx`: the user has one `+` ("Add action") whose fan is Consume and Produce (greyed with
+  the reason when present; gone when both exist) and no attach tab; an action has "Add after" (the
+  seven-type fan, only Service and API enabled) and "Attach", no left `+`. A new action is selected
+  with its Name focused. `removal.tsx`: an action's X pre-checks `laneRemoveActionRefusal`, then
+  runs `removeAction` and selects the user. `Workspace.tsx`: `ActionInspector` (heading, Name via
+  `studio/ActionForm.tsx` — a form-drafts spec, so it autosaves after 500ms or on blur through
+  `renameAction` — Lane read-only, Entries as buttons), the entry summary shows the action and its
+  lane row (`setEntryLane`), and the user→action line has a short summary. Chat selection sends no
+  ID for the user, an action or the user's line (IDs starting with `@`). CSS: `.lane-action*`,
+  `.lane-facts`, `.lane-action-entries`, `.lane-fan-action`; the unused `.board-chip svg` rule went.
+- **Chat** (`tools.ts`): the commands come with `studioCommandSchema`; `getDesign` has `actions`
+  (each `{ lane, name, entries, tiles }`) in place of `lanes`; the instructions say what an action
+  is in two sentences (defaults and the name limit from the spec), list the three action commands,
+  and update addTile, linkTiles, setEntryLane and the caps line ("entries per action").
+- **Blueprint** (still `blueprint: 2`): top-level `actions` (`{lane, name}`, lane order) and each
+  entry `{ lane, action, element }`.
+- **Studies**: TinyURL 3.1.0 (Open link, Shorten), marketplace 1.1.0 (Browse, Buy & sell), YouTube
+  1.1.0 (Watch, Publish; `upload-parts` removed; doc comment, the Upload service's purpose and the
+  goal text now say the Upload service writes Original videos, so its `goalManifestSha256` is the
+  new text's). `createStudioStudy` takes `actions`. Layout tuning left for LA03.
+
+Tests (144; +5): link rows (user → action only, action → store/external/queue/worker refused,
+modes); `studioEntryKinds`; laneGraph nodes and edges with actions; a design stored with entries and
+no actions (both defaults; composed with `both`; a stored name kept; two in one lane; a long name);
+a stored entry into Original videos (loads, one finding); actions (`laneActionOptions`, addAction on
+blank with `system`, rename, remove alone, remove refused and allowed, `planRemoveTile` on an
+action); the legacy design (new entry refused, other commands "Fix the lanes first", `removeLink`
+repairs it); `addTile` from a lane creating Produce then Consume; linkTiles/setEntryLane without an
+action; blueprint actions and entries for all three studies; chat addAction/rename/remove and
+getDesign `actions`. E2E (17; +1): counts with actions and no chips in the three studies; the user's
+`+` gone in TinyURL, Open link's fan greys stores ("Open link can't link to object storage. …"),
+Shorten's Attach refuses Redirect service and makes a new Service its entry; a new test builds
+Watch → API → Produce from Blank (Name focused, Consume greyed with its reason); the blueprint test
+reads `actions`; edit-history adds its API from Shorten's `+`. `createStudy(page, name, "blank")`
+makes a blank project. The chat fixture needed no change (it edits `redirect`).
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 198 files; type checks; 22 files / 144 tests).
+- `pnpm test:e2e`: 17 passed (twice, the second on the final code).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse, my API on 4312 (scratch `JEEVES_HOME`, scripted model,
+`jeeves_e2e`) and web on 4302, stopped by PID afterwards (the API was restarted once to run the
+final code). Every script waited for its new project's URL and deleted only its projects (all
+204); `jeeves_e2e` again holds just "TinyURL · studio study". I did not touch 4300, 4304, 4310 or
+the `jeeves` database. No console errors or warnings in any run.
+
+- Blank: the user's only tab is "Add action"; its fan is Consume, Produce. Consume → an action tile
+  named Consume, selected, Name focused; typing "Watch" renamed it (autosave). Watch's tabs: "Add
+  after" only (nothing to attach yet); its fan: Service and API, the other five greyed. API added.
+  The user's `+` again: Consume greyed, tip "This design already has a Consume action; each lane has
+  one."; Produce added. Watch's inspector: "Consume action: what the user does in the download
+  lane", Name, Lane Download, Entries API. Watch's X: notice "Removing Watch would cut off API."
+  The User → Watch line: no X; its inspector names the action. The Watch → API entry: lane row,
+  Upload moved it to Produce (stored `upload`); Watch's X then removed it and selected the user;
+  Undo brought it back. Dark mode (the app's toggle): the action tiles read clearly.
+- Studies at 1440×900 and 1280×800: TinyURL 11 tiles / 12 lines (Open link, Shorten), marketplace
+  20 / 23 (Browse, Buy & sell), YouTube 17 / 21 (Watch, Publish); no chips; blueprints list the
+  actions with no findings.
+- Fit zooms now (closed / chat / inspector / both): TinyURL 0.85 / 0.67 / 0.66 / 0.48 at 1440×900,
+  0.75 / 0.57 / 0.56 / 0.38 at 1280×800; marketplace 0.42 and 0.36 whatever the rails; YouTube 0.60
+  (one rail at most) / 0.48 (both) and 0.53 / 0.38.
+
+Docs: studio guide (lane canvas: actions and the action tile; Layout and the fit table; Creating and
+connecting: the user's `+`, an action's tabs; Removing: an action's X, the user's line; Inspector:
+action and entry; History; Chat; the three studies' lane diagrams, counts and versions; Limits:
+both-rails zooms, chat selection, legacy entries), CATALOG (lanes and links, the table, the legacy
+finding, caps, the three action commands, helpers, canvas wiring, studies), studio settings (new
+Actions section, Lane entries), blueprint doc (`actions`, entries' `action`, the example, additive
+within v2; the example matches `designBlueprint` at revision 1), PLAN (web files, board, data model,
+lane model, commands, helpers, chat, Next: LA01 done, LA02–LA05 remain).
+
+Notes for the next units:
+
+- Deviation: the refusal says "a service (not a worker), an API or the CDN" (the plan's example has
+  no "(not a worker)"); a worker can't be an entry, and the old wording said so too.
+- Decision: `linkTiles` from a lane with no action is refused rather than creating the action (the
+  plan names only `addTile`); chat's instructions and the refusal say to add it first.
+- Rough: selecting an action sends chat no identity (actions have no design ID); "rename this" with
+  an action selected needs words. Noted in Limits.
+- Rough: a design broken only by a stored entry into storage takes no edit but that entry's
+  removal. LA04: the owner's YouTube copy (`7eef33c4…`) has one (`upload-parts`), as its plan
+  replaces it anyway. The owner's TinyURL (`41bbd268…`) is v2, whose factory entered at a CDN and
+  a service, so it should load with Consume and Produce and no finding; I did not open the `jeeves`
+  database to check (its revision 39 may differ), which LA04 does.
+- LA02: an action with no entries is allowed and has no finding yet (Blank's Produce above). The
+  board's per-tile `maxOut` makes the action's entry cap a board rule, so "too-many-links" on an
+  action node is that cap.
+- LA03: the graph order is actor, `@download`, `@upload`, then tiles; band membership can come from
+  which action reaches a tile. Action tiles are 128×128 like other tiles. The YouTube Video CDN /
+  Upload service bus and the marketplace's buses remain; the studies' entry orders were chosen
+  before the action column existed.
+- `LineSpec.chip` stays in the board (generic) but Jeeves no longer uses it; board layout tests
+  still use chips in their own fixture.

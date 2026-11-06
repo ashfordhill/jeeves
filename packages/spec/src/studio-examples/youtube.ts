@@ -3,17 +3,18 @@
  * stream, search, view counts), designed as clean microservices from published designs. Design
  * intent only.
  *
- * In lanes: the user downloads through the Search API, the Watch API (a video's details and view
- * count; it also records each view) and the Video CDN (segments, playlists and thumbnails), and
- * uploads through the Upload service (it starts, signs and completes a multipart upload), straight
- * into Original videos (the parts, with the signed URLs) and through Identity (sign-in).
+ * In lanes: the user watches (download, the **Watch** action) through the Search API, the Watch
+ * API (a video's details and view count; it also records each view) and the Video CDN (segments,
+ * playlists and thumbnails), and publishes (upload, the **Publish** action) through the Upload
+ * service (it starts, signs and completes a multipart upload, and writes Original videos) and
+ * Identity (sign-in).
  *
  * What the sources agree on, and what each tile traces to:
  * - All four: originals in object storage (Original videos), uploaded in parts that can resume;
  *   ByteByteGo, HelloInterview and the DesignGurus crash course send them straight from the
- *   client with pre-signed URLs (the user's upload entry into Original videos). AWS's multipart
- *   pattern: the backend starts the upload, signs a URL per part and completes it (Upload
- *   service).
+ *   client with pre-signed URLs. AWS's multipart pattern: the backend starts the upload, signs a
+ *   URL per part and completes it (Upload service, its Multipart upload module). On the canvas
+ *   the Upload service writes Original videos: a user reaches storage only through a service.
  * - All four: processing is asynchronous, behind a queue (Upload jobs; HelloInterview's
  *   orchestrator has its own), and encodes each video at several resolutions and bitrates
  *   (Video processor, Encoded videos). ByteByteGo, HelloInterview and the crash course split it
@@ -71,20 +72,20 @@
  *   https://www.cloudflare.com/service-specific-terms-application-services/
  */
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
-import type { StudioEntry } from "../studio-model.ts";
+import type { StudioEntry, StudioLaneAction } from "../studio-model.ts";
 import type { StudioConnectionCreation } from "../studio-operations.ts";
 import { createStudioStudy } from "./study.ts";
 
 const description =
-  "A video-sharing site from published designs: creators upload straight to storage in resumable parts; a queue feeds a video processor that writes streamable segments, playlists and thumbnails for a CDN, then records and indexes each video; views are counted in batches.";
+  "A video-sharing site from published designs: creators upload in resumable parts through an upload service that signs each part; a queue feeds a video processor that writes streamable segments, playlists and thumbnails for a CDN, then records and indexes each video; views are counted in batches.";
 
 export const YOUTUBE_STUDIO_EXAMPLE = {
   id: "studio-youtube",
-  version: "1.0.0",
+  version: "1.1.0",
   name: "YouTube · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
-  goalManifestSha256: "54ac97ca4a7b67d80a6f92d11037ebff613429084931b0b2b5bd78b719632949",
+  goalManifestSha256: "8c1d2e0de25ecd135e8c7f8380886f96614abbcdeac11460f3cd13ff1534d87a",
 } as const;
 
 const call = (label: string, protocol: "HTTPS" | "SQL"): StudioConnectionCreation["planned"] => ({
@@ -266,18 +267,23 @@ const componentConnections: StudioComponentConnection[] = [
   uses("index-writer-search", "processor-index", "search-index", "processor-index-write"),
 ];
 
+/** Viewers watch (download), and creators publish (upload). */
+const actions: StudioLaneAction[] = [
+  { lane: "download", name: "Watch" },
+  { lane: "upload", name: "Publish" },
+];
 /**
- * The user downloads through the Search API, the Watch API and the Video CDN, and uploads through
- * the Upload service, Original videos (the parts themselves) and Identity. Of the 36 orders that
- * keep download above upload, this one draws no crossing lines and is the shortest: the Search
- * API's read runs along the top row and the view path sits under it.
+ * Watch reaches the Search API, the Watch API and the Video CDN; Publish reaches the Upload
+ * service and Identity. Of the 36 orders that kept download above upload before the action
+ * tiles, this one drew no crossing lines and was the shortest: the Search API's read runs along
+ * the top row and the view path sits under it. Layout tuning for the action tiles waits for the
+ * lane bands (LA03).
  */
 const entries: StudioEntry[] = [
   { id: "download-search", lane: "download", element: "search" },
   { id: "download-watch", lane: "download", element: "watch" },
   { id: "download-video-cdn", lane: "download", element: "video-cdn" },
   { id: "upload-service", lane: "upload", element: "upload" },
-  { id: "upload-parts", lane: "upload", element: "originals" },
   { id: "upload-identity", lane: "upload", element: "identity" },
 ];
 
@@ -412,7 +418,7 @@ export function youtubeStudioExample() {
         id: "upload",
         name: "Upload service",
         description:
-          "Lets a creator upload a video in resumable parts straight to storage, then queues it for transcoding.",
+          "Lets a creator upload a video in resumable, signed parts into Original videos, then queues it for transcoding.",
         settings: service(2, 10, 5000, 500),
       },
       {
@@ -563,6 +569,6 @@ export function youtubeStudioExample() {
           "Creators upload videos that are transcoded for streaming; viewers find them by search, watch them at a bitrate that suits their connection and see how many times each was viewed.",
       },
     },
-    { entries, components, componentConnections },
+    { actions, entries, components, componentConnections },
   );
 }

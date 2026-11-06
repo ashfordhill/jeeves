@@ -36,10 +36,14 @@ describe("designBlueprint", () => {
       "url-db",
     ]);
     expect(blueprint.externals).toEqual([]);
+    expect(blueprint.actions).toEqual([
+      { lane: "download", name: "Open link" },
+      { lane: "upload", name: "Shorten" },
+    ]);
     expect(blueprint.entries).toEqual([
-      { lane: "download", element: "redirect" },
-      { lane: "download", element: "stats-api" },
-      { lane: "upload", element: "shorten" },
+      { lane: "download", action: "Open link", element: "redirect" },
+      { lane: "download", action: "Open link", element: "stats-api" },
+      { lane: "upload", action: "Shorten", element: "shorten" },
     ]);
     expect(blueprint.connections).toHaveLength(7);
     expect(blueprint.componentLinks).toHaveLength(12);
@@ -91,14 +95,18 @@ describe("designBlueprint", () => {
       ["search-index", "search"],
     ]);
     // Four entries in the upload lane: the cap (`laneLimits.entriesPerLane`) is four.
+    expect(blueprint.actions).toEqual([
+      { lane: "download", name: "Browse" },
+      { lane: "upload", name: "Buy & sell" },
+    ]);
     expect(blueprint.entries).toEqual([
-      { lane: "download", element: "image-cdn" },
-      { lane: "download", element: "orders" },
-      { lane: "download", element: "storefront" },
-      { lane: "upload", element: "cart" },
-      { lane: "upload", element: "identity" },
-      { lane: "upload", element: "payments" },
-      { lane: "upload", element: "shop" },
+      { lane: "download", action: "Browse", element: "image-cdn" },
+      { lane: "download", action: "Browse", element: "orders" },
+      { lane: "download", action: "Browse", element: "storefront" },
+      { lane: "upload", action: "Buy & sell", element: "cart" },
+      { lane: "upload", action: "Buy & sell", element: "identity" },
+      { lane: "upload", action: "Buy & sell", element: "payments" },
+      { lane: "upload", action: "Buy & sell", element: "shop" },
     ]);
     expect(blueprint.componentLinks).toHaveLength(23);
     // Each store's owner is its only writer; queues keep publish and consume.
@@ -157,15 +165,17 @@ describe("designBlueprint", () => {
       ["view-counts", "database"],
       ["view-events", "queue"],
     ]);
-    // The user uploads the parts straight into object storage (an entry), with the URLs the
-    // Upload service signs.
+    // A user reaches storage only through a service: the Upload service writes Original videos.
+    expect(blueprint.actions).toEqual([
+      { lane: "download", name: "Watch" },
+      { lane: "upload", name: "Publish" },
+    ]);
     expect(blueprint.entries).toEqual([
-      { lane: "download", element: "search" },
-      { lane: "download", element: "video-cdn" },
-      { lane: "download", element: "watch" },
-      { lane: "upload", element: "identity" },
-      { lane: "upload", element: "originals" },
-      { lane: "upload", element: "upload" },
+      { lane: "download", action: "Watch", element: "search" },
+      { lane: "download", action: "Watch", element: "video-cdn" },
+      { lane: "download", action: "Watch", element: "watch" },
+      { lane: "upload", action: "Publish", element: "identity" },
+      { lane: "upload", action: "Publish", element: "upload" },
     ]);
     expect(blueprint.componentLinks).toHaveLength(23);
     // Each store's owner is its only writer; queues keep publish and consume.

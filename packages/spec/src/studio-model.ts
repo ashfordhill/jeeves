@@ -16,6 +16,8 @@ export const studioLimits = {
   name: 120,
   description: 240,
   action: 60,
+  /** A lane action's name: the one large word on its tile. */
+  actionName: 24,
   concurrency: { min: 1, max: 1024 },
   ttlSeconds: { min: 1, max: 604800 },
   retentionSeconds: { min: 60, max: 1209600 },
@@ -622,6 +624,44 @@ export const studioEntrySchema = z.strictObject({
   element: idSchema,
 });
 export type StudioEntry = z.infer<typeof studioEntrySchema>;
+/**
+ * What the user does in a lane: at most one action per lane, drawn as an action tile between the
+ * user and the lane's entries. The user links only to its actions; an entry links an action to a
+ * tile. `name` is the one large word on the tile ("Watch", "Publish").
+ */
+export const studioLaneActionNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Name the action with a word.")
+  .max(studioLimits.actionName, `Use ${studioLimits.actionName} characters or fewer.`);
+export const studioLaneActionSchema = z.strictObject({
+  lane: studioLaneSchema,
+  name: studioLaneActionNameSchema,
+});
+export type StudioLaneAction = z.infer<typeof studioLaneActionSchema>;
+/** Each lane's action name when none is given: the user consumes (download) or produces (upload). */
+export const studioActionDefaults: Record<StudioLane, string> = {
+  download: "Consume",
+  upload: "Produce",
+};
+/**
+ * The design's actions in lane order: the stored ones, plus one with the default name for each
+ * lane that has entries but no action. Designs stored before actions read this way, and the
+ * model's parse stores it.
+ */
+export function studioActions(
+  studio:
+    | { actions?: readonly StudioLaneAction[]; entries?: readonly { lane: StudioLane }[] }
+    | undefined,
+): StudioLaneAction[] {
+  return studioLanes.flatMap((lane) => {
+    const stored = studio?.actions?.find((action) => action.lane === lane);
+    if (stored) return [{ ...stored }];
+    return studio?.entries?.some((entry) => entry.lane === lane)
+      ? [{ lane, name: studioActionDefaults[lane] }]
+      : [];
+  });
+}
 export const studioModelSchema = z
   .strictObject({
     version: z.literal(1, { error: "Unsupported studio version; only version 1 is supported." }),
@@ -642,6 +682,8 @@ export const studioModelSchema = z
       .optional(),
     /** Optional so documents made before lanes read unchanged. */
     entries: z.array(studioEntrySchema).max(studioLimits.connections).optional(),
+    /** Optional so documents made before actions read; a lane with entries gains its action. */
+    actions: z.array(studioLaneActionSchema).optional(),
   })
   .superRefine((value, ctx) => {
     const unique = (items: string[], collection: string, field: string) => {
@@ -698,5 +740,19 @@ export const studioModelSchema = z
         members.add(id);
       });
     });
+    for (const lane of studioLanes) {
+      const count = value.actions?.filter((action) => action.lane === lane).length ?? 0;
+      if (count > 1)
+        ctx.addIssue({
+          code: "custom",
+          path: ["actions"],
+          message: `Each lane has one action; the ${lane} lane has ${count}.`,
+        });
+    }
+  })
+  // A lane with entries but no action (stored before actions) gains one with the default name.
+  .transform((value) => {
+    const actions = studioActions(value);
+    return actions.length || value.actions ? { ...value, actions } : value;
   });
 export type StudioModel = z.infer<typeof studioModelSchema>;

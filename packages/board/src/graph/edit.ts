@@ -14,6 +14,7 @@ import {
   type BoardGraph,
   type BoardNode,
   fail,
+  maxOutOf,
   type NewLink,
   ok,
   type Refusal,
@@ -234,11 +235,9 @@ function linkRefusal(
     return fail("refused-link", `"${source}" cannot link to "${target}"${how}.`);
   }
   const links = graph.edges.filter((e) => e.source === source).length;
-  if (rules.maxOut !== undefined && source !== rules.root && links >= rules.maxOut) {
-    return fail(
-      "too-many-links",
-      `"${source}" already has ${links} links; the most is ${rules.maxOut}.`,
-    );
+  const max = maxOutOf(rules, source);
+  if (max !== undefined && source !== rules.root && links >= max) {
+    return fail("too-many-links", `"${source}" already has ${links} links; the most is ${max}.`);
   }
   return undefined;
 }

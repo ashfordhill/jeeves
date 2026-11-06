@@ -4,7 +4,7 @@
 // The dashes are drawn per segment with their phase locked to the world, so shared trunks keep
 // the same gaps. The selected line, and the selected tile's own lines, take the selection colour.
 // A selected line shows a red X on a stretch no other line shares (its midpoint when it has none,
-// above its chip when it has one).
+// above its chip when it has one), unless the caller marks it as not removable.
 //
 // Changes from automation-illustrator: no restitch preview, stretch, insert hover, label editor
 // or context menu (removal is the X). The chip holds caller content (an icon) instead of
@@ -40,6 +40,8 @@ export type BoardLineData = {
   /** Accessible name of the line and its chip; never drawn. */
   label?: string;
   chip?: ReactNode;
+  /** The line can't be removed on its own: no X when selected. */
+  fixed?: boolean;
 };
 
 export type BoardLineEdge = Edge<BoardLineData, "line">;
@@ -53,7 +55,9 @@ export function BoardLine({
   selected,
   data,
 }: EdgeProps<BoardLineEdge>) {
-  const { layout, selectLine, removeLine } = useBoardContext();
+  const context = useBoardContext();
+  const { layout, selectLine } = context;
+  const removeLine = data?.fixed ? undefined : context.removeLine;
   const dashed = Boolean(data?.dashed);
   const route = layout?.routes[id];
   const points =

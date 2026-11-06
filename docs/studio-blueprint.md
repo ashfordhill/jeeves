@@ -28,7 +28,8 @@ history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 | --- | --- |
 | `revision` | The design revision it was read from. |
 | `system` | System name and description (C1). |
-| `entries` | The tiles the user reaches directly: `{lane, element}`, `lane` being `download` or `upload`, sorted by lane then element. Empty for a design without lane entries. |
+| `actions` | What the user does: `{lane, name}`, at most one per lane, in lane order (`download`, then `upload`). `name` is the word on the action tile ("Watch"). A lane with entries but no stored action has its default one (Consume or Produce). Actions are design intent; they generate no code, and tell a generator's frontend templates which user flow each service serves. Empty for a design without actions. |
+| `entries` | The tiles each action reaches directly: `{lane, action, element}`, `lane` being `download` or `upload` and `action` that lane's action name, sorted by lane then element. Empty for a design without lane entries. |
 | `services` | Each studio application (service, browser, worker, billing, redirect, notification, identity, gateway): definition ref and status, settings, optional group, optional C1 context node, and its C3 `components` (kind, settings, purpose, typical third-party products, required link kinds). One service is one future deployable. |
 | `resources` | Database, cache, queue, object store, search, CDN: definition, settings, optional owner. A store's owner is its only writer. |
 | `externals` | External API elements (category, provider), plus C1 external systems that have no C2 element (`source: "context"`). |
@@ -43,7 +44,7 @@ generated.
 
 ## Example
 
-The [TinyURL study](studio.md#the-tinyurl-study) at revision 1 has three entries, four services
+The [TinyURL study](studio.md#the-tinyurl-study) at revision 1 has two actions, three entries, four services
 (`analytics`, `redirect`, `shorten`, `stats-api`) holding nine components, four resources
 (`analytics-store`, `click-events`, `url-cache`, `url-db`), no externals, no groups, seven
 connections, twelve component links, and empty `omitted` and `findings`. Each store has one
@@ -58,10 +59,14 @@ read. Its head, and three of its connections (a publish, a read and a write):
     "name": "TinyURL",
     "description": "Shortens long URLs, redirects visitors quickly and counts their clicks asynchronously."
   },
+  "actions": [
+    { "lane": "download", "name": "Open link" },
+    { "lane": "upload", "name": "Shorten" }
+  ],
   "entries": [
-    { "lane": "download", "element": "redirect" },
-    { "lane": "download", "element": "stats-api" },
-    { "lane": "upload", "element": "shorten" }
+    { "lane": "download", "action": "Open link", "element": "redirect" },
+    { "lane": "download", "action": "Open link", "element": "stats-api" },
+    { "lane": "upload", "action": "Shorten", "element": "shorten" }
   ],
   "connections": [
     {
@@ -106,6 +111,7 @@ read. Its head, and three of its connections (a publish, a read and a write):
 - **Intent, not availability.** Settings and `thirdParty` names are design intent. The blueprint
   never claims that a template, runtime or verification exists.
 - **Versioning.** A breaking change needs a new version. Version 2 renamed a connection's planned
-  identity from `access` to `security` and gave `access` its read/write meaning. An optional field
-  or a new enum value (for example a new kind) is additive within a version. A generator must
+  identity from `access` to `security` and gave `access` its read/write meaning. An optional field,
+  a new list or a new enum value (for example a new kind) is additive within a version: the
+  `actions` list and each entry's `action` were added within version 2. A generator must
   reject what it does not understand rather than guess.

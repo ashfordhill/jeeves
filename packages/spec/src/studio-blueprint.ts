@@ -20,6 +20,7 @@ import { studioStoreAccess, studioStoreAccessValues } from "./studio-links.ts";
 import {
   definitionRefSchema,
   type StudioElementBinding,
+  studioActions,
   studioApplicationKinds,
   studioChannelUseSchema,
   studioDefinitionStatus,
@@ -133,8 +134,14 @@ export const blueprintComponentLinkSchema = z.strictObject({
   ]),
   label: text.optional(),
 });
-/** A tile the user reaches directly, and in which lane. */
-export const blueprintEntrySchema = z.strictObject({ lane: studioLaneSchema, element: idSchema });
+/** What the user does in a lane (at most one action per lane): the word on its action tile. */
+export const blueprintActionSchema = z.strictObject({ lane: studioLaneSchema, name: text });
+/** A tile a lane's action reaches directly: the lane, its action's name and the tile. */
+export const blueprintEntrySchema = z.strictObject({
+  lane: studioLaneSchema,
+  action: text,
+  element: idSchema,
+});
 export const blueprintOmissionSchema = z.strictObject({
   kind: z.enum(["element", "connection", "component", "component-link", "entry"]),
   id: idSchema,
@@ -145,7 +152,9 @@ export const designBlueprintSchema = z.strictObject({
   /** Semantic design revision the blueprint was read from. */
   revision: z.int().nonnegative(),
   system: z.strictObject({ name: text, description: text }),
-  /** The user's lane entries, sorted by lane then element. */
+  /** The user's actions, in lane order (download, then upload). */
+  actions: z.array(blueprintActionSchema),
+  /** The actions' lane entries, sorted by lane then element. */
   entries: z.array(blueprintEntrySchema),
   services: z.array(blueprintServiceSchema),
   resources: z.array(blueprintResourceSchema),
@@ -330,13 +339,19 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
     });
   }
 
+  const actions = studioActions(studio);
+  const actionName = new Map(actions.map((action) => [action.lane, action.name]));
   const entries: DesignBlueprint["entries"] = [];
   for (const entry of byId(studio?.entries ?? [])) {
     if (!endpointKind.has(entry.element)) {
       omitted.push({ kind: "entry", id: entry.id, reason: "endpoint-outside-blueprint" });
       continue;
     }
-    entries.push({ lane: entry.lane, element: entry.element });
+    entries.push({
+      lane: entry.lane,
+      action: actionName.get(entry.lane) ?? "",
+      element: entry.element,
+    });
   }
   const order = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
   entries.sort((a, b) => order(a.lane, b.lane) || order(a.element, b.element));
@@ -369,6 +384,7 @@ export function designBlueprint(design: DesignDocument, projectName = ""): Desig
       name: architecture?.system.name ?? projectName,
       description: architecture?.system.description ?? "",
     },
+    actions: actions.map((action) => ({ lane: action.lane, name: action.name })),
     entries,
     services,
     resources,

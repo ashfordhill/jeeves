@@ -2,10 +2,10 @@
  * The TinyURL study, the single studio study and fresh-install default. A read-heavy URL
  * shortener built from the published designs. Design intent only.
  *
- * In lanes: the user downloads through the Stats API (which reads the Analytics store) and the
- * Redirect service (its URL cache, the URL database on a cache miss, and the asynchronous click
- * path into the Analytics store), and uploads through the Shorten service, the URL database's
- * only writer.
+ * In lanes: the user opens links (download, the **Open link** action) through the Stats API
+ * (which reads the Analytics store) and the Redirect service (its URL cache, the URL database on a
+ * cache miss, and the asynchronous click path into the Analytics store), and shortens links
+ * (upload, the **Shorten** action) through the Shorten service, the URL database's only writer.
  *
  * What the sources agree on, and what each tile traces to:
  * - All four: a create path, a redirect path with a cache in front of the database, and one URL
@@ -35,7 +35,7 @@
  * - Dub, an open-source link shortener (AGPL): https://github.com/dubinc/dub
  */
 import type { StudioComponent, StudioComponentConnection } from "../studio-components.ts";
-import type { StudioEntry } from "../studio-model.ts";
+import type { StudioEntry, StudioLaneAction } from "../studio-model.ts";
 import type { StudioConnectionCreation } from "../studio-operations.ts";
 import { createStudioStudy } from "./study.ts";
 
@@ -44,7 +44,7 @@ const description =
 
 export const TINYURL_STUDIO_EXAMPLE = {
   id: "studio-tinyurl",
-  version: "3.0.0",
+  version: "3.1.0",
   name: "TinyURL · studio study",
   description,
   /** SHA-256 of `description`, the study's goal. */
@@ -203,12 +203,16 @@ const componentConnections: StudioComponentConnection[] = [
   uses("shorten-data-writes", "shorten-data", "url-db", "shorten-db"),
 ];
 
+/** The user opens links and their click counts (download) and shortens links (upload). */
+const actions: StudioLaneAction[] = [
+  { lane: "download", name: "Open link" },
+  { lane: "upload", name: "Shorten" },
+];
 /**
- * The user reads click counts through the Stats API and follows short links through the Redirect
- * service (download), and creates links through the Shorten service (upload). The Stats API's
- * entry comes first so the canvas draws it on the top row: its read of the Analytics store then
- * runs along the top, and the user's line into the Redirect service, and the click path after it,
- * are straight.
+ * Open link reads click counts through the Stats API and follows short links through the
+ * Redirect service; Shorten creates links through the Shorten service. The Stats API's entry
+ * comes first so the canvas draws it on the top row: its read of the Analytics store then runs
+ * along the top. Layout tuning for the action tiles waits for the lane bands (LA03).
  */
 const entries: StudioEntry[] = [
   { id: "download-stats-api", lane: "download", element: "stats-api" },
@@ -392,6 +396,7 @@ export function tinyurlStudioExample() {
       },
     },
     {
+      actions,
       entries,
       components,
       componentConnections,

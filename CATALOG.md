@@ -68,14 +68,22 @@ has a distinct one.
 
 ## Lanes and links
 
-Every lane design starts from one **actor**, the user, which is not stored. Its **entries**
-(`architecture.studio.entries`) are links to the tiles the user reaches directly, each in the
-**download** or **upload** lane. A tile has at most one entry. Every tile must be reachable from the actor, with no cycles.
+Every lane design starts from one **actor**, the user, which is not stored. The user does at most
+two things, its **actions** (`architecture.studio.actions`, each `{ lane, name }`): one in the
+**download** lane (it consumes; default name **Consume**) and one in the **upload** lane (it
+produces; default **Produce**), at most one per lane. `name` is the one large word on the action
+tile, 1–24 characters. The user links only to its actions. An action's **entries**
+(`architecture.studio.entries`, each `{ id, lane, element }`) link it to the tiles that handle it;
+an entry needs its lane's action, and a tile has at most one entry. Every tile must be reachable
+from the actor, with no cycles. Actions are design intent and generate no code. A stored design
+whose lane has entries but no action reads with that lane's default action (`studioActions`; the
+model's parse stores it, beside the `both` and language normalisation).
 Which tiles may link, and how, is one table, `studioLinkRules` in
 [`studio-links.ts`](packages/spec/src/studio-links.ts), exported so a later blueprint version can
-publish it. Its rows are by source role and target role: **user** (the actor's entries),
-**application** (the Service and API kinds except `cdn`), **CDN**, **external API**, **queue** and
-**store** (`database`, `search`, `cache`, `object-store`). Each row has its allowed modes, its
+publish it. Its rows are by source role and target role: **user** (the actor), **action** (a lane
+action; its links are its entries), **application** (the Service and API kinds except `cdn`),
+**CDN**, **external API**, **queue** and **store** (`database`, `search`, `cache`,
+`object-store`). Each row has its allowed modes, its
 default mode and the connection a new link gets; a pair with no row is refused. A sync link is a
 request (solid line); an async link does not wait (dashed line, as is every link that continues
 after one). The connection's interaction follows the mode (Request / response or Asynchronous);
@@ -83,10 +91,9 @@ its security is Service identity.
 
 | Source → target | Modes | Default | Connection |
 | --- | --- | --- | --- |
-| user → `service`, `redirect`, `identity`, `notification`, `billing`, `gateway` | sync | sync | an entry |
-| user → `cdn` | sync | sync | an entry |
-| user → `object-store` | sync | sync | an entry |
-| user → `external-api` | sync | sync | an entry |
+| user → action | sync | sync | none (the user's line to its action) |
+| action → `service`, `redirect`, `identity`, `notification`, `billing`, `gateway` | sync | sync | an entry |
+| action → `cdn` | sync | sync | an entry |
 | application → application | sync, async | sync | calls, "Calls", HTTPS |
 | application → `external-api` | sync, async | sync | calls, "Calls", HTTPS |
 | application → `queue` | async | async | depends-on, "Publishes", Messaging, `channelUse: publish` |
@@ -99,8 +106,14 @@ its security is Service identity.
 | `cdn` → application | sync | sync | calls, "Calls", HTTPS |
 | `cdn` → `object-store` | sync | sync | depends-on, "Uses", HTTPS |
 
-So stores are end tiles (no row has a store as its source); a queue sits between applications;
-a CDN fronts an application or object storage; `browser` has no role and takes no links.
+So the user reaches a store or a third party only through a service; stores are end tiles (no row
+has a store as its source); a queue sits between applications; a CDN fronts an application or
+object storage; `browser` has no role and takes no links. A design stored with an entry into
+storage or an external API (YouTube 1.0.0's upload entry into Original videos) loads unchanged
+and reports it as a finding ("Produce can't link to Original videos; an action reaches a service
+(not a worker), an API or the CDN."); no command adds one, and until that entry is removed
+(`removeLink`, which a design broken only by refused links accepts) every other lane command is
+refused.
 
 **One writer per store.** A link into a store (database, search index, cache, object storage)
 writes when it comes from the store's owner and reads otherwise (`studioStoreAccess(design,
@@ -109,7 +122,7 @@ derived from the owner, never stored; changing the owner changes who writes. The
 shows "Writes (owner)" or "Reads", the store's inspector lists its writer and readers, chat's
 `getDesign` gives each such link its `access`, and the blueprint gives the connection `access`.
 Queue links keep publish and consume. The
-entry kinds (`studioEntryKinds`) are the user rows' targets. A link given without a mode takes its
+entry kinds (`studioEntryKinds`) are the action rows' targets. A link given without a mode takes its
 pair's default: async for queue links, sync otherwise (`studioDefaultLinkMode`;
 `studioLinkDefaults(source, target, mode?)`). `studioLinkRefusal` gives the reason a pair or mode
 is refused, in plain words ("A cache can't link onward.", "Publishing to a queue is asynchronous,
@@ -119,29 +132,36 @@ The table records design intent only. No template-support state is kept: a futur
 will mark the tiles and links it has no template for (a badge and a blueprint finding) and never
 refuse them, keeping design intent and template availability apart.
 
-Caps (`laneLimits`): at most 4 outgoing links per tile and 4 entries per lane, and a tile has
-at most one entry. The entry cap was raised from 3 for the marketplace study, whose upload lane has
-sign-in, the seller's shop, payments and the cart. A broken rule is a `LANE_INVALID` finding (`laneFindings`). Validation includes
+Caps (`laneLimits`): at most 4 outgoing links per tile and 4 entries per lane (per action), and a
+tile has at most one entry. The entry cap was raised from 3 for the marketplace study, whose
+upload lane has sign-in, the seller's shop, payments and the cart. A broken rule is a
+`LANE_INVALID` finding (`laneFindings`). Validation includes
 these, so any batch that leaves a broken lane rule is rejected, from the canvas, chat or the API.
 C1 people, external systems and relationships are not tiles and are not checked.
 
 Lane commands ([`studio-lane-commands.ts`](packages/spec/src/studio-lane-commands.ts)) edit a
-design that keeps these rules, and refuse in plain words with tile names ("URL cache can't link
-to Geo lookup. A cache can't link onward."):
+design that keeps these rules, and refuse in plain words with tile and action names ("URL cache
+can't link to Geo lookup. A cache can't link onward."):
 
 | Command | What it does |
 | --- | --- |
-| `addTile` | A new tile after a tile, after a lane (an entry; always a request) or before a tile. `link` (the mode) is optional and defaults to the pair's. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
-| `linkTiles` | Links a lane or a tile to a tile already on the board (a merge), in `link` mode or the pair's default. A lane onto a tile that already has an entry, in either lane, is refused ("Redirect service already starts the download lane; a tile has one entry."). |
-| `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay in the lane). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
+| `addAction` | Adds a lane's action (`lane`, optional `name`, default Consume or Produce); refused when the lane has one ("This design already has a Produce action; each lane has one."). `system` starts a new project's system. |
+| `renameAction` | Renames a lane's action (`lane`, `name`). |
+| `removeAction` | Removes a lane's action and its entries, unless that cuts off a tile ("Removing Shorten would cut off Shorten service."). |
+| `addTile` | A new tile after a tile, after a lane's action (an entry; always a request; the action is added with its default name if the lane has none) or before a tile. `link` (the mode) is optional and defaults to the pair's. Before moves every link into the tile, and its entry, to the new tile: a moved connection keeps its ID and mode and takes the table's defaults. A new database, cache, storage or queue is owned by the application it is added next to. |
+| `linkTiles` | Links a lane's action or a tile to a tile already on the board (a merge, or a new entry), in `link` mode or the pair's default. From a lane with no action it is refused; onto a tile that already has an entry, in either lane, too ("Redirect service already starts the download lane; a tile has one entry."). |
+| `removeTile` | Removes a tile and links every predecessor to every successor the table allows (restitched entries stay with the action). Tiles that would be cut off must be listed in `alsoRemove`. Their modules, links and the settings that named them go too; a resource whose owner went passes to the first application that still links to it. |
 | `removeLink` | Removes a connection or an entry, unless that cuts off a tile. |
 | `changeKind` | Switches to another kind of the same tile type with that kind's default settings, unless a link, an entry or a module's link would no longer fit. |
-| `setEntryLane` | Moves an entry to the other lane (`download` or `upload`), unless that lane already has 4 entries. |
+| `setEntryLane` | Moves an entry to the other lane's action (`download` or `upload`), unless that lane has no action or its action already has 4 entries. |
 
-Two pure helpers answer what a tile can do, for the canvas and chat:
+Pure helpers answer what a tile can do, for the canvas and chat:
 
+- `laneActionOptions(design)` returns the user's two actions, download then upload, each with its
+  default name, or the refusal when the design already has it.
 - `laneOptions(design, from, side)` returns all seven tile types in `studioTileTypes` order for one
-  side of a tile (`after` adds on the right, `before` inserts on the left) or a lane. Each is
+  side of a tile (`after` adds on the right, `before` inserts on the left) or a lane's action
+  (only a Service or an API fits there). Each is
   `{ type, kind }`, the kind an `addTile` would add (the type's default, a worker after a queue,
   else its first kind the rules accept), or `{ type, refusal }`, the plain-words reason the type's
   preferred kind is refused ("A queue can't link to URL database. A queue feeds only an
@@ -150,16 +170,18 @@ Two pure helpers answer what a tile can do, for the canvas and chat:
   order with the `linkTiles` an attach would make, in the pair's default mode: selected → target
   when the rules allow it, else target → selected, else the forward direction's refusal. With
   URL database selected, dropping on Analytics worker makes Analytics worker → URL database.
-  For the user (`LANE_ACTOR`) it lists, per lane, every tile that lane could take as an entry, or
-  why not.
+  For an action (`laneActionNode(lane)`) it lists every tile its lane could take as an entry, or
+  why not. Nothing attaches onto the user.
 
-On the canvas ([studio guide](docs/studio.md#creating-and-connecting)), a side's `+` shows when
+On the canvas ([studio guide](docs/studio.md#creating-and-connecting)), the user's one `+` shows
+`laneActionOptions` (a pick runs `addAction`), and a tile's or action's side has a `+` when
 `laneOptions` has a kind for it, and its fan shows all seven types, greyed with the refusal where
 there is none; a pick runs `addTile`. The link tool shows when `attachOptions` has a link, and a
 drop runs that option's `linkTiles`. Both leave out `link`, so the pair's default mode applies. A
 tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
-`alsoRemove`) and a line's X runs `removeLink` ([removing](docs/studio.md#removing)); the
-inspector's Type list runs `changeKind`
+`alsoRemove`), an action's X runs `removeAction` and a line's X runs `removeLink`
+([removing](docs/studio.md#removing)); the user's line to an action has no X. The inspector's
+Type list runs `changeKind`, an action's Name runs `renameAction`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
 reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or
@@ -233,33 +255,36 @@ The design chat uses one provider and model chosen in Settings
 
 New project offers three studies, described in the [studio guide](docs/studio.md).
 
-**TinyURL** (`studio-tinyurl@3.0.0`, the default) is built from published designs
+**TinyURL** (`studio-tinyurl@3.1.0`, the default) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
 redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
 front of one URL database that only the Shorten service writes, and click analytics through a
-queue into a store read by a Stats API. No CDN tile. The user downloads through the Stats API
-and the Redirect service and uploads through the Shorten service: eight tiles, ten links (three
-entries and seven connections) and nine components
+queue into a store read by a Stats API. No CDN tile. The user's Open link action reaches the
+Stats API and the Redirect service, and its Shorten action the Shorten service: two actions,
+eight tiles, twelve links (the user's two lines, three entries and seven connections) and nine
+components
 ([guide](docs/studio.md#the-tinyurl-study)).
 
-**Marketplace** (`studio-marketplace@1.0.0`) is a multi-seller marketplace with Etsy's core
+**Marketplace** (`studio-marketplace@1.1.0`) is a multi-seller marketplace with Etsy's core
 functionality as clean microservices (Educative, System Design Handbook, ByteByteGo's payment
 system, Online Boutique, eShop, Stripe Connect, and Cloudflare's and AWS's image delivery). The
 Shop service is the only writer of the catalog and its photos, and publishes listing changes that a
 worker indexes for the Storefront API; an Image CDN resizes photos on request; Payments (Billing
 with Stripe) prices the cart, takes one payment per order and pays each seller through Stripe
 Connect, and publishes paid orders that a worker records for the Orders service; a Cart service
-keeps carts in Redis; Identity signs everyone in. Seventeen tiles, 21 links (seven entries, four
-of them upload, and fourteen connections) and sixteen components
+keeps carts in Redis; Identity signs everyone in. Two actions (Browse; Buy & sell), seventeen
+tiles, 23 links (the user's two lines, seven entries, four of them upload, and fourteen
+connections) and sixteen components
 ([guide](docs/studio.md#the-marketplace-study)).
 
-**YouTube** (`studio-youtube@1.0.0`) is a video-sharing site with YouTube's core functionality as
+**YouTube** (`studio-youtube@1.1.0`) is a video-sharing site with YouTube's core functionality as
 clean microservices (ByteByteGo, HelloInterview, DesignGurus' Grokking and crash course, AWS's
-multipart uploads, Cloudflare R2). Creators upload straight into object storage in resumable parts
-with URLs the Upload service signs (a user entry into Original videos); an upload job queue feeds
+multipart uploads, Cloudflare R2). Creators upload in resumable parts with URLs the Upload service
+signs, and the Upload service writes Original videos; an upload job queue feeds
 a Video processor (a worker) that encodes streamable segments, playlists and thumbnails, records
 the playable video in a MySQL metadata database and indexes it; a Video CDN serves segments and
 resizes thumbnails on request; a Watch API reads a video's details and view count and publishes
 views, which a View counter adds in batches; a Search API reads the index; Identity signs everyone
-in. Fourteen tiles, 20 links (six entries and fourteen connections) and sixteen components,
+in. Two actions (Watch; Publish), fourteen tiles, 21 links (the user's two lines, five entries and
+fourteen connections) and sixteen components,
 built from the existing options ([guide](docs/studio.md#the-youtube-study)).

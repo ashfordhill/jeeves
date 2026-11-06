@@ -2,13 +2,16 @@ import { createStudy, dashedLines, expect, lines, test, tile, tiles } from "./st
 
 test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => {
   expect(new URL(page.url()).searchParams.get("project")).toBe(tinyurl);
-  // The user and eight tiles; three lane entries and seven connections, three dashed (the click
-  // path). No CDN: the user enters at the Redirect service directly.
-  await expect(tiles(page)).toHaveCount(9);
-  await expect(lines(page)).toHaveCount(10);
+  // The user, its two actions and eight tiles; the user's two lines, three lane entries and seven
+  // connections, three dashed (the click path). No CDN: Open link reaches the Redirect service
+  // directly. Entry lines carry no chips: the action tiles say which lane they start.
+  await expect(tiles(page)).toHaveCount(11);
+  await expect(lines(page)).toHaveCount(12);
   await expect(dashedLines(page)).toHaveCount(3);
   await expect(tile(page, "User")).toBeVisible();
-  await expect(page.locator(".board-chip")).toHaveCount(3);
+  await expect(page.locator(".board-chip")).toHaveCount(0);
+  await expect(tile(page, "Open link").locator(".lane-action-name")).toHaveText("Open link");
+  await expect(tile(page, "Shorten").locator(".lane-action-name")).toHaveText("Shorten");
   for (const name of [
     "Stats API",
     "Redirect service",
@@ -25,13 +28,22 @@ test("New project offers the marketplace study", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await createStudy(page, "E2E Marketplace", "Marketplace · studio study");
   try {
-    // The user and seventeen tiles; seven lane entries (four upload) and fourteen connections,
-    // six of them dashed (the listing and paid-order paths).
-    await expect(tiles(page)).toHaveCount(18);
-    await expect(lines(page)).toHaveCount(21);
+    // The user, Browse and Buy & sell and seventeen tiles; the user's two lines, seven lane
+    // entries (four upload) and fourteen connections, six of them dashed (the listing and
+    // paid-order paths).
+    await expect(tiles(page)).toHaveCount(20);
+    await expect(lines(page)).toHaveCount(23);
     await expect(dashedLines(page)).toHaveCount(6);
-    await expect(page.locator(".board-chip")).toHaveCount(7);
-    for (const name of ["Storefront API", "Image CDN", "Shop service", "Payments", "Cart service"])
+    await expect(page.locator(".board-chip")).toHaveCount(0);
+    for (const name of [
+      "Browse",
+      "Buy & sell",
+      "Storefront API",
+      "Image CDN",
+      "Shop service",
+      "Payments",
+      "Cart service",
+    ])
       await expect(tile(page, name)).toBeVisible();
 
     const inspector = page.locator(".studio-inspector");
@@ -53,13 +65,16 @@ test("New project offers the YouTube study", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(String(error)));
   const id = await createStudy(page, "E2E YouTube", "YouTube · studio study");
   try {
-    // The user and fourteen tiles; six lane entries (one straight into Original videos) and
-    // fourteen connections, nine of them dashed (the view and upload-job paths).
-    await expect(tiles(page)).toHaveCount(15);
-    await expect(lines(page)).toHaveCount(20);
+    // The user, Watch and Publish and fourteen tiles; the user's two lines, five lane entries
+    // (none into storage: the Upload service writes Original videos) and fourteen connections,
+    // nine of them dashed (the view and upload-job paths).
+    await expect(tiles(page)).toHaveCount(17);
+    await expect(lines(page)).toHaveCount(21);
     await expect(dashedLines(page)).toHaveCount(9);
-    await expect(page.locator(".board-chip")).toHaveCount(6);
+    await expect(page.locator(".board-chip")).toHaveCount(0);
     for (const name of [
+      "Watch",
+      "Publish",
       "Video CDN",
       "Watch API",
       "Search API",

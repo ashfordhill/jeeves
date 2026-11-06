@@ -60,9 +60,10 @@ describe("studio chat tools", () => {
     );
     const design = run(workspace, "getDesign");
     expect(design.baseRevision).toBe(3);
-    expect(design.lanes).toEqual([
+    expect(design.actions).toEqual([
       {
         lane: "download",
+        name: "Open link",
         entries: [
           { id: "download-stats-api", tile: "stats-api" },
           { id: "download-redirect", tile: "redirect" },
@@ -79,6 +80,7 @@ describe("studio chat tools", () => {
       },
       {
         lane: "upload",
+        name: "Shorten",
         entries: [{ id: "upload-shorten", tile: "shorten" }],
         tiles: ["shorten", "url-db"],
       },
@@ -147,7 +149,7 @@ describe("studio chat tools", () => {
     expect(apply({ type: "addRoute", path: "/x" }).error).toMatch(/no "addRoute" command/);
     // The old island-making commands are gone; tiles hang off lanes.
     expect(apply({ type: "create", elements: [] }).error).toMatch(
-      /no "create" command\. The commands are addTile, linkTiles/,
+      /no "create" command\. The commands are addAction, renameAction, removeAction, addTile, linkTiles/,
     );
     expect(apply({ type: "edit", element: "ghost", name: "Ghost" }).error).toBe(
       'There is no tile "ghost".',
@@ -171,6 +173,35 @@ describe("studio chat tools", () => {
     expect(workspace.activity.every((a) => !a.ok)).toBe(true);
   });
 
+  it("starts a design from nothing with an action that names the system, then renames it", () => {
+    const workspace = new Workspace(emptyDesign());
+    const apply = (...commands: unknown[]) =>
+      run(workspace, "applyStudioCommands", { baseRevision: 0, commands });
+    expect(apply({ type: "addAction", lane: "download" }).error).toMatch(
+      /^This design has no system yet\. Start it with addAction/,
+    );
+    expect(
+      apply(
+        { type: "addAction", lane: "download", system: { name: "Videos" } },
+        { type: "renameAction", lane: "download", name: "Watch" },
+        { type: "addAction", lane: "upload", name: "Publish" },
+      ),
+    ).toMatchObject({ ok: true, findings: [] });
+    expect(run(workspace, "getDesign").actions).toEqual([
+      { lane: "download", name: "Watch", entries: [], tiles: [] },
+      { lane: "upload", name: "Publish", entries: [], tiles: [] },
+    ]);
+    // One action per lane; the name is a word, not a sentence.
+    expect(apply({ type: "addAction", lane: "upload" }).error).toBe(
+      "This design already has a Produce action; each lane has one.",
+    );
+    expect(
+      apply({ type: "renameAction", lane: "upload", name: "Publish a video to the channel" }).ok,
+    ).toBe(false);
+    expect(apply({ type: "removeAction", lane: "upload" })).toMatchObject({ ok: true });
+    expect(run(workspace, "getDesign").actions).toHaveLength(1);
+  });
+
   it("starts a design from nothing with a first tile on a lane that names the system, then moves it", () => {
     const workspace = new Workspace(emptyDesign());
     const first = {
@@ -187,17 +218,31 @@ describe("studio chat tools", () => {
     const result = apply({ ...first, system: { name: "Shortener" } });
     expect(result).toMatchObject({ ok: true, findings: [] });
     expect(workspace.working.architecture?.system.name).toBe("Shortener");
-    expect(run(workspace, "getDesign").lanes[1]).toEqual({
-      lane: "upload",
-      entries: [{ id: "upload-api", tile: "api" }],
-      tiles: ["api"],
-    });
-    // An entry is in one lane: "both" is refused, and setEntryLane moves it to the other lane.
+    // The addTile from the lane added its action, with the default name.
+    expect(run(workspace, "getDesign").actions).toEqual([
+      {
+        lane: "upload",
+        name: "Produce",
+        entries: [{ id: "upload-api", tile: "api" }],
+        tiles: ["api"],
+      },
+    ]);
+    // An entry is in one lane: "both" is refused, and setEntryLane moves it to the other lane's
+    // action, which must exist.
     expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "both" }).ok).toBe(false);
+    expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "download" }).error).toBe(
+      "The download lane has no action yet; add its Consume action first.",
+    );
+    expect(apply({ type: "addAction", lane: "download" }).ok).toBe(true);
     expect(apply({ type: "setEntryLane", entry: "upload-api", lane: "download" }).ok).toBe(true);
-    expect(run(workspace, "getDesign").lanes).toEqual([
-      { lane: "download", entries: [{ id: "upload-api", tile: "api" }], tiles: ["api"] },
-      { lane: "upload", entries: [], tiles: [] },
+    expect(run(workspace, "getDesign").actions).toEqual([
+      {
+        lane: "download",
+        name: "Consume",
+        entries: [{ id: "upload-api", tile: "api" }],
+        tiles: ["api"],
+      },
+      { lane: "upload", name: "Produce", entries: [], tiles: [] },
     ]);
   });
 
@@ -208,9 +253,11 @@ describe("studio chat tools", () => {
       expect.arrayContaining([
         "Application -> queue: async (Publishes).",
         "External API -> application: sync or async, default sync (Calls).",
-        "User -> object-store: sync (a lane entry).",
+        "User -> action: sync.",
+        "Action -> CDN: sync (a lane entry).",
       ]),
     );
+    expect(INSTRUCTIONS).not.toMatch(/User -> (object-store|external|service)/);
 
     // Without a link (the schema leaves it optional), each link takes its pair's default.
     const workspace = new Workspace(tinyurl());
