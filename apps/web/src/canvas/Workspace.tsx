@@ -1,6 +1,6 @@
 // The Design tab: the chat rail, the lane canvas and the inspector rail, with Undo, Redo and the
 // rail toggles in the app header and Select, Hand and Fit on the canvas. The selected tile's pull
-// tabs add and link tiles (`creation.tsx`), the red X on a tile or line removes it
+// tabs add tiles and attach them (`creation.tsx`), the red X on a tile or line removes it
 // (`removal.tsx`); settings, kinds and modules are edited in the inspector (`TileInspector.tsx`),
 // and an entry's lane in its own inspector (`EntrySummary`).
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";

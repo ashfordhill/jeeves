@@ -72,7 +72,7 @@ follows the canvas:
 - Once you pan or zoom, the camera is yours: rails opening and closing leave it alone until you
   click Fit.
 - A new tile that lands outside the view is brought in: the canvas pans just enough to show it,
-  with room for its tabs, at the same zoom. Merges and chat edits don't move the camera.
+  with room for its tabs, at the same zoom. Attaches and chat edits don't move the camera.
 
 TinyURL fits at these zooms, which the canvas takes by itself as the rails open and close:
 
@@ -84,40 +84,49 @@ TinyURL fits at these zooms, which the canvas takes by itself as the rails open 
 ## Creating and connecting
 
 Only the selected tile shows controls: tabs on its sides, for what the lane rules allow there, and
-the red X on its top edge ([Removing](#removing)).
+the red X on its top edge ([Removing](#removing)). There are two kinds of tab:
 
-- **`+`** adds or links with a request (a solid line); **`---`** with an asynchronous link (a
-  dashed line).
-- The right side works after the tile. The left side works before it: a new tile takes over every
-  link into the tile (and its lane entry) and then links to it.
-- The user has one `+` per lane on its right, marked with the download or upload icon. A project
-  with no tiles opens with the user selected, so both lane tabs show.
-- A side or mode with nothing to offer has no tab: databases, caches, storage and search indexes
-  have no right-side tabs, and a queue has only `---`.
+- **`+`** creates a new tile. The right `+` adds one after the tile. The left `+` inserts one
+  before it: the new tile takes over every link into the tile (and its lane entry) and then links
+  to it. A side has a `+` when at least one tile type fits there, so databases, caches, storage
+  and search indexes have no right `+`.
+- **The link tab** (a chain-link icon) attaches the tile to a tile already on the canvas, in either
+  direction. It sits on the right, below the `+`, or alone where there is no `+`, and shows
+  whenever the tile can attach to at least one other tile.
+- The user has, for each lane, a `+` (a new tile that starts the lane) and a link tab (an existing
+  tile starts the lane), each marked with the download or upload icon. A project with no tiles
+  opens with the user selected, so its two `+` tabs show.
 
-Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer, the
-rest of the board dims, and a fan of tile-type icons opens around the tab, offering only the types
-the rules accept there (the name shows under the icon the pointer is on). The fan stays on the
-canvas, at least 16px inside its edges, so it never covers a rail or the header; near an edge its
-icons line up along it, and an icon that would sit on a tile you can link to moves just off it.
+Every new link takes its pair's default mode from the [link table](../CATALOG.md#lanes-and-links):
+asynchronous (a dashed line) to and from a queue, a request (a solid line) otherwise. Where the
+table allows both, the line inspector's Interaction field switches it.
 
-- **Release on an icon** to add a tile of that type. It is named after the type ("Cache", then
-  "Cache 2"), docks at the next slot beside its source while the layout animates around it, and is
-  selected with its Name field ready to type over (the canvas pans to it if it landed out of
-  view). A Service added after a queue is a worker; a new
-  database, cache, storage or queue belongs to the application it is added next to.
-- **Release on another tile** to link to it (a merge): from the right side the tile links to it,
-  from the left side it links to the tile, and from a lane tab it becomes an entry of that lane.
-  A tile has one entry, so a tile that already starts either lane is dimmed for either lane tab.
-  The tile you pulled from stays selected,
-  so its next fork or merge starts at once.
-  Tiles the tab can link to stay bright with a dashed outline; on one of them, the fan steps back
-  and the outline thickens. A dimmed tile can't be linked: releasing on it changes nothing and the
-  notice says why ("CDN already starts the download lane; a tile has one entry."). An icon over a dimmed tile can still
-  be picked.
+Pull a tab with the mouse. Past 36px a thick band stretches from under the tile to the pointer,
+and the pull stays open until you let go.
+
+- **A `+`** opens a fan of all seven tile types around the tab, always in the same order and the
+  same places. The name shows under the icon the pointer is on. A type the rules refuse on that
+  side is greyed, and its name adds why ("A queue can't link to Links database. A queue feeds only
+  an application, not a database."). The fan stays on the canvas, at least 16px inside its edges,
+  so it never covers a rail or the header; near an edge its icons line up along it, sometimes right
+  beside the tab. **Release on an icon** to add a tile of that type. It is named after the type
+  ("Cache", then "Cache 2"), docks at the next slot beside its source while the layout animates
+  around it, and is selected with its Name field ready to type over (the canvas pans to it if it
+  landed out of view). A Service added after a queue is a worker; a new database, cache, storage
+  or queue belongs to the application it is added next to. A `+` never links to existing tiles:
+  the board doesn't dim, and releasing on a greyed icon or on a tile changes nothing.
+- **A link tab** opens no fan. The board dims, and the tiles it can attach to stay bright with a
+  dashed outline, which thickens on the one under the pointer. **Release on one** to link the two:
+  from the selected tile to it when the rules allow that, else from it to the selected tile.
+  Attaching Analytics store to Redirect service makes Redirect service → Analytics store, since a
+  store links onward to nothing. From one of the user's link tabs, the tile becomes an entry of
+  that lane. The tile you pulled from stays selected, so its next fork or merge starts at once. A
+  dimmed tile can't be attached: releasing on it changes nothing, and the notice says why ("CDN
+  already starts the download lane; a tile has one entry."). Nothing attaches onto the user; a
+  lane starts only from the user's own tabs.
 - **Release anywhere else**, or press Escape, and the band springs back.
 
-Each add or link is one batch and one undo step.
+Each add or attach is one batch and one undo step.
 
 Every tile must hang off the user through a lane, with no cycles, links the
 [link table](../CATALOG.md#lanes-and-links) allows and at most 4 links out of a tile and 3 entries
@@ -262,8 +271,9 @@ external, nine connections and all eleven components, with nothing omitted and n
 
 - The fan is drawn at screen size beside tiles drawn at the board's zoom, and the tabs and the X
   scale with the board. With both rails open (zoom 0.44 at 1440×900, 0.35 at 1280×800) the tabs
-  are 18px or 14px, tile names are hard to read, and the fan's icons can still cover nearby tiles
-  (only drop targets are kept clear). Closing a rail helps; a fitted camera refits by itself.
+  are 18px or 14px, tile names are hard to read, and the fan's seven icons cover nearby tiles (a
+  `+` never drops on them, so nothing is lost). Near the canvas's edge the fan lines up in a
+  column along it. Closing a rail helps; a fitted camera refits by itself.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back.
 - Where two services fork to the same tiles, their lines share one bus (TinyURL: Redirect service

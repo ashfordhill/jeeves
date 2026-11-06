@@ -4,8 +4,10 @@
 //
 // Changes from automation-illustrator: N items instead of the fixed Step and Data pair, and
 // horizontal only. Two items keep automation-illustrator's arc (radius 104, 56°); every item
-// beyond two adds 24px of radius and the spread widens with the count, up to 150°. `placeFan`
-// keeps the items on the board (automation-illustrator's previews never reach a rail).
+// beyond two adds 24px of radius and the spread widens with the count, up to 150°. An item's slot
+// depends only on its index and the count, so a caller that always passes the same items (some
+// disabled) gets the same slots. `placeFan` keeps the items on the board
+// (automation-illustrator's previews never reach a rail).
 import type { Point } from "../layout/metrics.ts";
 
 export const FAN_RADIUS = 104;
@@ -18,7 +20,7 @@ export const FAN_MAX_SPREAD = 150;
 export const FAN_ITEM_SIZE = 60;
 /** Room a fan item keeps from the board's edges. */
 export const FAN_EDGE_MARGIN = 16;
-/** Room between a nudged item and the tile it was moved off, or another item. */
+/** Room between two items pushed apart along a board edge. */
 const FAN_GAP = 6;
 
 /** A screen rectangle. */
@@ -41,13 +43,11 @@ export function fanCenters(restX: number, restY: number, count: number, before =
 /**
  * Keeps the fan inside the board: every item is clamped into `board` with a 16px margin, so it
  * never covers a rail or the header, and items the clamp moved are pushed apart where they would
- * stack. An item on top of a tile that accepts a drop (`avoid`, its centre on it) is nudged just
- * off it, so both the item and the tile stay in reach.
+ * stack.
  */
 export function placeFan(
   centers: readonly Point[],
   board: ScreenBox | undefined,
-  avoid: readonly ScreenBox[] = [],
   size = FAN_ITEM_SIZE,
 ): Point[] {
   if (!board) return [...centers];
@@ -94,36 +94,5 @@ export function placeFan(
     }
     if (!overlaps) break;
   }
-
-  // An item on top of a drop target moves just off it, inside the board: preferably clear of
-  // every target and every other item, at least with its centre off every target.
-  const covers = (p: Point, box: ScreenBox) =>
-    p.x > box.x && p.x < box.x + box.w && p.y > box.y && p.y < box.y + box.h;
-  const touches = (p: Point, box: ScreenBox) =>
-    p.x + half > box.x &&
-    p.x - half < box.x + box.w &&
-    p.y + half > box.y &&
-    p.y - half < box.y + box.h;
-  const onItem = (p: Point, skip: number) =>
-    out.some((q, k) => k !== skip && Math.abs(q.x - p.x) < apart && Math.abs(q.y - p.y) < apart);
-  out.forEach((p, i) => {
-    const box = avoid.find((target) => covers(p, target));
-    if (!box) return;
-    const cost = (c: Point) =>
-      Number(avoid.some((target) => touches(c, target))) * 2 + Number(onItem(c, i));
-    const candidates = [
-      { x: box.x - FAN_GAP - half, y: p.y },
-      { x: box.x + box.w + FAN_GAP + half, y: p.y },
-      { x: p.x, y: box.y - FAN_GAP - half },
-      { x: p.x, y: box.y + box.h + FAN_GAP + half },
-    ]
-      .map(clamp)
-      .filter((c) => !avoid.some((target) => covers(c, target)))
-      .sort(
-        (c, d) =>
-          cost(c) - cost(d) || Math.hypot(c.x - p.x, c.y - p.y) - Math.hypot(d.x - p.x, d.y - p.y),
-      );
-    if (candidates[0]) out[i] = candidates[0];
-  });
   return out;
 }

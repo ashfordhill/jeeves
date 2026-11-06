@@ -4,11 +4,9 @@ import { type DesignDocument, emptyDesign } from "./design.ts";
 import { studioArchitectureExample } from "./studio-examples/index.ts";
 import {
   attachOptions,
-  laneChoices,
   laneEntryRefusal,
   laneLinkRefusal,
   laneOptions,
-  laneTabs,
   newLinkId,
   newTileIdentity,
   planRemoveTile,
@@ -282,7 +280,15 @@ describe("setEntryLane", () => {
     const cap = "The download lane already has 3 entries; the most is 3.";
     expect(laneEntryRefusal(full, "upload-shorten-api", "download")).toBe(cap);
     expect(laneEntryRefusal(full, "download-cdn", "upload")).toBeUndefined();
-    expect(laneTabs(full, LANE_ACTOR).map((tab) => tab.from)).toEqual([{ lane: "upload" }]);
+    // The full lane offers nothing to add or attach, so the user shows only the upload lane's
+    // `+` (every tile that could start a lane already has an entry, so there is no attach tab).
+    expect(laneOptions(full, { lane: "download" }, "after")[0]).toEqual({
+      type: "service",
+      refusal: cap,
+    });
+    expect(laneOptions(full, { lane: "download" }, "after").some((o) => "kind" in o)).toBe(false);
+    expect(laneOptions(full, { lane: "upload" }, "after").some((o) => "kind" in o)).toBe(true);
+    expect(attachOptions(full, LANE_ACTOR).some((o) => "link" in o)).toBe(false);
     expect(refusal(design, { type: "setEntryLane", entry: "download-cdn", lane: "download" })).toBe(
       "CDN already starts the download lane.",
     );
@@ -633,34 +639,6 @@ describe("attach options", () => {
       refusal:
         "Analytics worker can't start the upload lane. A lane starts at a service (not a worker), an API, storage or an external API.",
     });
-  });
-});
-
-describe("lane choices", () => {
-  it("offer only valid tile types: after a queue, async only, and a Service is a worker", () => {
-    const design = tinyurl();
-    expect(laneChoices(design, { tile: "click-events" }, "after", "sync")).toEqual([]);
-    expect(laneChoices(design, { tile: "click-events" }, "after", "async")).toEqual([
-      { type: "service", kind: "worker" },
-      { type: "api", kind: "gateway" },
-    ]);
-    expect(laneChoices(design, { lane: "download" }, "after", "sync")).toEqual([
-      { type: "service", kind: "service" },
-      { type: "api", kind: "gateway" },
-      { type: "storage", kind: "object-store" },
-      { type: "external", kind: "external-api" },
-    ]);
-    expect(laneTabs(design, "click-events")).toEqual([
-      { from: { tile: "click-events" }, side: "after", mode: "async" },
-      { from: { tile: "click-events" }, side: "before", mode: "async" },
-    ]);
-    expect(laneTabs(design, "link-cache")).toEqual([
-      { from: { tile: "link-cache" }, side: "before", mode: "sync" },
-    ]);
-    expect(laneTabs(design, LANE_ACTOR).map((tab) => tab.from)).toEqual([
-      { lane: "download" },
-      { lane: "upload" },
-    ]);
   });
 });
 

@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ElkNode } from "elkjs/lib/elk-api.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLayoutEngine, type ElkLike } from "../layout/engine.ts";
-import { Board, type LineSpec, type TileSpec } from "./Board.tsx";
+import { Board, type BoardProps, type LineSpec, type TileSpec } from "./Board.tsx";
+import { fanCenters } from "./fan.ts";
+import type { FanItem, TabSpec } from "./TileChrome.tsx";
 
 /**
  * Fixed geometry: tile tops in one row at y 32, 192px apart; lines run level from the source's
@@ -126,5 +128,98 @@ describe("Board", () => {
     expect(onSelectTile).toHaveBeenCalledWith("redirect");
     fireEvent.click(screen.getByRole("button", { name: "Download" }));
     expect(onSelectLine).toHaveBeenCalledWith("entry");
+  });
+
+  it("greys a disabled fan item in its own slot, shows its reason and never picks it", async () => {
+    // jsdom has no pointer capture or hit testing; the pull reads both. With no matchMedia the
+    // board takes reduced motion, so the fan opens as soon as the tab is pressed.
+    const capture = { setPointerCapture: () => {}, releasePointerCapture: () => {} };
+    Object.assign(HTMLElement.prototype, capture);
+    if (!globalThis.CSS?.escape) vi.stubGlobal("CSS", { escape: (value: string) => value });
+    let under: Element | null = null;
+    document.elementFromPoint = () => under;
+
+    const item = (id: string, disabled?: string): FanItem => ({
+      id,
+      label: id.toUpperCase(),
+      content: <span>{id}</span>,
+      ...(disabled && { disabled }),
+    });
+    const tab = (items: FanItem[]): TabSpec => ({
+      id: "add",
+      kind: "create",
+      side: "after",
+      label: "Add after",
+      items,
+    });
+    const onPick = vi.fn<NonNullable<BoardProps["onPick"]>>(() => undefined);
+    const board = (items: FanItem[]) => (
+      <div style={{ width: 1200, height: 800 }}>
+        <Board
+          tiles={tiles}
+          lines={lines}
+          engine={createLayoutEngine(fakeElk, { debounceMs: 0 })}
+          selected={{ tile: "redirect" }}
+          onSelectTile={() => {}}
+          onSelectLine={() => {}}
+          onClear={() => {}}
+          mode="select"
+          tabs={[tab(items)]}
+          onPick={onPick}
+        />
+      </div>
+    );
+    const { container, rerender } = render(board([item("a"), item("b"), item("c")]));
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const handle = await screen.findByRole("button", { name: "Add after" });
+    // Every element's rect is the 1200×800 board, so the tab rests at its centre.
+    const press = () =>
+      fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 600, clientY: 400 });
+    const fan = () =>
+      [...document.querySelectorAll<HTMLElement>("[data-fan-item]")].map((el) => ({
+        id: el.dataset.fanItem,
+        at: `${el.style.left},${el.style.top}`,
+        disabled: el.getAttribute("aria-disabled") === "true",
+      }));
+    const slots = fanCenters(600, 400, 3).map((p) => `${p.x}px,${p.y}px`);
+
+    press();
+    expect(fan()).toEqual([
+      { id: "a", at: slots[0], disabled: false },
+      { id: "b", at: slots[1], disabled: false },
+      { id: "c", at: slots[2], disabled: false },
+    ]);
+    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 600, clientY: 400 });
+
+    // Disabling an item keeps every item in its slot.
+    rerender(board([item("a"), item("b", "B doesn't fit here."), item("c")]));
+    press();
+    expect(fan()).toEqual([
+      { id: "a", at: slots[0], disabled: false },
+      { id: "b", at: slots[1], disabled: true },
+      { id: "c", at: slots[2], disabled: false },
+    ]);
+    // On the disabled item, its tip gives the reason; releasing there picks nothing.
+    under = document.querySelector('[data-fan-item="b"]');
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    expect(document.querySelector(".board-fan-tip")?.textContent).toBe("BB doesn't fit here.");
+    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    expect(onPick).not.toHaveBeenCalled();
+    expect(fan()).toEqual([]);
+
+    // An enabled item is picked, even one the board's edge pushed back near the tab: once the
+    // pull has gone past the threshold it stays open.
+    press();
+    under = null;
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 700, clientY: 400 });
+    under = document.querySelector('[data-fan-item="c"]');
+    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 610, clientY: 400 });
+    expect(fan()).toHaveLength(3);
+    await act(async () => {
+      fireEvent.pointerUp(handle, { pointerId: 1, clientX: 610, clientY: 400 });
+    });
+    expect(onPick).toHaveBeenCalledWith("redirect", "add", "c");
   });
 });

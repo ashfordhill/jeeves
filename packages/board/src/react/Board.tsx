@@ -5,8 +5,9 @@
 // one-time camera (a fit, or a sole tile centred); `fit()` refits on demand. A fitted camera
 // refits when the board changes size (a rail opens or closes); once the user pans or zooms, the
 // camera is theirs and stays. The selected tile shows the caller's pull tabs (`TileChrome`): a
-// picked fan item becomes a new tile, which docks at the next slot beside its source until ELK
-// lands and the layout animates, and the camera pans just enough to show it. The selected line
+// create tab's picked fan item becomes a new tile, which docks at the next slot beside its source
+// until ELK lands and the layout animates, and the camera pans just enough to show it; an attach
+// tab drops on the tiles `canDrop` allows, which show through the scrim. The selected line
 // and the selected tile's lines take the selection colour, drawn over the rest. A removable
 // selected tile, and a selected line, show a red X; a caller's panel (`hud`, a confirmation)
 // sits at the bottom centre of the board.
@@ -130,20 +131,21 @@ export type BoardProps = {
   hints?: Record<string, Point>;
   /** The selected tile's pull tabs (select mode only); none shows no chrome. */
   tabs?: readonly TabSpec[];
-  /** Whether a tab of `tile` may drop on `target`: the target shows through the scrim. */
+  /** Whether an attach tab of `tile` may drop on `target`: the target shows through the scrim. */
   canDrop?: (tile: string, tab: string, target: string) => boolean;
   /**
-   * A fan item released on: returns, or resolves to, the new tile's ID (undefined when nothing is
-   * added). Return it synchronously so the tile docks at the next slot as soon as it appears.
+   * A create tab's enabled fan item released on: returns, or resolves to, the new tile's ID
+   * (undefined when nothing is added). Return it synchronously so the tile docks at the next slot
+   * as soon as it appears.
    */
   onPick?: (
     tile: string,
     tab: string,
     item: string,
   ) => string | undefined | Promise<string | undefined>;
-  /** A release over a tile `canDrop` allows. */
+  /** An attach tab released over a tile `canDrop` allows. */
   onDrop?: (tile: string, tab: string, target: string) => void;
-  /** A release over a tile `canDrop` refuses; the pull springs back. */
+  /** An attach tab released over a tile `canDrop` refuses; the pull springs back. */
   onDropRefused?: (tile: string, tab: string, target: string) => void;
   /** Whether the selected tile shows a red X (select mode). */
   removable?: (tile: string) => boolean;
@@ -469,7 +471,7 @@ function Inner({
   const hand = mode === "hand";
   const placed = (id: string): Point | undefined => display?.[id] ?? dockShow[id] ?? hints?.[id];
 
-  /* The selected tile's pull: which tiles it may drop on, and the one under the pointer. */
+  /* The selected tile's pull: which tiles an attach tab may drop on, and the one under the pointer. */
   const [pull, setPull] = useState<PullState | null>(null);
   const onPull = useCallback((next: PullState | null) => {
     setPull((current) =>
@@ -532,8 +534,8 @@ function Inner({
       onRefused={(tab, target) => onDropRefused?.(chromeTile, tab, target)}
     />
   ) : null;
-  /* Tiles the pull may drop on are outlined; the one under the pointer more strongly. Tiles a
-     panel is about (a removal's) get a warning ring. */
+  /* Tiles an attach pull may drop on are outlined; the one under the pointer more strongly.
+     Tiles a panel is about (a removal's) get a warning ring. */
   const tileClass = (id: string): string => {
     if (hudTile && hud?.marked?.includes(id)) return " is-marked";
     if (!pull?.targets?.has(id) || !chromeTile) return "";

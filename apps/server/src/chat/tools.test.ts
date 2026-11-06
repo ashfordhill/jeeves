@@ -1,7 +1,7 @@
 import {
   buildStudioCommand,
   emptyDesign,
-  laneChoices,
+  laneOptions,
   newLinkId,
   newTileIdentity,
   studioArchitectureExample,
@@ -13,7 +13,10 @@ import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.
 const tinyurl = () => ({ ...studioArchitectureExample("studio-tinyurl").design, revision: 3 });
 const run = (workspace: Workspace, name: string, args: unknown = {}) =>
   JSON.parse(workspace.run(name, JSON.stringify(args)));
-/** A cache after the Redirect service, as the canvas names it (`redirect-cache` is taken). */
+/**
+ * A cache after the Redirect service, as the canvas names it (`redirect-cache` is taken), with
+ * the pair's default mode.
+ */
 const addCache = (baseRevision: number) => ({
   baseRevision,
   commands: [
@@ -21,7 +24,6 @@ const addCache = (baseRevision: number) => ({
       type: "addTile",
       from: { tile: "redirect" },
       side: "after",
-      link: "sync",
       tile: { id: "cache", name: "Cache", kind: "cache" },
       linkId: "redirect-cache-2",
     },
@@ -92,16 +94,15 @@ describe("studio chat tools", () => {
 
   it("adds a tile through chat with the same batch as the canvas", () => {
     const base = tinyurl();
-    // What the canvas sends for Redirect's right + dropped on Cache (canvas/creation.tsx).
+    // What the canvas sends for Redirect's right + released on Cache (canvas/creation.tsx).
     const from = { tile: "redirect" };
-    const choice = laneChoices(base, from, "after", "sync").find((c) => c.type === "cache");
+    const option = laneOptions(base, from, "after").find((o) => o.type === "cache");
     const tile = newTileIdentity(base, "cache");
     const canvas = {
       type: "addTile" as const,
       from,
       side: "after" as const,
-      link: "sync" as const,
-      tile: { ...tile, kind: choice?.kind ?? "cache" },
+      tile: { ...tile, kind: option && "kind" in option ? option.kind : "cache" },
       linkId: newLinkId(base, from, tile.id, [tile.id]),
     };
     expect(canvas).toEqual(addCache(3).commands[0]);

@@ -28,7 +28,7 @@ describe("fanCenters", () => {
 });
 
 describe("placeFan", () => {
-  it("keeps items on the board without stacking them and nudges one off a drop target", () => {
+  it("keeps items on the board without stacking them", () => {
     const board = { x: 0, y: 0, w: 400, h: 600 };
     const room = FAN_EDGE_MARGIN + FAN_ITEM_SIZE / 2;
     // A six-item fan from a tab near the right edge: all inside, 16px to spare, none on another.
@@ -44,10 +44,5 @@ describe("placeFan", () => {
         expect(Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y))).toBeGreaterThanOrEqual(
           FAN_ITEM_SIZE,
         );
-    // An item on top of a drop target moves the shortest way off it (here up), clear of it.
-    const target = { x: 100, y: 100, w: 100, h: 100 };
-    expect(placeFan([{ x: 150, y: 120 }], board, [target])).toEqual([
-      { x: 150, y: 100 - 6 - FAN_ITEM_SIZE / 2 },
-    ]);
   });
 });

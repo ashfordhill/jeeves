@@ -1,18 +1,19 @@
 // Ported from automation-illustrator src/board/controls/TileChrome.tsx (0803c4a).
-// The selected tile's pull tabs: `+` (plus) and `---` (dash) on either side. Pulling a tab past
-// 36px stretches a thick rubber band from under the tile face to the pointer, dims the board
-// with a hole for the tile and opens the fan of items around the tab's resting place. Releasing
-// over an item picks it; releasing over another tile drops on it (a link) when allowed; anywhere
-// else, or Escape, springs back. Pointer capture stays on the tab, so panning never steals the
-// gesture.
+// The selected tile's pull tabs, of two kinds. A **create** tab (`+`) opens a fan of items around
+// its resting place once pulled past 36px; releasing over an item picks it, and the tab never
+// links to existing tiles (no drop targets, no dimming). An **attach** tab (a link) opens no fan:
+// once pulled past 36px the board dims, with holes for the tile and the tiles it may drop on,
+// which stay bright with a dashed outline; releasing over one of them drops on it. Either way a
+// thick rubber band stretches from under the tile face to the pointer. Releasing anywhere else,
+// or Escape, springs back. Pointer capture stays on the tab, so panning never steals the gesture.
 //
-// Changes from automation-illustrator: the tabs, fan items and drop rules come from props; one
-// tab both fans and drops (there, `+` only fans and the path tab only drops); a `---` tab's band
-// is dashed; tiles the tab may drop on show through the scrim and the others stay dimmed; on a
-// drop target the fan steps back, elsewhere a fan item wins over the tile under it; a refused
-// drop is reported; Escape cancels and a cancelled pull springs back. The fan stays inside the
-// board (`placeFan`). The red X shows only when the caller lets the tile go (`remove`). No tile
-// pickup or insert silhouette.
+// Changes from automation-illustrator: the tabs, fan items and drop rules come from props; the
+// attach tab (automation-illustrator's path tab) has a link glyph; a fan item can be disabled
+// (greyed in its slot, its tip gives the reason, a release on it changes nothing); once past the
+// threshold the pull stays open until it ends, so a fan item the board's edge pushed back beside
+// the tab can still be picked; a refused drop is reported; Escape cancels and a cancelled pull
+// springs back. The fan stays inside the board (`placeFan`). The red X shows only when the caller
+// lets the tile go (`remove`). No tile pickup or insert silhouette.
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
@@ -24,11 +25,10 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import type { DockSide, Size, SlotOrder } from "../layout/metrics.ts";
-import { DashGlyph } from "./DashGlyph.tsx";
 import { fanCenters, placeFan } from "./fan.ts";
+import { LinkGlyph } from "./LinkGlyph.tsx";
 import {
   fallbackTileRect,
-  RIBBON_BORDER,
   type TileRect,
   taffyRibbon,
   tileScreenRect,
@@ -42,29 +42,52 @@ export const SPRING_MS = 200;
 /** Room around a drop target's hole in the scrim, for its outline. */
 const TARGET_PAD = 14;
 
-/** One item of a tab's fan: an icon, named by `label` (its accessible name and hover tip). */
-export type FanItem = { id: string; label: string; content: ReactNode; shape?: "rect" | "pill" };
-
-export type TabGlyph = "plus" | "dash";
-
-/** A pull tab on the selected tile. */
-export type TabSpec = {
+/**
+ * One item of a create tab's fan: an icon, named by `label` (its accessible name and hover tip).
+ * A `disabled` item (the reason, in words) is greyed in its usual slot, its tip adds the reason,
+ * and releasing on it changes nothing.
+ */
+export type FanItem = {
   id: string;
-  /** `after` sits on the right and fans right; `before` sits on the left and fans left. */
+  label: string;
+  content: ReactNode;
+  shape?: "rect" | "pill";
+  disabled?: string;
+};
+
+/** `plus` on a create tab, `link` on an attach tab. */
+export type TabGlyph = "plus" | "link";
+
+type TabBase = {
+  id: string;
+  /** `after` sits on the right (a create tab fans right); `before` on the left (fans left). */
   side: DockSide;
-  glyph: TabGlyph;
   /** Accessible name. */
   label: string;
   /** Tooltip; defaults to the label. */
   title?: string;
   /** A small mark on the tab's corner (an icon). */
   badge?: ReactNode;
+};
+/** A `+` tab: its fan's items create; it never drops on a tile. */
+export type CreateTab = TabBase & {
+  kind: "create";
+  /** Every item, always in the same order, so each sits in the same slot every time. */
   items: readonly FanItem[];
   /** The row a tile picked from this fan takes, next to an existing tile (a lane's last tile). */
   order?: SlotOrder;
 };
+/** A link tab: no fan; it drops on the tiles `canDrop` allows (it attaches the two). */
+export type AttachTab = TabBase & { kind: "attach" };
+/** A pull tab on the selected tile. */
+export type TabSpec = CreateTab | AttachTab;
 
-/** What the board shows while a tab is pulled: the drop targets (once open) and the one under the pointer. */
+export const tabGlyph = (tab: TabSpec): TabGlyph => (tab.kind === "create" ? "plus" : "link");
+
+/**
+ * What the board shows while a tab is pulled: an attach tab's drop targets (once open; none for a
+ * create tab) and the tile under the pointer.
+ */
 export type PullState = { tab: string; targets: ReadonlySet<string> | null; over: string | null };
 
 export type ChromeProps = {
@@ -74,9 +97,10 @@ export type ChromeProps = {
   host: RefObject<HTMLElement | null>;
   /** Every other tile on the board. */
   others: () => readonly string[];
+  /** Whether an attach tab may drop on `target`. */
   canDrop: (tab: string, target: string) => boolean;
   onPull: (pull: PullState | null) => void;
-  onPick: (tab: TabSpec, item: string) => void;
+  onPick: (tab: CreateTab, item: string) => void;
   onDrop: (tab: string, target: string) => void;
   onRefused: (tab: string, target: string) => void;
   /** The red X above the tile; none when the tile can't be removed. */
@@ -92,8 +116,14 @@ type Drag = {
   tile: TileRect;
   /** False while springing back. */
   live: boolean;
+  /** The pull has gone past `PULL_THRESHOLD`; it stays open until it ends. */
+  opened: boolean;
   hover: Hover;
 };
+
+/** Whether the pointer is past the threshold from the tab's resting place. */
+const stretched = (drag: Drag, at: { clientX: number; clientY: number }) =>
+  Math.hypot(at.clientX - drag.restX, at.clientY - drag.restY) >= PULL_THRESHOLD;
 
 /** The same hole for the scrim and the band's exit: this tile's screen rect and radius. */
 function holeRect(tile: TileRect, pad: number) {
@@ -107,7 +137,7 @@ function holeRect(tile: TileRect, pad: number) {
 }
 
 function TabGlyphMark({ glyph }: { glyph: TabGlyph }) {
-  return glyph === "plus" ? <span aria-hidden>+</span> : <DashGlyph size={22} />;
+  return glyph === "plus" ? <span aria-hidden>+</span> : <LinkGlyph size={22} />;
 }
 
 export function TileChrome(props: ChromeProps) {
@@ -118,7 +148,12 @@ export function TileChrome(props: ChromeProps) {
       {sides.map((side) => {
         const tabs = props.tabs.filter((tab) => tab.side === side);
         return tabs.length ? (
-          <div key={side} className="board-tabs" data-side={side}>
+          <div
+            key={side}
+            className="board-tabs"
+            data-side={side}
+            data-many={tabs.length > 2 || undefined}
+          >
             {tabs.map((tab) => (
               <PullTab key={tab.id} tab={tab} chrome={props} onActive={setActive} />
             ))}
@@ -153,12 +188,13 @@ function PullTab({
   const [drag, setDrag] = useState<Drag | null>(null);
   const ids = useId();
   const live = Boolean(drag?.live);
-  const stretched = drag
-    ? Math.hypot(drag.x - drag.restX, drag.y - drag.restY) >= PULL_THRESHOLD
-    : false;
-  const open = live && (stretched || prefersReducedMotion());
+  const open = live && (Boolean(drag?.opened) || prefersReducedMotion());
+  const attach = tab.kind === "attach";
+  /** The tiles an attach tab may drop on; a create tab has none. */
   const targets = () => {
-    targetsRef.current ??= new Set(chrome.others().filter((id) => chrome.canDrop(tab.id, id)));
+    targetsRef.current ??= new Set(
+      attach ? chrome.others().filter((id) => chrome.canDrop(tab.id, id)) : [],
+    );
     return targetsRef.current;
   };
   const over = drag?.hover && "tile" in drag.hover ? drag.hover.tile : null;
@@ -166,7 +202,7 @@ function PullTab({
   // The board dims and outlines tiles from this; reported only when something changes.
   const report = useRef(chrome.onPull);
   report.current = chrome.onPull;
-  const shownTargets = open ? targets() : null;
+  const shownTargets = open && attach ? targets() : null;
   useEffect(() => {
     report.current(live ? { tab: tab.id, targets: shownTargets, over } : null);
   }, [live, tab.id, shownTargets, over]);
@@ -182,20 +218,15 @@ function PullTab({
     [onActive],
   );
 
-  /**
-   * What the pointer is on. Once it is on a tile the tab may drop on, it stays there until it
-   * leaves that tile, and the fan steps back (faded, not hit), so a fan item over the tile can't
-   * take the release; otherwise a fan item under the pointer wins, even over a tile.
-   */
-  const hitAt = (x: number, y: number, previous: Hover): Hover => {
-    if (previous && "tile" in previous && targets().has(previous.tile)) {
-      const r = tileScreenRect(host.current, previous.tile);
-      if (r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return previous;
-    }
+  /** What the pointer is on: a create tab's fan item, or another tile for an attach tab. */
+  const hitAt = (x: number, y: number): Hover => {
     const el = document.elementFromPoint(x, y);
-    const item = el?.closest<HTMLElement>("[data-fan-item]");
-    if (item?.dataset.fanTab === tab.id && item.dataset.fanItem)
-      return { item: item.dataset.fanItem };
+    if (!attach) {
+      const item = el?.closest<HTMLElement>("[data-fan-item]");
+      return item?.dataset.fanTab === tab.id && item.dataset.fanItem
+        ? { item: item.dataset.fanItem }
+        : null;
+    }
     const node = el?.closest<HTMLElement>(".react-flow__node");
     const id = node && host.current?.contains(node) ? node.dataset.id : undefined;
     return id && id !== tile ? { tile: id } : null;
@@ -287,6 +318,7 @@ function PullTab({
       restY: rest.top + rest.height / 2,
       tile: tileScreenRect(host.current, tile) ?? fallbackTileRect(rest, chrome.size),
       live: true,
+      opened: false,
       hover: null,
     });
   };
@@ -294,10 +326,11 @@ function PullTab({
   const onPointerMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (!drag?.live) return;
     e.stopPropagation();
-    const dist = Math.hypot(e.clientX - drag.restX, e.clientY - drag.restY);
-    const hover = dist >= PULL_THRESHOLD ? hitAt(e.clientX, e.clientY, drag.hover) : null;
+    const opened = drag.opened || stretched(drag, e);
+    const hover = opened ? hitAt(e.clientX, e.clientY) : null;
     setDrag({
       ...drag,
+      opened,
       x: e.clientX,
       y: e.clientY,
       hover,
@@ -308,12 +341,15 @@ function PullTab({
   const onPointerUp = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (!drag?.live) return;
     e.stopPropagation();
-    const dist = Math.hypot(e.clientX - drag.restX, e.clientY - drag.restY);
-    const hover = dist >= PULL_THRESHOLD ? hitAt(e.clientX, e.clientY, drag.hover) : null;
-    if (hover && "item" in hover) {
-      end();
-      chrome.onPick(tab, hover.item);
-      return;
+    const hover = drag.opened || stretched(drag, e) ? hitAt(e.clientX, e.clientY) : null;
+    // A disabled item is not picked: the pull springs back and nothing changes.
+    if (tab.kind === "create" && hover && "item" in hover) {
+      const item = tab.items.find((each) => each.id === hover.item);
+      if (item && !item.disabled) {
+        end();
+        chrome.onPick(tab, item.id);
+        return;
+      }
     }
     if (hover && "tile" in hover && targets().has(hover.tile)) {
       end();
@@ -349,7 +385,6 @@ function PullTab({
                 : []
             }
             refused={over !== null && !targets().has(over)}
-            onTarget={over !== null && targets().has(over)}
           />,
           document.body,
         )
@@ -361,7 +396,7 @@ function PullTab({
         ref={restRef}
         type="button"
         className="board-tab nopan"
-        data-glyph={tab.glyph}
+        data-glyph={tabGlyph(tab)}
         data-hidden={drag ? true : undefined}
         aria-label={tab.label}
         title={tab.title ?? tab.label}
@@ -371,7 +406,7 @@ function PullTab({
         onPointerCancel={onPointerCancel}
         onClick={(e) => e.stopPropagation()}
       >
-        <TabGlyphMark glyph={tab.glyph} />
+        <TabGlyphMark glyph={tabGlyph(tab)} />
         {tab.badge ? <span className="board-tab-badge">{tab.badge}</span> : null}
       </button>
       {overlay}
@@ -379,7 +414,10 @@ function PullTab({
   );
 }
 
-/** The screen-space layer of one pull: scrim, band, fan and the tab under the pointer. */
+/**
+ * The screen-space layer of one pull: the band and the tab under the pointer, with a create tab's
+ * fan or an attach tab's scrim.
+ */
 function PullOverlay({
   ids,
   tab,
@@ -388,7 +426,6 @@ function PullOverlay({
   board,
   holes,
   refused,
-  onTarget,
 }: {
   ids: string;
   tab: TabSpec;
@@ -396,18 +433,20 @@ function PullOverlay({
   open: boolean;
   /** The board's screen rect. */
   board: DOMRect | undefined;
+  /** An attach tab's drop targets, which show through the scrim. */
   holes: ReturnType<typeof holeRect>[];
+  /** The pointer is on a tile an attach tab can't drop on. */
   refused: boolean;
-  /** The pointer is on a tile the tab may drop on: the fan steps back. */
-  onTarget: boolean;
 }) {
   const before = tab.side === "before";
+  const glyph = tabGlyph(tab);
   const origin = underTileOrigin(drag.tile, drag.restY, before);
   const ribbon = taffyRibbon(origin.x, origin.y, drag.x, drag.y);
+  const items = tab.kind === "create" ? tab.items : [];
+  // Slots come from the item's place in the whole list, disabled or not, so they never shift.
   const centers = placeFan(
-    fanCenters(drag.restX, drag.restY, tab.items.length, before),
+    fanCenters(drag.restX, drag.restY, items.length, before),
     board && { x: board.x, y: board.y, w: board.width, h: board.height },
-    holes.map((hole) => ({ x: hole.x, y: hole.y, w: hole.width, h: hole.height })),
   );
   const exit = holeRect(drag.tile, 0);
   const scrimMask = `${ids}-scrim`;
@@ -415,13 +454,8 @@ function PullOverlay({
   const exitMask = `${ids}-exit`;
   const hovered = drag.hover && "item" in drag.hover ? drag.hover.item : null;
   return (
-    <div
-      className="board-overlay board-pull"
-      data-glyph={tab.glyph}
-      data-on-tile={onTarget || undefined}
-      aria-hidden={!open}
-    >
-      {open ? (
+    <div className="board-overlay board-pull" data-glyph={glyph} aria-hidden={!open}>
+      {open && tab.kind === "attach" ? (
         <svg className="board-scrim" width="100%" height="100%" aria-hidden>
           <defs>
             {board ? (
@@ -456,28 +490,16 @@ function PullOverlay({
           </mask>
         </defs>
         <g mask={`url(#${exitMask})`}>
-          {tab.glyph === "dash" ? (
-            // An asynchronous band: the dashed-line colour with a dashed outline.
-            <path
-              data-ribbon="dash"
-              d={ribbon.fill}
-              fill="var(--board-dash)"
-              stroke="var(--board-line)"
-              strokeWidth={RIBBON_BORDER * 2}
-              strokeDasharray="12 8"
-              strokeLinejoin="round"
-              paintOrder="stroke"
-            />
-          ) : (
-            <>
-              <path data-ribbon="outline" d={ribbon.outline} fill="var(--board-line)" />
-              <path data-ribbon="plus" d={ribbon.fill} fill="var(--board-plus)" />
-            </>
-          )}
+          <path data-ribbon="outline" d={ribbon.outline} fill="var(--board-line)" />
+          <path
+            data-ribbon={glyph}
+            d={ribbon.fill}
+            fill={glyph === "plus" ? "var(--board-plus)" : "var(--board-link)"}
+          />
         </g>
       </svg>
       {open
-        ? tab.items.map((item, i) => {
+        ? items.map((item, i) => {
             const at = centers[i];
             return at ? (
               <button
@@ -490,21 +512,29 @@ function PullOverlay({
                 data-shape={item.shape ?? "rect"}
                 data-hover={hovered === item.id || undefined}
                 aria-label={item.label}
+                aria-disabled={item.disabled ? true : undefined}
                 style={{ left: at.x, top: at.y }}
               >
-                {item.content}
-                {hovered === item.id ? <span className="board-fan-tip">{item.label}</span> : null}
+                <span className="board-fan-content">{item.content}</span>
+                {hovered === item.id ? (
+                  <span className="board-fan-tip" data-reason={item.disabled ? true : undefined}>
+                    {item.label}
+                    {item.disabled ? (
+                      <span className="board-fan-reason">{item.disabled}</span>
+                    ) : null}
+                  </span>
+                ) : null}
               </button>
             ) : null;
           })
         : null}
       <div
         className="board-tab-ghost"
-        data-glyph={tab.glyph}
+        data-glyph={glyph}
         data-refused={refused || undefined}
         style={{ left: drag.x, top: drag.y }}
       >
-        <TabGlyphMark glyph={tab.glyph} />
+        <TabGlyphMark glyph={glyph} />
         {tab.badge ? <span className="board-tab-badge">{tab.badge}</span> : null}
       </div>
     </div>

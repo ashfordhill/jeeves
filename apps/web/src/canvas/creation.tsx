@@ -1,26 +1,32 @@
-// Creation on the lane canvas: the selected tile's pull tabs and fans, from the lane rules. A tab
-// is a side and a mode with something to offer (`laneTabs`): `+` adds or links with a request,
-// `---` asynchronously; the user has one `+` per lane. Its fan offers the tile types the rules
-// accept there (`laneChoices`), as icons. A picked type becomes a new tile (`addTile`, named after
-// its type) and is selected; a drop on a tile links to it (`linkTiles`) and leaves the tile you
-// pulled from selected, ready for its next fork or merge. Each is one batch and one undo step; a
-// refusal goes to the studio notice in plain words.
-import type { BoardProps, FanItem, TabSpec } from "@jeeves/board";
+// Creation on the lane canvas: the selected tile's pull tabs, from the lane rules. A `+` (create)
+// tab sits on each side that can add at least one tile type (`laneOptions`): the right adds after
+// the tile, the left inserts before it. Its fan always shows all seven types in the same slots,
+// with the ones the rules refuse there greyed and the reason in their tip. A picked type becomes a
+// new tile (`addTile`, named after its type) and is selected. One attach tab (a link) sits on the
+// right, below the `+`, whenever the tile can attach to another (`attachOptions`): a drop on a tile
+// links the two in whichever direction the rules allow (`linkTiles`) and leaves the tile you
+// pulled from selected, ready for its next fork or merge. The user has a `+` (a new entry tile)
+// and an attach tab (an existing tile becomes an entry) per lane. Creates and attaches take the
+// pair's default mode. Each is one batch and one undo step; a refusal goes to the studio notice in
+// plain words.
+import type { BoardProps, CreateTab, FanItem, TabSpec } from "@jeeves/board";
 import {
+  type AttachOption,
+  attachOptions,
   buildStudioCommand,
   type DesignDocument,
   LANE_ACTOR,
   type LaneFrom,
   type LaneGraph,
-  type LaneTab,
-  laneChoices,
+  type LaneOption,
+  type LaneSide,
   laneLinkRefusal,
-  laneTabs,
+  laneOptions,
   newLinkId,
   newTileIdentity,
   type StudioLane,
-  type StudioTileType,
   studioDefinitions,
+  studioLanes,
   studioTileDefinitions,
 } from "@jeeves/spec";
 import { useMemo } from "react";
@@ -31,26 +37,16 @@ import { LaneIcon, laneNames } from "./LaneCanvas.tsx";
 
 type Creation = Pick<BoardProps, "tabs" | "canDrop" | "onPick" | "onDrop" | "onDropRefused">;
 
-const tabId = (tab: LaneTab) =>
-  "lane" in tab.from ? `lane-${tab.from.lane}` : `${tab.side}-${tab.mode}`;
-
-function tabLabel(tab: LaneTab): string {
-  if ("lane" in tab.from) return `${laneNames[tab.from.lane]} lane`;
-  return `${tab.mode === "sync" ? "Request" : "Async"} ${tab.side}`;
-}
-
-/** The link a drop makes: out of the tile on its right, into it on its left. */
-function dropLink(tab: LaneTab, target: string): { from: LaneFrom; to: string } {
-  return tab.side === "before" && "tile" in tab.from
-    ? { from: { tile: target }, to: tab.from.tile }
-    : { from: tab.from, to: target };
-}
+/** What a tab does: create from `from` on `side`, or attach to the tiles in `options`. */
+type Tab =
+  | { kind: "create"; from: LaneFrom; side: LaneSide; options: readonly LaneOption[] }
+  | { kind: "attach"; from: LaneFrom; options: ReadonlyMap<string, AttachOption> };
 
 /**
  * Where a new lane entry's tile takes its row: after the lane's last entry, so download stays
  * above upload; a first download entry goes above the first upload entry.
  */
-function laneOrder(graph: LaneGraph, lane: StudioLane): TabSpec["order"] {
+function laneOrder(graph: LaneGraph, lane: StudioLane): CreateTab["order"] {
   const entries = (of: StudioLane) =>
     graph.edges.filter((edge) => edge.lane === of).map((edge) => edge.target);
   const own = entries(lane).at(-1);
@@ -63,18 +59,21 @@ function laneOrder(graph: LaneGraph, lane: StudioLane): TabSpec["order"] {
   return last ? { after: last } : undefined;
 }
 
-function fanItems(design: DesignDocument, tab: LaneTab): FanItem[] {
-  return laneChoices(design, tab.from, tab.side, tab.mode).map((choice) => {
-    const type = studioTileDefinitions[choice.type];
+/** All seven tile types, in order; a type the rules refuse here is disabled with the reason. */
+function fanItems(options: readonly LaneOption[]): FanItem[] {
+  return options.map((option) => {
+    const type = studioTileDefinitions[option.type];
+    const kind = "kind" in option ? option.kind : type.kinds[0];
     return {
-      id: choice.type,
+      id: option.type,
       label: type.name,
       shape: type.shape,
       content: (
-        <span className="lane-fan-icon" data-family={studioDefinitions[choice.kind].visual.color}>
+        <span className="lane-fan-icon" data-family={studioDefinitions[kind].visual.color}>
           <StudioIcon name={type.icon} size={30} />
         </span>
       ),
+      ...("refusal" in option && { disabled: option.refusal }),
     };
   });
 }
@@ -97,75 +96,120 @@ export function useLaneCreation({
   onCreated: (id: string) => void;
 }): Creation {
   const lanes = useMemo(() => {
-    const tabs = new Map<string, LaneTab>();
-    if (!tile || !graph.nodes.some((node) => node.id === tile)) return { tabs, specs: [] };
-    const specs: TabSpec[] = laneTabs(design, tile).map((tab) => {
-      const id = tabId(tab);
-      tabs.set(id, tab);
-      const label = tabLabel(tab);
-      const lane = "lane" in tab.from ? tab.from.lane : undefined;
-      return {
+    const tabs = new Map<string, Tab>();
+    const specs: TabSpec[] = [];
+    if (!tile || !graph.nodes.some((node) => node.id === tile)) return { tabs, specs };
+    const attach = attachOptions(design, tile);
+    /** A `+` on this side, when it can add at least one tile type. */
+    const addCreate = (
+      id: string,
+      from: LaneFrom,
+      side: LaneSide,
+      label: string,
+      extra: Pick<CreateTab, "title" | "badge" | "order"> = {},
+    ) => {
+      const options = laneOptions(design, from, side);
+      if (!options.some((option) => "kind" in option)) return;
+      tabs.set(id, { kind: "create", from, side, options });
+      specs.push({
         id,
-        side: tab.side,
-        glyph: tab.mode === "sync" ? "plus" : "dash",
+        kind: "create",
+        side,
         label,
-        title: `${label}: pull onto a type for a new tile, or onto a tile to link it`,
-        items: fanItems(design, tab),
-        ...(lane && { badge: <LaneIcon lane={lane} size={13} />, order: laneOrder(graph, lane) }),
-      };
-    });
+        title: `${label}: pull onto a type for a new tile`,
+        items: fanItems(options),
+        ...extra,
+      });
+    };
+    /** The link tab, when at least one tile can be attached (from the user: in `lane`). */
+    const addAttach = (id: string, from: LaneFrom, label: string, lane?: StudioLane) => {
+      const options = attach.filter((option) => option.lane === lane);
+      if (!options.some((option) => "link" in option)) return;
+      tabs.set(id, {
+        kind: "attach",
+        from,
+        options: new Map(options.map((option) => [option.tile, option])),
+      });
+      specs.push({
+        id,
+        kind: "attach",
+        side: "after",
+        label,
+        title: `${label}: pull onto a tile to ${lane ? "make it an entry" : "link the two"}`,
+        ...(lane && { badge: <LaneIcon lane={lane} size={13} /> }),
+      });
+    };
+    if (tile === LANE_ACTOR)
+      for (const lane of studioLanes) {
+        const name = `${laneNames[lane].toLowerCase()} lane`;
+        addCreate(`add-${lane}`, { lane }, "after", `Add to ${name}`, {
+          title: `Add to ${name}: pull onto a type for a new entry tile`,
+          badge: <LaneIcon lane={lane} size={13} />,
+          order: laneOrder(graph, lane),
+        });
+        addAttach(`attach-${lane}`, { lane }, `Attach to ${name}`, lane);
+      }
+    else {
+      addCreate("add-before", { tile }, "before", "Add before");
+      addCreate("add-after", { tile }, "after", "Add after");
+      addAttach("attach", { tile }, "Attach");
+    }
     return { tabs, specs };
   }, [design, graph, tile]);
+
+  /** The attach option for a drop on `target`, if the tab attaches. */
+  const attachOn = (id: string, target: string) => {
+    const tab = lanes.tabs.get(id);
+    return tab?.kind === "attach" ? { tab, option: tab.options.get(target) } : undefined;
+  };
 
   return {
     tabs: lanes.specs,
     canDrop: (_tile, id, target) => {
-      const tab = lanes.tabs.get(id);
-      if (!tab) return false;
-      const { from, to } = dropLink(tab, target);
-      return !laneLinkRefusal(design, from, to, tab.mode);
+      const option = attachOn(id, target)?.option;
+      return option !== undefined && "link" in option;
     },
     onDropRefused: (_tile, id, target) => {
-      const tab = lanes.tabs.get(id);
-      if (!tab) return;
-      const { from, to } = dropLink(tab, target);
-      const message = laneLinkRefusal(design, from, to, tab.mode);
+      const found = attachOn(id, target);
+      if (!found) return;
+      // A tile that isn't an option (the user) gets the link rules' own reason.
+      const message =
+        found.option && "refusal" in found.option
+          ? found.option.refusal
+          : laneLinkRefusal(design, found.tab.from, target);
       if (message) useProject.getState().setNotice({ tone: "error", message });
     },
     onDrop: (_tile, id, target) => {
-      const tab = lanes.tabs.get(id);
-      if (!tab) return;
-      const { from, to } = dropLink(tab, target);
+      const option = attachOn(id, target)?.option;
+      if (!option || !("link" in option)) return;
+      const { from, to } = option.link;
       const linkId = newLinkId(design, from, to);
       // The source stays selected (unlike a pick), so its next fork or merge needs no click back.
       void commitAction(
         projectId,
-        (latest) =>
-          buildStudioCommand(latest, { type: "linkTiles", from, to, link: tab.mode, linkId }).ops,
+        (latest) => buildStudioCommand(latest, { type: "linkTiles", from, to, linkId }).ops,
       );
     },
     onPick: (_tile, id, item) => {
       const tab = lanes.tabs.get(id);
-      const type = item as StudioTileType;
-      const choice = tab
-        ? laneChoices(design, tab.from, tab.side, tab.mode).find((c) => c.type === type)
-        : undefined;
-      if (!tab || !choice) return undefined;
+      const option =
+        tab?.kind === "create" ? tab.options.find((each) => each.type === item) : undefined;
+      if (tab?.kind !== "create" || !option || !("kind" in option)) return undefined;
+      const { from, side } = tab;
       // The ID is chosen now, so the board can dock the tile as soon as it arrives.
-      const created = newTileIdentity(design, type);
+      const created = newTileIdentity(design, option.type);
       const linkId =
-        tab.side === "before" && "tile" in tab.from
-          ? newLinkId(design, { tile: created.id }, tab.from.tile, [created.id])
-          : newLinkId(design, tab.from, created.id, [created.id]);
+        side === "before" && "tile" in from
+          ? newLinkId(design, { tile: created.id }, from.tile, [created.id])
+          : newLinkId(design, from, created.id, [created.id]);
       void commitAction(
         projectId,
         (latest) =>
           buildStudioCommand(latest, {
             type: "addTile",
-            from: tab.from,
-            side: tab.side,
-            link: tab.mode,
-            tile: { ...created, kind: choice.kind },
+            from,
+            side,
+            tile: { ...created, kind: option.kind },
             linkId,
             ...(!latest.architecture && { system: { name: projectName } }),
           }).ops,
@@ -177,6 +221,6 @@ export function useLaneCreation({
   };
 }
 
-/** The actor is selected on an empty project, so its two lane tabs show. */
+/** The actor is selected on an empty project, so its lane `+` tabs show. */
 export const startsSelected = (graph: LaneGraph) =>
   graph.nodes.length === 1 ? { tile: LANE_ACTOR } : {};

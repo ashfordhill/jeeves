@@ -1818,3 +1818,120 @@ Notes for DP04:
   incomplete: External is greyed too (an external API can only call an application).
 - The web's `connection-drafts.ts` still has its own "Queue connections require Asynchronous"
   check for the line inspector; it agrees with the table but isn't derived from it.
+
+## 2026-11-05 — DP04: + creates, the link tool attaches (complete)
+
+Owner: "+ is for create. The --- is for attaching 2 tiles together", in either direction, with a
+link icon.
+
+Board (`packages/board`):
+
+- `TabSpec` is `CreateTab | AttachTab` (`kind: "create" | "attach"`); `tabGlyph(tab)` gives
+  `plus` or `link`. A create tab has `items` (and `order`); an attach tab has neither. A create
+  pull opens its fan and never drops on a tile: no targets, no scrim (the plan's "no dimming"
+  taken literally; the band and fan only), and its ghost never shows "refused". An attach pull
+  opens no fan: past 36px the scrim dims the board with holes for the tile and its `canDrop`
+  targets (dashed outline, thicker under the pointer); a release on a target is `onDrop`, on any
+  other tile `onDropRefused`, elsewhere or Escape springs back. `canDrop` is only asked for attach
+  tabs. Gone: the fan "stepping back" on a target (`data-on-tile`), `placeFan`'s `avoid` (no fan
+  shares the board with drop targets any more), the dashed band, `DashGlyph` (replaced by
+  `LinkGlyph`, Tabler's IconLink paths inline) and `--board-dash`/`--board-dash-ink` (now
+  `--board-link`/`--board-link-ink`, same teal).
+- `FanItem.disabled` (a reason): drawn in its usual slot with a faded border and a greyed icon,
+  `aria-disabled="true"`; its tip shows the name, then the reason (wraps at 240px). A release on
+  it springs back and calls nothing. Slots depend only on index and count (`fanCenters`), so a
+  caller passing the same items always gets the same places.
+- One change beyond the plan: **once past 36px, a pull stays open until it ends** (`Drag.opened`).
+  Before, the fan closed whenever the pointer came back within 36px of the tab. With seven items
+  always (radius 224px) a tile near the board's edge gets its fan clamped into a column along the
+  edge, and one item can land on the tab's own spot; in Blank that made Cache unpickable after
+  Redirect service (seen in the browser). Releasing near the tab on nothing still springs back.
+- More than two tabs on a side (`data-many`) sit 14px apart instead of 24px, so the user's four
+  fit (they reach ~24px past the 160px tile's top and bottom).
+
+Web (`creation.tsx`, rewritten): per tile, `Add before` (left) and `Add after` (right) when
+`laneOptions` has a kind on that side; the fan is all seven types from `laneOptions`, refused ones
+disabled with the refusal. `Attach` (right, below `Add after`) when `attachOptions` has a link;
+`canDrop` is "the option has a link", a drop runs that option's `linkTiles` (from/to as given,
+`link` left out, so the pair's default), a refused release shows the option's refusal, or
+`laneLinkRefusal`'s for the user ("Links don't lead back to the user; …"), which is not an option.
+The user: per lane `Add to download lane` / `Attach to download lane` (and upload), each with the
+lane badge; the `+` keeps `laneOrder`. Picks run `addTile` without `link`. Tab titles say what to
+pull onto.
+
+Spec: `laneChoices`, `laneTabs`, `LaneTab` and `LaneChoice` (inlined into `LaneOption`) are gone,
+and `laneOption` lost its fixed `mode`. `laneLinkRefusal`'s doc now says the canvas uses it for an
+attach released on the user.
+
+Tests (130; board +1, spec −1):
+
+- `board.test.tsx`: a create tab's fan keeps every item's slot when one is disabled (positions
+  equal `fanCenters`), the disabled item's tip has the reason, releasing on it picks nothing and
+  closes the fan, and an enabled item released 10px from the tab after the pull went past the
+  threshold is picked (the latch).
+- `fan.test.ts`: the drop-target nudge case removed with `avoid`.
+- Spec: the "lane choices" test removed (DP03's lane-options tests cover it); the full-lane case
+  now asserts `laneOptions`/`attachOptions` instead of `laneTabs`.
+- `tools.test.ts`: the canvas-equivalence test uses `laneOptions`, and `addCache` (canvas and
+  chat) leaves out `link`.
+- E2E `spawn.spec.ts` (6 tests): Redirect has three tabs and its `Add after` fan shows seven
+  enabled icons, Cache adds a tile; Links database has two tabs and its `Add before` greys
+  Database, Cache, Queue, Storage **and External** (DP03 was right: an external API can only call
+  an application, so the plan's list of four was incomplete), Queue's tip gives "A queue can't
+  link to Links database. A queue feeds only an application, not a database.", release changes
+  nothing; Redirect's `Add before` released on Analytics worker: no outline, no scrim, no notice,
+  revision 1; Analytics store's `Attach` onto Redirect service makes `redirect → analytics-store`
+  (`uses-database`), Undo removes it; Shorten API's `Attach` onto Click events publishes
+  asynchronously; the user's four tabs, and `Attach to upload lane` on the CDN refused with the
+  notice.
+
+Checks (Node 24.21.0 first in PATH), on the final code:
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 130 tests).
+- `pnpm test:e2e`: 12 passed, on both runs (before and after the latch and docs).
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium at 1440×900 driven by mouse (names typed), my own API on 4312
+(scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, both stopped afterwards.
+The script waited for each new project's URL before acting, and deleted only the projects it
+created (all 204); `jeeves_e2e` again holds just "TinyURL · studio study". The owner's 4300/4310
+and the `jeeves` database were not touched. No console errors or warnings.
+
+- Tabs on TinyURL: User — right: Add to download lane, Attach to download lane, Add to upload
+  lane, Attach to upload lane. CDN, Redirect service, Click events, Analytics worker, Shorten API,
+  URL reputation API — left: Add before; right: Add after, Attach. Link cache, Links database,
+  Analytics store — left: Add before; right: Attach.
+- Redirect's `Add after`: seven icons, none greyed, no scrim; Escape: revision unchanged. Links
+  database's `Add before`: Service, API, then five greyed; the Queue tip as above; release: nothing.
+  Redirect's `Add before` on Analytics worker: nothing, no notice.
+- Analytics store's `Attach`: targets Redirect service and Shorten API; onto Redirect →
+  `redirect → analytics-store` sync; Undo removed it. Redirect's `Attach` onto the CDN: dimmed,
+  notice "CDN already leads to Redirect service; linking them would make a loop."; onto Analytics
+  worker: `redirect → analytics` sync (then Undo); onto the user: the "Links don't lead back to the
+  user" notice; Escape mid-attach: nothing. Dark mode: greyed fan and attach scrim read clearly.
+- Rebuilding TinyURL from Blank: **11 drags and 6 clicks**, plus 9 names typed. Drags: User
+  download `+` → API, CDN `+` → Service, Redirect `+` → Cache, Database, Queue, Click events `+`
+  → Service (a worker), Analytics worker `+` → Database, User upload `+` → Service, Shorten API
+  `Attach` → Links database and → Link cache, Shorten API `+` → External. Clicks: kind CDN, kind
+  Redirect, Redirect reselected twice (after Cache and Database), Fit (the camera had followed the
+  new tiles and the user was under the chat rail), the user. The result matched TinyURL: 9 tiles,
+  the same kinds, entries, 9 connections and modes (IDs follow the type names).
+
+Docs: studio guide "Creating and connecting" rewritten (two tab kinds, where they show, the
+pair's default mode, the greyed fan, the link tool both ways, the user's tabs), "Attaches and
+chat edits don't move the camera", and the Limits fan bullet; CATALOG (the canvas paragraph:
+`laneOptions` drives the `+` and its greyed fan, `attachOptions` the link tool, both with the
+pair's default; the `laneTabs`/`laneChoices` note removed); PLAN (`creation.tsx`, `TileChrome`,
+the helper list).
+
+Notes for the next units:
+
+- Rough: near the canvas's edge the seven-icon fan collapses into a column along the edge and can
+  sit over the tab and the tile's right side (Blank, Redirect next to the inspector rail). It works
+  (the latch), but a fan that flips to the open side would look better; DP07 may want it.
+- Rough: with no scrim on a create pull, the fan's icons sit straight on the busy board; readable in
+  both themes, but the scrim could come back (uniform, no holes) if the owner prefers.
+- The spec's refusals still say "pull from the user's download or upload tab"; still true with the
+  user's lane tabs, so left as is.
+- DP03's note stands: `connection-drafts.ts` has its own "Queue connections require Asynchronous"
+  check.

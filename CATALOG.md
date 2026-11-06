@@ -134,13 +134,13 @@ Two pure helpers answer what a tile can do, for the canvas and chat:
   For the user (`LANE_ACTOR`) it lists, per lane, every tile that lane could take as an entry, or
   why not.
 
-The canvas still uses `laneTabs` and `laneChoices` (its sync `+` and async `---` tabs), built on
-the same option code with a fixed mode.
-
-On the canvas, a fan pick runs `addTile` and a drop on a tile runs `linkTiles`
-([studio guide](docs/studio.md#creating-and-connecting)); a tile's X runs `removeTile` (after
-`planRemoveTile`, with the tiles the confirmation listed as `alsoRemove`) and a line's X runs
-`removeLink` ([removing](docs/studio.md#removing)); the inspector's kind row runs `changeKind`
+On the canvas ([studio guide](docs/studio.md#creating-and-connecting)), a side's `+` shows when
+`laneOptions` has a kind for it, and its fan shows all seven types, greyed with the refusal where
+there is none; a pick runs `addTile`. The link tool shows when `attachOptions` has a link, and a
+drop runs that option's `linkTiles`. Both leave out `link`, so the pair's default mode applies. A
+tile's X runs `removeTile` (after `planRemoveTile`, with the tiles the confirmation listed as
+`alsoRemove`) and a line's X runs `removeLink` ([removing](docs/studio.md#removing)); the
+inspector's kind row runs `changeKind`
 and an entry's lane row runs `setEntryLane` (a lane either would refuse is disabled, with the
 reason as its tooltip). A new tile is named after its type and
 numbered when taken ("Cache 2", ID `cache-2`); a new link's ID is `source-target`, or

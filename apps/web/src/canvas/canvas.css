@@ -11,7 +11,7 @@
   --board-shadow: var(--btn-shadow);
   --board-select: var(--blue);
   --board-plus: var(--plus);
-  --board-dash: color-mix(in srgb, var(--data) 55%, var(--paper-deep));
+  --board-link: color-mix(in srgb, var(--data) 55%, var(--paper-deep));
   --board-grab-cursor: var(--grab-cursor);
   --board-grabbing-cursor: var(--grabbing-cursor);
   --board-refuse: var(--minus);

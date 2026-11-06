@@ -13,10 +13,10 @@
   --board-shadow: rgba(7, 28, 40, 0.16);
   --board-select: #1a8fd4;
   --board-plus: #1e8a62;
-  --board-dash: color-mix(in srgb, #1db8a8 55%, color-mix(in srgb, #e8f4fa 88%, #0c3349));
-  /* Pull tabs: glyph ink on the plus and dash fills, size and how far they peek off the tile. */
+  --board-link: color-mix(in srgb, #1db8a8 55%, color-mix(in srgb, #e8f4fa 88%, #0c3349));
+  /* Pull tabs: glyph ink on the plus and link fills, size and how far they peek off the tile. */
   --board-plus-ink: #f4fff6;
-  --board-dash-ink: #071c28;
+  --board-link-ink: #071c28;
   --board-tab-size: 40px;
   --board-tab-peek: 18px;
   --board-scrim: rgba(7, 28, 40, 0.38);
@@ -241,7 +241,8 @@
   pointer-events: none;
 }
 
-/* 40px tabs peeking 18px off the face; `+` above `---`. */
+/* 40px tabs peeking 18px off the face; `+` above the link. More than two (the user's two lanes)
+   sit closer, centred on the tile. */
 .board-tabs {
   position: absolute;
   top: 50%;
@@ -251,6 +252,10 @@
   flex-direction: column;
   gap: 24px;
   pointer-events: none;
+}
+
+.board-tabs[data-many] {
+  gap: 14px;
 }
 
 .board-tabs[data-side="after"] {
@@ -296,10 +301,10 @@
   color: var(--board-plus-ink);
 }
 
-.board-tab[data-glyph="dash"],
-.board-tab-ghost[data-glyph="dash"] {
-  background: var(--board-dash);
-  color: var(--board-dash-ink);
+.board-tab[data-glyph="link"],
+.board-tab-ghost[data-glyph="link"] {
+  background: var(--board-link);
+  color: var(--board-link-ink);
 }
 
 .board-tab:focus-visible {
@@ -360,14 +365,15 @@
   pointer-events: none;
 }
 
-/* Over a tile the tab can't link to. */
+/* An attach tab over a tile it can't attach to. */
 .board-tab-ghost[data-refused] {
   border-color: var(--board-refuse);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--board-refuse) 45%, transparent);
 }
 
 /* Fan items: icons only; the name shows under the one the pointer is on. Data tiles are round.
-   The 60px box is `FAN_ITEM_SIZE` in fan.ts, which keeps the items on the board. */
+   The 60px box is `FAN_ITEM_SIZE` in fan.ts, which keeps the items on the board. A disabled item
+   is greyed in its slot, and its tip adds the reason. */
 .board-fan-item {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -390,12 +396,6 @@
   transition: opacity 120ms ease;
 }
 
-/* On a tile, the fan steps back. */
-.board-pull[data-on-tile] .board-fan-item {
-  opacity: 0.25;
-  pointer-events: none;
-}
-
 .board-fan-item[data-shape="pill"] {
   border-radius: 999px;
 }
@@ -404,6 +404,26 @@
   z-index: 1;
   background: var(--board-tile);
   transform: translate(-50%, -50%) scale(1.06);
+}
+
+.board-fan-content {
+  display: flex;
+}
+
+.board-fan-item[aria-disabled="true"] {
+  border-color: color-mix(in srgb, var(--board-line) 40%, transparent);
+  background: color-mix(in srgb, var(--board-tile) 55%, transparent);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.board-fan-item[aria-disabled="true"][data-hover] {
+  transform: translate(-50%, -50%);
+}
+
+.board-fan-item[aria-disabled="true"] .board-fan-content {
+  opacity: 0.4;
+  filter: grayscale(1);
 }
 
 .board-fan-tip {
@@ -419,6 +439,20 @@
   font-weight: 800;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+/* A disabled item's tip: the name, then why it can't be added here. */
+.board-fan-tip[data-reason] {
+  width: max-content;
+  max-width: 240px;
+  white-space: normal;
+  text-align: center;
+}
+
+.board-fan-reason {
+  display: block;
+  margin-top: 2px;
+  font-weight: 600;
 }
 
 /* Drop targets show through the scrim; the one under the pointer gets the dashed ring. */

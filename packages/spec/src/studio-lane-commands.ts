@@ -122,10 +122,10 @@ export const laneCommandSchemas = [
 ] as const;
 export type LaneCommand = z.infer<(typeof laneCommandSchemas)[number]>;
 
-export type LaneTab = { from: LaneFrom; side: LaneSide; mode: StudioLinkMode };
-export type LaneChoice = { type: StudioTileType; kind: StudioKind };
 /** A tile type a side offers: the kind it would add, or why it can't, in plain words. */
-export type LaneOption = LaneChoice | { type: StudioTileType; refusal: string };
+export type LaneOption =
+  | { type: StudioTileType; kind: StudioKind }
+  | { type: StudioTileType; refusal: string };
 /**
  * Another tile the link tool can attach to: the `linkTiles` it would run (`from`, `to` and the
  * pair's default mode), or why it can't. From the user, `lane` names the lane the entry joins.
@@ -680,14 +680,13 @@ function changeKind(
 /**
  * One tile type on this side: the kind it would add (the type's default, where a Service after a
  * queue is a worker, else its first kind the rules accept), or the reason its default is refused.
- * The new link takes `mode`, or its pair's default when `mode` is left out.
+ * The new link takes its pair's default mode.
  */
 function laneOption(
   at: ReturnType<typeof lanes>,
   from: LaneFrom,
   side: LaneSide,
   type: StudioTileType,
-  mode?: StudioLinkMode,
 ): LaneOption {
   const host = "tile" in from ? at().kindOf(from.tile) : undefined;
   const preferred = defaultKind(type, side === "after" && host ? { after: host } : {});
@@ -697,7 +696,7 @@ function laneOption(
     // The new tile is named by its kind in refusals: "Link cache can't link to a queue. …"
     const tile = { id: "@new", kind, name: noun(kind) };
     const view = at(tile);
-    const async = (mode ?? pairMode(view, ...addedLink(from, side, tile.id))) === "async";
+    const async = pairMode(view, ...addedLink(from, side, tile.id)) === "async";
     const why = addTileRefusal(view, from, side, async, tile, "@new-link");
     if (!why) return { type, kind };
     reason ??= why;
@@ -755,42 +754,6 @@ export function attachOptions(design: DesignDocument, node: string): AttachOptio
 }
 
 /**
- * The tile types the fan offers on this side and in this mode, each with the kind it adds: the
- * accepted entries of `laneOptions` with the link in `mode`. Used by the canvas's per-mode tabs.
- */
-export function laneChoices(
-  design: DesignDocument,
-  from: LaneFrom,
-  side: LaneSide,
-  mode: StudioLinkMode,
-): LaneChoice[] {
-  if (laneFindings(design).length) return [];
-  const at = lanes(design);
-  return studioTileTypes.flatMap((type) => {
-    const option = laneOption(at, from, side, type, mode);
-    return "kind" in option ? [option] : [];
-  });
-}
-
-/**
- * The tabs a selected node shows: the side and mode pairs with at least one tile type to offer.
- * The actor (`LANE_ACTOR`) has one tab per lane; a tile has up to four.
- */
-export function laneTabs(design: DesignDocument, nodeKey: string): LaneTab[] {
-  const froms: LaneFrom[] =
-    nodeKey === LANE_ACTOR ? studioLanes.map((lane) => ({ lane })) : [{ tile: nodeKey }];
-  return froms.flatMap((from) => {
-    const sides: LaneSide[] = "lane" in from ? ["after"] : ["after", "before"];
-    const modes: StudioLinkMode[] = "lane" in from ? ["sync"] : ["sync", "async"];
-    return sides.flatMap((side) =>
-      modes.flatMap((mode) =>
-        laneChoices(design, from, side, mode).length ? [{ from, side, mode }] : [],
-      ),
-    );
-  });
-}
-
-/**
  * What removing a tile takes with it: the tiles it strands (lane order), which a `removeTile`
  * must list in `alsoRemove`. Refused when the removal itself breaks a rule.
  */
@@ -806,8 +769,8 @@ export function planRemoveTile(
 
 /**
  * Why linking `from` (a lane or a tile) to the existing tile `to` is refused, in plain words, or
- * `undefined` when a `linkTiles` would be accepted (in `mode`, else the pair's default). The canvas
- * lights up drop targets with it and explains a refused drop.
+ * `undefined` when a `linkTiles` would be accepted (in `mode`, else the pair's default). The
+ * canvas explains an attach released on the user with it.
  */
 export function laneLinkRefusal(
   design: DesignDocument,
