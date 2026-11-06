@@ -2,6 +2,7 @@
 
 **Status: approved 2026-11-06.** Five units, run in order: LA01 → LA05. A fresh agent runs one
 unit at a time on primary `main`.
+**Progress:** LA01–LA04 are done; LA05 remains (see [the handoff](../../handoff.md)).
 
 ## Why
 

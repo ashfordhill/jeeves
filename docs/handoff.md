@@ -2931,3 +2931,86 @@ Notes for the next units:
   worker keeps it off the main thread.
 - LA04: the owner's TinyURL (`41bbd268…`, v2) will lay out in bands too; its stored entries decide
   which stores are shared. The new marketplace and YouTube copies get the 1.2.0 orders.
+
+## 2026-11-06 — LA04: lane actions acceptance and documentation (complete)
+
+A mouse walkthrough of LA01–LA03, the owner's study copies replaced, and a docs sweep. No code
+changed: the walkthrough found no defect, only rough edges (below).
+
+Browser: Playwright Chromium by mouse (names typed; the native Study select with
+`selectOption`), my API on 4312 (scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on
+4302. Each script waited for its new project's URL and deleted only its projects (four per run,
+all 204; earlier runs that stopped on my script's own timing were cleaned up the same way);
+`jeeves_e2e` again holds just "TinyURL · studio study". No page errors, console errors or
+warnings in any run.
+
+- **A small YouTube-like design from Blank** at 1440×900, both rails open: **11 drags and 17
+  clicks**: 13 tile selections (several re-select the tile just added), the CDN Type button and
+  Fit 3 times; plus 9 names typed. Drags: User `+` → Consume; Watch
+  `+` → API (Watch API); Watch API `+` → Database (Video database); User `+` → Produce; Publish
+  `+` → Service (Upload service); Upload service `+` → Storage (Original videos) and → Queue
+  (Upload events); Upload events `+` → Service (Video processor, a worker); Video processor's link
+  tab → Video database; Watch `+` → API (Video CDN, then **CDN** in its Type list); Video CDN's
+  link tab → Original videos (its drop targets: Watch API, Upload service, Original videos, Video
+  processor). Result: 10 tiles, 11 lines, actions Watch and Publish, entries Watch API, Upload
+  service, Video CDN; Original videos and Video database sit in the shared band; blueprint
+  findings `[]`; fit 0.46, and 0.36 at 1280×800 in dark mode.
+- **The greyed second action:** with Watch present, the User's `+` fan shows Consume greyed,
+  tip "This design already has a Consume action; each lane has one."; Produce added. With both
+  actions the User shows no tabs.
+- **Warnings appearing and clearing:** a new Watch carries the mark "Watch has no entries: …"
+  until Watch API is added; Publish's mark until the Upload service; Upload events "has no
+  consumer: … Add a worker after it." until the Video processor. Then the Upload service →
+  Original videos line by its X: Original videos marked, its inspector's yellow row "Original
+  videos has no writer: its owner Upload service doesn't link to it. Link Upload service to it,
+  or choose another owner."; Undo: no marks, 11 lines.
+- **The three studies in bands**, new projects, 1440×900 and 1280×800, light and dark (the app's
+  toggle), chat open: TinyURL 11 tiles / 12 lines (Open link, Shorten), fit 0.65 / 0.56;
+  marketplace 20 / 23 (Browse, Buy & sell), 0.33 / 0.29; YouTube 17 / 21 (Watch, Publish), 0.39 /
+  0.35. No marks, no findings. Download on top, shared stores between, upload below, the user at
+  the left between its actions; dark mode reads clearly.
+- **Readability of the fitted view** (fit padding not changed, an open owner question): at
+  YouTube's 0.39 and the marketplace's 0.33 the bands, the line structure and the action words
+  (about 9px) read; tile names are about 5px and need the wheel. The YouTube fit is
+  height-bound and leaves wide empty margins left and right at 1440×900.
+
+**The owner's `jeeves` database** (my API on 4313 against `jeeves`, scratch `JEEVES_HOME`, web
+on 4303; both stopped by PID; 4300, 4304 and 4310 untouched):
+
+- TinyURL `41bbd268-9244-47cc-be63-66c5e61d116c` opened read-only: 12 tiles, 13 lines, action
+  tiles **Consume** and **Produce** (added by normalisation; entries CDN and Shorten API), no
+  marks, blueprint findings `[]`, fit 0.55. Its design JSON before and after the session is
+  identical (revision 39, `updatedAt` 2026-11-05T23:25:51Z). No clicks on its canvas.
+- Deleted through Project → All projects → trash → Delete: "Marketplace · studio study"
+  `4222440b-cdad-47f4-897b-f36136cd452e` and "YouTube · studio study"
+  `7eef33c4-b6a5-4e80-8bd7-72cbf7e78b1b`.
+- Created through Project → New project → Architecture study (default names):
+  - **Marketplace · studio study `81571ba1-c2da-4896-a79c-c31557f164ca`**: 20 tiles, 23 lines,
+    Browse and Buy & sell, no marks, findings `[]`, fit 0.33.
+  - **YouTube · studio study `7ec5980c-6191-40a4-8688-fa2dd8821d54`**: 17 tiles, 21 lines, Watch
+    and Publish, no marks, findings `[]`, fit 0.39.
+- The database now holds exactly those two and TinyURL.
+
+Docs: studio guide Limits (the fitted view's readability in numbers; attaching to a tile out of
+view needs Fit first); PLAN Next (LA04 done, LA05 remains); this plan's Progress line (LA01–LA04
+done, LA05 remains). Checked and already current: the guide's lanes, creating and connecting
+(the User's `+` gone with both actions), inspector, warnings, layout and fit table (matches the
+zooms above), the three studies' sections and versions (3.1.0, 1.2.0, 1.2.0); CATALOG (link table,
+caps per action, warnings, bands, study versions); studio settings (Actions, Lane entries);
+blueprint doc (`actions`, entries' `action`, `DESIGN_WARNING`); README.
+
+Checks (Node 24.21.0 first in PATH), on the final tree:
+
+- `pnpm check`: exit 0 (Biome 205 files; type checks; 24 files / 162 tests).
+- `pnpm test:e2e`: 17 passed.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Rough edges (not fixed; for LA05 or the owner):
+
+- An attach target out of view can't be dropped on: two of my attaches silently did nothing
+  until I pressed Fit (the board doesn't zoom as a chain grows). Documented in Limits.
+- The User's fan opens over the existing action tile, so the greyed Consume icon sits on top of
+  Watch (DP04's fan placement, still open).
+- A CDN entry is made as an API and then switched to CDN in the Type list; the action's fan has
+  no CDN item. Matches the guide (API: Gateway or CDN) but takes a second click.
+- Fit padding (owner question): see readability above.

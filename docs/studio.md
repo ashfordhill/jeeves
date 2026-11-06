@@ -671,8 +671,8 @@ sixteen components, with nothing omitted and no findings.
   refits by itself.
 - A tall design fits small. The fit leaves 28% of the design's size free on each side, so the
   marketplace study (seventeen tiles, 1,632px tall) fits at 0.33 at 1440×900 and 0.29 at
-  1280×800, and YouTube (1,376px) at 0.39 and 0.35, with tile names too small to read until you
-  zoom in.
+  1280×800, and YouTube (1,376px) at 0.39 and 0.35. At those zooms the action words (about 9px)
+  and the bands read, but tile names are about 5px and need the wheel to read.
 - The lane bands cost height. A band's rows hold only its own tiles, so a column the shared band
   leaves empty stays empty between the lanes (YouTube: the space between the Video CDN and
   Identity, beside the three shared stores). The studies grew taller with the bands (YouTube from
@@ -681,7 +681,8 @@ sixteen components, with nothing omitted and no findings.
   project; a later successful edit leaves it. A fan opened near the bottom edge after a refusal
   can sit over it.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
-  and the first tiles can leave the view; Fit brings everything back.
+  and the first tiles can leave the view; Fit brings everything back. A link tab's drop target
+  must be on screen, so attaching to a tile that has left the view needs Fit (or a pan) first.
 - Where two services of one lane fork to the same tiles, their lines share one bus (the
   marketplace: the Shop service and Payments into the Catalog database; YouTube: the Upload
   service's write of Original videos joins the Video processor's bus). Lines of different lanes
