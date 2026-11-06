@@ -5,7 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLayoutEngine, type ElkLike } from "../layout/engine.ts";
 import { Board, type LineSpec, type TileSpec } from "./Board.tsx";
 
-/** Fixed geometry: tiles in one row, 192px apart; lines run port to port; chips sit mid-line. */
+/**
+ * Fixed geometry: tile tops in one row at y 32, 192px apart; lines run level from the source's
+ * port; chips sit mid-line. The engine then puts it on the grid (`alignLayout`).
+ */
 const fakeElk: ElkLike = {
   async layout(graph: ElkNode) {
     const children = (graph.children ?? []).map((c, i) => ({ ...c, x: 32 + i * 192, y: 32 }));
@@ -104,15 +107,16 @@ describe("Board", () => {
     await waitFor(() => expect(board?.getAttribute("data-board")).toBe("ready"));
 
     const redirect = screen.getByRole("group", { name: "Redirect" });
-    expect(redirect.style.transform).toBe("translate(224px,32px)");
+    // The 160px User's port (112) goes onto the grid at 128, and Redirect follows onto its row.
+    expect(redirect.style.transform).toBe("translate(224px,64px)");
     expect(screen.getByRole("group", { name: "User" })).toBeTruthy();
     expect(screen.getByRole("group", { name: "Events" })).toBeTruthy();
 
     const entry = container.querySelector('.react-flow__edge[data-id="entry"]');
     const publish = container.querySelector('.react-flow__edge[data-id="publish"]');
-    // The solid line follows its ELK route (the fallback would run at y 104) and has no dashes.
+    // The solid line follows its aligned route, straight on that row, and has no dashes.
     expect(entry?.querySelector(".react-flow__edge-path")?.getAttribute("d")).toBe(
-      "M 160 112 L 224 112",
+      "M 160 128 L 224 128",
     );
     expect(entry?.querySelectorAll(".board-line-dash")).toHaveLength(0);
     // The dashed line is drawn as world-locked dash segments over a transparent hit path.

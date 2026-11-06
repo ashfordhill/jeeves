@@ -40,14 +40,28 @@ lane, with no islands and no cycles.
 
 ## Layout and navigation
 
-The layout is automatic and never stored: ELK layered, left to right, on a 32px grid, with
-automation-illustrator's options. Each tile sits one column right of its furthest predecessor (the
+The layout is automatic and never stored: ELK layered, left to right, with automation-illustrator's
+options, then put on the 32px grid. Each tile sits one column right of its furthest predecessor (the
 user's entries share the first column, download-only entries above, an entry that starts both
-lanes between them, upload-only entries below), a fork is centred on its tile, and links that meet at the
-same tiles share one bus. The positions on screen are stability hints for the next layout, so forks
-keep their rows and columns when the design changes, and changes animate for 200ms. The first
-layout already follows these rules, so the first edit moves only what it changes. The canvas writes
-no layout.
+lanes between them, upload-only entries below), a fork is centred on its tile as nearly as the
+grid allows, and links that meet at the same tiles share one bus. The positions on screen are
+stability hints for the next layout, so forks keep their rows and columns when the design changes,
+and changes animate for 200ms. The first layout already follows these rules, so the first edit
+moves only what it changes. The canvas writes no layout.
+
+On the grid (`alignLayout` in `packages/board`, run on every ELK result):
+
+- Every port sits on a grid line, and the paper's dots mark the grid's crossings. A tile's top-left
+  corner sits on a dot; the user, 160px tall, has its centre on a grid line instead.
+- A line whose ends ELK left within 16px of each other is straight. ELK centres a merge between
+  its predecessors, which used to leave small jogs; in TinyURL, Redirect service → Link cache and
+  Shorten API → Links database are now straight.
+- Other lines bend by whole grid steps, so no bend is shorter than 32px. A merge exactly between
+  two equally distant tiles takes the nearer grid line, so its two lines bend by different
+  amounts (Blank with two services that both link to one database: 96px and 64px).
+- Tiles in one column keep their order with at least 32px between them; a tile that moves down
+  pushes the tiles below it.
+- A line keeps ELK's bus columns. A line that passes a column keeps the row ELK gave it there.
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and

@@ -1565,3 +1565,98 @@ Notes for whoever picks up lanes next:
 - `addTile` from a lane still takes `download` or `upload`; a new shared entry is an `addTile`
   plus `setEntryLane` (chat) or a pick plus a drop (mouse).
 - Read/write tags on the links after a shared tile are the owner's later decision.
+
+## 2026-11-05 — DP01: lines line up on the grid (complete)
+
+New pure step `alignLayout(layout, input)` (`packages/board/src/layout/align.ts`, exported from
+the layout index). The engine runs it on every ELK result before caching, so the shown positions,
+and therefore the next stability hints, are already aligned. No ELK option changed.
+
+- **Ports on grid lines.** Every tile's centre (its ports' y) snaps to the 32px grid, so 128px
+  tiles have their top-left on it and the 160px user has its centre on it. x snaps too (ELK's x
+  was already on the grid).
+- **Near-straight lines become straight.** Columns are processed left to right. A tile whose ELK
+  input port is within 16px (`STRAIGHTEN_PX`) of a placed predecessor's ELK output port takes
+  that predecessor's final row. Ties go to a line ELK drew straight, then input order.
+- **Columns keep order and gaps.** Tiles with overlapping x spans form a column and keep ELK's
+  top-to-bottom order with at least `BRANCH_GAP`. A tile that would come closer is pushed down
+  (whole grid steps), which pushes the ones below. One refinement beyond the plan's wording: if
+  the tile above is "free" (it only snapped, following no predecessor) and the grid line above is
+  still within 16px of its ELK row, that tile moves up instead. Without it, forking Analytics
+  worker in TinyURL put Click events on a half step (5.5 grid) that rounded down onto Link cache
+  and pushed it off Redirect's row (a 32px jog). It is unit-tested and was seen in the browser.
+- **Routes follow the tiles.** The first horizontal run takes the source port's y, the last run
+  the target's. Middle points keep ELK's x and y; the route is then de-duplicated and collinear
+  points dropped. A straight route whose ends now differ gets a bend on the grid column nearest
+  the middle that is clear of its chip. A chip moves with the horizontal run it sits on. Bounds
+  only grow.
+- **Dots on the crossings.** `Board`'s `Background` now passes
+  `offset={DOT_SIZE / 2 - GRID / 2}`. React Flow draws each dot at its cell's corner plus the
+  radius, shifted half a cell, so the dots used to sit about 17px off the grid. Now tile corners
+  and lines visibly sit on the dots. This is a one-line visual change beyond the plan's list; I
+  made it because "on the grid" is otherwise invisible. Revert that line if the owner prefers the
+  old dot phase.
+
+Real-ELK TinyURL (current input), aligned: User 32,304 (centre 384); CDN and Redirect y 192
+(centre 256); Link cache 192 (256); Links database 416 (480); Shorten API 416 (480); URL
+reputation API 352 (416); the click path on y 32. Redirect → Link cache is `640,256 → 704,256`,
+and Shorten API → Links database is `448,480 → 704,480`. Bounds are unchanged (1248×592), so the
+guide's fit table is unchanged (measured: 1440 0.78/0.61/0.60/0.44, 1280 0.69/0.53/0.52/0.35).
+
+Tests (124, +4 in `layout.test.ts`; `layoutOf` now runs `alignLayout` like the engine):
+
+- `expectClean` now also checks grid x, ports on grid lines, and tops on the grid where the
+  half-height allows.
+- TinyURL: no vertical segment shorter than 32px, the user's top 16px off the grid, both merges
+  are 2-point straight routes.
+- Re-laying out with its own positions gives the identical layout. Adding a tile after Analytics
+  store moves no existing tile, and the new tile takes the store's row.
+- Forking Analytics worker keeps both merges straight (the lift).
+- A hand-made case: a 160px tile pushes the tile below, which bends a straight line at x 192 and
+  grows the bounds.
+- The fork test's centring tolerance went from 1px to 16px (a fork's middle is often half a
+  step).
+- `board.test.tsx`: the fake ELK's rows were off the grid; Redirect now follows the User's
+  aligned port (y 64, path `M 160 128 L 224 128`).
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: exit 0 (Biome 193 files; type checks; 22 files / 124 tests).
+- `pnpm test:e2e`: 9 passed on 3 of 5 runs, including the last two on the final code. The other
+  two runs each failed one different spec at the fixture's first page load (`Project:` menu not
+  visible in 5s, load average about 10). Neither failure reached the canvas, so I take them as
+  load flakes, not this change.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium driven by mouse at 1440×900 and 1280×800. I used my own API on 4312
+(scratch `JEEVES_HOME`, scripted model, `jeeves_e2e`) and web on 4302, and stopped both
+afterwards. All 10 throwaway projects were deleted (204); only the study that was already there
+remains. The owner's 4300/4310 and the `jeeves` database were not touched. There were no console
+errors or warnings.
+
+- TinyURL fitted (0.61, chat open) and at about 155% (wheel steps; 1.547): both circled places,
+  Redirect → Link cache and Shorten API → Links database, are straight. Tile edges and lines run
+  through the dots.
+- Rail toggles at both sizes refit to the zooms above.
+- Blank: download `+` → Service, Service `+` → Database, upload `+` → Service 2, then Service 2's
+  `Request after` dropped on Database. The merge drew Service (centre 96) and Service 2 (256) into
+  Database (192). Its lines bend by 96 and 64 on bus x 480. This is the expected case: ELK's
+  centre (176) falls on a half step, so the merge takes the nearer grid line and neither line is
+  near-straight.
+- Analytics worker `+` → Database on TinyURL: the board shifts as before (ELK's layering moves
+  everything 64–96px), the merges stay straight, and Undo restores the exact earlier positions.
+  Dark mode renders the same.
+
+Docs: the studio guide's Layout section (the grid rules, what is straight, the dots); PLAN (the
+Layout paragraph and the `packages/board` row). CATALOG, the settings and blueprint docs needed no
+change.
+
+Notes for the next units:
+
+- automation-illustrator has the same gap: no post-ELK alignment, and React Flow's default dot
+  phase. When the board is shared, port `align.ts` and the dot offset there.
+- What is still not perfectly tidy: a line passing a column (a long edge through ELK dummies)
+  keeps ELK's middle row, which may be off the grid. TinyURL has none. Free tiles snap to the
+  nearest grid line, so a fork's parent can sit 16px off its children's midpoint.
+- `alignLayout` runs inside the engine, so anything calling `toBoardLayout` directly (only the
+  tests) must add it.

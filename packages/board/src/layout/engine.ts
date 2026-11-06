@@ -8,10 +8,12 @@
 // - The first request (nothing cached or running) skips the debounce.
 // - An empty board resolves to `emptyLayout` without calling ELK.
 // - ELK errors are logged once per engine and rejected, so callers keep their previous layout.
+// - Every ELK result is put on the grid (`alignLayout`) before it is cached.
 //
 // Changes from automation-illustrator: one request channel instead of one per lane, no
 // orientation, and a superseded request that was queued for the next microtask no longer runs.
 import type { ElkNode } from "elkjs/lib/elk-api.js";
+import { alignLayout } from "./align.ts";
 import { buildElkGraph, graphKey, type LayoutInput, type PositionMap } from "./elkGraph.ts";
 import { type BoardLayout, emptyLayout, toBoardLayout } from "./elkLayout.ts";
 
@@ -63,13 +65,13 @@ export function createLayoutEngine(
     }
   }
 
-  function run(key: string, graph: ElkNode): Promise<BoardLayout> {
+  function run(key: string, graph: ElkNode, input: LayoutInput): Promise<BoardLayout> {
     const existing = inFlight.get(key);
     if (existing) return existing;
     const job = elk
       .layout(graph)
       .then((laidOut) => {
-        const layout = toBoardLayout(key, laidOut);
+        const layout = alignLayout(toBoardLayout(key, laidOut), input);
         remember(layout);
         return layout;
       })
@@ -121,7 +123,7 @@ export function createLayoutEngine(
       const fire = () => {
         if (pending !== entry) return;
         pending = null;
-        run(key, graph).then(resolve, reject);
+        run(key, graph, input).then(resolve, reject);
       };
       const cold = cache.size === 0 && inFlight.size === 0;
       if (debounceMs > 0 && !cold) entry.timer = setTimeout(fire, debounceMs);

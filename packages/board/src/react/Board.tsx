@@ -214,6 +214,8 @@ function dockFor(
 }
 
 const nodeTypes = { tile: Tile };
+/** The paper's dot diameter, in board pixels. */
+const DOT_SIZE = 2.2;
 const edgeTypes = { line: BoardLine };
 
 function layoutInput(tiles: readonly TileSpec[], lines: readonly LineSpec[]): LayoutInput {
@@ -672,10 +674,13 @@ function Inner({
             if (!hand) onClear();
           }}
         >
+          {/* React Flow draws each dot at its cell's corner plus the dot's radius, half a cell
+              off; this offset puts the dots on the grid's crossings, where ports and corners sit. */}
           <Background
             variant={BackgroundVariant.Dots}
             gap={GRID}
-            size={2.2}
+            size={DOT_SIZE}
+            offset={DOT_SIZE / 2 - GRID / 2}
             color="var(--board-dot)"
           />
         </ReactFlow>

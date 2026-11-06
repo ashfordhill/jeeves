@@ -3,10 +3,11 @@
 // the main thread, except where the engine's call count matters.
 import ELK from "elkjs/lib/elk.bundled.js";
 import { describe, expect, it, vi } from "vitest";
+import { alignLayout } from "./align.ts";
 import { buildElkGraph, graphKey, type LayoutInput, usedOptionIds } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import { createLayoutEngine, LayoutSuperseded } from "./engine.ts";
-import { dockHint, newTileHint, type Point, type Rect } from "./metrics.ts";
+import { dockHint, GRID, newTileHint, type Point, type Rect } from "./metrics.ts";
 
 const elk = new ELK();
 const ENTRY_CHIP = { w: 32, h: 32 };
@@ -27,8 +28,10 @@ function board(tiles: string[], lines: string[]): LayoutInput {
   };
 }
 
+/** What the engine caches: ELK's layout, put on the grid. */
 async function layoutOf(input: LayoutInput, previous?: Record<string, Point>) {
-  return toBoardLayout(graphKey(input), await elk.layout(buildElkGraph(input, previous)));
+  const laidOut = toBoardLayout(graphKey(input), await elk.layout(buildElkGraph(input, previous)));
+  return alignLayout(laidOut, input);
 }
 
 function rect(input: LayoutInput, layout: BoardLayout, id: string): Rect {
@@ -54,12 +57,16 @@ function distanceToRoute(route: Point[], p: Point): number {
   return best;
 }
 
-/** Tiles do not overlap; routes are orthogonal, start and end at the mid-height ports; chips sit
- * on their own line and clear every tile. */
+/** Tiles do not overlap and their ports sit on grid lines (the top-left too, unless the
+ * half-height is off the grid); routes are orthogonal, start and end at the mid-height ports;
+ * chips sit on their own line and clear every tile. */
 function expectClean(input: LayoutInput, layout: BoardLayout) {
   const rects = input.tiles.map((t) => rect(input, layout, t.id));
   for (const [i, a] of rects.entries()) {
     expect(Number.isInteger(a.x) && Number.isInteger(a.y)).toBe(true);
+    expect(a.x % GRID, `${input.tiles[i]?.id} x`).toBe(0);
+    expect(centreY(a) % GRID, `${input.tiles[i]?.id} port`).toBe(0);
+    if ((a.h / 2) % GRID === 0) expect(a.y % GRID, `${input.tiles[i]?.id} top`).toBe(0);
     for (const b of rects.slice(i + 1)) expect(intersects(a, b)).toBe(false);
   }
   for (const line of input.lines) {
@@ -145,7 +152,8 @@ describe("ELK layout", () => {
     const first = await layoutOf(fork);
     expectClean(fork, first);
     const [p, a, b] = ["p", "a", "b"].map((id) => centreY(rect(fork, first, id)));
-    expect(Math.abs((p ?? 0) - ((a ?? 0) + (b ?? 0)) / 2)).toBeLessThanOrEqual(1);
+    // Within half a grid step: ports sit on grid lines, and the fork's middle may not.
+    expect(Math.abs((p ?? 0) - ((a ?? 0) + (b ?? 0)) / 2)).toBeLessThanOrEqual(16);
     expect(a).toBeLessThan(b ?? 0);
 
     // Shown the other way round (say, after a drop), the fork keeps that order.
@@ -154,6 +162,87 @@ describe("ELK layout", () => {
     const again = await layoutOf(fork, swapped);
     expect(again.positions.b?.y).toBeLessThan(again.positions.a?.y ?? 0);
     expect(centreY(rect(fork, again, "p"))).toBe(p);
+  });
+
+  it("puts TinyURL on the grid with no small jogs", async () => {
+    const layout = await layoutOf(tinyUrl);
+    expectClean(tinyUrl, layout);
+    // The user is 160 tall: its centre is on the grid, its top half a step off.
+    expect((layout.positions.actor?.y ?? 0) % GRID).toBe(16);
+    for (const [id, route] of Object.entries(layout.routes)) {
+      for (const [i, a] of route.slice(0, -1).entries()) {
+        const b = route[i + 1] as Point;
+        if (a.x === b.x) expect(Math.abs(b.y - a.y), `${id} jogs`).toBeGreaterThanOrEqual(GRID);
+      }
+    }
+    // ELK left both merges 8px off their source: they are straight now.
+    for (const id of ["redirect-cache", "shorten-db"]) {
+      const route = layout.routes[id] ?? [];
+      expect(route, id).toHaveLength(2);
+      expect(route[0]?.y, id).toBe(route[1]?.y);
+    }
+  });
+
+  it("moves only what an edit changes, and lays itself out again unchanged", async () => {
+    const first = await layoutOf(tinyUrl);
+    expect(await layoutOf(tinyUrl, first.positions)).toEqual(first);
+    const longer = board(
+      tinyUrl.tiles.map((t) => `${t.id}:${t.w}x${t.h}`).concat("report"),
+      tinyUrl.lines
+        .map((l) => `${l.source}>${l.target}${l.chip ? "*" : ""}`)
+        .concat("store>report"),
+    );
+    const next = await layoutOf(longer, first.positions);
+    expectClean(longer, next);
+    for (const [id, at] of Object.entries(first.positions))
+      expect(next.positions[id], id).toEqual(at);
+    expect(next.positions.report?.y).toBe(first.positions.store?.y);
+  });
+
+  it("keeps the merges straight after a fork moves the board", async () => {
+    // Forking Analytics worker moves most tiles. Click events then lands on a half step and would
+    // push Link cache off Redirect's row; it takes the grid line above instead.
+    const first = await layoutOf(tinyUrl);
+    const forked = board(
+      tinyUrl.tiles.map((t) => `${t.id}:${t.w}x${t.h}`).concat("report"),
+      tinyUrl.lines
+        .map((l) => `${l.source}>${l.target}${l.chip ? "*" : ""}`)
+        .concat("worker>report"),
+    );
+    const next = await layoutOf(forked, first.positions);
+    expectClean(forked, next);
+    for (const id of ["redirect-cache", "shorten-db"]) expect(next.routes[id], id).toHaveLength(2);
+  });
+
+  it("pushes a column's lower tiles down to keep the gap, and bends a line that was straight", () => {
+    // Hand-made ELK output. `e` is 160 tall, so its centre goes onto the grid and its bottom ends
+    // half a step lower; `c`, level with `b` on a straight line, must then make room below it.
+    const input = board(["b", "e:128x160", "c"], ["b>c"]);
+    const raw: BoardLayout = {
+      key: "k",
+      positions: { b: { x: 32, y: 224 }, e: { x: 224, y: 32 }, c: { x: 224, y: 224 } },
+      routes: {
+        "b-c": [
+          { x: 160, y: 288 },
+          { x: 224, y: 288 },
+        ],
+      },
+      chips: {},
+      bounds: { x: 0, y: 0, w: 384, h: 384 },
+    };
+    const layout = alignLayout(raw, input);
+    expect(layout.positions).toEqual({
+      b: { x: 32, y: 224 },
+      e: { x: 224, y: 48 },
+      c: { x: 224, y: 256 },
+    });
+    expect(layout.routes["b-c"]).toEqual([
+      { x: 160, y: 288 },
+      { x: 192, y: 288 },
+      { x: 192, y: 320 },
+      { x: 224, y: 320 },
+    ]);
+    expect(layout.bounds).toEqual({ x: 0, y: 0, w: 384, h: 416 });
   });
 
   it("puts a merge one layer after its deepest source", async () => {
