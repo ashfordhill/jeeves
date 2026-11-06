@@ -22,8 +22,8 @@ The last opened project reopens on the next visit; its ID is in the URL.
 
 There is one canvas, with no levels. It starts from the **user** (the actor, a stick figure), who is
 always there and is not stored. The user starts two **lanes**: **download** (following, viewing,
-consuming; drawn above) and **upload** (creating, posting; drawn below). Every tile hangs off a
-lane, with no islands and no cycles.
+consuming; usually drawn above) and **upload** (creating, posting; usually drawn below). Every tile
+hangs off a lane, with no islands and no cycles.
 
 - **Tiles** are 128×128: the kind's icon in its family colour and the name in up to two lines.
   Database, cache, queue and storage tiles are pills; services, APIs and externals are rounded
@@ -43,11 +43,13 @@ lane, with no islands and no cycles.
 
 The layout is automatic and never stored: ELK layered, left to right, with automation-illustrator's
 options, then put on the 32px grid. Each tile sits one column right of its furthest predecessor (the
-user's entries share the first column, download entries above upload entries), a fork is centred on its tile as nearly as the
-grid allows, and links that meet at the same tiles share one bus. The positions on screen are
-stability hints for the next layout, so forks keep their rows and columns when the design changes,
-and changes animate for 200ms. The first layout already follows these rules, so the first edit
-moves only what it changes. The canvas writes no layout.
+user's entries share the first column; ELK gets the download entries first and usually keeps them
+above the upload entries, but not always: 48 of the marketplace's 144 entry orders put a download
+entry among the upload entries), a fork is centred on its tile as nearly as the grid allows, and
+links that meet at the same tiles share one bus. The positions on screen are stability hints for
+the next layout, so forks keep their rows and columns when the design changes, and changes animate
+for 200ms. The first layout already follows these rules, so the first edit moves only what it
+changes. The canvas writes no layout.
 
 On the grid (`alignLayout` in `packages/board`, run on every ELK result):
 

@@ -262,8 +262,6 @@
   outline-offset: 2px;
 }
 
-/* A tile's kind row (automation-illustrator's Type keys): one icon per kind of its tile type, the
-   current kind filled yellow; a refused kind is faded, with the reason as its tooltip. */
 /* The Type list: each kind of the tile's type, icon and name, the current one highlighted. */
 .lane-kinds {
   display: grid;

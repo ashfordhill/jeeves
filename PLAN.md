@@ -157,7 +157,7 @@ The lane grid ([build plan](docs/build-plan-lane-grid.md), units LG01–LG13 in
 lists what was left for later. Code generation will be
 a separate service that reads the blueprint.
 
-The [design polish units](docs/plans/design-polish/units.md) DP01–DP09 are done:
+The [design polish units](docs/plans/design-polish/units.md) DP01–DP10 are done:
 
 - lines aligned on the grid
 - no both-lane entries
@@ -168,5 +168,6 @@ The [design polish units](docs/plans/design-polish/units.md) DP01–DP09 are don
 - an acceptance walkthrough and docs sweep
 - a marketplace study, with a CDN image-resizing setting and four entries per lane
 - a YouTube study, built from the existing options
+- a review of DP01–DP09, which fixed what it could show and left questions for the owner
 
-Next is DP10 (a review of DP01–DP09).
+Next: the owner's answers to DP10's questions ([handoff](docs/handoff.md)); no unit is planned.

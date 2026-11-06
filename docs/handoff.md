@@ -2451,3 +2451,105 @@ Notes for the next unit (DP10):
   notifications step after it means another worker behind a queue, or dropping a link.
 - The guide's claim that download entries draw above upload entries held for all 36 YouTube
   orders I scored with download entries first (DP08 found it doesn't always hold).
+
+## 2026-11-05 — DP10: review of the design polish units (complete)
+
+A review of what DP01–DP09 left between them, not a second acceptance pass. `/code-review` ran at
+`high` on `2b9eff5..HEAD` (ten candidates); I kept only what I could show. Code changed: two stale
+comments. Docs changed: one false sentence (twice in the guide, once in a doc comment), the plan's
+status and PLAN's Next.
+
+### Ledger
+
+How checked: "open" items were re-read in the current code or docs; "fixed" items in the unit and
+test named; scratch scripts (real ELK plus `alignLayout`, the spec's commands) where a number is
+quoted. Owner decisions are listed under Questions, not here.
+
+| From | Item | Status |
+| --- | --- | --- |
+| DP01 | automation-illustrator lacks `align.ts` and the dot offset | Open (port when the board is shared) |
+| DP01 | A line passing a column keeps ELK's middle row; a fork's parent can sit 16px off centre | Open, documented (guide, Layout). No route crosses a tile in 182 study layouts checked |
+| DP01 | Callers of `toBoardLayout` outside the engine must add `alignLayout` | Still applies (tests only) |
+| DP01 | The "lift" refinement beyond the plan | Stands, unit-tested |
+| DP01 | E2E load flake at the first page load | Fixed by DP06 (the fixture opens a stable project) |
+| DP02 | `both` normalisation can go once no stored design has it; `jeeves` not scanned | Open (I did not touch `jeeves`) |
+| DP02 | A full lane's tooltip in the lane row was unit-tested only | Open |
+| DP03 | `connection-drafts.ts` restates queue ⇒ Asynchronous | Open: agrees with the table and validation, not derived (finding 3) |
+| DP03 | DP04's greyed list missed External | Fixed by DP04 (E2E checks five) |
+| DP03 | Two refusal-order changes; user → non-entry gives "A lane starts at…" | Stand (recorded deviations) |
+| DP04 | Edge fan lines up in a column over the tile's own tabs | Open (DP07 confirmed; guide Limits) |
+| DP04 | Refusals say "pull from the user's download or upload tab" | Still true |
+| DP04 | `data-many` tabs 14px apart | Stands |
+| DP05 | TinyURL v2's unspecified CDN and External reputation API | No longer applies (v3) |
+| DP05 | Type list truncates in a narrow inspector rail | Open |
+| DP05 | Stored providers are not normalised (an `unspecified` Billing stays) | Stands, documented |
+| DP06 | A new link into a store says "Reads & writes" even when it reads | Open (guide Limits) |
+| DP06 | Removing a tile restitches its entry under a new free ID | Open (pre-existing, unit test records it) |
+| DP06 | The owner's existing projects stay v2 | Still applies |
+| DP06 | Blueprint 2 renamed `access` → `security` and reused `access` for read/write | Stands (question 7) |
+| DP07 | A notice stays across later edits; a fan near the bottom can cover it | Open (question 5) |
+| DP07 | Rebuilding TinyURL needs the URL database's owner set by hand | Open |
+| DP07 | The owner's API on 4310 stopped during DP07 | Not a code item; not checked |
+| DP08 | Guide: download entries are drawn above upload entries | **Fixed here** (finding 1) |
+| DP08 | `FIT_PADDING` 28% makes tall studies fit at ~0.4 | Open (question 1) |
+| DP08 | Marketplace shared buses and two crossings at the Search index | Open (question 2) |
+| DP08 | Cap 4 entries per lane; CDN `imageResizing` | Complete: schema, form, validation, blueprint, chat, docs, tests |
+| DP09 | YouTube store-column bus | Open (question 2) |
+| DP09 | The Video processor is at the 4-link cap (no right `+`) | Open, by design |
+
+### Findings
+
+| # | Severity | Where | What goes wrong | Reproduce | Status |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Low (docs) | `docs/studio.md:25,46`, `packages/spec/src/studio-lanes.ts:29` | Said download entries are drawn above upload entries; ELK can interleave them | Marketplace entries ordered Storefront, Image CDN, Orders \| Shop, Payments, Cart, Identity: Orders service y 928, between Payments (672) and Cart (1,088); 48 of 144 orders interleave (real ELK + `alignLayout`) | Fixed: "usually", with the count |
+| 2 | Low | `apps/web/e2e/studio.ts:65`, `apps/web/src/canvas/canvas.css:265` | Comments still named the removed `Request after` tab and the icon-only kind row | Read them; no such tab or row exists | Fixed |
+| 3 | Low | `apps/web/src/studio/connection-drafts.ts:109-115`; `apps/server/src/chat/tools.ts:90` | Rules restated by hand: queue ⇒ Asynchronous/publish/consume in the line form; the five presets in the chat instructions. Both agree with the spec today | — (no divergence to show) | Follow-up |
+| 4 | Medium | `packages/spec/src/studio-lane-commands.ts` (`addTile` before a store, `removeLink`; `adoptOrphans`) | When the owner's link into a store is moved or removed, the store keeps its owner, so no link writes it and no finding says so; the store inspector still says "Writes (owner) Shorten service" | TinyURL: URL database `Add before` → Service: `svc → url-db` reads, owner still `shorten`, blueprint has no `write` into `url-db`. Or remove `shorten-db`: same | Follow-up (question 6) |
+
+Code-review candidates dropped: route middle runs crossing pushed tiles (none in 182 study layouts;
+ELK's x is already on the grid), language normalisation hiding intent (the plan's instruction),
+dark-mode attach-tab ink (contrast about 4.3:1, unchanged since before DP04), repeated lane checks
+per selection, unused `studioEntryKinds` (CATALOG documents it) and a duplicated coded-kind
+narrowing (refactors, not defects).
+
+Seams checked and clean: the `both` and language normalisations compose in the one stored schema
+(`studioEntrySchema`, `studioElementBindingSchema`) and both are in studio settings; commands parse
+settings strictly (`edit` with `csharp` refused; DP05's tests); raw `setStudio` operations do
+normalise (DP02 noted it). No code, export, CSS, test, chat text or doc outside history still
+uses `laneChoices`, `laneTabs`, `DashGlyph`, `entryLanes`, a `both` lane or an `unspecified`
+language. All three studies validate with no findings after a JSON round trip through
+`designSchema`; the blueprint doc's TinyURL example matches `designBlueprint` exactly.
+
+### Questions for the owner
+
+1. The fit's 28% padding: tall studies fit at about 0.4 (marketplace 0.42/0.36). Keep, or a
+   fixed margin (~0.59 at 1440×900)?
+2. Shared buses into stores (marketplace: two; YouTube: one column bus for all five stores).
+   Accept, or a layout change?
+3. DP01's dot offset (dots on the grid crossings): keep?
+4. DP04's fan latch (stays open past 36px) and no dimming on a `+` pull: keep?
+5. Should a notice clear on the next successful edit, or when a pull starts?
+6. When the owner's link into a store is moved (`Add before` the store) or removed, should the
+   ownership move, the owner be cleared, or validation report a store with no writer? Today
+   nothing changes (finding 4).
+7. Blueprint 2 reuses the name `access` with a new meaning (read/write); a v1 reader gets no
+   error. Keep, or rename (for example `storeAccess`)?
+8. Should the layout keep download entries above upload entries always (an alignment rule),
+   rather than usually (finding 1)?
+
+### Checks (Node 24.21.0 first in PATH), on the final tree
+
+- `pnpm check`: exit 0 (Biome 195 files; type checks; 22 files / 139 tests).
+- `pnpm test:e2e`: 16 passed, first run.
+- `pnpm --filter @jeeves/web build`: exit 0 (the existing chunk-size advisory).
+
+Browser: Playwright Chromium by mouse at 1440×900, my API on 4312 (scratch `JEEVES_HOME`,
+scripted model, `jeeves_e2e`) and web on 4302, both stopped by PID afterwards. A new TinyURL
+project renders (9 tiles with the user, 10 lines); selecting Shorten service by mouse shows the
+Type list with names (the CSS file I touched); dark mode shows Redirect's tabs and the Attach glyph
+legibly. Two projects created, waited for by URL and deleted (204); `jeeves_e2e` again holds just
+"TinyURL · studio study". No console errors or warnings. 4300/4310 and the `jeeves` database were
+not touched.
+
+Docs: the guide's lane intro and Layout paragraph, `laneGraph`'s doc comment, the plan's status
+(complete) and PLAN's Next.

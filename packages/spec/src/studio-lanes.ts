@@ -25,9 +25,10 @@ export type LaneGraph = { nodes: LaneNode[]; edges: LaneEdge[] };
 
 /**
  * Nodes are the actor, then tiles breadth-first from the download entries, then from the upload
- * entries (children in connection order), then any unreachable tiles in document order, so
- * download lays out above upload. Edges are the entries, then each node's connections in node
- * order. Links to elements that do not exist are left out (validation reports them).
+ * entries (children in connection order), then any unreachable tiles in document order, so ELK
+ * usually lays out download above upload (it can interleave them). Edges are the entries, then
+ * each node's connections in node order. Links to elements that do not exist are left out
+ * (validation reports them).
  */
 export function laneGraph(design: DesignDocument): LaneGraph {
   const studio = design.architecture?.studio;
