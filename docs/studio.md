@@ -405,6 +405,16 @@ empty project starts with an `addAction` or an `addTile` from a lane that names 
 provider-reported cost appear only when complete. The model and provider are chosen in
 **Settings**. Chat and the inspector collapse and resize independently.
 
+Chat can retrieve four [reviewed design patterns](studio-patterns.md) through bounded
+`listStudioPatterns` and `describeStudioPattern` tools: cache-aside lookup, durable background
+jobs, committed publication to search, and pending-order/payment coordination. Its instructions
+require relevant retrieval before building or substantial restructuring; a trivial rename can
+proceed directly. Each record separates applicability, topology support and implementation
+obligations from template availability and runtime verification (both absent). Unsupported
+same-owner callbacks remain precise obligations, with no extra service invented for lane rules.
+Lookup appears in the activity list and changes no design or revision. The local catalog supplies
+guidance; it does not certify a design or enforce live-model retrieval and judgment.
+
 ## The TinyURL study
 
 The default study, `studio-tinyurl@3.2.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),

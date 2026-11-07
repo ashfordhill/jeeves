@@ -43,6 +43,21 @@
         },
         { "text": "Added a cache after the Redirect service on the download lane." }
       ]
+    },
+    {
+      "match": "Review the processing lifecycle",
+      "steps": [
+        { "toolCalls": [{ "name": "listStudioPatterns", "arguments": {} }] },
+        {
+          "toolCalls": [
+            { "name": "describeStudioPattern", "arguments": { "id": "durable-background-job" } },
+            { "name": "describeStudioPattern", "arguments": { "id": "publication-to-search" } }
+          ]
+        },
+        {
+          "text": "Processing success is not committed publication. Implementation obligation: the same logical owner must persist attempts, reject duplicate or stale results and commit visibility before publishing to search. The current no-cycle model cannot express that return. No runtime template or verification is supplied."
+        }
+      ]
     }
   ]
 }

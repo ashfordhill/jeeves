@@ -711,3 +711,24 @@ Completion handler and Search indexer writes. The complete fitted overview still
 shared stems and U-shaped returns that resemble frames. Focus improves inspection; it does not
 establish that the whole architecture is immediately readable or resolve logical ownership and
 asynchronous lifecycle modeling.
+
+## 2026-11-07 chat follow-up: reviewed patterns with explicit limits
+
+RF03 exposes a curated [local pattern catalog](studio-patterns.md) through Jeeves chat's actual
+tool loop. Repository prose alone does not reach the assistant. Keep the discovery index bounded,
+retrieve only the records relevant to the use case, and identify versions and stable checklist/
+obligation IDs so later review can name the requirement precisely. Retrieval does not make a
+pattern applicable to every design.
+
+Keep a generic pattern's core requirements separate from domain variants. Publication-to-search
+requires an authoritative publish/update/unpublish decision, entity versions, visibility and a
+freshness policy. A media variant additionally needs processing attempts and results; a Shop
+listing publisher should not inherit transcode states. Even publication after commit leaves
+replica and negative-cache read races to resolve.
+
+Examples that pass canvas commands prove representable topology, not implemented cache behavior,
+transactional outbox delivery or workflow recovery. An unsupported result returning to the same
+logical owner should yield its precise state/correlation/reconciliation obligation. Extra
+independent completion services do not repair that missing model contract. Keep design intent,
+template availability and exact-runtime verification separate, and label scripted transcript
+tests as plumbing evidence rather than measured live-model architecture quality.

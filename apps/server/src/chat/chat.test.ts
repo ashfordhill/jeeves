@@ -5,7 +5,7 @@ import {
   type ModelRequest,
   type Script,
 } from "@jeeves/providers";
-import type { DesignDocument } from "@jeeves/spec";
+import { type DesignDocument, studioPatternIds, studioPatterns } from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
@@ -94,6 +94,82 @@ function textOf(item: ModelItem | undefined): string {
 }
 
 describe("design chat", () => {
+  it.each(studioPatternIds)(
+    "delivers %s and its support limits through the actual chat tool loop",
+    async (patternId) => {
+      const pattern = studioPatterns[patternId];
+      const h = harness((request, round) => {
+        const result = () => {
+          const item = request.items.at(-1);
+          if (item?.type !== "tool-result") throw new Error("Expected the previous tool's result");
+          return JSON.parse(item.output);
+        };
+        if (round === 0) {
+          expect(request.tools?.map((tool) => tool.name)).toContain("describeStudioPattern");
+          expect(request.instructions).toContain("before building or substantially restructuring");
+          expect(request.instructions).toContain("A trivial rename does not need retrieval");
+          expect(request.instructions).toContain(
+            "Retrieval alone does not establish that a pattern applies",
+          );
+          return { toolCalls: [{ name: "listStudioPatterns", arguments: {} }] };
+        }
+        if (round === 1) {
+          expect(result().patterns.map((entry: { id: string }) => entry.id)).toContain(patternId);
+          return { toolCalls: [{ name: "describeStudioPattern", arguments: { id: patternId } }] };
+        }
+        if (round === 2) {
+          const received = result().pattern;
+          expect(received).toEqual(pattern);
+          expect(received.support).toMatchObject({
+            templateAvailability: "none",
+            runtimeVerification: "none",
+          });
+          if (pattern.example.kind === "commands") {
+            return {
+              toolCalls: [
+                {
+                  name: "applyStudioCommands",
+                  arguments: { baseRevision: 0, commands: pattern.example.commands },
+                },
+              ],
+            };
+          }
+          // The scripted provider reads a precise missing contract from the actual tool response.
+          // This proves transport, not whether a live model follows the instruction or designs well.
+          const missing = received.support.obligations.find(
+            (item: { id: string }) => item.id === "same-owner-result",
+          );
+          return { text: `Implementation obligation: ${missing.implementation}` };
+        }
+        expect(result().ok).toBe(true);
+        return {
+          text: "Prepared the topology example. Implementation obligations remain; no runtime template or verification is supplied.",
+        };
+      });
+      const id = await h.project();
+      const { turn, state } = await h.chat(id, `Review and illustrate ${patternId}`);
+      expect(turn.status).toBe("done");
+      expect(turn.activity).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ tool: "listStudioPatterns", ok: true }),
+          expect.objectContaining({ tool: "describeStudioPattern", ok: true }),
+        ]),
+      );
+      if (pattern.example.kind === "obligation") {
+        expect(turn.reply).toContain("never invent another independently owned service");
+        expect(turn.reply).toContain("current attempt");
+        expect(turn.operationId).toBeNull();
+        expect(state.design.elements).toEqual([]);
+        expect(state.design.revision).toBe(0);
+      } else {
+        expect(turn.operationId).toEqual(expect.any(Number));
+        expect(state.design.revision).toBe(1);
+        const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+        expect(undone.body.design.elements).toEqual([]);
+      }
+    },
+  );
+
   it("stores an askUser question, ends the turn, and sends it as history with the answer", async () => {
     const h = harness([
       {

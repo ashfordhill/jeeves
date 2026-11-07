@@ -3943,3 +3943,70 @@ and generator contracts remain open. RF03 should expose those limits in its revi
 no schema migration is needed here. RF03 was not started.
 
 Local commit: **RF02: focus and trace individual relationships**.
+
+## 2026-11-07 — RF03: give chat reviewed design patterns (complete)
+
+Worked RF03 only on primary `main` after RF02 `251ef15`, under the owner's sequential unit
+authorization. No delegation, branches, worktrees, stash or push. Preserved `.jeeves-feedback/`,
+owner projects, owner 4300/4310 and the `jeeves` database. RF04 was not started.
+
+Added typed local catalog/record version **1.0.0** in `studio-patterns.ts`: cache-aside lookup,
+durable background jobs, committed publication to search and pending-order/payment coordination.
+Each record declares applicability, roles, required relationships, variants/tradeoffs, stable
+checklist/obligation IDs, primary references, represented topology and explicit unsupported
+implementation obligations. Three topology-only examples use current validated commands/defaults;
+payment returns a conceptual obligation sequence because the same-owner outcome cannot be
+represented. No workaround completion service, new schema/settings, ownership model, lane-rule
+change, study edit, provider change, template, generator or evaluation harness was introduced.
+
+`listStudioPatterns` and `describeStudioPattern` run in Workspace and the real ChatService tool
+loop with finite strict inputs, bounded results and mouse-visible activity. Instructions call for
+relevant retrieval before building/substantial restructuring, allow trivial renames directly,
+and say retrieval does not establish applicability. Store-access instructions now accurately
+describe the existing ownership inference and its inability to distinguish an owner's read.
+Defaults/link rules still come from the existing catalogs. Lookup is read-only; command edits
+retain the existing whole-turn commit/Undo and revision checks.
+
+Reviewed against RF00 and primary documentation: outbox atomicity is one database state/intent
+transaction, not storage/payment atomicity; job delivery/execution can duplicate; processing
+success differs from committed publication; search-after-commit still needs cache/replica
+read-after-publish; finite stock requires concurrency/expiry/compensation scope; redirect cache
+hits can bypass analytics. The coordinator corrected an overly media-specific generic
+publication obligation; the final record puts Ready/Failed/Cancelled/current-attempt behavior
+in a media variant, while the core requires authoritative publish/update/unpublish. Coordinator
+review found no remaining blocking issue in the final catalog, chat/docs/tests and screenshot.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: pass, Biome 217 files, all type checks, 28 test files / 191 tests.
+- `pnpm test:e2e`: 22 passed in native Chromium.
+- `pnpm --filter @jeeves/web build`: pass, existing chunk-size advisory.
+- `git diff --check`: pass. Command examples execute through `buildStudioCommand` and
+  `applyOperations`; four fake-provider transcripts through ChatService receive the requested
+  pattern/support limits, three examples commit and undo once, unsupported checkout emits the
+  received obligation without any design/revision change. Invalid/extra lookup arguments refuse
+  without workspace mutations. E2E checks visible lookup activities and unchanged blueprint.
+
+Browser: isolated 4302/4312, scratch JEEVES_HOME, scripted chat, `jeeves_e2e`; no owner server or
+owner DB use. By mouse, created TinyURL (11 tiles/12 lines) and YouTube (21/25), checked fitted
+and focused/zoomed views at 1440×900 and 1280×800. On YouTube sent **Review the processing
+lifecycle**, observed job + publication lookup activity/version and a precise same-owner
+return obligation. The turn has no operation ID; full blueprint/revision remained identical.
+Selection/focus also preserved blueprint content. No page/console errors or warnings. Both
+scratch projects deleted (204); E2E DB again contains only the default TinyURL. Only isolated
+servers were stopped; owner listeners remained unchanged.
+
+Evidence: `/tmp/jeeves-rf03-browser-VSb9ga/` contains eight screenshots, `walkthrough.mjs` and
+`results.json`. Inspected `youtube-1280-fitted.png`, `youtube-1440-focused.png` and
+`tinyurl-1280-fitted.png`; the coordinator also inspected the small YouTube fitted screenshot.
+Current studio/catalog/tool docs live in `docs/studio-patterns.md`, with feedback Resolution,
+playbook lessons and plan progress appended/updated.
+
+Remaining: retrieval is model guidance, not a server-enforced gate or deterministic reviewer.
+All records explicitly report no runtime template and no runtime verification. Scripted
+transcripts prove plumbing and command validation, not live-model design quality. Same-owner
+callbacks, lifecycle/ownership/access contracts and the previously recorded overview limitations
+remain open; no fake tile repairs them. RF04 should reuse pattern/version/checklist/obligation
+IDs while keeping applicability and represented facts separate from unmodeled requirements.
+
+Local commit: **RF03: give chat reviewed design patterns**.

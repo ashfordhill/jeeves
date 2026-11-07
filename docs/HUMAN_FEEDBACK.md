@@ -307,3 +307,27 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   U returns can still resemble buses or frames. Focus makes individual relationships traceable;
   it does not resolve logical ownership/grouping, asynchronous lifecycle semantics, architecture
   completeness or the later contract/generator work. Earlier unresolved feedback remains open.
+- RF03, local commit titled **RF03: give chat reviewed design patterns**: chat now retrieves a
+  local versioned catalog through bounded list/describe tools in its actual Workspace/tool loop.
+  The four reviewed records cover cache-aside lookup, durable jobs, committed publication to
+  search and pending-order/payment coordination. Each includes applicability, roles, required
+  relationships, variants/tradeoffs, invariant/failure checks, primary references, topology
+  support and precise implementation obligations. Three examples validate only topology through
+  the canvas command builder; checkout's same-owner outcome remains an obligation sequence.
+- RF03 preserves the RF00 qualifications: outbox atomicity covers one database change/intent,
+  jobs may execute more than once, processing success is distinct from committed publication,
+  cache/replica read races remain after publication, finite-stock scope requires reservation and
+  recovery rules, and response-cache hits may bypass click analytics. Generic publication does
+  not require video-specific transcode states. Neither callbacks nor ownership gaps are solved
+  by inventing independent services for lane rules. Pattern retrieval does not establish that
+  a record applies, that a runtime template exists or that a composition has passed runtime tests.
+- RF03 checked by 191 network-free unit tests, 22 E2E tests and web build. Fake-provider
+  transcripts through ChatService prove all four records and their limits reach the model;
+  command examples commit atomically and undo together, while the unsupported checkout lifecycle
+  makes no edit. Isolated mouse review of TinyURL/YouTube at 1440×900 and 1280×800 shows the two
+  lifecycle-pattern activities and precise obligation reply, with unchanged blueprint/revision.
+  The coordinator reviewed the catalog, generic/media distinction, chat/docs/tests and small
+  YouTube screenshot. Evidence is in the RF03 [handoff](handoff.md).
+- Still open after RF03: deterministic proposed-design review, strict tool schemas, measured
+  live-model quality and the prior ownership/lifecycle/contract/generator and overview-readability
+  concerns. Retrieval is an instruction to the model, not a server gate or architecture proof.

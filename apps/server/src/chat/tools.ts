@@ -16,6 +16,7 @@ import {
   type LaneGraph,
   laneGraph,
   laneLimits,
+  listStudioPatterns,
   type OperationInput,
   type StudioKind,
   type StudioLane,
@@ -31,6 +32,9 @@ import {
   studioKindSchema,
   studioLimits,
   studioLinkRules,
+  studioPatternCatalogVersion,
+  studioPatternIdSchema,
+  studioPatterns,
   studioStoreAccess,
   studioTileDefinitions,
   studioTileTypes,
@@ -74,12 +78,14 @@ The lane canvas:
 - Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
 - A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
 - Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
-- One writer per store: a database, cache, storage or search index is written only by its owner; every other link into it reads (getDesign shows each such link's access). To change who writes, edit the store's owner.
+- Store access is inferred from ownership: links from the owner or its package members are marked write, others read. An owner's individual read cannot be distinguished from a write. This is a modeling approximation, not proof of runtime access or an independently owned service boundary. To change the inferred writer, edit the store's owner.
 - ${linkTable}
 - Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per action.
 - ${studioWarningSentence}
 
 Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
+
+Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before building or substantially restructuring a design, use listStudioPatterns to discover applicability and describeStudioPattern to retrieve the relevant records. Select only patterns that fit the person's use case: cache-aside lookup, durable background job, publication-to-search, pending-order/payment coordination. For an upload/processing/publication flow retrieve both the job and publication records. A trivial rename does not need retrieval. Retrieval alone does not establish that a pattern applies; state the chosen scope and assumptions. Read each record's support limitations and implementation obligations before proposing commands. Examples marked commands are topology-only starting points, not complete applications; examples marked obligation describe unsupported lifecycle contracts and must not be converted into fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. Preserve the intended logical owner and explain the missing contract precisely. Pattern guidance, represented design intent, template availability and runtime verification are separate: these patterns supply no runtime templates or verification. Do not claim tests of this tool loop prove model design quality.
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
@@ -103,6 +109,8 @@ Keep designs small and readable: a few tiles per lane (at most 15 to start), sho
 const schemas = {
   listStudioDefinitions: z.strictObject({}),
   describeStudioDefinition: z.strictObject({ kind: studioKindSchema }),
+  listStudioPatterns: z.strictObject({}),
+  describeStudioPattern: z.strictObject({ id: studioPatternIdSchema }),
   getDesign: z.strictObject({}),
   applyStudioCommands: z.strictObject({
     baseRevision: z.int().nonnegative(),
@@ -121,6 +129,10 @@ const descriptions: Record<ToolName, string> = {
     "List the tile types with their kinds, the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
   describeStudioDefinition:
     "Read a kind's exact settings JSON Schema, defaults, inspector fields and implementation obligations.",
+  listStudioPatterns:
+    "List the four reviewed design patterns, versions and applicability. Discover relevant records before building or substantial restructuring; retrieval does not establish applicability or runtime support.",
+  describeStudioPattern:
+    "Read one reviewed pattern's roles, required relationships, variants, invariant/failure checklist, sources, topology-only example and precise unsupported implementation obligations. No runtime template or verification is supplied.",
   getDesign:
     "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, the current findings and the design warnings.",
   applyStudioCommands:
@@ -371,6 +383,15 @@ export class Workspace {
           ...designSummary(this.working, validateDesign(this.working)),
           baseRevision: this.base.revision,
         };
+      case "listStudioPatterns":
+        this.log(tool, true, "Listed reviewed design patterns");
+        return listStudioPatterns();
+      case "describeStudioPattern": {
+        const { id } = parsed.data as z.infer<typeof schemas.describeStudioPattern>;
+        const pattern = studioPatterns[id];
+        this.log(tool, true, `Read design pattern ${pattern.name} (${pattern.version})`);
+        return { catalogVersion: studioPatternCatalogVersion, pattern };
+      }
       case "validateDesign":
         this.log(tool, true, "Checked design readiness");
         return { findings: validateDesign(this.working) };

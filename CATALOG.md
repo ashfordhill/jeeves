@@ -281,6 +281,14 @@ Settings name providers as intent only: they create no box, credential, deployme
 
 ## Chat model providers
 
+Chat also reads the finite [reviewed pattern catalog](docs/studio-patterns.md)
+([source](packages/spec/src/studio-patterns.ts)), version 1.0.0: cache-aside lookup, durable jobs,
+publication-to-search and pending-order/payment coordination. `listStudioPatterns` and
+`describeStudioPattern` expose applicability, requirements, variants, failures, sources and
+explicit support gaps through the actual chat tool loop. These are design references; no runtime
+template or verification is available. Current kind defaults and link rules still come from
+their existing catalogs, and unsupported lifecycle returns do not authorize workaround services.
+
 The design chat uses one provider and model chosen in Settings
 ([`packages/providers`](packages/providers/src/catalog.ts)):
 

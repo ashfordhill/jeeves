@@ -49,6 +49,26 @@ test("applies a chat turn from the scripted model as one edit", async ({ page, t
   expect(saved.elements.find((e) => e.id === "redirect")?.name).toBe("Redirector");
 });
 
+test("shows pattern lookup and unsupported obligations without changing the design", async ({
+  page,
+  tinyurl: id,
+}) => {
+  const before = await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
+  await send(page, "Review the processing lifecycle");
+  await expect(
+    page.getByText("Processing success is not committed publication.", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Read design pattern Durable background job (1.0.0)", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Read design pattern Committed publication to search (1.0.0)", { exact: true }),
+  ).toBeVisible();
+  await ready(page);
+  await expect(tiles(page)).toHaveCount(11);
+  expect(await (await page.request.get(`/api/projects/${id}/blueprint`)).json()).toEqual(before);
+});
+
 test("adds a tile through chat with the lane commands", async ({ page, tinyurl: id }) => {
   // The script answers this message with an addTile after Redirect, as the canvas's + would.
   await send(page, "Add a cache after the redirect service");

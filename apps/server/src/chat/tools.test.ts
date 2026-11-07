@@ -36,11 +36,35 @@ describe("studio chat tools", () => {
     expect(toolDefinitions().map((t) => t.name)).toEqual([
       "listStudioDefinitions",
       "describeStudioDefinition",
+      "listStudioPatterns",
+      "describeStudioPattern",
       "getDesign",
       "applyStudioCommands",
       "validateDesign",
       "askUser",
     ]);
+  });
+
+  it("bounds pattern lookup and leaves the workspace unchanged", () => {
+    const base = tinyurl();
+    const workspace = new Workspace(base);
+    expect(run(workspace, "listStudioPatterns").patterns).toHaveLength(4);
+    expect(
+      run(workspace, "describeStudioPattern", { id: "pending-order-payment" }).pattern,
+    ).toMatchObject({
+      support: { topology: "partial", templateAvailability: "none", runtimeVerification: "none" },
+      example: { kind: "obligation" },
+    });
+    for (const args of [
+      { id: "unknown" },
+      { id: "durable-background-job", version: "latest" },
+      { id: ["cache-aside-lookup"] },
+    ]) {
+      expect(run(workspace, "describeStudioPattern", args).ok).toBe(false);
+    }
+    expect(run(workspace, "listStudioPatterns", { query: "anything" }).ok).toBe(false);
+    expect(workspace.working).toBe(base);
+    expect(workspace.pending).toEqual([]);
   });
 
   it("reads the tile types, a definition and the design in lane order", () => {

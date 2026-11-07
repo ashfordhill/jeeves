@@ -99,6 +99,18 @@ removing valid dependencies or weakening topology tests.
 
 ### RF03 — Give chat the reviewed design knowledge
 
+**Progress (2026-11-07): complete.** Local typed catalog/record version 1.0.0 contains the four
+reviewed patterns, explicit applicability, roles/relationships, variants, stable checklist and
+obligation IDs, primary references and honest support gaps. Three topology examples pass the
+real command builder; checkout returns a conceptual obligation sequence with no callback
+workaround service. Bounded list/describe tools run through Workspace and ChatService, with
+instructions to retrieve relevant records before builds/restructures and preserve applicability,
+intent, support and verification distinctions. Required checks pass (191 unit tests, 22 E2E,
+web build). Isolated mouse acceptance covered TinyURL and YouTube at both required sizes,
+including both lifecycle-pattern activities and no blueprint/revision change. Detailed evidence
+and remaining live-model/contract limits are in the RF03 handoff. Local commit:
+**RF03: give chat reviewed design patterns**. RF04 was not started in this unit.
+
 **Depends on:** RF00; execute after RF02. **Areas:** new finite pattern records in spec, chat
 lookup tools, playbook and tool documentation.
 
