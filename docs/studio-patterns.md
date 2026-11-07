@@ -26,8 +26,9 @@ ChatService tool-result loop.
 Chat is instructed to retrieve relevant records before building or substantially restructuring
 a design, select the scope that applies, and keep unresolved obligations explicit. A trivial
 rename need not retrieve patterns. For upload/processing/publication it should retrieve both
-the job and publication records. This is model guidance, not a server-enforced retrieval gate
-or a deterministic architecture reviewer.
+the job and publication records. This retrieval instruction is model guidance, not a server-enforced
+retrieval gate. The bounded review described below checks represented facts and explicit scope;
+it does not certify architecture.
 
 Three records contain executable **topology-only** command examples starting from an empty
 design. Their commands use the existing catalog defaults and link rules and are checked with
@@ -48,3 +49,37 @@ processing success differs from committed publication; index ordering does not r
 or negative-cache races; finite stock needs concurrency/expiry/recovery rules; redirect-response
 cache hits may bypass analytics. Each record links the relevant primary references. Changes to
 guidance or support must update its version and be reviewed against those distinctions.
+
+`declareReviewScope({patterns, assumptions, obligations})` explicitly selects this turn's review
+scope. Each pattern selection has an `id` and `checklistIds` chosen from that record (an empty
+list is allowed for topology-only scope). Select variant requirements such as `finite-stock`
+only when the user includes them. Pattern selections are unique; unknown/duplicate checklist
+IDs refuse without changing scope. Custom obligations have a local `id`, `requirement`, and
+optional existing `element`/`connection` targets. Scope is bounded to four patterns, eight checks
+per pattern, eight assumptions (500 characters each) and eight custom obligations (1,000
+characters each). A later removed target retains its requirement with `targetPresent: false`.
+Scope is turn metadata recorded in the conversation's review, never a persistent design field.
+
+`reviewDesign({})` is read-only. It previews all staged additions/updates/removals (including
+settings, ownership, modules, actions and removed IDs), reuses validation findings with their
+element/connection/path targets and introduced flags, and returns assumptions and unresolved
+requirements. Selected checklist invariants and a selected pattern's unsupported obligations
+carry pattern ID/version and **not specified** status. An undeclared pattern adds no obligations.
+No free-text name, connection label or module establishes payload semantics, legal transitions,
+publication ordering, idempotency or implemented side effects. Existing `CONFIG_REQUIRED`
+findings also remain visible. Topology checks supply no runtime template or verification.
+
+Chat sends a fresh review through the actual tool-result loop before committing staged commands
+or meaningful scope, even when the model ends its response. Later commands/scope changes make
+that review stale. At most two subsequent response batches may repair commands/scope, inside
+the existing 16 model rounds; exhaustion of rounds still fails without saving. `askUser` keeps
+its immediate end-turn behavior, using deterministic review and a final summary without another
+model call. Pure conversational turns need no extra round. All successful design edits still
+commit atomically with one Undo and the original revision-conflict guard; warnings are saveable.
+
+The deterministic final reply distinguishes the exact chat commit from the latest saved-state
+review. After conflict/provider failure it reports no saved chat edits and reviews actual
+storage; a later canvas edit cannot be credited to the chat. User-visible **Review details**
+opens targeted findings, assumptions and the complete unsupported requirements. Review-only and
+semantic no-op turns write no design revision or history step. If the project was deleted, the
+turn reports that no saved design remains and the final event has `state: null`.

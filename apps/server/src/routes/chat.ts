@@ -17,7 +17,8 @@ const chatBody = z.strictObject({
  * Chat turns and their files.
  *
  * `POST /projects/:id/chat` answers with newline-delimited JSON (`ChatEvent`s): `turn` first,
- * then `text` deltas and `activity` lines, then `done` with the turn and the design state. Errors
+ * then `text` deltas and `activity` lines, then `done` with the turn and the design state
+ * (`null` if the project was deleted during the turn). Errors
  * that prevent the turn from starting are ordinary JSON responses (404, 409 `CHAT_BUSY` or
  * `REVISION_CONFLICT`, 422 `UNKNOWN_FILE`).
  */

@@ -17,6 +17,8 @@ export const studioWarningRules = [
   "queue-without-publisher",
   "queue-without-consumer",
   "action-without-entries",
+  "uploads-without-storage",
+  "worker-without-output",
 ] as const;
 export type StudioWarningRule = (typeof studioWarningRules)[number];
 
@@ -27,6 +29,8 @@ export const studioWarningSummaries: Record<StudioWarningRule, string> = {
   "queue-without-publisher": "a queue nobody publishes to",
   "queue-without-consumer": "a queue nobody consumes",
   "action-without-entries": "an action with no entries",
+  "uploads-without-storage": "an Uploads tile with no storage relationship",
+  "worker-without-output": "a worker with no outgoing relationship",
 };
 
 /** The chat instructions' sentence on warnings, generated from the list above. */
@@ -88,6 +92,22 @@ export function studioWarnings(design: DesignDocument): StudioWarning[] {
         );
       continue;
     }
+    const outgoing = design.connections.filter((item) => item.from.element === node.id);
+    if (
+      kind === "uploads" &&
+      !outgoing.some((item) => bindings.get(item.to.element)?.settings.kind === "object-store")
+    )
+      warn(
+        "uploads-without-storage",
+        node.id,
+        `${store} has no storage relationship: link the durable storage used for uploads. A transfer setting alone does not specify storage.`,
+      );
+    if (kind === "worker" && !outgoing.length)
+      warn(
+        "worker-without-output",
+        node.id,
+        `${store} has no outgoing relationship: no output, publication or downstream call is represented. Add the intended relationship or explain this scope; side effects cannot be inferred from its name or modules.`,
+      );
     if (studioLinkRole(kind) !== "store") continue;
     const owner = binding.owner;
     const ownerName =

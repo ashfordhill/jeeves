@@ -41,7 +41,7 @@ history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 | `connections` | Resolved C2 connections: typed `from`/`to` endpoints, action, protocol, interaction, security (the planned identity, such as `Service identity`), store access, channel use, timeout and retry. `access` is set on a link into a database, search index, cache or object storage: `write` when it comes from the store's owner (or a member of the owning package), `read` otherwise ([one writer per store](studio-settings.md#relationships)); it is derived from the owner, never stored. A queue link has `channelUse` (`publish` or `consume`) instead. C1 relationships with an external system that has no element appear with `source: "context"`. |
 | `componentLinks` | A component's use of a sibling component or, through its `via` C2 connection, an element. |
 | `omitted` | Anything that cannot be represented (`element`, `connection`, `component`, `component-link` or `entry`), with a reason (`no-studio-binding`, `endpoint-outside-blueprint`, `host-not-a-service`). Nothing disappears silently. |
-| `findings` | Validation findings at this revision. Readiness gaps are `CONFIG_REQUIRED`. Design warnings, designs that look wrong but are allowed (a store with no writer, a worker's output nobody reads, a queue with no publisher or consumer, an action with no entries), are `DESIGN_WARNING` with `severity: "warning"`; they never block an edit ([warnings](studio.md#warnings)). The shape is unchanged; the new code is additive within version 2. |
+| `findings` | Validation findings at this revision. Readiness gaps are `CONFIG_REQUIRED`. Design warnings, designs that look wrong but are allowed (a store with no writer, a worker's output nobody reads, a queue with no publisher or consumer, an action with no entries, Uploads without a storage relationship, a worker without any outgoing relationship), are `DESIGN_WARNING` with `severity: "warning"`; they never block an edit ([warnings](studio.md#warnings)). The shape is unchanged; the new code is additive within version 2. |
 
 It leaves out layout, presentation, history and UI state. People are not included; they are not
 generated.
@@ -123,3 +123,9 @@ read. Its head, and three of its connections (a publish, a read and a write):
   a new list or a new enum value (for example a new kind) is additive within a version: the
   `actions` list and each entry's `action` were added within version 2. A generator must
   reject what it does not understand rather than guess.
+
+
+Chat preview/review scope and assumptions are turn metadata, not blueprint fields. The review
+reuses these findings and reports declared behavior contracts as **not specified**; it does not
+change blueprint version 2 or certify application completeness, template support or runtime
+behavior. A worker's outgoing call/publication/store dependency only expresses topology.

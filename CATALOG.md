@@ -169,6 +169,8 @@ never look at, so no warning refuses an edit:
 | `queue-without-publisher` | No link into a queue | "Click events has no publisher: nothing sends it messages. Link the service that publishes them to it." |
 | `queue-without-consumer` | No link out of a queue | "Link events has no consumer: nothing takes its messages. Add a worker after it." |
 | `action-without-entries` | An action with no entries | "Watch has no entries: nothing handles it yet. Add the service or API that handles it after it, or remove the action." |
+| `uploads-without-storage` | Uploads has no outgoing link to object storage | "Uploads has no storage relationship: link the durable storage used for uploads." |
+| `worker-without-output` | A worker has no outgoing relationship of any kind | "Worker has no outgoing relationship: no output, publication or downstream call is represented." |
 
 `studioWarningSummaries` describes each in a few words and `studioWarningSentence` is the chat
 instructions' sentence, generated from them. The canvas marks a warned tile or action and lists
@@ -336,3 +338,15 @@ counter adds in batches; a Search API reads the index; Identity signs everyone i
 (Watch; Publish), eighteen tiles, 25 links (the user's two lines, five entries and eighteen
 connections) and twenty components; it added the Uploads kind
 ([guide](docs/studio.md#the-youtube-study)).
+
+
+`reviewStudioDesign(base, working, scope)` ([source](packages/spec/src/studio-review.ts)) is a
+read-only review of staged identity changes and the existing validation/warning findings,
+including their targets and whether they were introduced. `declareReviewScope` explicitly
+selects up to four pattern IDs, up to eight applicable checklist IDs each, eight assumptions and
+eight custom obligations. It replaces turn metadata only. `reviewDesign` reports this scope,
+pattern versions and stable obligation IDs. Pattern retrieval never selects applicability.
+Unsupported behavior checks are **not specified**, with no inference from prose or module names.
+The final saved-state review and compact saved/unresolved result are visible in chat; full
+requirements use a mouse disclosure. Two repair batches fit inside the original 16-round limit.
+Neither tool changes persisted settings, contracts, blueprint versions or runtime evidence.

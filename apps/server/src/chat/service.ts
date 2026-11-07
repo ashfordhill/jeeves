@@ -11,7 +11,13 @@ import {
   type ModelRole,
   ProviderError,
 } from "@jeeves/providers";
-import { type DesignDocument, designIds, type Finding } from "@jeeves/spec";
+import {
+  type DesignDocument,
+  designIds,
+  type Finding,
+  reviewStudioDesign,
+  type StudioReview,
+} from "@jeeves/spec";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
 import {
@@ -59,7 +65,7 @@ export type ChatEvent =
   | { type: "turn"; turn: ChatTurn }
   | { type: "text"; delta: string }
   | { type: "activity"; activity: ChatActivity }
-  | { type: "done"; turn: ChatTurn; state: DesignState };
+  | { type: "done"; turn: ChatTurn; state: DesignState | null };
 
 export type ChatInput = {
   message: string;
@@ -74,6 +80,8 @@ export type StartResult =
   | { ok: false; status: 404 | 409 | 422; code: string; message: string };
 
 export const MAX_ROUNDS = 16;
+/** Response batches allowed to change commands/scope after the model has received review. */
+export const MAX_REPAIR_PASSES = 2;
 /** Earlier turns sent as conversation history. */
 const HISTORY_TURNS = 12;
 
@@ -204,6 +212,7 @@ export class ChatService {
     let costUsd = 0;
     let reply = "";
     let operationId: number | null = null;
+    let committedState: DesignState | null = null;
     let changed: string[] = [];
     let model: string | null = null;
     let error: string | null = null;
@@ -238,12 +247,17 @@ export class ChatService {
         },
       ];
       const tools = toolDefinitions();
+      let seenReview = -1;
+      let repairPasses = 0;
       for (let round = 0; ; round++) {
         if (round >= MAX_ROUNDS) {
           throw new TurnError(
             `The assistant didn't finish within ${MAX_ROUNDS} steps. Nothing was changed.`,
           );
         }
+        // A review only counts as seen when it is included in an actual provider request.
+        if (workspace.reviewedGeneration === workspace.generation)
+          seenReview = workspace.reviewedGeneration;
         let separated = false;
         awaitingResponse = true;
         const response = await source.provider.respond(
@@ -299,23 +313,55 @@ export class ChatService {
         items.push(...response.items);
 
         if (response.toolCalls.length > 0) {
+          const generation = workspace.generation;
           for (const call of response.toolCalls) {
             const before = logged();
-            items.push({
-              type: "tool-result",
-              callId: call.callId,
-              output: workspace.run(call.name, call.arguments),
-            });
+            const mutation =
+              call.name === "applyStudioCommands" || call.name === "declareReviewScope";
+            let output: string;
+            if (mutation && seenReview >= 0 && repairPasses >= MAX_REPAIR_PASSES) {
+              const message = `The ${MAX_REPAIR_PASSES} review repair passes are used. End with the unresolved findings; no more commands or scope changes can be prepared this turn.`;
+              workspace.log(call.name, false, message);
+              output = JSON.stringify({ ok: false, error: message });
+            } else {
+              output = workspace.run(call.name, call.arguments);
+            }
+            items.push({ type: "tool-result", callId: call.callId, output });
             flushActivity(before);
           }
+          if (seenReview >= 0 && workspace.generation !== generation) repairPasses++;
           if (!workspace.question) continue;
         }
 
+        if (
+          !workspace.question &&
+          workspace.generation > 0 &&
+          seenReview !== workspace.generation
+        ) {
+          // Ending a model response cannot skip review. Use the same tool/result protocol as an
+          // explicit reviewDesign call, then let the model repair or summarize within MAX_ROUNDS.
+          const before = logged();
+          const callId = `jeeves-review-${round}`;
+          items.push(
+            { type: "tool-call", callId, name: "reviewDesign", arguments: "{}" },
+            { type: "tool-result", callId, output: workspace.run("reviewDesign", "{}") },
+            textMessage(
+              "user",
+              `[Jeeves] Fresh pre-save review. Nothing is saved yet. ${MAX_REPAIR_PASSES - repairPasses} repair passes remain within the ${MAX_ROUNDS}-round turn limit. Report unresolved requirements accurately; do not invent solution tiles.`,
+            ),
+          );
+          flushActivity(before);
+          continue;
+        }
+
         const before = logged();
+        // Questions end immediately, with a deterministic review and summary but no extra model call.
+        if (workspace.question) workspace.review();
         const committed = await this.commit(projectId, workspace);
         flushActivity(before);
         if (committed.ok) {
           operationId = committed.operationId;
+          committedState = committed.state;
           changed = committed.changed;
           break;
         }
@@ -335,31 +381,73 @@ export class ChatService {
           : `The assistant failed: ${caught instanceof Error ? caught.message : String(caught)}`;
     }
 
-    const state = (await this.design.getDesign(projectId)) as DesignState;
+    const state = (await this.design.getDesign(projectId)) ?? null;
+    if (!state) error = "The project was deleted; no saved design remains.";
+    // Attribute edits to the exact committed chat snapshot. A later canvas edit may already exist
+    // by this read; its findings belong to the current-state review, never this chat's Undo step.
+    const savedChanges = committedState
+      ? reviewStudioDesign(initial.design, committedState.design).changes.length
+      : 0;
+    const finalReview = state
+      ? reviewStudioDesign(state.design, state.design, workspace.scope)
+      : null;
+    const beforeFinal = logged();
+    if (finalReview && state) {
+      workspace.log(
+        "finalReview",
+        true,
+        `Reviewed saved revision ${state.design.revision}: ${operationId === null ? "no design edits saved" : `chat committed at revision ${committedState?.design.revision}`}, ${finalReview.findings.length} findings, ${finalReview.obligations.length} not specified obligations`,
+      );
+      for (const finding of finalReview.findings)
+        workspace.log(
+          "reviewDetail",
+          true,
+          `${finding.code}${finding.target.element ? ` · ${finding.target.element}` : finding.target.connection ? ` · ${finding.target.connection}` : ""}: ${finding.message}`,
+        );
+      for (const assumption of finalReview.assumptions)
+        workspace.log("reviewDetail", true, `Assumption (this turn): ${assumption}`);
+      for (const obligation of finalReview.obligations)
+        workspace.log(
+          "reviewDetail",
+          true,
+          `Not specified · ${"pattern" in obligation ? `${obligation.pattern}@${obligation.version}/` : ""}${obligation.id}: ${obligation.requirement} ${obligation.limitation}${"targetPresent" in obligation && !obligation.targetPresent ? " The referenced target is absent from the saved design." : ""}`,
+        );
+    } else {
+      workspace.log("finalReview", false, "Project deleted; there is no saved design to review");
+    }
+    flushActivity(beforeFinal);
+    const summary =
+      finalReview && state
+        ? reviewSummary(finalReview, committedState, savedChanges, state.design.revision)
+        : "The project was deleted; no saved design remains. Review unavailable.";
+    const delta = `${reply ? "\n\n" : ""}${summary}`;
+    reply += delta;
+    emit({ type: "text", delta });
 
+    const completion = {
+      status: error ? ("failed" as const) : ("done" as const),
+      reply,
+      question: error ? null : (workspace.question ?? null),
+      operationId,
+      changed,
+      activity: workspace.activity,
+      usage: receivedUsage
+        ? {
+            ...usage,
+            ...(cachedRounds === responseRounds && { cachedInputTokens }),
+            ...(costRounds === responseRounds && { costUsd }),
+          }
+        : null,
+      model,
+      error,
+      finishedAt: new Date(),
+    };
     const [finished] = await this.db
       .update(chatTurns)
-      .set({
-        status: error ? "failed" : "done",
-        reply,
-        question: error ? null : (workspace.question ?? null),
-        operationId,
-        changed,
-        activity: workspace.activity,
-        usage: receivedUsage
-          ? {
-              ...usage,
-              ...(cachedRounds === responseRounds && { cachedInputTokens }),
-              ...(costRounds === responseRounds && { costUsd }),
-            }
-          : null,
-        model,
-        error,
-        finishedAt: new Date(),
-      })
+      .set(completion)
       .where(eq(chatTurns.id, row.id))
       .returning();
-    const turn = (await this.toTurns(finished ? [finished] : []))[0] as ChatTurn;
+    const turn = (await this.toTurns([finished ?? { ...row, ...completion }]))[0] as ChatTurn;
     emit({ type: "done", turn, state });
     return turn;
   }
@@ -369,9 +457,15 @@ export class ChatService {
     projectId: string,
     workspace: Workspace,
   ): Promise<
-    { ok: true; operationId: number | null; changed: string[] } | { ok: false; message: string }
+    | { ok: true; operationId: number | null; changed: string[]; state: DesignState | null }
+    | { ok: false; message: string }
   > {
-    if (workspace.pending.length === 0) return { ok: true, operationId: null, changed: [] };
+    if (
+      workspace.pending.length === 0 ||
+      JSON.stringify({ ...workspace.base, revision: 0 }) ===
+        JSON.stringify({ ...workspace.working, revision: 0 })
+    )
+      return { ok: true, operationId: null, changed: [], state: null };
     const result = await this.design.edit(projectId, {
       baseRevision: workspace.base.revision,
       ops: workspace.pending,
@@ -388,6 +482,7 @@ export class ChatService {
         ok: true,
         operationId: result.operationId,
         changed: changedIds(workspace.base, result.state.design),
+        state: result.state,
       };
     }
     if (result.reason === "conflict") {
@@ -491,4 +586,25 @@ export function changedIds(before: DesignDocument, after: DesignDocument): strin
   return [...index(after)]
     .filter(([id, json]) => ids.has(id) && old.get(id) !== json)
     .map(([id]) => id);
+}
+
+/** Compact result for the narrow chat rail; full targeted diagnostics stay in review activity. */
+function reviewSummary(
+  review: StudioReview,
+  committed: DesignState | null,
+  savedChanges: number,
+  revision: number,
+): string {
+  const saved = !committed
+    ? "No design edits saved."
+    : `Saved ${savedChanges} design changes at revision ${committed.design.revision} as one Undo step.`;
+  const requirements = [...new Set(review.obligations.map((item) => item.id.replaceAll("-", " ")))];
+  const names =
+    requirements.slice(0, 5).join(", ") +
+    (requirements.length > 5 ? `, +${requirements.length - 5} more` : "");
+  const unresolved =
+    review.findings.length || review.obligations.length
+      ? `Unresolved: ${review.findings.length} design finding${review.findings.length === 1 ? "" : "s"}; ${review.obligations.length} requirement${review.obligations.length === 1 ? "" : "s"} not specified${names ? ` (${names})` : ""}. See Review details.`
+      : "No represented structural/readiness findings. Undeclared requirements remain outside this review.";
+  return `${saved} Review of saved revision ${revision}.\n${unresolved} No runtime verification.`;
 }

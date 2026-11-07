@@ -41,6 +41,8 @@ describe("studio chat tools", () => {
       "getDesign",
       "applyStudioCommands",
       "validateDesign",
+      "declareReviewScope",
+      "reviewDesign",
       "askUser",
     ]);
   });
@@ -65,6 +67,48 @@ describe("studio chat tools", () => {
     expect(run(workspace, "listStudioPatterns", { query: "anything" }).ok).toBe(false);
     expect(workspace.working).toBe(base);
     expect(workspace.pending).toEqual([]);
+  });
+
+  it("declares bounded review scope explicitly and keeps previews read-only", () => {
+    const base = tinyurl();
+    const workspace = new Workspace(base);
+    run(workspace, "describeStudioPattern", { id: "cache-aside-lookup" });
+    expect(run(workspace, "reviewDesign").obligations).toEqual([]);
+    const scope = {
+      patterns: [{ id: "cache-aside-lookup", checklistIds: ["cache-loss"] }],
+      assumptions: ["Approximate analytics"],
+      obligations: [
+        {
+          id: "custom-behavior",
+          requirement: "Define custom visibility",
+          element: "redirect",
+          connection: "redirect-db",
+        },
+      ],
+    };
+    expect(run(workspace, "declareReviewScope", scope).ok).toBe(true);
+    const generation = workspace.generation;
+    const review = run(workspace, "reviewDesign");
+    expect(review.changes).toEqual([]);
+    expect(review.obligations).toHaveLength(4);
+    expect(
+      review.obligations.every((item: { status: string }) => item.status === "not specified"),
+    ).toBe(true);
+    expect(review.assumptions).toEqual(scope.assumptions);
+    expect(review.scope.persistence).toBe("this turn only");
+    expect(workspace.generation).toBe(generation);
+    expect(workspace.working).toBe(base);
+    expect(workspace.pending).toEqual([]);
+    for (const invalid of [
+      { ...scope, patterns: [{ id: "cache-aside-lookup", checklistIds: ["imaginary"] }] },
+      { ...scope, patterns: [...scope.patterns, ...scope.patterns] },
+      { ...scope, obligations: [{ id: "missing", requirement: "Something", element: "ghost" }] },
+      { ...scope, assumptions: Array(9).fill("Too many") },
+      { ...scope, verified: true },
+    ])
+      expect(run(workspace, "declareReviewScope", invalid).ok).toBe(false);
+    expect(workspace.scope).toEqual(scope);
+    expect(run(workspace, "reviewDesign", { save: true }).ok).toBe(false);
   });
 
   it("reads the tile types, a definition and the design in lane order", () => {

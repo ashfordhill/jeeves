@@ -10,6 +10,7 @@ import {
   applyOperations,
   buildStudioCommand,
   type DesignDocument,
+  emptyReviewScope,
   type Finding,
   isDesignWarning,
   LANE_ACTOR,
@@ -18,10 +19,13 @@ import {
   laneLimits,
   listStudioPatterns,
   type OperationInput,
+  reviewScopeProblem,
+  reviewStudioDesign,
   type StudioKind,
   type StudioLane,
   type StudioLinkRole,
   type StudioLinkRule,
+  type StudioReviewScope,
   studioActionDefaults,
   studioActions,
   studioCommandSchema,
@@ -35,6 +39,7 @@ import {
   studioPatternCatalogVersion,
   studioPatternIdSchema,
   studioPatterns,
+  studioReviewScopeSchema,
   studioStoreAccess,
   studioTileDefinitions,
   studioTileTypes,
@@ -87,6 +92,8 @@ Tools: listStudioDefinitions lists the tile types, their kinds and the module ki
 
 Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before building or substantially restructuring a design, use listStudioPatterns to discover applicability and describeStudioPattern to retrieve the relevant records. Select only patterns that fit the person's use case: cache-aside lookup, durable background job, publication-to-search, pending-order/payment coordination. For an upload/processing/publication flow retrieve both the job and publication records. A trivial rename does not need retrieval. Retrieval alone does not establish that a pattern applies; state the chosen scope and assumptions. Read each record's support limitations and implementation obligations before proposing commands. Examples marked commands are topology-only starting points, not complete applications; examples marked obligation describe unsupported lifecycle contracts and must not be converted into fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. Preserve the intended logical owner and explain the missing contract precisely. Pattern guidance, represented design intent, template availability and runtime verification are separate: these patterns supply no runtime templates or verification. Do not claim tests of this tool loop prove model design quality.
 
+Review before saving: declareReviewScope explicitly selects this turn's pattern IDs, applicable checklist IDs, assumptions and custom obligations. It replaces only turn-local review metadata, never design settings. Retrieval does not select scope. Do not select variant checks (such as finite stock) unless they apply; use an empty checklist for topology-only scope. reviewDesign is read-only: inspect staged additions/updates/removals, targeted findings, assumptions and unsupported obligations. All selected behavior checks without typed contracts stay "not specified", never "verified"; no labels or module names prove payload semantics, transitions or side effects. A fresh review is sent back before edits commit even if you end your response. You may repair at most two response batches after receiving a review, within the normal 16-round limit; review again after edits. Warnings remain saveable: fix represented facts or explicitly report what remains. askUser still ends the turn immediately. The server appends the actual saved-edit and unresolved-review result.
+
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
 - addTile: a new tile after a tile, after a lane's action (from {"lane": "download"} or {"lane": "upload"}, side "after"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
@@ -117,6 +124,8 @@ const schemas = {
     commands: z.array(studioCommandSchema).min(1).max(50),
   }),
   validateDesign: z.strictObject({}),
+  declareReviewScope: studioReviewScopeSchema,
+  reviewDesign: z.strictObject({}),
   askUser: z.strictObject({
     question: z.string().min(1).max(500),
     choices: z.array(z.string().min(1).max(120)).min(1).max(6),
@@ -138,6 +147,10 @@ const descriptions: Record<ToolName, string> = {
   applyStudioCommands:
     "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
+  declareReviewScope:
+    "Explicitly replace this turn's review scope: selected pattern/checklist IDs, assumptions and custom unsupported obligations. No persistent design setting or capability contract is created. Retrieve patterns before selecting their IDs.",
+  reviewDesign:
+    "Preview all staged changes without saving: targeted structural/readiness findings, declared assumptions and unsupported obligations. Contract checks stay not specified. Later edits or scope changes invalidate this review.",
   askUser: "Ask a focused question with clickable choices, then end the turn.",
 };
 
@@ -311,6 +324,21 @@ export class Workspace {
   pending: OperationInput[] = [];
   question: ChatQuestion | undefined;
   activity: ChatActivity[] = [];
+  scope: StudioReviewScope = emptyReviewScope();
+  /** Changes to commands or scope invalidate an earlier review, including within one response. */
+  generation = 0;
+  reviewedGeneration = -1;
+
+  review() {
+    this.reviewedGeneration = this.generation;
+    const review = reviewStudioDesign(this.base, this.working, this.scope);
+    this.log(
+      "reviewDesign",
+      true,
+      `Reviewed staged design: ${review.changes.length} changes, ${review.findings.length} findings, ${review.obligations.length} not specified obligations`,
+    );
+    return review;
+  }
 
   constructor(
     /** The committed design the pending edits apply to. */
@@ -323,6 +351,7 @@ export class Workspace {
     this.base = base;
     this.working = base;
     this.pending = [];
+    this.generation++;
   }
 
   /** Runs one tool call and returns its JSON result for the model. */
@@ -392,6 +421,28 @@ export class Workspace {
         this.log(tool, true, `Read design pattern ${pattern.name} (${pattern.version})`);
         return { catalogVersion: studioPatternCatalogVersion, pattern };
       }
+      case "declareReviewScope": {
+        const scope = parsed.data as StudioReviewScope;
+        const problem = reviewScopeProblem(scope, this.working);
+        if (problem) {
+          this.log(tool, false, problem);
+          return { ok: false, error: problem, note: "Review scope unchanged." };
+        }
+        if (JSON.stringify(scope) !== JSON.stringify(this.scope)) this.generation++;
+        this.scope = scope;
+        this.log(
+          tool,
+          true,
+          `Declared turn-only review scope: ${scope.patterns.length} patterns, ${scope.obligations.length} custom obligations`,
+        );
+        return {
+          ok: true,
+          scope,
+          note: "This turn only; not saved as design settings or implementation contracts.",
+        };
+      }
+      case "reviewDesign":
+        return this.review();
       case "validateDesign":
         this.log(tool, true, "Checked design readiness");
         return { findings: validateDesign(this.working) };
@@ -438,6 +489,7 @@ export class Workspace {
     }
     this.working = working;
     this.pending.push(...ops);
+    if (ops.length) this.generation++;
     this.log(
       tool,
       true,

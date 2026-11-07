@@ -4010,3 +4010,61 @@ remain open; no fake tile repairs them. RF04 should reuse pattern/version/checkl
 IDs while keeping applicability and represented facts separate from unmodeled requirements.
 
 Local commit: **RF03: give chat reviewed design patterns**.
+
+
+## 2026-11-07 — RF04: review proposed chat designs before saving (complete)
+
+Worked RF04 only after RF03 `317ae6c`, on primary `main`, under the owner's sequential unit
+authorization. No delegation, branches, worktrees, stash or push. Preserved `.jeeves-feedback/`,
+owner projects, owner 4300/4310 and the `jeeves` database. RF05 was not started.
+
+Added pure `reviewStudioDesign` and read-only `reviewDesign`: staged identity additions/updates/
+removals include settings/ownership, modules and actions; existing validation findings retain
+node/connection/path targets and introduced flags. `declareReviewScope` explicitly selects up
+to four patterns with applicable checklist IDs, eight assumptions and eight custom obligations
+for this turn only. Unknown/duplicate IDs or missing targets refuse without mutation. Retrieval
+alone selects nothing. Selected checks/unsupported obligations retain pattern/version/stable IDs
+and say **not specified**; no contract/side-effect inference from names, labels or modules.
+No persisted settings, contracts, blueprint version, pattern records or ownership rules changed.
+
+Reused warning paths; added Uploads without an object-storage dependency and workers with zero
+outgoing relationships. Calls/publications count as represented outgoing relationships, without
+claiming business outputs. Warning marks, inspectors and blueprint findings remain saveable;
+structural invalidity still refuses the whole batch.
+
+Chat now sends a fresh staged review through an actual tool-call/result continuation before
+staged commands or meaningful scope finish. Edits invalidate it; at most two response batches
+repair commands/scope within the original 16 rounds. Questions still end immediately with
+review/summary; pure conversational replies need no extra call. Edited turns commit/undo once;
+review-only and semantic no-op turns write no design revision. Final compact text and mouse
+**Review details** separate the exact chat snapshot from current saved-state findings and precise
+unsupported requirements. Conflicts/provider failure review storage without claiming proposals
+were saved. Post-commit mouse edits are not attributed to chat. Deletion yields a failed turn
+with `done.state: null`; client skips adopting missing state.
+
+Checks (Node 24.21.0 first in PATH): `pnpm check` passes (Biome 218 files, all type checks,
+28 files / 203 tests); `pnpm test:e2e` passes (23, native Chromium);
+`pnpm --filter @jeeves/web build` passes (existing chunk-size advisory); `git diff --check` passes.
+Real ChatService/fake-provider tests cover nonpersistent multi-command preview, repair from
+received findings, forced/stale review, atomic rejected batch, concurrent canvas conflict,
+post-commit canvas interleaving, deletion, two-repair/original round limits, same-owner obligation,
+question behavior, no-op/review-only and one Undo. Unit tests remain network-free/PGlite.
+
+Browser evidence: `/tmp/jeeves-rf04-browser-lJqWut/` (14 PNGs, walkthrough.mjs, results.json).
+Isolated 4302/4312, scratch JEEVES_HOME, scripted model and `jeeves_e2e`. At 1440×900 and
+1280×800, TinyURL renders (11 tiles/12 lines); adding Uploads saves a visible storage warning
+and precise lifecycle obligation, opens Review details by mouse, and keeps warning/blueprint
+stable during focus/Fit focus. One mouse Undo restores prior blueprint semantics (revision 3).
+YouTube's explicitly scoped processing/publication review reports seven **not specified**
+requirements, no operation ID and an identical full blueprint/revision (21/25). Fit and focused
+views pass at both sizes. No page/console errors or warnings. Images inspected by me; coordinator
+also inspected the small TinyURL disclosure and YouTube summary. Both scratch projects deleted
+(204); E2E DB again holds only default TinyURL. Only isolated servers stopped.
+
+Remaining: model/user scope selection is not a server completeness gate; undeclared requirements
+remain outside review. Unknown payloads, lifecycle, ownership/access and runtime behavior are not
+verified. Pattern/template/evidence distinctions remain; live-model design quality, strict wire
+schemas (RF05), evaluations (RF06), contract/generator milestones and previous overview limits
+remain open. No fake solution tiles or general requirements editor were added.
+
+Local commit: **RF04: review staged designs before saving chat**.

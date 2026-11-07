@@ -318,3 +318,18 @@
   font-size: 13px;
   color: var(--mantine-color-dimmed);
 }
+
+.chat-review-details {
+  margin-top: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.chat-review-details summary {
+  cursor: pointer;
+}
+.chat-review-details ul {
+  padding-left: 18px;
+}
+.chat-review-details li {
+  margin-top: 8px;
+}

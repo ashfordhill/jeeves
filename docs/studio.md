@@ -347,7 +347,7 @@ reopen to edit."
 A **warning** is a design that looks wrong but is allowed. A design is built step by step, so a
 queue with no consumer yet or a new action with no entries must be accepted while you build it.
 Warnings never refuse an edit: no command, pull, attach or chat call is blocked by one, and they
-are not "Fix the lanes first" problems (those are lane errors). There are four:
+are not "Fix the lanes first" problems (those are lane errors). The rules are:
 
 - **A store with no writer**: a database, search index, cache or storage with no owner, or whose
   owner doesn't link to it, for example after **Add before** the store or removing the owner's
@@ -360,6 +360,11 @@ are not "Fix the lanes first" problems (those are lane errors). There are four:
   messages. Add a worker after it.").
 - **An action with no entries** ("Watch has no entries: nothing handles it yet. Add the service or
   API that handles it after it, or remove the action.").
+- **Uploads with no storage relationship**: an Uploads tile has no outgoing link to object
+  storage. Its transfer setting alone does not specify durable storage.
+- **A worker with no outgoing relationship**: no output, publication or downstream call is
+  represented. Any outgoing relationship clears this narrow check; it does not establish that
+  a business side effect is implemented. Names, labels and modules cannot establish one.
 
 On the canvas, a tile or action with a warning has a small yellow mark in its top-right corner;
 the pointer on it shows the message. Its inspector lists its warnings, and the system's inspector
@@ -414,6 +419,27 @@ obligations from template availability and runtime verification (both absent). U
 same-owner callbacks remain precise obligations, with no extra service invented for lane rules.
 Lookup appears in the activity list and changes no design or revision. The local catalog supplies
 guidance; it does not certify a design or enforce live-model retrieval and judgment.
+
+Before saving a proposed turn, chat reviews the working copy through `reviewDesign`. It returns
+staged additions, updates and removals, findings targeted to elements/connections, declared
+assumptions and unsupported obligations without writing the design. `declareReviewScope`
+explicitly selects pattern/checklist IDs and custom requirements for **this turn only**; lookup
+alone selects nothing. This metadata is not saved as design settings or capability contracts.
+Checks without typed contracts say **not specified**, even if a name or module describes the
+behavior. Undeclared requirements are outside the review.
+
+A fresh review reaches the model before commands or meaningful declared scope finish; ending
+its response cannot skip it. Further commands or scope changes invalidate the review. The model
+may make two response batches of repairs after receiving review, within the existing 16-round
+limit. Warnings remain saveable; structural errors still refuse a batch. A pure conversational
+answer needs no extra model round. A question still ends immediately with the current edits and
+deterministic final review. Review/no-op turns create no design revision or Undo step.
+
+Each final reply names what the chat actually saved and what remains unresolved; **Review
+details** opens targeted findings, assumptions and precise requirements by mouse. This review is
+of the latest saved revision, including after a conflict/failure. A later mouse edit is never
+counted as part of the chat's committed snapshot. Concurrent edits still prevent a stale commit;
+a successful edited turn still undoes once. No review claims a runtime template or verification.
 
 ## The TinyURL study
 

@@ -143,7 +143,18 @@ describe("design warnings", () => {
       tile: { id: "indexer", name: "Indexer", kind: "worker" },
       linkId: "events-indexer",
     });
-    expect(warnings(consumed)).toEqual([]);
+    expect(warnings(consumed)).toEqual([
+      expect.objectContaining({ rule: "worker-without-output", node: "indexer" }),
+    ]);
+    // An outgoing publication counts as represented output; no payload semantics are guessed.
+    const published = run(consumed, {
+      type: "addTile",
+      from: { tile: "indexer" },
+      side: "after",
+      tile: { id: "indexed", name: "Indexed", kind: "queue" },
+      linkId: "indexer-indexed",
+    });
+    expect(warnings(published).map((item) => item.rule)).toEqual(["queue-without-consumer"]);
 
     // With its publisher's link gone (stored that way), Click events has no publisher.
     const design = tinyurl();
@@ -182,6 +193,28 @@ describe("design warnings", () => {
       linkId: "download-api",
     });
     expect(warnings(handled)).toEqual([]);
+  });
+
+  it("warns about upload storage without inferring lifecycle state from labels", () => {
+    const upload = run(emptyDesign(), {
+      type: "addTile",
+      from: { lane: "upload" },
+      side: "after",
+      system: { name: "Media" },
+      tile: { id: "uploads", name: "Ready with durable retry", kind: "uploads" },
+      linkId: "upload-uploads",
+    });
+    expect(warnings(upload)).toEqual([
+      expect.objectContaining({ rule: "uploads-without-storage", node: "uploads" }),
+    ]);
+    const stored = run(upload, {
+      type: "addTile",
+      from: { tile: "uploads" },
+      side: "after",
+      tile: { id: "originals", name: "Originals", kind: "object-store" },
+      linkId: "uploads-originals",
+    });
+    expect(warnings(stored)).toEqual([]);
   });
 
   it("the chat sentence is generated from the warning list", () => {

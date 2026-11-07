@@ -169,7 +169,7 @@ export const useChat = create<ChatState>()((set, get) => ({
               break;
             case "done":
               set({ turns: [...get().turns, event.turn], live: undefined });
-              useProject.getState().adoptChange(event.state);
+              if (event.state) useProject.getState().adoptChange(event.state);
               break;
           }
         },

@@ -331,3 +331,26 @@ been launched. Revised ownership, runtime relationships and contract semantics r
 - Still open after RF03: deterministic proposed-design review, strict tool schemas, measured
   live-model quality and the prior ownership/lifecycle/contract/generator and overview-readability
   concerns. Retrieval is an instruction to the model, not a server gate or architecture proof.
+
+- RF04, local commit titled **RF04: review staged designs before saving chat**: chat can preview
+  staged changes without persistence and explicitly select a bounded scope for that turn. Review
+  reuses targeted warnings/readiness findings, adds missing upload storage and workers with no
+  outgoing relationship, and reports declared lifecycle/contract requirements as **not specified**.
+  Retrieving a pattern selects no scope. Free-text labels/modules prove no behavior; no extra
+  completion owner is invented. Scope/assumptions are conversation metadata, absent from blueprints.
+- RF04 sends a fresh review through the real tool loop before staged work ends, invalidates it
+  after edits, and allows two repair batches within 16 model rounds. Warnings remain saveable,
+  invalid batches atomic, conflicts protected and successful edited turns one Undo. Questions
+  retain immediate end-turn behavior; conversational/review/no-op turns create no design edits.
+  A compact actual saved/unresolved result and mouse **Review details** expose the precise gaps.
+  Failure/conflict reviews actual storage; a later mouse edit is not attributed to the chat.
+- RF04 checked by 203 network-free unit tests, 23 E2E tests and web build. Fake-provider tests
+  cover multi-call preview/repair, stale reviews, failing batches, conflicts, post-commit mouse
+  interleaving, deletion, repair/round limits, unsupported lifecycle, no-op and question behavior.
+  Isolated mouse acceptance at 1440×900 and 1280×800 checks TinyURL's saveable upload warning,
+  details and one Undo, plus a read-only YouTube lifecycle review with seven explicit obligations
+  and an identical blueprint. Evidence is in the RF04 [handoff](handoff.md).
+- Still open after RF04: applicability and scope selection rely on the model/user; deterministic
+  review covers represented facts, not application completeness. Typed ownership, payload,
+  lifecycle and business contracts, template/runtime evidence, strict tool wire schemas and
+  measured live-model design quality remain open, along with prior overview-readability limits.

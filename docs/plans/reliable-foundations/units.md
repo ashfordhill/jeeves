@@ -130,6 +130,20 @@ a misleading current-model workaround. Human review verifies the records against
 
 ### RF04 — Review proposed designs before committing a turn
 
+**Progress (2026-11-07): complete.** Read-only `reviewDesign` previews the staged identity delta,
+existing targeted findings, explicit turn-only assumptions and unsupported obligations.
+`declareReviewScope` selects bounded pattern/checklist IDs and custom requirements; retrieval
+selects nothing. Unsupported contracts remain **not specified**, with no prose-based inference.
+Uploads without storage and workers without any outgoing relationship join existing saveable
+warnings. A fresh review reaches the actual model tool loop before staged commands/scope finish;
+later edits invalidate it. Two repair batches stay inside the original 16 rounds. Questions
+still end immediately; pure conversational replies need no extra round. Final results separate
+the exact chat commit from current saved-state review, including conflict/failure/deletion.
+Required checks pass (203 unit tests, 23 E2E, production build); isolated mouse acceptance covers
+TinyURL warnings/disclosure/one Undo and unchanged scoped YouTube reviews at both required sizes.
+Evidence and limits: RF04 handoff. Local commit: **RF04: review staged designs before saving chat**.
+RF05 was not started in this unit.
+
 **Depends on:** RF03. **Areas:** spec diagnostics, chat Workspace/tool loop, warning inspector.
 
 Reuse the existing working-copy/atomic-turn mechanism. Add a read-only preview/review operation

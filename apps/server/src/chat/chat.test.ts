@@ -2,16 +2,29 @@ import {
   createFakeProvider,
   type FakeProvider,
   type ModelItem,
+  type ModelProvider,
   type ModelRequest,
   type Script,
 } from "@jeeves/providers";
-import { type DesignDocument, studioPatternIds, studioPatterns } from "@jeeves/spec";
+import {
+  buildStudioCommand,
+  type DesignDocument,
+  studioPatternIds,
+  studioPatterns,
+} from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Db } from "../db/client.ts";
+import { DesignService, type EditInput } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 import { rasterizeSvg } from "./files.ts";
-import type { ChatEvent, ChatTurn, ModelSource } from "./service.ts";
+import {
+  type ChatEvent,
+  ChatService,
+  type ChatTurn,
+  MAX_ROUNDS,
+  type ModelSource,
+} from "./service.ts";
 
 type State = {
   design: DesignDocument;
@@ -100,10 +113,23 @@ describe("design chat", () => {
       const pattern = studioPatterns[patternId];
       const h = harness((request, round) => {
         const result = () => {
-          const item = request.items.at(-1);
+          const item = request.items.findLast((item) => item.type === "tool-result");
           if (item?.type !== "tool-result") throw new Error("Expected the previous tool's result");
           return JSON.parse(item.output);
         };
+        if (
+          request.items.some(
+            (item) => item.type === "tool-call" && item.callId.startsWith("jeeves-review-"),
+          )
+        ) {
+          const review = result();
+          expect(review.structurallyValid).toBe(true);
+          // Retrieval alone did not declare applicability.
+          expect(review.scope.patterns).toEqual([]);
+          return {
+            text: "Reviewed the represented topology; behavior contracts remain outside this review.",
+          };
+        }
         if (round === 0) {
           expect(request.tools?.map((tool) => tool.name)).toContain("describeStudioPattern");
           expect(request.instructions).toContain("before building or substantially restructuring");
@@ -197,11 +223,13 @@ describe("design chat", () => {
     expect(h.requests).toHaveLength(1);
 
     const second = await h.chat(id, "No accounts");
-    expect(second.turn.reply).toBe("Noted: no accounts.");
+    expect(second.turn.status).toBe("done");
+    expect(second.turn.reply).toContain("Noted: no accounts.");
+    expect(h.requests).toHaveLength(2);
     const history = (h.requests[1] as ModelRequest).items.map(textOf);
     expect(history[0]).toBe("Make me a link shortener");
     expect(history[1]).toMatch(
-      /One question first\.\n\[Asked: Do people need accounts\? Choices: No accounts \| Email login\]/,
+      /One question first\.[\s\S]*\n\[Asked: Do people need accounts\? Choices: No accounts \| Email login\]/,
     );
     expect(history.at(-1)).toBe("No accounts");
   });
@@ -237,10 +265,14 @@ describe("design chat", () => {
         ],
       },
       { text: "Added two services." },
+      { text: "Reviewed both services." },
     ]);
     const id = await h.project();
     const { turn, state } = await h.chat(id, "Add a link service and a redirect");
-    expect(turn).toMatchObject({ status: "done", reply: "Added two services." });
+    expect(turn).toMatchObject({
+      status: "done",
+      reply: expect.stringContaining("Added two services."),
+    });
     expect(turn.operationId).toEqual(expect.any(Number));
     expect(turn.changed).toEqual(expect.arrayContaining(["links", "redirect"]));
     expect(turn.activity.map((a) => a.ok)).toEqual(expect.arrayContaining([true, false]));
@@ -293,6 +325,408 @@ describe("design chat", () => {
     expect(
       (await h.call("POST", `/projects/${id}/chat`, { message: "  ", baseRevision: 0 })).status,
     ).toBe(400);
+  });
+});
+
+const toolOutput = (request: ModelRequest) => {
+  const item = request.items.findLast((item) => item.type === "tool-result");
+  if (item?.type !== "tool-result") throw new Error("Expected a tool result");
+  return JSON.parse(item.output);
+};
+const firstUpload = {
+  type: "addTile",
+  from: { lane: "upload" },
+  side: "after",
+  tile: { id: "uploads", name: "Uploads", kind: "uploads" },
+  linkId: "upload-uploads",
+  system: { name: "Media" },
+};
+const originalStorage = {
+  type: "addTile",
+  from: { tile: "uploads" },
+  side: "after",
+  tile: { id: "originals", name: "Originals", kind: "object-store" },
+  linkId: "uploads-originals",
+};
+const apply = (...commands: unknown[]) => ({
+  name: "applyStudioCommands",
+  arguments: { baseRevision: 0, commands },
+});
+
+describe("proposed-design review in ChatService", () => {
+  it("previews multi-command staged changes without persistence, repairs from received diagnostics, and undoes once", async () => {
+    const fake = createFakeProvider((request, round) => {
+      if (round === 0)
+        return {
+          toolCalls: [
+            apply(firstUpload, { type: "edit", element: "uploads", name: "Video uploads" }),
+            { name: "reviewDesign", arguments: {} },
+          ],
+        };
+      const review = toolOutput(request);
+      if (round === 1) {
+        expect(review.changes).toContainEqual(
+          expect.objectContaining({
+            type: "element",
+            id: "uploads",
+            change: "added",
+            name: "Video uploads",
+          }),
+        );
+        expect(review.findings).toContainEqual(
+          expect.objectContaining({
+            code: "DESIGN_WARNING",
+            target: { element: "uploads" },
+            introduced: true,
+          }),
+        );
+        return { toolCalls: [apply(originalStorage)] };
+      }
+      if (round === 2) return { text: "The storage relationship is prepared." };
+      expect(review.changes.map((item: { id: string }) => item.id)).toContain("originals");
+      expect(review.findings).toEqual([]);
+      return { text: "Reviewed the final staged topology." };
+    });
+    let id = "";
+    const provider: ModelProvider = {
+      ...fake,
+      respond: async (request, options) => {
+        if (fake.requests.length > 0) {
+          const stored = await h.design(id);
+          expect(stored.design.revision).toBe(0);
+          expect(stored.design.elements).toEqual([]);
+        }
+        return fake.respond(request, options);
+      },
+    };
+    const h = harness({ models: () => ({ provider, model: "fake" }) });
+    id = await h.project();
+    const { turn, state } = await h.chat(id, "Add durable uploads");
+    expect(turn.status).toBe("done");
+    expect(fake.requests).toHaveLength(4);
+    expect(state.design.revision).toBe(1);
+    expect(state.design.elements.map((item) => item.id)).toEqual(["uploads", "originals"]);
+    expect(turn.reply).toContain("Saved");
+    expect(turn.reply).toContain("one Undo step");
+    const undone = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+    expect(undone.body.design.elements).toEqual([]);
+    expect(undone.body.history.canUndo).toBe(false);
+  });
+
+  it("forces review when the model ends, invalidates it after later commands, and saves warnings", async () => {
+    const h = harness((request, round) => {
+      if (round === 0) return { toolCalls: [apply(firstUpload)] };
+      if (round === 1) return { text: "Finished." }; // No explicit review call.
+      if (round === 2) {
+        expect(toolOutput(request).findings[0].target).toEqual({ element: "uploads" });
+        return {
+          toolCalls: [apply({ type: "edit", element: "uploads", name: "Still missing storage" })],
+        };
+      }
+      if (round === 3) return { text: "Finished again." };
+      expect(toolOutput(request).changes).toContainEqual(
+        expect.objectContaining({ id: "uploads", name: "Still missing storage" }),
+      );
+      return { text: "Storage remains unresolved in this scope." };
+    });
+    const id = await h.project();
+    const { turn, state } = await h.chat(id, "Prepare the upload entry only");
+    expect(turn.status).toBe("done");
+    expect(h.requests).toHaveLength(5);
+    expect(state.findings).toContainEqual(
+      expect.objectContaining({ code: "DESIGN_WARNING", target: { element: "uploads" } }),
+    );
+    expect(turn.reply).toContain("Unresolved: 1 design finding");
+    expect(turn.activity.filter((item) => item.tool === "reviewDesign")).toHaveLength(2);
+    expect(turn.activity.find((item) => item.tool === "reviewDetail")?.summary).toContain(
+      "has no storage relationship",
+    );
+  });
+
+  it("keeps a failing command batch atomic and structural invalidity rejected", async () => {
+    const h = harness((request, round) => {
+      if (round === 0)
+        return {
+          toolCalls: [
+            apply(firstUpload, {
+              type: "linkTiles",
+              from: { tile: "uploads" },
+              to: "uploads",
+              linkId: "loop",
+            }),
+          ],
+        };
+      if (round === 1) {
+        expect(toolOutput(request)).toMatchObject({
+          ok: false,
+          note: "Nothing changed for this call.",
+        });
+        return { toolCalls: [{ name: "reviewDesign", arguments: {} }] };
+      }
+      expect(toolOutput(request).changes).toEqual([]);
+      return { text: "The invalid batch was refused." };
+    });
+    const id = await h.project();
+    const { turn, state } = await h.chat(id, "Try an invalid batch");
+    expect(turn.status).toBe("done");
+    expect(turn.operationId).toBeNull();
+    expect(state.design.revision).toBe(0);
+    expect(state.design.elements).toEqual([]);
+    expect(state.history.canUndo).toBe(false);
+  });
+
+  it("does not overwrite a concurrent canvas edit and reviews the actual saved state on conflict", async () => {
+    const fake = createFakeProvider([
+      { toolCalls: [apply(firstUpload)] },
+      { text: "Prepared uploads." },
+      { text: "Reviewed uploads." },
+    ]);
+    let id = "";
+    const provider: ModelProvider = {
+      ...fake,
+      respond: async (request, options) => {
+        if (fake.requests.length === 2) {
+          const current = await h.design(id);
+          const batch = buildStudioCommand(current.design, {
+            type: "addAction",
+            lane: "download",
+            name: "Browse",
+            system: { name: "Mouse design" },
+          });
+          expect(
+            (await h.call("POST", `/projects/${id}/operations`, { ...batch, source: "canvas" }))
+              .status,
+          ).toBe(200);
+        }
+        return fake.respond(request, options);
+      },
+    };
+    const h = harness({ models: () => ({ provider, model: "fake" }) });
+    id = await h.project();
+    const { turn, state } = await h.chat(id, "Prepare uploads while I edit");
+    expect(turn.status).toBe("failed");
+    expect(turn.error).toContain("design changed while");
+    expect(turn.operationId).toBeNull();
+    expect(turn.changed).toEqual([]);
+    expect(state.design.revision).toBe(1);
+    expect(state.design.elements).toEqual([]);
+    expect(state.design.architecture?.system.name).toBe("Mouse design");
+    expect(turn.reply).toContain("No design edits saved. Review of saved revision 1.");
+    const details = turn.activity
+      .filter((item) => item.tool === "reviewDetail")
+      .map((item) => item.summary)
+      .join(" ");
+    expect(details).toContain("Browse has no entries");
+    expect(details).not.toContain("Uploads has no storage");
+  });
+
+  it("reports explicit lifecycle obligations without an extra owner or any design mutation", async () => {
+    const h = harness((request, round) => {
+      if (round === 0)
+        return {
+          toolCalls: [
+            { name: "describeStudioPattern", arguments: { id: "durable-background-job" } },
+          ],
+        };
+      if (round === 1)
+        return {
+          toolCalls: [
+            {
+              name: "declareReviewScope",
+              arguments: {
+                patterns: [{ id: "durable-background-job", checklistIds: ["current-attempt"] }],
+                assumptions: ["One logical owner receives processing results."],
+                obligations: [],
+              },
+            },
+            { name: "reviewDesign", arguments: {} },
+          ],
+        };
+      const review = toolOutput(request);
+      expect(
+        review.obligations.every((item: { status: string }) => item.status === "not specified"),
+      ).toBe(true);
+      const missing = review.obligations.find(
+        (item: { id: string }) => item.id === "same-owner-result",
+      );
+      expect(missing.version).toBe("1.0.0");
+      expect(missing.requirement).toContain("never invent another independently owned service");
+      return { text: "The same owner result remains not specified; no extra service repairs it." };
+    });
+    const id = await h.project();
+    const before = await h.design(id);
+    const { turn, state } = await h.chat(id, "Review a same-owner processing result");
+    expect(turn.status).toBe("done");
+    expect(turn.operationId).toBeNull();
+    expect(state).toEqual(before);
+    expect(turn.reply).toContain("4 requirements not specified");
+    expect(
+      turn.activity.find(
+        (item) => item.tool === "reviewDetail" && item.summary.includes("same-owner-result"),
+      ),
+    ).toBeDefined();
+  });
+
+  it("keeps repair batches bounded and does not weaken the normal round limit", async () => {
+    // Third response batch tries a further mutation after two accepted repairs.
+    const script = createFakeProvider((request, round) => {
+      if (round === 0)
+        return { toolCalls: [apply(firstUpload), { name: "reviewDesign", arguments: {} }] };
+      if (round <= 3)
+        return {
+          toolCalls: [
+            apply({ type: "edit", element: "uploads", name: `Repair ${round}` }),
+            { name: "reviewDesign", arguments: {} },
+          ],
+        };
+      expect(
+        request.items
+          .filter((item) => item.type === "tool-result")
+          .some(
+            (item) => item.type === "tool-result" && item.output.includes("2 review repair passes"),
+          ),
+      ).toBe(true);
+      return { text: "Remaining warning is explicit." };
+    });
+    const bounded = harness({ models: () => ({ provider: script, model: "fake" }) });
+    const id = await bounded.project();
+    const { turn, state } = await bounded.chat(id, "Repeated repairs");
+    expect(turn.status).toBe("done");
+    expect(state.design.elements[0]?.name).toBe("Repair 2");
+    expect(
+      turn.activity.filter((item) => item.tool === "applyStudioCommands" && !item.ok),
+    ).toHaveLength(1);
+    // Endless read tools still fail at the original limit, saving none of the staged edits.
+    const endless = harness((_request, round) => ({
+      toolCalls: round === 0 ? [apply(firstUpload)] : [{ name: "getDesign", arguments: {} }],
+    }));
+    const other = await endless.project();
+    const failed = await endless.chat(other, "Never finish");
+    expect(endless.requests).toHaveLength(MAX_ROUNDS);
+    expect(failed.turn.status).toBe("failed");
+    expect(failed.state.design.elements).toEqual([]);
+    expect(failed.turn.reply).toContain("No design edits saved");
+    expect(failed.turn.activity.find((item) => item.tool === "reviewDetail")).toBeUndefined();
+  });
+
+  it("answers a pure conversational turn without another model call or design write", async () => {
+    const h = harness([{ text: "A queue separates the request from later work." }]);
+    const id = await h.project();
+    const before = await h.design(id);
+    const result = await h.chat(id, "What is a queue?");
+    expect(h.requests).toHaveLength(1);
+    expect(result.turn.status).toBe("done");
+    expect(result.turn.reply).toContain("A queue separates");
+    expect(result.turn.reply).toContain("No design edits saved");
+    expect(result.state).toEqual(before);
+  });
+
+  it("attributes only the chat snapshot when a canvas edit follows its commit", async () => {
+    class InterleavedDesign extends DesignService {
+      override async edit(projectId: string, input: EditInput) {
+        const committed = await super.edit(projectId, input);
+        if (committed.ok && input.source === "chat") {
+          const batch = buildStudioCommand(
+            committed.state.design,
+            originalStorage as Parameters<typeof buildStudioCommand>[1],
+          );
+          expect((await super.edit(projectId, { ...batch, source: "canvas" })).ok).toBe(true);
+        }
+        return committed;
+      }
+    }
+    const design = new InterleavedDesign(db);
+    const fake = createFakeProvider([
+      { toolCalls: [apply(firstUpload), { name: "reviewDesign", arguments: {} }] },
+      { text: "Reviewed entry only." },
+    ]);
+    const chat = new ChatService(db, design, () => ({ provider: fake, model: "fake" }));
+    const project = await design.createProject("Post-commit interleaving");
+    const started = await chat.start(project.id, {
+      message: "Prepare an entry",
+      fileIds: [],
+      selection: [],
+      baseRevision: 0,
+    });
+    if (!started.ok) throw new Error(started.message);
+    const turn = await started.run(() => {});
+    expect(turn.status).toBe("done");
+    expect(turn.reply).toContain("Saved 4 design changes at revision 1 as one Undo step");
+    expect(turn.reply).toContain("Review of saved revision 2");
+    expect(turn.reply).toContain("No represented structural/readiness findings");
+    expect(turn.changed).toEqual(["uploads"]);
+    expect((await design.getDesign(project.id))?.design.elements.map((item) => item.id)).toEqual([
+      "uploads",
+      "originals",
+    ]);
+  });
+
+  it("finishes safely if the project is deleted during the provider call", async () => {
+    const design = new DesignService(db);
+    const project = await design.createProject("Deleted mid-turn");
+    const fake = createFakeProvider([{ text: "No changes needed." }]);
+    const provider: ModelProvider = {
+      ...fake,
+      respond: async (request, options) => {
+        await design.deleteProject(project.id);
+        return fake.respond(request, options);
+      },
+    };
+    const chat = new ChatService(db, design, () => ({ provider, model: "fake" }));
+    const started = await chat.start(project.id, {
+      message: "Explain",
+      fileIds: [],
+      selection: [],
+      baseRevision: 0,
+    });
+    if (!started.ok) throw new Error(started.message);
+    const events: ChatEvent[] = [];
+    const turn = await started.run((event) => events.push(event));
+    expect(turn.status).toBe("failed");
+    expect(turn.error).toContain("project was deleted");
+    expect(turn.reply).toContain("Review unavailable");
+    expect(events.at(-1)).toMatchObject({ type: "done", state: null, turn: { status: "failed" } });
+  });
+
+  it("preserves immediate questions with staged edits and skips no-op writes", async () => {
+    const h = harness([
+      {
+        toolCalls: [
+          apply(firstUpload),
+          {
+            name: "askUser",
+            arguments: { question: "Is storage in scope next?", choices: ["Yes", "Later"] },
+          },
+        ],
+      },
+    ]);
+    const id = await h.project();
+    const asked = await h.chat(id, "Prepare an entry and ask");
+    expect(h.requests).toHaveLength(1);
+    expect(asked.turn.status).toBe("done");
+    expect(asked.turn.question?.question).toBe("Is storage in scope next?");
+    expect(asked.state.design.revision).toBe(1);
+    expect(asked.turn.reply).toContain("Unresolved: 1 design finding");
+    const noop = harness([
+      {
+        toolCalls: [
+          {
+            name: "applyStudioCommands",
+            arguments: {
+              baseRevision: 1,
+              commands: [{ type: "edit", element: "uploads", name: "Uploads" }],
+            },
+          },
+          { name: "reviewDesign", arguments: {} },
+        ],
+      },
+      { text: "The name was already set." },
+    ]);
+    const before = await noop.design(id);
+    const result = await noop.chat(id, "Keep the name");
+    expect(result.turn.status).toBe("done");
+    expect(result.turn.operationId).toBeNull();
+    expect(result.state).toEqual(before);
   });
 });
 

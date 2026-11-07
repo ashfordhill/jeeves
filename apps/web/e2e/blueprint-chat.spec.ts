@@ -86,3 +86,38 @@ test("adds a tile through chat with the lane commands", async ({ page, tinyurl: 
   await ready(page);
   await expect(tiles(page)).toHaveCount(11);
 });
+
+test("saves a warned proposal with readable review details and one mouse Undo", async ({
+  page,
+  tinyurl: id,
+}) => {
+  const before = await design(page, id);
+  await send(page, "Prepare uploads without storage");
+  await expect(page.getByText("Review of saved revision 2.", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("Unresolved: 1 design finding; 1 requirement not specified", { exact: false }),
+  ).toBeVisible();
+  await page.getByText("Review details (3)", { exact: true }).click();
+  await expect(
+    page
+      .locator(".chat-review-details")
+      .getByText("Not specified · upload-lifecycle:", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".chat-review-details").getByText("has no storage relationship", { exact: false }),
+  ).toBeVisible();
+  await ready(page);
+  await tile(page, "Uploads").click();
+  await expect(
+    page.getByLabel("Warnings").getByText("Uploads has no storage relationship", { exact: false }),
+  ).toBeVisible();
+  const saved = await design(page, id);
+  expect(saved.revision).toBe(2);
+  expect(saved.elements).toHaveLength(before.elements.length + 1);
+  expect(saved.architecture?.studio).not.toHaveProperty("reviewScope");
+  await page.locator(".lane-header-actions").getByRole("button", { name: "Undo" }).click();
+  await ready(page);
+  await expect(tiles(page)).toHaveCount(11);
+  const undone = await design(page, id);
+  expect({ ...undone, revision: before.revision }).toEqual(before);
+});

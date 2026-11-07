@@ -9,18 +9,33 @@
               "name": "applyStudioCommands",
               "arguments": {
                 "baseRevision": 1,
-                "commands": [{ "type": "edit", "element": "redirect", "name": "Redirector" }]
+                "commands": [
+                  {
+                    "type": "edit",
+                    "element": "redirect",
+                    "name": "Redirector"
+                  }
+                ]
               }
             }
           ]
         },
-        { "text": "Renamed Redirect to Redirector." }
+        {
+          "text": "Renamed Redirect to Redirector."
+        }
       ]
     },
     {
       "match": "Add a cache after the redirect service",
       "steps": [
-        { "toolCalls": [{ "name": "getDesign", "arguments": {} }] },
+        {
+          "toolCalls": [
+            {
+              "name": "getDesign",
+              "arguments": {}
+            }
+          ]
+        },
         {
           "toolCalls": [
             {
@@ -30,10 +45,16 @@
                 "commands": [
                   {
                     "type": "addTile",
-                    "from": { "tile": "redirect" },
+                    "from": {
+                      "tile": "redirect"
+                    },
                     "side": "after",
                     "link": "sync",
-                    "tile": { "id": "cache", "name": "Cache", "kind": "cache" },
+                    "tile": {
+                      "id": "cache",
+                      "name": "Cache",
+                      "kind": "cache"
+                    },
                     "linkId": "redirect-cache-2"
                   }
                 ]
@@ -41,21 +62,120 @@
             }
           ]
         },
-        { "text": "Added a cache after the Redirect service on the download lane." }
+        {
+          "text": "Added a cache after the Redirect service on the download lane."
+        }
       ]
     },
     {
       "match": "Review the processing lifecycle",
       "steps": [
-        { "toolCalls": [{ "name": "listStudioPatterns", "arguments": {} }] },
         {
           "toolCalls": [
-            { "name": "describeStudioPattern", "arguments": { "id": "durable-background-job" } },
-            { "name": "describeStudioPattern", "arguments": { "id": "publication-to-search" } }
+            {
+              "name": "listStudioPatterns",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "describeStudioPattern",
+              "arguments": {
+                "id": "durable-background-job"
+              }
+            },
+            {
+              "name": "describeStudioPattern",
+              "arguments": {
+                "id": "publication-to-search"
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "declareReviewScope",
+              "arguments": {
+                "patterns": [
+                  {
+                    "id": "durable-background-job",
+                    "checklistIds": ["current-attempt"]
+                  },
+                  {
+                    "id": "publication-to-search",
+                    "checklistIds": ["publication-decision"]
+                  }
+                ],
+                "assumptions": ["This review covers processing results and committed publication."],
+                "obligations": []
+              }
+            },
+            {
+              "name": "reviewDesign",
+              "arguments": {}
+            }
           ]
         },
         {
           "text": "Processing success is not committed publication. Implementation obligation: the same logical owner must persist attempts, reject duplicate or stale results and commit visibility before publishing to search. The current no-cycle model cannot express that return. No runtime template or verification is supplied."
+        }
+      ]
+    },
+    {
+      "match": "Prepare uploads without storage",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "applyStudioCommands",
+              "arguments": {
+                "baseRevision": 1,
+                "commands": [
+                  {
+                    "type": "addTile",
+                    "from": {
+                      "lane": "upload"
+                    },
+                    "side": "after",
+                    "tile": {
+                      "id": "uploads",
+                      "name": "Uploads",
+                      "kind": "uploads"
+                    },
+                    "linkId": "upload-uploads"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "toolCalls": [
+            {
+              "name": "declareReviewScope",
+              "arguments": {
+                "patterns": [],
+                "assumptions": ["Only the upload entry is in scope this turn."],
+                "obligations": [
+                  {
+                    "id": "upload-lifecycle",
+                    "requirement": "Specify durable pending/failed upload state and retry correlation; transfer settings do not define it.",
+                    "element": "uploads"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "reviewDesign",
+              "arguments": {}
+            }
+          ]
+        },
+        {
+          "text": "Prepared the upload entry. Storage and the durable upload lifecycle remain unresolved; no extra owner was added."
         }
       ]
     }

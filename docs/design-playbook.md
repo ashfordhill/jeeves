@@ -732,3 +732,26 @@ logical owner should yield its precise state/correlation/reconciliation obligati
 independent completion services do not repair that missing model contract. Keep design intent,
 template availability and exact-runtime verification separate, and label scripted transcript
 tests as plumbing evidence rather than measured live-model architecture quality.
+
+
+## 2026-11-07 chat follow-up: review proposed and actual saved state
+
+Review the working copy before committing a turn, through the same tool loop the model uses.
+A fresh diagnostic must reach a subsequent model request; ending a response cannot bypass review
+of staged commands or explicit scope. Further edits invalidate the review. Bound repair batches
+inside the ordinary round budget, while keeping warnings saveable and structural errors atomic.
+A focused question can still end immediately, with deterministic review and an honest summary.
+
+Scope must be declared rather than inferred from pattern retrieval, tile names or module prose.
+Choose variant checklist IDs deliberately; not every shopping design includes finite stock or
+every publication flow transcodes media. Turn-only scope/assumptions are conversation metadata,
+not capability contracts or saved requirements. Unknown payload/state/side-effect guarantees
+remain **not specified**. A worker's outgoing dependency represents topology; it does not prove
+its intended output or business effects. An Uploads transfer setting alone supplies no storage.
+
+Distinguish proposed edits, the exact chat commit and the latest saved state. On provider failure
+or a revision conflict, discard proposals and review storage. A mouse edit after the chat commit
+must not be credited to its Undo step. Show a compact saved/unresolved result and expose precise
+targeted requirements in a mouse disclosure. Review-only and semantic no-op turns need no design
+revision; a deleted project has no saved state to certify. Scripted transcripts and browser
+checks prove these boundaries, not improved live-model design judgment or runtime correctness.

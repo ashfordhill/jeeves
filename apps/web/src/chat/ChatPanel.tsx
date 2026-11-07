@@ -45,17 +45,33 @@ function FileChips({ files }: { files: FileInfo[] }) {
 
 function ActivityList({ activity }: { activity: ChatActivity[] }) {
   if (activity.length === 0) return null;
+  const details = activity.filter((item) => item.tool === "reviewDetail");
   return (
-    <ul className="chat-activity" aria-label="What the assistant did">
-      {activity.map((a, i) => (
-        // Activity lines never reorder.
-        // biome-ignore lint/suspicious/noArrayIndexKey: append-only list
-        <li key={i} data-ok={a.ok || undefined}>
-          {a.ok ? <IconCheck size={12} aria-hidden /> : <IconX size={12} aria-hidden />}
-          {a.summary}
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="chat-activity" aria-label="What the assistant did">
+        {activity
+          .filter((item) => item.tool !== "reviewDetail")
+          .map((a, i) => (
+            // Activity lines never reorder.
+            // biome-ignore lint/suspicious/noArrayIndexKey: append-only list
+            <li key={i} data-ok={a.ok || undefined}>
+              {a.ok ? <IconCheck size={12} aria-hidden /> : <IconX size={12} aria-hidden />}
+              {a.summary}
+            </li>
+          ))}
+      </ul>
+      {details.length ? (
+        <details className="chat-review-details">
+          <summary>Review details ({details.length})</summary>
+          <ul>
+            {details.map((item, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: append-only list
+              <li key={i}>{item.summary}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </>
   );
 }
 

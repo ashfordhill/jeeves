@@ -63,7 +63,7 @@ export type ChatEvent =
   | { type: "turn"; turn: ChatTurn }
   | { type: "text"; delta: string }
   | { type: "activity"; activity: ChatActivity }
-  | { type: "done"; turn: ChatTurn; state: DesignState };
+  | { type: "done"; turn: ChatTurn; state: DesignState | null };
 
 export type ModelRole = "designChat";
 
