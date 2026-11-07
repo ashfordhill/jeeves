@@ -462,3 +462,12 @@ inputs, never a model/user manifest. A manifest supports one exact composition; 
 exist only in isolated tests. Generation eligibility excludes output evidence to permit first
 generation, and never implies verification. Product availability is unavailable; evidence is
 none. [Report fields, hash rules and trust limits](docs/studio-readiness.md).
+
+NC14 checks Create's actual source dependency for synchronous SQL/native intent and an internal
+service boundary; known contradictions refuse, unspecified protocol stays unresolved, and unknown
+operation refs acquire no Create semantics. The inspector makes declared API/worker roles and
+resource access primary while preserving legacy inference/editor disclosures. V3 exports detached
+ownership rows. Trusted suite format v2 additionally pins hash-resolved executable-bundle bytes;
+case names alone identify no code. Frozen operation/cache/profile records are unchanged. See the
+[independent review](docs/plans/reliable-foundations/nc14-review.md) and the separate
+[future backend plan](docs/plans/reliable-foundations/backend-first-proof-plan.md).

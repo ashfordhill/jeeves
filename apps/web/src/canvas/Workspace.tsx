@@ -615,6 +615,22 @@ function Inspector({
     );
   if (edge) {
     const access = studioStoreAccess(design, edge.id);
+    const declared = designOwnership(design).dependencies.some(
+      (item) => item.connection === edge.id,
+    );
+    const legacyAccess = access ? (
+      <>
+        <dl className="lane-facts" aria-label="Inferred relationship access">
+          <dt>{design.schemaVersion === 3 ? "Legacy inferred access" : "Access (inferred)"}</dt>
+          <dd data-access={access}>{studioStoreAccessLabels[access]}</dd>
+        </dl>
+        <p className="studio-field-help">
+          {design.schemaVersion === 3
+            ? "Preserved legacy inference follows the studio writer setting; it declares no grant or dependency request."
+            : "Access follows ownership. Owner reads are not distinguished from writes."}
+        </p>
+      </>
+    ) : null;
     const connection = design.connections.find((item) => item.id === edge.id);
     const channelUse = design.architecture?.studio?.connections.find(
       (item) => item.connection === edge.id,
@@ -639,18 +655,15 @@ function Inspector({
                   ? "Sender → receiver"
                   : "Caller → target"}
           </dd>
-          {access ? (
-            <>
-              <dt>Access (inferred)</dt>
-              <dd data-access={access}>{studioStoreAccessLabels[access]}</dd>
-            </>
-          ) : null}
         </dl>
-        {access ? (
-          <p className="studio-field-help">
-            Access follows ownership. Owner reads are not distinguished from writes.
-          </p>
-        ) : null}
+        {legacyAccess && declared ? (
+          <details className="studio-legacy-access">
+            <summary>Legacy inferred relationship access</summary>
+            {legacyAccess}
+          </details>
+        ) : (
+          legacyAccess
+        )}
         <ConnectionForm projectId={project.id} connection={edge.id} design={design} />
       </div>
     );

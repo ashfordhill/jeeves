@@ -4766,3 +4766,51 @@ YouTube/Marketplace gaps, extended overview/readability, Mini/live evidence and 
 remain open. NC07–NC13 stay deferred; backend remains later.
 
 Local commit: **NC06: add the narrow TinyURL foundation study**.
+
+## 2026-11-07 — NC14: independent small-contract review and deferred backend plan
+
+NC14 only after NC06 `888c1bc`, primary main, one writer/no delegation. Independently inspected
+NC01–NC06 diffs/source and storage/export/validation/cleanup/chat/wire/study seams. Four confirmed
+repairs: explicit inspector authority/access stays primary over a collapsed preserved legacy
+inference+writer editor; declared API/worker role meaning is qualified; Create validates its
+actual synchronous SQL/native internal source dependency; v3 ownership exports detach row
+objects; trusted suite format v2 pins hash-resolved execution-bundle content rather than only case
+IDs (the two inspector items are one presentation correction). Meaningful unit and mouse E2E
+regressions cover these. Frozen operation/cache/profile JSON, old schema2 fixture/TinyURL source,
+RF06 as-run records and five original feedback images remain intact. Profile digest unchanged
+`40130ff2…441985`. No backend/generator/runtime/registry/runner/paid call or saved-project migration.
+
+[Review ledger](plans/reliable-foundations/nc14-review.md) states what is declared and what remains
+unknown. [Future backend plan only](plans/reliable-foundations/backend-first-proof-plan.md) scopes
+HTTP/auth/PostgreSQL/Redis first, reviewed pinned templates/manifests, deterministic assembly,
+exact output/independent evidence protocol, executable suite closure and real adapter/fault cases.
+It includes generated/custom file ownership, edited-generated refusal, custom preservation and
+regenerate/reverify acceptance; unreviewed custom runtime behavior blocks. Repository/conventions,
+auth/runtime/adapter versions are future kickoff dependencies. NC07–NC13 stay deferred. Current
+studio/catalog/contracts/settings/blueprint/readiness docs, playbook and append-only feedback match.
+
+Frozen Node 24.21.0 required checks passed sequentially: **380 tests / 46 files**, lint/all typechecks;
+**32 native Chromium E2Es (50.3s)**; web production build 843ms (existing chunk advisory). No source
+edits during E2E. Both 1440×900 / 1280×800 mouse: foundation 6/7 tiles, 7 lines, source/cache/connection
+selection and fit/focus pure; legacy disclosure edit preserves explicit declarations, one Undo
+and reload restore; role explanation readable after mouse collapsing details. Extended schema2
+11 tiles / 12 lines retains original Owner/access/kind/v2 export. Zero final browser errors; 33 inspected
+PNGs, exact audits, initial test-authoring failures and all cleanup statuses are retained in
+[evidence](plans/reliable-foundations/evidence/nc14/README.md). Coordinator acceptance is bounded,
+not owner usability or runtime acceptance.
+
+Strict tools/instructions/legacy context remain 70,336 / 15,427 / 17,016 UTF-8 bytes; foundation 17,019
+separately. Giant union 427 properties / 538 enum values / depth 9; no codec/history semantics or tool budget
+change. Full unit suite covers twelve fetch-forbidden synthetic pairs; old RF06 request drift
+remains 77669bb5… → 80781cbc… before response replay, with exact reason/hash retained. Intended
+Mini/live strict acceptance and model quality are open; historical fallback 2.44× input / 2.07× responses
+is no general quality win. Bytes are not token/cost evidence.
+
+All own projects deleted 204; e2e DB equals its original default-only listing. Only own 4312/4302
+listeners stopped; isolated settings path was never created; owner 4300/4310 and saved 53/1/1
+revisions unchanged. `.jeeves-feedback/` preserved. Separate Read counts/Publish view ports,
+returned-data arrows, YouTube/Marketplace semantic gaps, extended overview/readability, intended
+model evidence and backend proof remain open. Next is future backend kickoff under its own repo
+rules and accepted scope, not another automatic domain expansion.
+
+Local commit: **NC14: review the TinyURL contract boundary and defer backend proof**.

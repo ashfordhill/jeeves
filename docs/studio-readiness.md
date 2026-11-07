@@ -84,6 +84,14 @@ throwing resolution produces targeted blockers. No caller-supplied composition h
   manifest, templates, dependencies, verifiers and expected generated-output content refs. It
   also pins the required suite/version, environment image/configuration hashes and acceptance
   window. Output and suite bytes must resolve; a matching self-reported output hash is insufficient.
+- The strict suite descriptor is `jeeves.runtime-suite.v2`: `cases` lists obligation IDs and
+  `executionBundle` pins an exact ID/version/SHA256 whose actual bytes must also resolve and hash
+  correctly. The future trusted publisher must make that bundle self-contained: runner, tests,
+  fixtures, configuration and pinned execution dependencies. Case IDs alone fingerprint no test
+  code. Descriptor-only v1 and v2 without the bundle ref fail closed; no automatic upgrade gives
+  old descriptors a stronger meaning. This host-only format has no product registry or stored
+  suite records to migrate. Receipt/evidence formats remain v1 because their exact suite refs
+  already bind descriptor content. Frozen operation/cache/profile identities are unchanged.
 - Strict `jeeves.runtime-evidence.v1` binds that expected receipt and every exact identity above,
   suite/environment, completion instant and case outcomes. The pinned suite must cover all twelve
   finite profile obligations exactly once. Evidence must include every case once, all passing;
@@ -93,6 +101,11 @@ throwing resolution produces targeted blockers. No caller-supplied composition h
 These documents are trust-input formats, not a registry implementation or proof that arbitrary
 bytes implement the stated contracts. A future real registry/runner must establish those claims
 before supplying trusted receipts and evidence.
+
+The eventual assembler must consume only the canonical subject and independently pinned artifact
+bytes. Project envelope metadata (including the fallback display name on an otherwise empty
+blueprint), UI state, history and origin are not extra template inputs. Any new output-relevant
+input requires an explicit subject/input-contract version change and renewed evidence.
 
 SHA256 uses exactly pinned `@noble/hashes` **2.0.1** to preserve the shared synchronous blueprint/
 chat/browser boundary. automation-pitch has no direct hash dependency to reuse. The

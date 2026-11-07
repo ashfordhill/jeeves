@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
+import { applyOperations } from "./apply.ts";
 import { canonicalJson, jsonBytes } from "./content-hash.ts";
 import { designSchema } from "./design.ts";
 import { designReadiness } from "./design-readiness.ts";
@@ -9,6 +10,7 @@ import operationFixture from "./fixtures/nc04-resolve-v1.json" with { type: "jso
 import { narrowReadinessDesign } from "./fixtures/nc05-narrow.ts";
 import {
   type ExactContractRef,
+  operationContractFindings,
   operationContractsSchema,
   positiveCachePolicy,
 } from "./operation-contracts.ts";
@@ -63,10 +65,12 @@ function artifacts() {
   });
   const manifestRef = put("fixture-manifest", manifest),
     compositionSha256 = hash(jsonBytes(readinessSubject(design)));
-  const suite = put("fixture-suite", {
-    format: "jeeves.runtime-suite.v1",
+  const suiteDocument = {
+    format: "jeeves.runtime-suite.v2",
     cases: tinyurlRuntimeCases,
-  });
+    executionBundle: put("fixture-suite-bundle", new Uint8Array([13, 14, 15])),
+  };
+  const suite = put("fixture-suite", suiteDocument);
   const receipt = generationReceiptSchema.parse({
     format: "jeeves.generated-receipt.v1",
     compositionSha256,
@@ -109,7 +113,7 @@ function artifacts() {
     evidence: put("fixture-evidence", evidence),
     resolve: (ref) => contents.get(key(ref)),
   };
-  return { design, context, put, contents, key, manifest, receipt, evidence };
+  return { design, context, put, contents, key, manifest, receipt, evidence, suiteDocument };
 }
 
 describe("one exact snapshot readiness report", () => {
@@ -199,6 +203,18 @@ describe("one exact snapshot readiness report", () => {
       expect.objectContaining({ target: expect.objectContaining({ connection: "resolve-store" }) }),
     );
   });
+  it("exports detached ownership rows so a consumer cannot mutate saved declarations through v3", () => {
+    const design = narrowReadinessDesign(),
+      before = structuredClone(design),
+      blueprint = designBlueprintV3(design);
+    required(blueprint.ownership.owners[0]).name = "Changed outside the design";
+    required(blueprint.ownership.roles[0]).owner = "different-owner";
+    required(blueprint.ownership.resources[0]).authority = "different-owner";
+    required(blueprint.ownership.grants[0]).access = "write";
+    required(blueprint.ownership.dependencies[0]).access = "write";
+    expect(design).toEqual(before);
+    expect(designBlueprintV3(design).readiness).toEqual(designReadiness(before));
+  });
   it.each([
     "retention",
     "cache-policy",
@@ -274,6 +290,44 @@ describe("one exact snapshot readiness report", () => {
     expect(report.contractCompleteness.status).toBe("incomplete");
     expect(design).toEqual(before);
   });
+  it.each(["protocol", "security", "interaction", "unknown-protocol"])(
+    "checks Create's actual bound source %s without inventing an adapter",
+    (mode) => {
+      const design = narrowReadinessDesign(),
+        before = structuredClone(design),
+        link = required(design.connections.find((row) => row.id === "create-store"));
+      if (mode === "protocol") link.planned.protocol = "Redis";
+      if (mode === "security") link.planned.security = "Public";
+      if (mode === "interaction") link.planned.interaction = "Streaming";
+      if (mode === "unknown-protocol") link.planned.protocol = "Unspecified";
+      const report = designReadiness(design);
+      expect(report.contractCompleteness.status).toBe("incomplete");
+      expect([
+        ...report.designValidity.blockers,
+        ...report.contractCompleteness.blockers,
+      ]).toContainEqual(
+        expect.objectContaining({
+          code: mode === "unknown-protocol" ? "CONFIG_REQUIRED" : "CONFIG_INVALID",
+          target: expect.objectContaining({ connection: "create-store", operation: "create-link" }),
+        }),
+      );
+      const result = applyOperations(before, [
+        { op: "updatePlannedConnection", id: link.id, ...link.planned },
+      ]);
+      expect(result.ok).toBe(mode === "unknown-protocol");
+      expect(before).toEqual(narrowReadinessDesign());
+      // Unknown operation versions retain their graph references but acquire no Create semantics.
+      if (design.schemaVersion !== 3 || !design.operations) throw new Error();
+      required(design.operations.receivers[0]).implementation.operation.version = "99.0.0";
+      required(design.operations.calls[0]).expects.operation.version = "99.0.0";
+      expect(
+        operationContractFindings(design).some(
+          (item) =>
+            item.message.startsWith("Create source") || item.message.startsWith("Create durable"),
+        ),
+      ).toBe(false);
+    },
+  );
   it.each(["replica", "timeout"])(
     "does not accept an uncovered Create data-access %s promise",
     (mode) => {
@@ -418,6 +472,47 @@ describe("one exact snapshot readiness report", () => {
 });
 
 describe("trusted isolated artifact/evidence resolution", () => {
+  it.each(["missing", "mismatched", "changed", "descriptor-only-v1", "missing-ref"])(
+    "refuses %s executable suite identity while keeping case IDs unchanged",
+    (mode) => {
+      const fixture = artifacts(),
+        { suiteDocument, receipt, evidence, context, put, key, contents } = fixture;
+      if (mode === "missing") contents.delete(key(suiteDocument.executionBundle));
+      if (mode === "mismatched")
+        contents.set(key(suiteDocument.executionBundle), new Uint8Array([99]));
+      if (mode === "changed") {
+        // The evidence producer may name changed code, but cannot repin host acceptance policy.
+        evidence.suite = put("changed-suite", {
+          ...suiteDocument,
+          executionBundle: put("changed-bundle", new Uint8Array([99])),
+        });
+      }
+      if (mode === "descriptor-only-v1" || mode === "missing-ref") {
+        const descriptor = {
+          format:
+            mode === "descriptor-only-v1" ? "jeeves.runtime-suite.v1" : "jeeves.runtime-suite.v2",
+          cases: suiteDocument.cases,
+        };
+        receipt.verification.suite = put("descriptor-only", descriptor);
+        context.expectedReceipt = put("fixture-receipt", receipt);
+        evidence.receipt = context.expectedReceipt;
+        evidence.suite = receipt.verification.suite;
+      }
+      context.evidence = put("fixture-evidence", evidence);
+      const result = designReadiness(fixture.design, context);
+      expect(result.generationEligible).toBe(true);
+      expect(result.runtimeEvidence.status).toBe("insufficient");
+      expect(codes(result, "runtimeEvidence")).toContain(
+        mode === "missing"
+          ? "ARTIFACT_UNAVAILABLE"
+          : mode === "mismatched"
+            ? "ARTIFACT_HASH_MISMATCH"
+            : mode === "changed"
+              ? "EVIDENCE_POLICY_MISMATCH"
+              : "ARTIFACT_DOCUMENT_INVALID",
+      );
+    },
+  );
   it("permits first generation with exact available artifacts without requiring future output evidence", () => {
     const fixture = artifacts(),
       context = { ...fixture.context, expectedReceipt: undefined, evidence: undefined };

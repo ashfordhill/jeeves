@@ -387,6 +387,14 @@ no new service is created merely to keep a journey acyclic. Record readability a
 
 ### NC14 — Independent contract milestone review
 
+**Progress, 2026-11-07:** independent source/diff/seam review of NC01–NC06, with a concrete
+[review ledger](nc14-review.md) and [future backend build plan](backend-first-proof-plan.md).
+Confirmed corrections make declared inspector facts primary, check Create's actual source
+transport/security, detach v3 ownership projections and require suite-v2 executable-bundle content
+identity. Frozen contracts/profile, old schema2 studies, default-v2 export and deferred runtime
+boundary remain intact. Verification/evidence details belong to the ledger; backend implementation
+and NC07–NC13 remain deferred.
+
 **Depends:** NC01–NC06 for the default first milestone. Repeat a separately scoped review after
 any later NC07–NC13 expansion; those units are not first-proof prerequisites. Review diffs and migration/
 wire/schema seams; load unmodified owner-style old projects; trace each changed preset by mouse

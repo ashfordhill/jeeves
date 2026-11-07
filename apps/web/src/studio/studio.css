@@ -410,3 +410,14 @@
   color: var(--ink-soft);
   font-size: 12px;
 }
+.studio-legacy-access {
+  margin: 12px 0;
+  padding: 8px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+}
+
+.studio-legacy-access > summary {
+  cursor: pointer;
+  font-size: 12px;
+}

@@ -92,3 +92,57 @@ test("foundation view actions preserve complete semantics and exact operation se
     await page.request.delete(`/api/projects/${id}`);
   }
 });
+
+test("explicit authority stays primary while preserved legacy inference remains editable and undoable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const id = await createStudy(page, "E2E NC14 legacy disclosure");
+  try {
+    const state = async () =>
+      (await (await page.request.get(`/api/projects/${id}/design`)).json()).design;
+    const before = await state();
+    await page.getByRole("button", { name: "Collapse chat", exact: true }).click();
+    await tile(page, "Links database").click();
+    const explicit = page.getByLabel("Declared ownership and access"),
+      legacy = page.locator(".studio-legacy-access");
+    await expect(explicit).toContainText("Explicit authority: Links");
+    await expect(explicit).toContainText("Create link · Read & write");
+    await expect(legacy).not.toHaveAttribute("open");
+    await expect(page.getByLabel("Legacy inferred writer", { exact: true })).toBeHidden();
+    await legacy.locator("> summary").click();
+    await expect(legacy).toContainText("Legacy inferred writer");
+    await expect(legacy).toContainText("no owner yet");
+    await page
+      .getByLabel("Legacy inferred writer", { exact: true })
+      .selectOption("element:resolve-api");
+    await expect
+      .poll(
+        async () =>
+          (await state()).architecture.studio.elements.find(
+            (row: { element: string }) => row.element === "links-db",
+          ).owner,
+      )
+      .toEqual({ kind: "element", id: "resolve-api" });
+    expect((await state()).ownership).toEqual(before.ownership);
+    expect((await state()).operations).toEqual(before.operations);
+    await expect(explicit).toContainText("Create link · Read & write");
+    await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect
+      .poll(async () => ({ ...(await state()), revision: 0 }))
+      .toEqual({ ...before, revision: 0 });
+    await page.reload();
+    await ready(page);
+    await page.getByRole("button", { name: "Expand roles", exact: true }).click();
+    await ready(page);
+    await tile(page, "Create link").click();
+    await expect(page.locator(".lane-inspector-kind")).toHaveText("API role");
+    await expect(
+      page.getByText(/Tile kind: Microservice · deployable intent: links-runtime/),
+    ).toBeVisible();
+    expect({ ...(await state()), revision: 0 }).toEqual({ ...before, revision: 0 });
+  } finally {
+    await page.request.delete(`/api/projects/${id}`);
+  }
+});

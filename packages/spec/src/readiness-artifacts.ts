@@ -61,8 +61,10 @@ export const runtimeEvidenceSchema = z.strictObject({
     .max(100),
 });
 const suiteSchema = z.strictObject({
-  format: z.literal("jeeves.runtime-suite.v1"),
+  format: z.literal("jeeves.runtime-suite.v2"),
   cases: z.array(idSchema).min(1).max(100),
+  /** Exact self-contained runner/tests/fixtures/configuration bundle; case IDs identify no code. */
+  executionBundle: exactContractRefSchema,
 });
 
 /** The host pins references independently of design/model input. A hash field alone is no proof. */
@@ -308,6 +310,13 @@ export function inspectRuntimeEvidence(
       "verification",
       "suite",
     ]);
+    if (suite)
+      content(context, suite.executionBundle, blockers, [
+        "expectedReceipt",
+        "verification",
+        "suite",
+        "executionBundle",
+      ]);
     if (
       suite &&
       canonicalJson([...suite.cases].sort()) !== canonicalJson([...tinyurlRuntimeCases].sort())

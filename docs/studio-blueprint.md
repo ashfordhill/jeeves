@@ -76,6 +76,14 @@ A schema-v3 design with no scope, ownership or operation rows can still export v
 each finite/custom requirement and every ownership/operation row cause v2 refusal with its exact source path,
 including nonempty ownership with empty scope. Optional ownership is never added on read;
 `setOwnership` / `setOperations` require v3. Optional operations are never added on read. Empty declarations add no meaning.
+
+V3 projects detached ownership rows as well as detached settings/scope/operations: changing the
+returned object cannot change source declarations. Validator finding paths always address the
+source document's row order, even where exported collections sort by identity. Do not use numeric
+finding paths as indexes into sorted blueprint arrays or `readiness.composition.subject`.
+Use the canonical tile/edge/owner/operation targets in readiness; fetch the source design when
+interpreting an original validator path. Manifest composition-difference paths instead explicitly
+start at `composition.subject` and address that canonical subject.
 The mouse form reads the design, never the v2 blueprint, when editing these declarations.
 Undo/Redo restore the complete original schema and declarations as a new revision.
 

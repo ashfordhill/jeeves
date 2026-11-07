@@ -421,6 +421,12 @@ keep logical authority, role permission and a dependency's intent separate. Same
 reads; cache read and fill requires read-write. Foreign writes refuse; a published cross-owner
 read remains unresolved until its actual contract exists. Co-deployment grants nothing.
 
+Declared API/worker tiles identify their role and separately disclose the underlying tile kind
+and deployable intent. For a declared resource, **Legacy inferred access & writer** in General
+keeps the old writer editor and inferred readers collapsed together. Relationship inference is
+also secondary when explicit dependency intent exists. These legacy settings remain editable;
+they never change authority or grant access. Schema2 keeps its existing Owner/access inspector.
+
 A declared owner is one collapsed canvas card by default: its name, role count and **Expand
 roles**. Selecting it shows its canonical role buttons in the inspector. Expansion shows the
 original tiles, each labeled with that same owner. Select a role to edit its original identity;

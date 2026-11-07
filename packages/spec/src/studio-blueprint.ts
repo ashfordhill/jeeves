@@ -306,13 +306,15 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
     ownership: Object.fromEntries(
       Object.entries(designOwnership(design)).map(([key, rows]) => [
         key,
-        [...rows].sort((a, b) =>
-          JSON.stringify(a) < JSON.stringify(b)
-            ? -1
-            : JSON.stringify(a) > JSON.stringify(b)
-              ? 1
-              : 0,
-        ),
+        [...rows]
+          .map(clone)
+          .sort((a, b) =>
+            JSON.stringify(a) < JSON.stringify(b)
+              ? -1
+              : JSON.stringify(a) > JSON.stringify(b)
+                ? 1
+                : 0,
+          ),
       ]),
     ) as ReturnType<typeof designOwnership>,
     ownershipStatus: Object.values(designOwnership(design)).some((rows) => rows.length)

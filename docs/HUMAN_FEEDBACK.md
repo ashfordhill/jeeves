@@ -554,3 +554,20 @@ implementation for later”; the authorized Jeeves sequence continues and the ba
   Publish view ports, returned-data arrows, YouTube/Marketplace domain gaps, broader overview
   readability and runtime proof remain open. Prior actual contract commits are NC03 `1823124`,
   NC04 `7b789a7` and NC05 `4ada4c2`; no earlier feedback section or image was rewritten.
+
+- NC14, local commit titled **NC14: review the TinyURL contract boundary and defer backend proof**:
+  independently reviewed NC01–NC06 source/diffs/seams after NC06 `888c1bc`. Explicit authority,
+  grants and requests now remain primary; preserved legacy writer/reader inference and its editor
+  share a closed, labeled resource disclosure, with secondary inferred relationship access.
+  Declared API/worker roles disclose the underlying tile/deployable intent without implying
+  independent owners/processes. Both-size mouse expand/edit/Undo/reload and old schema2 checks are
+  recorded in `plans/reliable-foundations/evidence/nc14/`. Exact Create source compatibility,
+  detached v3 ownership exports and executable-suite content pinning were corrected as well.
+  Frozen contracts/profile, old projects/studies and all five feedback images remain intact.
+  [Review ledger](plans/reliable-foundations/nc14-review.md) and the separate
+  [backend plan only](plans/reliable-foundations/backend-first-proof-plan.md) retain the actual
+  boundary: no runtime/runner/registry/generator was built. Read counts/Publish view ports,
+  returned-data arrows, YouTube/Marketplace domain gaps, extended-overview readability, owner
+  usability acceptance and intended Mini/live evidence remain open. Earlier actual contract
+  commits remain NC01 `8ee2027`, NC02 `db9af1c`, NC03 `1823124`, NC04 `7b789a7`, NC05 `4ada4c2`
+  and NC06 `888c1bc`; no earlier feedback section or image was rewritten.

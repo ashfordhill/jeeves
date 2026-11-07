@@ -2,6 +2,7 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
+  declaredAccessLabels,
   moduleLinkChoices,
   type StudioComponentDefinition,
   type StudioComponentField,
@@ -528,6 +529,7 @@ export function TargetInspector({
   modules,
   tab,
   onTab,
+  legacyAccess,
 }: {
   projectId: string;
   element?: string;
@@ -539,6 +541,8 @@ export function TargetInspector({
   modules?: ReactNode;
   tab?: InspectorTab;
   onTab?: (tab: InspectorTab) => void;
+  /** Preserved inferred facts join their legacy writer editor in one secondary disclosure. */
+  legacyAccess?: ReactNode;
 }) {
   const target = useMemo<InspectorTarget>(
     () => (element ? { kind: "element", id: element } : { kind: "system" }),
@@ -558,6 +562,7 @@ export function TargetInspector({
       modules={modules}
       tab={tab}
       onTab={onTab}
+      legacyAccess={legacyAccess}
     />
   );
 }
@@ -575,6 +580,7 @@ function TargetForm({
   modules,
   tab,
   onTab,
+  legacyAccess,
 }: {
   spec: NonNullable<ReturnType<typeof inspectorSpec>>;
   design: DesignDocument;
@@ -583,6 +589,7 @@ function TargetForm({
   modules?: ReactNode;
   tab?: InspectorTab;
   onTab?: (tab: InspectorTab) => void;
+  legacyAccess?: ReactNode;
 }) {
   useSyncExternalStore(formDrafts.subscribe, formDrafts.snapshot);
   const entry = formDrafts.open(spec, design);
@@ -679,25 +686,41 @@ function TargetForm({
         aria-label={groups.length === 1 ? active : undefined}
         aria-labelledby={groups.length > 1 ? `${tabId}-${active}-tab` : undefined}
       >
-        {current.fields.map((field) => (
-          <DraftField
-            key={field.path}
-            idPrefix={tabId}
-            field={field}
-            draft={entry}
-            references={optionsFor(field)}
-            help={performance.includes(field as StudioPerformanceField)}
-            onSelect={(value) =>
-              formDrafts.change(
-                entry.key,
-                field.control === "select" && !("optional" in field && field.optional)
-                  ? selectChange(definition?.fields ?? [], entry.values, field.path, value)
-                  : { [field.path]: value || undefined },
-                true,
-              )
-            }
-          />
-        ))}
+        {current.fields.map((field) => {
+          const legacyWriter = field.path === "owner" && design.schemaVersion === 3;
+          const input = (
+            <DraftField
+              key={field.path}
+              idPrefix={tabId}
+              field={legacyWriter ? { ...field, label: "Legacy inferred writer" } : field}
+              draft={entry}
+              references={optionsFor(field)}
+              help={performance.includes(field as StudioPerformanceField)}
+              onSelect={(value) =>
+                formDrafts.change(
+                  entry.key,
+                  field.control === "select" && !("optional" in field && field.optional)
+                    ? selectChange(definition?.fields ?? [], entry.values, field.path, value)
+                    : { [field.path]: value || undefined },
+                  true,
+                )
+              }
+            />
+          );
+          return legacyWriter && legacyAccess ? (
+            <details className="studio-legacy-access" key={field.path}>
+              <summary>Legacy inferred access & writer</summary>
+              <p className="studio-field-help">
+                Preserved studio inference. Explicit authority, grants and dependency requests are
+                shown above; this legacy setting declares none of them.
+              </p>
+              {legacyAccess}
+              {input}
+            </details>
+          ) : (
+            input
+          );
+        })}
         {active === "Connections" && connections.length ? (
           <div className="studio-dependencies">
             {connections.map((item) => {
@@ -707,6 +730,10 @@ function TargetForm({
               const to = design.elements.find((element) => element.id === item.to.element)?.name;
               const protocol = item.planned.protocol;
               const access = studioStoreAccess(design, item.id);
+              const declared =
+                design.schemaVersion === 3
+                  ? design.ownership?.dependencies.find((row) => row.connection === item.id)?.access
+                  : undefined;
               return (
                 <div className="studio-dependency-row" key={item.id}>
                   <button type="button" onClick={() => onConnection(item.id)}>
@@ -714,7 +741,11 @@ function TargetForm({
                     <span>
                       {item.planned.label}
                       {protocol && protocol !== "Unspecified" ? ` · ${protocol}` : ""}
-                      {access ? ` · ${studioStoreAccessLabels[access]}` : ""}
+                      {declared
+                        ? ` · Declared request: ${declaredAccessLabels[declared]}`
+                        : access
+                          ? ` · ${design.schemaVersion === 3 ? "Legacy inferred: " : ""}${studioStoreAccessLabels[access]}`
+                          : ""}
                     </span>
                   </button>
                 </div>

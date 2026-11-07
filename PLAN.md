@@ -262,4 +262,12 @@ gap rather than gaining permission. NC06 adds the distinct `studio-tinyurl-found
 with complete atomic v3 seeding, one Links owner, two API roles, exact source/cache contracts and
 visible exclusions. The old `studio-tinyurl@3.2.0` source and saved projects remain intact.
 Actual blank-canvas mouse and scripted ChatService construction agree exactly on the semantic
-blueprint/report; this is plumbing evidence, not model quality or runtime proof. NC14 reviews this subset.
+blueprint/report; this is plumbing evidence, not model quality or runtime proof. The independent review covers this subset.
+
+The [NC14 independent review](docs/plans/reliable-foundations/nc14-review.md) records the bounded
+contract milestone and its corrections: secondary legacy inspector facts, exact Create source
+compatibility, detached ownership exports and executable-suite content pinning. The separate
+[first backend proof plan](docs/plans/reliable-foundations/backend-first-proof-plan.md) is a plan
+only. Repository/conventions, auth/runtime/adapter versions and real fault evidence remain future
+kickoff dependencies; no backend, assembler, registry or runner is implemented here. NC07–NC13
+remain deferred until the TinyURL backend proof and a new expansion scope decision.

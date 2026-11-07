@@ -340,7 +340,16 @@ The old binding `owner` and connection `access` remain the **legacy inferred wri
 approximation above. They are separate from explicit authority/grants and remain unchanged by
 ownership configuration. Exact operation bindings have their own editor below; runtime authorization remains unavailable.
 
-Legacy topology warnings still describe the inferred writer approximation. Targeted
+With explicit resource/access declarations, General groups the preserved inferred writer editor
+and legacy reader facts inside **Legacy inferred access & writer**, closed initially. A declared
+dependency similarly puts inferred relationship access in a secondary disclosure; Connections
+rows label declared requests explicitly. Changing a legacy writer edits only that old setting,
+never logical authority, grants or operation intent. Schema2 retains its original Owner/access
+inspector. Declared API/worker tiles show their role kind with underlying tile/deployable intent,
+so a Microservice tile kind does not imply a separate owner or running process.
+
+Topology writer warnings use valid declared authority/role/write-grant/dependency facts when
+present, with legacy inferred-writer fallback when resource access declarations are absent. Targeted
 `ownershipFindings` check the explicit declarations; neither proves runtime authorization.
 
 

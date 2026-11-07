@@ -1,0 +1,44 @@
+[
+  {
+    "path": "packages/spec/src/studio-examples/tinyurl.ts",
+    "baseline": "886eb77",
+    "baselineByteSha256": "b6c4b47fd2fcf22ac8bc0befe9ab8e361eaceaab9914ac3262078ed214e7b1a7",
+    "currentByteSha256": "b6c4b47fd2fcf22ac8bc0befe9ab8e361eaceaab9914ac3262078ed214e7b1a7",
+    "equalBytes": true
+  },
+  {
+    "path": "packages/spec/src/fixtures/nc01-schema2.json",
+    "baseline": "8ee2027",
+    "baselineByteSha256": "e6246211a98c2bb3f0a5bfdd5920fba7ebaec771e29238de288a401de74e8d71",
+    "currentByteSha256": "e6246211a98c2bb3f0a5bfdd5920fba7ebaec771e29238de288a401de74e8d71",
+    "equalBytes": true
+  },
+  {
+    "path": "packages/spec/src/operation-catalog.json",
+    "baseline": "1823124",
+    "baselineByteSha256": "f77fd1f1818c8f64022dc20b06ab11913775b156c5a047a7da9e3061262280ad",
+    "currentByteSha256": "f77fd1f1818c8f64022dc20b06ab11913775b156c5a047a7da9e3061262280ad",
+    "equalBytes": true
+  },
+  {
+    "path": "packages/spec/src/resolve-operation-catalog.json",
+    "baseline": "7b789a7",
+    "baselineByteSha256": "4946a7cc2fa711c57cfb7b12fbd4230229eb389df7ca2474cdc39cfcf9711a36",
+    "currentByteSha256": "4946a7cc2fa711c57cfb7b12fbd4230229eb389df7ca2474cdc39cfcf9711a36",
+    "equalBytes": true
+  },
+  {
+    "path": "packages/spec/src/cache-policy-catalog.json",
+    "baseline": "7b789a7",
+    "baselineByteSha256": "0c7759aa84d64f42a532bd0eb07c72339b4b92227c6459534bb34e3dc8e5ed27",
+    "currentByteSha256": "0c7759aa84d64f42a532bd0eb07c72339b4b92227c6459534bb34e3dc8e5ed27",
+    "equalBytes": true
+  },
+  {
+    "path": "packages/spec/src/tinyurl-readiness-profile.json",
+    "baseline": "4ada4c2",
+    "baselineByteSha256": "0a53457bb96bda56ffbd01678a0fddb8173f3801ad7360030ffc93a278a78baf",
+    "currentByteSha256": "0a53457bb96bda56ffbd01678a0fddb8173f3801ad7360030ffc93a278a78baf",
+    "equalBytes": true
+  }
+]

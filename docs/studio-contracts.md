@@ -31,6 +31,10 @@ Create requires an explicit API role, its own source database, and both an expli
 request and read-write grant: retained-result lookup and unknown-outcome reconciliation read the
 same source that atomically commits success. Existing write-only intent stays unchanged and
 saveable with a targeted missing-read contract gap; read-only still cannot satisfy writes.
+The actual bound source dependency must declare synchronous SQL/Native binding and an internal
+service/private-network boundary. Known contradictory protocol/security/interaction intent
+refuses; Unspecified protocol remains a targeted incomplete declaration, without an inferred
+adapter. Unknown operation refs acquire no Create-specific dependency checks.
 Same-owner reads remain reads; co-deployment grants nothing. The
 retention declaration is `24` hours or `null` (unspecified). The advanced verifier disclosure edits/clears a bounded exact ID/version/hash reference or
 null; no actual verifier manifest/registry exists, so either choice has a targeted unavailable /

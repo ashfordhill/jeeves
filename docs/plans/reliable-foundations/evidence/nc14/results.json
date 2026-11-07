@@ -1,0 +1,63 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "foundation": {
+        "collapsedTiles": 6,
+        "expandedTiles": 7,
+        "lines": 7,
+        "closedLegacyDisclosure": true,
+        "mouseExpandEditUndoReload": true,
+        "explicitDeclarationsUnchanged": true,
+        "declaredRoleMeaning": true,
+        "connectionMeaning": true,
+        "viewPurity": true
+      },
+      "schema2": {
+        "tiles": 11,
+        "lines": 12,
+        "originalOwnerAccessAndKind": true,
+        "v2ExportAndSourceUnchanged": true
+      }
+    },
+    {
+      "viewport": "1280x800",
+      "foundation": {
+        "collapsedTiles": 6,
+        "expandedTiles": 7,
+        "lines": 7,
+        "closedLegacyDisclosure": true,
+        "mouseExpandEditUndoReload": true,
+        "explicitDeclarationsUnchanged": true,
+        "declaredRoleMeaning": true,
+        "connectionMeaning": true,
+        "viewPurity": true
+      },
+      "schema2": {
+        "tiles": 11,
+        "lines": 12,
+        "originalOwnerAccessAndKind": true,
+        "v2ExportAndSourceUnchanged": true
+      }
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "c278429e-16db-4f81-a858-c1ed48a7982c",
+      "status": 204
+    },
+    {
+      "id": "e3aebfdb-4994-4cdb-979f-617703a73a91",
+      "status": 204
+    },
+    {
+      "id": "27885fed-1f74-4bb2-8d1e-1abed47ee53f",
+      "status": 204
+    },
+    {
+      "id": "a83d8b4e-08f7-48cc-b950-30adb5cea0eb",
+      "status": 204
+    }
+  ]
+}

@@ -236,6 +236,30 @@ export function operationContractFindings(design: DesignDocument): Finding[] {
           target,
         );
       if (knownCreate) {
+        if (link.planned.interaction !== "Request / response")
+          report(
+            "CONFIG_INVALID",
+            [...path, "binding", "storeConnection"],
+            "Create durable commit and retained-result lookup require a synchronous source dependency.",
+            { ...target, connection: link.id },
+          );
+        if (!["SQL", "Native binding"].includes(link.planned.protocol))
+          report(
+            studioProtocolSchema.options.some((value) => value === link.planned.protocol) &&
+              link.planned.protocol !== "Unspecified"
+              ? "CONFIG_INVALID"
+              : "CONFIG_REQUIRED",
+            [...path, "binding", "storeConnection"],
+            `Create source protocol ${link.planned.protocol} does not declare SQL or Native binding intent; no adapter is inferred.`,
+            { ...target, connection: link.id },
+          );
+        if (!["Service identity", "Private network"].includes(link.planned.security))
+          report(
+            "CONFIG_INVALID",
+            [...path, "binding", "storeConnection"],
+            "Create source dependency must declare a trusted internal service boundary.",
+            { ...target, connection: link.id },
+          );
         const resource = ownership.resources.find((x) => x.element === link.to.element);
         const kind = design.architecture?.studio?.elements.find(
           (x) => x.element === link.to.element,

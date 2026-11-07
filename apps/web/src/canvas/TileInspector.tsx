@@ -10,6 +10,7 @@ import {
   buildStudioCommand,
   createStudioComponentSettings,
   type DesignDocument,
+  designOwnership,
   moduleKinds,
   newModuleIdentity,
   type StudioComponent,
@@ -56,12 +57,13 @@ function StoreAccess({ design, store }: { design: DesignDocument; store: string 
       <dl className="lane-store-access" aria-label="Access inferred from ownership">
         <dt>{design.schemaVersion === 3 ? "Legacy inferred writer" : "Owner"}</dt>
         <dd>{ownerName}</dd>
-        <dt>Other readers</dt>
+        <dt>{design.schemaVersion === 3 ? "Legacy inferred readers" : "Other readers"}</dt>
         <dd>{readers.length ? [...new Set(readers)].join(", ") : "nobody else"}</dd>
       </dl>
       <p className="studio-field-help">
-        Access is inferred: owner links (including owning package members) count as writes; other
-        links count as reads. Owner reads are not distinguished.
+        {design.schemaVersion === 3 ? "Legacy access inference" : "Access is inferred"}: owner links
+        (including owning package members) count as writes; other links count as reads. Owner reads
+        are not distinguished.
       </p>
     </>
   );
@@ -318,16 +320,40 @@ export function TileInspector({
   const kind = kindOf(design, id);
   const definition = kind ? studioDefinitions[kind] : undefined;
   const application = moduleKinds(design, id).length > 0;
+  const ownership = designOwnership(design);
+  const role = ownership.roles.find((item) => item.element === id);
+  const declaredStore =
+    ownership.resources.some((item) => item.element === id) ||
+    ownership.grants.some((item) => item.resource === id) ||
+    design.connections.some(
+      (link) =>
+        link.to.element === id &&
+        ownership.dependencies.some((item) => item.connection === link.id),
+    );
+  const storeAccess =
+    kind && studioLinkRole(kind) === "store" ? (
+      <StoreAccess design={design} store={id} />
+    ) : undefined;
   return (
     <div className="studio-selection-summary">
       <h2 className="lane-inspector-title" data-family={definition?.visual.color ?? "generic"}>
         <StudioIcon name={definition?.visual.icon} size={22} />
         {name}
       </h2>
-      {definition ? <p className="lane-inspector-kind">{definition.name}</p> : null}
+      {definition ? (
+        <p className="lane-inspector-kind">
+          {role ? `${role.kind === "api" ? "API" : "Worker"} role` : definition.name}
+        </p>
+      ) : null}
+      {definition && role ? (
+        <p className="studio-field-help">
+          Tile kind: {definition.name} · deployable intent: {role.deployable ?? "unspecified"}. A
+          role is a responsibility within its logical owner; roles may share a process.
+        </p>
+      ) : null}
       <WarningList warnings={studioWarnings(design).filter((item) => item.node === id)} />
       <TypeList projectId={projectId} design={design} element={id} />
-      {kind && studioLinkRole(kind) === "store" ? <StoreAccess design={design} store={id} /> : null}
+      {!declaredStore ? storeAccess : null}
       <TargetInspector
         projectId={projectId}
         element={id}
@@ -336,6 +362,7 @@ export function TileInspector({
         onConnection={(line) => onSelect({ line })}
         tab={tab}
         onTab={setTab}
+        legacyAccess={declaredStore ? storeAccess : undefined}
         modules={
           application ? (
             <ModuleList projectId={projectId} design={design} host={id} onOpen={openModule} />

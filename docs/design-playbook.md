@@ -949,3 +949,28 @@ Legacy fallback is useful for old designs, but presenting its “no owner” and
 an unqualified second explanation below explicit authority is confusing. NC14 should review a
 labeled disclosure; an explicit API responsibility's generic “Microservice” kind label is another
 bounded clarity issue. Coordinator review of readable views is not owner usability acceptance.
+
+## 2026-11-07 independent narrow-contract review
+
+When explicit authority, grants and dependency requests exist, make those facts primary throughout
+the inspector. Keep preserved legacy writer inference and its editor together in a clearly labeled,
+closed disclosure; unqualified “no owner” or “other readers” below an explicit owner is a conflicting
+explanation. A declared API/worker role is a responsibility within one owner, even when its tile
+kind is Microservice and it shares a deployable. Qualify legacy relationship inference too. Keep
+schema2 inspection and canonical identities intact; demonstrate mouse edit, Undo and reload rather
+than hiding or fabricating legacy metadata.
+
+A pinned verification descriptor containing case names identifies only those names. Separately
+pin and hash-resolve actual self-contained executable test/runner/fixture/config/dependency bytes;
+fail old weaker formats closed. A trusted publisher/runner must independently establish bundle
+completeness, expected output and provenance. Opaque positive fixtures prove only trust plumbing.
+Exact templates must consume only the semantic subject, not excluded project/UI metadata. Source
+validator row indexes are not sorted export indexes: preserve canonical targets and document the
+basis. Exported mutable objects must not alias saved declarations and bypass revision/history.
+
+The [NC14 ledger](plans/reliable-foundations/nc14-review.md) keeps remaining owner usability,
+YouTube/Marketplace domain questions and intended-model evidence open. The separate
+[backend proof plan](plans/reliable-foundations/backend-first-proof-plan.md) is deferred: reviewed
+finite templates/assembly, real auth/HTTP/PostgreSQL/Redis and exact-output fault evidence first.
+Regeneration must preserve custom-owned files and refuse edits to generated-owned files; reserved
+extension space cannot silently acquire the narrow profile's verification.
