@@ -1,4 +1,4 @@
-import { layoutSchema, operationBatchSchema } from "@jeeves/spec";
+import { layoutSchema, operationBatchSchema, UnsupportedBlueprintContentError } from "@jeeves/spec";
 import type { FastifyReply } from "fastify";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
@@ -61,11 +61,35 @@ export const projectRoutes: FastifyPluginAsyncZod<{ service: DesignService }> = 
     return state ?? notFound(reply);
   });
 
-  /** Read-only generation blueprint (`blueprint: 2`); the studio keeps writing via operations. */
-  app.get("/projects/:id/blueprint", { schema: { params: projectParams } }, async (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    return (await service.blueprint(req.params.id)) ?? notFound(reply);
-  });
+  /** Default v2 remains stable; v3 is an explicit, read-only opt-in. */
+  app.get(
+    "/projects/:id/blueprint",
+    {
+      schema: {
+        params: projectParams,
+        querystring: z.strictObject({ version: z.enum(["2", "3"]).default("2") }),
+      },
+    },
+    async (req, reply) => {
+      reply.header("Cache-Control", "no-store");
+      try {
+        return (
+          (await service.blueprint(req.params.id, req.query.version === "3" ? 3 : 2)) ??
+          notFound(reply)
+        );
+      } catch (error) {
+        if (error instanceof UnsupportedBlueprintContentError)
+          return reply.code(422).send({
+            code: error.code,
+            message: error.message,
+            requestedVersion: 2,
+            supportedVersion: 3,
+            unsupported: error.unsupported,
+          });
+        throw error;
+      }
+    },
+  );
 
   app.get("/projects/:id/findings", { schema: { params: projectParams } }, async (req, reply) => {
     const state = await service.getDesign(req.params.id);

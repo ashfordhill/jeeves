@@ -439,3 +439,15 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   Marketplace pending/finite-stock/payment reconciliation and TinyURL analytics/cache/reader
   questions. No Milestone 2 or generator implementation was introduced. Backend location and
   conventions, real compatible templates and exact runtime evidence remain unknown.
+
+- NC01, local commit titled **NC01: persist profile scope with explicit v3 boundary**: the owner's
+  existing goahead authorizes the bounded first phase; G1/G4 decisions are recorded in the plan.
+  **Profile & requirements** now previews and explicitly upgrades a legacy design, persisting
+  included/excluded behavior and targeted custom requirements through reload/history. Chat uses
+  the same command. Required excluded behavior stays visible as a blocker; unknown profiles and
+  missing targets stay unresolved. Default blueprint v2 refuses exact unsupported paths; opt-in
+  v3 retains declarations and unspecified contracts. One Undo returns to schema2 without changing
+  legacy meaning. No owner projects/presets were migrated and no contracts/runtime/generator are
+  implied. Both-size mouse evidence is retained in `plans/reliable-foundations/evidence/nc01/`;
+  the form/footer is readable and focus/Fit/Show all preserve full export. Ownership/API/cache
+  contracts, template/readiness evidence and earlier owner readability questions remain open.

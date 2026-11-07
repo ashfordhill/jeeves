@@ -6,6 +6,13 @@
 import { z } from "zod";
 import { containerContext } from "./architecture.ts";
 import type { DesignDocument } from "./design.ts";
+import {
+  designScope,
+  designScopeFindings,
+  designScopeSchema,
+  profileStatus,
+  unresolvedDesignScope,
+} from "./design-scope.ts";
 import { findingSchema } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import { connectionPresentation, relationshipInteractionSchema } from "./relationship-display.ts";
@@ -190,6 +197,86 @@ const clone = <T>(value: T): T => structuredClone(value);
  * in `omitted`. The design is never changed.
  */
 export function designBlueprint(design: DesignDocument, projectName = ""): DesignBlueprint {
+  const unsupported = unsupportedBlueprintV2(design);
+  if (unsupported.length) throw new UnsupportedBlueprintContentError(unsupported);
+  return projectLegacyBlueprint(design, projectName);
+}
+
+export type UnsupportedBlueprintContent = { path: (string | number)[]; reason: string };
+export function unsupportedBlueprintV2(design: DesignDocument): UnsupportedBlueprintContent[] {
+  if (design.schemaVersion === 2) return [];
+  return [
+    ...(design.scope.profile
+      ? [
+          {
+            path: ["scope", "profile"],
+            reason: "Exact behavior profile is unsupported by blueprint v2.",
+          },
+        ]
+      : []),
+    ...design.scope.requirements.map((item, index) => ({
+      path: ["scope", "requirements", index],
+      reason: `Persistent ${item.disposition} ${item.feature} (${item.criticality}) is unsupported by blueprint v2.`,
+    })),
+    ...design.scope.customRequirements.map((item, index) => ({
+      path: ["scope", "customRequirements", index],
+      reason: `Unresolved custom requirement ${item.id} (${item.criticality}) is unsupported by blueprint v2.`,
+    })),
+  ];
+}
+export class UnsupportedBlueprintContentError extends Error {
+  readonly code = "UNSUPPORTED_BLUEPRINT_CONTENT";
+  constructor(readonly unsupported: UnsupportedBlueprintContent[]) {
+    super("Blueprint v2 cannot represent this design's persistent scope. Request ?version=3.");
+  }
+}
+
+export const designBlueprintV3Schema = designBlueprintSchema.extend({
+  blueprint: z.literal(3),
+  sourceSchemaVersion: z.union([z.literal(2), z.literal(3)]),
+  scope: designScopeSchema,
+  profileStatus: z.enum(["known", "unresolved", "unspecified"]),
+  unresolvedRequirements: z.array(
+    z.strictObject({
+      source: z.enum(["profile", "requirement", "contract", "custom"]),
+      id: idSchema,
+      requirement: z.string(),
+      criticality: z.enum(["required", "advisory"]),
+      element: idSchema.optional(),
+      connection: idSchema.optional(),
+    }),
+  ),
+  legacyAccess: z.literal("inferred-from-ownership; not a declared operation grant"),
+  templateAvailability: z.literal("none"),
+  runtimeVerification: z.literal("none"),
+});
+export type DesignBlueprintV3 = z.output<typeof designBlueprintV3Schema>;
+export function designBlueprintV3JsonSchema() {
+  return z.toJSONSchema(designBlueprintV3Schema, { target: "draft-2020-12", io: "output" });
+}
+export function designBlueprintV3(design: DesignDocument, projectName = ""): DesignBlueprintV3 {
+  const scope = clone(designScope(design));
+  scope.requirements.sort((a, b) => (a.feature < b.feature ? -1 : a.feature > b.feature ? 1 : 0));
+  scope.customRequirements = byId(scope.customRequirements);
+  return {
+    ...projectLegacyBlueprint(design, projectName),
+    blueprint: 3,
+    sourceSchemaVersion: design.schemaVersion,
+    findings: [...validateStudio(design), ...designScopeFindings(design)],
+    scope,
+    profileStatus: profileStatus(scope),
+    unresolvedRequirements: [...unresolvedDesignScope(design)]
+      .sort((a, b) =>
+        a.source < b.source ? -1 : a.source > b.source ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
+      )
+      .map(clone),
+    legacyAccess: "inferred-from-ownership; not a declared operation grant",
+    templateAvailability: "none",
+    runtimeVerification: "none",
+  };
+}
+
+function projectLegacyBlueprint(design: DesignDocument, projectName: string): DesignBlueprint {
   const architecture = design.architecture;
   const studio = architecture?.studio;
   const bindings = new Map<string, StudioElementBinding>(

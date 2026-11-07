@@ -1,6 +1,6 @@
 /** Real tool schemas + mocked Responses transport + the authoritative Workspace command path. */
 import { createOpenAIProvider, type ModelItem, toOpenAIInput } from "@jeeves/providers";
-import { emptyDesign, studioArchitectureExample } from "@jeeves/spec";
+import { emptyDesign, studioArchitectureExample, tinyurlDesignScope } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { toolDefinitions, Workspace } from "./tools.ts";
 
@@ -45,6 +45,52 @@ const execute = (workspace: Workspace, calls: { name: string; arguments: string 
   calls.map((call) => JSON.parse(workspace.run(call.name, call.arguments)));
 
 describe("strict OpenAI studio tools", () => {
+  it("transmits persistent scope with exact nullable references, omission defaults and canonical history replay", async () => {
+    const workspace = new Workspace(emptyDesign());
+    const scope = tinyurlDesignScope();
+    scope.customRequirements.push({
+      id: "custom-rule",
+      requirement: "Define tenant policy",
+      criticality: "required",
+    });
+    const preview = { baseRevision: 0, action: "preview", scope };
+    const missingUpgrade = { ...preview, action: "apply" };
+    const apply = { ...missingUpgrade, upgrade: true };
+    const { provider, requests } = transport(
+      [preview, missingUpgrade, apply]
+        .map((args) => [
+          { name: "configureDesignScope", arguments: wire("configureDesignScope", args) },
+        ])
+        .concat([[]]),
+    );
+    let items: ModelItem[] = [];
+    for (const [index, args] of [preview, missingUpgrade, apply].entries()) {
+      const response = await provider.respond(request(items));
+      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(args);
+      const [result] = execute(workspace, response.toolCalls);
+      expect(result.ok).toBe(index !== 1);
+      items = [
+        ...items,
+        ...response.items,
+        {
+          type: "tool-result",
+          callId: response.toolCalls[0]?.callId ?? "",
+          output: JSON.stringify(result),
+        },
+      ];
+    }
+    expect(workspace.working).toMatchObject({ schemaVersion: 3, scope });
+    await provider.respond(request(items));
+    const firstWire = JSON.parse(
+      String(requests[3]?.input.find((item) => item.type === "function_call")?.arguments),
+    );
+    expect(firstWire).toMatchObject({
+      upgrade: null,
+      scope: { customRequirements: [{ element: null, connection: null }] },
+    });
+    const noProfile = { ...preview, scope: { ...scope, profile: null } };
+    expect(JSON.parse(wire("configureDesignScope", noProfile)).scope.profile).toBeNull();
+  });
   it("transmits every current schema as strict, preserves nested commands/defaults, and replays wire history", async () => {
     const args = {
       baseRevision: 0,
@@ -199,7 +245,7 @@ describe("strict OpenAI studio tools", () => {
     );
     expect(requests[1]?.input[0]).toMatchObject({ type: "function_call", arguments: encoded });
     expect(requests[0]?.tools).toEqual(requests[1]?.tools);
-    expect(requests[0]?.tools).toHaveLength(10);
+    expect(requests[0]?.tools).toHaveLength(11);
     // Inspect the actual HTTP body recursively, including all settings/module/scope unions.
     function inspect(schema: Record<string, unknown>) {
       expect(schema).not.toHaveProperty("oneOf");

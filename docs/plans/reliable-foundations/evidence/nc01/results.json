@@ -1,0 +1,47 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "upgradePreviewPure": true,
+      "profileRef": {
+        "id": "tinyurl-create-resolve",
+        "version": "1.0.0"
+      },
+      "unsupportedPaths": 12,
+      "persistentReloadAndEdit": true,
+      "focusFitShowAllFullExportUnchanged": true,
+      "missingTargetRetainsOriginalScope": true,
+      "undoRemovalAndScopeEditAndUpgrade": true,
+      "legacyMeaningRestored": true
+    },
+    {
+      "viewport": "1280x800",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "upgradePreviewPure": true,
+      "profileRef": {
+        "id": "tinyurl-create-resolve",
+        "version": "1.0.0"
+      },
+      "unsupportedPaths": 12,
+      "persistentReloadAndEdit": true,
+      "focusFitShowAllFullExportUnchanged": true,
+      "missingTargetRetainsOriginalScope": true,
+      "undoRemovalAndScopeEditAndUpgrade": true,
+      "legacyMeaningRestored": true
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "c2d48f7e-6bb9-47de-a6f9-d0198c3eeb09",
+      "status": 204
+    },
+    {
+      "id": "80f68ce9-bea6-48dc-b638-cf1e291f0da4",
+      "status": 204
+    }
+  ]
+}

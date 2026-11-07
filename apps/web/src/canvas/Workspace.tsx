@@ -42,6 +42,7 @@ import { canRedo, canUndo, useProject } from "../project/store.ts";
 import { ActionForm } from "../studio/ActionForm.tsx";
 import { commitAction } from "../studio/actions.ts";
 import { ConnectionForm } from "../studio/ConnectionForm.tsx";
+import { DesignScopeForm } from "../studio/DesignScopeForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
 import { useStudioPreferences } from "../studio/preferences.ts";
@@ -91,6 +92,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [pick, setPick] = useState<BoardSelection>(() => startsSelected(graph));
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
+  const [scopeOpen, setScopeOpen] = useState(false);
   const [focusTile, setFocusTile] = useState<string>();
   const board = useRef<BoardHandle>(null);
   const selection = liveSelection(graph, pick);
@@ -200,6 +202,9 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   const header = (
     <div className="studio-header-actions lane-header-actions">
+      <button type="button" title="Profile & requirements" onClick={() => setScopeOpen(true)}>
+        Profile & requirements
+      </button>
       <button
         type="button"
         title="Undo"
@@ -241,6 +246,13 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   return (
     <div className="studio-workspace">
+      {scopeOpen ? (
+        <DesignScopeForm
+          projectId={projectId}
+          design={loaded.design}
+          onClose={() => setScopeOpen(false)}
+        />
+      ) : null}
       {headerHost ? createPortal(header, headerHost) : null}
       {preferences.chatOpen ? (
         <>

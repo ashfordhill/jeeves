@@ -15,7 +15,7 @@ studio (operations) ──▶ design document ──▶ designBlueprint() ──
 ## Endpoint
 
 `GET /projects/:id/blueprint` returns the blueprint JSON with `Cache-Control: no-store`: 404 for an
-unknown project, 400 for a malformed ID. It is a pure read and changes no revision, layout or
+unknown project, 400 for a malformed ID or unsupported version query. The default remains v2; `?version=2` selects it explicitly and `?version=3` opts into v3. A v2 request returns 422 `UNSUPPORTED_BLUEPRINT_CONTENT` when persistent scope would be lost: `requestedVersion`, `supportedVersion` and `unsupported[]` name every exact path and reason. It is a pure read and changes no revision, layout or
 history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 
 ## Source
@@ -45,6 +45,34 @@ history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 
 It leaves out layout, presentation, history and UI state. People are not included; they are not
 generated.
+
+## Contents (`blueprint: 3`)
+
+`designBlueprintV3()` and `designBlueprintV3Schema` provide the explicit v3 projection;
+`designBlueprintV3JsonSchema()` exposes its JSON Schema. It retains the v2 graph/settings fields
+and adds:
+
+| Field | Holds |
+| --- | --- |
+| `sourceSchemaVersion` | The stored document's 2 or 3. Reading/exporting never upgrades it. |
+| `scope` | Exact nullable profile reference, finite included/excluded requirements with criticality, and up to eight unresolved custom requirements with optional element/connection targets. Requirements sort by feature, custom requirements by ID. Unknown well-formed profile versions remain unchanged. |
+| `profileStatus` | `known`, `unresolved` or `unspecified`; known means the scope record exists, never that its contracts are implemented. |
+| `unresolvedRequirements` | Namespaced `source` (`profile`, `requirement`, `contract`, `custom`), ID, requirement, criticality and optional targets. Includes unspecified legacy requirements, required incompatible behavior, missing contracts and unresolved custom behavior. Missing targets are diagnostic text; the stored original requirement survives. |
+| `legacyAccess` | `inferred-from-ownership; not a declared operation grant`. Existing access values do not gain permission semantics. |
+| `templateAvailability`, `runtimeVerification` | Both `none`. Selecting a profile supplies neither. |
+
+Stored schema v2 remains readable as-is and exports its identical v2 meaning. Explicit
+`upgradeDesign` creates schema v3 plus `scope` in one operation; `setDesignScope` requires v3.
+A schema-v3 design with no scope content can still export v2 with the legacy meaning. Profile,
+each finite requirement and each custom requirement are v3-only content and cause v2 refusal.
+The mouse form reads the design, never the v2 blueprint, when editing these declarations.
+Undo/Redo restore the complete original schema and declarations as a new revision.
+
+The only known profile is `tinyurl-create-resolve@1.0.0`: one public namespace, immutable HTTP(S)
+destinations, authenticated create, public resolve and optional expiry. Required custom slugs,
+mutable destinations, disable/management, reputation, quotas or exact analytics remain visible
+and block this narrow scope. Selecting it reports ownership/access, create, resolve and
+expiry/cache contracts as not specified. This is no readiness certification or implementation.
 
 ## Example
 
@@ -125,7 +153,7 @@ read. Its head, and three of its connections (a publish, a read and a write):
   reject what it does not understand rather than guess.
 
 
-Chat preview/review scope and assumptions are turn metadata, not blueprint fields. The review
+Chat turn-only preview/review scope and assumptions are conversation metadata, distinct from persistent `scope` in v3. The review
 reuses these findings and reports declared behavior contracts as **not specified**; it does not
 change blueprint version 2 or certify application completeness, template support or runtime
 behavior. A worker's outgoing call/publication/store dependency only expresses topology.

@@ -354,3 +354,23 @@ Unsupported behavior checks are **not specified**, with no inference from prose 
 The final saved-state review and compact saved/unresolved result are visible in chat; full
 requirements use a mouse disclosure. Two repair batches fit inside the original 16-round limit.
 Neither tool changes persisted settings, contracts, blueprint versions or runtime evidence.
+
+
+## Persistent behavior scope
+
+[`design-scope.ts`](packages/spec/src/design-scope.ts) is the finite schema-v3 scope catalog:
+`tinyurl-create-resolve@1.0.0` selects immutable HTTP(S) destinations, authenticated create,
+public resolve and optional expiry in one public namespace. Custom slugs, destination mutation,
+disable/management, reputation, quotas and exact analytics are excluded. The ten finite rows
+can carry included/excluded, required/advisory intent; required incompatible behavior stays
+saveable with a blocker. Up to eight targeted custom requirements are always unresolved.
+Unknown exact profile references remain unresolved without substitution.
+
+The mouse **Profile & requirements** form and narrow chat `configureDesignScope` tool use
+`previewDesignScope` / `buildDesignScopeCommand`. Preview then explicit upgrade preserves
+schema-v2 projects; one Undo crosses the version boundary. Scope-only chat changes invalidate
+review and count toward its existing two repair batches. RF04 review scope remains turn-only.
+The v3 blueprint retains scope and unresolved contracts; default v2 refuses every v3-only path.
+No owner/API/message contracts, deployables, runtime templates, generator or verification follow
+from profile selection. See [settings](docs/studio-settings.md#profile-and-persistent-requirements)
+and [blueprint](docs/studio-blueprint.md#contents-blueprint-3).

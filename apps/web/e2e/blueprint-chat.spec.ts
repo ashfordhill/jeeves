@@ -97,6 +97,8 @@ test("saves a warned proposal with readable review details and one mouse Undo", 
   await expect(
     page.getByText("Unresolved: 1 design finding; 1 requirement not specified", { exact: false }),
   ).toBeVisible();
+  // The completed turn replaces the streaming view; open its disclosure after that replacement.
+  await expect(page.locator(".chat-turn[aria-busy]")).toHaveCount(0);
   await page.getByText("Review details (3)", { exact: true }).click();
   await expect(
     page

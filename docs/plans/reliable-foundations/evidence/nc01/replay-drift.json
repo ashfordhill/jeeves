@@ -1,0 +1,8 @@
+{
+  "case": "video-build",
+  "arm": "rf00-ablation",
+  "round": 1,
+  "expectedRequestHash": "77669bb5b59a1dbcc98c08bbcd07d3a70a2cae54f285972bc6650417b2995a6b",
+  "actualRequestHash": "05ea669ff9f5c887fbc9099d92454f74ca9e3024c1e138116f3c0082a970c39b",
+  "reason": "Baseline prompt/tool map unchanged, but shared turnContext now adds schemaVersion, persistentScope/unresolved requirements and availableProfileDefault. Request hash differs before any recorded response is replayed. Current arm additionally changes INSTRUCTIONS/toolDefinitions. CLI reports design mismatch because the earlier context-drift error leaves the seed unchanged."
+}

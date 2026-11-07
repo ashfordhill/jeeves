@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
 import { classificationSchema } from "./architecture-choices.ts";
+import { designScopeSchema } from "./design-scope.ts";
 import { idSchema } from "./ids.ts";
 import {
   relationshipInteractionSchema,
@@ -51,13 +52,19 @@ export type Connection = z.infer<typeof connectionSchema>;
  * A studio design. `revision` is bumped once per applied operation batch, never by layout changes.
  * Documents in any other shape are rejected.
  */
-export const designSchema = z.strictObject({
+export const designV2Schema = z.strictObject({
   schemaVersion: z.literal(2),
   revision: z.int().nonnegative(),
   architecture: architectureSchema.optional(),
   elements: z.array(elementSchema).default([]),
   connections: z.array(connectionSchema).default([]),
 });
+/** Explicit readers preserve legacy meaning; reading never writes or upgrades a document. */
+export const designV3Schema = designV2Schema.extend({
+  schemaVersion: z.literal(3),
+  scope: designScopeSchema,
+});
+export const designSchema = z.discriminatedUnion("schemaVersion", [designV2Schema, designV3Schema]);
 export type DesignDocument = z.output<typeof designSchema>;
 export type DesignDocumentInput = z.input<typeof designSchema>;
 

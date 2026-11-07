@@ -154,7 +154,7 @@ describe("projects", () => {
     await db.insert(designRevisions).values({
       projectId: id,
       revision: 1,
-      document: { ...emptyDesign(), revision: 1, annotations: [] } as DesignDocument,
+      document: { ...emptyDesign(), revision: 1, annotations: [] } as unknown as DesignDocument,
       findings: [],
     });
     await db.update(projects).set({ revision: 1 }).where(eq(projects.id, id));

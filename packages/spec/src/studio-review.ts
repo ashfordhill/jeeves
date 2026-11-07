@@ -1,6 +1,7 @@
 /** Read-only review of represented design facts and explicitly declared, turn-local scope. */
 import { z } from "zod";
 import type { DesignDocument } from "./design.ts";
+import { designScope, profileStatus, unresolvedDesignScope } from "./design-scope.ts";
 import { isStructural } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import { studioPatternIdSchema, studioPatterns } from "./studio-patterns.ts";
@@ -67,6 +68,7 @@ export function reviewScopeProblem(
 export type StudioChange = {
   type:
     | "system"
+    | "scope"
     | "action"
     | "element"
     | "connection"
@@ -86,6 +88,8 @@ export function studioChanges(base: DesignDocument, working: DesignDocument): St
     const add = (type: StudioChange["type"], id: string, name: string, value: unknown) =>
       entries.push([`${type}:${id}`, { change: { type, id, name }, value }]);
     const studio = design.architecture?.studio;
+    if (design.schemaVersion === 3)
+      add("scope", "persistent-scope", "Profile and persistent requirements", design.scope);
     if (design.architecture)
       add("system", "system", design.architecture.system.name, design.architecture.system);
     for (const item of studio?.actions ?? []) add("action", item.lane, item.name, item);
@@ -159,9 +163,23 @@ export function reviewStudioDesign(
       introduced: !baseline.has(JSON.stringify(item)),
     })),
     scope: { ...scope, persistence: "this turn only" as const },
+    persistentScope: {
+      ...designScope(working),
+      profileStatus: profileStatus(designScope(working)),
+      unresolved: unresolvedDesignScope(working),
+      persistence: "saved design" as const,
+    },
     assumptions: scope.assumptions,
     obligations: [
       ...obligations,
+      ...(working.schemaVersion === 3
+        ? unresolvedDesignScope(working).map((item) => ({
+            ...item,
+            status: "not specified" as const,
+            limitation:
+              "Persistent design intent has no implemented behavior contract, template or runtime verification.",
+          }))
+        : []),
       ...scope.obligations.map((item) => ({
         ...item,
         status: "not specified" as const,

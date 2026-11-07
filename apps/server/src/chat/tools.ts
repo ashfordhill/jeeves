@@ -8,8 +8,12 @@
 import type { ToolDefinition } from "@jeeves/providers";
 import {
   applyOperations,
+  buildDesignScopeCommand,
   buildStudioCommand,
   type DesignDocument,
+  type DesignScope,
+  designScope,
+  designScopeCommandSchema,
   emptyReviewScope,
   type Finding,
   isDesignWarning,
@@ -19,6 +23,8 @@ import {
   laneLimits,
   listStudioPatterns,
   type OperationInput,
+  previewDesignScope,
+  profileStatus,
   reviewScopeProblem,
   reviewStudioDesign,
   type StudioKind,
@@ -45,6 +51,8 @@ import {
   studioTileTypes,
   studioWarningSentence,
   tileTypeOf,
+  tinyurlDesignScope,
+  unresolvedDesignScope,
   validateDesign,
 } from "@jeeves/spec";
 import { z } from "zod";
@@ -94,6 +102,8 @@ Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before 
 
 Review before saving: declareReviewScope explicitly selects this turn's pattern IDs, applicable checklist IDs, assumptions and custom obligations. It replaces only turn-local review metadata, never design settings. Retrieval does not select scope. Do not select variant checks (such as finite stock) unless they apply; use an empty checklist for topology-only scope. reviewDesign is read-only: inspect staged additions/updates/removals, targeted findings, assumptions and unsupported obligations. All selected behavior checks without typed contracts stay "not specified", never "verified"; no labels or module names prove payload semantics, transitions or side effects. A fresh review is sent back before edits commit even if you end your response. You may repair at most two response batches after receiving a review, within the normal 16-round limit; review again after edits. Warnings remain saveable: fix represented facts or explicitly report what remains. askUser still ends the turn immediately. The server appends the actual saved-edit and unresolved-review result.
 
+Persistent profile and requirements: getDesign includes schemaVersion, saved persistentScope, unresolved requirements and the one available profile default. configureDesignScope previews or applies exactly those declarations with the same command as the mouse form. For schema v2 first preview the exact scope, then apply with upgrade:true; omission never upgrades. This explicit version change and all turn edits are one Undo step. Preserve unknown profile versions and existing custom requirements unless the person asks to replace them. Included/excluded requirements are saved intent, separate from declareReviewScope. Required custom slugs, mutable destinations, disable/management, reputation, quotas or exact analytics block tinyurl-create-resolve@1.0.0; retain the requirement instead of erasing it or claiming support. Profile selection supplies no owner, API, failure/cache contract, template or runtime verification. Unknown/absent requirements remain unspecified. Missing custom targets stay unresolved after deletion.
+
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
 - addTile: a new tile after a tile, after a lane's action (from {"lane": "download"} or {"lane": "upload"}, side "after"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
@@ -109,7 +119,7 @@ IDs are lowercase slugs, unique across the design. Name a new link "source-targe
 
 Several commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.
 
-Only names and purposes, the system goal, finite settings, ownership, links and modules are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior in the goal and name it as an implementation obligation. Kinds come preconfigured (listStudioDefinitions shows each kind's defaults): Billing starts with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs, Gateway with Traefik and CDN with Cloudflare; the other choices stay selectable. Large uploads go through an Uploads service that writes the storage; its transfer (signed URLs to storage, or through the service with tus) says how the bytes travel, never a line from an action to storage. Each coded kind offers two languages, its default first (languages in listStudioDefinitions and getDesign); any other language is refused. Gateway and CDN are products, not code, and have no language. A provider chosen on a kind (Billing with Stripe) is that service's integration: never add a separate External tile for it. External tiles are for third parties no kind covers. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.
+Only names and purposes, the system goal, finite settings, ownership, links, modules and bounded persistent scope declarations are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior as a persistent unresolved custom requirement when requested. Kinds come preconfigured (listStudioDefinitions shows each kind's defaults): Billing starts with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs, Gateway with Traefik and CDN with Cloudflare; the other choices stay selectable. Large uploads go through an Uploads service that writes the storage; its transfer (signed URLs to storage, or through the service with tus) says how the bytes travel, never a line from an action to storage. Each coded kind offers two languages, its default first (languages in listStudioDefinitions and getDesign); any other language is refused. Gateway and CDN are products, not code, and have no language. A provider chosen on a kind (Billing with Stripe) is that service's integration: never add a separate External tile for it. External tiles are for third parties no kind covers. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.
 
 Keep designs small and readable: a few tiles per lane (at most 15 to start), short names, useful purposes. Docker is the default intent for a new service. No provider setup or credentials. Ask one focused askUser question only when the answer changes the architecture, then end the turn. Reply briefly with what changed and what remains open. Messages beginning [Jeeves] are caller context; "this" or "the selected" means its selected identities (a tile, link or entry on the canvas).`;
 
@@ -119,6 +129,11 @@ const schemas = {
   listStudioPatterns: z.strictObject({}),
   describeStudioPattern: z.strictObject({ id: studioPatternIdSchema }),
   getDesign: z.strictObject({}),
+  configureDesignScope: z.strictObject({
+    baseRevision: z.int().nonnegative(),
+    action: z.enum(["preview", "apply"]),
+    ...designScopeCommandSchema.shape,
+  }),
   applyStudioCommands: z.strictObject({
     baseRevision: z.int().nonnegative(),
     commands: z.array(studioCommandSchema).min(1).max(50),
@@ -144,6 +159,8 @@ const descriptions: Record<ToolName, string> = {
     "Read one reviewed pattern's roles, required relationships, variants, invariant/failure checklist, sources, topology-only example and precise unsupported implementation obligations. No runtime template or verification is supplied.",
   getDesign:
     "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, the current findings and the design warnings.",
+  configureDesignScope:
+    "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
   applyStudioCommands:
     "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
@@ -160,6 +177,17 @@ export function toolDefinitions(): ToolDefinition[] {
     description: descriptions[name],
     parameters: z.toJSONSchema(schemas[name], { io: "input" }) as Record<string, unknown>,
   }));
+}
+
+/** Shared by the real loop and evaluation observer; scope previews spend no repair pass. */
+export function isWorkspaceMutation(name: string, rawArguments: string): boolean {
+  if (name === "applyStudioCommands" || name === "declareReviewScope") return true;
+  if (name !== "configureDesignScope") return false;
+  try {
+    return JSON.parse(rawArguments)?.action !== "preview";
+  } catch {
+    return true;
+  }
 }
 
 const caps = {
@@ -242,6 +270,13 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
       }));
   return {
     baseRevision: design.revision,
+    schemaVersion: design.schemaVersion,
+    persistentScope: {
+      ...designScope(design),
+      profileStatus: profileStatus(designScope(design)),
+      unresolved: unresolvedDesignScope(design),
+    },
+    availableProfileDefault: tinyurlDesignScope(),
     system: design.architecture
       ? {
           name: design.architecture.system.name,
@@ -328,6 +363,7 @@ export class Workspace {
   /** Changes to commands or scope invalidate an earlier review, including within one response. */
   generation = 0;
   reviewedGeneration = -1;
+  private scopePreview: { generation: number; scope: string } | undefined;
 
   review() {
     this.reviewedGeneration = this.generation;
@@ -412,6 +448,8 @@ export class Workspace {
           ...designSummary(this.working, validateDesign(this.working)),
           baseRevision: this.base.revision,
         };
+      case "configureDesignScope":
+        return this.configureScope(parsed.data as z.infer<typeof schemas.configureDesignScope>);
       case "listStudioPatterns":
         this.log(tool, true, "Listed reviewed design patterns");
         return listStudioPatterns();
@@ -452,6 +490,61 @@ export class Workspace {
         return { ok: true, note: "End this turn; the answer comes as a new message." };
       case "applyStudioCommands":
         return this.applyCommands(parsed.data as z.infer<typeof schemas.applyStudioCommands>);
+    }
+  }
+
+  private configureScope({
+    baseRevision,
+    action,
+    scope,
+    upgrade,
+  }: {
+    baseRevision: number;
+    action: "preview" | "apply";
+    scope: DesignScope;
+    upgrade: boolean;
+  }): unknown {
+    const tool = "configureDesignScope";
+    const refuse = (error: string) => {
+      this.log(tool, false, error);
+      return { ok: false, error, note: "Nothing changed for this call." };
+    };
+    if (baseRevision !== this.base.revision)
+      return refuse("Revision conflict. Read getDesign before preparing requirements.");
+    if (action === "preview") {
+      this.scopePreview = { generation: this.generation, scope: JSON.stringify(scope) };
+      this.log(tool, true, "Previewed persistent profile and requirements; nothing saved");
+      return { ok: true, ...previewDesignScope(this.working, scope) };
+    }
+    if (
+      this.working.schemaVersion === 2 &&
+      (this.scopePreview?.generation !== this.generation ||
+        this.scopePreview.scope !== JSON.stringify(scope))
+    )
+      return refuse(
+        "Preview this exact scope against the current working design before explicitly upgrading it.",
+      );
+    try {
+      const batch = buildDesignScopeCommand(this.working, { scope, upgrade });
+      if (!batch.ops.length)
+        return { ok: true, note: "Persistent scope unchanged; no edit prepared." };
+      const result = applyOperations(this.working, batch.ops);
+      if (!result.ok) return refuse(result.errors.map((item) => item.message).join(" "));
+      this.working = result.design;
+      this.pending.push(...batch.ops);
+      this.generation++;
+      this.log(
+        tool,
+        true,
+        "Prepared persistent profile and requirements as part of one turn commit",
+      );
+      return {
+        ok: true,
+        ...previewDesignScope(this.working, scope),
+        note: "Prepared, not saved. Profile selection supplies no capability contracts, templates or runtime verification.",
+      };
+    } catch (error) {
+      return refuse(error instanceof Error ? error.message : String(error));
     }
   }
 

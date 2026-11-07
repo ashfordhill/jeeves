@@ -26,6 +26,33 @@ model has a property. The source of truth is
 - Selecting a provider changes no other field's meaning, creates no box, calls nothing and claims
   no working code.
 
+## Profile and persistent requirements
+
+The header's **Profile & requirements** form edits top-level `scope` on stored schema v3,
+using `design-scope.ts`. Legacy schema v2 opens with unspecified declarations and changes only
+after **Preview requirements → Upgrade & save requirements**. The upgrade and requirements
+save form one Undo step; existing tiles, settings and inferred ownership do not change.
+
+| Path | Allowed values / bound |
+| --- | --- |
+| `scope.profile` | `null` (unspecified) or exact `{id, version}`. IDs are lowercase slugs (63 chars); versions are exact three-part nonnegative decimal versions (40 chars, no leading zeros/ranges). The selectable known ref is `tinyurl-create-resolve@1.0.0`. Unknown well-formed refs remain saveable/unresolved and visible. |
+| `scope.requirements[]` | At most ten distinct finite features below; each has `disposition: included/excluded` and `criticality: required/advisory`. Missing feature is unspecified. |
+| `scope.customRequirements[]` | At most eight distinct slug IDs, `requirement` (1–1000 trimmed chars), `criticality: required/advisory`, optional element and connection slug targets. Always unresolved; removing a target retains the requirement with a missing-target diagnostic. |
+
+Selecting the TinyURL profile initially includes `immutable-http-targets`, `authenticated-create`,
+`public-resolve`, `optional-expiry`, and excludes `custom-slugs`, `mutable-destinations`,
+`disable-management`, `reputation-enforcement`, `quotas`, `exact-analytics`, all required.
+Existing explicit rows/custom requirements are preserved when selecting the profile. Each row
+can be included, excluded or unspecified, and required or advisory. Contradictions remain
+saveable intent with targeted unresolved findings; a required excluded feature blocks this
+profile. Removing the profile preserves its requirement declarations.
+
+Preview shows the exact unresolved contracts and the v3 export boundary. A changed design
+invalidates the preview before save. Profile selection never converts names, labels or modules
+into contracts. No ownership/API/message contracts, template manifest or runtime exist here.
+Chat's `configureDesignScope` shares the mouse command and validation; RF04
+`declareReviewScope` remains turn-only metadata. See [blueprint](studio-blueprint.md).
+
 ## Applications
 
 `S` is `architecture.studio.elements[].settings`. "Common" means service, worker, billing,

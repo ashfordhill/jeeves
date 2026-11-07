@@ -1,0 +1,1260 @@
+{
+  "sourceCommit": "886eb777382ca979c9e87d8581b830472d62b51a",
+  "design": {
+    "schemaVersion": 2,
+    "revision": 0,
+    "architecture": {
+      "studio": {
+        "version": 1,
+        "origin": {
+          "example": {
+            "id": "studio-tinyurl",
+            "version": "3.2.0"
+          },
+          "goalManifestSha256": "07bb550567398a39c201d6e17c580ad9d63612aeaab06c01b3108052f6c25006"
+        },
+        "elements": [
+          {
+            "element": "redirect",
+            "definition": {
+              "id": "studio-redirect",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "redirect",
+              "language": "go",
+              "exposure": "public",
+              "minReplicas": 3,
+              "maxReplicas": 30,
+              "autoscaleOn": "requests-per-second",
+              "requestTimeoutMs": 250,
+              "concurrencyLimit": 5000,
+              "lookupStoreConnection": "redirect-db",
+              "lookupCacheConnection": "redirect-cache",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "url-cache",
+            "definition": {
+              "id": "studio-cache",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "cache",
+              "engine": "redis-compatible",
+              "provider": "self-hosted",
+              "ttlSeconds": 86400,
+              "topology": "cluster",
+              "eviction": "lru"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "redirect"
+            }
+          },
+          {
+            "element": "url-db",
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "database",
+              "engine": "postgresql",
+              "provider": "self-hosted",
+              "readReplicas": 2,
+              "partitionKey": "short_code"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "shorten"
+            }
+          },
+          {
+            "element": "click-events",
+            "definition": {
+              "id": "studio-queue",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "queue",
+              "mode": "topic",
+              "provider": "self-hosted",
+              "retentionSeconds": 604800,
+              "partitions": 12
+            },
+            "owner": {
+              "kind": "element",
+              "id": "redirect"
+            }
+          },
+          {
+            "element": "analytics",
+            "definition": {
+              "id": "studio-worker",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "worker",
+              "language": "typescript",
+              "concurrency": 8,
+              "minReplicas": 1,
+              "maxReplicas": 6,
+              "autoscaleOn": "queue-lag",
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "analytics-store",
+            "definition": {
+              "id": "studio-database",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "database",
+              "engine": "clickhouse",
+              "provider": "self-hosted"
+            },
+            "owner": {
+              "kind": "element",
+              "id": "analytics"
+            }
+          },
+          {
+            "element": "stats-api",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "language": "typescript",
+              "exposure": "public",
+              "minReplicas": 2,
+              "maxReplicas": 6,
+              "autoscaleOn": "cpu",
+              "requestTimeoutMs": 1000,
+              "concurrencyLimit": 200,
+              "execution": "docker"
+            }
+          },
+          {
+            "element": "shorten",
+            "definition": {
+              "id": "studio-service",
+              "version": "1.0.0"
+            },
+            "settings": {
+              "kind": "service",
+              "language": "typescript",
+              "exposure": "public",
+              "minReplicas": 2,
+              "maxReplicas": 6,
+              "autoscaleOn": "cpu",
+              "requestTimeoutMs": 3000,
+              "concurrencyLimit": 200,
+              "execution": "docker"
+            }
+          }
+        ],
+        "packages": [],
+        "connections": [
+          {
+            "connection": "redirect-clicks",
+            "settings": {
+              "channelUse": "publish"
+            }
+          },
+          {
+            "connection": "redirect-cache",
+            "settings": {}
+          },
+          {
+            "connection": "redirect-db",
+            "settings": {}
+          },
+          {
+            "connection": "click-events-analytics",
+            "settings": {
+              "channelUse": "consume"
+            }
+          },
+          {
+            "connection": "analytics-write",
+            "settings": {}
+          },
+          {
+            "connection": "stats-read",
+            "settings": {}
+          },
+          {
+            "connection": "shorten-db",
+            "settings": {}
+          }
+        ],
+        "components": [
+          {
+            "id": "redirect-cache-reader",
+            "host": "redirect",
+            "name": "Cache reader",
+            "description": "Cache-aside: in-process L1, then Redis, one database load per key at a time.",
+            "settings": {
+              "kind": "cache-reader",
+              "pattern": "cache-aside",
+              "l1MaxEntries": 100000,
+              "l1TtlSeconds": 60,
+              "l2TtlSeconds": 86400,
+              "negativeTtlSeconds": 30,
+              "stampede": "single-flight"
+            }
+          },
+          {
+            "id": "redirect-data",
+            "host": "redirect",
+            "name": "Link reader",
+            "description": "Reads links from a replica on a cache miss.",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 50,
+              "readRouting": "replica",
+              "statementTimeoutMs": 200
+            }
+          },
+          {
+            "id": "redirect-responder",
+            "host": "redirect",
+            "name": "Redirect responder",
+            "description": "Answers 302 with no edge caching, so every click reaches the service.",
+            "settings": {
+              "kind": "redirect-responder",
+              "status": "302",
+              "edgeMaxAgeSeconds": 0
+            }
+          },
+          {
+            "id": "redirect-click-publisher",
+            "host": "redirect",
+            "name": "Click publisher",
+            "description": "Publishes click events in batches after responding.",
+            "settings": {
+              "kind": "event-publisher",
+              "batchSize": 500,
+              "lingerMs": 50,
+              "outbox": "disabled"
+            }
+          },
+          {
+            "id": "analytics-click-consumer",
+            "host": "analytics",
+            "name": "Click consumer",
+            "description": "Consumes click batches with bounded retries.",
+            "settings": {
+              "kind": "event-consumer",
+              "concurrency": 8,
+              "batchSize": 1000,
+              "retryLimit": 5
+            }
+          },
+          {
+            "id": "analytics-aggregation",
+            "host": "analytics",
+            "name": "Click aggregation",
+            "description": "Rolls clicks up per link and hour before writing.",
+            "settings": {
+              "kind": "custom"
+            }
+          },
+          {
+            "id": "analytics-data",
+            "host": "analytics",
+            "name": "Aggregate writer",
+            "description": "Bulk-inserts hourly aggregates.",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 10,
+              "readRouting": "primary",
+              "statementTimeoutMs": 30000
+            }
+          },
+          {
+            "id": "stats-data",
+            "host": "stats-api",
+            "name": "Stats reader",
+            "description": "Reads click counts per link and period.",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 10,
+              "readRouting": "primary",
+              "statementTimeoutMs": 5000
+            }
+          },
+          {
+            "id": "shorten-data",
+            "host": "shorten",
+            "name": "Link writer",
+            "description": "Inserts new links on the primary; the short code is generated in this module.",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 20,
+              "readRouting": "primary",
+              "statementTimeoutMs": 2000
+            }
+          }
+        ],
+        "componentConnections": [
+          {
+            "id": "cache-reader-redis",
+            "from": "redirect-cache-reader",
+            "to": {
+              "kind": "element",
+              "id": "url-cache",
+              "via": "redirect-cache"
+            }
+          },
+          {
+            "id": "cache-reader-miss",
+            "from": "redirect-cache-reader",
+            "to": {
+              "kind": "component",
+              "id": "redirect-data"
+            },
+            "label": "Loads on miss"
+          },
+          {
+            "id": "redirect-data-reads",
+            "from": "redirect-data",
+            "to": {
+              "kind": "element",
+              "id": "url-db",
+              "via": "redirect-db"
+            }
+          },
+          {
+            "id": "responder-lookup",
+            "from": "redirect-responder",
+            "to": {
+              "kind": "component",
+              "id": "redirect-cache-reader"
+            },
+            "label": "Resolves code"
+          },
+          {
+            "id": "responder-click",
+            "from": "redirect-responder",
+            "to": {
+              "kind": "component",
+              "id": "redirect-click-publisher"
+            },
+            "label": "Records click"
+          },
+          {
+            "id": "click-publisher-queue",
+            "from": "redirect-click-publisher",
+            "to": {
+              "kind": "element",
+              "id": "click-events",
+              "via": "redirect-clicks"
+            }
+          },
+          {
+            "id": "click-consumer-queue",
+            "from": "analytics-click-consumer",
+            "to": {
+              "kind": "element",
+              "id": "click-events",
+              "via": "click-events-analytics"
+            }
+          },
+          {
+            "id": "consumer-aggregation",
+            "from": "analytics-click-consumer",
+            "to": {
+              "kind": "component",
+              "id": "analytics-aggregation"
+            },
+            "label": "Hands batch"
+          },
+          {
+            "id": "aggregation-writer",
+            "from": "analytics-aggregation",
+            "to": {
+              "kind": "component",
+              "id": "analytics-data"
+            },
+            "label": "Writes rollups"
+          },
+          {
+            "id": "analytics-data-writes",
+            "from": "analytics-data",
+            "to": {
+              "kind": "element",
+              "id": "analytics-store",
+              "via": "analytics-write"
+            }
+          },
+          {
+            "id": "stats-data-reads",
+            "from": "stats-data",
+            "to": {
+              "kind": "element",
+              "id": "analytics-store",
+              "via": "stats-read"
+            }
+          },
+          {
+            "id": "shorten-data-writes",
+            "from": "shorten-data",
+            "to": {
+              "kind": "element",
+              "id": "url-db",
+              "via": "shorten-db"
+            }
+          }
+        ],
+        "entries": [
+          {
+            "id": "download-stats-api",
+            "lane": "download",
+            "element": "stats-api"
+          },
+          {
+            "id": "download-redirect",
+            "lane": "download",
+            "element": "redirect"
+          },
+          {
+            "id": "upload-shorten",
+            "lane": "upload",
+            "element": "shorten"
+          }
+        ],
+        "actions": [
+          {
+            "lane": "download",
+            "name": "Open link"
+          },
+          {
+            "lane": "upload",
+            "name": "Shorten"
+          }
+        ]
+      },
+      "system": {
+        "name": "TinyURL",
+        "description": "Shortens long URLs, redirects visitors quickly and counts their clicks asynchronously."
+      },
+      "nodes": [],
+      "relationships": []
+    },
+    "elements": [
+      {
+        "id": "redirect",
+        "name": "Redirect service",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Resolves short codes on the hot path, cache first, answers 302 and publishes the click."
+      },
+      {
+        "id": "url-cache",
+        "name": "URL cache",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Redis cache of hot short codes, filled by the Redirect service on a miss."
+      },
+      {
+        "id": "url-db",
+        "name": "URL database",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Authoritative short code to destination mapping, read from replicas."
+      },
+      {
+        "id": "click-events",
+        "name": "Click events",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Buffers click events between redirects and analytics."
+      },
+      {
+        "id": "analytics",
+        "name": "Analytics worker",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Consumes click events and writes hourly aggregates."
+      },
+      {
+        "id": "analytics-store",
+        "name": "Analytics store",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "ClickHouse column store for click aggregates."
+      },
+      {
+        "id": "stats-api",
+        "name": "Stats API",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Serves click counts per link to the people who created the links."
+      },
+      {
+        "id": "shorten",
+        "name": "Shorten service",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Validates destinations, generates short codes and stores new links."
+      }
+    ],
+    "connections": [
+      {
+        "id": "redirect-clicks",
+        "kind": "depends-on",
+        "from": {
+          "element": "redirect"
+        },
+        "to": {
+          "element": "click-events"
+        },
+        "planned": {
+          "label": "Publishes clicks",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "redirect-cache",
+        "kind": "depends-on",
+        "from": {
+          "element": "redirect"
+        },
+        "to": {
+          "element": "url-cache"
+        },
+        "planned": {
+          "label": "Reads hot links, fills on miss",
+          "protocol": "Redis",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "redirect-db",
+        "kind": "uses-database",
+        "from": {
+          "element": "redirect"
+        },
+        "to": {
+          "element": "url-db"
+        },
+        "planned": {
+          "label": "Reads links on a cache miss",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "click-events-analytics",
+        "kind": "depends-on",
+        "from": {
+          "element": "click-events"
+        },
+        "to": {
+          "element": "analytics"
+        },
+        "planned": {
+          "label": "Delivers clicks",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "analytics-write",
+        "kind": "uses-database",
+        "from": {
+          "element": "analytics"
+        },
+        "to": {
+          "element": "analytics-store"
+        },
+        "planned": {
+          "label": "Writes aggregates",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "stats-read",
+        "kind": "uses-database",
+        "from": {
+          "element": "stats-api"
+        },
+        "to": {
+          "element": "analytics-store"
+        },
+        "planned": {
+          "label": "Reads click counts",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      },
+      {
+        "id": "shorten-db",
+        "kind": "uses-database",
+        "from": {
+          "element": "shorten"
+        },
+        "to": {
+          "element": "url-db"
+        },
+        "planned": {
+          "label": "Writes links",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    ]
+  },
+  "blueprint": {
+    "blueprint": 2,
+    "revision": 0,
+    "system": {
+      "name": "TinyURL",
+      "description": "Shortens long URLs, redirects visitors quickly and counts their clicks asynchronously."
+    },
+    "actions": [
+      {
+        "lane": "download",
+        "name": "Open link"
+      },
+      {
+        "lane": "upload",
+        "name": "Shorten"
+      }
+    ],
+    "entries": [
+      {
+        "lane": "download",
+        "action": "Open link",
+        "element": "redirect"
+      },
+      {
+        "lane": "download",
+        "action": "Open link",
+        "element": "stats-api"
+      },
+      {
+        "lane": "upload",
+        "action": "Shorten",
+        "element": "shorten"
+      }
+    ],
+    "services": [
+      {
+        "id": "analytics",
+        "name": "Analytics worker",
+        "description": "Consumes click events and writes hourly aggregates.",
+        "definition": {
+          "id": "studio-worker",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "worker",
+        "settings": {
+          "kind": "worker",
+          "language": "typescript",
+          "concurrency": 8,
+          "minReplicas": 1,
+          "maxReplicas": 6,
+          "autoscaleOn": "queue-lag",
+          "execution": "docker"
+        },
+        "components": [
+          {
+            "id": "analytics-aggregation",
+            "name": "Click aggregation",
+            "purpose": "Rolls clicks up per link and hour before writing.",
+            "kind": "custom",
+            "settings": {
+              "kind": "custom"
+            },
+            "thirdParty": [],
+            "requires": []
+          },
+          {
+            "id": "analytics-click-consumer",
+            "name": "Click consumer",
+            "purpose": "Consumes click batches with bounded retries.",
+            "kind": "event-consumer",
+            "settings": {
+              "kind": "event-consumer",
+              "concurrency": 8,
+              "batchSize": 1000,
+              "retryLimit": 5
+            },
+            "thirdParty": ["Kafka", "Amazon SQS", "Redis Streams"],
+            "requires": [
+              {
+                "kinds": ["queue"],
+                "reason": "An event consumer needs a consume connection from a queue."
+              }
+            ]
+          },
+          {
+            "id": "analytics-data",
+            "name": "Aggregate writer",
+            "purpose": "Bulk-inserts hourly aggregates.",
+            "kind": "data-access",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 10,
+              "readRouting": "primary",
+              "statementTimeoutMs": 30000
+            },
+            "thirdParty": ["PostgreSQL"],
+            "requires": [
+              {
+                "kinds": ["database"],
+                "reason": "Data access needs a database connection."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "redirect",
+        "name": "Redirect service",
+        "description": "Resolves short codes on the hot path, cache first, answers 302 and publishes the click.",
+        "definition": {
+          "id": "studio-redirect",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "redirect",
+        "settings": {
+          "kind": "redirect",
+          "language": "go",
+          "exposure": "public",
+          "minReplicas": 3,
+          "maxReplicas": 30,
+          "autoscaleOn": "requests-per-second",
+          "requestTimeoutMs": 250,
+          "concurrencyLimit": 5000,
+          "lookupStoreConnection": "redirect-db",
+          "lookupCacheConnection": "redirect-cache",
+          "execution": "docker"
+        },
+        "components": [
+          {
+            "id": "redirect-cache-reader",
+            "name": "Cache reader",
+            "purpose": "Cache-aside: in-process L1, then Redis, one database load per key at a time.",
+            "kind": "cache-reader",
+            "settings": {
+              "kind": "cache-reader",
+              "pattern": "cache-aside",
+              "l1MaxEntries": 100000,
+              "l1TtlSeconds": 60,
+              "l2TtlSeconds": 86400,
+              "negativeTtlSeconds": 30,
+              "stampede": "single-flight"
+            },
+            "thirdParty": ["Redis", "Memcached"],
+            "requires": [
+              {
+                "kinds": ["cache"],
+                "reason": "A cache reader needs a cache connection."
+              }
+            ]
+          },
+          {
+            "id": "redirect-click-publisher",
+            "name": "Click publisher",
+            "purpose": "Publishes click events in batches after responding.",
+            "kind": "event-publisher",
+            "settings": {
+              "kind": "event-publisher",
+              "batchSize": 500,
+              "lingerMs": 50,
+              "outbox": "disabled"
+            },
+            "thirdParty": ["Kafka", "Amazon SQS", "Redis Streams"],
+            "requires": [
+              {
+                "kinds": ["queue"],
+                "reason": "An event publisher needs a publish connection to a queue."
+              }
+            ]
+          },
+          {
+            "id": "redirect-data",
+            "name": "Link reader",
+            "purpose": "Reads links from a replica on a cache miss.",
+            "kind": "data-access",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 50,
+              "readRouting": "replica",
+              "statementTimeoutMs": 200
+            },
+            "thirdParty": ["PostgreSQL"],
+            "requires": [
+              {
+                "kinds": ["database"],
+                "reason": "Data access needs a database connection."
+              }
+            ]
+          },
+          {
+            "id": "redirect-responder",
+            "name": "Redirect responder",
+            "purpose": "Answers 302 with no edge caching, so every click reaches the service.",
+            "kind": "redirect-responder",
+            "settings": {
+              "kind": "redirect-responder",
+              "status": "302",
+              "edgeMaxAgeSeconds": 0
+            },
+            "thirdParty": ["CDN"],
+            "requires": []
+          }
+        ]
+      },
+      {
+        "id": "shorten",
+        "name": "Shorten service",
+        "description": "Validates destinations, generates short codes and stores new links.",
+        "definition": {
+          "id": "studio-service",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "service",
+        "settings": {
+          "kind": "service",
+          "language": "typescript",
+          "exposure": "public",
+          "minReplicas": 2,
+          "maxReplicas": 6,
+          "autoscaleOn": "cpu",
+          "requestTimeoutMs": 3000,
+          "concurrencyLimit": 200,
+          "execution": "docker"
+        },
+        "components": [
+          {
+            "id": "shorten-data",
+            "name": "Link writer",
+            "purpose": "Inserts new links on the primary; the short code is generated in this module.",
+            "kind": "data-access",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 20,
+              "readRouting": "primary",
+              "statementTimeoutMs": 2000
+            },
+            "thirdParty": ["PostgreSQL"],
+            "requires": [
+              {
+                "kinds": ["database"],
+                "reason": "Data access needs a database connection."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stats-api",
+        "name": "Stats API",
+        "description": "Serves click counts per link to the people who created the links.",
+        "definition": {
+          "id": "studio-service",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "service",
+        "settings": {
+          "kind": "service",
+          "language": "typescript",
+          "exposure": "public",
+          "minReplicas": 2,
+          "maxReplicas": 6,
+          "autoscaleOn": "cpu",
+          "requestTimeoutMs": 1000,
+          "concurrencyLimit": 200,
+          "execution": "docker"
+        },
+        "components": [
+          {
+            "id": "stats-data",
+            "name": "Stats reader",
+            "purpose": "Reads click counts per link and period.",
+            "kind": "data-access",
+            "settings": {
+              "kind": "data-access",
+              "poolSize": 10,
+              "readRouting": "primary",
+              "statementTimeoutMs": 5000
+            },
+            "thirdParty": ["PostgreSQL"],
+            "requires": [
+              {
+                "kinds": ["database"],
+                "reason": "Data access needs a database connection."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "analytics-store",
+        "name": "Analytics store",
+        "description": "ClickHouse column store for click aggregates.",
+        "definition": {
+          "id": "studio-database",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "database",
+        "settings": {
+          "kind": "database",
+          "engine": "clickhouse",
+          "provider": "self-hosted"
+        },
+        "owner": {
+          "kind": "element",
+          "id": "analytics"
+        }
+      },
+      {
+        "id": "click-events",
+        "name": "Click events",
+        "description": "Buffers click events between redirects and analytics.",
+        "definition": {
+          "id": "studio-queue",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "queue",
+        "settings": {
+          "kind": "queue",
+          "mode": "topic",
+          "provider": "self-hosted",
+          "retentionSeconds": 604800,
+          "partitions": 12
+        },
+        "owner": {
+          "kind": "element",
+          "id": "redirect"
+        }
+      },
+      {
+        "id": "url-cache",
+        "name": "URL cache",
+        "description": "Redis cache of hot short codes, filled by the Redirect service on a miss.",
+        "definition": {
+          "id": "studio-cache",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "cache",
+        "settings": {
+          "kind": "cache",
+          "engine": "redis-compatible",
+          "provider": "self-hosted",
+          "ttlSeconds": 86400,
+          "topology": "cluster",
+          "eviction": "lru"
+        },
+        "owner": {
+          "kind": "element",
+          "id": "redirect"
+        }
+      },
+      {
+        "id": "url-db",
+        "name": "URL database",
+        "description": "Authoritative short code to destination mapping, read from replicas.",
+        "definition": {
+          "id": "studio-database",
+          "version": "1.0.0",
+          "status": "known"
+        },
+        "kind": "database",
+        "settings": {
+          "kind": "database",
+          "engine": "postgresql",
+          "provider": "self-hosted",
+          "readReplicas": 2,
+          "partitionKey": "short_code"
+        },
+        "owner": {
+          "kind": "element",
+          "id": "shorten"
+        }
+      }
+    ],
+    "externals": [],
+    "groups": [],
+    "connections": [
+      {
+        "id": "analytics-write",
+        "source": "design",
+        "from": {
+          "kind": "service",
+          "id": "analytics"
+        },
+        "to": {
+          "kind": "resource",
+          "id": "analytics-store"
+        },
+        "action": "Writes aggregates",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Service identity",
+        "access": "write"
+      },
+      {
+        "id": "click-events-analytics",
+        "source": "design",
+        "from": {
+          "kind": "resource",
+          "id": "click-events"
+        },
+        "to": {
+          "kind": "service",
+          "id": "analytics"
+        },
+        "action": "Delivers clicks",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Service identity",
+        "channelUse": "consume"
+      },
+      {
+        "id": "redirect-cache",
+        "source": "design",
+        "from": {
+          "kind": "service",
+          "id": "redirect"
+        },
+        "to": {
+          "kind": "resource",
+          "id": "url-cache"
+        },
+        "action": "Reads hot links, fills on miss",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Service identity",
+        "access": "write"
+      },
+      {
+        "id": "redirect-clicks",
+        "source": "design",
+        "from": {
+          "kind": "service",
+          "id": "redirect"
+        },
+        "to": {
+          "kind": "resource",
+          "id": "click-events"
+        },
+        "action": "Publishes clicks",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Service identity",
+        "channelUse": "publish"
+      },
+      {
+        "id": "redirect-db",
+        "source": "design",
+        "from": {
+          "kind": "service",
+          "id": "redirect"
+        },
+        "to": {
+          "kind": "resource",
+          "id": "url-db"
+        },
+        "action": "Reads links on a cache miss",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Service identity",
+        "access": "read"
+      },
+      {
+        "id": "shorten-db",
+        "source": "design",
+        "from": {
+          "kind": "service",
+          "id": "shorten"
+        },
+        "to": {
+          "kind": "resource",
+          "id": "url-db"
+        },
+        "action": "Writes links",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Service identity",
+        "access": "write"
+      },
+      {
+        "id": "stats-read",
+        "source": "design",
+        "from": {
+          "kind": "service",
+          "id": "stats-api"
+        },
+        "to": {
+          "kind": "resource",
+          "id": "analytics-store"
+        },
+        "action": "Reads click counts",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Service identity",
+        "access": "read"
+      }
+    ],
+    "componentLinks": [
+      {
+        "id": "aggregation-writer",
+        "service": "analytics",
+        "from": "analytics-aggregation",
+        "to": {
+          "kind": "component",
+          "id": "analytics-data"
+        },
+        "label": "Writes rollups"
+      },
+      {
+        "id": "analytics-data-writes",
+        "service": "analytics",
+        "from": "analytics-data",
+        "to": {
+          "kind": "element",
+          "id": "analytics-store",
+          "via": "analytics-write"
+        }
+      },
+      {
+        "id": "cache-reader-miss",
+        "service": "redirect",
+        "from": "redirect-cache-reader",
+        "to": {
+          "kind": "component",
+          "id": "redirect-data"
+        },
+        "label": "Loads on miss"
+      },
+      {
+        "id": "cache-reader-redis",
+        "service": "redirect",
+        "from": "redirect-cache-reader",
+        "to": {
+          "kind": "element",
+          "id": "url-cache",
+          "via": "redirect-cache"
+        }
+      },
+      {
+        "id": "click-consumer-queue",
+        "service": "analytics",
+        "from": "analytics-click-consumer",
+        "to": {
+          "kind": "element",
+          "id": "click-events",
+          "via": "click-events-analytics"
+        }
+      },
+      {
+        "id": "click-publisher-queue",
+        "service": "redirect",
+        "from": "redirect-click-publisher",
+        "to": {
+          "kind": "element",
+          "id": "click-events",
+          "via": "redirect-clicks"
+        }
+      },
+      {
+        "id": "consumer-aggregation",
+        "service": "analytics",
+        "from": "analytics-click-consumer",
+        "to": {
+          "kind": "component",
+          "id": "analytics-aggregation"
+        },
+        "label": "Hands batch"
+      },
+      {
+        "id": "redirect-data-reads",
+        "service": "redirect",
+        "from": "redirect-data",
+        "to": {
+          "kind": "element",
+          "id": "url-db",
+          "via": "redirect-db"
+        }
+      },
+      {
+        "id": "responder-click",
+        "service": "redirect",
+        "from": "redirect-responder",
+        "to": {
+          "kind": "component",
+          "id": "redirect-click-publisher"
+        },
+        "label": "Records click"
+      },
+      {
+        "id": "responder-lookup",
+        "service": "redirect",
+        "from": "redirect-responder",
+        "to": {
+          "kind": "component",
+          "id": "redirect-cache-reader"
+        },
+        "label": "Resolves code"
+      },
+      {
+        "id": "shorten-data-writes",
+        "service": "shorten",
+        "from": "shorten-data",
+        "to": {
+          "kind": "element",
+          "id": "url-db",
+          "via": "shorten-db"
+        }
+      },
+      {
+        "id": "stats-data-reads",
+        "service": "stats-api",
+        "from": "stats-data",
+        "to": {
+          "kind": "element",
+          "id": "analytics-store",
+          "via": "stats-read"
+        }
+      }
+    ],
+    "omitted": [],
+    "findings": []
+  }
+}

@@ -9,6 +9,7 @@ import {
 import {
   buildStudioCommand,
   type DesignDocument,
+  designScopeSchema,
   studioPatternIds,
   studioPatterns,
 } from "@jeeves/spec";
@@ -18,6 +19,7 @@ import type { Db } from "../db/client.ts";
 import { DesignService, type EditInput } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
 import { rasterizeSvg } from "./files.ts";
+import scopeFixture from "./fixtures/nc01-scope-v1.json" with { type: "json" };
 import {
   type ChatEvent,
   ChatService,
@@ -36,6 +38,74 @@ let db: Db;
 let close: () => Promise<void>;
 beforeAll(async () => {
   ({ db, close } = await openTestDb());
+});
+
+it("bounds persistent scope repairs, allows preview after exhaustion and saves scope-only edits as one Undo", async () => {
+  const initial = designScopeSchema.parse(scopeFixture.scope);
+  const scoped = (requirement: string) => ({
+    ...initial,
+    customRequirements: [{ id: "custom-rule", requirement, criticality: "required" as const }],
+  });
+  const configure = (action: "preview" | "apply", scope = initial) => ({
+    name: "configureDesignScope",
+    arguments: { baseRevision: 0, action, scope, upgrade: true },
+  });
+  const review = { name: "reviewDesign", arguments: {} };
+  const h = harness([
+    { toolCalls: [configure("preview"), configure("apply"), review] },
+    { toolCalls: [configure("apply", scoped("First repair")), review] },
+    { toolCalls: [configure("apply", scoped("Second repair")), review] },
+    {
+      toolCalls: [
+        configure("apply", scoped("Forbidden third repair")),
+        configure("preview", scoped("Preview remains read-only")),
+      ],
+    },
+    { text: "Saved the scope with unresolved contracts." },
+  ]);
+  try {
+    const id = await h.project();
+    const { turn, state } = await h.chat(
+      id,
+      "Select the narrow TinyURL profile and save my requirements.",
+    );
+    expect(turn.error).toBeNull();
+    expect(state.design).toMatchObject({
+      schemaVersion: 3,
+      revision: 1,
+      scope: scoped("Second repair"),
+    });
+    expect(
+      turn.activity.filter((item) => item.tool === "configureDesignScope" && !item.ok),
+    ).toContainEqual(
+      expect.objectContaining({
+        summary: expect.stringContaining("2 review repair passes are used"),
+      }),
+    );
+    expect(
+      turn.activity.filter(
+        (item) => item.tool === "configureDesignScope" && item.summary.startsWith("Previewed"),
+      ),
+    ).toHaveLength(2);
+    expect(turn.reply).toContain("one Undo step");
+    expect(h.requests).toHaveLength(5);
+    const outputs = h.requests
+      .at(-1)
+      ?.items.filter((item) => item.type === "tool-result")
+      .map((item) => (item.type === "tool-result" ? JSON.parse(item.output) : null));
+    expect(outputs).toContainEqual(
+      expect.objectContaining({ note: expect.stringContaining("Preview only") }),
+    );
+    const undo = await h.call("POST", `/projects/${id}/undo`, { baseRevision: 1 });
+    expect(undo.body.design).toEqual({
+      schemaVersion: 2,
+      revision: 2,
+      elements: [],
+      connections: [],
+    });
+  } finally {
+    await h.app.close();
+  }
 });
 afterAll(async () => {
   await close();

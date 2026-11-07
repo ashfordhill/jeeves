@@ -379,6 +379,28 @@ batch (an autosaved edit, an action's rename, a kind or lane switch, adding, lin
 removing a module) or chat turn is one step; a new edit ends the redo chain. Selecting, switching tabs, opening a module,
 panning, zooming and Fit add none. The history survives reloads.
 
+## Profile and requirements
+
+**Profile & requirements** in the header opens a bounded behavior form. A legacy project starts
+unspecified; merely opening it changes nothing. Select **TinyURL create / resolve · 1.0.0** to
+inspect immutable destinations, authenticated create, public resolve and optional expiry.
+Included/excluded behavior rows and up to eight custom requirements carry required/advisory
+criticality; custom requirements can target a tile and relationship. Required behavior outside
+the narrow profile remains visible as a blocker. Custom behavior always remains unresolved.
+
+Choose **Preview requirements**, inspect the unspecified contracts, then **Upgrade & save
+requirements** for a legacy design or **Save requirements** for v3. One Undo restores the entire
+previous document, including schema v2. Reload/history retain declarations and missing-target
+obligations. Existing projects and study presets are never automatically upgraded. The form
+changes no tile identity, provider or inferred access and claims no template/runtime support.
+The default v2 blueprint refuses scope it cannot represent; explicit v3 retains every declaration.
+See the [allowlist](studio-settings.md#profile-and-persistent-requirements).
+
+Chat reads these saved declarations separately from its turn-only assumptions and can edit them
+with `configureDesignScope`, using the same command, preview and explicit upgrade as the mouse.
+Scope-only edits trigger the same fresh review, atomic commit, conflict protection and one Undo.
+The repair limit counts scope applies, while read-only previews remain available.
+
 ## Chat
 
 Chat (left rail, open by default in a fresh project) edits the design with the canvas's own

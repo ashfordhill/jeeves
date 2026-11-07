@@ -1,4 +1,6 @@
 import {
+  applyOperations,
+  buildDesignScopeCommand,
   buildStudioCommand,
   emptyDesign,
   laneOptions,
@@ -7,6 +9,7 @@ import {
   studioArchitectureExample,
   studioLinkRules,
   studioWarningSentence,
+  tinyurlDesignScope,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import { INSTRUCTIONS, linkRuleText, toolDefinitions, Workspace } from "./tools.ts";
@@ -32,6 +35,54 @@ const addCache = (baseRevision: number) => ({
 });
 
 describe("studio chat tools", () => {
+  it("shares persistent scope commands with mouse edits and requires a fresh explicit upgrade preview", () => {
+    const base = tinyurl();
+    const workspace = new Workspace(base);
+    const scope = tinyurlDesignScope();
+    scope.customRequirements.push({
+      id: "custom-rule",
+      requirement: "Define tenant policy",
+      criticality: "required",
+      element: "shorten",
+    });
+    const args = { baseRevision: base.revision, scope, upgrade: true };
+    expect(run(workspace, "configureDesignScope", { ...args, action: "apply" }).ok).toBe(false);
+    expect(run(workspace, "configureDesignScope", { ...args, action: "preview" }).ok).toBe(true);
+    expect(workspace.pending).toEqual([]);
+    expect(
+      run(workspace, "configureDesignScope", { ...args, action: "apply", upgrade: undefined }).ok,
+    ).toBe(false);
+    expect(
+      run(workspace, "configureDesignScope", { ...args, action: "apply", baseRevision: 0 }).ok,
+    ).toBe(false);
+    expect(run(workspace, "configureDesignScope", { ...args, action: "apply" }).ok).toBe(true);
+    const mouse = applyOperations(
+      base,
+      buildDesignScopeCommand(base, { scope, upgrade: true }).ops,
+    );
+    if (!mouse.ok) throw new Error(JSON.stringify(mouse.errors));
+    expect(workspace.working).toEqual(mouse.design);
+    expect(workspace.pending).toEqual(buildDesignScopeCommand(base, { scope, upgrade: true }).ops);
+    const review = run(workspace, "reviewDesign");
+    expect(review.changes).toContainEqual(expect.objectContaining({ type: "scope" }));
+    expect(review.persistentScope).toMatchObject({ ...scope, persistence: "saved design" });
+    expect(review.scope.persistence).toBe("this turn only");
+    expect(review.obligations).toContainEqual(
+      expect.objectContaining({ source: "custom", id: "custom-rule", status: "not specified" }),
+    );
+    const generation = workspace.generation;
+    const edited = structuredClone(scope);
+    edited.customRequirements = edited.customRequirements.map((item) => ({
+      ...item,
+      requirement: "Refine tenant policy",
+    }));
+    run(workspace, "configureDesignScope", { ...args, action: "apply", scope: edited });
+    expect(workspace.generation).toBe(generation + 1);
+    expect(workspace.reviewedGeneration).toBeLessThan(workspace.generation);
+    expect(run(workspace, "getDesign").persistentScope.customRequirements).toEqual(
+      edited.customRequirements,
+    );
+  });
   it("offers exactly the finite studio toolset", () => {
     expect(toolDefinitions().map((t) => t.name)).toEqual([
       "listStudioDefinitions",
@@ -39,6 +90,7 @@ describe("studio chat tools", () => {
       "listStudioPatterns",
       "describeStudioPattern",
       "getDesign",
+      "configureDesignScope",
       "applyStudioCommands",
       "validateDesign",
       "declareReviewScope",

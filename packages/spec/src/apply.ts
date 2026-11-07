@@ -111,6 +111,28 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
     );
 
   switch (op.op) {
+    case "upgradeDesign": {
+      if (design.schemaVersion !== 2)
+        throw new OpError(
+          finding("INVALID_OPERATION", "Only a schema v2 design can be explicitly upgraded.", {
+            op: index,
+          }),
+        );
+      Object.assign(design, { schemaVersion: 3, scope: op.scope });
+      return;
+    }
+    case "setDesignScope": {
+      if (design.schemaVersion !== 3)
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Explicitly upgrade to schema v3 before editing persistent requirements.",
+            { op: index },
+          ),
+        );
+      design.scope = op.scope;
+      return;
+    }
     case "setArchitecture": {
       if (op.architecture === null) delete design.architecture;
       else design.architecture = op.architecture;

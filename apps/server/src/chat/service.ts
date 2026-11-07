@@ -30,7 +30,13 @@ import {
 } from "../db/schema.ts";
 import type { DesignService, DesignState } from "../design/service.ts";
 import { type AcceptedType, checkFile, fileParts } from "./files.ts";
-import { INSTRUCTIONS, toolDefinitions, turnContext, Workspace } from "./tools.ts";
+import {
+  INSTRUCTIONS,
+  isWorkspaceMutation,
+  toolDefinitions,
+  turnContext,
+  Workspace,
+} from "./tools.ts";
 
 /** Picks the provider and model for a role, or says why there is none. */
 export type ModelSource = (
@@ -316,8 +322,7 @@ export class ChatService {
           const generation = workspace.generation;
           for (const call of response.toolCalls) {
             const before = logged();
-            const mutation =
-              call.name === "applyStudioCommands" || call.name === "declareReviewScope";
+            const mutation = isWorkspaceMutation(call.name, call.arguments);
             let output: string;
             if (mutation && seenReview >= 0 && repairPasses >= MAX_REPAIR_PASSES) {
               const message = `The ${MAX_REPAIR_PASSES} review repair passes are used. End with the unresolved findings; no more commands or scope changes can be prepared this turn.`;

@@ -3,7 +3,7 @@
 The provider-neutral tools, conversation items and server commands use canonical Jeeves arguments.
 Optional fields retain their existing omission semantics and defaults. The OpenAI adapter alone
 encodes a separate wire representation, validates returned wire arguments and decodes them before
-Workspace receives them. No command, setting, saved design or blueprint format changes.
+Workspace receives them. The codec preserves command meanings independently of the explicit stored-design/blueprint version boundary.
 
 | Provider | Argument constraint |
 | --- | --- |
@@ -68,8 +68,7 @@ type arrays, formats and other unaudited constructs fail with a tool/schema path
 This is narrower than OpenAI's full supported subset. No constraint is silently discarded, and
 there is no fallback to best-effort tools. New schema constructs require a codec/test update.
 
-The current ten tools compile, including RF04 scope. The canonical schema audit has 18 `oneOf`,
-3 `anyOf` and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
+The current eleven tools compile, including RF04 turn scope and NC01 persistent scope. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
 values and at most nine nesting levels under the adapter's conservative traversal. The adapter
 checks emitted schemas, including wrappers, against 5,000 properties, ten nesting levels, 1,000
 enum values, 120,000 characters for names/enum values, and the large-enum string limit.
@@ -80,3 +79,34 @@ checked 2026-11-07. Model variants can have narrower support (including fine-tun
 constraints); API rejections remain explicit provider errors. Mocked HTTP tests demonstrate the
 actual transmitted schemas, decoding, canonical Workspace behavior and continuation replay. They
 require no API key/network and do not establish live model/API acceptance or design quality.
+
+
+NC01's separate `configureDesignScope` strict tool has 17 properties, 18 enum values and five
+nesting levels (2,497 UTF-8 bytes including tool metadata). `applyStudioCommands` remains at
+427 properties / 538 enum values / depth nine; its union was not enlarged. Profile null is an
+explicit required nullable reference. Omitted `upgrade` remains omitted through wire null and
+defaults to false at Workspace; custom element/connection omission also survives replay.
+Duplicate requirements and other Zod refinements remain authoritative server checks.
+
+On the same default schema2 TinyURL, the rendered instructions grew 10,161 → 11,237 bytes,
+caller context 13,549 → 15,147 bytes and strict tool array 55,397 → 57,895 bytes. These are
+UTF-8 sizes, not token/latency/quality measurements. A scripted scope/repair regression uses five
+responses including two repairs, third-apply refusal and a read-only preview after exhaustion.
+No paid/live run was made. RF06's reported 2.44× input / 2.07× response overhead is unchanged
+historical evidence, not a claimed NC01 improvement.
+
+Old RF06 as-run records remain immutable. Their first replay request now intentionally differs
+because caller context adds explicit schema/persistent scope, the current prompt adds its rules
+and the current tool map adds the narrow tool. The separately versioned
+`apps/server/src/chat/fixtures/nc01-scope-v1.json` freezes the new scripted scope arguments;
+network-free synthetic RF06 cases still replay deterministically under the current code.
+
+
+The first old Codex replay drift is `video-build/rf00-ablation`, round 1: expected request hash
+`77669bb5b59a1dbcc98c08bbcd07d3a70a2cae54f285972bc6650417b2995a6b`, new hash
+`05ea669ff9f5c887fbc9099d92454f74ca9e3024c1e138116f3c0082a970c39b`.
+That arm retains its old prompt/tools but uses shared caller context; it now includes schema
+version, persistent scope/unknown requirements and the available profile. No recorded response
+runs. The CLI's subsequent `design` mismatch is a consequence of this earlier context refusal,
+not a re-adjudication of the old model result. [Audit](plans/reliable-foundations/evidence/nc01/audit.json)
+and [drift](plans/reliable-foundations/evidence/nc01/replay-drift.json) retain the observed values.

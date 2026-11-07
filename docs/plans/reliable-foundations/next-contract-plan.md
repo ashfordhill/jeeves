@@ -1,7 +1,13 @@
 # Next contract milestone: one complete TinyURL foundation first
 
-RF07 proposal, 2026-11-07. **Nothing in this document is implemented or owner-approved contract
-semantics.** The [Milestone 1 review](milestone1-review.md) is the evidence. This refines the work
+Execution authorized, 2026-11-07. The owner's existing “goahead and kick it off” and
+subsequent correction that work should continue across milestone boundaries authorize the
+bounded first phase NC01–NC06 and NC14 under the defaults below. The earlier coordinator stop
+was a coordination error, not a missing owner action. G1 and G4 are recorded decisions for NC01;
+remaining gates are implementation prerequisites resolved within this accepted scope, not
+repeated owner-approval requests. NC01 implements only the scope/version boundary; subsequent
+contracts remain planned until their own units complete. The
+[Milestone 1 review](milestone1-review.md) is the evidence. This refines the work
 areas in [units](units.md); it does not authorize the generator, replace saved projects or ask an
 agent to build a general architecture language. Development remains sequential on primary main,
 one fresh agent/unit, one commit, coordinator review before dispatching the next unit.
@@ -12,20 +18,19 @@ the separate backend once its repository/conventions are known. NC07–NC13 are 
 expansions, not prerequisites for that first runtime proof. A generic Service remains useful
 for design without claiming a capability or generation readiness.
 
-## Proposed defaults and decision gates
+## Accepted defaults and decision gates
 
-One owner acceptance of the first-phase defaults authorizes NC01–NC06 and its NC14 review.
+The owner has authorized the first-phase defaults for NC01–NC06 and its NC14 review.
 The coordinator records prerequisite decisions/evidence and resolves routine details within that
 scope without repeated owner permission. A changed product scope/meaning or missing external
-dependency needs a new decision; a gate below is not a request for repeated approval. These are
-chosen proposals to review, rather than an unresolved menu an implementation agent must invent.
+dependency needs a new decision; a gate below is not a request for repeated approval.
 
-| Gate | Proposed default | Must be settled before |
+| Gate | Chosen default | Must be settled before |
 | --- | --- | --- |
-| G1: first workload | One public short-link namespace; immutable destinations; authenticated create, public resolve; optional expiry. No custom slugs, destination mutation/disable API, exact analytics, quotas, reputation enforcement or deployment claim. Required excluded features must instead block that profile. | NC01; changing scope requires a new profile/version. |
+| G1: first workload — recorded NC01 | One public short-link namespace; immutable destinations; authenticated create, public resolve; optional expiry. No custom slugs, destination mutation/disable API, exact analytics, quotas, reputation enforcement or deployment claim. Required excluded features must instead block that profile. | NC01; changing scope requires a new profile/version. |
 | G2: owner and presentation | One logical **Links** owner; create and resolve are API roles inside it, a later analytics consumer may be a worker role. Roles may share one deployable; role ≠ owner ≠ process. Default collapsed owner tile, mouse expansion of roles. Preserve existing element IDs as role/resource references where possible; do not merge legacy owners automatically. | NC02; a concrete small owner/expanded-role sketch is reviewed at both sizes before coding presentation. |
 | G3: contracts and policies | Local immutable finite records with exact IDs/versions/schema hashes. Select a profile and bounded parameters; no route/entity/policy DSL or arbitrary expressions. Start with exact caller/receiver version equality; compatible evolution is a later explicit rule. | NC03; schema/command budget audit before adding tools. |
-| G4: version boundary | New stored design schema and blueprint **v3**, with explicit reader/writer migration. Existing default `/blueprint` stays v2 during rollout; explicit `?version=3` opts in. Legacy-only designs retain exact v2 meaning. A design using v3-only semantics refuses v2 export with a structured unsupported-content list, never a silently lossy success. Default-version switch is a separate final-review decision. | NC01; review API consumer impact and migration fixtures first. |
+| G4: version boundary — recorded NC01 | New stored design schema and blueprint **v3**, with explicit reader/writer migration. Existing default `/blueprint` stays v2 during rollout; explicit `?version=3` opts in. Legacy-only designs retain exact v2 meaning. A design using v3-only semantics refuses v2 export with a structured unsupported-content list, never a silently lossy success. Default-version switch is a separate final-review decision. | NC01; review API consumer impact and migration fixtures first. |
 | G5: first consistency policy | Authoritative primary lookup; immutable target; cache entries never outlive expiry; no negative cache initially, no browser/CDN redirect-response cache. Cache miss/outage falls back to authority; bounded outage protection is part of the profile. Create success follows durable commit; immediate resolve must find it. | NC04; cache fallback/overload behavior and finite parameter bounds are pinned in the profile. |
 | G6: runtime profile boundary | Recommend one future TypeScript/container, PostgreSQL, Redis-compatible cache and one messaging adapter. Jeeves records unresolved template bindings until an actual pinned manifest exists. Auth verification and provider-specific runtime adapters remain mandatory manifest requirements, not guessed implementations. | NC05 report can exist without a manifest; actual support requires a selected manifest. Backend repository/conventions remain unknown. |
 | G7: expansion | Finish NC14 review of the small TinyURL contract and then its separate backend proof before considering messaging/video/checkout expansion. Expansion needs its own accepted scope. Mini/live strict acceptance is still an evidence gate; no additional live paid run is implicitly authorized here. | After NC06/NC14 and backend proof; NC07+ stay deferred. |
@@ -110,6 +115,13 @@ Acceptance for **each** NC unit includes:
 ## Sequential vertical units
 
 ### NC01 — Persist the narrow profile and expose the version boundary
+
+**Progress, 2026-11-07:** NC01 implements explicit stored v2/v3 readers, upgrade/set-scope
+operations, finite profile and persistent requirements, shared mouse/chat preview/apply, complete
+history Undo/Redo and opt-in blueprint v3. Default v2 refuses exact unsupported scope paths.
+Legacy schema2 reads/findings/v2 export preserve their meaning. Unknown refs/custom behavior
+remain unresolved; profile selection reports owner/access/API/expiry/cache contracts unspecified.
+No owner project/preset migration, runtime or generator. Evidence/checks are in the NC01 handoff.
 
 **Depends:** G1/G4 recorded. Add the v3 read/write/export boundary and a finite
 `tinyurl-create-resolve@1.0.0` scope selection, including persistent included/excluded requirements

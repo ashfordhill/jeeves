@@ -6,6 +6,7 @@ export * from "./apply.ts";
 export * from "./architecture.ts";
 export * from "./architecture-choices.ts";
 export * from "./design.ts";
+export * from "./design-scope.ts";
 export * from "./findings.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";

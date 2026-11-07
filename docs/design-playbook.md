@@ -830,3 +830,19 @@ Capability intent, compatible-template availability and exact-runtime verificati
 separate claims. Unknown critical contracts and required custom behavior block generation;
 clean graph checks cannot waive them. Review the small foundation before expanding to video and
 finite-stock checkout. New presets never authorize replacing the owner's older saved diagrams.
+
+## 2026-11-07 scope follow-up: an explicit upgrade preserves uncertainty
+
+A profile selection records intended included/excluded behavior. It must not manufacture owner,
+API, failure or cache guarantees from familiar tiles. Keep finite conflicts and targeted custom
+requirements visible and saveable; a required behavior outside the selected profile blocks that
+profile. Preserve the original obligation if its target disappears, with a separate diagnostic.
+Namespace profile/contract/finite/custom findings so equal display IDs cannot hide each other.
+
+Preview a document-version change explicitly, keep legacy reads pure and allow one Undo across
+the schema boundary. An older blueprint must refuse each semantic field it would lose; a newer
+projection should expose unknown requirements without migrating storage. Scope-only chat changes
+need the same review invalidation/repair budget as graph edits. Read-only preview remains useful
+after repairs are exhausted. Persisted requirements and a chat turn's assumptions remain separate.
+Measure additional prompt/tool/context bytes honestly; added declarations are no model-quality or
+runtime proof. Preserve old as-run records when a deliberate context change invalidates replay.

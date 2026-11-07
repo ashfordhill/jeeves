@@ -4301,3 +4301,87 @@ Coordinator review also aligned the future generator briefs with the narrow firs
 core auth/create/resolve/expiry/cache/idempotency and real-adapter recovery first; disabled links,
 messaging/analytics/Stats and queue redelivery need separately accepted profile extensions. Source
 hashes/determinism, custom extension preservation and generated-file conflict checks stay in core.
+
+## 2026-11-07 — NC01: persistent profile scope and explicit v3 boundary
+
+Worked NC01 only after RF07 `886eb77`, sequentially on primary main. Recorded the owner's
+existing first-phase authorization and G1/G4 decisions in `next-contract-plan.md`; the prior
+milestone stop was a coordination error, not a missing owner permission. No branch, worktree,
+stash, push, delegation, owner project/preset migration, generator or runtime implementation.
+Preserved `.jeeves-feedback/` and owner settings/designs.
+
+Added explicit strict `designV2Schema` / `designV3Schema` readers. Reads never upgrade; v3 adds
+bounded top-level `scope`: exact nullable profile ref, ten finite included/excluded behavior
+rows with required/advisory criticality and up to eight targeted unresolved custom requirements.
+`tinyurl-create-resolve@1.0.0` defaults to immutable HTTP(S) targets, authenticated create,
+public resolve and optional expiry in one public namespace; custom slugs, destination mutation,
+disable/management, reputation, quotas and exact analytics are excluded. Required conflicts stay
+saveable and block this scope instead of disappearing. Unknown well-formed profiles remain
+unresolved; malformed refs/duplicate declarations refuse atomically. Missing targets retain the
+original requirement and add a namespaced diagnostic. Profile selection reports owner/access,
+create, resolve and expiry/cache contracts as not specified, never a capability or ready result.
+
+Shared `previewDesignScope` / `buildDesignScopeCommand` back the header mouse form and narrow
+chat `configureDesignScope` tool. Schema2 requires a pure preview then explicit upgrade; saves
+use normal revisions, conflicts, complete history and one Undo (including back to schema2).
+Scope-only changes enter staged change review and invalidate it. A shared mutation classifier
+also covers the real chat repair limit and RF06 observer: two repair batches, third apply
+refused, read-only previews still allowed. RF04 turn-only scope stays distinct. Strict omission,
+nullable profile and canonical historical replay are preserved. No tile-command union expansion.
+
+Default `/blueprint` remains v2; `?version=2|3` selects explicitly, other versions refuse 400.
+Legacy-only v2 meaning remains identical, including an empty-scope schema3 boundary. Content
+v2 would lose returns 422 `UNSUPPORTED_BLUEPRINT_CONTENT` with every exact scope path/reason.
+V3 retains all declarations/unknown refs, source schema and unresolved requirements; inferred
+legacy access is explicitly labeled, template availability/runtime verification both `none`.
+The form saves through design operations and never calls the old blueprint for persistence.
+Docs/settings/catalog/PLAN and append-only feedback/playbook records match these boundaries.
+
+Checks, Node 24.21.0 first in PATH: `pnpm check` passed (248 tests / 33 files, Biome and all
+workspace typechecks); `pnpm test:e2e` passed (24 native Chromium); web production build passed
+(existing chunk-size advisory); `git diff --check` passed. The frozen schema2 fixture's v2 export
+was also compared independently against the original HEAD blueprint source and matched exactly.
+Tests cover unknown/malformed refs, pure previews, save/edit/PGlite close-and-reopen, stale
+conflicts, atomic refusal, missing targets, mouse/chat canonical equality, strict transport and
+one-step cross-version Undo/Redo. A local 15s timeout bounds the test with two actual PGlite
+starts/migrations/disk reloads (5s was exceeded under concurrent browser load). The existing
+warned-chat E2E now waits for streaming completion before opening final Review details; clicking
+the transient live disclosure could lose open state when replaced. This is a test timing repair,
+not a new production UI behavior. Heavy final suites ran sequentially.
+
+Strict emitted schema audit: new tool 17 properties / 18 enum values / nesting five (2,497 UTF-8
+bytes with metadata). `applyStudioCommands` unchanged at 427 / 538 / nine. On the same default
+schema2 TinyURL: rendered instructions 10,161→11,237 bytes, caller context 13,549→15,147,
+strict tools array 55,397→57,895. These are bytes, not model tokens, costs or quality evidence.
+The new versioned scripted scope fixture exercises five responses with repair/refusal/preview;
+no live/paid model calls. RF06's historical 2.44× input / 2.07× responses remain disclosed.
+
+RF06 raw as-run Codex/Mini records are unchanged. Old Codex replay intentionally stops before
+its first response: `video-build/rf00-ablation` round1 expected request hash `77669bb5…`, now
+`05ea669f…`, because shared caller context explicitly adds schemaVersion, persistent scope and
+unknown requirements plus profile defaults. Current arm additionally changes instructions/tools.
+The replay CLI subsequently reports a design mismatch because the seed was not edited after
+context refusal. Full exact hashes/reason are retained in `evidence/nc01/replay-drift.json`.
+The current network-forbidden synthetic RF06 suite still replays all twelve cases deterministically.
+No old outputs were rewritten to appear compatible; Mini/live strict acceptance remains blocked.
+
+Browser evidence: `/tmp/jeeves-nc01-browser-GrWanS/` (walkthrough.mts, 12 PNGs, API refusal,
+check/E2E/build/replay logs), with three directly inspected useful PNGs and audit/results/drift JSON
+retained in `docs/plans/reliable-foundations/evidence/nc01/`. Own API4312/web4302 used scratch
+JEEVES_HOME, scripted provider, `jeeves_e2e`; owner 4300/4310 untouched. At 1440×900 and 1280×800,
+default TinyURL renders 11 tiles / 12 lines; mouse preview is pure, required custom slugs blocks narrow
+scope, targeted custom behavior persists through save/reload/edit, and default v2 refuses all 12
+unsupported paths. Focus/Fit focus/Show all/Fit preserve the full v3 export including revision.
+Mouse target removal retains the original scope and shows both missing tile/relationship; one
+Undo restores removal, one restores the scope edit, and one restores schema2 meaning. No page or
+console errors/warnings. Both scratch copies deleted (204); E2E DB retains only its default TinyURL.
+Coordinator independently inspected both small form evidence images and accepted the seams.
+Stopped only the owned 4302/4312 servers and removed the scratch settings directory.
+
+Remaining: NC02 ownership/roles/access, NC03/04 operation/policy contracts, NC05 compatibility
+and evidence report, NC06 new explicit narrow study, NC14 independent review. Generic tiles and
+legacy names still supply no contracts. Owner/human overview readability and Mini/live strict
+model acceptance remain open; backend location/conventions and real templates/runtime evidence
+are still absent. NC02 can proceed within the recorded first-phase authorization.
+
+Local commit: **NC01: persist profile scope with explicit v3 boundary**.

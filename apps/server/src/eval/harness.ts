@@ -2,7 +2,7 @@
 import type { ModelItem, ModelProvider, ModelResponse, ToolDefinition } from "@jeeves/providers";
 import { studioChanges, validateDesign } from "@jeeves/spec";
 import { ChatService } from "../chat/service.ts";
-import { turnContext, Workspace } from "../chat/tools.ts";
+import { isWorkspaceMutation, turnContext, Workspace } from "../chat/tools.ts";
 import type { Db } from "../db/client.ts";
 import { DesignService } from "../design/service.ts";
 import type { EvalCase } from "./cases.ts";
@@ -96,9 +96,7 @@ export async function runCase(
         );
         if (
           receivedReview &&
-          response.toolCalls.some(
-            (call) => call.name === "applyStudioCommands" || call.name === "declareReviewScope",
-          )
+          response.toolCalls.some((call) => isWorkspaceMutation(call.name, call.arguments))
         )
           repairBatches++;
         return response;

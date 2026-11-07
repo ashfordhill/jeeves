@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
 import { connectionSchema, elementSchema, plannedConnectionSchema } from "./design.ts";
+import { designScopeSchema } from "./design-scope.ts";
 import { idSchema } from "./ids.ts";
 import { studioModelSchema } from "./studio-model.ts";
 
@@ -10,6 +11,8 @@ import { studioModelSchema } from "./studio-model.ts";
  * element and connect it in one go.
  */
 export const operationSchema = z.discriminatedUnion("op", [
+  z.strictObject({ op: z.literal("upgradeDesign"), scope: designScopeSchema }),
+  z.strictObject({ op: z.literal("setDesignScope"), scope: designScopeSchema }),
   z.strictObject({ op: z.literal("setArchitecture"), architecture: architectureSchema.nullable() }),
   /** Canonical system text only. */
   z.strictObject({

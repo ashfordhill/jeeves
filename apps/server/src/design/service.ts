@@ -2,6 +2,7 @@ import {
   applyOperations,
   type DesignDocument,
   designBlueprint,
+  designBlueprintV3,
   designSchema,
   emptyDesign,
   emptyLayout,
@@ -82,10 +83,13 @@ export class DesignService {
   }
 
   /** Code-generation boundary: read-only, derived on request, never stored. */
-  async blueprint(projectId: string) {
+  async blueprint(projectId: string, version: 2 | 3 = 2) {
     const project = await this.getProject(projectId);
     if (!project) return undefined;
-    return designBlueprint((await this.current(this.db, project)).document, project.name);
+    const design = (await this.current(this.db, project)).document;
+    return version === 3
+      ? designBlueprintV3(design, project.name)
+      : designBlueprint(design, project.name);
   }
 
   async renameProject(id: string, name: string): Promise<Project | undefined> {

@@ -30,8 +30,13 @@ Internal packages export TypeScript source directly; nothing is built except the
 
 ## Data model (`packages/spec`)
 
-A **design document** is `{schemaVersion: 2, revision, architecture?, elements, connections}`
-(`design.ts`), parsed strictly; any other shape is rejected.
+A **design document** has strict explicit v2/v3 readers (`design.ts`). Schema v2 is
+`{schemaVersion: 2, revision, architecture?, elements, connections}`; v3 adds required top-level
+`scope` (exact nullable profile, finite included/excluded requirements, targeted unresolved custom
+requirements). Reading never upgrades. `upgradeDesign` explicitly crosses the boundary and
+`setDesignScope` requires v3; complete history snapshots support one Undo back to v2.
+`design-scope.ts` supplies the finite `tinyurl-create-resolve@1.0.0` intent catalog, shared
+preview/commands and unresolved diagnostics. Selecting scope implements no capability contracts.
 
 - `elements`: C2 boxes `{id, name, classification?, description?}`.
 - `connections`: `{id, kind, from: {element}, to: {element}, planned: {label, protocol,
@@ -139,6 +144,8 @@ call. An unknown command type (such as the retired `create`) is refused with the
 commands. `declareReviewScope` replaces only turn-local assumptions, checklist selection and
 custom obligations; these are not saved application requirements. `reviewDesign` previews
 staged additions, updates and removals, findings and precise **not specified** obligations.
+Persistent scope uses a separate bounded `configureDesignScope` tool shared with the mouse form; unknown refs/custom requirements stay unresolved. Schema v2 requires a read-only preview and explicit upgrade.
+
 After commands or scope change, a fresh review must reach a subsequent model request before
 commit, even when the model ends its response. Two repair response batches fit inside the
 ordinary sixteen-round limit. Questions still end immediately with deterministic review;
@@ -165,7 +172,7 @@ scripted model.
 
 `GET /projects/:id/blueprint` returns `designBlueprint(design, projectName)`: services with
 settings and components, resources, externals, groups, resolved connections, component links,
-omissions and findings, at `blueprint: 2`. Each connection into a store says whether it writes
+omissions and findings, at default `blueprint: 2`. Explicit `?version=3` includes persistent scope, unresolved requirements, source schema and absent template/runtime evidence. V2 refuses v3-only scope with 422 `UNSUPPORTED_BLUEPRINT_CONTENT` and exact paths; legacy-only v2 meaning stays identical. Each connection into a store says whether it writes
 (from the store's owner) or reads (one writer per store, derived from the owner). It is derived
 per request, `no-store`, and is the only
 interface a future code generator should read. See [studio blueprint](docs/studio-blueprint.md).

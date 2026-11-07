@@ -1,0 +1,106 @@
+{
+  "version": "nc01-scope-v1",
+  "tools": [
+    {
+      "tool": "listStudioDefinitions",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 298
+    },
+    {
+      "tool": "describeStudioDefinition",
+      "properties": 1,
+      "enums": 16,
+      "depth": 2,
+      "bytes": 481
+    },
+    {
+      "tool": "listStudioPatterns",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 370
+    },
+    {
+      "tool": "describeStudioPattern",
+      "properties": 1,
+      "enums": 4,
+      "depth": 2,
+      "bytes": 529
+    },
+    {
+      "tool": "getDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 369
+    },
+    {
+      "tool": "configureDesignScope",
+      "properties": 17,
+      "enums": 18,
+      "depth": 5,
+      "bytes": 2497
+    },
+    {
+      "tool": "applyStudioCommands",
+      "properties": 427,
+      "enums": 538,
+      "depth": 9,
+      "bytes": 50591
+    },
+    {
+      "tool": "validateDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 239
+    },
+    {
+      "tool": "declareReviewScope",
+      "properties": 9,
+      "enums": 4,
+      "depth": 5,
+      "bytes": 1564
+    },
+    {
+      "tool": "reviewDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 383
+    },
+    {
+      "tool": "askUser",
+      "properties": 3,
+      "enums": 0,
+      "depth": 3,
+      "bytes": 562
+    }
+  ],
+  "instructionsBytes": 11237,
+  "tinyurlContextBytes": 15147,
+  "toolsHash": "c97193b76b3abb84bec31f2c77948383f3125474082c28d9206de56399816974",
+  "instructionsHash": "c4ba8e220644eaab483b6b1aceb7a798ac028759be8f46416a945a203ff10ea4",
+  "priorRF06ToolsHash": "170213ff1ad633d3bd139a2ae05d884643ed4551f1b1a269c9314841b0a6ec1d",
+  "note": "No live calls. New instructions/context/tool make old RF06 request hashes intentionally different. Scope-only scripted regression uses 5 responses: preview/apply/review, two apply/review repairs, refused third apply plus read-only preview, final response. This is plumbing effort, not live-model quality/cost evidence.",
+  "requestComparison": {
+    "baseline": {
+      "instructions": 10161,
+      "tinyurlContext": 13549,
+      "strictTools": 55397
+    },
+    "current": {
+      "instructions": 11237,
+      "tinyurlContext": 15147,
+      "strictTools": 57895
+    },
+    "delta": {
+      "instructions": 1076,
+      "tinyurlContext": 1598,
+      "strictTools": 2498
+    },
+    "note": "UTF-8 bytes on exact same default schema2 TinyURL; not model token usage. No live calls or latency/quality inference."
+  }
+}

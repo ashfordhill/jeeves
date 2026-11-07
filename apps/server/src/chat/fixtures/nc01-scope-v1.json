@@ -1,0 +1,63 @@
+{
+  "version": "nc01-scope-v1",
+  "evidence": "Scripted canonical arguments; no live-model or runtime evidence.",
+  "scope": {
+    "profile": {
+      "id": "tinyurl-create-resolve",
+      "version": "1.0.0"
+    },
+    "requirements": [
+      {
+        "feature": "immutable-http-targets",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "authenticated-create",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "public-resolve",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "optional-expiry",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "custom-slugs",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "mutable-destinations",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "disable-management",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "reputation-enforcement",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "quotas",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "exact-analytics",
+        "disposition": "excluded",
+        "criticality": "required"
+      }
+    ],
+    "customRequirements": []
+  }
+}
