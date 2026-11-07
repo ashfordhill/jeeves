@@ -178,6 +178,14 @@
           "text": "Prepared the upload entry. Storage and the durable upload lifecycle remain unresolved; no extra owner was added."
         }
       ]
+    },
+    {
+      "match": "Inspect this logical owner selection",
+      "steps": [
+        {
+          "text": "Selected logical owner retained. No design edits."
+        }
+      ]
     }
   ]
 }

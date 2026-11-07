@@ -68,7 +68,7 @@ type arrays, formats and other unaudited constructs fail with a tool/schema path
 This is narrower than OpenAI's full supported subset. No constraint is silently discarded, and
 there is no fallback to best-effort tools. New schema constructs require a codec/test update.
 
-The current eleven tools compile, including RF04 turn scope and NC01 persistent scope. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
+The current twelve tools compile, including RF04 turn scope, NC01 persistent scope and NC02 explicit ownership. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
 values and at most nine nesting levels under the adapter's conservative traversal. The adapter
 checks emitted schemas, including wrappers, against 5,000 properties, ten nesting levels, 1,000
 enum values, 120,000 characters for names/enum values, and the large-enum string limit.
@@ -110,3 +110,25 @@ version, persistent scope/unknown requirements and the available profile. No rec
 runs. The CLI's subsequent `design` mismatch is a consequence of this earlier context refusal,
 not a re-adjudication of the old model result. [Audit](plans/reliable-foundations/evidence/nc01/audit.json)
 and [drift](plans/reliable-foundations/evidence/nc01/replay-drift.json) retain the observed values.
+
+
+NC02 adds the narrow `configureOwnership` tool: **28 properties, 13 enum values, depth five**
+(3,600 UTF-8 bytes including metadata). The existing tile union remains 427 / 538 / nine.
+Omitted deployable/published-read boundary use wire null and return to omission; omitted upgrade
+defaults false. Malformed/null arrays and extra fields refuse before normalization, and canonical
+history re-encodes every ownership union. Real ChatService tests cover two repair passes, refused
+third apply and permitted previews; all accepted edits are one Undo.
+
+A selected logical owner travels as `owner:<slug>` (at most 69 chars including a 63-char owner
+ID), distinct from canonical element/connection IDs. The route validates this new namespace,
+refuses missing owners, and caller context resolves the owner without selecting its roles.
+Legacy selection strings and stored history remain unchanged; rename preserves the owner ID.
+
+Against the retained NC01 audit on the same default schema2 TinyURL, instructions grow
+11,237 → 12,512 bytes, caller context 15,147 → 15,928 and strict tools 57,895 → 61,496.
+These are UTF-8 bytes, not tokens, latency, price or quality results. Ownership-only scripted
+repair coverage uses five responses. No paid/live calls were made. The new ownership context,
+selection namespace and tool intentionally drift old RF06 request hashes; raw as-run evidence is
+unchanged. The current network-forbidden synthetic suite remains deterministic. Exact audit and
+first old-request drift are retained in `plans/reliable-foundations/evidence/nc02/`. Mini/live strict
+acceptance and RF06's historical 2.44× input / 2.07× response overhead remain disclosed limits.

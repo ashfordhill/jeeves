@@ -250,8 +250,9 @@ the next milestone's contracts precise before handing them to implementation age
 ## Milestone 2: a specification that can describe one complete foundation
 
 RF07 refines these work areas into the separate [next contract plan](next-contract-plan.md).
-It is **proposed, not implemented or owner-approved contract semantics**. Its decision gates
-must be recorded before dependent implementation; this plan does not authorize an unbounded
+The owner authorized the bounded NC01–NC06/NC14 first phase and continuation across milestones;
+NC01/NC02 implement their own scope/version and ownership/access slices. Remaining units are
+planned until completed, with prerequisite decisions recorded in the next contract plan. This is no authorization for an unbounded
 modeling-language rewrite or generator work.
 
 The first six sequential vertical units cover a persistent narrow TinyURL scope/version boundary,

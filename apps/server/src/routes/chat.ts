@@ -1,3 +1,4 @@
+import { chatSelectionReferenceSchema } from "@jeeves/spec";
 import type { FastifyPluginAsyncZod, ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { acceptedTypes, MAX_FILE_BYTES, mediaTypeFor } from "../chat/files.ts";
@@ -10,7 +11,7 @@ const chatBody = z.strictObject({
   baseRevision: z.int().nonnegative(),
   message: z.string().trim().min(1).max(20_000),
   fileIds: z.array(z.uuid()).max(10).default([]),
-  selection: z.array(z.string().max(63)).max(200).default([]),
+  selection: z.array(chatSelectionReferenceSchema).max(200).default([]),
 });
 
 /**

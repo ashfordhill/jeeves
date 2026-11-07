@@ -12,6 +12,11 @@ areas in [units](units.md); it does not authorize the generator, replace saved p
 agent to build a general architecture language. Development remains sequential on primary main,
 one fresh agent/unit, one commit, coordinator review before dispatching the next unit.
 
+**Owner clarification, 2026-11-07:** “Keep backend implementation for later.” Continue the
+authorized Jeeves sequence NC02–NC06 and NC14. The separate backend remains a concrete future
+build plan, with repository/conventions and real runtime tests still dependencies; no backend or
+generator implementation is authorized by these units.
+
 The default next milestone is the small typed **create/resolve** profile in NC01–NC06, followed
 by independent NC14 review of that completed subset. Then prove the first TinyURL foundation in
 the separate backend once its repository/conventions are known. NC07–NC13 are deferred domain
@@ -28,7 +33,7 @@ dependency needs a new decision; a gate below is not a request for repeated appr
 | Gate | Chosen default | Must be settled before |
 | --- | --- | --- |
 | G1: first workload — recorded NC01 | One public short-link namespace; immutable destinations; authenticated create, public resolve; optional expiry. No custom slugs, destination mutation/disable API, exact analytics, quotas, reputation enforcement or deployment claim. Required excluded features must instead block that profile. | NC01; changing scope requires a new profile/version. |
-| G2: owner and presentation | One logical **Links** owner; create and resolve are API roles inside it, a later analytics consumer may be a worker role. Roles may share one deployable; role ≠ owner ≠ process. Default collapsed owner tile, mouse expansion of roles. Preserve existing element IDs as role/resource references where possible; do not merge legacy owners automatically. | NC02; a concrete small owner/expanded-role sketch is reviewed at both sizes before coding presentation. |
+| G2: owner and presentation — recorded NC02 | One logical **Links** owner; create and resolve are API roles inside it, a later analytics consumer may be a worker role. Roles may share one deployable; role ≠ owner ≠ process. Default collapsed owner tile, mouse expansion of roles. Preserve existing element IDs as role/resource references where possible; do not merge legacy owners automatically. | NC02; a concrete small owner/expanded-role sketch is reviewed at both sizes before coding presentation. |
 | G3: contracts and policies | Local immutable finite records with exact IDs/versions/schema hashes. Select a profile and bounded parameters; no route/entity/policy DSL or arbitrary expressions. Start with exact caller/receiver version equality; compatible evolution is a later explicit rule. | NC03; schema/command budget audit before adding tools. |
 | G4: version boundary — recorded NC01 | New stored design schema and blueprint **v3**, with explicit reader/writer migration. Existing default `/blueprint` stays v2 during rollout; explicit `?version=3` opts in. Legacy-only designs retain exact v2 meaning. A design using v3-only semantics refuses v2 export with a structured unsupported-content list, never a silently lossy success. Default-version switch is a separate final-review decision. | NC01; review API consumer impact and migration fixtures first. |
 | G5: first consistency policy | Authoritative primary lookup; immutable target; cache entries never outlive expiry; no negative cache initially, no browser/CDN redirect-response cache. Cache miss/outage falls back to authority; bounded outage protection is part of the profile. Create success follows durable commit; immediate resolve must find it. | NC04; cache fallback/overload behavior and finite parameter bounds are pinned in the profile. |
@@ -136,6 +141,18 @@ explicit v3 export names every unresolved requirement. No empty “ready” resu
 This unit introduces no owner/API/messaging inference, runtime manifest or generator.
 
 ### NC02 — One Links owner, API roles and explicit data access
+
+**Progress, 2026-11-07:** implemented the optional v3 ownership/access vertical slice. G2's
+concrete collapsed/expanded 1440/1280 sketch and actual 1280 images were reviewed by the
+coordinator. Existing role/resource/connection IDs remain canonical; one logical owner is a
+view projection with safe expansion fallback, independent of deployable assignment. Shared
+mouse/chat preview/apply declares authority, source/projection, role grants and dependency intent.
+Contradictory grants/foreign writes refuse atomically; cross-owner published reads and projection
+population/freshness/failure remain targeted unresolved intent. Legacy inference stays separate.
+Exact removal/transfer rows, stale previews, reload/history and one Undo are covered. V2 refuses
+every nonempty row, including empty-scope ownership. Operation contracts still belong to NC03/04;
+no preset, owner project, template, generator or runtime was changed. Evidence/checks are in the
+NC02 handoff and `evidence/nc02/`.
 
 **Depends:** NC01/G2. Assign create/resolve roles to one logical owner without forcing a new
 owner or deployable for each handler. Declare resource/dependency access intent and explicit

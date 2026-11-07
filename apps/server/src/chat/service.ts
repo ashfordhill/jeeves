@@ -17,6 +17,7 @@ import {
   type Finding,
   reviewStudioDesign,
   type StudioReview,
+  selectedLogicalOwners,
 } from "@jeeves/spec";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
@@ -151,6 +152,16 @@ export class ChatService {
           "The design changed before the message started. Reload and inspect the current design before sending again.",
       };
     }
+    if (
+      selectedLogicalOwners(state.design, input.selection).some((item) => item.status !== "present")
+    )
+      return {
+        ok: false,
+        status: 422,
+        code: "UNKNOWN_SELECTION",
+        message:
+          "The selected logical owner is missing or invalid. Select an existing owner before sending again.",
+      };
     if (this.running.has(projectId)) {
       return {
         ok: false,
@@ -403,6 +414,14 @@ export class ChatService {
         true,
         `Reviewed saved revision ${state.design.revision}: ${operationId === null ? "no design edits saved" : `chat committed at revision ${committedState?.design.revision}`}, ${finalReview.findings.length} findings, ${finalReview.obligations.length} not specified obligations`,
       );
+      if (committedState)
+        for (const row of reviewStudioDesign(initial.design, committedState.design).ownership
+          .changes)
+          workspace.log(
+            "reviewDetail",
+            true,
+            `Saved ownership ${row.change} · ${row.field}/${row.id}: ${JSON.stringify({ before: row.before, after: row.after })}`,
+          );
       for (const finding of finalReview.findings)
         workspace.log(
           "reviewDetail",

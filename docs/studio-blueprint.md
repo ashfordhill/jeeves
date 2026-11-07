@@ -15,7 +15,7 @@ studio (operations) ──▶ design document ──▶ designBlueprint() ──
 ## Endpoint
 
 `GET /projects/:id/blueprint` returns the blueprint JSON with `Cache-Control: no-store`: 404 for an
-unknown project, 400 for a malformed ID or unsupported version query. The default remains v2; `?version=2` selects it explicitly and `?version=3` opts into v3. A v2 request returns 422 `UNSUPPORTED_BLUEPRINT_CONTENT` when persistent scope would be lost: `requestedVersion`, `supportedVersion` and `unsupported[]` name every exact path and reason. It is a pure read and changes no revision, layout or
+unknown project, 400 for a malformed ID or unsupported version query. The default remains v2; `?version=2` selects it explicitly and `?version=3` opts into v3. A v2 request returns 422 `UNSUPPORTED_BLUEPRINT_CONTENT` when persistent scope or explicit ownership/access would be lost: `requestedVersion`, `supportedVersion` and `unsupported[]` name every exact path and reason. It is a pure read and changes no revision, layout or
 history. Behind the web proxy the same route is `/api/projects/:id/blueprint`.
 
 ## Source
@@ -58,21 +58,25 @@ and adds:
 | `scope` | Exact nullable profile reference, finite included/excluded requirements with criticality, and up to eight unresolved custom requirements with optional element/connection targets. Requirements sort by feature, custom requirements by ID. Unknown well-formed profile versions remain unchanged. |
 | `profileStatus` | `known`, `unresolved` or `unspecified`; known means the scope record exists, never that its contracts are implemented. |
 | `unresolvedRequirements` | Namespaced `source` (`profile`, `requirement`, `contract`, `custom`), ID, requirement, criticality and optional targets. Includes unspecified legacy requirements, required incompatible behavior, missing contracts and unresolved custom behavior. Missing targets are diagnostic text; the stored original requirement survives. |
+| `ownership`, `ownershipStatus`, `ownershipFindings` | Complete explicit owners, canonical element roles, source/projection authority, role grants and dependency requests, plus targeted unresolved/refused declarations. Rows sort deterministically; status is declared or unspecified, never verified. |
+| `legacyOwnership`, `roleMeaning` | Qualify preserved `resources[].owner` as inferred writer and services as canonical application tiles, which are not independent logical owners or necessarily separate processes. |
 | `legacyAccess` | `inferred-from-ownership; not a declared operation grant`. Existing access values do not gain permission semantics. |
 | `templateAvailability`, `runtimeVerification` | Both `none`. Selecting a profile supplies neither. |
 
 Stored schema v2 remains readable as-is and exports its identical v2 meaning. Explicit
 `upgradeDesign` creates schema v3 plus `scope` in one operation; `setDesignScope` requires v3.
-A schema-v3 design with no scope content can still export v2 with the legacy meaning. Profile,
-each finite requirement and each custom requirement are v3-only content and cause v2 refusal.
+A schema-v3 design with no scope or ownership rows can still export v2 with legacy meaning. Profile,
+each finite/custom requirement and every ownership row cause v2 refusal with its exact source path,
+including nonempty ownership with empty scope. Optional ownership is never added on read;
+`setOwnership` requires v3. Empty declarations add no meaning.
 The mouse form reads the design, never the v2 blueprint, when editing these declarations.
 Undo/Redo restore the complete original schema and declarations as a new revision.
 
 The only known profile is `tinyurl-create-resolve@1.0.0`: one public namespace, immutable HTTP(S)
 destinations, authenticated create, public resolve and optional expiry. Required custom slugs,
 mutable destinations, disable/management, reputation, quotas or exact analytics remain visible
-and block this narrow scope. Selecting it reports ownership/access, create, resolve and
-expiry/cache contracts as not specified. This is no readiness certification or implementation.
+and block this narrow scope. Selecting it supplies no declarations; ownership completeness uses targeted NC02 findings, while create, resolve and
+expiry/cache operation contracts remain not specified. This is no readiness certification or implementation.
 
 ## Example
 

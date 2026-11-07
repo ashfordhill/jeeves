@@ -4,6 +4,7 @@ import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import type { OperationInput } from "./operations.ts";
+import { designOwnership, ownershipFindings } from "./ownership.ts";
 
 export const designProfileRefSchema = z.strictObject({
   id: idSchema,
@@ -158,11 +159,20 @@ export function unresolvedDesignScope(design: DesignDocument): ScopeUnresolved[]
           "requirement",
         );
     }
-    for (const [id, requirement] of [
-      [
+    const ownership = designOwnership(design);
+    if (
+      !ownership.owners.length ||
+      !ownership.roles.length ||
+      !ownership.resources.length ||
+      ownershipFindings(design).length
+    )
+      add(
         "links-owner-access",
-        "Links ownership, API roles and explicit data-access contracts are not specified.",
-      ],
+        "Logical owner, role, authority and access declarations are incomplete or unresolved; inspect the targeted ownership findings. Operation contracts remain separate.",
+        "required",
+        "contract",
+      );
+    for (const [id, requirement] of [
       [
         "create-contract",
         "Authenticated create, HTTP(S) validation, code allocation, idempotency and durable success contracts are not specified.",
@@ -180,7 +190,7 @@ export function unresolvedDesignScope(design: DesignDocument): ScopeUnresolved[]
   } else
     add(
       "contracts-unspecified",
-      "No typed owner, API or failure contracts are specified; names, labels and modules establish none.",
+      "API and failure contracts are unspecified; explicit ownership declarations are reported separately. Names, labels and modules establish no behavior.",
       "required",
       "contract",
     );

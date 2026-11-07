@@ -8,6 +8,7 @@ import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
   buildStudioCommand,
   type DesignDocument,
+  designOwnership,
   LANE_ACTOR,
   type LaneEdge,
   type LaneGraph,
@@ -15,6 +16,7 @@ import {
   laneActionOf,
   laneEntryRefusal,
   laneGraph,
+  ownerSelectionReference,
   type StudioLane,
   studioActionDefaults,
   studioDefinitions,
@@ -45,12 +47,15 @@ import { ConnectionForm } from "../studio/ConnectionForm.tsx";
 import { DesignScopeForm } from "../studio/DesignScopeForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
+import { OwnershipForm } from "../studio/OwnershipForm.tsx";
+import { OwnershipSummary } from "../studio/OwnershipSummary.tsx";
 import { useStudioPreferences } from "../studio/preferences.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
+import { ownerNodeId, projectOwnerGraph } from "./ownerProjection.ts";
 import { RailResize } from "./RailResize.tsx";
 import { RelationshipFocus } from "./RelationshipFocus.tsx";
 import { useLaneRemoval } from "./removal.tsx";
@@ -93,6 +98,15 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
   const [scopeOpen, setScopeOpen] = useState(false);
+  const [ownershipOpen, setOwnershipOpen] = useState(false);
+  const [expandedOwners, setExpandedOwners] = useState<string[]>([]);
+  const [ownerPick, setOwnerPick] = useState<string>();
+  const ownership = designOwnership(loaded.design);
+  const projection = useMemo(
+    () => projectOwnerGraph(loaded.design, graph, expandedOwners),
+    [loaded.design, graph, expandedOwners],
+  );
+  const selectedOwner = ownership.owners.find((x) => x.id === ownerPick);
   const [focusTile, setFocusTile] = useState<string>();
   const board = useRef<BoardHandle>(null);
   const selection = liveSelection(graph, pick);
@@ -121,9 +135,13 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     // Chat messages carry the selected element, connection or entry; the user, its actions and
     // its lines to them have no design ID.
     const id = selection.line ?? selection.tile;
-    const ids = id && !id.startsWith("@") ? [id] : [];
+    const ids = selectedOwner
+      ? [ownerSelectionReference(selectedOwner.id)]
+      : id && !id.startsWith("@")
+        ? [id]
+        : [];
     useProject.setState({ architectureSelection: ids });
-  }, [selection.tile, selection.line]);
+  }, [selection.tile, selection.line, selectedOwner]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
   useEffect(() => {
     // A new tile opens with its Name field focused, ready to rename.
@@ -161,6 +179,18 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const select = (next: BoardSelection) => {
     if (next.tile !== selection.tile || next.line !== selection.line)
       void formDrafts.flushProject(projectId, true);
+    setOwnerPick(undefined);
+    const roles = ownership.roles.filter(
+      (role) =>
+        role.element === next.tile ||
+        (next.line &&
+          graph.edges.some(
+            (edge) =>
+              edge.id === next.line &&
+              (edge.source === role.element || edge.target === role.element),
+          )),
+    );
+    setExpandedOwners((current) => [...new Set([...current, ...roles.map((role) => role.owner)])]);
     setPick(next);
     if (anchor && next.tile) setFocusTile(next.tile);
     if (anchor && next.line) {
@@ -246,6 +276,13 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   return (
     <div className="studio-workspace">
+      {ownershipOpen ? (
+        <OwnershipForm
+          projectId={projectId}
+          design={loaded.design}
+          onClose={() => setOwnershipOpen(false)}
+        />
+      ) : null}
       {scopeOpen ? (
         <DesignScopeForm
           projectId={projectId}
@@ -280,17 +317,54 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
         <LaneCanvas
           ref={board}
           design={loaded.design}
-          graph={graph}
-          selected={selection}
+          graph={projection.graph}
+          canonicalGraph={graph}
+          onExpandOwner={(id) => {
+            setExpandedOwners((current) => [...new Set([...current, id])]);
+            setOwnerPick(id);
+          }}
+          selected={selectedOwner ? { tile: ownerNodeId(selectedOwner.id) } : selection}
           mode={mode}
-          onSelectTile={(tile) => select({ tile })}
+          onSelectTile={(tile) => {
+            const owner = ownership.owners.find((x) => ownerNodeId(x.id) === tile);
+            if (owner) {
+              void formDrafts.flushProject(projectId, true);
+              setOwnerPick(owner.id);
+              setPick({});
+              setFocusTile(undefined);
+              setPreferences((current) => ({ ...current, inspectorOpen: true }));
+            } else select({ tile });
+          }}
           onSelectLine={(line) => select({ line })}
           onClear={() => select({})}
-          creation={creation}
-          removal={removal}
+          creation={{
+            ...creation,
+            onDropRefused: (tile, tab, target) => {
+              const owner = ownership.owners.find((x) => ownerNodeId(x.id) === target);
+              if (owner) {
+                setExpandedOwners((current) => [...new Set([...current, owner.id])]);
+                useProject.getState().setNotice({
+                  tone: "error",
+                  message: `${owner.name} contains canonical roles. Its roles are now expanded; attach to the intended role.`,
+                });
+              } else creation.onDropRefused?.(tile, tab, target);
+            },
+          }}
+          removal={{
+            ...removal,
+            removable: (id) => !id.startsWith("@owner:") && (removal.removable?.(id) ?? true),
+          }}
           visibleLines={visibleLines}
-          emphasizedTiles={emphasizedTiles}
+          emphasizedTiles={emphasizedTiles?.map((id) => projection.roleToView.get(id) ?? id)}
         />
+        {projection.fallbackOwners.length ? (
+          <p className="lane-owner-fallback" role="status">
+            {projection.fallbackOwners
+              .map((id) => ownership.owners.find((x) => x.id === id)?.name ?? id)
+              .join(", ")}
+            : roles expanded to preserve relationship direction. One logical owner is retained.
+          </p>
+        ) : null}
         {anchor ? (
           <section className="lane-focus-status" aria-label="Relationship focus">
             <span>
@@ -367,7 +441,23 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 <IconX size={17} />
               </button>
             </div>
-            {anchor || selection.tile ? (
+            <OwnershipSummary
+              design={loaded.design}
+              element={selection.tile}
+              connection={selection.line}
+              ownerId={selectedOwner?.id}
+              expanded={[...expandedOwners, ...projection.fallbackOwners]}
+              onConfigure={() => setOwnershipOpen(true)}
+              onExpand={(id) => setExpandedOwners((current) => [...new Set([...current, id])])}
+              onCollapse={(id) => {
+                setExpandedOwners((current) => current.filter((x) => x !== id));
+                setPick({});
+                setOwnerPick(id);
+                setFocusTile(undefined);
+              }}
+              onRole={(id) => select({ tile: id })}
+            />
+            {!selectedOwner && (anchor || selection.tile) ? (
               <RelationshipFocus
                 design={loaded.design}
                 graph={graph}
@@ -379,13 +469,15 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 onRemove={(id) => removal.onRemoveLine?.(id)}
               />
             ) : null}
-            <Inspector
-              key={selection.tile ?? selection.line ?? LANE_ACTOR}
-              loaded={loaded}
-              graph={graph}
-              selection={selection}
-              onSelect={select}
-            />
+            {!selectedOwner ? (
+              <Inspector
+                key={selection.tile ?? selection.line ?? LANE_ACTOR}
+                loaded={loaded}
+                graph={graph}
+                selection={selection}
+                onSelect={select}
+              />
+            ) : null}
           </aside>
         </>
       ) : null}

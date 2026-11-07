@@ -3,6 +3,7 @@ import { architectureSchema } from "./architecture.ts";
 import { classificationSchema } from "./architecture-choices.ts";
 import { designScopeSchema } from "./design-scope.ts";
 import { idSchema } from "./ids.ts";
+import { ownershipSchema } from "./ownership.ts";
 import {
   relationshipInteractionSchema,
   relationshipLabelSchema,
@@ -63,6 +64,7 @@ export const designV2Schema = z.strictObject({
 export const designV3Schema = designV2Schema.extend({
   schemaVersion: z.literal(3),
   scope: designScopeSchema,
+  ownership: ownershipSchema.optional(),
 });
 export const designSchema = z.discriminatedUnion("schemaVersion", [designV2Schema, designV3Schema]);
 export type DesignDocument = z.output<typeof designSchema>;

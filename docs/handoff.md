@@ -4385,3 +4385,92 @@ model acceptance remain open; backend location/conventions and real templates/ru
 are still absent. NC02 can proceed within the recorded first-phase authorization.
 
 Local commit: **NC01: persist profile scope with explicit v3 boundary**.
+
+## 2026-11-07 — NC02: logical owners, canonical roles and declared store access
+
+Worked NC02 only after NC01 `8ee2027`, sequentially on primary main. Coordinator accepted G2's
+small collapsed/expanded sketch before presentation code and reviewed actual 1280 images plus
+identity/validation/history seams. No branch, worktree, stash, push, delegation, preset rewrite,
+owner-project migration, generator or runtime. Preserved `.jeeves-feedback/` and owner settings.
+The owner explicitly clarified “Keep backend implementation for later”: NC03–NC06/NC14 Jeeves
+work remains authorized, while the separate backend stays a concrete future plan.
+
+Optional schema-v3 `ownership` records logical owners, canonical API/worker element roles,
+optional deployable assignments, source/projection authority, role grants and actual store-edge
+access intent. Absence stays unspecified on read. Same-owner read remains read; cache read/fill
+needs read-write. Explicit incompatible grants and foreign writes refuse atomically; co-deploying
+roles grants nothing. Foreign read requires deliberate published-read intent or an owned
+projection; published contracts and projection population/freshness/failure remain targeted
+unresolved requirements. Source-only projection refs rule out self/chains/cycles. No label,
+module paragraph, package or legacy inferred writer becomes a declared permission.
+
+The inspector's bounded form and narrow `configureOwnership` tool share preview/commands.
+Preview shows named add/change/revoke/clear rows with optional raw details, before one save;
+stale previews refuse. Canonical tile/edge removal and authority/role/owner transfer expose exact
+affected bindings, clean or refuse them atomically, retain unrelated/missing-target requirements
+and undo once. Chat's fresh staged review contains exact rows and saved details are attributed to
+the committed chat snapshot. Optional/default/null and canonical strict history behavior remains.
+
+One collapsed owner card expands by mouse to original role IDs; resources remain separate and
+all relationship IDs/endpoint names survive. Exact edge selection expands endpoints; resource
+focus maps emphasis to collapsed owners; attach onto a collapsed owner expands it with guidance.
+Unsafe projections fall back to readable canonical roles without weakening semantic validation.
+Owner selection travels as `owner:<slug>` (69 chars maximum) through actual chat context/history,
+independent from role IDs, survives rename and refuses malformed/missing/removed references.
+View changes preserve complete exported contracts/revision. Legacy unowned diagrams remain as
+before, with a compact configuration entry and explicitly qualified inferred-access metadata.
+
+Default v2 refuses every new nonempty row with its exact source path, even empty-scope ownership;
+empty declarations add no meaning. V3 retains complete sorted declarations, targeted findings and
+explicit legacy-owner/role meaning. Profile ownership completeness now uses exact declaration
+findings; create/resolve/cache operations remain unspecified. Template/runtime evidence stays
+none. Generic services remain design-only. Docs/allowlist/catalog/plan match this boundary.
+
+Checks with Node 24.21.0 first in PATH: `pnpm check` passed **262 tests / 36 files**, Biome and all
+workspace typechecks; `pnpm test:e2e` passed **25 native Chromium** (35.3s); web production build
+passed (existing chunk advisory); `git diff --check` passed. Focused tests cover authority/grants,
+same-owner read/cache fill, foreign write/read boundaries, missing declarations, projection refs,
+transfer/deletion, atomic refusal, PGlite disk reload, conflicts, cross-version history/one Undo,
+mouse/chat command equality, exact v2/v3 semantics, strict omissions/history and actual repair
+loop plus owner selection. Tests prove declarations only, never runtime ACLs or concurrency.
+
+Strict wire audit: `configureOwnership` **28 properties / 13 enum values / depth five**, 3,600
+UTF-8 bytes including metadata. Giant tile union unchanged **427 / 538 / nine**. Retained NC01
+same-default-schema2 audit → current: instructions 11,237→12,512 bytes, caller context
+15,147→15,928, strict tools 57,895→61,496. Five scripted ownership responses exercise two repair
+passes, refused third apply and allowed previews. No live/paid calls, token/cost/quality win or
+Mini acceptance. Current offline synthetic cases replay deterministically. Old RF06 raw records
+are unchanged; first old Codex request intentionally drifts `77669bb5…`→`43bf9c36…` before any
+response because shared ownership/selection context changed (exact hashes in retained evidence).
+
+Browser: `/tmp/jeeves-nc02-browser/` holds scripts/logs and both-size mouse images; six inspected
+PNGs plus audit/results/drift are retained in `docs/plans/reliable-foundations/evidence/nc02/`.
+Isolated API4312/web4302, scratch JEEVES_HOME, scripted provider and `jeeves_e2e`; owner4300/4310
+listeners/designs/settings untouched. At 1440×900 and 1280×800 default TinyURL renders 11/12;
+mouse declares core Links roles without changing IDs, collapses/expands, traces a collapsed
+resource's exact read, previews/removes/undoes it, rejects cache read-only permission visibly,
+transfers role/authority and removes owner with exact cleanup/Undo, refuses stale previews,
+retains custom requirements after canonical role removal and restores role/cache removals in one
+Undo, refuses removal of a projection's source, reloads exactly and preserves full exports for
+view actions. Owner-card selection reaches the actual chat payload. Zero unexpected page/console
+errors; two HTTP409 console messages are the deliberate stale-preview refusals, separately
+recorded. Every owned scratch project was deleted; fitted full legacy overviews still need zoom.
+
+New owner screenshots received during final review are archived byte-for-byte as
+`docs/human-feedback/2026-11-07-api-action-sketch.png` and `2026-11-07-watch-counts-crop.png`.
+Appended a new HUMAN_FEEDBACK entry and playbook lesson: expandable Read counts/Publish view
+responsibilities of the same API, distinct from user lanes/services/deployments; sketch data-return
+arrows differ from current caller→target requests and need an explicit view convention. This is
+NC03+ design input for coordinator review, not an NC02 operation model or YouTube rewrite.
+
+Next: NC03 exact create operation/caller/receiver bindings must refine these role grants, then
+NC04 lookup/cache policies, NC05 report, NC06 new narrow study and NC14 review. Published-read
+markers/projections still require contracts; owner human overview acceptance, intended Mini/live
+strict evidence, real templates/runtime tests and backend dependencies remain open.
+
+Local commit: **NC02: declare logical owners, roles and store access**.
+
+Final cleanup: stopped only owned 4302/4312 servers and removed own empty scratch settings directories.
+Read-only final owner GETs remain TinyURL rev53 / YouTube rev1 / Marketplace rev1; `jeeves_e2e`
+contains only its default TinyURL. Owner4300/4310 listeners remain running. New feedback image
+hashes are `b29baa7c…` (sketch) and `2cf541ca…` (crop); original files were not altered.

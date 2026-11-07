@@ -1,0 +1,8 @@
+{
+  "case": "video-build",
+  "arm": "rf00-ablation",
+  "round": 1,
+  "expectedRequestHash": "77669bb5b59a1dbcc98c08bbcd07d3a70a2cae54f285972bc6650417b2995a6b",
+  "actualRequestHash": "43bf9c363f2d597069bf2b4437ca39d01ca53471808bd41ac78bf3450e184b9a",
+  "reason": "Baseline prompt/tool map unchanged, but shared turnContext now adds explicit ownership declarations, inferred-access qualification and namespaced logical-owner selection. NC01 scope/version context also remains. Request hash differs before any recorded response is replayed. Current arm additionally changes INSTRUCTIONS/toolDefinitions. CLI reports design mismatch because the earlier context-drift error leaves the seed unchanged."
+}

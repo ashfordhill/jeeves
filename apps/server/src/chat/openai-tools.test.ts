@@ -1,7 +1,17 @@
 /** Real tool schemas + mocked Responses transport + the authoritative Workspace command path. */
 import { createOpenAIProvider, type ModelItem, toOpenAIInput } from "@jeeves/providers";
-import { emptyDesign, studioArchitectureExample, tinyurlDesignScope } from "@jeeves/spec";
+import {
+  buildOwnershipCommand,
+  designBlueprintV3,
+  emptyDesign,
+  ownershipSchema,
+  studioArchitectureExample,
+  tinyurlDesignScope,
+} from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-ownership-v1.json" with {
+  type: "json",
+};
 import { toolDefinitions, Workspace } from "./tools.ts";
 
 const tools = toolDefinitions();
@@ -45,6 +55,63 @@ const execute = (workspace: Workspace, calls: { name: string; arguments: string 
   calls.map((call) => JSON.parse(workspace.run(call.name, call.arguments)));
 
 describe("strict OpenAI studio tools", () => {
+  it("transmits bounded ownership with omitted deployables/boundaries, defaults, canonical history and atomic grant refusal", async () => {
+    const base = studioArchitectureExample("studio-tinyurl").design,
+      workspace = new Workspace(base),
+      ownership = ownershipSchema.parse(ownershipFixture);
+    delete ownership.roles[0]?.deployable;
+    const args = { baseRevision: base.revision, action: "preview", ownership };
+    const apply = { ...args, action: "apply", upgrade: true };
+    const { provider, requests } = transport([
+      [{ name: "configureOwnership", arguments: wire("configureOwnership", args) }],
+      [{ name: "configureOwnership", arguments: wire("configureOwnership", apply) }],
+      [],
+    ]);
+    let items: ModelItem[] = [];
+    for (const expected of [args, apply]) {
+      const response = await provider.respond(request(items));
+      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(expected);
+      const [result] = execute(workspace, response.toolCalls);
+      expect(result.ok).toBe(true);
+      items = [
+        ...items,
+        ...response.items,
+        {
+          type: "tool-result",
+          callId: response.toolCalls[0]?.callId ?? "",
+          output: JSON.stringify(result),
+        },
+      ];
+    }
+    expect(workspace.pending).toEqual(
+      buildOwnershipCommand(base, { ownership, upgrade: true }).ops,
+    );
+    await provider.respond(request(items));
+    const first = JSON.parse(
+      String(requests[2]?.input.find((x) => x.type === "function_call")?.arguments),
+    );
+    expect(first.upgrade).toBeNull();
+    expect(first.ownership.roles[0].deployable).toBeNull();
+    expect(first.ownership.grants[0].boundary).toBeNull();
+    expect(() =>
+      wire("configureOwnership", { ...args, ownership: { ...ownership, owners: null } }),
+    ).toThrow();
+    const before = designBlueprintV3(workspace.working),
+      bad = structuredClone(ownership);
+    bad.dependencies[0] = { connection: "shorten-db", access: "read-write" };
+    expect(
+      JSON.parse(workspace.run("configureOwnership", JSON.stringify({ ...apply, ownership: bad })))
+        .ok,
+    ).toBe(false);
+    expect(designBlueprintV3(workspace.working)).toEqual(before);
+    const encoded = JSON.parse(wire("configureOwnership", apply));
+    encoded.ownership.roles[0].extra = "refuse";
+    const { provider: invalid } = transport([
+      [{ name: "configureOwnership", arguments: JSON.stringify(encoded) }],
+    ]);
+    await expect(invalid.respond(request())).rejects.toThrow();
+  });
+
   it("transmits persistent scope with exact nullable references, omission defaults and canonical history replay", async () => {
     const workspace = new Workspace(emptyDesign());
     const scope = tinyurlDesignScope();
@@ -245,7 +312,7 @@ describe("strict OpenAI studio tools", () => {
     );
     expect(requests[1]?.input[0]).toMatchObject({ type: "function_call", arguments: encoded });
     expect(requests[0]?.tools).toEqual(requests[1]?.tools);
-    expect(requests[0]?.tools).toHaveLength(11);
+    expect(requests[0]?.tools).toHaveLength(12);
     // Inspect the actual HTTP body recursively, including all settings/module/scope unions.
     function inspect(schema: Record<string, unknown>) {
       expect(schema).not.toHaveProperty("oneOf");

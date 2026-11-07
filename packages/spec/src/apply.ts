@@ -3,6 +3,7 @@ import { unbindArchitecture } from "./architecture.ts";
 import { type DesignDocument, designIdNouns, designIds } from "./design.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
 import { type Operation, type OperationInput, operationSchema } from "./operations.ts";
+import { ownershipFindings } from "./ownership.ts";
 import { pruneStudioAfterDelete } from "./studio-prune.ts";
 import { validateStudio } from "./studio-validation.ts";
 import { validateDesign } from "./validate.ts";
@@ -74,7 +75,7 @@ export function applyOperations(
   const findings = validateDesign(draft);
   // Studio has no historical invalid-data allowance: every resulting binding must be sound,
   // including when replacing a bad value at the same finding path or through setArchitecture.
-  const studioErrors = validateStudio(draft).filter(isStructural);
+  const studioErrors = [...validateStudio(draft), ...ownershipFindings(draft)].filter(isStructural);
   if (studioErrors.length) return { ok: false, errors: studioErrors };
   const introduced = findings.filter((f) => isStructural(f) && !before.has(findingKey(f)));
   if (introduced.length > 0) return { ok: false, errors: introduced };
@@ -131,6 +132,18 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
           ),
         );
       design.scope = op.scope;
+      return;
+    }
+    case "setOwnership": {
+      if (design.schemaVersion !== 3)
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Explicitly upgrade to schema v3 before declaring ownership and access.",
+            { op: index },
+          ),
+        );
+      design.ownership = op.ownership;
       return;
     }
     case "setArchitecture": {

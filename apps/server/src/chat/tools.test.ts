@@ -91,6 +91,7 @@ describe("studio chat tools", () => {
       "describeStudioPattern",
       "getDesign",
       "configureDesignScope",
+      "configureOwnership",
       "applyStudioCommands",
       "validateDesign",
       "declareReviewScope",

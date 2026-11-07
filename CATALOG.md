@@ -374,3 +374,26 @@ The v3 blueprint retains scope and unresolved contracts; default v2 refuses ever
 No owner/API/message contracts, deployables, runtime templates, generator or verification follow
 from profile selection. See [settings](docs/studio-settings.md#profile-and-persistent-requirements)
 and [blueprint](docs/studio-blueprint.md#contents-blueprint-3).
+
+
+## Explicit logical authority and access
+
+[`ownership.ts`](packages/spec/src/ownership.ts) adds optional schema-v3 `ownership`, independently
+from legacy inferred store writers. Owners contain canonical element roles (`api`/`worker`) with
+optional deployable assignment. Databases/caches/storage/search declare one authority and source
+or projection classification; projections name a different declared source and remain unresolved
+for population/freshness/failure. Role grants and actual store-connection requests independently
+select `read`, `write` or `read-write`. Co-deployment and package membership grant nothing.
+
+`previewOwnership` / `buildOwnershipCommand` back the inspector's **Ownership & access** form and
+narrow `configureOwnership` chat tool; preview is pure, apply is atomic/revision protected and one
+Undo. Contradictory grants and foreign writes refuse; foreign reads need deliberate published-read
+intent or an owned projection. Missing declarations stay saveable/unresolved. The marker does not
+implement a published contract or runtime ACL. Complete removal/transfer previews preserve unrelated
+custom requirements; surviving projections cannot silently lose their source.
+
+The canvas projects one owner card by default, expands canonical roles by mouse, keeps every edge
+ID and falls back to roles for unsafe collapsed graphs. View-only grouping changes no contracts.
+V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new
+row with an exact path. Generic tiles supply no capability, template or runtime verification.
+Operation bindings remain future units and must refine these grants. Existing presets are unchanged.

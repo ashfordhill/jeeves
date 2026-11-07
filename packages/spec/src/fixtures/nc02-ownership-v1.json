@@ -1,0 +1,21 @@
+{
+  "owners": [{ "id": "links", "name": "Links" }],
+  "roles": [
+    { "element": "shorten", "owner": "links", "kind": "api", "deployable": "links-app" },
+    { "element": "redirect", "owner": "links", "kind": "api", "deployable": "links-app" }
+  ],
+  "resources": [
+    { "element": "url-db", "authority": "links", "kind": "source" },
+    { "element": "url-cache", "authority": "links", "kind": "projection", "source": "url-db" }
+  ],
+  "grants": [
+    { "role": "shorten", "resource": "url-db", "access": "write" },
+    { "role": "redirect", "resource": "url-db", "access": "read" },
+    { "role": "redirect", "resource": "url-cache", "access": "read-write" }
+  ],
+  "dependencies": [
+    { "connection": "shorten-db", "access": "write" },
+    { "connection": "redirect-db", "access": "read" },
+    { "connection": "redirect-cache", "access": "read-write" }
+  ]
+}

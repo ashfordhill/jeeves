@@ -1,0 +1,113 @@
+{
+  "version": "nc02-ownership-v1",
+  "tools": [
+    {
+      "tool": "listStudioDefinitions",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 298
+    },
+    {
+      "tool": "describeStudioDefinition",
+      "properties": 1,
+      "enums": 16,
+      "depth": 2,
+      "bytes": 481
+    },
+    {
+      "tool": "listStudioPatterns",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 370
+    },
+    {
+      "tool": "describeStudioPattern",
+      "properties": 1,
+      "enums": 4,
+      "depth": 2,
+      "bytes": 529
+    },
+    {
+      "tool": "getDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 369
+    },
+    {
+      "tool": "configureDesignScope",
+      "properties": 17,
+      "enums": 18,
+      "depth": 5,
+      "bytes": 2497
+    },
+    {
+      "tool": "configureOwnership",
+      "properties": 28,
+      "enums": 13,
+      "depth": 5,
+      "bytes": 3600
+    },
+    {
+      "tool": "applyStudioCommands",
+      "properties": 427,
+      "enums": 538,
+      "depth": 9,
+      "bytes": 50591
+    },
+    {
+      "tool": "validateDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 239
+    },
+    {
+      "tool": "declareReviewScope",
+      "properties": 9,
+      "enums": 4,
+      "depth": 5,
+      "bytes": 1564
+    },
+    {
+      "tool": "reviewDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 383
+    },
+    {
+      "tool": "askUser",
+      "properties": 3,
+      "enums": 0,
+      "depth": 3,
+      "bytes": 562
+    }
+  ],
+  "instructionsBytes": 12512,
+  "tinyurlContextBytes": 15928,
+  "toolsHash": "dc16148bcd977c264e179363389c14bb0857b7c2740f4840fb3a4a02eb37964d",
+  "instructionsHash": "0fb54daec681d072220c52bcb86d049a3db575c95cdcf19aad36b006677fa656",
+  "priorRF06ToolsHash": "170213ff1ad633d3bd139a2ae05d884643ed4551f1b1a269c9314841b0a6ec1d",
+  "note": "No live calls. New instructions/context/tool make old RF06 request hashes intentionally different. Ownership-only scripted regression uses 5 responses: preview/apply/review, two preview/apply/review repairs, refused third apply plus read-only previews, final response. This is plumbing effort, not live-model quality/cost evidence.",
+  "requestComparison": {
+    "baseline": {
+      "instructions": 11237,
+      "tinyurlContext": 15147,
+      "strictTools": 57895
+    },
+    "current": {
+      "instructions": 12512,
+      "tinyurlContext": 15928,
+      "strictTools": 61496
+    },
+    "delta": {
+      "instructions": 1275,
+      "tinyurlContext": 781,
+      "strictTools": 3601
+    },
+    "note": "Baseline is the retained NC01 audit (same default schema2 TinyURL); current is measured from current rendered instructions/context/strict tools. UTF-8 bytes, not model token usage. No live calls or latency/quality inference."
+  }
+}

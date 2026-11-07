@@ -8,24 +8,35 @@
 // first predecessor is selected (a removed line leaves nothing selected).
 import { type BoardProps, nextTileAfterRemoval } from "@jeeves/board";
 import {
+  applyOperations,
   buildStudioCommand,
   type DesignDocument,
+  designOwnership,
   LANE_ACTOR,
   type LaneGraph,
   laneActionOf,
   laneGraph,
   laneRemoveActionRefusal,
   planRemoveTile,
+  previewOwnership,
+  type StudioCommand,
   studioDefinitions,
 } from "@jeeves/spec";
 import { IconTrash } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useProject } from "../project/store.ts";
 import { commitAction } from "../studio/actions.ts";
+import { OwnershipChanges } from "../studio/OwnershipChanges.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 
 type Removal = Pick<BoardProps, "removable" | "onRemoveTile" | "onRemoveLine" | "hud">;
-type Pending = { tile: string; strands: string[] };
+type Pending = {
+  tile: string;
+  strands: string[];
+  line?: string;
+  revision: number;
+  changes: ReturnType<typeof previewOwnership>["changes"];
+};
 
 export function useLaneRemoval({
   projectId,
@@ -44,9 +55,9 @@ export function useLaneRemoval({
 }): Removal & { remove: (tile: string) => void } {
   const [pending, setPending] = useState<Pending>();
   // A confirmation belongs to its tile: selecting anything else, or Hand, drops it.
-  const open = pending && pending.tile === tile ? pending : undefined;
+  const open = pending && (pending.line || pending.tile === tile) ? pending : undefined;
   useEffect(() => {
-    if (pending && pending.tile !== tile) setPending(undefined);
+    if (pending && !pending.line && pending.tile !== tile) setPending(undefined);
   }, [pending, tile]);
   // Escape cancels it (optional; Cancel does the same).
   useEffect(() => {
@@ -60,25 +71,44 @@ export function useLaneRemoval({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const commit = (id: string, strands: string[]) => {
+  const commit = (id: string, strands: string[], revision?: number) => {
     setPending(undefined);
     const predecessors = graph.edges.filter((edge) => edge.target === id).map((e) => e.source);
     const successors = graph.edges.filter((edge) => edge.source === id).map((e) => e.target);
-    void commitAction(
-      projectId,
-      (latest) =>
-        buildStudioCommand(latest, {
-          type: "removeTile",
-          tile: id,
-          ...(strands.length > 0 && { alsoRemove: strands }),
-        }).ops,
-    ).then((ok) => {
+    void commitAction(projectId, (latest) => {
+      if (revision !== undefined && latest.revision !== revision)
+        throw new Error(
+          "The design changed after the removal preview. Remove again to inspect the latest affected declarations.",
+        );
+      return buildStudioCommand(latest, {
+        type: "removeTile",
+        tile: id,
+        ...(strands.length > 0 && { alsoRemove: strands }),
+      }).ops;
+    }).then((ok) => {
       const latest = useProject.getState().loaded?.design;
       if (!ok || !latest) return;
       onRemoved(nextTileAfterRemoval(laneGraph(latest), predecessors, successors) ?? undefined);
     });
   };
 
+  const effects = (command: StudioCommand) => {
+    const result = applyOperations(design, buildStudioCommand(design, command).ops);
+    if (!result.ok) throw new Error(result.errors.map((x) => x.message).join(" "));
+    return previewOwnership(design, designOwnership(result.design)).changes;
+  };
+  const commitLine = (line: string, revision?: number) => {
+    setPending(undefined);
+    void commitAction(projectId, (latest) => {
+      if (revision !== undefined && latest.revision !== revision)
+        throw new Error(
+          "The design changed after the removal preview. Preview this relationship removal again.",
+        );
+      return buildStudioCommand(latest, { type: "removeLink", link: line }).ops;
+    }).then((ok) => {
+      if (ok) onRemoved(undefined);
+    });
+  };
   const remove = (id: string) => {
     if (id === LANE_ACTOR) return;
     const lane = laneActionOf(id);
@@ -101,8 +131,26 @@ export function useLaneRemoval({
       useProject.getState().setNotice({ tone: "error", message: planned.message });
       return;
     }
-    if (planned.value.strands.length) setPending({ tile: id, strands: planned.value.strands });
-    else commit(id, []);
+    try {
+      const changes = effects({
+        type: "removeTile",
+        tile: id,
+        ...(planned.value.strands.length && { alsoRemove: planned.value.strands }),
+      });
+      if (planned.value.strands.length || changes.length)
+        setPending({
+          tile: id,
+          strands: planned.value.strands,
+          revision: design.revision,
+          changes,
+        });
+      else commit(id, []);
+    } catch (error) {
+      useProject.getState().setNotice({
+        tone: "error",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
   };
 
   return {
@@ -112,12 +160,23 @@ export function useLaneRemoval({
     onRemoveLine: (line) => {
       // The user's line to an action goes with the action (no X); Delete leaves it too.
       if (graph.edges.find((edge) => edge.id === line)?.source === LANE_ACTOR) return;
-      void commitAction(
-        projectId,
-        (latest) => buildStudioCommand(latest, { type: "removeLink", link: line }).ops,
-      ).then((ok) => {
-        if (ok) onRemoved(undefined);
-      });
+      try {
+        const changes = effects({ type: "removeLink", link: line });
+        if (changes.length)
+          setPending({
+            tile: graph.edges.find((x) => x.id === line)?.source ?? LANE_ACTOR,
+            strands: [],
+            line,
+            revision: design.revision,
+            changes,
+          });
+        else commitLine(line);
+      } catch (error) {
+        useProject.getState().setNotice({
+          tone: "error",
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
     },
     ...(open && {
       hud: {
@@ -128,7 +187,11 @@ export function useLaneRemoval({
             design={design}
             graph={graph}
             pending={open}
-            onConfirm={() => commit(open.tile, open.strands)}
+            onConfirm={() =>
+              open.line
+                ? commitLine(open.line, open.revision)
+                : commit(open.tile, open.strands, open.revision)
+            }
             onCancel={() => setPending(undefined)}
           />
         ),
@@ -163,8 +226,16 @@ function RemoveConfirm({
   };
   const count = pending.strands.length + 1;
   return (
-    <div className="lane-remove" role="dialog" aria-label={`Remove ${name(pending.tile)}`}>
-      <p className="lane-remove-title">Removing {name(pending.tile)} also removes</p>
+    <div
+      className="lane-remove"
+      role="dialog"
+      aria-label={
+        pending.line ? "Remove relationship declarations" : `Remove ${name(pending.tile)}`
+      }
+    >
+      <p className="lane-remove-title">
+        Removing {pending.line ? `relationship ${pending.line}` : name(pending.tile)} also removes
+      </p>
       <ul className="lane-remove-list">
         {pending.strands.map((id) => (
           <li key={id} data-family={visual(id)?.color ?? "generic"}>
@@ -173,13 +244,22 @@ function RemoveConfirm({
           </li>
         ))}
       </ul>
+      {pending.changes.length ? (
+        <details open>
+          <summary>{pending.changes.length} affected ownership declarations</summary>
+          <div className="lane-removal-declarations">
+            <OwnershipChanges design={design} changes={pending.changes} />
+          </div>
+          <p>Unrelated custom requirements remain. One Undo restores this removal.</p>
+        </details>
+      ) : null}
       <div className="lane-remove-actions">
         <button type="button" onClick={onCancel}>
           Cancel
         </button>
         <button type="button" ref={confirm} className="lane-remove-confirm" onClick={onConfirm}>
           <IconTrash size={16} aria-hidden />
-          Remove {count} tiles
+          {pending.line ? "Remove relationship" : `Remove ${count} tiles`}
         </button>
       </div>
     </div>

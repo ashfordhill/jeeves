@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "mouseOwnershipCreated": true,
+      "canonicalIdsPreserved": true,
+      "v2UnsupportedRows": 11,
+      "collapsedExpandedExportUnchanged": true,
+      "collapsedResourceFocus": true,
+      "canonicalEdgeSelectionAndRemovalUndo": true,
+      "rejectedCacheGrantVisible": true,
+      "roleAndAuthorityTransferExactCleanupUndo": true,
+      "ownerRemovalUndo": true,
+      "stalePreviewRefusedPreservingCustomRequirement": true,
+      "canonicalRoleAndResourceRemovalUndo": true,
+      "sourceRemovalRefused": true,
+      "reloadExact": true,
+      "mouseOwnerSelectionReachesChat": true
+    },
+    {
+      "viewport": "1280x800",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "mouseOwnershipCreated": true,
+      "canonicalIdsPreserved": true,
+      "v2UnsupportedRows": 11,
+      "collapsedExpandedExportUnchanged": true,
+      "collapsedResourceFocus": true,
+      "canonicalEdgeSelectionAndRemovalUndo": true,
+      "rejectedCacheGrantVisible": true,
+      "roleAndAuthorityTransferExactCleanupUndo": true,
+      "ownerRemovalUndo": true,
+      "stalePreviewRefusedPreservingCustomRequirement": true,
+      "canonicalRoleAndResourceRemovalUndo": true,
+      "sourceRemovalRefused": true,
+      "reloadExact": true,
+      "mouseOwnerSelectionReachesChat": true
+    }
+  ],
+  "errors": [],
+  "expectedConflictConsole": [
+    "error: Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "error: Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "cleanup": [
+    {
+      "id": "dc5ce60c-81c1-4879-a3bb-1ebc11d758c7",
+      "status": 204
+    },
+    {
+      "id": "619b34e5-9d03-408c-b5be-33be9389fe04",
+      "status": 204
+    },
+    {
+      "id": "f7bfa5e7-2f0b-4b41-950a-f2cba7aec5a2",
+      "status": 404
+    }
+  ]
+}

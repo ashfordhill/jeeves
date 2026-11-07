@@ -9,7 +9,9 @@ import {
 import {
   buildStudioCommand,
   type DesignDocument,
+  designOwnership,
   designScopeSchema,
+  emptyOwnership,
   studioPatternIds,
   studioPatterns,
 } from "@jeeves/spec";
@@ -170,6 +172,142 @@ function harness(input: Script | { models: ModelSource }) {
     },
   };
 }
+
+it("bounds actual ownership repairs, permits previews after exhaustion, and saves exact declaration details as one Undo", async () => {
+  const ownership = (name: string) => ({ ...emptyOwnership(), owners: [{ id: "links", name }] });
+  const configure = (action: "preview" | "apply", name: string) => ({
+    name: "configureOwnership",
+    arguments: { baseRevision: 0, action, ownership: ownership(name), upgrade: true },
+  });
+  const review = { name: "reviewDesign", arguments: {} };
+  const h = harness([
+    { toolCalls: [configure("preview", "Links"), configure("apply", "Links"), review] },
+    { toolCalls: [configure("preview", "Links one"), configure("apply", "Links one"), review] },
+    { toolCalls: [configure("preview", "Links two"), configure("apply", "Links two"), review] },
+    {
+      toolCalls: [
+        configure("preview", "Forbidden three"),
+        configure("apply", "Forbidden three"),
+        configure("preview", "Read only remains"),
+      ],
+    },
+    { text: "Saved declarations; operation and runtime contracts remain unspecified." },
+  ]);
+  try {
+    const id = await h.project();
+    const { turn, state } = await h.chat(id, "Declare one Links owner.");
+    expect(turn.error).toBeNull();
+    expect(designOwnership(state.design)).toEqual(ownership("Links two"));
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({
+        tool: "configureOwnership",
+        ok: false,
+        summary: expect.stringContaining("2 review repair passes are used"),
+      }),
+    );
+    expect(
+      turn.activity.filter(
+        (x) => x.tool === "configureOwnership" && x.summary.startsWith("Previewed"),
+      ),
+    ).toHaveLength(5);
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({
+        tool: "reviewDetail",
+        summary: expect.stringContaining(
+          'Saved ownership added · owners/links: {"before":null,"after":{"id":"links","name":"Links two"}}',
+        ),
+      }),
+    );
+    expect(h.requests).toHaveLength(5);
+    expect(turn.reply).toContain("one Undo step");
+    const undo = await h.call("POST", `/projects/${id}/undo`, {
+      baseRevision: state.design.revision,
+    });
+    expect(undo.body.design.schemaVersion).toBe(2);
+    expect(undo.body.design).not.toHaveProperty("ownership");
+  } finally {
+    await h.app.close();
+  }
+});
+
+it("carries an explicit owner-card selection into actual caller context, survives rename/history and refuses malformed or removed owners", async () => {
+  const ownerId = "l".repeat(63),
+    reference = `owner:${ownerId}`;
+  const ownership = (name: string) => ({ ...emptyOwnership(), owners: [{ id: ownerId, name }] });
+  const h = harness([
+    { text: "Inspecting the selected logical owner." },
+    { text: "Inspecting its renamed declaration." },
+  ]);
+  try {
+    const id = await h.project();
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: 0,
+      ops: [
+        { op: "upgradeDesign", scope: { profile: null, requirements: [], customRequirements: [] } },
+        { op: "setOwnership", ownership: ownership("Links") },
+      ],
+    });
+    const first = await h.chat(id, "Inspect this owner.", { selection: [reference] });
+    expect(first.turn.selection).toEqual([reference]);
+    const caller = h.requests[0]?.items
+      .filter((x) => x.type === "message")
+      .map(textOf)
+      .find((x) => x.startsWith("[Jeeves] Studio context"));
+    expect(caller).toContain(`Selected identities: ["${reference}"]`);
+    expect(caller).toContain(`"owner":{"id":"${ownerId}","name":"Links"}`);
+    expect(caller).toContain('"status":"present"');
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: first.state.design.revision,
+      ops: [{ op: "setOwnership", ownership: ownership("Renamed Links") }],
+    });
+    const renamed = await h.chat(id, "Inspect this owner again.", { selection: [reference] });
+    expect(renamed.turn.selection).toEqual([reference]);
+    expect(
+      h.requests
+        .at(-1)
+        ?.items.filter((x) => x.type === "message")
+        .map(textOf)
+        .at(-2),
+    ).toBeDefined();
+    expect(
+      h.requests
+        .at(-1)
+        ?.items.filter((x) => x.type === "message")
+        .map(textOf)
+        .some((x) => x.includes(`"owner":{"id":"${ownerId}","name":"Renamed Links"}`)),
+    ).toBe(true);
+    const invalid = await h.call("POST", `/projects/${id}/chat`, {
+      baseRevision: renamed.state.design.revision,
+      message: "Inspect",
+      selection: ["owner:Bad"],
+    });
+    expect(invalid.status).toBe(400);
+    const missing = await h.call("POST", `/projects/${id}/chat`, {
+      baseRevision: renamed.state.design.revision,
+      message: "Inspect",
+      selection: ["owner:missing"],
+    });
+    expect(missing).toMatchObject({ status: 422, body: { code: "UNKNOWN_SELECTION" } });
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: renamed.state.design.revision,
+      ops: [{ op: "setOwnership", ownership: emptyOwnership() }],
+    });
+    const current = await h.design(id),
+      removed = await h.call("POST", `/projects/${id}/chat`, {
+        baseRevision: current.design.revision,
+        message: "Inspect",
+        selection: [reference],
+      });
+    expect(removed).toMatchObject({ status: 422, body: { code: "UNKNOWN_SELECTION" } });
+    const history = await h.call("GET", `/projects/${id}/chat`);
+    expect(history.body.turns.map((turn: { selection: string[] }) => turn.selection)).toEqual([
+      [reference],
+      [reference],
+    ]);
+  } finally {
+    await h.app.close();
+  }
+});
 
 function textOf(item: ModelItem | undefined): string {
   if (item?.type !== "message") return "";

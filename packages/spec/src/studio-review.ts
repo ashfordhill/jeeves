@@ -4,6 +4,7 @@ import type { DesignDocument } from "./design.ts";
 import { designScope, profileStatus, unresolvedDesignScope } from "./design-scope.ts";
 import { isStructural } from "./findings.ts";
 import { idSchema } from "./ids.ts";
+import { designOwnership, previewOwnership } from "./ownership.ts";
 import { studioPatternIdSchema, studioPatterns } from "./studio-patterns.ts";
 import { validateDesign } from "./validate.ts";
 
@@ -69,6 +70,7 @@ export type StudioChange = {
   type:
     | "system"
     | "scope"
+    | "ownership"
     | "action"
     | "element"
     | "connection"
@@ -90,6 +92,13 @@ export function studioChanges(base: DesignDocument, working: DesignDocument): St
     const studio = design.architecture?.studio;
     if (design.schemaVersion === 3)
       add("scope", "persistent-scope", "Profile and persistent requirements", design.scope);
+    if (design.schemaVersion === 3 && design.ownership)
+      add(
+        "ownership",
+        "explicit-ownership",
+        "Logical owners, roles and declared access",
+        design.ownership,
+      );
     if (design.architecture)
       add("system", "system", design.architecture.system.name, design.architecture.system);
     for (const item of studio?.actions ?? []) add("action", item.lane, item.name, item);
@@ -163,6 +172,11 @@ export function reviewStudioDesign(
       introduced: !baseline.has(JSON.stringify(item)),
     })),
     scope: { ...scope, persistence: "this turn only" as const },
+    ownership: {
+      declarations: designOwnership(working),
+      changes: previewOwnership(base, designOwnership(working)).changes,
+      note: "Explicit declarations only; no operation or runtime authorization evidence.",
+    },
     persistentScope: {
       ...designScope(working),
       profileStatus: profileStatus(designScope(working)),

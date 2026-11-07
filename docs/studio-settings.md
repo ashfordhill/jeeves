@@ -49,7 +49,7 @@ profile. Removing the profile preserves its requirement declarations.
 
 Preview shows the exact unresolved contracts and the v3 export boundary. A changed design
 invalidates the preview before save. Profile selection never converts names, labels or modules
-into contracts. No ownership/API/message contracts, template manifest or runtime exist here.
+into contracts. Profile selection supplies no ownership/API/message contract, template manifest or runtime. Explicit ownership declarations have their own editor below.
 Chat's `configureDesignScope` shares the mouse command and validation; RF04
 `declareReviewScope` remains turn-only metadata. See [blueprint](studio-blueprint.md).
 
@@ -172,7 +172,7 @@ Minimum replicas may not exceed maximum, and `autoscaleOn` needs a maximum above
 
 ## Resources and integrations
 
-A resource can have an optional logical owner (an application or package), stored in the
+A resource can have an optional legacy inferred writer (an application or package), stored in the
 binding's `owner`, not in `S`; a queue requires one. Ownership provisions nothing. A store's owner
 is its only writer ([one writer per store](#relationships)).
 
@@ -302,3 +302,39 @@ lifecycle or state-machine editors, business data-retention rules, capacity targ
 framework/library versions and cloud deployment configuration. Behaviour like that belongs to a
 future generator's templates or to code written later, not to a free-text field that pretends it
 is implemented.
+
+## Explicit logical ownership and store access (schema v3)
+
+**Ownership & access** in the inspector edits optional top-level `ownership` using `ownership.ts`.
+Absence means unspecified; reading never upgrades or derives declarations. Preview the complete
+change before **Upgrade & save ownership** (v2) or **Save ownership** (v3). The preview switches
+to its report and lists each changed/removed binding and grant. A stale preview cannot save.
+
+| Field | Finite values / limits |
+| --- | --- |
+| `owners[]` | Up to 50 distinct `{id, name}` records. Slug ID, trimmed name 1–120 chars. Logical responsibility, independent of studio packages. |
+| `roles[]` | Up to 500 distinct existing application element IDs: `{element, owner, kind: api/worker, deployable?}`. Owner must be declared; optional deployable is a slug assignment, supplies no permission and implies no running process. |
+| `resources[]` | Up to 500 distinct existing database/cache/storage/search element IDs: `{element, authority, kind: source}` or `{element, authority, kind: projection, source}`. Authority is a declared logical owner. A projection names a different declared source resource, with its own authority; projection chains/self references refuse. Population/freshness/failure behavior remains unresolved. |
+| `grants[]` | Up to 500 distinct role/resource pairs: `{role, resource, access: read/write/read-write, boundary?: published-read}`. Both endpoints need declarations. This records permission intent, not an implemented ACL. |
+| `dependencies[]` | Up to 500 distinct canonical application → store connection IDs: `{connection, access: read/write/read-write}`. The actual endpoints determine the role/resource; labels do not. |
+
+A same-owner read stays read. Cache read and fill needs read-write; a read-only grant cannot
+satisfy it. A request exceeding a declared grant refuses atomically. Foreign-owner direct writes
+refuse even when deployables match. Cross-owner reads need an explicit `published-read` contract
+boundary or a reader-owned projection. The marker has targeted unresolved published-contract,
+freshness/failure and runtime-authorization findings; it supplies no API bypass or runtime proof.
+Missing legacy declarations/grants remain saveable readiness gaps, never inferred permission.
+
+The form clears dependent grants/requests when an owner, role or authority is removed/transferred
+in its draft, then previews every affected row. Complete chat replacements must explicitly retain
+or remove those rows; contradictions refuse. Canonical tile deletion cleans its role/authority,
+grants and removed-edge requests; removing a source used by a surviving projection refuses.
+Relationship removal drops its request and retains the independent role grant. One Undo restores
+all declarations; unrelated persistent custom requirements survive, including missing targets.
+
+The old binding `owner` and connection `access` remain the **legacy inferred writer/access**
+approximation above. They are separate from explicit authority/grants and remain unchanged by
+ownership configuration. Operation-specific capabilities and runtime authorization are unspecified.
+
+Legacy topology warnings still describe the inferred writer approximation. Targeted
+`ownershipFindings` check the explicit declarations; neither proves runtime authorization.

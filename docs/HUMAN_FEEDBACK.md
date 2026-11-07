@@ -451,3 +451,52 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   implied. Both-size mouse evidence is retained in `plans/reliable-foundations/evidence/nc01/`;
   the form/footer is readable and focus/Fit/Show all preserve full export. Ownership/API/cache
   contracts, template/readiness evidence and earlier owner readability questions remain open.
+
+- NC02, local commit titled **NC02: declare logical owners, roles and store access**: explicit
+  optional v3 declarations now separate logical authority, canonical API/worker roles, role grants
+  and dependency intent from preserved legacy inferred writers. One owner card expands to the
+  original roles; selecting a relationship retains its canonical ID, and owner selection reaches
+  chat as a distinct `owner:<slug>` reference. Named transfer/removal previews expose revoked
+  grants and cleared requests; atomic refusal/Undo preserve unrelated requirements. Both-size
+  evidence is in `plans/reliable-foundations/evidence/nc02/`. Published reads, projection freshness,
+  operation contracts, templates/runtime authorization and full-overview human acceptance remain
+  unresolved. Existing saved projects/presets were preserved. G2 sketch and actual small rendering
+  were coordinator reviewed; this is not owner usability acceptance.
+
+## 2026-11-07 — API read/publish action views
+
+The owner supplied this sketch and cropped current view, archived byte-for-byte:
+
+![Owner sketch: Watch API consume/produce responsibilities](human-feedback/2026-11-07-api-action-sketch.png)
+
+![Current Watch API, counts, events and counter](human-feedback/2026-11-07-watch-counts-crop.png)
+
+**Owner's points:** special consume/produce tiles attached to an API might clarify its separate
+relationships. In the sketch Watch API branches to CONSUME (reading View counts) and PRODUCE
+(publishing View events → View counter → View counts). The current crop's shared routes make
+those responsibilities hard to distinguish.
+
+**Questions and answers:**
+
+- **Would API consume/produce tiles help?** The coordinator recommended attached, expandable
+  action views named **Read counts** and **Publish view**. These expose responsibilities of the
+  same API/owner rather than inventing independent services or deployments.
+- **What do the sketch's arrows mean?** View counts → CONSUME depicts returned data. The current
+  canvas request convention is caller → target, so Watch API → View counts means “reads.” A
+  future operation/data-flow view must label its convention explicitly; do not silently mix them.
+- **Are these the existing user lane actions?** No. An API responsibility view is distinct from
+  the actor's current Consume/Produce lanes and must retain canonical role/relationship IDs.
+
+**Decision:** record this as operation-view design input for NC03+, for coordinator review before
+NC03 dispatch. NC02 adds no generic consume/produce persisted services, API operation model,
+extra deployments or graph-semantic changes. The owner separately clarified “Keep backend
+implementation for later”; the authorized Jeeves sequence continues and the backend stays a plan.
+
+**Resolution:**
+
+- NC02, local commit titled **NC02: declare logical owners, roles and store access**: archived
+  both images, recorded the feedback/answers/decision and added the playbook lesson. No action-view
+  implementation is claimed. NC02's owner/role identity projection supplies a foundation only.
+- Open for NC03+ review: concrete attached-operation presentation, readable read/publish tracing,
+  explicit arrow conventions and exact operation bindings. YouTube lifecycle/analytics semantics
+  and owner usability acceptance remain open; this sketch alone establishes no runtime behavior.

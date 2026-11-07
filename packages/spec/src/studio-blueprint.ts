@@ -15,6 +15,7 @@ import {
 } from "./design-scope.ts";
 import { findingSchema } from "./findings.ts";
 import { idSchema } from "./ids.ts";
+import { designOwnership, ownershipFindings, ownershipSchema } from "./ownership.ts";
 import { connectionPresentation, relationshipInteractionSchema } from "./relationship-display.ts";
 import {
   type StudioComponentTargetKind,
@@ -218,6 +219,12 @@ export function unsupportedBlueprintV2(design: DesignDocument): UnsupportedBluep
       path: ["scope", "requirements", index],
       reason: `Persistent ${item.disposition} ${item.feature} (${item.criticality}) is unsupported by blueprint v2.`,
     })),
+    ...Object.entries(designOwnership(design)).flatMap(([field, rows]) =>
+      rows.map((_, index) => ({
+        path: ["ownership", field, index],
+        reason: `Explicit ${field} declaration is unsupported by blueprint v2.`,
+      })),
+    ),
     ...design.scope.customRequirements.map((item, index) => ({
       path: ["scope", "customRequirements", index],
       reason: `Unresolved custom requirement ${item.id} (${item.criticality}) is unsupported by blueprint v2.`,
@@ -227,7 +234,7 @@ export function unsupportedBlueprintV2(design: DesignDocument): UnsupportedBluep
 export class UnsupportedBlueprintContentError extends Error {
   readonly code = "UNSUPPORTED_BLUEPRINT_CONTENT";
   constructor(readonly unsupported: UnsupportedBlueprintContent[]) {
-    super("Blueprint v2 cannot represent this design's persistent scope. Request ?version=3.");
+    super("Blueprint v2 cannot represent this design's explicit declarations. Request ?version=3.");
   }
 }
 
@@ -236,6 +243,9 @@ export const designBlueprintV3Schema = designBlueprintSchema.extend({
   sourceSchemaVersion: z.union([z.literal(2), z.literal(3)]),
   scope: designScopeSchema,
   profileStatus: z.enum(["known", "unresolved", "unspecified"]),
+  ownership: ownershipSchema,
+  ownershipStatus: z.enum(["declared", "unspecified"]),
+  ownershipFindings: z.array(findingSchema),
   unresolvedRequirements: z.array(
     z.strictObject({
       source: z.enum(["profile", "requirement", "contract", "custom"]),
@@ -245,6 +255,12 @@ export const designBlueprintV3Schema = designBlueprintSchema.extend({
       element: idSchema.optional(),
       connection: idSchema.optional(),
     }),
+  ),
+  legacyOwnership: z.literal(
+    "resources[].owner is the legacy inferred writer; ownership.resources[].authority is explicit logical authority",
+  ),
+  roleMeaning: z.literal(
+    "services contain canonical application tiles; declared roles are not independent logical owners or necessarily separate processes",
   ),
   legacyAccess: z.literal("inferred-from-ownership; not a declared operation grant"),
   templateAvailability: z.literal("none"),
@@ -262,7 +278,27 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
     ...projectLegacyBlueprint(design, projectName),
     blueprint: 3,
     sourceSchemaVersion: design.schemaVersion,
-    findings: [...validateStudio(design), ...designScopeFindings(design)],
+    findings: [
+      ...validateStudio(design),
+      ...designScopeFindings(design),
+      ...ownershipFindings(design),
+    ],
+    ownership: Object.fromEntries(
+      Object.entries(designOwnership(design)).map(([key, rows]) => [
+        key,
+        [...rows].sort((a, b) =>
+          JSON.stringify(a) < JSON.stringify(b)
+            ? -1
+            : JSON.stringify(a) > JSON.stringify(b)
+              ? 1
+              : 0,
+        ),
+      ]),
+    ) as ReturnType<typeof designOwnership>,
+    ownershipStatus: Object.values(designOwnership(design)).some((rows) => rows.length)
+      ? "declared"
+      : "unspecified",
+    ownershipFindings: ownershipFindings(design),
     scope,
     profileStatus: profileStatus(scope),
     unresolvedRequirements: [...unresolvedDesignScope(design)]
@@ -270,6 +306,10 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
         a.source < b.source ? -1 : a.source > b.source ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
       )
       .map(clone),
+    legacyOwnership:
+      "resources[].owner is the legacy inferred writer; ownership.resources[].authority is explicit logical authority",
+    roleMeaning:
+      "services contain canonical application tiles; declared roles are not independent logical owners or necessarily separate processes",
     legacyAccess: "inferred-from-ownership; not a declared operation grant",
     templateAvailability: "none",
     runtimeVerification: "none",

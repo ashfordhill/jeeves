@@ -1,5 +1,6 @@
 /** Removing elements or connections also removes the studio intent that pointed at them. */
 import type { DesignDocument } from "./design.ts";
+import { pruneOwnership } from "./ownership.ts";
 
 /**
  * Called only by explicit destructive operations, on an already detached draft. Never cascade
@@ -10,6 +11,7 @@ export function pruneStudioAfterDelete(
   removedElements: string[] = [],
   removedConnections: string[] = [],
 ): void {
+  pruneOwnership(design, removedElements, removedConnections);
   const studio = design.architecture?.studio;
   if (!studio) return;
   const removed = new Set(removedElements);

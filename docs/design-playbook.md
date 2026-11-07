@@ -846,3 +846,27 @@ need the same review invalidation/repair budget as graph edits. Read-only previe
 after repairs are exhausted. Persisted requirements and a chat turn's assumptions remain separate.
 Measure additional prompt/tool/context bytes honestly; added declarations are no model-quality or
 runtime proof. Preserve old as-run records when a deliberate context change invalidates replay.
+
+## 2026-11-07 ownership and API-action follow-up
+
+NC02 distinguishes a logical owner, its canonical API/worker roles and an optional deployable
+assignment. Co-deployment supplies no permission. Resource authority, role grants and dependency
+requests are separate declarations: an owner's read stays read, cache read and fill needs both,
+and a foreign read must use a deliberate published contract or owned projection. Legacy inferred
+writer metadata is retained and labeled separately. Missing operation/freshness/failure contracts
+remain unresolved; these document checks do not establish runtime authorization.
+
+An owner card is a view of canonical roles/relationships, not a stored duplicate or independent
+service. Unsafe collapsed graphs expand roles rather than split the owner or weaken graph
+validation. Review a permission transfer with named before/after, revoke and clear summaries;
+put raw identities/JSON in optional details so a small dialog exposes the actual consequences.
+Overview zoom still limits the old full studies; selected inspector/focus readability is a
+bounded improvement, not owner usability acceptance.
+
+The owner's [API action sketch](HUMAN_FEEDBACK.md#2026-11-07--api-readpublish-action-views)
+suggests attached **Read counts** and **Publish view** operation views for the same Watch API.
+Operations should explain responsibilities without inventing consume/produce services or
+processes. Keep these distinct from the actor's lane actions. The sketch uses a data-return
+arrow from counts toward its reader; the current canvas uses caller → target requests. A future
+operation/data-flow view must state its convention and preserve canonical identity explicitly.
+This is recorded NC03+ design input, not an NC02 operation feature or YouTube semantic rewrite.

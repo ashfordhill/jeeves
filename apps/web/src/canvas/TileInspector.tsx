@@ -54,7 +54,7 @@ function StoreAccess({ design, store }: { design: DesignDocument; store: string 
   return (
     <>
       <dl className="lane-store-access" aria-label="Access inferred from ownership">
-        <dt>Owner</dt>
+        <dt>{design.schemaVersion === 3 ? "Legacy inferred writer" : "Owner"}</dt>
         <dd>{ownerName}</dd>
         <dt>Other readers</dt>
         <dd>{readers.length ? [...new Set(readers)].join(", ") : "nobody else"}</dd>

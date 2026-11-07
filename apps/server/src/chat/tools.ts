@@ -9,9 +9,11 @@ import type { ToolDefinition } from "@jeeves/providers";
 import {
   applyOperations,
   buildDesignScopeCommand,
+  buildOwnershipCommand,
   buildStudioCommand,
   type DesignDocument,
   type DesignScope,
+  designOwnership,
   designScope,
   designScopeCommandSchema,
   emptyReviewScope,
@@ -23,7 +25,10 @@ import {
   laneLimits,
   listStudioPatterns,
   type OperationInput,
+  ownershipCommandSchema,
+  ownershipFindings,
   previewDesignScope,
+  previewOwnership,
   profileStatus,
   reviewScopeProblem,
   reviewStudioDesign,
@@ -32,6 +37,7 @@ import {
   type StudioLinkRole,
   type StudioLinkRule,
   type StudioReviewScope,
+  selectedLogicalOwners,
   studioActionDefaults,
   studioActions,
   studioCommandSchema,
@@ -91,7 +97,7 @@ The lane canvas:
 - Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.
 - A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.
 - Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.
-- Store access is inferred from ownership: links from the owner or its package members are marked write, others read. An owner's individual read cannot be distinguished from a write. This is a modeling approximation, not proof of runtime access or an independently owned service boundary. To change the inferred writer, edit the store's owner.
+- Legacy store access is inferred from the studio owner setting: links from the owner or its package members are marked write, others read. An owner's individual read cannot be distinguished from a write. This is a modeling approximation, not proof of runtime access or an independently owned service boundary. To change the inferred writer, edit the store's owner.
 - ${linkTable}
 - Caps: at most ${laneLimits.outgoingLinks} outgoing links per tile and ${laneLimits.entriesPerLane} entries per action.
 - ${studioWarningSentence}
@@ -102,11 +108,13 @@ Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before 
 
 Review before saving: declareReviewScope explicitly selects this turn's pattern IDs, applicable checklist IDs, assumptions and custom obligations. It replaces only turn-local review metadata, never design settings. Retrieval does not select scope. Do not select variant checks (such as finite stock) unless they apply; use an empty checklist for topology-only scope. reviewDesign is read-only: inspect staged additions/updates/removals, targeted findings, assumptions and unsupported obligations. All selected behavior checks without typed contracts stay "not specified", never "verified"; no labels or module names prove payload semantics, transitions or side effects. A fresh review is sent back before edits commit even if you end your response. You may repair at most two response batches after receiving a review, within the normal 16-round limit; review again after edits. Warnings remain saveable: fix represented facts or explicitly report what remains. askUser still ends the turn immediately. The server appends the actual saved-edit and unresolved-review result.
 
+Explicit logical ownership and access: configureOwnership is the narrow mouse/chat command. First preview the exact complete declarations, then apply that same preview; edit/removal/transfer must retain unrelated facts and show every affected grant/dependency. Existing element IDs identify API/worker roles belonging to a logical owner; roles can share a deployable, which grants nothing. Resources declare one logical authority and source/projection intent independently from legacy inferred writer. Explicit same-owner reads stay reads. Cache read and fill needs read-write. Foreign writes refuse; foreign reads require a deliberate published-read contract or an owned projection, never accidental table access. These are declarations; operation bindings and runtime authorization remain unspecified. No owners or grants follow from names, module prose or packages. Missing declarations stay unresolved.
+
 Persistent profile and requirements: getDesign includes schemaVersion, saved persistentScope, unresolved requirements and the one available profile default. configureDesignScope previews or applies exactly those declarations with the same command as the mouse form. For schema v2 first preview the exact scope, then apply with upgrade:true; omission never upgrades. This explicit version change and all turn edits are one Undo step. Preserve unknown profile versions and existing custom requirements unless the person asks to replace them. Included/excluded requirements are saved intent, separate from declareReviewScope. Required custom slugs, mutable destinations, disable/management, reputation, quotas or exact analytics block tinyurl-create-resolve@1.0.0; retain the requirement instead of erasing it or claiming support. Profile selection supplies no owner, API, failure/cache contract, template or runtime verification. Unknown/absent requirements remain unspecified. Missing custom targets stay unresolved after deletion.
 
 Commands (applyStudioCommands, with getDesign's baseRevision):
 - addAction (lane, and optionally name), renameAction (lane, name: at most ${studioLimits.actionName} characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).
-- addTile: a new tile after a tile, after a lane's action (from {"lane": "download"} or {"lane": "upload"}, side "after"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
+- addTile: a new tile after a tile, after a lane's action (from {"lane": "download"} or {"lane": "upload"}, side "after"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue receives that adjacent application as its legacy inferred writer; no logical authority, role or grant is declared automatically. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.
 - linkTiles: links a lane's action or a tile to a tile already on the canvas (a merge, or a new entry).
 - link ("sync" or "async") is optional on addTile and linkTiles: leave it out for the pair's default from the link table; give it only to choose the other mode where the table allows both.
 - setEntryLane: moves an entry to the other lane's action ("download" or "upload"), within its cap.
@@ -121,6 +129,8 @@ Several commands and calls in one turn commit together as one undo step. A refus
 
 Only names and purposes, the system goal, finite settings, ownership, links, modules and bounded persistent scope declarations are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior as a persistent unresolved custom requirement when requested. Kinds come preconfigured (listStudioDefinitions shows each kind's defaults): Billing starts with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs, Gateway with Traefik and CDN with Cloudflare; the other choices stay selectable. Large uploads go through an Uploads service that writes the storage; its transfer (signed URLs to storage, or through the service with tus) says how the bytes travel, never a line from an action to storage. Each coded kind offers two languages, its default first (languages in listStudioDefinitions and getDesign); any other language is refused. Gateway and CDN are products, not code, and have no language. A provider chosen on a kind (Billing with Stripe) is that service's integration: never add a separate External tile for it. External tiles are for third parties no kind covers. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.
 
+A selected owner:<id> reference names one logical owner, independently from its roles and deployables. Use declaredOwnership to inspect it; preserve the ID on rename. Never treat member roles as independently selected or reinterpret a missing owner as an element.
+
 Keep designs small and readable: a few tiles per lane (at most 15 to start), short names, useful purposes. Docker is the default intent for a new service. No provider setup or credentials. Ask one focused askUser question only when the answer changes the architecture, then end the turn. Reply briefly with what changed and what remains open. Messages beginning [Jeeves] are caller context; "this" or "the selected" means its selected identities (a tile, link or entry on the canvas).`;
 
 const schemas = {
@@ -133,6 +143,11 @@ const schemas = {
     baseRevision: z.int().nonnegative(),
     action: z.enum(["preview", "apply"]),
     ...designScopeCommandSchema.shape,
+  }),
+  configureOwnership: z.strictObject({
+    baseRevision: z.int().nonnegative(),
+    action: z.enum(["preview", "apply"]),
+    ...ownershipCommandSchema.shape,
   }),
   applyStudioCommands: z.strictObject({
     baseRevision: z.int().nonnegative(),
@@ -161,6 +176,8 @@ const descriptions: Record<ToolName, string> = {
     "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, the current findings and the design warnings.",
   configureDesignScope:
     "Preview or stage persistent profile and included/excluded/custom requirements using the mouse form's command. For schema v2 first preview this exact scope, then apply with upgrade:true. No owner/API/runtime contracts are implemented by selection; unknown profiles and unsupported required behavior remain unresolved. All accepted turn edits commit once.",
+  configureOwnership:
+    "Preview then stage exact logical owners, canonical API/worker roles, resource authority/source-projection intent, role grants and store dependency access. Use a complete ownership replacement, preserving unrelated declarations. Preview exact dependent removals/transfers first; apply must match the latest preview. Explicit v3 upgrade required for legacy designs. Declarations only: no operation/runtime authorization is implemented. Foreign writes refuse, foreign reads need a deliberate published-read contract; co-deployment grants nothing.",
   applyStudioCommands:
     "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
@@ -182,7 +199,7 @@ export function toolDefinitions(): ToolDefinition[] {
 /** Shared by the real loop and evaluation observer; scope previews spend no repair pass. */
 export function isWorkspaceMutation(name: string, rawArguments: string): boolean {
   if (name === "applyStudioCommands" || name === "declareReviewScope") return true;
-  if (name !== "configureDesignScope") return false;
+  if (name !== "configureDesignScope" && name !== "configureOwnership") return false;
   try {
     return JSON.parse(rawArguments)?.action !== "preview";
   } catch {
@@ -254,7 +271,11 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
   /** A link into a store: `write` from its owner, `read` otherwise (one writer per store). */
   const accessOf = (id: string) => {
     const access = studioStoreAccess(design, id);
-    return access ? { access } : {};
+    const explicit = designOwnership(design).dependencies.find((item) => item.connection === id);
+    return {
+      ...(access ? { access, accessBasis: "legacy-inferred; not a declared grant" } : {}),
+      ...(explicit ? { declaredAccess: explicit.access } : {}),
+    };
   };
   const modules = (host: string) =>
     (studio?.components ?? [])
@@ -277,6 +298,10 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
       unresolved: unresolvedDesignScope(design),
     },
     availableProfileDefault: tinyurlDesignScope(),
+    declaredOwnership: designOwnership(design),
+    ownershipFindings: ownershipFindings(design),
+    ownershipMeaning:
+      "Logical owners, canonical roles, authority and explicit grants are declarations only. Legacy store owner/access remains separate and inferred; operation bindings are unspecified. Co-deployment grants nothing.",
     system: design.architecture
       ? {
           name: design.architecture.system.name,
@@ -335,7 +360,7 @@ export function turnContext(
   findings: readonly Finding[],
   selection: readonly string[],
 ) {
-  return `[Jeeves] Studio context.\nTile types (finite, design only):\n${JSON.stringify(catalogSummary())}\nCurrent design:\n${JSON.stringify(designSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}`;
+  return `[Jeeves] Studio context.\nTile types (finite, design only):\n${JSON.stringify(catalogSummary())}\nCurrent design:\n${JSON.stringify(designSummary(design, findings))}\nSelected identities: ${JSON.stringify(selection)}\nSelected logical owners (owner:<id>, distinct from element/connection IDs; roles are not independently selected): ${JSON.stringify(selectedLogicalOwners(design, selection))}`;
 }
 
 const commandTypes: readonly string[] = studioCommandSchema.options.map(
@@ -363,6 +388,7 @@ export class Workspace {
   /** Changes to commands or scope invalidate an earlier review, including within one response. */
   generation = 0;
   reviewedGeneration = -1;
+  private ownershipPreview: { generation: number; ownership: string } | undefined;
   private scopePreview: { generation: number; scope: string } | undefined;
 
   review() {
@@ -448,6 +474,8 @@ export class Workspace {
           ...designSummary(this.working, validateDesign(this.working)),
           baseRevision: this.base.revision,
         };
+      case "configureOwnership":
+        return this.configureOwnership(parsed.data as z.infer<typeof schemas.configureOwnership>);
       case "configureDesignScope":
         return this.configureScope(parsed.data as z.infer<typeof schemas.configureDesignScope>);
       case "listStudioPatterns":
@@ -490,6 +518,63 @@ export class Workspace {
         return { ok: true, note: "End this turn; the answer comes as a new message." };
       case "applyStudioCommands":
         return this.applyCommands(parsed.data as z.infer<typeof schemas.applyStudioCommands>);
+    }
+  }
+
+  private configureOwnership(input: z.infer<typeof schemas.configureOwnership>): unknown {
+    const tool = "configureOwnership";
+    const refuse = (error: string) => {
+      this.log(tool, false, error);
+      return { ok: false, error, note: "Nothing changed for this call." };
+    };
+    if (input.baseRevision !== this.base.revision)
+      return refuse("Revision conflict. Read getDesign before preparing ownership.");
+    try {
+      const preview = previewOwnership(this.working, input.ownership);
+      if (input.action === "preview") {
+        this.ownershipPreview = {
+          generation: this.generation,
+          ownership: JSON.stringify(input.ownership),
+        };
+        this.log(
+          tool,
+          true,
+          "Previewed logical owners, roles, grants and dependent changes; nothing saved",
+        );
+        return { ok: true, ...preview };
+      }
+      if (
+        this.ownershipPreview?.generation !== this.generation ||
+        this.ownershipPreview.ownership !== JSON.stringify(input.ownership)
+      )
+        return refuse(
+          "Preview these exact ownership declarations and affected bindings against the current working design before applying.",
+        );
+      if (!preview.canApply)
+        return refuse(
+          preview.findings
+            .filter((item) => item.code !== "CONFIG_REQUIRED")
+            .map((item) => item.message)
+            .join(" "),
+        );
+      const batch = buildOwnershipCommand(this.working, {
+        ownership: input.ownership,
+        upgrade: input.upgrade,
+      });
+      if (!batch.ops.length) return { ok: true, note: "Ownership unchanged; no edit prepared." };
+      const result = applyOperations(this.working, batch.ops);
+      if (!result.ok) return refuse(result.errors.map((item) => item.message).join(" "));
+      this.working = result.design;
+      this.pending.push(...batch.ops);
+      this.generation++;
+      this.log(tool, true, "Prepared explicit ownership and access as part of one turn commit");
+      return {
+        ok: true,
+        ...preview,
+        note: "Prepared declarations, not saved. No operation binding, template or runtime authorization is supplied.",
+      };
+    } catch (error) {
+      return refuse(error instanceof Error ? error.message : String(error));
     }
   }
 

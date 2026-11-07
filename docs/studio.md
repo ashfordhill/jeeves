@@ -401,6 +401,40 @@ with `configureDesignScope`, using the same command, preview and explicit upgrad
 Scope-only edits trigger the same fresh review, atomic commit, conflict protection and one Undo.
 The repair limit counts scope applies, while read-only previews remain available.
 
+## Logical owners, roles and access
+
+Open **Ownership & access** in the inspector (open the inspector with its header button when
+closed). Declare a logical owner, assign existing application tiles as API/worker roles, declare
+store authority and source/projection intent, then set role grants and each store relationship's
+requested access. **Preview ownership** opens the exact affected-row report before one save.
+The [finite fields and refusal rules](studio-settings.md#explicit-logical-ownership-and-store-access-schema-v3)
+keep logical authority, role permission and a dependency's intent separate. Same-owner reads are
+reads; cache read and fill requires read-write. Foreign writes refuse; a published cross-owner
+read remains unresolved until its actual contract exists. Co-deployment grants nothing.
+
+A declared owner is one collapsed canvas card by default: its name, role count and **Expand
+roles**. Selecting it shows its canonical role buttons in the inspector. Expansion shows the
+original tiles, each labeled with that same owner. Select a role to edit its original identity;
+**Collapse Links** returns to one owner card. Resources remain distinct. A relationship keeps its
+original edge ID and endpoint names; selecting it expands the endpoint roles before focus or
+removal. Resource focus also works while its owner is collapsed. Attach onto a collapsed card
+expands it and explains that the intended role must be selected. Unsafe self/cyclic grouping
+falls back to role expansion with a visible reason; lane validation remains unchanged.
+
+Collapse, expansion, selection, focus and Fit are views: complete design/blueprint contracts,
+including revision, stay identical. Legacy unowned projects keep their original canvas. Full
+legacy overviews can still need zoom/focus; this is not a readability certification. Owner
+configuration does not migrate saved projects or rewrite study presets.
+
+Owner/role/authority transfer previews each removed grant/request. Canonical tile and relationship
+removal previews affected explicit rows before committing, or refuses a surviving projection's
+missing source. Undo restores the whole edit; custom requirements remain even when targets vanish.
+Chat receives a selected owner as `owner:<slug>`, distinct from canonical role/edge IDs. Rename
+preserves that identity; removed/malformed owner references refuse instead of selecting another
+object. Historical selections remain unchanged. `configureOwnership` uses the same bounded builder and exact preview, with stale revision,
+review and repair limits. Review includes exact ownership changes; accepted turn edits save once.
+These declarations supply no operation capability, runtime template or implemented authorization.
+
 ## Chat
 
 Chat (left rail, open by default in a fresh project) edits the design with the canvas's own
