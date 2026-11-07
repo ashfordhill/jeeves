@@ -40,6 +40,46 @@
   inset: 0;
 }
 
+/* Screen-sized notation, with details available by mouse at either fitted or zoomed views. */
+.lane-line-legend {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 5;
+  box-sizing: border-box;
+  width: 248px;
+  max-width: calc(100% - 24px);
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: var(--chip-shadow);
+  font-size: 12px;
+}
+.lane-line-legend summary {
+  cursor: pointer;
+}
+.lane-line-legend summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.lane-line-legend svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75px;
+}
+.lane-line-legend p {
+  margin: 10px 0 0;
+  line-height: 1.4;
+}
+.lane-connection-label {
+  font-weight: 600;
+}
+
 /* Tile face (StepTile task card proportions): icon pinned near the top, name below. */
 .lane-tile {
   box-sizing: border-box;

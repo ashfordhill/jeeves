@@ -402,17 +402,41 @@ function Inspector({
       />
     );
   if (edge) {
-    // A link into a store writes when it comes from the store's owner and reads otherwise.
     const access = studioStoreAccess(design, edge.id);
+    const connection = design.connections.find((item) => item.id === edge.id);
+    const channelUse = design.architecture?.studio?.connections.find(
+      (item) => item.connection === edge.id,
+    )?.settings.channelUse;
     return (
       <div className="studio-selection-summary">
         <h2>Connection</h2>
         <p>
           {name(edge.source)} → {name(edge.target)}
         </p>
+        <p className="lane-connection-label">{connection?.planned.label}</p>
+        <dl className="lane-facts" aria-label="Relationship">
+          <dt>Interaction</dt>
+          <dd>{edge.async ? "Asynchronous (dashed)" : "Request / response (solid)"}</dd>
+          <dt>Arrow</dt>
+          <dd>
+            {channelUse === "publish"
+              ? "Publisher → channel"
+              : channelUse === "consume"
+                ? "Channel → consumer"
+                : edge.async
+                  ? "Sender → receiver"
+                  : "Caller → target"}
+          </dd>
+          {access ? (
+            <>
+              <dt>Access (inferred)</dt>
+              <dd data-access={access}>{studioStoreAccessLabels[access]}</dd>
+            </>
+          ) : null}
+        </dl>
         {access ? (
-          <p className="lane-inspector-kind" data-access={access}>
-            {studioStoreAccessLabels[access]}
+          <p className="studio-field-help">
+            Access follows ownership. Owner reads are not distinguished from writes.
           </p>
         ) : null}
         <ConnectionForm projectId={project.id} connection={edge.id} design={design} />

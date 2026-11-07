@@ -86,9 +86,10 @@ action; its links are its entries), **application** (the Service and API kinds e
 **CDN**, **external API**, **queue** and **store** (`database`, `search`, `cache`,
 `object-store`). Each row has its allowed modes, its
 default mode and the connection a new link gets; a pair with no row is refused. A sync link is a
-request (solid line); an async link does not wait (dashed line, as is every link that continues
-after one). The connection's interaction follows the mode (Request / response or Asynchronous);
-its security is Service identity.
+request (solid line); an async link does not wait (dashed line). Style follows each relationship,
+so a worker's store request remains solid after a queue. Target arrowheads mean caller → target
+for requests, including reads, and publisher → channel → consumer for messaging. The connection's
+interaction follows the mode (Request / response or Asynchronous); its security is Service identity.
 
 | Source → target | Modes | Default | Connection |
 | --- | --- | --- | --- |
@@ -122,9 +123,12 @@ at all (an open owner question).
 writes when it comes from the store's owner and reads otherwise (`studioStoreAccess(design,
 connection)`: `"write" | "read"`, or `undefined` for a link that doesn't end at a store). It is
 derived from the owner, never stored; changing the owner changes who writes. The line inspector
-shows "Writes (owner)" or "Reads", the store's inspector lists its writer and readers, chat's
+shows "Writes (owner)" or "Reads" as inferred access, the store's inspector lists its owner and
+other readers, chat's
 `getDesign` gives each such link its `access`, and the blueprint gives the connection `access`.
-Queue links keep publish and consume. The
+Owning package members also count as writers. The model cannot distinguish an owner's
+individual read from a write; the saved action label does not change this inference. Queue links
+keep publish and consume. The
 entry kinds (`studioEntryKinds`) are the action rows' targets. A link given without a mode takes its
 pair's default: async for queue links, sync otherwise (`studioDefaultLinkMode`;
 `studioLinkDefaults(source, target, mode?)`). `studioLinkRefusal` gives the reason a pair or mode

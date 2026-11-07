@@ -526,9 +526,16 @@ describe("removeTile and removeLink", () => {
       kind: "calls",
       planned: { interaction: "Asynchronous" },
     });
-    expect(laneGraph(direct).edges.find((edge) => edge.id === "analytics-write")?.dashed).toBe(
-      true,
-    );
+    const directGraph = laneGraph(direct);
+    expect(directGraph.edges.find((edge) => edge.id === "redirect-analytics")).toMatchObject({
+      async: true,
+      dashed: true,
+    });
+    // Restitching preserves the store request's own interaction, even after an async call.
+    expect(directGraph.edges.find((edge) => edge.id === "analytics-write")).toMatchObject({
+      async: false,
+      dashed: false,
+    });
 
     // The URL database stays reachable through the Shorten service.
     const unlinked = run(design, { type: "removeLink", link: "redirect-db" }).design;

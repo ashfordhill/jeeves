@@ -52,12 +52,18 @@ function StoreAccess({ design, store }: { design: DesignDocument; store: string 
     .filter((item) => item.to.element === store && studioStoreAccess(design, item.id) === "read")
     .map((item) => name(item.from.element));
   return (
-    <dl className="lane-store-access" aria-label="Access">
-      <dt>Writes (owner)</dt>
-      <dd>{ownerName}</dd>
-      <dt>Reads</dt>
-      <dd>{readers.length ? [...new Set(readers)].join(", ") : "nobody else"}</dd>
-    </dl>
+    <>
+      <dl className="lane-store-access" aria-label="Access inferred from ownership">
+        <dt>Owner</dt>
+        <dd>{ownerName}</dd>
+        <dt>Other readers</dt>
+        <dd>{readers.length ? [...new Set(readers)].join(", ") : "nobody else"}</dd>
+      </dl>
+      <p className="studio-field-help">
+        Access is inferred: owner links (including owning package members) count as writes; other
+        links count as reads. Owner reads are not distinguished.
+      </p>
+    </>
   );
 }
 

@@ -672,3 +672,20 @@ schema, lane rules or runtime capabilities.
   pattern records through its real context/tools, mark unrepresentable variants, and evaluate
   the resulting designs. Structured arguments and deterministic review complement the model;
   they do not prove that its architectural judgment is correct.
+
+## 2026-11-07 notation follow-up: relationship direction
+
+RF01 implements the review addendum's relationship notation. A worker's store read or write is
+a solid request even when the worker consumes a queue; only asynchronous relationships are
+dashed. Target arrowheads follow caller → target for requests, including reads, and
+publisher → channel → consumer for messaging. The canvas legend discloses this convention;
+selected connections show their saved action label, interaction, arrow convention and inferred
+store access. This changes no design semantics or blueprint fields.
+
+Mouse review of the three studies at 1440×900 and 1280×800 showed that a selected solid return
+with its target arrowhead is easier to recognize at 0.95 zoom, while overview tile names still
+need zoom and shared segments still hide route identity. Direction markers improve notation;
+they do not solve overlapping routes. Keep those concerns for focus/tracing rather than moving
+stores or inventing services. A saved label such as “Reads originals” explains intent; access
+still follows ownership, and the current model cannot distinguish an owner's individual read
+from a write.

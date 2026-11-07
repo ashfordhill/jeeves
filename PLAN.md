@@ -207,7 +207,10 @@ DP10 questions in [the handoff](docs/handoff.md), and to the open points of the 
 
 The owner's subsequent three-study review is recorded in the
 [reliable foundations review](docs/plans/reliable-foundations/review.md). Its
-[proposed plan](docs/plans/reliable-foundations/units.md) starts with relationship clarity,
+[build plan](docs/plans/reliable-foundations/units.md) starts with relationship clarity,
 traceable paths and a pattern-backed, evaluated design assistant; later milestones define
-behavior contracts and a separate generator beginning with TinyURL. These are proposals, not
-implemented changes. The current studio and blueprint remain as described above.
+behavior contracts and a separate generator beginning with TinyURL. The owner authorized
+sequential implementation on 2026-11-07. RF01 adds per-relationship solid/dashed strokes, target
+arrowheads, a mouse-visible legend and selected-line explanations; it changes no ownership,
+access inference or blueprint semantics. Later units and contract/generator milestones remain
+open as described in the plan.

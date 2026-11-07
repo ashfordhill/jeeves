@@ -202,10 +202,14 @@ the same edit. A C1 relationship has only its action and endpoints.
 **One writer per store.** A link into a database, search index, cache or object storage *writes*
 when it comes from the store's owner (the resource's **Owner**, or a member of the owning package)
 and *reads* otherwise; a store with no owner is only read. This is derived, never stored: the line
-inspector shows "Writes (owner)" or "Reads", the store's inspector lists its writer and readers,
+inspector shows "Writes (owner)" or "Reads" as **Access (inferred)**; the store inspector lists
+**Owner** and **Other readers**,
 and the [blueprint](studio-blueprint.md) gives the connection `access: "write" | "read"`.
-Changing a store's owner changes who writes. Queue links keep their channel role (publish or
-consume) instead.
+Changing a store's owner changes who writes. An owner's individual read cannot be distinguished
+from a write by this model; editing the Action label does not override inferred access. Queue
+links keep their channel role (publish or consume) instead. Solid/dashed strokes follow each
+relationship's own Interaction, independently of upstream queues; target arrowheads and the
+canvas's mouse-opened legend add no saved settings.
 
 ## Actions
 

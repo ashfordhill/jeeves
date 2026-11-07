@@ -266,3 +266,22 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   contract/profile; backend project location; measured performance of the intended chat model.
 - Earlier feedback entries retain their own history. This review does not mark their unresolved
   routing or architecture concerns fixed.
+- 2026-11-07: the owner authorized the reliable-foundations work (“goahead and kick it off”),
+  using fresh sequential Sol xhigh agents. The [plan](plans/reliable-foundations/units.md) is in
+  progress.
+- RF01, local commit titled **RF01: clarify relationship styles and direction**: request strokes
+  now stay solid after queues; only asynchronous relationships are dashed. Target arrowheads and
+  the mouse-visible Request/Async legend explain caller → target (including reads) and
+  publisher → channel → consumer. Selecting Transcoder → Original videos shows **Reads
+  originals**, **Request / response (solid)** and inferred **Reads**. Upload jobs → Transcoder
+  stays dashed; View counter → View counts is solid. Store and line inspectors disclose that
+  access follows ownership and an owner's individual read is not distinguished. No stores,
+  ownership, access inference, presets or blueprint semantics changed.
+- RF01 checked by unit/E2E/build suites and mouse walkthroughs of all three studies at 1440×900
+  and 1280×800, fitted and 0.95 zoom. Selected return lines were removed with their X and restored
+  with Undo. The three study blueprints match their pre-change JSON byte-for-byte. Screenshots
+  and detailed evidence are recorded in the RF01 [handoff](handoff.md).
+- Still open after RF01: full-overview tile names need zoom; shared trunks and crossings can
+  obscure individual route identity, and returning lines still wrap intervening tiles. RF01
+  improves notation, not the routing; RF02 owns focus and tracing. The architectural, ownership,
+  contract, model-evaluation and generator questions above remain open.

@@ -1,6 +1,6 @@
 // The lane canvas: the design's lane graph (`laneGraph`) on the board. The actor, its actions and
 // every tile become board tiles; the user's lines to its actions, the entries and connections
-// become lines, dashed when asynchronous or after an asynchronous link. The user's line to an
+// become directed lines, dashed only when that relationship is asynchronous. The user's line to an
 // action goes with the action, so it has no X. Lines carry no words; their accessible names say
 // what they join. The selected tile's pull tabs come from `creation`, its X and the selected
 // line's from `removal`. A tile or action with a design warning carries a mark (`Warnings.tsx`).
@@ -24,6 +24,7 @@ import {
 } from "@jeeves/spec";
 import { type Ref, useMemo } from "react";
 import { layoutEngine } from "./elk.ts";
+import { LineLegend } from "./LineLegend.tsx";
 import { laneLayoutInput } from "./laneLayout.ts";
 import { ActionTile } from "./tiles/ActionTile.tsx";
 import { ACTOR_NAME, ActorTile } from "./tiles/ActorTile.tsx";
@@ -107,6 +108,7 @@ export function LaneCanvas({
       source: edge.source,
       target: edge.target,
       dashed: edge.dashed,
+      directed: true,
       label: `${name(edge.source)} to ${name(edge.target)}`,
       ...(edge.source === LANE_ACTOR && { removable: false }),
       ...(input.lines[i]?.band !== undefined && { band: input.lines[i]?.band }),
@@ -129,6 +131,7 @@ export function LaneCanvas({
         {...creation}
         {...removal}
       />
+      <LineLegend />
     </div>
   );
 }

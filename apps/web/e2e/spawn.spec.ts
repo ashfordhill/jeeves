@@ -108,14 +108,14 @@ test("attaches a store to a service, backwards, then undoes it", async ({ page, 
 test("attaches to a queue asynchronously, the pair's default", async ({ page, tinyurl: id }) => {
   await tile(page, "Shorten service").click();
   // The inspector opened beside the canvas, and the fitted camera refitted, so no Fit is needed.
-  await expect(dashedLines(page)).toHaveCount(3);
+  await expect(dashedLines(page)).toHaveCount(2);
   await pull(page, "Shorten service", "Attach");
   await moveOnto(page, tile(page, "Click events"));
   await expect(tile(page, "Click events")).toHaveClass(/is-drop-over/);
   await page.mouse.up();
 
   await ready(page);
-  await expect(dashedLines(page)).toHaveCount(4);
+  await expect(dashedLines(page)).toHaveCount(3);
   // An attach leaves the source selected, ready for its next fork or merge.
   await expect(tile(page, "Shorten service")).toHaveClass(/selected/);
   await expect(tile(page, "Click events")).not.toHaveClass(/selected/);

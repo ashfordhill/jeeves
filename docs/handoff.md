@@ -3807,3 +3807,66 @@ projects were deleted (204). Screenshots are in
 
 Local commit: **RF00: review architecture and plan reliable foundations**. Implementation and
 owner discussion of the proposed semantic changes remain open. Keep the generator outside Jeeves.
+
+## 2026-11-07 — RF01: clarify relationship styles and direction (complete)
+
+Worked RF01 only, sequentially on primary `main`, from RF00 `4e2cd15`. The owner authorized the
+plan on 2026-11-07 (“goahead and kick it off”); the plan is now in progress and records RF01 as
+complete. No branches, worktrees, stashes, delegation or pushes. Preserved `.jeeves-feedback/`
+and owner projects; no owner server was stopped.
+
+Relationships now draw their own interaction: requests stay solid after queues, while async
+publication/consumption stays dashed. TinyURL has 2 dashed lines (was 3), Marketplace 4 (was 6),
+YouTube 7 (was 12); no relationships were added or removed. The generic board accepts an optional
+target arrowhead, follows the last nonzero routed segment (including vertical returns and short
+animated routes), and keeps the 44px line hit band and X. It imports no Jeeves code. Jeeves uses
+the arrowheads on all lines. A screen-size Request/Async legend opens by mouse and explains
+caller → target, including reads, and publisher → channel → consumer. Selected connections show
+the existing saved label, interaction, arrow convention and inferred access. Store/line inspectors
+state the current ownership-based inference and its inability to distinguish an owner's read
+from a write. No settings/schema additions, store relocation, ownership/domain changes, access
+inference changes, study revisions, blueprint version changes or generator work.
+
+Current studio/catalog/settings/blueprint docs describe the notation. Appended feedback
+Resolution and playbook lessons; earlier entries were preserved. Tests cover worker requests
+after async links (including a restitched async call), named YouTube dependencies, generic arrow
+geometry, unchanged hit/removal behavior, the legend, mouse route selection/removal/Undo, and
+unchanged blueprint during selection. One old restitch test explicitly expected the inherited
+dash; it now asserts both the restitched call's async/dashed style and its downstream store
+request's sync/solid style. Topology/layout assertions were not loosened.
+
+Checks (Node 24.21.0 first in PATH):
+
+- `pnpm check`: pass, Biome 209 files; all type checks; 25 test files / 178 tests.
+- `pnpm test:e2e`: 18 passed, native Chromium; no Docker-browser fallback needed.
+- `pnpm --filter @jeeves/web build`: pass, existing chunk-size advisory.
+- Exact JSON snapshots of all three study blueprints, captured before the implementation,
+  match the final projection byte-for-byte. `git diff --check` passes.
+
+Browser: isolated web/API on 4302/4312, scratch JEEVES_HOME, scripted chat and `jeeves_e2e`, using
+Playwright Chromium by mouse. Created fresh TinyURL (11/12), Marketplace (20/23) and YouTube
+(21/25), checked both 1440×900 and 1280×800 fitted views and 0.95 zoom, expanded/collapsed the
+legend, selected actual routes, removed each study's selected return with its on-screen X at
+zoom, and used Undo. These were Analytics worker → Analytics store, Search indexer → Search
+index, and Transcoder → Original videos. Each return's X stayed visible and clickable at both
+sizes. Also selected Upload jobs → Transcoder (dashed, Channel → consumer) and View counter →
+View counts (solid, inferred write). Transcoder's line visibly points into Original videos and
+its inspector says Reads originals, Request / response (solid), Reads. Read/selection and the
+remove/Undo round trip preserved semantic blueprint content (only revision advanced for edits).
+No page/console errors or warnings. All three scratch projects deleted (204); only the isolated
+servers were stopped. Owner 4300/4310 and the `jeeves` database were untouched.
+
+Screenshots inspected under `/tmp/jeeves-rf01-browser-SamcIy/` (16 images plus `results.json`):
+`youtube-1440-zoomed.png` shows the selected Transcoder read; `youtube-1280-fitted.png` the small
+overview and expanded legend; `youtube-1280-view-count-write.png` and
+`youtube-1440-job-consume.png` show the other named relationships. The coordinator also inspected
+the first two images. Both-rails fitted zooms remain TinyURL 0.560/0.449, Marketplace 0.368/0.322,
+YouTube 0.377/0.303 (1440/1280).
+
+Next unit: RF02's focus and route identity remain necessary. Target arrows and selected-line
+explanations make requests recognizable at zoom, but overview names are still tiny, shared
+trunks/crossings remain ambiguous, and U's still wrap intervening tiles. Arrowheads on a shared
+target segment cannot identify which upstream route owns it. This unit does not claim to solve
+those problems or the review's architectural questions. RF02 was not started.
+
+Local commit: **RF01: clarify relationship styles and direction**.

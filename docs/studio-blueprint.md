@@ -108,6 +108,10 @@ read. Its head, and three of its connections (a publish, a read and a write):
 
 ## Boundaries
 
+- **Canvas notation.** Solid/dashed strokes and target arrowheads are presentation only; they do
+  not add blueprint fields or change connection direction, interaction, action or inferred access.
+  A read's caller → store arrow does not represent the return of bytes. Access still follows
+  ownership, so an owner's individual read is not distinguished from a write.
 - **Intent, not availability.** Settings and `thirdParty` names are design intent. The blueprint
   never claims that a template, runtime or verification exists.
 - **Versioning.** A breaking change needs a new version. Version 2 renamed a connection's planned

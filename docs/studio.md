@@ -39,10 +39,13 @@ future generator's frontend templates) which user flow each service serves.
   rectangles. The user tile is 128×160. An **action tile** is 128×128 on the user's pastel: its
   lane icon in a round badge and its name in large type (smaller for a long name), so it reads as
   the start of a flow, not as a service.
-- **Lines** carry no words. A solid line is a request; a dashed line is an asynchronous link, and so
-  is every link that continues after one. The user's line to an action is a plain line; entry
-  lines carry no chip, since the action tile says which lane they start. Action, protocol and the
-  rest are in the inspector.
+- **Lines** carry target arrowheads. A solid line is a request, including a worker's store read or
+  write after a queue; a dashed line is that relationship's asynchronous interaction. Request
+  arrows point caller → target, including reads, rather than showing the return of data. Messaging
+  arrows follow publisher → channel → consumer; direct async calls point sender → receiver. The
+  user's line to an action and entry lines are solid. Lines carry no words or chips; select one
+  for its label, interaction, direction and inferred access in the inspector. The small **Request /
+  Async** legend at the lower left opens these conventions by mouse and stays at screen size.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
   The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
   a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
@@ -265,9 +268,10 @@ for an application tile, **Modules**; empty ones are hidden.
   and its tooltip says why ("Shorten service can't become a worker. An action reaches a service
   (not a worker), an API or the CDN."; "Link reader in Redirect service can't use a search index;
   remove its link to URL database first.").
-- A store (database, search index, cache, storage) shows, below the Type list, who writes it and
-  who reads it: **Writes (owner)** names its owner, its only writer; **Reads** names every other
-  tile that links to it. Changing the **Owner** field changes who writes
+- A store (database, search index, cache, storage) shows **Owner** and **Other readers** below the
+  Type list. Access is inferred: links from the owner (including owning package members) count as
+  writes; other links count as reads. The model cannot distinguish an owner's individual read
+  from a write. Changing **Owner** changes that inference
   ([one writer per store](studio-settings.md#relationships)).
 - **Language** offers the kind's two languages, its default first: TypeScript or Go, and Go or
   TypeScript for Redirect. Gateway and CDN are products, not code, and have no Language
@@ -292,9 +296,11 @@ for an application tile, **Modules**; empty ones are hidden.
   it) and **Link to**, the tiles its tile links to whose kind it may use, through that link (an
   event publisher reaches a queue only through a publish link, a consumer only through a consume
   link).
-- A line: its two tiles, "Writes (owner)" or "Reads" for a link into a store, then Action,
-  Protocol, Interaction, Security, and timeout/retry where the protocol allows. Switching Interaction between Request / response and Asynchronous changes the
-  dash where the link table allows both.
+- A line: its endpoints and saved action label, interaction (solid or dashed), arrow convention,
+  and **Access (inferred)** ("Writes (owner)" or "Reads") for a store link. Then Action, Protocol,
+  Interaction, Security, and timeout/retry where the protocol allows. The label is editable prose;
+  it does not override access. Switching Interaction between Request / response and Asynchronous
+  changes the dash where the link table allows both, independently of upstream links.
 - An action: its lane icon and name, then **Name** (the word on its tile, at most 24 characters;
   it autosaves like a tile's name), its **Lane** (read-only) and its **Entries**, each a button
   that selects that tile.
@@ -410,8 +416,8 @@ UPLOAD (writes)
 Each store has one writer, its owner: the Shorten service writes the URL database, the Redirect
 service the URL cache (it fills it on a miss) and Click events, and the Analytics worker the
 Analytics store. In all: the user, two actions and eight tiles, and twelve links (the user's two
-lines to its actions, three lane entries and seven connections), three of which are asynchronous
-or follow an asynchronous link (the click path). The URL database, which both lanes reach, sits in
+lines to its actions, three lane entries and seven connections), two of which are asynchronous
+(click publication and consumption); the Analytics worker's store write is solid. The URL database, which both lanes reach, sits in
 the shared band between them. The Analytics store sits on the top row, right above the Analytics
 worker that fills it: the Stats API's read runs straight along that row, and the worker's write
 comes back up to it ([Layout](#layout-and-navigation)). Of the twelve entry and link orders, laid
@@ -511,8 +517,8 @@ listings), Product images and Listing events; the Search indexer the Search inde
 Payments database and Order events; the Order recorder the Orders database; the Cart service the
 Cart store. Every other link into a store reads. In all: the user, two actions and seventeen
 tiles, and 23 links (the user's two lines, seven lane entries, four of them upload, and fourteen
-connections), six of which are asynchronous or follow an asynchronous link (the listing and
-paid-order paths). Every service is TypeScript on Docker; the study has no C1 people or
+connections), four of which are asynchronous (publication and consumption of listing and
+paid-order events); the workers' store writes are solid. Every service is TypeScript on Docker; the study has no C1 people or
 relationships and no package. The Search index, the Orders database and Product images, which both
 lanes reach, sit in the shared band, one row: Product images right after the Image CDN and the
 Shop service, the Search index right above the Search indexer that writes it, and the Orders
@@ -666,8 +672,9 @@ the Transcoder writes Transcoded videos and Completion events; the Completion ha
 Metadata database; the Search indexer writes the Search index; the Watch API writes its Metadata
 cache and View events; the View counter writes View counts. Every other link into a store reads.
 In all: the user, two actions and eighteen tiles, and 25 links (the user's two lines, five lane
-entries, two of them upload, and eighteen connections), twelve of which are asynchronous or follow
-an asynchronous link (the view path, and the pipeline after Upload jobs). Every service is
+entries, two of them upload, and eighteen connections), seven of which are asynchronous (the
+publish and consume links for views, jobs and completion events). Worker store reads and writes,
+including Transcoder → Original videos, are solid directed requests. Every service is
 TypeScript on Docker; the study has no C1 people or relationships and no package. The Watch API
 has four links out, the most a tile can have; the Transcoder three. Transcoded videos, the
 Metadata database and the Search index, which both lanes reach, sit in the shared band, one row;
@@ -776,12 +783,12 @@ and all twenty components, with nothing omitted and no findings.
   past the Completion handler and over the Search index to come down into it. A line that comes
   back to a store in its own tile's column (TinyURL's Analytics worker into the Analytics store
   above it, the marketplace's Search indexer into the Search index) hooks round the store's corner.
-- A line that comes back can read as a box. Lines have no arrowheads, and lines after a queue are
-  dashed, so a dashed U round the tiles it passes looks like a group outline, at the fitted zoom
-  and still at 100%: YouTube's View counter → View counts round View events and the View counter,
-  the Transcoder's two lines round Upload jobs and the Transcoder, and the Completion handler's
-  and the Search indexer's writes nested round the Search index. Selecting the worker colours its
-  lines, which shows where the U starts and ends.
+- A line that comes back still wraps intervening tiles and can resemble a frame at fitted zoom:
+  YouTube's View counter → View counts, the Transcoder's store read/write, and the Completion
+  handler's and Search indexer's nested writes. Their solid request strokes and target arrowheads
+  distinguish them from asynchronous links; selecting the worker colours its lines, and selecting
+  a line shows its endpoints, label and access. The routes and shared trunks are unchanged;
+  arrowheads alone do not make every overview path unambiguous.
 - Which column a store with several users takes depends on how many tiles its band has per
   column, so an edit elsewhere in a band can move it, and a store that gains a link out (only a
   board outside Jeeves allows it; Jeeves stores are end tiles) goes back to the column after its

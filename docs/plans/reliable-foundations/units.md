@@ -1,7 +1,9 @@
-# Reliable foundations: proposed build plan
+# Reliable foundations: build plan
 
-2026-11-06. **Status: proposed; implementation has not started.** RF00 is the
-[review](review.md) and feedback record. It changes no application behavior.
+2026-11-06. **Status: in progress.** On 2026-11-07 the owner authorized implementation
+(“goahead and kick it off”), using fresh sequential Sol xhigh agents. RF00 is the
+[review](review.md) and feedback record. RF01 implements relationship clarity; later units and
+milestones remain subject to their stated scope and dependency boundaries.
 
 The intended result is a readable, editable architecture specification that a separate backend
 can compile into a limited set of tested foundations. Start by making the existing diagram and
@@ -42,6 +44,13 @@ These are the first dispatchable units. They do not change the domain ownership 
 lane limits or add code generation.
 
 ### RF01 — Make relationships mean what they draw
+
+**Progress (2026-11-07): complete.** Per-relationship strokes, target arrowheads, a mouse-visible
+legend and selected-line explanations implemented; all required checks pass. Mouse acceptance
+covered the three studies at 1440×900 and 1280×800, fitted and zoomed, including return removal
+and Undo. All three study blueprints match their pre-change JSON byte-for-byte. Evidence and
+remaining overview/shared-run limits are in the RF01 handoff. Local commit:
+**RF01: clarify relationship styles and direction**. RF02 has not started in this unit.
 
 **Depends on:** RF00. **Areas:** `studio-lanes.ts`, canvas edge adapters, generic board line
 rendering and relevant docs.

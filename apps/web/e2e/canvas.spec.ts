@@ -1,13 +1,30 @@
-import { createStudy, dashedLines, expect, lines, test, tile, tiles } from "./studio.ts";
+import {
+  clickLine,
+  createStudy,
+  dashedLines,
+  design,
+  expect,
+  lines,
+  test,
+  tile,
+  tiles,
+} from "./studio.ts";
 
 test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => {
   expect(new URL(page.url()).searchParams.get("project")).toBe(tinyurl);
   // The user, its two actions and eight tiles; the user's two lines, three lane entries and seven
-  // connections, three dashed (the click path). No CDN: Open link reaches the Redirect service
+  // connections, two dashed (publish and consume). The worker's store write is solid.
+  // No CDN: Open link reaches the Redirect service
   // directly. Entry lines carry no chips: the action tiles say which lane they start.
   await expect(tiles(page)).toHaveCount(11);
   await expect(lines(page)).toHaveCount(12);
-  await expect(dashedLines(page)).toHaveCount(3);
+  await expect(dashedLines(page)).toHaveCount(2);
+  await expect(page.locator(".board-line-arrow")).toHaveCount(12);
+  const guide = page.locator(".lane-line-legend");
+  await guide.getByLabel("Line guide").click();
+  await expect(guide).toContainText("caller → target, including reads");
+  await expect(guide).toContainText("publisher → channel → consumer");
+  await guide.getByLabel("Line guide").click();
   await expect(tile(page, "User")).toBeVisible();
   await expect(page.locator(".board-chip")).toHaveCount(0);
   // No design warnings in a study.
@@ -31,11 +48,12 @@ test("New project offers the marketplace study", async ({ page }) => {
   const id = await createStudy(page, "E2E Marketplace", "Marketplace · studio study");
   try {
     // The user, Browse and Buy & sell and seventeen tiles; the user's two lines, seven lane
-    // entries (four upload) and fourteen connections, six of them dashed (the listing and
-    // paid-order paths).
+    // entries (four upload) and fourteen connections, four dashed (publish and consume for
+    // listing and paid-order events). Worker store writes stay solid.
     await expect(tiles(page)).toHaveCount(20);
     await expect(lines(page)).toHaveCount(23);
-    await expect(dashedLines(page)).toHaveCount(6);
+    await expect(dashedLines(page)).toHaveCount(4);
+    await expect(page.locator(".board-line-arrow")).toHaveCount(23);
     await expect(page.locator(".board-chip")).toHaveCount(0);
     // No design warnings in a study.
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
@@ -56,7 +74,7 @@ test("New project offers the marketplace study", async ({ page }) => {
     await expect(inspector.getByLabel("Image resizing", { exact: true })).toHaveValue("on-request");
     await tile(page, "Catalog database").click();
     await expect(inspector.locator(".lane-store-access")).toHaveText(
-      "Writes (owner)Shop serviceReadsPayments",
+      "OwnerShop serviceOther readersPayments",
     );
   } finally {
     await page.request.delete(`/api/projects/${id}`);
@@ -71,10 +89,11 @@ test("New project offers the YouTube study", async ({ page }) => {
   try {
     // The user, Watch and Publish and eighteen tiles; the user's two lines, five lane entries
     // (none into storage: the Upload service writes Original videos) and eighteen connections,
-    // twelve of them dashed (the view path, and the upload pipeline after Upload jobs).
+    // seven dashed (the individual publish and consume links).
     await expect(tiles(page)).toHaveCount(21);
     await expect(lines(page)).toHaveCount(25);
-    await expect(dashedLines(page)).toHaveCount(12);
+    await expect(dashedLines(page)).toHaveCount(7);
+    await expect(page.locator(".board-line-arrow")).toHaveCount(25);
     await expect(page.locator(".board-chip")).toHaveCount(0);
     // No design warnings in a study.
     await expect(page.locator(".board .lane-warning-mark")).toHaveCount(0);
@@ -97,13 +116,14 @@ test("New project offers the YouTube study", async ({ page }) => {
     const inspector = page.locator(".studio-inspector");
     const access = inspector.locator(".lane-store-access");
     await tile(page, "Original videos").click();
-    await expect(access).toHaveText("Writes (owner)Upload serviceReadsTranscoder");
+    await expect(access).toHaveText("OwnerUpload serviceOther readersTranscoder");
+    await expect(inspector).toContainText("Owner reads are not distinguished");
     await tile(page, "Metadata database").click();
-    await expect(access).toHaveText("Writes (owner)Completion handlerReadsWatch API");
+    await expect(access).toHaveText("OwnerCompletion handlerOther readersWatch API");
     await tile(page, "Search index").click();
-    await expect(access).toHaveText("Writes (owner)Search indexerReadsSearch API");
+    await expect(access).toHaveText("OwnerSearch indexerOther readersSearch API");
     await tile(page, "Metadata cache").click();
-    await expect(access).toHaveText("Writes (owner)Watch APIReadsnobody else");
+    await expect(access).toHaveText("OwnerWatch APIOther readersnobody else");
     // The Upload service is an Uploads service; its bytes travel by signed URLs.
     await tile(page, "Upload service").click();
     await expect(
@@ -113,6 +133,35 @@ test("New project offers the YouTube study", async ({ page }) => {
     ).toHaveAttribute("aria-pressed", "true");
     await inspector.getByRole("tab", { name: "Options", exact: true }).click();
     await expect(inspector.getByLabel("Transfer", { exact: true })).toHaveValue("signed-url");
+
+    // Select actual routes by mouse, including a returning store read. View-only interaction
+    // must preserve the exact blueprint; removing and undoing the return still work by mouse.
+    const before = await (await page.request.get(`/api/projects/${id}/blueprint`)).json();
+    await clickLine(page, "transcoder-read");
+    await expect(inspector.locator(".lane-connection-label")).toHaveText("Reads originals");
+    await expect(
+      inspector.getByRole("definition").filter({ hasText: "Request / response (solid)" }),
+    ).toHaveCount(1);
+    await expect(inspector.locator('[data-access="read"]')).toHaveText("Reads");
+    const read = page.locator('.react-flow__edge[data-id="transcoder-read"]');
+    await expect(read.locator(".react-flow__edge-path")).not.toHaveClass(/is-dashed/);
+    await expect(read.locator(".board-line-arrow")).toHaveCount(1);
+    expect(await (await page.request.get(`/api/projects/${id}/blueprint`)).json()).toEqual(before);
+    await page
+      .getByRole("button", { name: "Remove Transcoder to Original videos", exact: true })
+      .click();
+    await expect(read).toHaveCount(0);
+    expect((await design(page, id)).connections.some((c) => c.id === "transcoder-read")).toBe(
+      false,
+    );
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(read).toHaveCount(1);
+    await clickLine(page, "jobs-transcoder");
+    await expect(inspector).toContainText("Asynchronous (dashed)");
+    await expect(inspector).toContainText("Channel → consumer");
+    await clickLine(page, "counter-write");
+    await expect(inspector).toContainText("Request / response (solid)");
+    await expect(inspector.locator('[data-access="write"]')).toHaveText("Writes (owner)");
   } finally {
     await page.request.delete(`/api/projects/${id}`);
   }
@@ -123,10 +172,10 @@ test("shows each store's writer and readers, from its owner", async ({ page, tin
   const inspector = page.locator(".studio-inspector");
   const access = inspector.locator(".lane-store-access");
   await tile(page, "URL database").click();
-  await expect(access).toHaveText("Writes (owner)Shorten serviceReadsRedirect service");
+  await expect(access).toHaveText("OwnerShorten serviceOther readersRedirect service");
   await inspector.getByRole("tab", { name: "Connections", exact: true }).click();
   await inspector.getByRole("button", { name: /^Redirect service → URL database/ }).click();
-  await expect(inspector.locator(".lane-inspector-kind")).toHaveText("Reads");
+  await expect(inspector.locator('[data-access="read"]')).toHaveText("Reads");
 
   // Changing the owner changes who writes.
   await tile(page, "URL database").click();
@@ -134,7 +183,7 @@ test("shows each store's writer and readers, from its owner", async ({ page, tin
   await inspector
     .getByLabel("Owner", { exact: true })
     .selectOption({ label: "Redirect service · Application" });
-  await expect(access).toHaveText("Writes (owner)Redirect serviceReadsShorten service");
+  await expect(access).toHaveText("OwnerRedirect serviceOther readersShorten service");
   const res = await page.request.get(`/api/projects/${id}/blueprint`);
   const blueprint = await res.json();
   const of = (link: string) =>

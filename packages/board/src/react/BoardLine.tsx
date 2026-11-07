@@ -23,6 +23,7 @@ import {
   polylineToSvg,
 } from "../layout/polyline.ts";
 import { useBoardContext } from "./context.ts";
+import { directionArrow } from "./directionArrow.ts";
 import { RemoveButton } from "./RemoveButton.tsx";
 
 /** The invisible hit band, wider than the drawn stroke. */
@@ -35,6 +36,7 @@ const REMOVE_GAP = 8;
 
 export type BoardLineData = {
   dashed: boolean;
+  directed?: boolean;
   /** A line into or out of the selected tile: the selection colour at the normal width. */
   linked?: boolean;
   /** Accessible name of the line and its chip; never drawn. */
@@ -66,6 +68,7 @@ export function BoardLine({
   const width = selected ? LINE_WIDTH_SELECTED : LINE_WIDTH;
   const ink = selected || data?.linked ? "var(--board-select)" : "var(--board-line)";
   const segments = dashed ? polylineDrawSegments(points, DASH_PERIOD) : [];
+  const arrow = data?.directed ? directionArrow(points) : undefined;
 
   const rect = layout?.chips[id];
   const mid = pointAtLength(points, pathLength(points) / 2);
@@ -115,6 +118,15 @@ export function BoardLine({
           }}
         />
       ))}
+      {arrow ? (
+        <path
+          className="board-line-arrow"
+          d={arrow}
+          fill="none"
+          pointerEvents="none"
+          style={{ stroke: ink, strokeWidth: width, strokeLinejoin: "miter" }}
+        />
+      ) : null}
       {data?.chip ? (
         <EdgeLabelRenderer>
           <button

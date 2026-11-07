@@ -351,7 +351,7 @@ describe("tile types and entries", () => {
 });
 
 describe("laneGraph", () => {
-  it("orders download before upload and dashes async links and what follows them", () => {
+  it("orders download before upload and styles each relationship by its own interaction", () => {
     const graph = laneGraph(tinyurl());
     expect(graph.nodes.map((node) => node.id)).toEqual([
       LANE_ACTOR,
@@ -397,15 +397,15 @@ describe("laneGraph", () => {
     ]);
     const ids = (pick: (edge: (typeof graph.edges)[0]) => boolean) =>
       graph.edges.filter(pick).map((edge) => edge.id);
-    // Publish and consume are async; the analytics write continues after them.
+    // Publish and consume are async; the analytics store write remains a request.
     expect(ids((edge) => edge.async)).toEqual(["redirect-clicks", "click-events-analytics"]);
-    expect(ids((edge) => edge.dashed)).toEqual([
-      "redirect-clicks",
-      "click-events-analytics",
-      "analytics-write",
-    ]);
+    expect(ids((edge) => edge.dashed)).toEqual(["redirect-clicks", "click-events-analytics"]);
+    expect(graph.edges.find((edge) => edge.id === "analytics-write")).toMatchObject({
+      async: false,
+      dashed: false,
+    });
 
-    // Once the worker is also reached by a request, what follows it is solid again.
+    // Adding another path to the caller cannot change its outgoing relationships' style.
     const merged = laneGraph(
       edit(tinyurl(), (draft) => {
         draft.connections.push(connection("redirect-analytics", "redirect", "analytics"));
@@ -415,6 +415,39 @@ describe("laneGraph", () => {
       "redirect-clicks",
       "click-events-analytics",
     ]);
+  });
+
+  it("keeps YouTube worker reads and writes solid without changing the design or blueprint", () => {
+    const design = studioArchitectureExample("studio-youtube").design;
+    const original = structuredClone(design);
+    const blueprint = designBlueprint(design, "YouTube");
+    const graph = laneGraph(design);
+    for (const id of [
+      "transcoder-read",
+      "transcoder-write",
+      "counter-write",
+      "handler-metadata",
+      "indexer-write",
+    ])
+      expect(
+        graph.edges.find((edge) => edge.id === id),
+        id,
+      ).toMatchObject({
+        async: false,
+        dashed: false,
+      });
+    expect(graph.edges.find((edge) => edge.id === "jobs-transcoder")).toMatchObject({
+      source: "upload-queue",
+      target: "transcoder",
+      async: true,
+      dashed: true,
+    });
+    for (const connection of design.connections)
+      expect(graph.edges.find((edge) => edge.id === connection.id)?.dashed).toBe(
+        connection.planned.interaction === "Asynchronous",
+      );
+    expect(design).toEqual(original);
+    expect(designBlueprint(design, "YouTube")).toEqual(blueprint);
   });
 
   it("reads an entry stored with both lanes as a download entry", () => {

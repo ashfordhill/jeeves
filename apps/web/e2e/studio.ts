@@ -52,6 +52,26 @@ export const dashedLines = (page: Page) => page.locator(".board .react-flow__edg
 export const tile = (page: Page, name: string): Locator =>
   page.locator(".board").getByRole("group", { name, exact: true });
 
+/** Click a visible, exposed stretch of this route, using the same hit target as the mouse. */
+export async function clickLine(page: Page, id: string) {
+  const path = page.locator(`.board .react-flow__edge[data-id="${id}"] .react-flow__edge-path`);
+  const point = await path.evaluate((element) => {
+    const path = element as SVGPathElement;
+    const matrix = path.getScreenCTM();
+    if (!matrix) throw new Error("The line is not drawn.");
+    const edge = path.closest(".react-flow__edge");
+    for (let i = 1; i < 100; i++) {
+      const at = path.getPointAtLength((path.getTotalLength() * i) / 100);
+      const screen = new DOMPoint(at.x, at.y).matrixTransform(matrix);
+      if (document.elementFromPoint(screen.x, screen.y)?.closest(".react-flow__edge") === edge)
+        return { x: screen.x, y: screen.y };
+    }
+    throw new Error("No visible stretch of this line can be clicked.");
+  });
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator(`.board .react-flow__edge[data-id="${id}"]`)).toHaveClass(/selected/);
+}
+
 /** The element's box once the camera and layout have stopped moving it. */
 async function settledBox(target: Locator) {
   let last = "";

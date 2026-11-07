@@ -104,6 +104,8 @@ export type LineSpec = {
   source: string;
   target: string;
   dashed: boolean;
+  /** Draw an arrowhead at the target, following the routed line's final segment. */
+  directed?: boolean;
   /** Accessible name of the line; never drawn. */
   label?: string;
   /** A box drawn on the line (phrasing content, such as an icon), kept clear by ELK. */
@@ -601,6 +603,7 @@ function Inner({
       ...(l.label ? { ariaLabel: l.label } : {}),
       data: {
         dashed: l.dashed,
+        ...(l.directed ? { directed: true } : {}),
         ...(linked(l) ? { linked: true } : {}),
         ...(l.label ? { label: l.label } : {}),
         ...(l.chip ? { chip: l.chip.content } : {}),

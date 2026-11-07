@@ -25,9 +25,8 @@ export const laneActionLine = (lane: StudioLane) => `@actor-${lane}`;
 export type LaneNode = { id: string; kind?: StudioKind; action?: StudioLane };
 /**
  * A connection; the user's line to an action (its source is the actor); or an entry (`lane` set;
- * its source is that lane's action). `async` follows the connection's interaction. `dashed` is
- * async, or continues after an async link: its source can only be reached from the actor through
- * one.
+ * its source is that lane's action). `async` and `dashed` follow this connection's interaction,
+ * independently of how its source was reached. A worker's store request stays solid.
  */
 export type LaneEdge = BoardEdge & { async: boolean; dashed: boolean; lane?: StudioLane };
 export type LaneGraph = { nodes: LaneNode[]; edges: LaneEdge[] };
@@ -57,7 +56,7 @@ export function laneGraph(design: DesignDocument): LaneGraph {
       source,
       target,
       async: connection.planned.interaction === "Asynchronous",
-      dashed: false,
+      dashed: connection.planned.interaction === "Asynchronous",
     };
     const list = outgoing.get(source);
     if (list) list.push(edge);
@@ -106,11 +105,6 @@ export function laneGraph(design: DesignDocument): LaneGraph {
     })),
     ...order.flatMap((id) => outgoing.get(id) ?? []),
   ];
-  const synchronous = reachableFrom(
-    LANE_ACTOR,
-    edges.filter((edge) => !edge.async),
-  );
-  for (const edge of edges) edge.dashed = edge.async || !synchronous.has(edge.source);
   return { nodes, edges };
 }
 

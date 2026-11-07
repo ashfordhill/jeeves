@@ -62,7 +62,7 @@ const lines: LineSpec[] = [
     label: "Download",
     chip: { w: 32, h: 32, content: <span>v</span> },
   },
-  { id: "publish", source: "redirect", target: "events", dashed: true },
+  { id: "publish", source: "redirect", target: "events", dashed: true, directed: true },
 ];
 
 describe("Board", () => {
@@ -123,11 +123,47 @@ describe("Board", () => {
     expect(entry?.querySelectorAll(".board-line-dash")).toHaveLength(0);
     // The dashed line is drawn as world-locked dash segments over a transparent hit path.
     expect(publish?.querySelectorAll(".board-line-dash").length).toBeGreaterThan(0);
+    expect(entry?.querySelector(".board-line-arrow")).toBeNull();
+    expect(publish?.querySelector(".board-line-arrow")?.getAttribute("pointer-events")).toBe(
+      "none",
+    );
 
     fireEvent.click(redirect);
     expect(onSelectTile).toHaveBeenCalledWith("redirect");
     fireEvent.click(screen.getByRole("button", { name: "Download" }));
     expect(onSelectLine).toHaveBeenCalledWith("entry");
+  });
+
+  it("keeps a directed line's hit band and mouse removal", async () => {
+    const onSelectLine = vi.fn();
+    const onRemoveLine = vi.fn();
+    const engine = createLayoutEngine(fakeElk, { debounceMs: 0 });
+    const board = (selected: BoardProps["selected"]) => (
+      <Board
+        tiles={tiles}
+        lines={lines}
+        engine={engine}
+        selected={selected}
+        onSelectTile={() => {}}
+        onSelectLine={onSelectLine}
+        onClear={() => {}}
+        onRemoveLine={onRemoveLine}
+        mode="select"
+      />
+    );
+    const { container, rerender } = render(board({}));
+    await waitFor(() =>
+      expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+    );
+    const line = container.querySelector('.react-flow__edge[data-id="publish"]');
+    const hit = line?.querySelector(".react-flow__edge-interaction");
+    expect(hit?.getAttribute("stroke-width")).toBe("44");
+    if (!hit) throw new Error("Missing line hit target");
+    fireEvent.click(hit);
+    expect(onSelectLine).toHaveBeenCalledWith("publish");
+    rerender(board({ line: "publish" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Remove line" }));
+    expect(onRemoveLine).toHaveBeenCalledWith("publish");
   });
 
   it("greys a disabled fan item in its own slot, shows its reason and never picks it", async () => {
