@@ -463,6 +463,16 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   unresolved. Existing saved projects/presets were preserved. G2 sketch and actual small rendering
   were coordinator reviewed; this is not owner usability acceptance.
 
+- NC05, local commit titled **NC05: report exact snapshot compatibility and evidence gaps**:
+  separates full design validity, exact contracts, implementation availability and exact-output
+  evidence in one mouse/blueprint/chat report. Required unknown/custom/extra behavior stays
+  blocking; product has no manifest/registry/output/evidence. The concrete verifier gap is separate
+  from known auth behavior, and Create retained-result reads need explicit read-write access.
+  Existing write-only declarations are preserved with a targeted gap. Trusted positive artifact
+  tests verify only the report's trust plumbing; backend remains deferred. Recent foundational
+  contract steps are NC03 `1823124` and NC04 `7b789a7`; NC06 owns the new narrow study. No old
+  project or preset is migrated, and previous owner readability/usability/runtime questions stay open.
+
 ## 2026-11-07 — API read/publish action views
 
 The owner supplied this sketch and cropped current view, archived byte-for-byte:
@@ -524,3 +534,11 @@ implementation for later”; the authorized Jeeves sequence continues and the ba
   from this conversation are archived byte-for-byte. The coordinator independently recomputed
   matching SHA256 for the original YouTube/Marketplace/TinyURL images and the two API sketch/crop
   originals. The newest two were committed in `db9af1c`; earlier feedback sections remain intact.
+
+
+- NC05, local commit titled **NC05: report exact snapshot compatibility and evidence gaps**:
+  the existing inspector now exposes separate contract/availability/evidence results and exact
+  canonical role/edge/owner/operation target buttons for chat, preserving view-only selection.
+  This does not close the proposed Read counts/Publish view ports, returned-data arrows,
+  YouTube lifecycle/analytics semantics, fitted-overview readability or owner usability acceptance.
+  NC03 `1823124` and NC04 `7b789a7` supply the bounded operation views; backend remains later.

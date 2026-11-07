@@ -96,6 +96,7 @@ describe("studio chat tools", () => {
       "configureOwnership",
       "applyStudioCommands",
       "validateDesign",
+      "readReadiness",
       "declareReviewScope",
       "reviewDesign",
       "askUser",

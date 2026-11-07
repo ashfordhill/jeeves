@@ -1,0 +1,102 @@
+{
+  "ref": {
+    "id": "tinyurl-create-resolve",
+    "version": "1.0.0",
+    "sha256": "40130ff2ff51611631a540bb9289c3397de7d02ce162926ecfc279b03c441985"
+  },
+  "definition": {
+    "domain": "jeeves.tinyurl.profile.v1",
+    "requirements": [
+      {
+        "feature": "immutable-http-targets",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "authenticated-create",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "public-resolve",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "optional-expiry",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "custom-slugs",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "mutable-destinations",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "disable-management",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "reputation-enforcement",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "quotas",
+        "disposition": "excluded",
+        "criticality": "required"
+      },
+      {
+        "feature": "exact-analytics",
+        "disposition": "excluded",
+        "criticality": "required"
+      }
+    ],
+    "contracts": [
+      {
+        "id": "links-create",
+        "version": "1.0.0",
+        "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+      },
+      {
+        "id": "links-resolve",
+        "version": "1.0.0",
+        "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+      },
+      {
+        "id": "links-positive-cache",
+        "version": "1.0.0",
+        "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a"
+      }
+    ],
+    "namespace": "All Create and Resolve bindings share one authoritative source and logical owner.",
+    "coverage": "Only exact known link receivers/callers, their owned source and positive cache, and traced data-access/cache-reader/redirect-responder modules. No other application behavior is represented.",
+    "generation": "Valid design, complete exact contracts and resolved exact compatible implementation artifacts; output evidence is a separate later stage.",
+    "verification": "Trusted pinned generation receipt and output content; exact composition, profile, manifest, template and dependency hashes; pinned suite, complete passing cases, environment and validity window.",
+    "requiredRuntimeCases": [
+      "create-auth-and-input",
+      "create-atomic-idempotency",
+      "create-retention-replay",
+      "create-collision-and-unknown-outcome",
+      "create-total-deadline",
+      "resolve-wire-outcomes",
+      "resolve-primary-visibility",
+      "resolve-expiry-and-no-reuse",
+      "cache-validation-and-isolation",
+      "cache-expiry-clamp-and-clocks",
+      "cache-fallback-and-deadline",
+      "primary-admission-and-cancellation"
+    ],
+    "access": {
+      "createSource": "read-write",
+      "resolveSource": "read",
+      "resolvePositiveCache": "read-write"
+    }
+  }
+}

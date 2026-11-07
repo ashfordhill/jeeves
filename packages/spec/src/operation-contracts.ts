@@ -282,6 +282,16 @@ export function operationContractFindings(design: DesignDocument): Finding[] {
             "Create link writes exceed the declared dependency or role grant; a read remains a read.",
             target,
           );
+        if (
+          (dependency && !accessAllows(dependency.access, "read")) ||
+          (grant && !accessAllows(grant.access, "read"))
+        )
+          report(
+            "CONFIG_REQUIRED",
+            [...path, "binding", "storeConnection"],
+            "Create link retained-result lookup and unknown-outcome reconciliation require explicit source read-write dependency and role grant. Write alone supplies no read permission; co-deployment grants nothing.",
+            target,
+          );
       }
     }
     if (

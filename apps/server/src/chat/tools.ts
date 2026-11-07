@@ -17,6 +17,7 @@ import {
   type DesignScope,
   designOperations,
   designOwnership,
+  designReadiness,
   designScope,
   designScopeCommandSchema,
   emptyReviewScope,
@@ -114,6 +115,8 @@ The lane canvas:
 
 Tools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.
 
+readReadiness returns the same snapshot report as the inspector and blueprint v3: design validity, exact contract completeness, implementation availability and exact generated-output evidence are separate stages. Generation eligibility needs the first three, never future output evidence; eligible does not mean verified. Product has no real artifact/evidence registry, generated output or runner. The report is read-only and does not replace a fresh reviewDesign before staged edits commit.
+
 Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before building or substantially restructuring a design, use listStudioPatterns to discover applicability and describeStudioPattern to retrieve the relevant records. Select only patterns that fit the person's use case: cache-aside lookup, durable background job, publication-to-search, pending-order/payment coordination. For an upload/processing/publication flow retrieve both the job and publication records. A trivial rename does not need retrieval. Retrieval alone does not establish that a pattern applies; state the chosen scope and assumptions. Read each record's support limitations and implementation obligations before proposing commands. Examples marked commands are topology-only starting points, not complete applications; examples marked obligation describe unsupported lifecycle contracts and must not be converted into fake solution tiles. Never split an owner or invent a service to bypass a callback/cycle, ownership or lane restriction. Preserve the intended logical owner and explain the missing contract precisely. Pattern guidance, represented design intent, template availability and runtime verification are separate: these patterns supply no runtime templates or verification. Do not claim tests of this tool loop prove model design quality.
 
 Review before saving: declareReviewScope explicitly selects this turn's pattern IDs, applicable checklist IDs, assumptions and custom obligations. It replaces only turn-local review metadata, never design settings. Retrieval does not select scope. Do not select variant checks (such as finite stock) unless they apply; use an empty checklist for topology-only scope. reviewDesign is read-only: inspect staged additions/updates/removals, targeted findings, assumptions and unsupported obligations. All selected behavior checks without typed contracts stay "not specified", never "verified"; no labels or module names prove payload semantics, transitions or side effects. A fresh review is sent back before edits commit even if you end your response. You may repair at most two response batches after receiving a review, within the normal 16-round limit; review again after edits. Warnings remain saveable: fix represented facts or explicitly report what remains. askUser still ends the turn immediately. The server appends the actual saved-edit and unresolved-review result.
@@ -174,6 +177,7 @@ const schemas = {
     commands: z.array(studioCommandSchema).min(1).max(50),
   }),
   validateDesign: z.strictObject({}),
+  readReadiness: z.strictObject({}),
   declareReviewScope: studioReviewScopeSchema,
   reviewDesign: z.strictObject({}),
   askUser: z.strictObject({
@@ -205,6 +209,8 @@ const descriptions: Record<ToolName, string> = {
   applyStudioCommands:
     "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
   validateDesign: "Read current readiness findings. Findings do not establish runtime support.",
+  readReadiness:
+    "Read the same snapshot compatibility report as the mouse and blueprint v3: full structural validity, exact contract completeness, implementation availability and exact-output runtime evidence separately. Read-only; supplies no registry, generator or runtime proof and does not replace staged review.",
   declareReviewScope:
     "Explicitly replace this turn's review scope: selected pattern/checklist IDs, assumptions and custom unsupported obligations. No persistent design setting or capability contract is created. Retrieve patterns before selecting their IDs.",
   reviewDesign:
@@ -297,6 +303,7 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
   const bindings = new Map(studio?.elements.map((item) => [item.element, item]));
   const connections = new Map(design.connections.map((item) => [item.id, item]));
   const linkSettings = new Map(studio?.connections.map((item) => [item.connection, item.settings]));
+  const readiness = designReadiness(design);
   /** A link into a store: `write` from its owner, `read` otherwise (one writer per store). */
   const accessOf = (id: string) => {
     const access = studioStoreAccess(design, id);
@@ -321,6 +328,24 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
   return {
     baseRevision: design.revision,
     schemaVersion: design.schemaVersion,
+    readiness: {
+      compositionSha256: readiness.composition.sha256,
+      generationEligible: readiness.generationEligible,
+      ...Object.fromEntries(
+        (
+          [
+            "designValidity",
+            "contractCompleteness",
+            "implementationAvailability",
+            "runtimeEvidence",
+          ] as const
+        ).map((stage) => [
+          stage,
+          { status: readiness[stage].status, blockers: readiness[stage].blockers.length },
+        ]),
+      ),
+      detailTool: "readReadiness",
+    },
     persistentScope: {
       ...designScope(design),
       profileStatus: profileStatus(designScope(design)),
@@ -567,6 +592,9 @@ export class Workspace {
       case "validateDesign":
         this.log(tool, true, "Checked design readiness");
         return { findings: validateDesign(this.working) };
+      case "readReadiness":
+        this.log(tool, true, "Read exact composition compatibility and evidence gaps");
+        return designReadiness(this.working);
       case "askUser":
         this.question = parsed.data as z.infer<typeof schemas.askUser>;
         this.log(tool, true, "Asked a question");

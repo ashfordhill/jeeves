@@ -58,6 +58,7 @@ import { OperationsSummary } from "../studio/OperationsSummary.tsx";
 import { OwnershipForm } from "../studio/OwnershipForm.tsx";
 import { OwnershipSummary } from "../studio/OwnershipSummary.tsx";
 import { useStudioPreferences } from "../studio/preferences.ts";
+import { ReadinessReport } from "../studio/ReadinessReport.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
@@ -465,6 +466,25 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 <IconX size={17} />
               </button>
             </div>
+            <ReadinessReport
+              design={loaded.design}
+              onTarget={(target) => {
+                if (target.operation) {
+                  const receiver = designOperations(loaded.design).receivers.find(
+                    (item) => item.id === target.operation,
+                  );
+                  if (receiver) {
+                    select({ tile: receiver.role });
+                    setOperationPick(receiver.id);
+                  }
+                } else if (target.owner) {
+                  select({});
+                  setOwnerPick(target.owner);
+                  setFocusTile(undefined);
+                } else if (target.connection) select({ line: target.connection });
+                else if (target.element) select({ tile: target.element });
+              }}
+            />
             <OwnershipSummary
               design={loaded.design}
               element={selection.tile}

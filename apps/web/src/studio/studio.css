@@ -311,6 +311,68 @@
   cursor: default;
 }
 /* Component inspector facts, readiness and field help. */
+.readiness-report {
+  margin: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--grid-dot);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.readiness-report summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.readiness-stages {
+  margin: 12px 0;
+}
+.readiness-stages > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+.readiness-stages dd {
+  margin: 0;
+  font-weight: 600;
+}
+.readiness-eligibility {
+  margin: 8px 0;
+}
+.readiness-blockers {
+  margin-top: 10px;
+}
+.readiness-blockers ul {
+  padding-left: 16px;
+}
+.readiness-blockers li {
+  margin: 10px 0;
+}
+.readiness-blockers p {
+  margin: 4px 0;
+}
+.readiness-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.readiness-targets button {
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.readiness-path,
+.readiness-hash {
+  display: block;
+  overflow-wrap: anywhere;
+  margin-top: 5px;
+}
 .studio-component-meta {
   display: grid;
   grid-template-columns: auto 1fr;

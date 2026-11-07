@@ -1,0 +1,14 @@
+{
+  "results": [],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "67399728-aad0-432f-b3df-6b0b794e7892",
+      "status": 204
+    },
+    {
+      "id": "b68e10b6-83e4-4027-9b8e-02d3d68cf576",
+      "status": 204
+    }
+  ]
+}

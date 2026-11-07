@@ -4690,3 +4690,41 @@ artifacts to certify. Preserve NC03 Create identity, unknown refs, current decla
 and old owner projects. NC06 owns the new narrow study; the separate backend remains a plan.
 
 Local commit: **NC04: bind public Resolve and positive cache contracts**.
+
+## 2026-11-07 — NC05: exact snapshot compatibility and evidence report
+
+NC05 only after `7b789a7`, primary main, one writer. Coordinator reviewed the model before coding
+and accepted final both-size report/target views. No branch/delegation/push/backend/generator/
+live call or owner-project/preset migration; frozen NC03/04 JSON and `.jeeves-feedback/` preserved.
+
+One read-only report serves inspector, blueprint v3 and `readReadiness {}`; chat context carries
+compact statuses/counts/hash. Full validity, exact contracts, implementation availability and
+exact-output evidence stay separate; first generation does not require future output evidence.
+Whole-design coverage blocks generic/unknown/custom/extra behavior. Concrete verifier availability
+is separate from known auth intent. Create retained-result reads now require explicit read-write
+source intent/grant; old write-only declarations remain saveable targeted gaps. V2/read purity
+remain exact. Fixed profile digest `40130ff2…441985`; trusted positive fixtures test trust plumbing
+only. Product has no registry/manifests/output/evidence. [Report/hash/trust details](studio-readiness.md);
+README/PLAN/catalog/studio docs, G6/NC05, playbook and append-only feedback are current.
+
+Frozen Node 24.21.0 checks: **344 tests / 42 files**, lint/all typechecks; **29 native E2Es**
+(47.7s); web build (existing chunk advisory), final lint/diff pass. First PGlite integration timeout
+7.38s was aligned from default 5s to existing 15s; full sequence reran. Actual ChatService preserves
+two-repair/fresh-review gates and report parity; strict codec unchanged. New tool 0/0/depth 1,
+462 bytes; giant union 427/538/depth 9 unchanged. Actual byte deltas/audit, twelve offline replay
+pairs, old RF06 drift and open Mini/live acceptance are in [evidence](plans/reliable-foundations/evidence/nc05/README.md).
+
+Mouse 1440×900 / 1280×800: default 11 tiles / 12 lines; narrow valid/complete/unavailable/none;
+operation/role/edge/owner targets reach actual chat/history. Required custom/unknown profile/extra
+owner stay blocked; Undo/reload restore; report/focus/Fit/selection preserve full export. Zero
+browser errors. Fourteen PNGs, exact audits/results and retained failed helper/history-race logs
+are linked above. All own scratch projects deleted 204; e2e DB retains only default TinyURL. Only
+own 4312/4302 listeners/settings removed; owner 4300/4310 remain and revisions stay 53/1/1.
+
+Next NC06 adds the narrow study. Legacy topology warnings can contradict explicit authority/grants;
+prefer explicit-access warnings with legacy fallback, not copying fixture legacy writers to hide
+warnings. Read/publish ports, returned-data arrows, YouTube semantics, overview readability and
+owner usability remain open. Real runtime/adapters/clocks/concurrency proof stays in the separate
+backend later; NC14 independently reviews the small subset.
+
+Local commit: **NC05: report exact snapshot compatibility and evidence gaps**.

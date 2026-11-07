@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { containerContext } from "./architecture.ts";
 import type { DesignDocument } from "./design.ts";
+import { designReadiness } from "./design-readiness.ts";
 import {
   designScope,
   designScopeFindings,
@@ -23,6 +24,7 @@ import {
   operationContractsSchema,
 } from "./operation-contracts.ts";
 import { designOwnership, ownershipFindings, ownershipSchema } from "./ownership.ts";
+import { designReadinessSchema } from "./readiness-types.ts";
 import { connectionPresentation, relationshipInteractionSchema } from "./relationship-display.ts";
 import {
   type StudioComponentTargetKind,
@@ -281,6 +283,7 @@ export const designBlueprintV3Schema = designBlueprintSchema.extend({
   legacyAccess: z.literal("inferred-from-ownership; not a declared operation grant"),
   templateAvailability: z.literal("none"),
   runtimeVerification: z.literal("none"),
+  readiness: designReadinessSchema,
 });
 export type DesignBlueprintV3 = z.output<typeof designBlueprintV3Schema>;
 export function designBlueprintV3JsonSchema() {
@@ -336,6 +339,7 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
     legacyAccess: "inferred-from-ownership; not a declared operation grant",
     templateAvailability: "none",
     runtimeVerification: "none",
+    readiness: designReadiness(design),
   };
 }
 

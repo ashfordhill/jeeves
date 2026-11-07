@@ -5,6 +5,13 @@ inspector on the right. Everything in it is design intent. Nothing is provisione
 generated; a future code generator reads the [blueprint](studio-blueprint.md). Field values are
 listed in [studio settings](studio-settings.md).
 
+Open **Compatibility report** in the inspector to see four separate results for the saved
+snapshot: design validity, exact contracts, implementation availability and exact output evidence.
+Expand a blocker list and use its mouse buttons to select the exact role/resource, relationship,
+owner or operation for chat. Report, selection, focus and Fit never save or upgrade the design.
+There is no product template/evidence registry; availability stays unavailable and evidence none.
+The [report guide](studio-readiness.md) explains its exact composition identity and limitations.
+
 ## Projects
 
 The project menu (top right) lists recent projects and opens **New project**, the project browser

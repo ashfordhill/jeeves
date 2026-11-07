@@ -433,3 +433,21 @@ than migrate. Selected-profile namespace agreement is checked; arbitrary indepen
 remain legal. Unknown exact refs and incomplete declarations stay unresolved. The existing form,
 chat lookup/configure, preview/history, compact API count and blueprint share these declarations.
 No preset, saved project, provider adapter, template or backend runtime is added.
+
+### Exact snapshot compatibility report (NC05)
+
+`design-readiness.ts` uses full structural validation, exact profile/contract completeness and
+independent whole-design coverage. The inspector disclosure, blueprint v3 `readiness` and
+`readReadiness {}` share it; initial chat context carries a compact status/count/hash summary.
+`readiness-subject.ts` exposes the canonical semantic subject with all source settings, grants,
+bindings, deployables and names/prose, excluding only revision/origin and external layout/UI.
+`tinyurl-readiness-profile.json` pins the actual local profile definition and explicit three v1
+record refs; unrelated future records cannot alter its identity. Create requires read-write
+source intent/grant for retained-result lookup and writes; old write-only declarations remain
+saveable with a targeted contract gap. Concrete verifier availability remains a separate gap.
+
+`readiness-artifacts.ts` checks host-only pinned manifest/content/expected-output-receipt/evidence
+inputs, never a model/user manifest. A manifest supports one exact composition; positive paths
+exist only in isolated tests. Generation eligibility excludes output evidence to permit first
+generation, and never implies verification. Product availability is unavailable; evidence is
+none. [Report fields, hash rules and trust limits](docs/studio-readiness.md).

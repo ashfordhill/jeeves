@@ -63,6 +63,7 @@ and adds:
 | `legacyOwnership`, `roleMeaning` | Qualify preserved `resources[].owner` as inferred writer and services as canonical application tiles, which are not independent logical owners or necessarily separate processes. |
 | `legacyAccess` | `inferred-from-ownership; not a declared operation grant`. Existing access values do not gain permission semantics. |
 | `templateAvailability`, `runtimeVerification` | Both `none`. Selecting a profile supplies neither. |
+| `readiness` | Shared snapshot report: full structural validity, exact contract completeness, implementation availability, exact-output evidence, separate generation eligibility, targeted blockers/advisories/limits, and complete canonical `composition.subject` with its domain/profile/digest. Product availability remains unavailable and evidence none. [Fields and trust boundary](studio-readiness.md). |
 
 Stored schema v2 remains readable as-is and exports its identical v2 meaning. Explicit
 `upgradeDesign` creates schema v3 plus `scope` in one operation; `setDesignScope` requires v3.

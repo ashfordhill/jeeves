@@ -12,6 +12,7 @@ import {
   type DesignDocument,
   designOperations,
   designOwnership,
+  designReadiness,
   designScopeSchema,
   emptyOwnership,
   operationContractsSchema,
@@ -236,6 +237,7 @@ it("bounds resolve repairs through actual ChatService and leaves policy lookup/p
         configure("apply", variants[2]),
         configure("preview", variants[2]),
         { name: "describeOperation", arguments: { ref: positiveCachePolicy.ref } },
+        { name: "readReadiness", arguments: {} },
       ],
     },
     { text: "Saved resolve declarations. Runtime unavailable." },
@@ -270,6 +272,21 @@ it("bounds resolve repairs through actual ChatService and leaves policy lookup/p
     expect(turn.activity).toContainEqual(
       expect.objectContaining({ tool: "describeOperation", ok: true }),
     );
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({ tool: "readReadiness", ok: true }),
+    );
+    const finalRequest = h.requests[4];
+    const readCall = finalRequest?.items.find(
+      (item) => item.type === "tool-call" && item.name === "readReadiness",
+    );
+    const readResult =
+      readCall?.type === "tool-call"
+        ? finalRequest?.items.find(
+            (item) => item.type === "tool-result" && item.callId === readCall.callId,
+          )
+        : undefined;
+    if (readResult?.type !== "tool-result") throw new Error("Expected post-budget report result");
+    expect(JSON.parse(readResult.output)).toEqual(designReadiness(state.design));
     const undo = await h.call("POST", `/projects/${id}/undo`, {
       baseRevision: state.design.revision,
     });
@@ -913,12 +930,16 @@ describe("proposed-design review in ChatService", () => {
 
   it("forces review when the model ends, invalidates it after later commands, and saves warnings", async () => {
     const h = harness((request, round) => {
-      if (round === 0) return { toolCalls: [apply(firstUpload)] };
+      if (round === 0)
+        return { toolCalls: [apply(firstUpload), { name: "readReadiness", arguments: {} }] };
       if (round === 1) return { text: "Finished." }; // No explicit review call.
       if (round === 2) {
         expect(toolOutput(request).findings[0].target).toEqual({ element: "uploads" });
         return {
-          toolCalls: [apply({ type: "edit", element: "uploads", name: "Still missing storage" })],
+          toolCalls: [
+            apply({ type: "edit", element: "uploads", name: "Still missing storage" }),
+            { name: "readReadiness", arguments: {} },
+          ],
         };
       }
       if (round === 3) return { text: "Finished again." };
@@ -936,6 +957,7 @@ describe("proposed-design review in ChatService", () => {
     );
     expect(turn.reply).toContain("Unresolved: 1 design finding");
     expect(turn.activity.filter((item) => item.tool === "reviewDesign")).toHaveLength(2);
+    expect(turn.activity.filter((item) => item.tool === "readReadiness")).toHaveLength(2);
     expect(turn.activity.find((item) => item.tool === "reviewDetail")?.summary).toContain(
       "has no storage relationship",
     );

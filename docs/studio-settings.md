@@ -343,11 +343,14 @@ Legacy topology warnings still describe the inferred writer approximation. Targe
 ## Exact operation contracts (schema v3)
 
 **Operation contracts** in the inspector edits the optional top-level `operations` allowlist.
-Choose a finite operation and canonical API role. Create uses its authoritative database write
+Choose a finite operation and canonical API role. Create uses its authoritative database read-write
 connection and explicit 24-hour successful-key retention. Resolve uses its source primary read
 and positive-cache read-and-fill connections plus the pinned policy. Both bind existing
 entry/service callers. Receiver/call IDs are separate stable binding identities. There is no
-route/schema/policy editor, auth verifier implementation or arbitrary configuration map.
+route/schema/policy editor, auth verifier implementation or arbitrary configuration map. Its
+retained-result lookup and unknown-outcome reconciliation require explicit read-write dependency
+and role grant; old write-only declarations remain unchanged with a targeted missing-read gap.
+The inspector's [Compatibility report](studio-readiness.md) is view-only and adds no setting.
 
 Use **Preview operations** before **Save operations** (or explicit **Upgrade & save operations**
 from v2). It shows named changes, exact ref details and targeted unresolved/refused findings.

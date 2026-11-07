@@ -36,7 +36,7 @@ dependency needs a new decision; a gate below is not a request for repeated appr
 | G3: contracts and policies — recorded NC03 | Local immutable finite records with exact IDs/versions/schema hashes. Select a profile and bounded parameters; no route/entity/policy DSL or arbitrary expressions. Start with exact caller/receiver version equality; compatible evolution is a later explicit rule. | NC03; schema/command budget audit before adding tools. |
 | G4: version boundary — recorded NC01 | New stored design schema and blueprint **v3**, with explicit reader/writer migration. Existing default `/blueprint` stays v2 during rollout; explicit `?version=3` opts in. Legacy-only designs retain exact v2 meaning. A design using v3-only semantics refuses v2 export with a structured unsupported-content list, never a silently lossy success. Default-version switch is a separate final-review decision. | NC01; review API consumer impact and migration fixtures first. |
 | G5: first consistency policy — recorded NC04 | Authoritative primary lookup; immutable target; cache entries never outlive expiry; no negative cache initially, no browser/CDN redirect-response cache. Cache miss/outage falls back to authority; bounded outage protection is part of the profile. Create success follows durable commit; immediate resolve must find it. | NC04; cache fallback/overload behavior and finite parameter bounds are pinned in the profile. |
-| G6: runtime profile boundary | Recommend one future TypeScript/container, PostgreSQL, Redis-compatible cache and one messaging adapter. Jeeves records unresolved template bindings until an actual pinned manifest exists. Auth verification and provider-specific runtime adapters remain mandatory manifest requirements, not guessed implementations. | NC05 report can exist without a manifest; actual support requires a selected manifest. Backend repository/conventions remain unknown. |
+| G6: runtime profile boundary — recorded NC05 | Four independent report stages; generation eligibility excludes future output evidence. No product registry/manifests/verifiers/dependencies/outputs/evidence exist. Optional host-only pinned content resolver supports one exact semantic composition, with independently pinned expected output receipt and evidence. Positive trust plumbing stays isolated in tests. No runtime/language/provider support is guessed from future recommendations. | NC05 reports unavailable implementation and no runtime evidence honestly. Actual support requires a real trusted registry and backend proof; repository/conventions remain future dependencies. |
 | G7: expansion | Finish NC14 review of the small TinyURL contract and then its separate backend proof before considering messaging/video/checkout expansion. Expansion needs its own accepted scope. Mini/live strict acceptance is still an evidence gate; no additional live paid run is implicitly authorized here. | After NC06/NC14 and backend proof; NC07+ stay deferred. |
 | G8: same-owner return | Semantic relationships and finite state/result contracts may revisit one owner; overview/journey steps reference that same identity. Acyclic lane projection remains a view invariant. A repeated reference is visibly the same participant, not a second owner or generated service. | NC08/NC09; review one concrete Video → job → Transcoder → result → Video projection first. |
 
@@ -232,6 +232,20 @@ immediate read-after-create behavior need later backend HTTP/real-adapter tests.
 analytics adds publisher-coverage checks only when that extension is selected.
 
 ### NC05 — Readiness for the exact TinyURL contract, separate from implementation evidence
+
+**Progress, 2026-11-07:** G6 coordinator review accepted four independent stages, exact canonical
+composition/profile hashes, trusted content-addressed manifest/receipt/evidence inputs and compact
+mouse targets. One `designReadiness` function serves inspector, blueprint v3 and read-only chat;
+initial chat context carries only statuses/counts/hash. Product has no registry or output, so
+implementation is unavailable and runtime evidence none. First generation needs valid/complete/
+available, never future output evidence; eligibility is not verification. Full `validateDesign`
+and whole-design coverage block generic/legacy/unknown/custom/extra behavior. Create retained-
+result lookup/reconciliation now requires explicit read-write dependency/grant; old write-only
+intent stays saveable with a targeted gap, not migrated. Frozen operation records remain unchanged.
+Only isolated tests resolve compatible manifests and pinned output evidence; their bytes prove
+trust plumbing, not HTTP/storage/cache/concurrency runtime behavior. [Report identity, formats and
+limits](../../studio-readiness.md). NC06 owns the new narrow study; no owner project/preset,
+generator, backend, deployment or live/paid model call is added.
 
 **Depends:** NC04/G6. Expose a deterministic mouse/blueprint/chat compatibility report over the
 snapshot + exact profile + optional pinned template manifest. Report design validity, contract

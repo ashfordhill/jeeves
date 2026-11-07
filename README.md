@@ -7,6 +7,9 @@ no cycles. You configure each tile from a finite catalog of settings and provide
 talk to a chat assistant that edits the same design with the same rules. Every design is exposed
 as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). Code generation is not
 part of Jeeves: a future, separate service will read the blueprint and generate from it.
+The inspector, blueprint v3 and chat share a [snapshot compatibility report](docs/studio-readiness.md):
+structural validity, exact contracts, implementation availability and exact-output evidence stay
+separate. Product artifacts remain unavailable and runtime evidence remains none.
 
 The intention is to **reduce the amount of non-deterministic code and behaviour** when designing
 the foundations of web-based software systems. By keeping a diagram-based source of truth, we can

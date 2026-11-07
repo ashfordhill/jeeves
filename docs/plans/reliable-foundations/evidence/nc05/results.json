@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "legacyIncomplete": true,
+      "narrowCompleteArtifactsUnavailableEvidenceNone": true,
+      "operationRoleConnectionOwnerSelectionReachesActualChatAndHistory": true,
+      "readToolActivity": true,
+      "reportHashMatchesV3": true,
+      "focusFitSelectionPreserveFullBlueprint": true,
+      "requiredCustomBlockedMouseUndo": true,
+      "unknownProfileRetainedBlockedReadOnly": true,
+      "extraOwnerBlocked": true,
+      "reloadExact": true
+    },
+    {
+      "viewport": "1280x800",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "legacyIncomplete": true,
+      "narrowCompleteArtifactsUnavailableEvidenceNone": true,
+      "operationRoleConnectionOwnerSelectionReachesActualChatAndHistory": true,
+      "readToolActivity": true,
+      "reportHashMatchesV3": true,
+      "focusFitSelectionPreserveFullBlueprint": true,
+      "requiredCustomBlockedMouseUndo": true,
+      "unknownProfileRetainedBlockedReadOnly": true,
+      "extraOwnerBlocked": true,
+      "reloadExact": true
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "e2cbf447-eb80-4575-9322-7dc1974b50fd",
+      "status": 204
+    },
+    {
+      "id": "6c73ea4b-f9e8-44d0-a43a-597d896284de",
+      "status": 204
+    },
+    {
+      "id": "04f4142e-7a93-4697-9bc6-58e8047b5192",
+      "status": 204
+    },
+    {
+      "id": "dc153731-1d90-44c6-a34f-13af6b7cfea5",
+      "status": 204
+    }
+  ]
+}

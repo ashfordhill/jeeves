@@ -912,3 +912,19 @@ TTL precision or adapter behavior. Validate relevant typed module intent through
 and component links; an unrelated module on the same API must not force a new service. Several
 operations need a truthful compact count, individual inspector selection and optional unspecified
 global timeout when exact per-operation deadlines differ. Retain unknown siblings visibly.
+
+## 2026-11-07 exact snapshot readiness
+
+Show structural validity, complete declarations, implementation availability and exact output
+verification separately. First-generation eligibility cannot require output evidence that exists
+only after generation. A known authentication requirement is different from a concrete available
+verifier. Exact known operations do not cover unrelated APIs/modules/resources or prose. Retained
+idempotency results require explicit reads as well as writes; ownership/co-deployment supplies
+no hidden permission. Preserve old write-only declarations as targeted incomplete intent.
+
+Bind evidence conservatively to the entire semantic composition, including source names/prose
+until a template input contract proves they are ignored. Pin the actual profile definition and
+all artifact contents; a self-reported matching hash or verified flag is insufficient. A future
+trusted registry must independently establish expected output and acceptance policy. Static
+fixture checks of that boundary are not runtime proof. Keep the mouse report in the existing
+inspector, with exact target buttons, rather than turning this distinction into a broad badge.

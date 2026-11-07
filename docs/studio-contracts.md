@@ -23,8 +23,11 @@ the exact latest preview/revision; the entire save is one Undo step.
 
 A receiver has its own stable `id`, canonical `role` element, exact `implementation` signature
 and tagged `binding:{kind:"create-link",storeConnection,successRetentionHours,authVerifier}`.
-Create requires an explicit API role, its own source database, and both an explicit write
-request and write grant. Same-owner reads remain reads; co-deployment grants nothing. The
+Create requires an explicit API role, its own source database, and both an explicit read-write
+request and read-write grant: retained-result lookup and unknown-outcome reconciliation read the
+same source that atomically commits success. Existing write-only intent stays unchanged and
+saveable with a targeted missing-read contract gap; read-only still cannot satisfy writes.
+Same-owner reads remain reads; co-deployment grants nothing. The
 retention declaration is `24` hours or `null` (unspecified). The advanced verifier disclosure edits/clears a bounded exact ID/version/hash reference or
 null; no actual verifier manifest/registry exists, so either choice has a targeted unavailable /
 unresolved finding. Runtime availability is distinct from the known auth contract.
@@ -209,3 +212,16 @@ adapter evidence. No runtime handlers or simulated lookup are supplied as verifi
 illustrates atomic value/expiration mechanisms; [PostgreSQL isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
 explains committed-primary visibility. These sources do not choose the application's route,
 retention, bounds, adapter, provider or runtime version.
+
+## Exact snapshot report (NC05)
+
+The existing inspector's **Compatibility report**, blueprint v3 `readiness` and read-only chat
+`readReadiness {}` use the same full snapshot report. Design validity, exact contract completeness,
+implementation availability and exact generated-output evidence are independent. Generation
+eligibility requires the first three, without requiring future output evidence. Legacy/unknown/
+custom-unresolved or extended behavior cannot borrow support from the two known operations.
+Concrete auth-verifier availability is an implementation gap, separate from the known auth
+behavior contract. Product has no real manifest/registry/output/evidence. Trusted positive test
+inputs are isolated trust-plumbing fixtures, never runtime behavior evidence. The full canonical
+composition subject/hash, exact manifest/receipt/evidence formats and limits are documented in
+[Snapshot compatibility report](studio-readiness.md).

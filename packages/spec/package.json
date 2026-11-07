@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@jeeves/board": "workspace:*",
+    "@noble/hashes": "2.0.1",
     "zod": "4.5.4"
   }
 }

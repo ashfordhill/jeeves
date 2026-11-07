@@ -22,6 +22,21 @@ exports[`exact finite Create link declarations > preserves schema2 and explicit 
   "operationFindings": [
     {
       "code": "CONFIG_REQUIRED",
+      "message": "Create link retained-result lookup and unknown-outcome reconciliation require explicit source read-write dependency and role grant. Write alone supplies no read permission; co-deployment grants nothing.",
+      "severity": "error",
+      "target": {
+        "element": "shorten",
+        "path": [
+          "operations",
+          "receivers",
+          0,
+          "binding",
+          "storeConnection",
+        ],
+      },
+    },
+    {
+      "code": "CONFIG_REQUIRED",
       "message": "Trusted runtime auth verifier is unspecified and unavailable. The known operation requires verified issuer+subject, authenticity, issuer, audience and time validity; raw identity headers do not satisfy it.",
       "severity": "error",
       "target": {
