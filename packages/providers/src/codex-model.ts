@@ -34,8 +34,9 @@ export type CodexModelOptions = {
 };
 
 /**
- * The structured output Codex must produce. `arguments` is a JSON string because strict output
- * schemas can't describe "any object"; each tool's own schema is in the prompt instead.
+ * Only the outer answer is constrained. Each tool's canonical schema is in the prompt;
+ * `arguments` is a JSON string whose inner values are not constrained by this output schema.
+ * The server must parse and validate those arguments before executing a command.
  */
 export const codexAnswerSchema = {
   type: "object",

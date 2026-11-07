@@ -163,6 +163,20 @@ warnings remain saveable; structural errors still reject edits.
 
 ### RF05 — Constrain tool arguments without changing command semantics
 
+**Progress (2026-11-07): complete.** OpenAI Responses now sends strict function schemas through
+a provider-local audited codec; canonical tools/commands, the provider-neutral interface and
+Codex behavior stay intact. Ordinary optional nulls decode to omission; already-nullable
+optionals use a presence wrapper so `edit.owner` omission, clear and set remain distinct.
+Closed-object validation precedes normalization; unsupported keywords/references and unproven
+`oneOf` conversions refuse explicitly. All ten current tools compile, including RF04 scope;
+continuations re-encode canonical calls to the same strict wire representation. Server Zod
+refinements and graph rules remain authoritative. Required checks pass (225 unit tests, 23 E2E,
+web build); isolated mouse acceptance at both required sizes runs the actual OpenAI adapter
+against a loopback scripted Responses mock, proving rename/owner preservation, explicit clearing,
+Undo and askUser default/choice behavior. No external API/model was called. Evidence and honest
+provider/support limits are in the RF05 handoff and [tool-schema guide](../../chat-tool-schemas.md).
+Local commit: **RF05: preserve command semantics with strict OpenAI tools**. RF06 was not started.
+
 **Depends on:** RF04. **Areas:** provider tool serialization, tool schemas and focused tests.
 
 Introduce an explicit wire-schema adapter or narrower typed tools compatible with OpenAI strict

@@ -17,7 +17,13 @@ function sseFetch(events: Record<string, unknown>[], seen: unknown[] = []): type
 const request: ModelRequest = {
   model: "test-model",
   instructions: "Be brief.",
-  tools: [{ name: "getDesign", description: "Read the design.", parameters: { type: "object" } }],
+  tools: [
+    {
+      name: "getDesign",
+      description: "Read the design.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  ],
   items: [
     {
       type: "message",
@@ -85,7 +91,14 @@ describe("OpenAI adapter", () => {
       store: false,
       stream: true,
       include: ["reasoning.encrypted_content"],
-      tools: [{ type: "function", name: "getDesign", strict: false }],
+      tools: [
+        {
+          type: "function",
+          name: "getDesign",
+          strict: true,
+          parameters: { type: "object", properties: {}, required: [], additionalProperties: false },
+        },
+      ],
     });
     expect(body.input).toEqual([
       {
@@ -100,13 +113,16 @@ describe("OpenAI adapter", () => {
 
   it("maps tool calls, results, assistant text, and only its own opaque items", () => {
     expect(
-      toOpenAIInput([
-        { type: "message", role: "assistant", content: [{ type: "text", text: "Done." }] },
-        { type: "tool-call", callId: "c1", name: "getDesign", arguments: "{}" },
-        { type: "tool-result", callId: "c1", output: '{"ok":true}' },
-        { type: "opaque", provider: "openai", data: { type: "reasoning", id: "rs_1" } },
-        { type: "opaque", provider: "other", data: { anything: true } },
-      ]),
+      toOpenAIInput(
+        [
+          { type: "message", role: "assistant", content: [{ type: "text", text: "Done." }] },
+          { type: "tool-call", callId: "c1", name: "getDesign", arguments: "{}" },
+          { type: "tool-result", callId: "c1", output: '{"ok":true}' },
+          { type: "opaque", provider: "openai", data: { type: "reasoning", id: "rs_1" } },
+          { type: "opaque", provider: "other", data: { anything: true } },
+        ],
+        request.tools,
+      ),
     ).toEqual([
       { role: "assistant", content: "Done." },
       { type: "function_call", call_id: "c1", name: "getDesign", arguments: "{}" },
@@ -140,5 +156,48 @@ describe("OpenAI adapter", () => {
         }),
     });
     await expect(provider.respond(request)).rejects.toMatchObject({ kind: "auth" });
+  });
+
+  it("refuses unaudited schemas before transport and malformed wire calls before dispatch", async () => {
+    let fetched = false;
+    const provider = createOpenAIProvider({
+      apiKey: "sk-test",
+      fetch: async () => {
+        fetched = true;
+        throw new Error("Must not fetch");
+      },
+    });
+    await expect(
+      provider.respond({
+        ...request,
+        tools: [
+          {
+            name: "bad",
+            description: "",
+            parameters: { type: "object", properties: {}, additionalProperties: false, $ref: "#" },
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({ kind: "unsupported", message: expect.stringContaining("bad") });
+    expect(fetched).toBe(false);
+    for (const [name, argumentsJson] of [
+      ["getDesign", '{"extra":true}'],
+      ["getDesign", "{broken"],
+      ["unknown", "{}"],
+    ]) {
+      const malformed = createOpenAIProvider({
+        apiKey: "sk-test",
+        fetch: sseFetch([
+          {
+            type: "response.completed",
+            response: {
+              ...completed,
+              output: [{ type: "function_call", call_id: "c", name, arguments: argumentsJson }],
+            },
+          },
+        ]),
+      });
+      await expect(malformed.respond(request)).rejects.toMatchObject({ kind: "bad-request" });
+    }
   });
 });

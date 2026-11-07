@@ -4068,3 +4068,63 @@ schemas (RF05), evaluations (RF06), contract/generator milestones and previous o
 remain open. No fake solution tiles or general requirements editor were added.
 
 Local commit: **RF04: review staged designs before saving chat**.
+
+## 2026-11-07 — RF05: preserve command semantics with strict OpenAI tools (complete)
+
+Worked RF05 only after RF04 `8887b75`, on primary `main`, under the owner's sequential unit
+set authorization. No delegation, branches, worktrees, stash or push. Preserved
+`.jeeves-feedback/`, owner projects/settings, owner 4300/4310 and the `jeeves` database.
+RF06 was not started.
+
+Added finite provider-local `openai-schema.ts`: strict Responses function tools require all
+properties and closed objects; ordinary optional nulls represent omission. Already-nullable
+optionals use null for absence or `{value: ...}` for presence, including `{value: null}` to
+clear `edit.owner`. Defaults remain server behavior (`askUser.allowFreeText` remains true).
+Whole-value canonical/wire validation precedes normalization; no unknown keys are stripped.
+Returned ToolCall/ModelItem arguments are canonical and are deterministically re-encoded on
+history replay, preserving omitted versus cleared ownership and synthesized review calls.
+No domain schema/settings, canonical command meanings, provider-neutral shape or Codex behavior
+changed. Codex docs/comments/tests accurately say its outer structured answer contains argument
+JSON strings whose inner values are not constrained.
+
+Audited every current tool, including RF04 scope: canonical schemas contain 18 oneOf, 3 anyOf
+and no references. Only provably disjoint oneOf becomes anyOf; references and every unaudited
+keyword refuse with a schema path before transport. Bounds/enums/patterns remain explicit;
+const becomes a singleton enum and default/dialect annotations do not become command mutations.
+Emitted applyStudioCommands has 427 properties, 538 enum values, conservative nesting nine.
+Budget guards cover documented schema limits. The adapter's audited subset is intentionally
+narrower than OpenAI's full support; new constructs require deliberate codec coverage.
+Server Zod refinements, command builder, graph validation, atomic turns and Undo remain final.
+Current docs: `docs/chat-tool-schemas.md`, studio, README, CATALOG; playbook/feedback/progress updated.
+
+Checks (Node 24.21.0 first in PATH): `pnpm check` passes (Biome 221 files, all type checks,
+30 test files / 225 tests); `pnpm test:e2e` passes (23, native Chromium);
+`pnpm --filter @jeeves/web build` passes (existing chunk-size advisory); `git diff --check` passes.
+Mock fetch captures actual transmitted strict schemas for all ten tools, decodes nested
+add/edit/module/settings/from/connection/retry/scope calls, executes representative commands
+through Workspace and compares direct canonical results. Three request continuations preserve
+owner omission/clear/set exactly. Tests refuse malformed/extra nested input, unknown tools and
+unsupported constructs, while wire-valid Zod-refinement/lane-invalid calls still fail in
+Workspace without mutation. Unit tests need no key/network/Docker/Postgres.
+
+Browser evidence: `/tmp/jeeves-rf05-browser-o5PFdc/` (eight PNGs, `walkthrough.mjs`, `mock.mjs`,
+`requests.json`, `results.json`). Isolated 4302/4312, scratch JEEVES_HOME and `jeeves_e2e`; the actual
+OpenAI adapter used a loopback-only scripted Responses endpoint on 4313 with a fake credential.
+No external model/API calls. At 1440×900 and 1280×800 TinyURL renders (11 tiles/12 lines), fitted
+and focused; a mouse chat store rename preserves owner/purpose/settings, explicit-null clearing
+changes only owner, and one mouse Undo restores it. Question omission shows free-text entry;
+clicking Small works and changes no design. All eight captured strict requests pass mock
+assertions, including actual review continuations and strict history replay. No page/console
+errors or warnings. Inspected small owner/question and large focused screenshots. First script
+attempt checked Undo before its request finished; corrected it to await the new revision, then
+reran successfully. Both scratch projects deleted (204); E2E DB holds only default TinyURL.
+Only isolated servers/mock stopped; owner listeners remain.
+
+Remaining: no live API schema acceptance or model design quality evidence. Model variants may
+have narrower schema support and explicit API rejections are not silently downgraded. Codex's
+inner argument values are unconstrained until server validation. Strict shape cannot establish
+unmodeled lifecycle/ownership/access/business semantics, runtime templates or verification.
+RF06 may now exercise the intended model; RF07 still reviews the milestone. Prior overview and
+semantic-model limitations remain open. No generator work was introduced.
+
+Local commit: **RF05: preserve command semantics with strict OpenAI tools**.

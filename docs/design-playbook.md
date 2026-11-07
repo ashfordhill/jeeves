@@ -755,3 +755,19 @@ must not be credited to its Undo step. Show a compact saved/unresolved result an
 targeted requirements in a mouse disclosure. Review-only and semantic no-op turns need no design
 revision; a deleted project has no saved state to certify. Scripted transcripts and browser
 checks prove these boundaries, not improved live-model design judgment or runtime correctness.
+
+## 2026-11-07 chat follow-up: strict arguments preserve intent
+
+RF05 adds an audited [OpenAI wire schema](chat-tool-schemas.md), preserving the shared server
+commands. Missing information and an explicit clearing action are different design intents:
+renaming a store must not erase its owner because a provider requires every field. Nullable
+optional inputs need a separate presence representation; ordinary omission sentinels must still
+leave defaults to the server. Reject extra/malformed inputs before normalization, and retain
+canonical arguments when replaying tool history across requests.
+
+Strict generation constrains argument shape. It cannot establish lifecycle completeness,
+ownership/access correctness, business semantics or live-model design quality. Continue to use
+command/graph validation and explicit review obligations. Report provider support precisely:
+Codex's structured outer answer contains argument JSON strings whose inner values are not
+constrained by that output schema. Mocked HTTP acceptance proves transport/codec behavior, not
+live API acceptance, model judgment or a runtime template.

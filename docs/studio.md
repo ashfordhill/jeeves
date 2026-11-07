@@ -410,6 +410,12 @@ empty project starts with an `addAction` or an `addTile` from a lane that names 
 provider-reported cost appear only when complete. The model and provider are chosen in
 **Settings**. Chat and the inspector collapse and resize independently.
 
+OpenAI chat uses strict function schemas with a wire adapter that preserves omitted settings,
+defaults and explicit owner clearing. Codex constrains the outer answer only: its inner argument
+JSON strings still need server validation. Both providers use the same canonical commands and
+validators. See [tool argument schemas](chat-tool-schemas.md) for the audited subset and limits;
+strict arguments alone establish no architecture or runtime guarantee.
+
 Chat can retrieve four [reviewed design patterns](studio-patterns.md) through bounded
 `listStudioPatterns` and `describeStudioPattern` tools: cache-aside lookup, durable background
 jobs, committed publication to search, and pending-order/payment coordination. Its instructions

@@ -354,3 +354,22 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   review covers represented facts, not application completeness. Typed ownership, payload,
   lifecycle and business contracts, template/runtime evidence, strict tool wire schemas and
   measured live-model design quality remain open, along with prior overview-readability limits.
+
+- RF05, local commit titled **RF05: preserve command semantics with strict OpenAI tools**:
+  OpenAI function arguments now use an audited strict wire adapter; the shared server commands,
+  optional/default meanings and Codex path stay intact. Missing owner leaves ownership unchanged;
+  an explicit presence wrapper permits clearing it. Extra/malformed wire fields refuse before
+  normalization, unsupported schema constructs refuse explicitly, and canonical history replays
+  consistently into subsequent strict Responses requests. Server refinements and graph validation
+  still decide whether a command can run. All ten current tool schemas, including review scope,
+  have mocked transport coverage. Codex constrains only its outer answer; argument JSON strings
+  are not internally constrained by that output schema.
+- RF05 checked by 225 network-free unit tests, 23 E2E tests and web build. Isolated mouse checks
+  at 1440×900 and 1280×800 used the actual OpenAI adapter with a loopback scripted Responses
+  mock: TinyURL loads; a store rename preserves its owner; explicit null clears it; one Undo
+  restores it; question omission retains free-text entry and the choice works by mouse. Eight
+  strict requests include real review continuations and canonical-to-wire history replay.
+  No live API/model was called. Evidence is in the RF05 [handoff](handoff.md).
+- Still open after RF05: actual live schema/model acceptance and measured model design quality
+  (RF06), the prior ownership/lifecycle/contract/generator questions, template/runtime evidence
+  and overview readability limits. Strict argument shape does not resolve these architecture gaps.

@@ -150,6 +150,16 @@ describe("Codex as a model provider", () => {
     expect(plain.toolCalls).toEqual([]);
   });
 
+  it("leaves inner argument strings unconstrained for authoritative server validation", async () => {
+    const argumentsJson = '{"extra":null}';
+    const { codex } = recorded([
+      JSON.stringify({ message: "", toolCalls: [{ name: "getDesign", arguments: argumentsJson }] }),
+    ]);
+    const response = await createCodexModelProvider({ codex }).respond(request);
+    expect(response.toolCalls[0]?.arguments).toBe(argumentsJson);
+    expect(codexAnswerSchema.properties.toolCalls.items.properties.arguments.type).toBe("string");
+  });
+
   it("reports Codex failures as provider errors", async () => {
     const { codex } = recorded([
       [{ type: "turn.failed", error: { message: "You've hit your usage limit." } }],

@@ -10,6 +10,7 @@ import type {
   ResponseOutputItem,
 } from "openai/resources/responses/responses";
 import { assertSupported, ProviderError } from "./errors.ts";
+import { type StrictArguments, strictArguments } from "./openai-schema.ts";
 import type {
   ModelItem,
   ModelProvider,
@@ -43,13 +44,14 @@ export function createOpenAIProvider(options: OpenAIProviderOptions): ModelProvi
     async respond(request: ModelRequest, opts: RespondOptions = {}): Promise<ModelResponse> {
       assertSupported(this, request);
       let final: Response | undefined;
+      const codecs = compileTools(request.tools);
       try {
         const stream = await client.responses.create(
           {
             model: request.model,
             instructions: request.instructions,
-            input: toOpenAIInput(request.items),
-            tools: request.tools.map(toOpenAITool),
+            input: encodeInput(request.items, codecs),
+            tools: request.tools.map((tool) => wireTool(tool, codecFor(codecs, tool.name))),
             store: false,
             include: ["reasoning.encrypted_content"],
             max_output_tokens: request.maxOutputTokens,
@@ -80,23 +82,69 @@ export function createOpenAIProvider(options: OpenAIProviderOptions): ModelProvi
         throw toProviderError(error);
       }
       if (!final) throw new ProviderError(OPENAI, "unavailable", "OpenAI ended the stream early.");
-      return fromOpenAIResponse(final);
+      try {
+        return fromOpenAIResponse(final, codecs);
+      } catch (cause) {
+        throw new ProviderError(
+          OPENAI,
+          "bad-request",
+          `OpenAI returned invalid tool arguments: ${cause instanceof Error ? cause.message : String(cause)}`,
+          { cause },
+        );
+      }
     },
   };
 }
 
+function compileTools(tools: readonly ToolDefinition[]): Map<string, StrictArguments> {
+  const codecs = new Map<string, StrictArguments>();
+  for (const tool of tools) {
+    try {
+      if (codecs.has(tool.name)) throw new Error(`Duplicate tool name ${tool.name}`);
+      codecs.set(tool.name, strictArguments(tool.parameters));
+    } catch (cause) {
+      throw new ProviderError(
+        OPENAI,
+        "unsupported",
+        `Cannot constrain OpenAI tool ${tool.name}: ${cause instanceof Error ? cause.message : String(cause)}`,
+        { cause },
+      );
+    }
+  }
+  return codecs;
+}
+
 export function toOpenAITool(tool: ToolDefinition): FunctionTool {
+  return wireTool(tool, strictArguments(tool.parameters));
+}
+
+function wireTool(tool: ToolDefinition, codec: StrictArguments): FunctionTool {
   return {
     type: "function",
     name: tool.name,
     description: tool.description,
-    parameters: tool.parameters,
-    // Strict mode needs every property required; our operation schemas have optional fields.
-    strict: false,
+    parameters: codec.parameters,
+    strict: true,
   };
 }
 
-export function toOpenAIInput(items: readonly ModelItem[]): ResponseInputItem[] {
+export function toOpenAIInput(
+  items: readonly ModelItem[],
+  tools: readonly ToolDefinition[],
+): ResponseInputItem[] {
+  return encodeInput(items, compileTools(tools));
+}
+
+function codecFor(codecs: Map<string, StrictArguments>, name: string): StrictArguments {
+  const codec = codecs.get(name);
+  if (!codec) throw new Error(`Unknown tool ${name}`);
+  return codec;
+}
+
+function encodeInput(
+  items: readonly ModelItem[],
+  codecs: Map<string, StrictArguments>,
+): ResponseInputItem[] {
   const input: ResponseInputItem[] = [];
   for (const item of items) {
     switch (item.type) {
@@ -124,7 +172,7 @@ export function toOpenAIInput(items: readonly ModelItem[]): ResponseInputItem[] 
           type: "function_call",
           call_id: item.callId,
           name: item.name,
-          arguments: item.arguments,
+          arguments: codecFor(codecs, item.name).encode(item.arguments),
         });
         break;
       case "tool-result":
@@ -138,7 +186,10 @@ export function toOpenAIInput(items: readonly ModelItem[]): ResponseInputItem[] 
   return input;
 }
 
-export function fromOpenAIResponse(response: Response): ModelResponse {
+function fromOpenAIResponse(
+  response: Response,
+  codecs: Map<string, StrictArguments>,
+): ModelResponse {
   const items: ModelItem[] = [];
   const toolCalls: ToolCall[] = [];
   let text = "";
@@ -154,7 +205,11 @@ export function fromOpenAIResponse(response: Response): ModelResponse {
         content: [{ type: "text", text: messageText }],
       });
     } else if (output.type === "function_call") {
-      const call = { callId: output.call_id, name: output.name, arguments: output.arguments };
+      const call = {
+        callId: output.call_id,
+        name: output.name,
+        arguments: codecFor(codecs, output.name).decode(output.arguments),
+      };
       toolCalls.push(call);
       items.push({ type: "tool-call", ...call });
     } else if (output.type === "reasoning") {

@@ -294,10 +294,14 @@ their existing catalogs, and unsupported lifecycle returns do not authorize work
 The design chat uses one provider and model chosen in Settings
 ([`packages/providers`](packages/providers/src/catalog.ts)):
 
-| Provider | Credentials |
-| --- | --- |
-| OpenAI API | `OPENAI_API_KEY` or `openai.apiKey` in `~/.jeeves/config.json` |
-| Codex | its own CLI login (`codex login`); Jeeves never sees the credentials |
+| Provider | Credentials | Tool argument constraints |
+| --- | --- | --- |
+| OpenAI API | `OPENAI_API_KEY` or `openai.apiKey` in `~/.jeeves/config.json` | Strict function schemas through an audited wire adapter; canonical server validation still applies. |
+| Codex | its own CLI login (`codex login`); Jeeves never sees the credentials | Outer structured answer only; inner argument JSON strings are validated by the server. |
+
+The [tool-schema guide](docs/chat-tool-schemas.md) documents omission/null encoding, the supported
+subset, history replay and explicit refusal of unaudited schema constructs. Strict arguments do
+not prove architecture quality or runtime behavior; live-model evidence remains separate.
 
 ## Studies
 

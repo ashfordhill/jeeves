@@ -49,6 +49,10 @@ environment, or `openai.apiKey` in `~/.jeeves/config.json`) or Codex using its o
 overrides the directory). Keys never leave the server process and never belong in the
 repository. The studio works without a provider.
 
+OpenAI tools use an [audited strict wire schema](docs/chat-tool-schemas.md) that preserves existing
+command defaults. Codex's outer structured answer leaves inner argument strings unconstrained;
+the server validates every provider's commands.
+
 ## Test
 
 ```sh

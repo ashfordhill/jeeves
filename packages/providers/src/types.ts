@@ -16,6 +16,7 @@ export type ContentPart =
  */
 export type ModelItem =
   | { type: "message"; role: "user" | "assistant"; content: ContentPart[] }
+  /** Canonical argument JSON; adapters decode from/re-encode to any provider wire format. */
   | { type: "tool-call"; callId: string; name: string; arguments: string }
   | { type: "tool-result"; callId: string; output: string }
   /**
@@ -27,7 +28,7 @@ export type ModelItem =
 export type ToolDefinition = {
   name: string;
   description: string;
-  /** JSON Schema for the arguments object. */
+  /** Canonical JSON Schema. Provider wire restrictions must not change server command semantics. */
   parameters: Record<string, unknown>;
 };
 
@@ -39,6 +40,7 @@ export type ModelRequest = {
   maxOutputTokens?: number;
 };
 
+/** Arguments use the same canonical representation as tool-call ModelItems. */
 export type ToolCall = { callId: string; name: string; arguments: string };
 
 /** Token usage as reported by the provider. `null` on a response means "unknown". */
