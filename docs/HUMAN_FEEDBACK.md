@@ -285,3 +285,25 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   obscure individual route identity, and returning lines still wrap intervening tiles. RF01
   improves notation, not the routing; RF02 owns focus and tracing. The architectural, ownership,
   contract, model-evaluation and generator questions above remain open.
+- RF02, local commit titled **RF02: focus and trace individual relationships**: a selected tile's
+  **Focus relationships** lists incoming/outgoing endpoints, saved verbs and Request/Async
+  interactions. Selecting a row isolates that exact saved relationship while retaining the
+  focus tile and list. The canvas shows shown/hidden counts, **Fit focus** and **Show all**;
+  dimmed context tiles remain clickable. The selected return's X remains, with a screen-size
+  **Remove relationship** alternative using the same removal and Undo.
+- RF02 separates two Watch API vertical stems inside the existing gap and draws a small gap at
+  proper crossings. Shared/overlapping mouse targets offer **Choose relationship** with endpoint
+  names and labels, instead of silently selecting whichever SVG route is on top. No tiles moved,
+  gaps widened, service identities duplicated or dependencies removed. Study topology, total/
+  longest route lengths and crossing counts are preserved; pairwise vertical overlap in YouTube
+  falls from 160px to 80px. Focus, selection and fitting leave the complete blueprint unchanged.
+- RF02 verified Transcoder → Original videos (**Reads originals**), Transcoder → Transcoded
+  videos (**Stores segments, playlists and thumbnails**), Watch API → Metadata database (**Reads
+  video details on a miss**), and the independent Completion handler/Search indexer writes, by
+  mouse at 1440×900 and 1280×800. TinyURL and Marketplace focus, return X removal/Undo and Show all
+  also pass. Required checks pass: 182 unit tests, 21 E2E tests and web build. Screenshots and
+  detailed evidence are in the RF02 [handoff](handoff.md).
+- Still open after RF02: fitted full-overview names remain small; crowded shared stems and long
+  U returns can still resemble buses or frames. Focus makes individual relationships traceable;
+  it does not resolve logical ownership/grouping, asynchronous lifecycle semantics, architecture
+  completeness or the later contract/generator work. Earlier unresolved feedback remains open.

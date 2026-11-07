@@ -69,6 +69,8 @@ export async function clickLine(page: Page, id: string) {
     throw new Error("No visible stretch of this line can be clicked.");
   });
   await page.mouse.click(point.x, point.y);
+  const chooser = page.getByRole("dialog", { name: "Choose relationship" });
+  if (await chooser.isVisible()) await chooser.locator(`[data-line-id="${id}"]`).click();
   await expect(page.locator(`.board .react-flow__edge[data-id="${id}"]`)).toHaveClass(/selected/);
 }
 

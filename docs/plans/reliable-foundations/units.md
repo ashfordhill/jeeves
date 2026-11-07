@@ -71,6 +71,16 @@ runtime behavior.
 
 ### RF02 — Trace a path without deciphering shared trunks
 
+**Progress (2026-11-07): complete.** Mouse relationship focus keeps a stable tile anchor,
+incoming/outgoing endpoint and verb lists, exact route selection, hidden counts, Fit focus and
+Show all. Overlap clicks offer an explicit chooser; proper crossings have visual gaps. A bounded
+route pass separates two Watch API vertical stems without moving any tiles, widening gaps or
+changing the three studies' route lengths/crossing counts. Required checks pass (182 unit tests,
+21 E2E tests, production build); mouse acceptance covers all studies at both required sizes,
+including focused return X removal/Undo and unchanged blueprints. Full-overview small names,
+crowded shared stems and frame-like returns remain documented. Evidence: RF02 handoff. Local
+commit: **RF02: focus and trace individual relationships**. RF03 was not started in this unit.
+
 **Depends on:** RF01. **Areas:** canvas/board routes, selection, inspector connection list.
 
 Add an explicit mouse-driven way to focus a selected tile's incoming/outgoing relationships and

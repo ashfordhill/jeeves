@@ -465,3 +465,40 @@
   outline: 4px dashed var(--board-select);
   outline-offset: 8px;
 }
+
+.board .react-flow__node.is-muted {
+  opacity: 0.22;
+}
+.board-line-chooser {
+  position: absolute;
+  z-index: 10;
+  box-sizing: border-box;
+  width: 324px;
+  max-width: calc(100% - 16px);
+  max-height: 250px;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--board-line);
+  border-radius: 8px;
+  background: var(--board-tile);
+  box-shadow: 0 4px 12px var(--board-shadow);
+  font-size: 13px;
+}
+.board-line-chooser button {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid var(--board-dot);
+  border-radius: 5px;
+  background: var(--board-paper);
+  color: var(--board-ink);
+  text-align: left;
+  font: inherit;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.board-line-chooser button span {
+  font-size: 12px;
+}

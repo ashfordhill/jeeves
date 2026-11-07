@@ -4,6 +4,10 @@ The blueprint is the part of a design that a code generator reads. Code generati
 future service and is not built here. The studio writes through operations; the blueprint is
 derived on every request and is never stored or edited.
 
+Canvas relationship focus, hidden/dimmed counts, route selection and Fit focus are view state.
+They neither filter this endpoint nor change the design revision: the blueprint always includes
+every saved relationship.
+
 ```text
 studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ generator (future, separate)
 ```

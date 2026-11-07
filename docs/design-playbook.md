@@ -689,3 +689,25 @@ they do not solve overlapping routes. Keep those concerns for focus/tracing rath
 stores or inventing services. A saved label such as “Reads originals” explains intent; access
 still follows ownership, and the current model cannot distinguish an owner's individual read
 from a write.
+
+## 2026-11-07 tracing follow-up: relationship focus
+
+RF02 keeps relationship identity separate from the view: a tile's incoming/outgoing list names
+endpoints, saved verbs and interactions; choosing a row isolates that exact relationship while
+retaining the tile as the focus anchor. Hidden relationship counts and Show all stay on the
+canvas. Fit focus includes the full route and both endpoint tiles. View filters never remove
+relationships from the saved design or blueprint.
+
+A wide line hit band is not evidence of which overlapping route the reader intended. Resolve
+clicks by distance to the visible routes and ask the reader to choose when several are equally
+close; keep direct list selection available. Distinguish proper crossings with a visual gap,
+while retaining the shared port stem as a junction. A bounded pass can separate vertical stems
+inside an existing gap without moving tiles or increasing crossings. When no safe grid slot is
+free, keep the topology and offer focus instead of inventing a service or dropping a dependency.
+
+Mouse review of the three studies confirms that focused returns are traceable, including
+Transcoder's originals read and transcoded write, Watch's metadata read, and the independent
+Completion handler and Search indexer writes. The complete fitted overview still has small names,
+shared stems and U-shaped returns that resemble frames. Focus improves inspection; it does not
+establish that the whole architecture is immediately readable or resolve logical ownership and
+asynchronous lifecycle modeling.

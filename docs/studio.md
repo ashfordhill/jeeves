@@ -46,6 +46,10 @@ future generator's frontend templates) which user flow each service serves.
   user's line to an action and entry lines are solid. Lines carry no words or chips; select one
   for its label, interaction, direction and inferred access in the inspector. The small **Request /
   Async** legend at the lower left opens these conventions by mouse and stays at screen size.
+- At a crossing, a small gap separates the routes; shared stems meet at a tile's port. Where
+  several routes are equally close to a mouse click, **Choose relationship** lists their
+  endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
+  decide which one is selected.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
   The selected tile shows its pull tabs ([Creating and connecting](#creating-and-connecting)) and
   a red X, and its own lines (in and out) turn the selection blue, drawn over the rest, so you can
@@ -53,6 +57,20 @@ future generator's frontend templates) which user flow each service serves.
   the same blue, with a red X ([Removing](#removing)).
   Modules (components) are not drawn; they are listed in their tile's inspector
   ([Inspector](#inspector)). C1 people, external systems and packages are not shown.
+
+Select a tile and click **Focus relationships** in the inspector to show only its incoming and
+outgoing relationships. The list gives each relationship's endpoints, saved verb and Request/Async
+interaction. Clicking a row selects that exact relationship and shows it alone, while keeping the
+tile's list open. **All for this tile** restores its incoming/outgoing view; clicking another tile
+changes the focus anchor. Other tiles stay visible as dimmed context and remain clickable.
+
+The canvas shows the number of relationships shown and hidden. **Fit focus** frames the shown
+routes and their endpoints, including returns; selecting another row keeps the camera stable.
+The ordinary **Fit** button frames the whole design. **Show all** restores every relationship.
+The selected line's X and the focus list's **Remove relationship** use the same removal/Undo
+operation. Focus, selection and both fit controls change no saved design, revision or blueprint.
+If the focus tile disappears, the view follows the removal's surviving selection when available,
+or shows all relationships.
 
 ## Layout and navigation
 
@@ -128,6 +146,9 @@ On the grid (`alignLayout` in `packages/board`, run on every layout):
 - Lines that turn in the same gap between columns run 32px apart, so every column and every
   vertical run sits on a grid line. A line that passes a column keeps the row ELK gave it there,
   16px from the tiles beside it (between two tiles 32px apart, half a step off the grid).
+- Shared vertical stems split into free grid slots in the same gap when that reduces overlap
+  without more crossings, cross-band clashes, short jogs or a line through a tile. This pass moves
+  no tiles and widens no gaps. Crowded gaps can still retain shared runs.
 
 Drag the paper to pan; the wheel zooms, and zooming out stops a little below the fit. The toolbar
 has **Select** (V), **Hand** (H; every drag pans, even from a tile, and nothing is selected) and
@@ -787,8 +808,9 @@ and all twenty components, with nothing omitted and no findings.
   YouTube's View counter → View counts, the Transcoder's store read/write, and the Completion
   handler's and Search indexer's nested writes. Their solid request strokes and target arrowheads
   distinguish them from asynchronous links; selecting the worker colours its lines, and selecting
-  a line shows its endpoints, label and access. The routes and shared trunks are unchanged;
-  arrowheads alone do not make every overview path unambiguous.
+  a line shows its endpoints, label and access. Relationship focus isolates an individual route
+  with its endpoints and verb list. The return geometry still wraps intervening tiles in the full
+  overview; focus does not claim to make that overview unambiguous.
 - Which column a store with several users takes depends on how many tiles its band has per
   column, so an edit elsewhere in a band can move it, and a store that gains a link out (only a
   board outside Jeeves allows it; Jeeves stores are end tiles) goes back to the column after its
@@ -804,9 +826,9 @@ and all twenty components, with nothing omitted and no findings.
   a store joins its other lines just before it (YouTube: the Transcoder's read joins the Upload
   service's write of Original videos). Lines of different lanes meet only in the last 32px before
   a shared tile. Selecting a tile colours its own lines,
-  which shows who reaches what. A click on a shared stretch still selects one of the lines on it;
-  when every stretch of that line is shared, its X sits at its middle, on the bus. To select or
-  remove a particular one, click its row in the tile's Connections list.
+  which shows who reaches what. A click on a shared stretch opens a chooser; when every stretch
+  of a selected line is shared, its X sits at its middle, on the bus. Relationship focus and the
+  tile's Connections list select a particular relationship directly by its row.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &

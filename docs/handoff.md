@@ -3870,3 +3870,76 @@ target segment cannot identify which upstream route owns it. This unit does not 
 those problems or the review's architectural questions. RF02 was not started.
 
 Local commit: **RF01: clarify relationship styles and direction**.
+
+## 2026-11-07 — RF02: focus and trace individual relationships (complete)
+
+Worked RF02 only, sequentially on primary `main` after RF01 `30f1c9b`, under the owner's plan
+authorization. No delegation, branches, worktrees, stash or push. Preserved `.jeeves-feedback/`,
+owner projects and owner 4300/4310. No pattern/chat/provider/generator work.
+
+**Focus relationships** keeps a tile anchor and incoming/outgoing endpoint, saved-verb and
+Request/Async lists. A row selects its exact saved edge ID and isolates that route while keeping
+the list open; **All for this tile** restores its immediate relationships. Other tiles stay
+dimmed and clickable; selecting another changes the anchor. A screen-size strip counts shown/
+hidden relationships and offers **Fit focus** (the complete route plus endpoints) and **Show
+all**. Selection keeps the camera stable. The return X remains, with **Remove relationship** in
+the list calling the same removal/Undo. Removed anchors follow a surviving selection or fall
+back to the full view. All focus/fitting is local view state, with no revision or blueprint edit.
+
+The generic board resolves line hits by distance to visible centrelines; equally close routes
+open a clamped, scrollable chooser with endpoint names and labels. SVG stacking cannot silently
+select a different overlapping route. The chooser wheel scrolls without zooming the canvas
+(covered by E2E). Proper crossings have a visual gap; shared port stems stay connected. A bounded
+post-routing pass separates vertical stems in free grid slots, rejecting more crossings/band
+clashes, short jogs, through-tile/chip routes, column changes or moves outside existing bounds.
+It skips chipped routes, moves no tiles and widens no gaps. Only YouTube's Watch → View counts
+and Watch → View events stems move x 576 → 608. Return geometry is unchanged. The board imports
+no Jeeves code; all previous topology/layout assertions remain intact.
+
+Diagnostics, before → after:
+
+| Study | Total line length | Longest | Crossings | Pairwise shared vertical length |
+| --- | --- | --- | --- | --- |
+| TinyURL | 2,752 → 2,752px | 416 → 416px | 0 → 0 | 64 → 64px |
+| Marketplace | 6,912 → 6,912px | 896 → 896px | 1 → 1 | 160 → 160px |
+| YouTube | 8,864 → 8,864px | 1,056 → 1,056px | 1 → 1 | 160 → 80px |
+
+All tile positions/bounds stay unchanged (1,024×832, 1,280×1,472 and 1,504×1,376px). No service
+identities, dependencies, ownership/access inference, settings, presets or blueprint semantics
+changed. Updated studio/blueprint docs and appended feedback Resolution, playbook and plan progress.
+
+Checks (Node 24.21.0 first in PATH), on the final implementation:
+
+- `pnpm check`: pass; Biome 215 files, all type checks, 27 test files / 182 tests.
+- `pnpm test:e2e`: 21 passed, native Chromium.
+- `pnpm --filter @jeeves/web build`: pass, existing chunk-size advisory.
+- `git diff --check`: pass. Added route-identity/crossing/bounds/Watch-stem tests and E2E for
+  focus, unchanged blueprints/positions, chooser scrolling, return removal/Undo and anchor removal.
+  Corrected a deletion assertion to await that exact route's disappearance before reading storage.
+
+Browser: isolated 4302/4312, scratch JEEVES_HOME, scripted chat and `jeeves_e2e`, Chromium by
+mouse. All three studies at 1440×900 and 1280×800: fitted, tile focus, single route, Fit focus,
+0.95 zoom, return X removal/Undo, anchor changes and Show all. All six return Xs stayed fully
+visible. Traced Transcoder reads Originals/writes Transcoded, Watch reads metadata, and Completion
+handler/Search indexer writes independently; TinyURL's analytics and Marketplace's indexing
+returns also work. Hidden counts remain explicit (Transcoder 4 shown/21 hidden; selected route
+1/24). Selection/focus/fitting preserve the exact blueprint; remove/Undo restores its semantics
+apart from revision, and tile positions restore after animation. Actual overlapping mouse choice
+and zoomed crossing checked at both sizes. Successful runs had no page/console errors or warnings.
+All scratch projects deleted (204); E2E DB again holds only default TinyURL. Only my servers stopped.
+
+Evidence: `/tmp/jeeves-rf02-browser-UlF3da/` (50 PNGs, results.json and two scripts), including
+`youtube-1440-zoomed.png`, `youtube-1280-{transcoder-write,watch-metadata,handler-metadata,indexer-write,overlap-chooser,crossing}.png`,
+`tinyurl-1280-fit-focus.png` and `marketplace-1280-zoomed.png`; images inspected by me and several
+by the coordinator. Shortened the header to **All for this tile** after a tight long anchor name
+at 1280. Both-rails fits remain TinyURL 0.560/0.449, Marketplace 0.368/0.322, YouTube 0.377/0.303
+(1440/1280); the checked study returns Fit focus at 1.0. Watch's longer metadata route fits
+smaller, with screen-size endpoint/verb text in the list.
+
+Remaining: full-overview names need zoom, crowded same-band stems remain, and long U returns can
+still resemble frames. Focus makes individual routes traceable, not the whole overview instantly
+readable. Logical ownership, asynchronous lifecycle/return semantics, architecture completeness
+and generator contracts remain open. RF03 should expose those limits in its reviewed patterns;
+no schema migration is needed here. RF03 was not started.
+
+Local commit: **RF02: focus and trace individual relationships**.

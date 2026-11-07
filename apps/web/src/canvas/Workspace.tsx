@@ -51,6 +51,7 @@ import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { RailResize } from "./RailResize.tsx";
+import { RelationshipFocus } from "./RelationshipFocus.tsx";
 import { useLaneRemoval } from "./removal.tsx";
 import { TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
@@ -90,8 +91,26 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [pick, setPick] = useState<BoardSelection>(() => startsSelected(graph));
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
+  const [focusTile, setFocusTile] = useState<string>();
   const board = useRef<BoardHandle>(null);
   const selection = liveSelection(graph, pick);
+  const anchor = graph.nodes.some((node) => node.id === focusTile) ? focusTile : undefined;
+  const focusedEdges = anchor
+    ? graph.edges.filter((edge) => edge.source === anchor || edge.target === anchor)
+    : undefined;
+  const visibleLines = focusedEdges
+    ?.filter((edge) => !selection.line || edge.id === selection.line)
+    .map((edge) => edge.id);
+  const emphasizedTiles = focusedEdges
+    ? [
+        ...new Set([
+          anchor as string,
+          ...focusedEdges
+            .filter((edge) => !selection.line || edge.id === selection.line)
+            .flatMap((edge) => [edge.source, edge.target]),
+        ]),
+      ]
+    : undefined;
 
   useEffect(() => {
     setHeaderHost(document.getElementById("studio-header-controls"));
@@ -141,6 +160,11 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     if (next.tile !== selection.tile || next.line !== selection.line)
       void formDrafts.flushProject(projectId, true);
     setPick(next);
+    if (anchor && next.tile) setFocusTile(next.tile);
+    if (anchor && next.line) {
+      const edge = graph.edges.find((item) => item.id === next.line);
+      if (edge && edge.source !== anchor && edge.target !== anchor) setFocusTile(edge.source);
+    }
     if (next.tile || next.line)
       setPreferences((current) =>
         current.inspectorOpen ? current : { ...current, inspectorOpen: true },
@@ -252,7 +276,24 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           onClear={() => select({})}
           creation={creation}
           removal={removal}
+          visibleLines={visibleLines}
+          emphasizedTiles={emphasizedTiles}
         />
+        {anchor ? (
+          <section className="lane-focus-status" aria-label="Relationship focus">
+            <span>
+              <strong>{laneNodeName(loaded.design, graph, anchor)}</strong> ·{" "}
+              {visibleLines?.length ?? 0} shown · {graph.edges.length - (visibleLines?.length ?? 0)}{" "}
+              relationships hidden
+            </span>
+            <button type="button" onClick={() => board.current?.fit(visibleLines)}>
+              Fit focus
+            </button>
+            <button type="button" onClick={() => setFocusTile(undefined)}>
+              Show all
+            </button>
+          </section>
+        ) : null}
         <div className="studio-tools" role="toolbar" aria-label="Canvas tools">
           <button
             type="button"
@@ -314,6 +355,18 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 <IconX size={17} />
               </button>
             </div>
+            {anchor || selection.tile ? (
+              <RelationshipFocus
+                design={loaded.design}
+                graph={graph}
+                anchor={anchor ?? (selection.tile as string)}
+                active={!!anchor}
+                selection={selection}
+                onFocus={() => setFocusTile(selection.tile)}
+                onSelect={select}
+                onRemove={(id) => removal.onRemoveLine?.(id)}
+              />
+            ) : null}
             <Inspector
               key={selection.tile ?? selection.line ?? LANE_ACTOR}
               loaded={loaded}

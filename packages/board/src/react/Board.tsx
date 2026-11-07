@@ -80,6 +80,7 @@ import {
   ZOOM_BOUNDS_PAD,
 } from "./camera.ts";
 import { BoardContext } from "./context.ts";
+import { crossingBridges, nearestLines } from "./lineGeometry.ts";
 import { type PullState, type TabSpec, TileChrome } from "./TileChrome.tsx";
 import { prefersReducedMotion, useAnimatedLayout } from "./useAnimatedLayout.ts";
 import { useBoardLayout } from "./useBoardLayout.ts";
@@ -106,8 +107,10 @@ export type LineSpec = {
   dashed: boolean;
   /** Draw an arrowhead at the target, following the routed line's final segment. */
   directed?: boolean;
-  /** Accessible name of the line; never drawn. */
+  /** Accessible name of the line; also shown in the overlap chooser. */
   label?: string;
+  /** Optional explanation in the chooser when several routes overlap. */
+  detail?: string;
   /** A box drawn on the line (phrasing content, such as an icon), kept clear by ELK. */
   chip?: Size & { content: ReactNode };
   /** `false`: the selected line shows no X (it goes with a tile). Default true. */
@@ -123,13 +126,17 @@ export type BoardSelection = { tile?: string; line?: string };
  */
 export type TileHud = { tile: string; content: ReactNode; marked?: readonly string[] };
 export type BoardMode = "select" | "hand";
-export type BoardHandle = { fit: () => void };
+export type BoardHandle = { fit: (lines?: readonly string[]) => void };
 
 export type BoardProps = {
   tiles: readonly TileSpec[];
   lines: readonly LineSpec[];
   engine: LayoutEngine;
   selected: BoardSelection;
+  /** View-only line filter. Every line still participates in layout. */
+  visibleLines?: readonly string[];
+  /** View-only emphasis: other tiles stay clickable but are dimmed. */
+  emphasizedTiles?: readonly string[];
   onSelectTile: (id: string) => void;
   onSelectLine: (id: string) => void;
   /** A click on empty paper. */
@@ -265,6 +272,8 @@ function Inner({
   lines,
   engine,
   selected,
+  visibleLines,
+  emphasizedTiles,
   onSelectTile,
   onSelectLine,
   onClear,
@@ -283,6 +292,10 @@ function Inner({
 }: Omit<BoardProps, "ref"> & { handle?: Ref<BoardHandle> }) {
   const rf = useReactFlow<TileNode, BoardLineEdge>();
   const hostRef = useRef<HTMLDivElement>(null);
+  const [lineChoice, setLineChoice] = useState<{ ids: string[]; x: number; y: number }>();
+  useEffect(() => {
+    if (selected.tile || selected.line || mode === "hand") setLineChoice(undefined);
+  }, [selected.tile, selected.line, mode]);
   const input = layoutInput(tiles, lines);
 
   const sizes: Record<string, Size> = {};
@@ -376,18 +389,40 @@ function Inner({
   useImperativeHandle(
     handle,
     () => ({
-      fit() {
+      fit(lineIds) {
         const pane = paneOf(hostRef.current);
         const current = shownRef.current;
-        const box = current ? unionTileBounds(current.positions, sizesRef.current) : undefined;
+        let box = current ? unionTileBounds(current.positions, sizesRef.current) : undefined;
+        if (current && lineIds?.length) {
+          const focused = lines.filter((line) => lineIds.includes(line.id));
+          const endpoints = new Set(focused.flatMap((line) => [line.source, line.target]));
+          box = unionTileBounds(
+            Object.fromEntries(
+              Object.entries(current.positions).filter(([id]) => endpoints.has(id)),
+            ),
+            sizesRef.current,
+          );
+          if (box)
+            for (const line of focused)
+              for (const point of current.routes[line.id] ?? []) {
+                const x = Math.min(box.x, point.x);
+                const y = Math.min(box.y, point.y);
+                box = {
+                  x,
+                  y,
+                  w: Math.max(box.x + box.w, point.x) - x,
+                  h: Math.max(box.y + box.h, point.y) - y,
+                };
+              }
+        }
         if (!pane || !layoutBoundsAreUsable(box)) return;
         const next = viewportToFitRect(pane, box);
         lastZoomRef.current = next.zoom;
-        originRef.current = "fit";
+        originRef.current = lineIds ? "user" : "fit";
         void rf.setViewport(next, { duration: prefersReducedMotion() ? 0 : ANIMATE_MS });
       },
     }),
-    [rf],
+    [rf, lines],
   );
 
   /* The board changed size (a rail opened or closed, the window resized): a fitted camera refits
@@ -437,7 +472,8 @@ function Inner({
     if (!host) return;
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey || e.deltaY === 0) return;
-      if (e.target instanceof Element && e.target.closest(".board-hud")) return;
+      if (e.target instanceof Element && e.target.closest(".board-hud, .board-line-chooser"))
+        return;
       e.preventDefault();
       e.stopPropagation();
       const pane = paneOf(host);
@@ -571,7 +607,7 @@ function Inner({
       draggable: false,
       connectable: false,
       selected: selected.tile === t.id,
-      className: `nopan${tileClass(t.id)}`,
+      className: `nopan${tileClass(t.id)}${emphasizedTiles && !emphasizedTiles.includes(t.id) ? " is-muted" : ""}`,
       width: t.w,
       height: t.h,
       measured: { width: t.w, height: t.h },
@@ -591,25 +627,34 @@ function Inner({
     selected.tile !== undefined && (l.source === selected.tile || l.target === selected.tile);
   const rank = (l: LineSpec) =>
     (selected.line === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
-  const edges: BoardLineEdge[] = [...lines]
-    .sort((a, b) => rank(a) - rank(b))
-    .map((l) => ({
-      id: l.id,
-      source: l.source,
-      target: l.target,
-      type: "line",
-      hidden: !placed(l.source) || !placed(l.target),
-      selected: selected.line === l.id,
-      ...(l.label ? { ariaLabel: l.label } : {}),
-      data: {
-        dashed: l.dashed,
-        ...(l.directed ? { directed: true } : {}),
-        ...(linked(l) ? { linked: true } : {}),
-        ...(l.label ? { label: l.label } : {}),
-        ...(l.chip ? { chip: l.chip.content } : {}),
-        ...(l.removable === false ? { fixed: true } : {}),
-      },
-    }));
+  const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
+  const visible = (id: string) => !visibleLines || visibleLines.includes(id);
+  const routes = Object.fromEntries(
+    Object.entries(shown?.routes ?? {}).filter(([id]) => visible(id)),
+  );
+  const edges: BoardLineEdge[] = ordered.map((l, i) => ({
+    id: l.id,
+    source: l.source,
+    target: l.target,
+    type: "line",
+    hidden: !visible(l.id) || !placed(l.source) || !placed(l.target),
+    selected: selected.line === l.id,
+    ...(l.label ? { ariaLabel: l.label } : {}),
+    data: {
+      dashed: l.dashed,
+      ...(l.directed ? { directed: true } : {}),
+      ...(linked(l) ? { linked: true } : {}),
+      ...(l.label ? { label: l.label } : {}),
+      ...(l.chip ? { chip: l.chip.content } : {}),
+      ...(l.removable === false ? { fixed: true } : {}),
+      bridges: crossingBridges(
+        routes[l.id] ?? [],
+        ordered
+          .slice(0, i)
+          .flatMap((line) => (routes[line.id] ? [routes[line.id] as Point[]] : [])),
+      ),
+    },
+  }));
 
   const context = useMemo(
     () => ({
@@ -683,12 +728,28 @@ function Inner({
             void rf.setViewport({ ...viewport, zoom });
           }}
           onNodeClick={(_, node) => {
+            setLineChoice(undefined);
             if (!hand) onSelectTile(node.id);
           }}
-          onEdgeClick={(_, edge) => {
-            if (!hand) onSelectLine(edge.id);
+          onEdgeClick={(event, edge) => {
+            if (hand) return;
+            const point = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
+            const ids = nearestLines(point, routes, 3 / rf.getZoom(), 22);
+            if (ids.length > 1) {
+              const pane = paneOf(hostRef.current);
+              if (pane)
+                setLineChoice({
+                  ids,
+                  x: Math.max(8, Math.min(event.clientX - pane.left, pane.width - 332)),
+                  y: Math.max(8, Math.min(event.clientY - pane.top, pane.height - 260)),
+                });
+            } else {
+              setLineChoice(undefined);
+              onSelectLine(ids[0] ?? edge.id);
+            }
           }}
           onPaneClick={() => {
+            setLineChoice(undefined);
             if (!hand) onClear();
           }}
         >
@@ -703,6 +764,36 @@ function Inner({
           />
         </ReactFlow>
       </BoardContext.Provider>
+      {lineChoice && !hand ? (
+        <div
+          className="board-line-chooser"
+          role="dialog"
+          aria-label="Choose relationship"
+          style={{ left: lineChoice.x, top: lineChoice.y }}
+        >
+          <strong>Choose relationship</strong>
+          {lineChoice.ids.filter(visible).map((id) => {
+            const line = lines.find((item) => item.id === id);
+            return line ? (
+              <button
+                key={id}
+                data-line-id={id}
+                type="button"
+                onClick={() => {
+                  setLineChoice(undefined);
+                  onSelectLine(id);
+                }}
+              >
+                {line.label ?? id}
+                {line.detail ? <span>{line.detail}</span> : null}
+              </button>
+            ) : null;
+          })}
+          <button type="button" onClick={() => setLineChoice(undefined)}>
+            Cancel
+          </button>
+        </div>
+      ) : null}
       {hudTile ? (
         <div className="board-hud" data-tile={hudTile}>
           {hud?.content}

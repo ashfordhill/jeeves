@@ -25,6 +25,7 @@
 //    it passes, and longer (measured on the studies, SD03).
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
 import { alignLayout } from "./align.ts";
+import { separateBranches } from "./branches.ts";
 import {
   byHint,
   elkTile,
@@ -455,5 +456,5 @@ export async function layoutBands(
     edges,
   });
   const routed = meetAtPorts(alignLayout(toBoardLayout(key, laidOut), forward), forward, column);
-  return routeReturns(routed, input, column);
+  return separateBranches(routeReturns(routed, input, column), input);
 }

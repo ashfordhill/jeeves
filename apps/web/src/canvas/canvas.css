@@ -599,3 +599,94 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Relationship controls stay readable at any canvas zoom. */
+.lane-focus-start {
+  padding: 10px 16px 4px;
+}
+.lane-focus-start button,
+.lane-relationship-focus button,
+.lane-focus-status button {
+  border: 1px solid var(--grid-dot);
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.lane-relationship-focus {
+  flex: 0 1 auto;
+  max-height: 46%;
+  overflow: auto;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--grid-dot);
+  font-size: 12px;
+}
+.lane-focus-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lane-focus-heading strong {
+  overflow-wrap: anywhere;
+}
+.lane-relationship-focus h3 {
+  margin: 10px 0 5px;
+  font-size: 12px;
+}
+.lane-relationship-focus p {
+  margin: 6px 0;
+  color: var(--ink-soft);
+}
+.lane-relationship-focus ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 5px;
+}
+.lane-focus-status button {
+  flex: none;
+}
+.lane-relationship-focus li button {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.lane-relationship-focus li button span + span {
+  color: var(--ink-soft);
+}
+.lane-relationship-focus button[aria-pressed="true"] {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 10%, var(--paper));
+}
+.lane-relationship-focus .lane-focus-remove {
+  margin-top: 10px;
+  color: var(--minus);
+}
+.studio-inspector > .studio-selection-summary {
+  flex: 1;
+  min-height: 0;
+}
+.lane-focus-status {
+  position: absolute;
+  z-index: 5;
+  top: 68px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  box-shadow: var(--chip-shadow);
+  font-size: 12px;
+}

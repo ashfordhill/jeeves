@@ -11,6 +11,7 @@
 // condition text.
 import { BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps } from "@xyflow/react";
 import type { ReactNode } from "react";
+import type { Point } from "../layout/metrics.ts";
 import {
   DASH_GAP,
   DASH_LENGTH,
@@ -44,6 +45,7 @@ export type BoardLineData = {
   chip?: ReactNode;
   /** The line can't be removed on its own: no X when selected. */
   fixed?: boolean;
+  bridges?: Point[][];
 };
 
 export type BoardLineEdge = Edge<BoardLineData, "line">;
@@ -90,6 +92,16 @@ export function BoardLine({
 
   return (
     <>
+      {data?.bridges?.map((bridge) => (
+        <path
+          key={polylineToSvg(bridge)}
+          className="board-line-crossing"
+          d={polylineToSvg(bridge)}
+          fill="none"
+          pointerEvents="none"
+          style={{ stroke: "var(--board-paper)", strokeWidth: width + 8 }}
+        />
+      ))}
       <BaseEdge
         id={id}
         path={path}

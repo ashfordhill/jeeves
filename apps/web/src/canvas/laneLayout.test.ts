@@ -171,6 +171,20 @@ describe("lane bands on the studies", () => {
     expect(overlaps(input, layout, "cdn-transcoded", "transcoder-write", 0)).not.toEqual([]);
   });
 
+  it("separates Watch's shared vertical stems using the existing gap", async () => {
+    const input = laneLayoutInput(laneGraph(studioArchitectureExample("studio-youtube").design));
+    const layout = await layoutOf(input);
+    for (const [a, b] of [
+      ["watch-cache", "watch-counts-read"],
+      ["watch-metadata", "watch-views-publish"],
+    ]) {
+      const shared = overlaps(input, layout, a as string, b as string, 0);
+      // Only their short horizontal stem at Watch's own port stays shared.
+      expect(shared.length).toBeGreaterThan(0);
+      expect(shared.every((run) => !run.includes("at x"))).toBe(true);
+    }
+  });
+
   it("move only what an edit changes, and lay out again unchanged", async () => {
     const input = laneLayoutInput(laneGraph(studioArchitectureExample("studio-youtube").design));
     const first = await layoutOf(input);
