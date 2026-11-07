@@ -17,7 +17,9 @@ import {
 } from "@jeeves/board";
 import {
   type DesignDocument,
+  designOperations,
   designOwnership,
+  knownCreateSignature,
   LANE_ACTOR,
   type LaneGraph,
   laneActionName,
@@ -77,6 +79,11 @@ export function LaneCanvas({
 }) {
   const { tiles, lines } = useMemo(() => {
     const ownership = designOwnership(design);
+    const operations = designOperations(design);
+    const ownerOperations = (id: string) =>
+      operations.receivers.filter((x) =>
+        ownership.roles.some((r) => r.element === x.role && ownerNodeId(r.owner) === id),
+      );
     const ownerOf = (id: string) => ownership.owners.find((owner) => ownerNodeId(owner.id) === id);
     const name = (id: string) =>
       ownerOf(id)?.name ?? laneNodeName(design, canonicalGraph ?? graph, id);
@@ -88,7 +95,13 @@ export function LaneCanvas({
     const box = (i: number) => {
       const { w, h, band } = input.tiles[i] ?? { w: 0, h: 0 };
       if (ownerOf(graph.nodes[i]?.id ?? ""))
-        return { w: 176, h: 160, ...(band !== undefined && { band }) };
+        return {
+          w: 176,
+          h: ownerOperations(graph.nodes[i]?.id ?? "").length ? 184 : 160,
+          ...(band !== undefined && { band }),
+        };
+      if (operations.receivers.some((x) => x.role === graph.nodes[i]?.id))
+        return { w: 176, h: 184, ...(band !== undefined && { band }) };
       return { w, h, ...(band !== undefined && { band }) };
     };
     const tiles: TileSpec[] = graph.nodes.map((node, i) =>
@@ -108,6 +121,9 @@ export function LaneCanvas({
                     {ownership.roles.filter((role) => ownerNodeId(role.owner) === node.id).length}{" "}
                     roles
                   </small>
+                  {ownerOperations(node.id).length ? (
+                    <small>{ownerOperations(node.id).length} declared operation</small>
+                  ) : null}
                   <button
                     type="button"
                     onClick={(event) => {
@@ -144,6 +160,15 @@ export function LaneCanvas({
                     kind={node.kind}
                     name={name(node.id)}
                     warnings={warnings.get(node.id)}
+                    operation={
+                      operations.receivers.some((x) => x.role === node.id)
+                        ? operations.receivers.some(
+                            (x) => x.role === node.id && knownCreateSignature(x.implementation),
+                          )
+                          ? "Create link · v1"
+                          : "Unresolved operation"
+                        : undefined
+                    }
                     owner={
                       ownership.owners.find(
                         (owner) =>

@@ -130,7 +130,8 @@ export function OwnershipSummary({
       </button>
       {owner || resource || dependency ? (
         <p className="studio-field-help">
-          Design intent only. Operation contracts and runtime authorization are unspecified.
+          Design intent only. Inspect operation declarations separately; runtime authorization is
+          unavailable.
         </p>
       ) : null}
     </section>

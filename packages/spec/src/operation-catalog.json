@@ -1,0 +1,295 @@
+{
+  "ref": {
+    "id": "links-create",
+    "version": "1.0.0",
+    "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+  },
+  "definition": {
+    "id": "links-create",
+    "version": "1.0.0",
+    "name": "Create link",
+    "schemas": {
+      "request": {
+        "ref": {
+          "id": "links-create-request",
+          "version": "1.0.0",
+          "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80"
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "headers": {
+              "type": "object",
+              "properties": {
+                "Idempotency-Key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[!-~]+$"
+                }
+              },
+              "required": ["Idempotency-Key"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "destination": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "expiresAt": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                }
+              },
+              "required": ["destination"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["headers", "body"],
+          "additionalProperties": false
+        }
+      },
+      "success": {
+        "ref": {
+          "id": "links-create-success",
+          "version": "1.0.0",
+          "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4"
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": 201
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{22}$"
+                },
+                "destination": {
+                  "type": "string"
+                },
+                "expiresAt": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": ["code", "destination", "expiresAt", "createdAt"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["status", "body"],
+          "additionalProperties": false
+        }
+      },
+      "errors": {
+        "ref": {
+          "id": "links-create-errors",
+          "version": "1.0.0",
+          "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c"
+        },
+        "definition": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 400
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "invalid-input"
+                    },
+                    "retry": {
+                      "const": "correct-request"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 401
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "unauthenticated"
+                    },
+                    "retry": {
+                      "const": "authenticate"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 409
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "idempotency-conflict"
+                    },
+                    "retry": {
+                      "const": "different-key"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 503
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "allocation-exhausted"
+                    },
+                    "retry": {
+                      "const": "same-key"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 503
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "dependency-failure"
+                    },
+                    "retry": {
+                      "const": "same-key"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "body"],
+              "additionalProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "behavior": {
+      "transport": {
+        "method": "POST",
+        "path": "/links",
+        "contentType": "application/json",
+        "timeoutMs": 10000,
+        "deadline": "One total request deadline includes verification, duplicate waiting, allocation attempts and commit; no phase gets an additional deadline."
+      },
+      "authentication": {
+        "mode": "verified-principal",
+        "principal": ["verified-issuer", "verified-subject"],
+        "verification": "A pinned trusted verifier must verify authenticity, configured trusted issuer, intended audience and time validity before a stable issuer+subject principal is accepted. Raw identity headers and unverified token claims are never principals. Any authenticated principal may create; no extra scopes or claims are implied."
+      },
+      "validation": {
+        "destination": "Parse an absolute URL using the WHATWG URL parser without a base; require http: or https:, a nonempty host and no username/password; serialize with the URL serializer. Reject a serialized destination above 2048 UTF-8 bytes. Do not fetch the destination; no reputation or reachability guarantee.",
+        "expiry": "Optional expiry; omission and null normalize to null. Otherwise require RFC3339 with an explicit offset, representable as a UTC millisecond timestamp within 0001-01-01T00:00:00.000Z..9999-12-31T23:59:59.999Z; reject excess fractional precision rather than truncate. Normalize to UTC with exactly 3 fraction digits. A new request requires expiry strictly after acceptance time.",
+        "order": [
+          "Verify principal. Parse closed request, key, destination and expiry syntax/range and calculate normalized fingerprint. Invalid input/auth consumes no key.",
+          "Look up principal+exact operation ID/version+case-sensitive key. If retained success exists, equal normalized fingerprint replays the original201 status/body, even after link expiry; unequal fingerprint conflicts.",
+          "For a new or post-retention request, enforce future expiry. Exclusively serialize scoped-key attempts before allocation; concurrent requests resolve against the committed fingerprint/result or wait within the single deadline."
+        ]
+      },
+      "idempotency": {
+        "mode": "principal-operation-key",
+        "key": "1..128 non-whitespace printableASCII characters (U+0021..U+007E), opaque and case-sensitive; this is not an auth credential.",
+        "scope": [
+          "verified-issuer",
+          "verified-subject",
+          "operation-id",
+          "operation-version",
+          "key"
+        ],
+        "fingerprint": ["serialized-destination", "normalized-expiry-or-null"],
+        "successRetentionHours": 24,
+        "retention": "Retain original successful status/body and fingerprint for 24 hours from durable commit, independently of link expiry. A key becomes eligible as a new request at commit+24h; late physical cleanup must not extend this promise. A new request is revalidated and may allocate a new code.",
+        "concurrent": "Serialize attempts exclusively for principal+operation+key before allocation. Duplicates wait within the single total 10-second request deadline. Once a prior normalized fingerprint and outcome become observable, equal retained success replays; changed payload conflicts. If an in-flight transaction or commit outcome cannot be determined by that deadline, return dependency-failure and retry the same key. Proven rollback releases the claim. No durable pending/lease state machine is implied.",
+        "failure": "Invalid/auth errors never reserve a key. Proven rolled-back attempts release the reservation; allocation-exhausted is returned only after rollback. An unknown commit outcome is dependency-failure, never a guessed success or a new allocation; retries reconcile the same key before allocation. A durable success is never replaced by a failure or another link within retention."
+      },
+      "allocation": {
+        "entropyBytes": 16,
+        "encoding": "unpadded base64url",
+        "characters": 22,
+        "maxAttempts": 5,
+        "uniqueness": "Server allocates cryptographically random codes in one public namespace and enforces a durable unique constraint. At most 5 total allocation attempts, including the initial attempt, fit within the single deadline. After 5 proven collisions, roll back and return allocation-exhausted. RNG, store or deadline failure returns dependency-failure. No custom slugs."
+      },
+      "commit": {
+        "access": "write",
+        "authority": "same-owner-source-database",
+        "atomicity": "Link(code, immutable serialized destination, normalized expiry, verified creator principal, createdAt) and successful idempotency fingerprint/status/body commit atomically in the same authoritative durable transaction before 201. Links survive idempotency retention; never reuse an allocated code for another destination.",
+        "success": "Replay original status/body, not a newly generated code, timestamp or origin URL. Future resolve policy must read the authoritative committed record; this create declaration does not supply resolve/cache policy."
+      },
+      "errors": {
+        "invalid-input": 400,
+        "unauthenticated": 401,
+        "idempotency-conflict": 409,
+        "allocation-exhausted": 503,
+        "dependency-failure": 503
+      },
+      "limits": "Declarative operation intent only; this record defines no handler, adapter, generator or runtime implementation."
+    },
+    "sources": [
+      "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "https://url.spec.whatwg.org/",
+      "https://www.postgresql.org/docs/current/index-unique-checks.html",
+      "https://www.postgresql.org/docs/current/transaction-iso.html"
+    ],
+    "sourceReview": {
+      "date": "2026-11-07",
+      "urlStandardCommitObserved": "845bafca22fb0c5a42c4bf384a9bdea525a2f10d",
+      "meaning": "Sources inform this finite behavior; they do not define the application-specific idempotency or allocation choices.",
+      "postgresqlMeaning": "Sources explain why uncommitted fingerprints need bounded serialization; this contract selects no database adapter or PostgreSQL version."
+    },
+    "requestEnvelope": "The request schema describes the normalized operation-owned Idempotency-Key header and JSON body after HTTP header-name normalization and the trusted authentication boundary. Other transport/auth headers are outside this closed envelope; it is not the entire raw HTTP request."
+  }
+}

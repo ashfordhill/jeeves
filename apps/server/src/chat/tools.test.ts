@@ -85,6 +85,8 @@ describe("studio chat tools", () => {
   });
   it("offers exactly the finite studio toolset", () => {
     expect(toolDefinitions().map((t) => t.name)).toEqual([
+      "describeOperation",
+      "configureOperations",
       "listStudioDefinitions",
       "describeStudioDefinition",
       "listStudioPatterns",

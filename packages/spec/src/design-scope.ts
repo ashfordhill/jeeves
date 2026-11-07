@@ -3,6 +3,11 @@ import { z } from "zod";
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
 import { idSchema } from "./ids.ts";
+import {
+  designOperations,
+  knownCreateSignature,
+  operationContractFindings,
+} from "./operation-contracts.ts";
 import type { OperationInput } from "./operations.ts";
 import { designOwnership, ownershipFindings } from "./ownership.ts";
 
@@ -172,11 +177,37 @@ export function unresolvedDesignScope(design: DesignDocument): ScopeUnresolved[]
         "required",
         "contract",
       );
-    for (const [id, requirement] of [
-      [
+    const operations = designOperations(design);
+    const declaredCreate = operations.receivers.some(
+      (receiver) =>
+        knownCreateSignature(receiver.implementation) &&
+        operations.calls.some(
+          (call) => call.receiverBinding === receiver.id && knownCreateSignature(call.expects),
+        ),
+    );
+    if (!declaredCreate)
+      add(
         "create-contract",
-        "Authenticated create, HTTP(S) validation, code allocation, idempotency and durable success contracts are not specified.",
-      ],
+        "Authenticated create and an exact matching caller/receiver binding are not fully declared. Names, labels and modules establish no behavior.",
+        "required",
+        "contract",
+      );
+    add(
+      "namespace-authority",
+      "One-public-namespace composition is unresolved: all create/resolve bindings must agree on one authoritative source and compatible logical owner. Per-operation declarations alone do not validate that agreement; NC04/NC05 must check it.",
+      "required",
+      "contract",
+    );
+    for (const [index, item] of operationContractFindings(design).entries())
+      unresolved.push({
+        source: "contract",
+        id: `create-binding-${index}`,
+        requirement: item.message,
+        criticality: "required",
+        ...(item.target.element ? { element: item.target.element } : {}),
+        ...(item.target.connection ? { connection: item.target.connection } : {}),
+      });
+    for (const [id, requirement] of [
       [
         "resolve-contract",
         "Public resolve, unknown/expired results and dependency-failure contracts are not specified.",

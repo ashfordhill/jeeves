@@ -1,15 +1,21 @@
 /** Real tool schemas + mocked Responses transport + the authoritative Workspace command path. */
 import { createOpenAIProvider, type ModelItem, toOpenAIInput } from "@jeeves/providers";
 import {
+  buildOperationsCommand,
   buildOwnershipCommand,
+  createLinkOperation,
   designBlueprintV3,
   emptyDesign,
+  operationContractsSchema,
   ownershipSchema,
   studioArchitectureExample,
   tinyurlDesignScope,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
 import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-ownership-v1.json" with {
+  type: "json",
+};
+import operationFixture from "../../../../packages/spec/src/fixtures/nc03-create-v1.json" with {
   type: "json",
 };
 import { toolDefinitions, Workspace } from "./tools.ts";
@@ -55,6 +61,69 @@ const execute = (workspace: Workspace, calls: { name: string; arguments: string 
   calls.map((call) => JSON.parse(workspace.run(call.name, call.arguments)));
 
 describe("strict OpenAI studio tools", () => {
+  it("transmits exact tagged operation refs, nullable verifier/retention, omission defaults and canonical history; refuses unknown fields", async () => {
+    const base = structuredClone(studioArchitectureExample("studio-tinyurl").design);
+    const shorten = base.architecture?.studio?.elements.find((x) => x.element === "shorten");
+    if (!shorten || !("requestTimeoutMs" in shorten.settings)) throw new Error();
+    shorten.settings.requestTimeoutMs = 10000;
+    const workspace = new Workspace(base),
+      operations = operationContractsSchema.parse(operationFixture);
+    if (!operations.receivers[0]) throw new Error();
+    operations.receivers[0].binding.successRetentionHours = null;
+    const args = { baseRevision: base.revision, action: "preview", operations },
+      apply = { ...args, action: "apply", upgrade: true };
+    const { provider, requests } = transport([
+      [{ name: "configureOperations", arguments: wire("configureOperations", args) }],
+      [{ name: "configureOperations", arguments: wire("configureOperations", apply) }],
+      [],
+    ]);
+    let items: ModelItem[] = [];
+    for (const expected of [args, apply]) {
+      const response = await provider.respond(request(items));
+      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(expected);
+      const [result] = execute(workspace, response.toolCalls);
+      expect(result.ok).toBe(true);
+      items = [
+        ...items,
+        ...response.items,
+        {
+          type: "tool-result",
+          callId: response.toolCalls[0]?.callId ?? "",
+          output: JSON.stringify(result),
+        },
+      ];
+    }
+    expect(workspace.pending).toEqual(
+      buildOperationsCommand(base, { operations, upgrade: true }).ops,
+    );
+    await provider.respond(request(items));
+    const replay = JSON.parse(
+      String(requests[2]?.input.find((x) => x.type === "function_call")?.arguments),
+    );
+    expect(replay.upgrade).toBeNull();
+    expect(replay.operations.receivers[0].binding.authVerifier).toBeNull();
+    expect(replay.operations.receivers[0].binding.successRetentionHours).toBeNull();
+    expect(replay.operations.receivers[0].id).toBe("create-link");
+    expect(
+      JSON.parse(
+        workspace.run("describeOperation", JSON.stringify({ ref: createLinkOperation.ref })),
+      ).status,
+    ).toBe("known");
+    expect(
+      JSON.parse(
+        workspace.run(
+          "describeOperation",
+          JSON.stringify({ ref: { ...createLinkOperation.ref, sha256: "d".repeat(64) } }),
+        ),
+      ).status,
+    ).toBe("unresolved");
+    const encoded = JSON.parse(wire("configureOperations", apply));
+    encoded.operations.receivers[0].binding.extra = "refuse";
+    const { provider: invalid } = transport([
+      [{ name: "configureOperations", arguments: JSON.stringify(encoded) }],
+    ]);
+    await expect(invalid.respond(request())).rejects.toThrow();
+  });
   it("transmits bounded ownership with omitted deployables/boundaries, defaults, canonical history and atomic grant refusal", async () => {
     const base = studioArchitectureExample("studio-tinyurl").design,
       workspace = new Workspace(base),
@@ -312,7 +381,7 @@ describe("strict OpenAI studio tools", () => {
     );
     expect(requests[1]?.input[0]).toMatchObject({ type: "function_call", arguments: encoded });
     expect(requests[0]?.tools).toEqual(requests[1]?.tools);
-    expect(requests[0]?.tools).toHaveLength(12);
+    expect(requests[0]?.tools).toHaveLength(14);
     // Inspect the actual HTTP body recursively, including all settings/module/scope unions.
     function inspect(schema: Record<string, unknown>) {
       expect(schema).not.toHaveProperty("oneOf");

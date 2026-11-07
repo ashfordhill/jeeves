@@ -953,3 +953,21 @@ and all twenty components, with nothing omitted and no findings.
   one can) is laid out without bands.
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).
+
+
+## Named API operation responsibilities
+
+The inspector's **Operation contracts** form declares the finite **Create link · v1** operation
+on an existing canonical API role. Its compact card label and expandable inspector responsibility
+refer to that same API, owner and graph relationships. They add no independent service or process.
+**Details & bindings** selects exactly that operation for chat; selecting its parent API/owner
+does not select all operations. Existing caller → target request arrows keep their meaning.
+
+Select a receiver, its authoritative write and existing entry/service callers; preview named
+binding changes and the exact unresolved verifier finding before saving. A legacy design
+requires an explicit v3 upgrade. Existing API/connection timeouts must match the fixed deadline
+and are edited explicitly through ordinary Options. Retention can be declared or left unresolved;
+missing auth runtime/template evidence remains unavailable. Removal/transfer previews name each
+affected binding and one Undo restores the entire change. [Contract details](studio-contracts.md)
+describe the fixed schemas and behavior. No Read counts/Publish view ports, returned-data arrows,
+YouTube contract rewrite, backend or generator is implemented by this first named responsibility.

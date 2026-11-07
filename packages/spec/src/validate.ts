@@ -3,12 +3,17 @@ import { containerClassification } from "./architecture-choices.ts";
 import { type DesignDocument, type DesignIdType, designIdNouns, designIds } from "./design.ts";
 import { designScopeFindings } from "./design-scope.ts";
 import { type Finding, finding } from "./findings.ts";
+import { operationContractFindings } from "./operation-contracts.ts";
 import { ownershipFindings } from "./ownership.ts";
 
 /** Every finding for a studio design: identities, references, C1 context and studio settings. */
 export function validateDesign(design: DesignDocument): Finding[] {
   const findings: Finding[] = validateArchitecture(design);
-  findings.push(...designScopeFindings(design), ...ownershipFindings(design));
+  findings.push(
+    ...designScopeFindings(design),
+    ...ownershipFindings(design),
+    ...operationContractFindings(design),
+  );
 
   const seen = new Map<string, DesignIdType>();
   for (const { id, type } of designIds(design)) {

@@ -5,8 +5,7 @@ subsequent correction that work should continue across milestone boundaries auth
 bounded first phase NC01–NC06 and NC14 under the defaults below. The earlier coordinator stop
 was a coordination error, not a missing owner action. G1 and G4 are recorded decisions for NC01;
 remaining gates are implementation prerequisites resolved within this accepted scope, not
-repeated owner-approval requests. NC01 implements only the scope/version boundary; subsequent
-contracts remain planned until their own units complete. The
+repeated owner-approval requests. NC01 implements the scope/version boundary, NC02 ownership/access, and NC03 the finite Create link contract/bindings; subsequent contracts remain planned until their own units complete. The
 [Milestone 1 review](milestone1-review.md) is the evidence. This refines the work
 areas in [units](units.md); it does not authorize the generator, replace saved projects or ask an
 agent to build a general architecture language. Development remains sequential on primary main,
@@ -34,7 +33,7 @@ dependency needs a new decision; a gate below is not a request for repeated appr
 | --- | --- | --- |
 | G1: first workload — recorded NC01 | One public short-link namespace; immutable destinations; authenticated create, public resolve; optional expiry. No custom slugs, destination mutation/disable API, exact analytics, quotas, reputation enforcement or deployment claim. Required excluded features must instead block that profile. | NC01; changing scope requires a new profile/version. |
 | G2: owner and presentation — recorded NC02 | One logical **Links** owner; create and resolve are API roles inside it, a later analytics consumer may be a worker role. Roles may share one deployable; role ≠ owner ≠ process. Default collapsed owner tile, mouse expansion of roles. Preserve existing element IDs as role/resource references where possible; do not merge legacy owners automatically. | NC02; a concrete small owner/expanded-role sketch is reviewed at both sizes before coding presentation. |
-| G3: contracts and policies | Local immutable finite records with exact IDs/versions/schema hashes. Select a profile and bounded parameters; no route/entity/policy DSL or arbitrary expressions. Start with exact caller/receiver version equality; compatible evolution is a later explicit rule. | NC03; schema/command budget audit before adding tools. |
+| G3: contracts and policies — recorded NC03 | Local immutable finite records with exact IDs/versions/schema hashes. Select a profile and bounded parameters; no route/entity/policy DSL or arbitrary expressions. Start with exact caller/receiver version equality; compatible evolution is a later explicit rule. | NC03; schema/command budget audit before adding tools. |
 | G4: version boundary — recorded NC01 | New stored design schema and blueprint **v3**, with explicit reader/writer migration. Existing default `/blueprint` stays v2 during rollout; explicit `?version=3` opts in. Legacy-only designs retain exact v2 meaning. A design using v3-only semantics refuses v2 export with a structured unsupported-content list, never a silently lossy success. Default-version switch is a separate final-review decision. | NC01; review API consumer impact and migration fixtures first. |
 | G5: first consistency policy | Authoritative primary lookup; immutable target; cache entries never outlive expiry; no negative cache initially, no browser/CDN redirect-response cache. Cache miss/outage falls back to authority; bounded outage protection is part of the profile. Create success follows durable commit; immediate resolve must find it. | NC04; cache fallback/overload behavior and finite parameter bounds are pinned in the profile. |
 | G6: runtime profile boundary | Recommend one future TypeScript/container, PostgreSQL, Redis-compatible cache and one messaging adapter. Jeeves records unresolved template bindings until an actual pinned manifest exists. Auth verification and provider-specific runtime adapters remain mandatory manifest requirements, not guessed implementations. | NC05 report can exist without a manifest; actual support requires a selected manifest. Backend repository/conventions remain unknown. |
@@ -168,6 +167,23 @@ removes exactly its dependent bindings in one operation; Undo restores them. Leg
 preserved with unspecified operation intent. No forced split/merge of saved service identities.
 
 ### NC03 — Create-link capability and caller/receiver bindings
+
+**Progress, 2026-11-07:** implemented finite `links-create@1.0.0`, full-definition and schema
+SHA256 refs, separate stable receiver/call binding IDs, exact entry/connection endpoints and a
+tagged create-link configuration. Shared mouse/chat preview/apply, strict transport, operation
+selection, v3 export/v2 refusal and exact removal/transfer cleanup preserve old designs. Known
+contradictions refuse; unknown exact refs remain unresolved without acquiring Create semantics.
+Auth verifier/template/runtime availability remains absent, separately from the known requirement.
+G3 coordinator review accepted 24-hour committed-success retention, 16 random bytes / 22 base64url
+characters, five total allocation attempts including the initial attempt, and one total 10-second
+deadline. Authenticate/parse and retained fingerprint lookup precede new-request expiry freshness;
+post-retention requests are revalidated. Concurrent transactions serialize until their result is
+observable or return dependency failure/same-key retry at deadline; no hidden pending/lease
+machine. Expiry is a valid future supported RFC3339 instant, no extra 365-day business ceiling.
+[Complete decisions](../../studio-contracts.md). Small-view sketch and actual 1280 card/inspector/
+preview were coordinator reviewed. This first named responsibility supplies no read/publish ports
+or returned-data arrows. Existing shorter API timeouts must be explicitly edited, never migrated.
+NC04 owns resolve/cache lookup policy. One-namespace composition remains explicitly unresolved: NC04/NC05 must check that every selected-profile create/resolve binding agrees on one authoritative source and compatible owner; per-operation presence does not prove it. Independent arbitrary designs are not prohibited. No backend, generator, preset rewrite or live model run.
 
 **Depends:** NC02/G3. Add an immutable create-link operation/schema profile and bounded binding
 UI/tool. Proposed behavior: authenticated principal, validated HTTP(S) target, server-allocated

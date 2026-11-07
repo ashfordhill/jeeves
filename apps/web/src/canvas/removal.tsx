@@ -11,12 +11,14 @@ import {
   applyOperations,
   buildStudioCommand,
   type DesignDocument,
+  designOperations,
   designOwnership,
   LANE_ACTOR,
   type LaneGraph,
   laneActionOf,
   laneGraph,
   laneRemoveActionRefusal,
+  operationChanges,
   planRemoveTile,
   previewOwnership,
   type StudioCommand,
@@ -26,6 +28,7 @@ import { IconTrash } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useProject } from "../project/store.ts";
 import { commitAction } from "../studio/actions.ts";
+import { OperationChanges } from "../studio/OperationChanges.tsx";
 import { OwnershipChanges } from "../studio/OwnershipChanges.tsx";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 
@@ -36,6 +39,7 @@ type Pending = {
   line?: string;
   revision: number;
   changes: ReturnType<typeof previewOwnership>["changes"];
+  operationChanges: ReturnType<typeof operationChanges>;
 };
 
 export function useLaneRemoval({
@@ -80,6 +84,8 @@ export function useLaneRemoval({
         throw new Error(
           "The design changed after the removal preview. Remove again to inspect the latest affected declarations.",
         );
+      const lane = laneActionOf(id);
+      if (lane) return buildStudioCommand(latest, { type: "removeAction", lane }).ops;
       return buildStudioCommand(latest, {
         type: "removeTile",
         tile: id,
@@ -95,7 +101,10 @@ export function useLaneRemoval({
   const effects = (command: StudioCommand) => {
     const result = applyOperations(design, buildStudioCommand(design, command).ops);
     if (!result.ok) throw new Error(result.errors.map((x) => x.message).join(" "));
-    return previewOwnership(design, designOwnership(result.design)).changes;
+    return {
+      changes: previewOwnership(design, designOwnership(result.design)).changes,
+      operationChanges: operationChanges(designOperations(design), designOperations(result.design)),
+    };
   };
   const commitLine = (line: string, revision?: number) => {
     setPending(undefined);
@@ -118,12 +127,17 @@ export function useLaneRemoval({
         useProject.getState().setNotice({ tone: "error", message: refusal });
         return;
       }
-      void commitAction(
-        projectId,
-        (latest) => buildStudioCommand(latest, { type: "removeAction", lane }).ops,
-      ).then((ok) => {
-        if (ok) onRemoved(LANE_ACTOR);
-      });
+      try {
+        const affected = effects({ type: "removeAction", lane });
+        if (affected.changes.length || affected.operationChanges.length)
+          setPending({ tile: id, strands: [], revision: design.revision, ...affected });
+        else commit(id, []);
+      } catch (error) {
+        useProject.getState().setNotice({
+          tone: "error",
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
       return;
     }
     const planned = planRemoveTile(design, id);
@@ -132,17 +146,21 @@ export function useLaneRemoval({
       return;
     }
     try {
-      const changes = effects({
+      const affected = effects({
         type: "removeTile",
         tile: id,
         ...(planned.value.strands.length && { alsoRemove: planned.value.strands }),
       });
-      if (planned.value.strands.length || changes.length)
+      if (
+        planned.value.strands.length ||
+        affected.changes.length ||
+        affected.operationChanges.length
+      )
         setPending({
           tile: id,
           strands: planned.value.strands,
           revision: design.revision,
-          changes,
+          ...affected,
         });
       else commit(id, []);
     } catch (error) {
@@ -161,14 +179,14 @@ export function useLaneRemoval({
       // The user's line to an action goes with the action (no X); Delete leaves it too.
       if (graph.edges.find((edge) => edge.id === line)?.source === LANE_ACTOR) return;
       try {
-        const changes = effects({ type: "removeLink", link: line });
-        if (changes.length)
+        const affected = effects({ type: "removeLink", link: line });
+        if (affected.changes.length || affected.operationChanges.length)
           setPending({
             tile: graph.edges.find((x) => x.id === line)?.source ?? LANE_ACTOR,
             strands: [],
             line,
             revision: design.revision,
-            changes,
+            ...affected,
           });
         else commitLine(line);
       } catch (error) {
@@ -251,6 +269,15 @@ function RemoveConfirm({
             <OwnershipChanges design={design} changes={pending.changes} />
           </div>
           <p>Unrelated custom requirements remain. One Undo restores this removal.</p>
+        </details>
+      ) : null}
+      {pending.operationChanges.length ? (
+        <details open>
+          <summary>{pending.operationChanges.length} affected operation bindings</summary>
+          <div className="lane-removal-declarations">
+            <OperationChanges design={design} changes={pending.operationChanges} />
+          </div>
+          <p>One Undo restores this removal. Unrelated custom requirements remain.</p>
         </details>
       ) : null}
       <div className="lane-remove-actions">

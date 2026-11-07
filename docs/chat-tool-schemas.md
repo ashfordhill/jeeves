@@ -68,7 +68,7 @@ type arrays, formats and other unaudited constructs fail with a tool/schema path
 This is narrower than OpenAI's full supported subset. No constraint is silently discarded, and
 there is no fallback to best-effort tools. New schema constructs require a codec/test update.
 
-The current twelve tools compile, including RF04 turn scope, NC01 persistent scope and NC02 explicit ownership. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
+The current fourteen tools compile, including RF04 turn scope, NC01 persistent scope, NC02 explicit ownership and NC03 exact operation lookup/binding. Schemas use only the audited subset and no references. After adaptation `applyStudioCommands` has 427 properties, 538 enum
 values and at most nine nesting levels under the adapter's conservative traversal. The adapter
 checks emitted schemas, including wrappers, against 5,000 properties, ten nesting levels, 1,000
 enum values, 120,000 characters for names/enum values, and the large-enum string limit.
@@ -132,3 +132,32 @@ selection namespace and tool intentionally drift old RF06 request hashes; raw as
 unchanged. The current network-forbidden synthetic suite remains deterministic. Exact audit and
 first old-request drift are retained in `plans/reliable-foundations/evidence/nc02/`. Mini/live strict
 acceptance and RF06's historical 2.44× input / 2.07× response overhead remain disclosed limits.
+
+
+NC03 adds `describeOperation` (**4 properties / 0 enum values / depth three**, 754 UTF-8 bytes)
+and `configureOperations` (**67 / 16 / seven**, 6,726 bytes). The giant tile tool stays
+**427 / 538 / nine**. A tagged closed create-link configuration keeps nullable retention/verifier
+explicit; omitted `upgrade` still decodes to omission and defaults false. A one-branch union was
+correctly refused by the existing audited codec during development; the unnecessary wrapper was
+removed, preserving the stored tag and all strictness. NC04 can extend it to a finite multi-branch
+union without migrating existing records. Extra fields/malformed refs refuse before mutation.
+
+The actual emitted strict tool array is **69,051 UTF-8 bytes**, versus retained NC02 **61,496**
+(+7,555). On the same default schema2 TinyURL, rendered instructions are **13,886** versus
+**12,512** (+1,374), caller context **16,293** versus **15,928** (+365). These are measured bytes,
+not tokens, price, speed or model-quality evidence. A separately versioned
+`packages/spec/src/fixtures/nc03-create-v1.json` drives current scripted regression: five real
+ChatService responses, two accepted repair passes, refused third apply, permitted lookup/preview
+and one turn Undo. Mocked transport verifies exact tagged refs, nullable values and canonical
+history; no live/paid call or Mini/live strict acceptance is claimed.
+
+Explicit operation selection uses `operation:<binding-id>` (maximum 73 characters), separate from
+canonical role/edge/owner IDs. Context resolves one exact binding; parent selection selects none.
+Malformed/missing/removed refs refuse at the real chat boundary, rename preserves identity and
+history preserves the original reference. The current network-forbidden RF06 synthetic suite
+remains deterministic. Immutable old RF06 records now intentionally stop at the first request:
+`video-build/rf00-ablation` round 1 expected `77669bb5…`, actual `cf667290…`, because shared context
+adds operation declarations/findings/catalog identity and namespaced selection. No recorded
+response was replayed. Exact audit/drift are retained in
+`plans/reliable-foundations/evidence/nc03/`; RF06's 2.44× input / 2.07× responses and intended
+Mini/live acceptance gap remain historical limits.

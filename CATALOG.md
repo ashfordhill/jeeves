@@ -397,3 +397,22 @@ ID and falls back to roles for unsafe collapsed graphs. View-only grouping chang
 V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new
 row with an exact path. Generic tiles supply no capability, template or runtime verification.
 Operation bindings remain future units and must refine these grants. Existing presets are unchanged.
+
+
+### Finite Create link contract (NC03)
+
+`operation-catalog.json` freezes `links-create@1.0.0` with full-definition SHA256 and separate
+request/success/error schema hashes. `operation-contracts.ts` supplies exact bounded refs,
+receiver/caller bindings, validation, preview and the shared mouse/chat command; these are
+separate from generic kinds/modules. The inspector adds an attached named responsibility on the
+same canonical API, with explicit operation selection. Several distinct operations may share an
+API/edge; binding IDs are stable and separate from graph IDs. No operation follows from a label.
+
+The fixed behavior declares verified-principal create, HTTP(S) normalization, optional expiry,
+16-byte random codes with five total attempts, atomic durable success, principal/operation/key
+replay for 24 hours and explicit errors under one 10-second deadline. Unknown exact refs are
+retained/unresolved; known contradictions refuse. [Contract details](docs/studio-contracts.md).
+`describeOperation` retrieves this exact record; `configureOperations` previews/applies the same
+bounded declarations as the mouse. Optional v3 `operations` exports completely; default v2
+refuses each nonempty row. Auth verifiers/templates/runtime evidence remain unavailable; resolve
+and cache/expiry lookup policy remain NC04. No presets or owner designs are migrated.

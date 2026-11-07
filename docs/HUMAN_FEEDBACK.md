@@ -500,3 +500,13 @@ implementation for later”; the authorized Jeeves sequence continues and the ba
 - Open for NC03+ review: concrete attached-operation presentation, readable read/publish tracing,
   explicit arrow conventions and exact operation bindings. YouTube lifecycle/analytics semantics
   and owner usability acceptance remain open; this sketch alone establishes no runtime behavior.
+
+- NC03, local commit titled **NC03: bind the finite Create link contract**: implemented the first
+  named API responsibility as an in-card Create link label and expandable inspector details tied
+  to the same canonical role/owner and stable operation binding. Coordinator reviewed the concrete
+  small-view sketch and actual 1280 card/inspector/preview; no synthetic service or new arrow
+  convention was added. Mouse details select exactly that operation for chat. Complete contract
+  refs, callers and exact affected-removal previews preserve canonical graph identities and Undo.
+  This resolves the first bounded responsibility-presentation step only. Separate Read counts /
+  Publish view ports, data-return arrows, YouTube lifecycle/analytics semantics, overview
+  readability and owner usability acceptance remain open. Backend stays deferred.

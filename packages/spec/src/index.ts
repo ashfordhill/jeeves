@@ -11,6 +11,7 @@ export * from "./design-scope.ts";
 export * from "./findings.ts";
 export * from "./ids.ts";
 export * from "./layout.ts";
+export * from "./operation-contracts.ts";
 export * from "./operations.ts";
 export * from "./ownership.ts";
 export * from "./relationship-display.ts";

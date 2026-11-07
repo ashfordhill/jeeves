@@ -15,6 +15,13 @@ import {
 } from "./design-scope.ts";
 import { findingSchema } from "./findings.ts";
 import { idSchema } from "./ids.ts";
+import {
+  createLinkOperation,
+  designOperations,
+  exactContractRefSchema,
+  operationContractFindings,
+  operationContractsSchema,
+} from "./operation-contracts.ts";
 import { designOwnership, ownershipFindings, ownershipSchema } from "./ownership.ts";
 import { connectionPresentation, relationshipInteractionSchema } from "./relationship-display.ts";
 import {
@@ -225,6 +232,12 @@ export function unsupportedBlueprintV2(design: DesignDocument): UnsupportedBluep
         reason: `Explicit ${field} declaration is unsupported by blueprint v2.`,
       })),
     ),
+    ...Object.entries(designOperations(design)).flatMap(([field, rows]) =>
+      rows.map((_, index) => ({
+        path: ["operations", field, index],
+        reason: `Exact operation ${field} binding is unsupported by blueprint v2.`,
+      })),
+    ),
     ...design.scope.customRequirements.map((item, index) => ({
       path: ["scope", "customRequirements", index],
       reason: `Unresolved custom requirement ${item.id} (${item.criticality}) is unsupported by blueprint v2.`,
@@ -246,6 +259,9 @@ export const designBlueprintV3Schema = designBlueprintSchema.extend({
   ownership: ownershipSchema,
   ownershipStatus: z.enum(["declared", "unspecified"]),
   ownershipFindings: z.array(findingSchema),
+  operations: operationContractsSchema,
+  operationFindings: z.array(findingSchema),
+  operationCatalog: z.array(exactContractRefSchema),
   unresolvedRequirements: z.array(
     z.strictObject({
       source: z.enum(["profile", "requirement", "contract", "custom"]),
@@ -282,6 +298,7 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
       ...validateStudio(design),
       ...designScopeFindings(design),
       ...ownershipFindings(design),
+      ...operationContractFindings(design),
     ],
     ownership: Object.fromEntries(
       Object.entries(designOwnership(design)).map(([key, rows]) => [
@@ -299,6 +316,12 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
       ? "declared"
       : "unspecified",
     ownershipFindings: ownershipFindings(design),
+    operations: {
+      receivers: byId(designOperations(design).receivers).map(clone),
+      calls: byId(designOperations(design).calls).map(clone),
+    },
+    operationFindings: operationContractFindings(design),
+    operationCatalog: [{ ...createLinkOperation.ref }],
     scope,
     profileStatus: profileStatus(scope),
     unresolvedRequirements: [...unresolvedDesignScope(design)]

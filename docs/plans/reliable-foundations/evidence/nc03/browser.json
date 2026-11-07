@@ -1,0 +1,132 @@
+{
+  "unit": "NC03",
+  "baseCommit": "db9af1c4cbd8875becc61a6c9476bce603a4d088",
+  "operation": {
+    "id": "links-create",
+    "version": "1.0.0",
+    "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+  },
+  "checks": {
+    "pnpm check": "274 tests /38 files; lint and all typechecks passed",
+    "pnpm test:e2e": "27 native Chromium passed;43.6s",
+    "web build": "passed; existing chunk-size advisory",
+    "offline synthetic RF06": "all12 case/arm pairs deterministic, replayed twice per case, fetch forbidden",
+    "browser": "mouse1440x900 and1280x800, own API4312/web4302, scripted provider, scratch settings and jeeves_e2e"
+  },
+  "observations": {
+    "results": [
+      {
+        "viewport": "1440x900",
+        "defaultTiles": 11,
+        "defaultLines": 12,
+        "timeoutContradictionRefused": true,
+        "explicitMouseTimeoutEdit": true,
+        "explicitUpgradeUndoSchema2": true,
+        "canonicalRoleOperationLabel": true,
+        "exactV2OperationPaths": 2,
+        "mouseOperationSelectionReachesChat": true,
+        "fullExportUnchangedForViewActions": true,
+        "retentionEditReload": true,
+        "ownerTransferExactOperationClearsUndo": true,
+        "storeEdgeRemovalExactClearsUndo": true,
+        "staleRefusalPreservesCustomScope": true,
+        "roleRemovalExactClearsUndo": true,
+        "reloadExact": true,
+        "advancedVerifierMouseRoundtripClear": true,
+        "entryMoveExactPreviewUndo": true,
+        "expandedContractAndRefsInspected": true
+      },
+      {
+        "viewport": "1280x800",
+        "defaultTiles": 11,
+        "defaultLines": 12,
+        "timeoutContradictionRefused": true,
+        "explicitMouseTimeoutEdit": true,
+        "explicitUpgradeUndoSchema2": true,
+        "canonicalRoleOperationLabel": true,
+        "exactV2OperationPaths": 2,
+        "mouseOperationSelectionReachesChat": true,
+        "fullExportUnchangedForViewActions": true,
+        "retentionEditReload": true,
+        "ownerTransferExactOperationClearsUndo": true,
+        "storeEdgeRemovalExactClearsUndo": true,
+        "staleRefusalPreservesCustomScope": true,
+        "roleRemovalExactClearsUndo": true,
+        "reloadExact": true,
+        "advancedVerifierMouseRoundtripClear": true,
+        "entryMoveExactPreviewUndo": true,
+        "expandedContractAndRefsInspected": true
+      }
+    ],
+    "errors": [],
+    "expectedConflicts": [
+      "Failed to load resource: the server responded with a status of 409 (Conflict)",
+      "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    ],
+    "cleanup": [
+      {
+        "id": "bafa8f96-d3db-44f8-b024-480f16315ef0",
+        "status": 204
+      },
+      {
+        "id": "821d9886-2137-479d-85ec-719ca06d6b9c",
+        "status": 204
+      }
+    ]
+  },
+  "images": [
+    {
+      "file": "1280-contract-expanded.png",
+      "sha256": "224f6201ed9acf71c2fd6bf3bb5f2532a49c1d9aeb3f3c05fb26a5b696e169e5"
+    },
+    {
+      "file": "1280-entry-move-preview.png",
+      "sha256": "dbba3b95c150ba4bfcd2122c9cb2d978d6f079011b4d73b77a798863302c6dbc"
+    },
+    {
+      "file": "1280-reference-expanded.png",
+      "sha256": "09744bc063745f4e5994835f49670d867b17ca99f13de26370d8fd590e9f1683"
+    },
+    {
+      "file": "1280-role-operation.png",
+      "sha256": "12a956b3c51b51383cd1777af7f8c90418d0e09cfa00e8184ad35d1f1eee823a"
+    },
+    {
+      "file": "1280-transfer-preview.png",
+      "sha256": "769bfaf338616fe1c7e5f1bd1f3443270438af680fdc301cd58b62bd4e0be1d3"
+    },
+    {
+      "file": "1280-verifier-preview.png",
+      "sha256": "d7b60bd54f9c8deb4c002fc9712cb9890c39b015ee40767cb6ca898607299abd"
+    },
+    {
+      "file": "1440-owner-operation.png",
+      "sha256": "524013f10b8832c683c2a37299e9e43ec2b1c37f7615ea7527efdca3c9bb26aa"
+    }
+  ],
+  "limitations": [
+    "Declarative validation and mouse/plumbing evidence only; no HTTP runtime, verifier, generator, compatible template or runtime verification.",
+    "No new live or paid calls; intended Mini/live strict acceptance and original RF06 overhead/quality limitations remain.",
+    "Fitted full legacy studies still have small labels; coordinator inspection is not owner usability acceptance.",
+    "First named API responsibility only; no separate Read counts/Publish view ports or data-return arrows.",
+    "One-namespace cross-operation source/owner agreement remains explicitly unresolved for NC04/NC05."
+  ],
+  "temporaryEvidence": "/tmp/jeeves-nc03-browser/",
+  "cleanup": {
+    "browserProjectsDeleted": [
+      {
+        "id": "bafa8f96-d3db-44f8-b024-480f16315ef0",
+        "status": 204
+      },
+      {
+        "id": "821d9886-2137-479d-85ec-719ca06d6b9c",
+        "status": 204
+      }
+    ],
+    "ownerPorts": "4300/4310 untouched; no owner API writes",
+    "ownedListenersStopped": [4302, 4312],
+    "scratchSettingsRemoved": true,
+    "e2eProjectsRemaining": ["TinyURL \u00b7 studio study"],
+    "ownerListenersConfirmed": [4300, 4310]
+  }
+}

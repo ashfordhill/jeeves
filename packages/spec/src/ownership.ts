@@ -4,6 +4,12 @@ import type { DesignDocument } from "./design.ts";
 import { emptyDesignScope } from "./design-scope.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
 import { idSchema } from "./ids.ts";
+import {
+  designOperations,
+  operationChanges,
+  operationContractFindings,
+  operationsAfterOwnership,
+} from "./operation-contracts.ts";
 import type { OperationInput } from "./operations.ts";
 import { studioApplicationKinds } from "./studio-model.ts";
 
@@ -401,6 +407,9 @@ export function previewOwnership(design: DesignDocument, ownership: Ownership) {
     schemaVersion: 3,
     scope: design.schemaVersion === 3 ? design.scope : emptyDesignScope(),
     ownership: model,
+    ...(design.schemaVersion === 3 && design.operations
+      ? { operations: operationsAfterOwnership(design, model) }
+      : {}),
   };
   const before = designOwnership(design);
   const changes = (Object.keys(model) as (keyof Ownership)[]).flatMap((field) => {
@@ -429,15 +438,16 @@ export function previewOwnership(design: DesignDocument, ownership: Ownership) {
         .map(([id, row]) => ({ field, id, change: "removed", before: row, after: null })),
     ];
   });
-  const findings = ownershipFindings(candidate);
+  const findings = [...ownershipFindings(candidate), ...operationContractFindings(candidate)];
   return {
     fromSchema: design.schemaVersion,
     toSchema: 3,
     ownership: model,
     changes,
+    operationChanges: operationChanges(designOperations(design), designOperations(candidate)),
     findings,
     canApply: !findings.some(isStructural),
-    note: "Design declarations only. Legacy inferred writers are unchanged. Roles may share a deployable; co-deployment grants nothing. Operation contracts, templates and runtime authorization are not supplied. Saving is one Undo step.",
+    note: "Design declarations only. Legacy inferred writers are unchanged. Roles may share a deployable; co-deployment grants nothing. This ownership edit adds no operation contract, template or runtime authorization. Saving is one Undo step.",
   };
 }
 

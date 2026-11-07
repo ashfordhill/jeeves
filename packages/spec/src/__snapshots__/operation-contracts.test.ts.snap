@@ -1,0 +1,109 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`exact finite Create link declarations > preserves schema2 and explicit upgrade/empty-scope v2 refusal; v3 retains a complete contract snapshot 1`] = `
+{
+  "operationCatalog": [
+    {
+      "id": "links-create",
+      "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f",
+      "version": "1.0.0",
+    },
+  ],
+  "operationFindings": [
+    {
+      "code": "CONFIG_REQUIRED",
+      "message": "Trusted runtime auth verifier is unspecified and unavailable. The known operation requires verified issuer+subject, authenticity, issuer, audience and time validity; raw identity headers do not satisfy it.",
+      "severity": "error",
+      "target": {
+        "element": "shorten",
+        "path": [
+          "operations",
+          "receivers",
+          0,
+          "binding",
+          "authVerifier",
+        ],
+      },
+    },
+  ],
+  "operations": {
+    "calls": [
+      {
+        "caller": {
+          "element": "shorten",
+          "entry": "upload-shorten",
+          "kind": "entry",
+          "lane": "upload",
+        },
+        "expects": {
+          "auth": "verified-principal",
+          "errors": {
+            "id": "links-create-errors",
+            "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c",
+            "version": "1.0.0",
+          },
+          "idempotency": "principal-operation-key",
+          "operation": {
+            "id": "links-create",
+            "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f",
+            "version": "1.0.0",
+          },
+          "request": {
+            "id": "links-create-request",
+            "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80",
+            "version": "1.0.0",
+          },
+          "success": {
+            "id": "links-create-success",
+            "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4",
+            "version": "1.0.0",
+          },
+          "timeoutMs": 10000,
+        },
+        "id": "create-upload",
+        "receiverBinding": "create-link",
+        "receiverRole": "shorten",
+      },
+    ],
+    "receivers": [
+      {
+        "binding": {
+          "authVerifier": null,
+          "kind": "create-link",
+          "storeConnection": "shorten-db",
+          "successRetentionHours": 24,
+        },
+        "id": "create-link",
+        "implementation": {
+          "auth": "verified-principal",
+          "errors": {
+            "id": "links-create-errors",
+            "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c",
+            "version": "1.0.0",
+          },
+          "idempotency": "principal-operation-key",
+          "operation": {
+            "id": "links-create",
+            "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f",
+            "version": "1.0.0",
+          },
+          "request": {
+            "id": "links-create-request",
+            "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80",
+            "version": "1.0.0",
+          },
+          "success": {
+            "id": "links-create-success",
+            "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4",
+            "version": "1.0.0",
+          },
+          "timeoutMs": 10000,
+        },
+        "role": "shorten",
+      },
+    ],
+  },
+  "runtimeVerification": "none",
+  "templateAvailability": "none",
+}
+`;

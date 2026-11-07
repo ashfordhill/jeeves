@@ -13,6 +13,7 @@ import { Button, Group } from "@mantine/core";
 import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useProject } from "../project/store.ts";
+import { OperationChanges } from "./OperationChanges.tsx";
 import { OwnershipChanges } from "./OwnershipChanges.tsx";
 import "./ownership.css";
 
@@ -561,11 +562,22 @@ export function OwnershipForm({
             <strong>
               {preview.value.canApply ? "Ownership declarations preview" : "Ownership refused"} ·{" "}
               {preview.value.changes.length} affected declarations
+              {preview.value.operationChanges.length
+                ? ` · ${preview.value.operationChanges.length} operation bindings also change`
+                : ""}
             </strong>
             <p>
               {preview.value.fromSchema === 2 ? "Explicit upgrade: schema v2 → v3. " : ""}
               {preview.value.note}
             </p>
+            {preview.value.operationChanges.length ? (
+              <details open>
+                <summary>
+                  {preview.value.operationChanges.length} affected operation bindings
+                </summary>
+                <OperationChanges design={design} changes={preview.value.operationChanges} />
+              </details>
+            ) : null}
             <details open={tab === "Preview"}>
               <summary>Exact affected bindings and grants ({preview.value.changes.length})</summary>
               <OwnershipChanges design={design} changes={preview.value.changes} />

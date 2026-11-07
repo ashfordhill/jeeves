@@ -33,7 +33,7 @@ Internal packages export TypeScript source directly; nothing is built except the
 A **design document** has strict explicit v2/v3 readers (`design.ts`). Schema v2 is
 `{schemaVersion: 2, revision, architecture?, elements, connections}`; v3 adds required top-level
 `scope` and optional explicit `ownership` (logical owners, canonical API/worker roles, resource
-authority, role grants and dependency requests). Scope holds an exact nullable profile, finite included/excluded requirements and targeted unresolved custom
+authority, role grants and dependency requests), plus optional exact `operations` receiver/caller bindings. Scope holds an exact nullable profile, finite included/excluded requirements and targeted unresolved custom
 requirements. Reading never upgrades. `upgradeDesign` explicitly crosses the boundary and
 `setDesignScope` requires v3; complete history snapshots support one Undo back to v2.
 `design-scope.ts` supplies the finite `tinyurl-create-resolve@1.0.0` intent catalog, shared
@@ -130,7 +130,7 @@ settings), `getDesign` (the actions, each with its lane, name, entries and the t
 reaches, then each tile's kind, settings, links with their modes and modules, the caps,
 the findings and the design warnings; an accepted command returns both too), `applyStudioCommands`,
 `validateDesign`, `askUser`, `listStudioPatterns`, `describeStudioPattern`, `declareReviewScope`
-and `reviewDesign`, plus bounded `configureDesignScope` and `configureOwnership`. The pattern tools supply four versioned local guidance records, their
+and `reviewDesign`, plus bounded `configureDesignScope`, `configureOwnership`, `describeOperation` and `configureOperations`. The pattern tools supply four versioned local guidance records, their
 applicability and unsupported obligations; retrieval alone selects no scope and supplies no
 runtime template. The instructions
 (`INSTRUCTIONS`) describe the actor, the two lanes, what an action is (two sentences; a tile has
@@ -173,7 +173,7 @@ scripted model.
 
 `GET /projects/:id/blueprint` returns `designBlueprint(design, projectName)`: services with
 settings and components, resources, externals, groups, resolved connections, component links,
-omissions and findings, at default `blueprint: 2`. Explicit `?version=3` includes persistent scope, ownership/roles/authority/grants/requests, unresolved requirements, source schema and absent template/runtime evidence. V2 refuses v3-only declarations with 422 `UNSUPPORTED_BLUEPRINT_CONTENT` and exact paths; legacy-only v2 meaning stays identical. Each connection into a store says whether it writes
+omissions and findings, at default `blueprint: 2`. Explicit `?version=3` includes persistent scope, ownership/roles/authority/grants/requests, exact finite operation declarations/findings, unresolved requirements, source schema and absent template/runtime evidence. V2 refuses v3-only declarations with 422 `UNSUPPORTED_BLUEPRINT_CONTENT` and exact paths; legacy-only v2 meaning stays identical. Each connection into a store says whether it writes
 (from the store's owner) or reads (one writer per store, derived from the owner). It is derived
 per request, `no-store`, and is the only
 interface a future code generator should read. See [studio blueprint](docs/studio-blueprint.md).
@@ -244,10 +244,8 @@ access inference or blueprint semantics. Later units and contract/generator mile
 open as described in the plan.
 
 
-NC01/NC02 now implement the accepted first-phase scope/version and ownership/access boundaries.
+NC01/NC02/NC03 now implement the accepted first-phase scope/version and ownership/access boundaries.
 `ownership.ts` validates declarations independently of legacy store inference; the narrow tool and
 mouse form share pure preview/commands. Owner collapse/expansion is a web view projection over
 canonical role/edge IDs, with safe expansion fallback. Deletion and transfer expose exact affected
-rows, preserve unrelated requirements and undo once. Operation-specific contracts, templates and
-runtime verification remain NC03+; no generator/runtime exists here. The first-phase continuation
-and G1/G2/G4 decisions are recorded in the next contract plan.
+rows, preserve unrelated requirements and undo once. NC03 adds immutable finite Create link/schema refs, exact caller/receiver binding IDs, explicit operation selection and the shared bounded mouse/chat editor. [Finite contracts](docs/studio-contracts.md) define the accepted semantics; resolve/lookup policy remains NC04 and templates/runtime evidence are unavailable. No generator/runtime exists here. The first-phase continuation and G1/G2/G3/G4 decisions are recorded in the next contract plan.

@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "timeoutContradictionRefused": true,
+      "explicitMouseTimeoutEdit": true,
+      "explicitUpgradeUndoSchema2": true,
+      "canonicalRoleOperationLabel": true,
+      "exactV2OperationPaths": 2,
+      "mouseOperationSelectionReachesChat": true,
+      "fullExportUnchangedForViewActions": true,
+      "retentionEditReload": true,
+      "ownerTransferExactOperationClearsUndo": true,
+      "storeEdgeRemovalExactClearsUndo": true,
+      "staleRefusalPreservesCustomScope": true,
+      "roleRemovalExactClearsUndo": true,
+      "reloadExact": true,
+      "advancedVerifierMouseRoundtripClear": true,
+      "entryMoveExactPreviewUndo": true,
+      "expandedContractAndRefsInspected": true
+    },
+    {
+      "viewport": "1280x800",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "timeoutContradictionRefused": true,
+      "explicitMouseTimeoutEdit": true,
+      "explicitUpgradeUndoSchema2": true,
+      "canonicalRoleOperationLabel": true,
+      "exactV2OperationPaths": 2,
+      "mouseOperationSelectionReachesChat": true,
+      "fullExportUnchangedForViewActions": true,
+      "retentionEditReload": true,
+      "ownerTransferExactOperationClearsUndo": true,
+      "storeEdgeRemovalExactClearsUndo": true,
+      "staleRefusalPreservesCustomScope": true,
+      "roleRemovalExactClearsUndo": true,
+      "reloadExact": true,
+      "advancedVerifierMouseRoundtripClear": true,
+      "entryMoveExactPreviewUndo": true,
+      "expandedContractAndRefsInspected": true
+    }
+  ],
+  "errors": [],
+  "expectedConflicts": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "cleanup": [
+    {
+      "id": "bafa8f96-d3db-44f8-b024-480f16315ef0",
+      "status": 204
+    },
+    {
+      "id": "821d9886-2137-479d-85ec-719ca06d6b9c",
+      "status": 204
+    }
+  ]
+}

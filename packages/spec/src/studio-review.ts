@@ -4,6 +4,7 @@ import type { DesignDocument } from "./design.ts";
 import { designScope, profileStatus, unresolvedDesignScope } from "./design-scope.ts";
 import { isStructural } from "./findings.ts";
 import { idSchema } from "./ids.ts";
+import { designOperations, operationChanges } from "./operation-contracts.ts";
 import { designOwnership, previewOwnership } from "./ownership.ts";
 import { studioPatternIdSchema, studioPatterns } from "./studio-patterns.ts";
 import { validateDesign } from "./validate.ts";
@@ -71,6 +72,7 @@ export type StudioChange = {
     | "system"
     | "scope"
     | "ownership"
+    | "operations"
     | "action"
     | "element"
     | "connection"
@@ -98,6 +100,13 @@ export function studioChanges(base: DesignDocument, working: DesignDocument): St
         "explicit-ownership",
         "Logical owners, roles and declared access",
         design.ownership,
+      );
+    if (design.schemaVersion === 3 && design.operations)
+      add(
+        "operations",
+        "operation-bindings",
+        "Exact operation implementations and caller expectations",
+        design.operations,
       );
     if (design.architecture)
       add("system", "system", design.architecture.system.name, design.architecture.system);
@@ -175,7 +184,12 @@ export function reviewStudioDesign(
     ownership: {
       declarations: designOwnership(working),
       changes: previewOwnership(base, designOwnership(working)).changes,
-      note: "Explicit declarations only; no operation or runtime authorization evidence.",
+      note: "Explicit access declarations; operation bindings are separate and runtime authorization is unavailable.",
+    },
+    operations: {
+      declarations: designOperations(working),
+      changes: operationChanges(designOperations(base), designOperations(working)),
+      note: "Exact declarative operation contracts; verifier, templates and runtime evidence remain unavailable.",
     },
     persistentScope: {
       ...designScope(working),

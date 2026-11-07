@@ -4474,3 +4474,95 @@ Final cleanup: stopped only owned 4302/4312 servers and removed own empty scratc
 Read-only final owner GETs remain TinyURL rev53 / YouTube rev1 / Marketplace rev1; `jeeves_e2e`
 contains only its default TinyURL. Owner4300/4310 listeners remain running. New feedback image
 hashes are `b29baa7c…` (sketch) and `2cf541ca…` (crop); original files were not altered.
+
+## 2026-11-07 — NC03: finite Create link contract and exact operation bindings
+
+Worked NC03 only after NC02 `db9af1c`, sequentially on primary main. Coordinator reviewed G3,
+revised binding identities/concurrency and the concrete small-view sketch before material work,
+then inspected actual 1280 operation/detail/transfer/move images and semantic seams. No branch,
+worktree, stash, delegation, push, backend, generator, preset rewrite or owner-project migration.
+Preserved `.jeeves-feedback/`, archived owner screenshots and owner settings/designs. Owner's
+“Keep backend implementation for later” remains the boundary; NC04 is the next assigned unit.
+
+Added immutable local `links-create@1.0.0`, SHA256 over the full actual schema/behavior definition
+(`bac402c1…`) plus individual request/success/error hashes. Bounded exact refs have no ranges,
+latest substitution or leading-zero versions. Contract declares verified issuer+subject with
+trusted authenticity/issuer/audience/time checks; normalized HTTP(S) URL, optional supported
+future RFC3339 expiry; 16 random bytes /22 unpadded base64url chars; **five total allocation
+attempts including the initial attempt**; atomic durable link+successful-key commit before 201.
+Principal+operation+opaque case-sensitive key replays the original result for 24 hours from commit,
+even after link expiry. Authentication/parsing/fingerprint lookup precedes new-request expiry
+freshness; post-retention requests are revalidated and may allocate anew. Concurrent attempts
+serialize until prior fingerprint/outcome is observable or return dependency failure/same-key
+retry under **one total 10s deadline**. Unknown commit outcome never guesses success/new allocation;
+proven rollback releases claim. No hidden pending/lease machine. Explicit 400/401/409/503 schemas
+cover invalid/auth/conflict/allocation/dependency outcomes. No extra 365-day business expiry ceiling.
+
+Optional v3 `operations` holds stable receiver/call binding IDs separate from graph IDs, exact
+signatures and tagged create-link config. Entry caller retains canonical ID+lane+element; service
+caller retains actual connection+role, receiver binding+canonical receiver role. Several different
+operations can share an API/edge. Duplicate IDs/known routes/caller pairs and known schema/auth/
+idempotency/deadline contradictions refuse atomically; unknown exact refs remain saveable and
+unresolved, even reusing known payload schemas in other positions, without Create semantics.
+Known create writes refine NC02 source authority + explicit write request/grant; reads stay reads,
+foreign writes refuse and co-deployment grants nothing. Existing API/connection timeout, protocol,
+interaction/channel and retry/principal propagation intents are checked or precisely unresolved.
+Legacy TinyURL's 1s API setting is visibly refused until explicitly edited by mouse; never migrated.
+
+Shared preview/commands back the bounded inspector form and narrow describe/configure tools.
+Advanced verifier ID/version/hash can be inspected/edited/cleared and reloaded; missing or unknown
+runtime verifier is targeted unavailable intent, separate from the known verification requirement.
+In-card Create link label and expandable inspector responsibility remain the same API/owner with
+original relationship IDs/arrows. Explicit `operation:<binding-id>` selection reaches actual chat
+context/history, survives API rename, refuses malformed/removed bindings and selects no sibling
+operations. Generic configuration selects none. Named ownership/role/authority/edge/removal and
+entry-move previews expose exact operation clears, revision conflicts refuse and one Undo restores
+the whole change. Unrelated custom scope survives. V3 exports every declaration/ref/finding sorted
+by stable binding ID; default v2 refuses every nonempty receiver/call row with exact source paths,
+even empty scope/ownership. Old schema2 fixture/v2 meaning remains exact; reads never upgrade.
+
+Create presence clears only the old blanket create-unspecified finding when exact caller/receiver
+signatures exist; verifier/access gaps and resolve/expiry/cache requirements remain. A required
+one-public-namespace composition obligation is explicitly unresolved: **NC04/NC05 must ensure all
+selected-profile create/resolve bindings share one authoritative source and compatible logical
+owner**. Per-operation declarations do not prove this. Arbitrary independent-source designs are
+not blanket structural errors. Availability belongs outside immutable contract identity; product
+templates/runtime evidence remain none. Read counts/Publish view ports, returned-data arrows,
+YouTube semantics, owner usability acceptance and the backend remain open. Docs/settings/catalog,
+G3 plan, feedback Resolution and playbook describe these actual limits.
+
+Checks with Node 24.21.0 first in PATH, heavy suites sequential: `pnpm check` passed **274 tests /
+38 files**, Biome and all typechecks; `pnpm test:e2e` passed **27 native Chromium** (43.6s); web
+production build passed (existing chunk-size advisory); final lint/diff checks passed. Focused
+network-free spec/PGlite disk-reload, real ChatService and strict mocked transport cover immutable
+hashes, unknown/refusal/category boundaries, exact mouse/chat command parity, staged review,
+actual two-repair budget, permitted lookup/preview afterward, conflicts/atomicity, history/Undo,
+selection/rename/removal, multiple operations, same-owner read/write and timeout/retry gaps. Two
+mouse E2Es cover verifier roundtrip/clear and exact entry-move preview+Undo. These prove contract
+validation/plumbing, never runtime URL/idempotency/concurrency/auth implementation.
+
+Actual strict wire audit: `configureOperations` **67 properties / 16 enum / depth 7**,6,726 UTF-8 bytes;
+`describeOperation` **4 / 0 / 3**, 754 bytes. Giant tile union stays **427 / 538 / 9**. An unnecessary one-branch
+union was rejected by the existing audited codec and removed; stored tagged object remains, with
+no adapter loosening. Same default schema2 TinyURL against retained NC02: instructions
+12,512→13,886 bytes, context 15,928→16,293, strict tools 61,496→**69,051**. Five scripted real-chat
+responses cover two repairs, third-apply refusal and readonly lookup/preview; no paid/live calls,
+model quality/cost/latency win or Mini acceptance. Current fetch-forbidden RF06 synthetic suite
+replays all 12 pairs deterministically. Old as-run records remain untouched: first old Codex request
+intentionally drifts `77669bb5…`→`cf667290…` before any response, because shared operation/catalog/
+selection context changed; exact hashes/reason retained. RF06's historical 2.44× input / 2.07× responses
+and intended Mini/live strict acceptance gap remain disclosed.
+
+Both-size mouse evidence: `/tmp/jeeves-nc03-browser/` holds walkthrough/scripts/check/E2E/build/
+replay logs; seven inspected PNGs, results, browser metadata, audit and drift retained in
+`docs/plans/reliable-foundations/evidence/nc03/`. Own 4302/4312 used scratch JEEVES_HOME, scripted
+provider and jeeves_e2e; default TinyURL rendered11 tiles / 12 lines. Mouse timeout refusal/explicit
+edit, pure upgrade/Undo back to schema2, create/edit/reload, exact refs/expanded contract,
+operation-specific chat selection, full-export equality under focus/Fit/Show all/collapse,
+retention/verifier edit/clear, owner transfer and store-edge/role removal previews/Undo, stale
+refusal preserving custom scope and entry-move preview/Undo passed at 1440×900 and 1280×800.
+Zero unexpected console/page errors; two deliberate HTTP409 stale refusals recorded separately.
+Owned scratch projects deleted (204); e2e DB contains only its default TinyURL. Only owned 4302/4312
+listeners and scratch settings directory were stopped/removed; owner 4300/4310 untouched.
+
+Local commit: **NC03: bind the finite Create link contract**.

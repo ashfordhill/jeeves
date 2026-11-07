@@ -18,6 +18,7 @@ import {
   reviewStudioDesign,
   type StudioReview,
   selectedLogicalOwners,
+  selectedOperationBindings,
 } from "@jeeves/spec";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "../db/client.ts";
@@ -161,6 +162,18 @@ export class ChatService {
         code: "UNKNOWN_SELECTION",
         message:
           "The selected logical owner is missing or invalid. Select an existing owner before sending again.",
+      };
+    if (
+      selectedOperationBindings(state.design, input.selection).some(
+        (item) => item.status !== "present",
+      )
+    )
+      return {
+        ok: false,
+        status: 422,
+        code: "UNKNOWN_SELECTION",
+        message:
+          "The selected operation binding is missing or invalid. Select an existing operation before sending again.",
       };
     if (this.running.has(projectId)) {
       return {
@@ -421,6 +434,14 @@ export class ChatService {
             "reviewDetail",
             true,
             `Saved ownership ${row.change} · ${row.field}/${row.id}: ${JSON.stringify({ before: row.before, after: row.after })}`,
+          );
+      if (committedState)
+        for (const row of reviewStudioDesign(initial.design, committedState.design).operations
+          .changes)
+          workspace.log(
+            "reviewDetail",
+            true,
+            `Saved operation ${row.change} · ${row.field}/${row.id}: ${JSON.stringify({ before: row.before, after: row.after })}`,
           );
       for (const finding of finalReview.findings)
         workspace.log(

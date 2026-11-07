@@ -334,7 +334,30 @@ all declarations; unrelated persistent custom requirements survive, including mi
 
 The old binding `owner` and connection `access` remain the **legacy inferred writer/access**
 approximation above. They are separate from explicit authority/grants and remain unchanged by
-ownership configuration. Operation-specific capabilities and runtime authorization are unspecified.
+ownership configuration. Exact operation bindings have their own editor below; runtime authorization remains unavailable.
 
 Legacy topology warnings still describe the inferred writer approximation. Targeted
 `ownershipFindings` check the explicit declarations; neither proves runtime authorization.
+
+
+## Exact operation contracts (schema v3)
+
+**Operation contracts** in the inspector edits the optional top-level `operations` allowlist.
+Choose the immutable **Create link · v1** record, an existing canonical API role and its
+authoritative database write connection, explicit 24-hour successful-key retention, and existing
+entry/service callers. Receiver/call IDs are separate stable binding identities. There is no
+route/schema/policy editor, auth verifier implementation or arbitrary configuration map.
+
+Use **Preview operations** before **Save operations** (or explicit **Upgrade & save operations**
+from v2). It shows named changes, exact ref details and targeted unresolved/refused findings.
+The fixed operation and existing receiver/connection timeout promises must agree; edit a legacy
+API timeout explicitly through **Options → Request timeout**. The form never rewrites it.
+Unknown refs remain unresolved and retained. Missing verifier is unavailable independently of
+the known auth requirement. Known contradictory schema/auth/idempotency/deadline or foreign write
+intent refuses atomically. One Undo restores the whole declaration; stale previews refuse.
+
+**Details & bindings** selects one `operation:<binding-id>` for chat, distinct from its parent
+role/owner. Generic configuration does not select one. Removal/transfer previews include exact
+dependent operation clears. See [finite operation contracts](studio-contracts.md) for the complete
+field shapes, hashing, normalization, idempotency, allocation and error semantics. V3 retains all
+rows/findings; default v2 refuses their exact paths. Templates/runtime verification remain none.

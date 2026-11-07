@@ -870,3 +870,27 @@ processes. Keep these distinct from the actor's lane actions. The sketch uses a 
 arrow from counts toward its reader; the current canvas uses caller → target requests. A future
 operation/data-flow view must state its convention and preserve canonical identity explicitly.
 This is recorded NC03+ design input, not an NC02 operation feature or YouTube semantic rewrite.
+
+
+## 2026-11-07 finite operation follow-up
+
+An operation is a named responsibility of a canonical API, not another service/process. Give each
+receiver/caller binding its own stable identity so one API and one relationship can support several
+operations. Parent selection must not ambiguously select all operations; an explicit operation
+selection travels to chat/history separately and survives role rename. Keep unknown refs honest:
+validate their canonical graph references without applying the only known operation's semantics.
+Known schema/auth/idempotency/deadline contradictions refuse; unknown exact versions/hashes stay
+retained and unresolved. Contract identity hashes the actual schemas and behavior; changing
+implementation availability does not change the contract.
+
+A timeout or retry already represented elsewhere can contradict a new contract. Show that conflict
+and let the person edit it explicitly; do not quietly upgrade old study settings. Idempotent replay
+after expiry needs retained-result lookup before new-request freshness validation. Concurrent
+transaction fingerprints may be invisible until commit: describe bounded serialization and unknown
+outcomes, not an immediate pending-payload conflict or an invented lease machine. Static contract
+checks prove none of this future runtime behavior.
+
+The first Create link card/inspector/preview is a bounded application of the owner's API-action
+sketch. It preserves caller → target arrows and canonical IDs, with the same logical owner. It
+does not implement separate read/publish ports, returned-data arrows or change old YouTube names
+into executable contracts. Full fitted overviews still need zoom and human usability review.

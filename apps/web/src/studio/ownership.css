@@ -155,3 +155,32 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.operation-form .operation-check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.operation-form .operation-check input {
+  width: auto;
+}
+.operation-form pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.operation-form button {
+  margin: 4px 5px 4px 0;
+}
+.operation-summary summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.lane-operation-label {
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-top: 1px solid var(--mantine-color-default-border);
+}

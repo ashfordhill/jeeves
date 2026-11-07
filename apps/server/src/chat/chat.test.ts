@@ -8,15 +8,26 @@ import {
 } from "@jeeves/providers";
 import {
   buildStudioCommand,
+  createLinkOperation,
   type DesignDocument,
+  designOperations,
   designOwnership,
   designScopeSchema,
   emptyOwnership,
+  operationContractsSchema,
+  ownershipSchema,
+  studioArchitectureExample,
   studioPatternIds,
   studioPatterns,
 } from "@jeeves/spec";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-ownership-v1.json" with {
+  type: "json",
+};
+import operationFixture from "../../../../packages/spec/src/fixtures/nc03-create-v1.json" with {
+  type: "json",
+};
 import type { Db } from "../db/client.ts";
 import { DesignService, type EditInput } from "../design/service.ts";
 import { buildTestApp, openTestDb } from "../test-support.ts";
@@ -172,6 +183,200 @@ function harness(input: Script | { models: ModelSource }) {
     },
   };
 }
+
+const operationSeed = () => {
+  const design = structuredClone(studioArchitectureExample("studio-tinyurl").design);
+  const role = design.architecture?.studio?.elements.find((x) => x.element === "shorten");
+  if (!role || !("requestTimeoutMs" in role.settings)) throw new Error();
+  role.settings.requestTimeoutMs = 10000;
+  return design;
+};
+const operationSeedOps = () => {
+  const seed = operationSeed();
+  return [
+    ...seed.elements.map((element) => ({ op: "addElement", element })),
+    ...seed.connections.map((connection) => ({ op: "connect", connection })),
+    { op: "setArchitecture", architecture: seed.architecture },
+  ];
+};
+it("bounds actual operation repairs, preserves read-only lookup/preview and commits exact operation details as one Undo", async () => {
+  const initial = operationContractsSchema.parse(operationFixture),
+    ownership = ownershipSchema.parse(ownershipFixture),
+    first = structuredClone(initial),
+    second = structuredClone(initial),
+    forbidden = structuredClone(initial);
+  if (!first.receivers[0] || !second.receivers[0] || !forbidden.receivers[0]) throw new Error();
+  first.receivers[0].binding.successRetentionHours = null;
+  second.receivers[0].binding.authVerifier = {
+    id: "future-verifier",
+    version: "1.0.0",
+    sha256: "e".repeat(64),
+  };
+  forbidden.receivers[0].binding.successRetentionHours = null;
+  const configure = (action: "preview" | "apply", operations = initial) => ({
+      name: "configureOperations",
+      arguments: { baseRevision: 1, action, operations },
+    }),
+    review = { name: "reviewDesign", arguments: {} };
+  const h = harness([
+    {
+      toolCalls: [
+        { name: "describeOperation", arguments: { ref: createLinkOperation.ref } },
+        {
+          name: "configureOwnership",
+          arguments: { baseRevision: 1, action: "preview", ownership, upgrade: true },
+        },
+        {
+          name: "configureOwnership",
+          arguments: { baseRevision: 1, action: "apply", ownership, upgrade: true },
+        },
+        configure("preview"),
+        configure("apply"),
+        review,
+      ],
+    },
+    { toolCalls: [configure("preview", first), configure("apply", first), review] },
+    { toolCalls: [configure("preview", second), configure("apply", second), review] },
+    {
+      toolCalls: [
+        configure("preview", forbidden),
+        configure("apply", forbidden),
+        configure("preview", forbidden),
+        { name: "describeOperation", arguments: { ref: createLinkOperation.ref } },
+      ],
+    },
+    { text: "Saved Create link declarations with the unavailable verifier still unresolved." },
+  ]);
+  try {
+    const id = await h.project();
+    expect(
+      (
+        await h.call("POST", `/projects/${id}/operations`, {
+          baseRevision: 0,
+          ops: operationSeedOps(),
+        })
+      ).status,
+    ).toBe(200);
+    const before = (await h.design(id)).design;
+    const { turn, state } = await h.chat(
+      id,
+      "Declare authenticated Create link with exact entry binding.",
+    );
+    expect(turn.error).toBeNull();
+    expect(designOperations(state.design)).toEqual(second);
+    expect(h.requests).toHaveLength(5);
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({
+        tool: "configureOperations",
+        ok: false,
+        summary: expect.stringContaining("2 review repair passes are used"),
+      }),
+    );
+    expect(
+      turn.activity.filter(
+        (x) => x.tool === "configureOperations" && x.summary.startsWith("Previewed"),
+      ),
+    ).toHaveLength(5);
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({
+        tool: "reviewDetail",
+        summary: expect.stringContaining("Saved operation added · receivers/create-link"),
+      }),
+    );
+    expect(turn.reply).toContain("one Undo step");
+    const undo = await h.call("POST", `/projects/${id}/undo`, {
+      baseRevision: state.design.revision,
+    });
+    expect(undo.body.design).toEqual({ ...before, revision: undo.body.design.revision });
+  } finally {
+    await h.app.close();
+  }
+});
+it("carries one explicit operation selection into actual context/history, preserves rename and refuses removed/malformed bindings", async () => {
+  const h = harness([
+    { text: "Inspecting only the selected operation." },
+    { text: "Its canonical API was renamed; binding identity survives." },
+  ]);
+  try {
+    const id = await h.project(),
+      operations = operationContractsSchema.parse(operationFixture),
+      binding = operations.receivers[0],
+      call = operations.calls[0];
+    if (!binding || !call) throw new Error();
+    binding.id = "o".repeat(63);
+    call.receiverBinding = binding.id;
+    const reference = `operation:${binding.id}`;
+    expect(
+      (
+        await h.call("POST", `/projects/${id}/operations`, {
+          baseRevision: 0,
+          ops: [
+            ...operationSeedOps(),
+            {
+              op: "upgradeDesign",
+              scope: { profile: null, requirements: [], customRequirements: [] },
+            },
+            { op: "setOwnership", ownership: ownershipSchema.parse(ownershipFixture) },
+            { op: "setOperations", operations },
+          ],
+        })
+      ).status,
+    ).toBe(200);
+    const first = await h.chat(id, "Inspect this operation.", { selection: [reference] });
+    expect(first.turn.selection).toEqual([reference]);
+    const context = h.requests[0]?.items
+      .filter((x) => x.type === "message")
+      .map(textOf)
+      .find((x) => x.startsWith("[Jeeves] Studio context"));
+    expect(context).toContain(`Selected identities: ["${reference}"]`);
+    expect(context).toContain("Selected operation bindings");
+    expect(context).toContain(`"binding":{"id":"${binding.id}"`);
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: first.state.design.revision,
+      ops: [{ op: "updateElement", id: "shorten", name: "Link creator" }],
+    });
+    const renamed = await h.chat(id, "Inspect the selected operation again.", {
+      selection: [reference],
+    });
+    expect(renamed.turn.selection).toEqual([reference]);
+    expect(designOperations(renamed.state.design)).toEqual(operations);
+    expect(
+      (
+        await h.call("POST", `/projects/${id}/chat`, {
+          baseRevision: renamed.state.design.revision,
+          message: "Inspect",
+          selection: ["operation:Bad"],
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      await h.call("POST", `/projects/${id}/chat`, {
+        baseRevision: renamed.state.design.revision,
+        message: "Inspect",
+        selection: ["operation:missing"],
+      }),
+    ).toMatchObject({ status: 422, body: { code: "UNKNOWN_SELECTION" } });
+    await h.call("POST", `/projects/${id}/operations`, {
+      baseRevision: renamed.state.design.revision,
+      ops: [{ op: "setOperations", operations: { receivers: [], calls: [] } }],
+    });
+    const removed = await h.design(id);
+    expect(
+      await h.call("POST", `/projects/${id}/chat`, {
+        baseRevision: removed.design.revision,
+        message: "Inspect",
+        selection: [reference],
+      }),
+    ).toMatchObject({ status: 422, body: { code: "UNKNOWN_SELECTION" } });
+    expect(
+      (await h.call("GET", `/projects/${id}/chat`)).body.turns.map(
+        (x: { selection: string[] }) => x.selection,
+      ),
+    ).toEqual([[reference], [reference]]);
+  } finally {
+    await h.app.close();
+  }
+});
 
 it("bounds actual ownership repairs, permits previews after exhaustion, and saves exact declaration details as one Undo", async () => {
   const ownership = (name: string) => ({ ...emptyOwnership(), owners: [{ id: "links", name }] });

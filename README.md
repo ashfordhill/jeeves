@@ -5,7 +5,7 @@ canvas: the user starts a download lane and an upload lane, and every service, A
 cache, queue, storage or external tile hangs off them, laid out automatically with no islands and
 no cycles. You configure each tile from a finite catalog of settings and provider choices, and
 talk to a chat assistant that edits the same design with the same rules. Every design is exposed
-as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access declarations). Code generation is not
+as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create link operation declarations). Code generation is not
 part of Jeeves: a future, separate service will read the blueprint and generate from it.
 
 The intention is to **reduce the amount of non-deterministic code and behaviour** when designing

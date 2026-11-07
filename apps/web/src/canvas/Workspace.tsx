@@ -6,8 +6,10 @@
 // (`EntrySummary`).
 import type { BoardHandle, BoardMode, BoardSelection } from "@jeeves/board";
 import {
+  applyOperations,
   buildStudioCommand,
   type DesignDocument,
+  designOperations,
   designOwnership,
   LANE_ACTOR,
   type LaneEdge,
@@ -16,6 +18,8 @@ import {
   laneActionOf,
   laneEntryRefusal,
   laneGraph,
+  operationChanges,
+  operationSelectionReference,
   ownerSelectionReference,
   type StudioLane,
   studioActionDefaults,
@@ -39,6 +43,7 @@ import {
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ChatPanel } from "../chat/ChatPanel.tsx";
+import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { formDrafts } from "../project/form-drafts.ts";
 import { canRedo, canUndo, useProject } from "../project/store.ts";
 import { ActionForm } from "../studio/ActionForm.tsx";
@@ -47,6 +52,9 @@ import { ConnectionForm } from "../studio/ConnectionForm.tsx";
 import { DesignScopeForm } from "../studio/DesignScopeForm.tsx";
 import { DraftFeedback } from "../studio/DraftFeedback.tsx";
 import { TargetInspector } from "../studio/InspectorForm.tsx";
+import { OperationChanges } from "../studio/OperationChanges.tsx";
+import { OperationsForm } from "../studio/OperationsForm.tsx";
+import { OperationsSummary } from "../studio/OperationsSummary.tsx";
 import { OwnershipForm } from "../studio/OwnershipForm.tsx";
 import { OwnershipSummary } from "../studio/OwnershipSummary.tsx";
 import { useStudioPreferences } from "../studio/preferences.ts";
@@ -98,13 +106,18 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
   const [scopeOpen, setScopeOpen] = useState(false);
+  const [operationsOpen, setOperationsOpen] = useState(false);
   const [ownershipOpen, setOwnershipOpen] = useState(false);
   const [expandedOwners, setExpandedOwners] = useState<string[]>([]);
+  const [operationPick, setOperationPick] = useState<string>();
   const [ownerPick, setOwnerPick] = useState<string>();
   const ownership = designOwnership(loaded.design);
   const projection = useMemo(
     () => projectOwnerGraph(loaded.design, graph, expandedOwners),
     [loaded.design, graph, expandedOwners],
+  );
+  const selectedOperation = designOperations(loaded.design).receivers.find(
+    (x) => x.id === operationPick,
   );
   const selectedOwner = ownership.owners.find((x) => x.id === ownerPick);
   const [focusTile, setFocusTile] = useState<string>();
@@ -135,13 +148,15 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     // Chat messages carry the selected element, connection or entry; the user, its actions and
     // its lines to them have no design ID.
     const id = selection.line ?? selection.tile;
-    const ids = selectedOwner
-      ? [ownerSelectionReference(selectedOwner.id)]
-      : id && !id.startsWith("@")
-        ? [id]
-        : [];
+    const ids = selectedOperation
+      ? [operationSelectionReference(selectedOperation.id)]
+      : selectedOwner
+        ? [ownerSelectionReference(selectedOwner.id)]
+        : id && !id.startsWith("@")
+          ? [id]
+          : [];
     useProject.setState({ architectureSelection: ids });
-  }, [selection.tile, selection.line, selectedOwner]);
+  }, [selection.tile, selection.line, selectedOwner, selectedOperation]);
   useEffect(() => () => useProject.setState({ architectureSelection: undefined }), []);
   useEffect(() => {
     // A new tile opens with its Name field focused, ready to rename.
@@ -179,6 +194,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const select = (next: BoardSelection) => {
     if (next.tile !== selection.tile || next.line !== selection.line)
       void formDrafts.flushProject(projectId, true);
+    setOperationPick(undefined);
     setOwnerPick(undefined);
     const roles = ownership.roles.filter(
       (role) =>
@@ -276,6 +292,13 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   return (
     <div className="studio-workspace">
+      {operationsOpen ? (
+        <OperationsForm
+          projectId={projectId}
+          design={loaded.design}
+          onClose={() => setOperationsOpen(false)}
+        />
+      ) : null}
       {ownershipOpen ? (
         <OwnershipForm
           projectId={projectId}
@@ -329,6 +352,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
             const owner = ownership.owners.find((x) => ownerNodeId(x.id) === tile);
             if (owner) {
               void formDrafts.flushProject(projectId, true);
+              setOperationPick(undefined);
               setOwnerPick(owner.id);
               setPick({});
               setFocusTile(undefined);
@@ -456,6 +480,17 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
                 setFocusTile(undefined);
               }}
               onRole={(id) => select({ tile: id })}
+            />
+            <OperationsSummary
+              design={loaded.design}
+              element={selection.tile}
+              connection={selection.line}
+              ownerId={selectedOwner?.id}
+              selectedBinding={selectedOperation?.id}
+              onConfigure={(id) => {
+                if (id) setOperationPick(id);
+                setOperationsOpen(true);
+              }}
             />
             {!selectedOwner && (anchor || selection.tile) ? (
               <RelationshipFocus
@@ -745,6 +780,41 @@ function EntrySummary({
   graph: LaneGraph;
   onSelect: (next: BoardSelection) => void;
 }) {
+  const [pending, setPending] = useState<{
+    lane: StudioLane;
+    revision: number;
+    changes: ReturnType<typeof operationChanges>;
+  }>();
+  const commitMove = (next: StudioLane, revision?: number) => {
+    setPending(undefined);
+    void commitAction(projectId, (latest) => {
+      if (revision !== undefined && latest.revision !== revision)
+        throw new Error(
+          "The design changed after this entry move preview. Preview its operation bindings again.",
+        );
+      return buildStudioCommand(latest, { type: "setEntryLane", entry: edge.id, lane: next }).ops;
+    });
+  };
+  const move = (next: StudioLane) => {
+    try {
+      const candidate = applyOperations(
+        design,
+        buildStudioCommand(design, { type: "setEntryLane", entry: edge.id, lane: next }).ops,
+      );
+      if (!candidate.ok) throw new Error(candidate.errors.map((x) => x.message).join(" "));
+      const changes = operationChanges(
+        designOperations(design),
+        designOperations(candidate.design),
+      );
+      if (changes.length) setPending({ lane: next, revision: design.revision, changes });
+      else commitMove(next);
+    } catch (error) {
+      useProject.getState().setNotice({
+        tone: "error",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
   const choices = useMemo(
     () =>
       studioLanes.map((choice) => ({
@@ -755,6 +825,34 @@ function EntrySummary({
   );
   return (
     <div className="studio-selection-summary">
+      {pending ? (
+        <ConfigurationDialog
+          title="Move entry operation bindings"
+          size="lg"
+          onClose={() => setPending(undefined)}
+          footer={
+            <div className="lane-remove-actions">
+              <button type="button" onClick={() => setPending(undefined)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={pending.revision !== design.revision}
+                onClick={() => commitMove(pending.lane, pending.revision)}
+              >
+                Move entry & clear bindings
+              </button>
+            </div>
+          }
+        >
+          <p>
+            Moving this canonical entry to {laneNames[pending.lane]} clears {pending.changes.length}{" "}
+            operation bindings. It never retargets them. One Undo restores the whole move; unrelated
+            requirements remain.
+          </p>
+          <OperationChanges design={design} changes={pending.changes} />
+        </ConfigurationDialog>
+      ) : null}
       <h2 className="lane-inspector-title">
         <LaneIcon lane={lane} size={22} />
         {name(edge.source)}
@@ -774,15 +872,7 @@ function EntrySummary({
               disabled={!!choice.refusal}
               onClick={() => {
                 if (current) return;
-                void commitAction(
-                  projectId,
-                  (latest) =>
-                    buildStudioCommand(latest, {
-                      type: "setEntryLane",
-                      entry: edge.id,
-                      lane: choice.lane,
-                    }).ops,
-                );
+                move(choice.lane);
               }}
             >
               <LaneIcon lane={choice.lane} size={22} />
