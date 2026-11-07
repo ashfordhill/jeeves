@@ -928,3 +928,24 @@ all artifact contents; a self-reported matching hash or verified flag is insuffi
 trusted registry must independently establish expected output and acceptance policy. Static
 fixture checks of that boundary are not runtime proof. Keep the mouse report in the existing
 inspector, with exact target buttons, rather than turning this distinction into a broad badge.
+
+## 2026-11-07 narrow study and construction review
+
+A new precise foundation needs its own ID/version and goal identity; changing the fresh default
+must preserve old studies, saved selections and owner projects. Seed the entire versioned design
+through one ordinary atomic edit, including explicit upgrade/scope/authority/operations, so the
+chooser cannot silently drop semantics introduced after graph storage. Test failure, disk reload,
+loss-refusal and one Undo at that boundary; reuse the complete seed in eval plumbing too.
+
+A small owner card can make two responsibilities readable without extra services: Create/Follow,
+Links, authoritative database and positive cache; expansion reveals the canonical API roles.
+Actual blank mouse construction plus scripted ChatService with the same deliberately chosen
+identities can verify exact semantic blueprint/report parity. This is not model design-quality or
+runtime evidence. Visible exclusions and unresolved required extras remain necessary.
+
+When explicit authority and access exist, topology warnings must use the valid declaration facts.
+Do not add fake legacy writer metadata to silence a false warning or turn a read into a write.
+Legacy fallback is useful for old designs, but presenting its “no owner” and “Other readers” as
+an unqualified second explanation below explicit authority is confusing. NC14 should review a
+labeled disclosure; an explicit API responsibility's generic “Microservice” kind label is another
+bounded clarity issue. Coordinator review of readable views is not owner usability acceptance.

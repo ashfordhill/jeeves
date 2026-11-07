@@ -18,7 +18,8 @@ The project menu (top right) lists recent projects and opens **New project**, th
 (search, rename, delete) and rename. New project offers:
 
 - **Architecture study**: a copy of a study, chosen in the **Study** list: the
-  [TinyURL study](#the-tinyurl-study) (the default; a fresh installation starts with one), the
+  [TinyURL foundation study](#the-tinyurl-foundation-study) (the default; a fresh installation starts with one),
+  the extended [TinyURL study](#the-tinyurl-study) (design only), the
   [marketplace study](#the-marketplace-study) or the [YouTube study](#the-youtube-study). The
   project name follows the chosen study until you type over it.
 - **Blank architecture**: an empty design.
@@ -170,14 +171,14 @@ follows the canvas:
 - A new tile that lands outside the view is brought in: the canvas pans just enough to show it,
   with room for its tabs, at the same zoom. Attaches and chat edits don't move the camera.
 
-TinyURL fits at these zooms, which the canvas takes by itself as the rails open and close:
+The extended TinyURL study fits at these zooms, which the canvas takes by itself as the rails open and close:
 
 | Window | Both rails closed | Chat open | Inspector open | Both open |
 | --- | --- | --- | --- | --- |
 | 1440×900 | 0.67 | 0.67 | 0.67 | 0.56 |
 | 1280×800 | 0.59 | 0.59 | 0.59 | 0.45 |
 
-TinyURL draws 1,024×832px and fits by height unless both rails are open. The marketplace study
+The extended TinyURL study draws 1,024×832px and fits by height unless both rails are open. The marketplace study
 (1,280×1,472px) is taller than it is wide, so it fits by height whichever rails are open: 0.37 at
 1440×900 and 0.32 at 1280×800. The YouTube study (1,504×1,376px) fits by height with at most one
 rail open, at 0.39 and 0.35, and by width with both open, at 0.38 and 0.30.
@@ -356,8 +357,9 @@ queue with no consumer yet or a new action with no entries must be accepted whil
 Warnings never refuse an edit: no command, pull, attach or chat call is blocked by one, and they
 are not "Fix the lanes first" problems (those are lane errors). The rules are:
 
-- **A store with no writer**: a database, search index, cache or storage with no owner, or whose
-  owner doesn't link to it, for example after **Add before** the store or removing the owner's
+- **A store with no writer**: where resource access is declared, no valid authority/role/write
+  request/matching grant. Otherwise use the legacy inferred owner: no owner, or an owner that
+  does not link to it, for example after **Add before** the store or removing the owner's
   link ("URL database has no writer: its owner Shorten service doesn't link to it. Link Shorten
   service to it, or choose another owner.").
 - **A worker's output nobody reads**: a store whose only links come from its owner, a worker
@@ -510,9 +512,41 @@ of the latest saved revision, including after a conflict/failure. A later mouse 
 counted as part of the chat's committed snapshot. Concurrent edits still prevent a stale commit;
 a successful edited turn still undoes once. No review claims a runtime template or verification.
 
+## The TinyURL foundation study
+
+`studio-tinyurl-foundation@1.0.0` is the fresh-install default and chooser preselection. It is a
+new study, with a distinct source/goal identity, not an upgrade of existing projects. Create
+(authenticated) and Follow (public) reach one collapsed **Links** owner. **Expand roles** reveals
+canonical **Create link** and **Resolve link** responsibilities, which may share `links-runtime`.
+The Links database is authoritative PostgreSQL; the Links cache is an owned positive projection.
+Select either resource to inspect its authority, source/projection intent and role grants.
+
+Create commits immutable HTTP(S) destinations and retained results durably. Resolve reads the
+primary on cache miss/outage, enforces optional expiry, and declares 307/no-store outcomes. Cache
+entries have a 300-second cap clamped to expiry; no negative or HTTP-response cache is declared.
+The existing exact records define deadlines, retries, idempotency and failure behavior in detail;
+these are declarations, with no implemented backend. The report is **valid / complete /
+unavailable / none**; generation remains ineligible because artifacts/verifier are unavailable.
+
+The chooser description and Profile & requirements show the exclusions: analytics, destination
+changes, disable management, reputation, quotas and custom slugs. Including a required excluded
+feature or a custom obligation blocks the narrow profile. No module prose supplies implementation.
+
+Study creation uses one complete, version-aware ordinary operation batch: explicit schema upgrade,
+scope, graph/architecture, authority/grants/dependencies and operation/caller/cache declarations.
+It saves once, reloads exactly, and one Undo returns to the empty schema2 design. A failed seed
+deletes only its newly created project. Requested, remembered and newest existing projects retain
+selection; the default is created only when there is no project. Blueprint v2 refuses v3-only
+semantics at their exact paths; request v3 to retain the full study.
+
+Topology warnings use valid declared authority, role, write request and matching grant where
+those facts are present. Missing write permission still warns; a legacy inferred writer cannot
+fill a missing explicit grant. Designs without resource access declarations retain legacy warning
+behavior. These checks establish design intent, not runtime authorization.
+
 ## The TinyURL study
 
-The default study, `studio-tinyurl@3.2.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
+The extended design-only study, `studio-tinyurl@3.2.0` ([factory](../packages/spec/src/studio-examples/tinyurl.ts)),
 is a read-heavy URL shortener built from four published designs and one open-source shortener:
 
 - HelloInterview, [Design Bit.ly](https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly)

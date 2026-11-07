@@ -1,0 +1,8 @@
+{
+  "case": "video-build",
+  "arm": "rf00-ablation",
+  "round": 1,
+  "expectedRequestHash": "77669bb5b59a1dbcc98c08bbcd07d3a70a2cae54f285972bc6650417b2995a6b",
+  "actualRequestHash": "80781cbcb98dddf6c38b37ddc032d17af98e7646c4113a2a5da1465f20e6424e",
+  "reason": "Baseline prompt/tool map unchanged, but shared turnContext now includes compact NC05 readiness statuses/counts/composition hash. Prior scope/ownership/operation/cache/selection additions remain. Request hash differs before any recorded response is replayed. NC06 preserves that shared context and tool schema; current instructions additionally shorten the writer-warning summary by seven UTF-8 bytes. CLI reports design mismatch because the earlier context-drift error leaves the seed unchanged."
+}

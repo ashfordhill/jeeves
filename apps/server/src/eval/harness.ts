@@ -1,6 +1,6 @@
 /** Eval-only RF00 guidance/tools ablation plus the real production ChatService path. */
 import type { ModelItem, ModelProvider, ModelResponse, ToolDefinition } from "@jeeves/providers";
-import { studioChanges, validateDesign } from "@jeeves/spec";
+import { studioChanges, studioStudySeedOperations, validateDesign } from "@jeeves/spec";
 import { ChatService } from "../chat/service.ts";
 import { isWorkspaceMutation, turnContext, Workspace } from "../chat/tools.ts";
 import type { Db } from "../db/client.ts";
@@ -59,15 +59,12 @@ export async function runCase(
   const project = await design.createProject(`RF06 synthetic ${test.id}`);
   try {
     const seed = test.seed();
-    if (seed.elements.length) {
+    const seedOps = studioStudySeedOperations(seed);
+    if (seedOps.length) {
       const result = await design.edit(project.id, {
         baseRevision: 0,
         source: "api",
-        ops: [
-          ...seed.elements.map((element) => ({ op: "addElement", element })),
-          ...seed.connections.map((connection) => ({ op: "connect", connection })),
-          { op: "setArchitecture", architecture: seed.architecture },
-        ],
+        ops: seedOps,
       });
       if (!result.ok) throw new Error(`Could not seed ${test.id}: ${stable(result)}`);
     }

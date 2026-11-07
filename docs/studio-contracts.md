@@ -13,6 +13,10 @@ key-sorted compact UTF-8 JSON; the operation hash covers the entire definition, 
 schemas and their individual hashes. Unit tests independently recompute them. Availability lives
 outside this identity: a known verification requirement supplies no available verifier.
 
+The separate `studio-tinyurl-foundation@1.0.0` preset selects these exact declarations and the
+existing `tinyurl-create-resolve@1.0.0` profile. The extended study and saved designs stay unchanged.
+Its null verifier keeps implementation unavailable; no fixture artifact is shipped as support.
+
 ## Bindings and editing
 
 Optional schema-v3 `operations` holds at most 50 receiver bindings and 100 calls. Absence remains

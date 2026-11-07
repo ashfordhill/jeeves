@@ -542,3 +542,15 @@ implementation for later”; the authorized Jeeves sequence continues and the ba
   This does not close the proposed Read counts/Publish view ports, returned-data arrows,
   YouTube lifecycle/analytics semantics, fitted-overview readability or owner usability acceptance.
   NC03 `1823124` and NC04 `7b789a7` supply the bounded operation views; backend remains later.
+
+- NC06, local commit titled **NC06: add the narrow TinyURL foundation study**: adds a distinct
+  Create/Follow study with one default-collapsed Links owner and two canonical API responsibilities,
+  exact PostgreSQL/positive-cache intent and visible exclusions. Existing extended TinyURL and
+  owner projects remain unchanged. Actual blank mouse and scripted ChatService construction
+  agree on complete semantic exports; both-size fitted/expanded/focused views and exact selections
+  were coordinator reviewed. This remains bounded declaration/presentation evidence, not owner
+  usability or backend acceptance. The generic inspector's separately preserved legacy writer/
+  reader wording and “Microservice” label under an API role need NC14 clarity review. Read counts /
+  Publish view ports, returned-data arrows, YouTube/Marketplace domain gaps, broader overview
+  readability and runtime proof remain open. Prior actual contract commits are NC03 `1823124`,
+  NC04 `7b789a7` and NC05 `4ada4c2`; no earlier feedback section or image was rewritten.

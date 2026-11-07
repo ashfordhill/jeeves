@@ -43,7 +43,8 @@ pnpm install
 pnpm dev        # Postgres via compose.yaml, then the API (4310) and the web app (4300)
 ```
 
-Open http://127.0.0.1:4300. A fresh database opens on an editable copy of the TinyURL study.
+Open http://127.0.0.1:4300. A fresh database opens on an editable copy of the narrow TinyURL foundation study (schema v3).
+The extended TinyURL study remains a separate design-only choice; saved projects are preserved.
 Database migrations run on server start.
 
 Chat needs a model provider, chosen in **Settings**: the OpenAI API (`OPENAI_API_KEY` in the

@@ -28,11 +28,14 @@ const warnings = (design: DesignDocument) =>
   studioWarnings(design).map(({ rule, node, message }) => ({ rule, node, message }));
 
 describe("design warnings", () => {
-  it("the three studies have none", () => {
+  it("studies have no topology warnings; the foundation retains its honest verifier gaps", () => {
     for (const study of studioArchitectureExamples) {
       const design = studioArchitectureExample(study.id).design;
       expect(studioWarnings(design)).toEqual([]);
-      expect(validateDesign(design)).toEqual([]);
+      expect(validateDesign(design).filter(isStructural)).toEqual([]);
+      if (study.id !== "studio-tinyurl-foundation") expect(validateDesign(design)).toEqual([]);
+      else
+        expect(validateDesign(design).every((x) => x.message.includes("auth verifier"))).toBe(true);
     }
   });
 
@@ -220,5 +223,68 @@ describe("design warnings", () => {
   it("the chat sentence is generated from the warning list", () => {
     for (const rule of studioWarningRules)
       expect(studioWarningSentence).toContain(studioWarningSummaries[rule]);
+  });
+});
+
+describe("declared store writers", () => {
+  const foundation = () => {
+    const design = studioArchitectureExample("studio-tinyurl-foundation").design;
+    if (design.schemaVersion !== 3 || !design.ownership) throw new Error();
+    return design as typeof design & { ownership: NonNullable<typeof design.ownership> };
+  };
+  it("uses valid authority/role/grant/dependency facts without fabricating legacy owner metadata", () => {
+    const design = foundation(),
+      before = structuredClone(design);
+    expect(studioWarnings(design)).toEqual([]);
+    expect(design).toEqual(before);
+    // Canonical ownership allows API or worker role intent for any application kind.
+    const role = design.ownership.roles[0];
+    if (role) role.kind = "worker";
+    expect(studioWarnings(design)).toEqual([]);
+  });
+  it.each(["grant", "dependency", "authority", "role", "read-only", "foreign", "duplicate"])(
+    "does not infer a declared write from missing/invalid %s, even with a legacy writer",
+    (mode) => {
+      const design = foundation(),
+        model = design.ownership;
+      const binding = design.architecture?.studio?.elements.find((x) => x.element === "links-db");
+      if (binding) binding.owner = { kind: "element", id: "create-api" };
+      if (mode === "grant") model.grants = model.grants.filter((x) => x.role !== "create-api");
+      if (mode === "dependency")
+        model.dependencies = model.dependencies.filter((x) => x.connection !== "create-store");
+      if (mode === "authority")
+        model.resources = model.resources.filter((x) => x.element !== "links-db");
+      if (mode === "role") model.roles = model.roles.filter((x) => x.element !== "create-api");
+      if (mode === "read-only") {
+        const grant = model.grants.find((x) => x.role === "create-api"),
+          dep = model.dependencies.find((x) => x.connection === "create-store");
+        if (grant) grant.access = "read";
+        if (dep) dep.access = "read";
+      }
+      if (mode === "foreign") {
+        const role = model.roles.find((x) => x.element === "create-api");
+        if (role) role.owner = "another-owner";
+      }
+      if (mode === "duplicate" && model.grants[0]) model.grants.push({ ...model.grants[0] });
+      expect(studioWarnings(design)).toContainEqual(
+        expect.objectContaining({
+          rule: "store-without-writer",
+          node: "links-db",
+          message: expect.stringContaining("no declared writer"),
+        }),
+      );
+    },
+  );
+  it("names the declared worker writer for an unread source instead of an absent legacy owner", () => {
+    const design = foundation();
+    const binding = design.architecture?.studio?.elements.find((x) => x.element === "create-api");
+    if (binding) binding.settings = { kind: "worker", execution: "docker", language: "typescript" };
+    design.connections = design.connections.filter((x) => x.id !== "resolve-store");
+    expect(studioWarnings(design)).toContainEqual({
+      rule: "output-unread",
+      node: "links-db",
+      message:
+        "Nothing reads Links database: only its declared writer Create link links to it. Link the service or API that reads it.",
+    });
   });
 });

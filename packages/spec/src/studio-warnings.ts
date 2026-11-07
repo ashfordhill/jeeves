@@ -7,9 +7,10 @@
  */
 import type { DesignDocument } from "./design.ts";
 import { type Finding, finding } from "./findings.ts";
+import { accessAllows, designOwnership } from "./ownership.ts";
 import { laneActionNode, laneGraph } from "./studio-lanes.ts";
 import { studioLinkRole, studioStoreAccess } from "./studio-links.ts";
-import { studioActions } from "./studio-model.ts";
+import { studioActions, studioApplicationKinds } from "./studio-model.ts";
 
 export const studioWarningRules = [
   "store-without-writer",
@@ -24,7 +25,7 @@ export type StudioWarningRule = (typeof studioWarningRules)[number];
 
 /** Each warning in a few words, for the chat instructions and the docs. */
 export const studioWarningSummaries: Record<StudioWarningRule, string> = {
-  "store-without-writer": "a store with no writer (no owner, or its owner doesn't link to it)",
+  "store-without-writer": "a store with no declared writer (or no linked legacy owner)",
   "output-unread": "a store only its worker owner links to (output nobody reads)",
   "queue-without-publisher": "a queue nobody publishes to",
   "queue-without-consumer": "a queue nobody consumes",
@@ -44,8 +45,8 @@ export type StudioWarning = { rule: StudioWarningRule; node: string; message: st
 
 /**
  * The design's warnings, in lane-graph order:
- * - a store (database, search index, cache, storage) with no writer: it has no owner, or no link
- *   into it comes from its owner (`studioStoreAccess`);
+ * - a store without a valid declared authority/role/write dependency/grant; where declarations
+ *   are absent, the linked legacy inferred writer (`studioStoreAccess`) remains the fallback;
  * - a store whose only links come from its owner, when that owner is a worker: the worker's
  *   output nobody reads (a cache used only by its owner is normal);
  * - a queue with no publisher (no link into it) or no consumer (no link out of it);
@@ -56,6 +57,7 @@ export function studioWarnings(design: DesignDocument): StudioWarning[] {
   if (!studio) return [];
   const graph = laneGraph(design);
   const bindings = new Map(studio.elements.map((item) => [item.element, item]));
+  const ownership = designOwnership(design);
   const names = new Map(design.elements.map((item) => [item.id, item.name]));
   const name = (id: string) => names.get(id) ?? id;
   const out: StudioWarning[] = [];
@@ -115,20 +117,68 @@ export function studioWarnings(design: DesignDocument): StudioWarning[] {
         ? (studio.packages.find((item) => item.id === owner.id)?.name ?? owner.id)
         : owner && name(owner.id);
     const into = design.connections.filter((item) => item.to.element === node.id);
-    if (!into.some((item) => studioStoreAccess(design, item.id) === "write")) {
+    // Once access/authority is declared for this resource, legacy inferred access cannot fill
+    // missing permissions. These are design facts, never proof of runtime authorization.
+    const declared =
+      ownership.resources.some((x) => x.element === node.id) ||
+      ownership.grants.some((x) => x.resource === node.id) ||
+      into.some((link) => ownership.dependencies.some((x) => x.connection === link.id));
+    const declaredWriters = into.filter((link) => {
+      const resources = ownership.resources.filter((x) => x.element === node.id),
+        roles = ownership.roles.filter((x) => x.element === link.from.element),
+        grants = ownership.grants.filter(
+          (x) => x.resource === node.id && x.role === link.from.element,
+        ),
+        requests = ownership.dependencies.filter((x) => x.connection === link.id);
+      const resource = resources[0],
+        role = roles[0],
+        grant = grants[0],
+        request = requests[0];
+      return (
+        resources.length === 1 &&
+        roles.length === 1 &&
+        grants.length === 1 &&
+        requests.length === 1 &&
+        resource &&
+        role &&
+        grant &&
+        request &&
+        ownership.owners.filter((x) => x.id === resource.authority).length === 1 &&
+        role.owner === resource.authority &&
+        (studioApplicationKinds as readonly string[]).includes(
+          bindings.get(role.element)?.settings.kind ?? "",
+        ) &&
+        !grant.boundary &&
+        request.access !== "read" &&
+        accessAllows(grant.access, request.access)
+      );
+    });
+    if (
+      declared
+        ? !declaredWriters.length
+        : !into.some((item) => studioStoreAccess(design, item.id) === "write")
+    ) {
       warn(
         "store-without-writer",
         node.id,
-        !owner
-          ? `${store} has no writer: it has no owner. Choose its owner, the tile that writes it.`
-          : owner.kind === "package"
-            ? `${store} has no writer: no tile in its owner ${ownerName} links to it. Link one of them to it, or choose another owner.`
-            : `${store} has no writer: its owner ${ownerName} doesn't link to it. Link ${ownerName} to it, or choose another owner.`,
+        declared
+          ? `${store} has no declared writer: link a role of its authority with an explicit write dependency and matching role grant. Ownership alone grants no access.`
+          : !owner
+            ? `${store} has no writer: it has no owner. Choose its owner, the tile that writes it.`
+            : owner.kind === "package"
+              ? `${store} has no writer: no tile in its owner ${ownerName} links to it. Link one of them to it, or choose another owner.`
+              : `${store} has no writer: its owner ${ownerName} doesn't link to it. Link ${ownerName} to it, or choose another owner.`,
       );
       continue;
     }
     // Every line into the store, entries included, comes from its worker owner.
-    const writer = owner?.kind === "element" ? owner.id : undefined;
+    const writer = declared
+      ? declaredWriters.length === 1
+        ? declaredWriters[0]?.from.element
+        : undefined
+      : owner?.kind === "element"
+        ? owner.id
+        : undefined;
     const readers = graph.edges.filter((edge) => edge.target === node.id && edge.source !== writer);
     if (
       kind !== "cache" &&
@@ -139,7 +189,9 @@ export function studioWarnings(design: DesignDocument): StudioWarning[] {
       warn(
         "output-unread",
         node.id,
-        `Nothing reads ${store}: only its owner ${ownerName} links to it. Link the service or API that reads it.`,
+        declared
+          ? `Nothing reads ${store}: only its declared writer ${name(writer)} links to it. Link the service or API that reads it.`
+          : `Nothing reads ${store}: only its owner ${ownerName} links to it. Link the service or API that reads it.`,
       );
   }
   return out;

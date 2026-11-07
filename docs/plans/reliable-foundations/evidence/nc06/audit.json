@@ -1,0 +1,139 @@
+{
+  "version": "nc06-study-v1",
+  "tools": [
+    {
+      "tool": "describeOperation",
+      "properties": 4,
+      "enums": 0,
+      "depth": 3,
+      "bytes": 745
+    },
+    {
+      "tool": "configureOperations",
+      "properties": 74,
+      "enums": 17,
+      "depth": 7,
+      "bytes": 7557
+    },
+    {
+      "tool": "listStudioDefinitions",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 298
+    },
+    {
+      "tool": "describeStudioDefinition",
+      "properties": 1,
+      "enums": 16,
+      "depth": 2,
+      "bytes": 481
+    },
+    {
+      "tool": "listStudioPatterns",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 370
+    },
+    {
+      "tool": "describeStudioPattern",
+      "properties": 1,
+      "enums": 4,
+      "depth": 2,
+      "bytes": 529
+    },
+    {
+      "tool": "getDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 369
+    },
+    {
+      "tool": "configureDesignScope",
+      "properties": 17,
+      "enums": 18,
+      "depth": 5,
+      "bytes": 2497
+    },
+    {
+      "tool": "configureOwnership",
+      "properties": 28,
+      "enums": 13,
+      "depth": 5,
+      "bytes": 3623
+    },
+    {
+      "tool": "applyStudioCommands",
+      "properties": 427,
+      "enums": 538,
+      "depth": 9,
+      "bytes": 50591
+    },
+    {
+      "tool": "validateDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 239
+    },
+    {
+      "tool": "readReadiness",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 462
+    },
+    {
+      "tool": "declareReviewScope",
+      "properties": 9,
+      "enums": 4,
+      "depth": 5,
+      "bytes": 1564
+    },
+    {
+      "tool": "reviewDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 433
+    },
+    {
+      "tool": "askUser",
+      "properties": 3,
+      "enums": 0,
+      "depth": 3,
+      "bytes": 562
+    }
+  ],
+  "instructionsBytes": 15427,
+  "tinyurlContextBytes": 17016,
+  "toolsHash": "7a2614fe0c48a695654074e7b9f1defb6b7e68a93af11a4f2bf893783613738b",
+  "instructionsHash": "1e37ff7e4bfcae39ab29ad45ed8796117eaa73f6aebd61cf143c8402f69c14fb",
+  "priorRF06ToolsHash": "170213ff1ad633d3bd139a2ae05d884643ed4551f1b1a269c9314841b0a6ec1d",
+  "note": "No live calls. Warning wording now recognizes explicit declared writers; wire tool schemas are unchanged. Same retained schema2 TinyURL used for comparable request byte audit. New foundation context measured separately. Scripted ChatService construction uses six offline responses, no model quality/cost claim.",
+  "requestComparison": {
+    "baseline": {
+      "instructions": 15434,
+      "tinyurlContext": 17016,
+      "strictTools": 70336
+    },
+    "current": {
+      "instructions": 15427,
+      "tinyurlContext": 17016,
+      "strictTools": 70336
+    },
+    "note": "Same retained schema2 TinyURL; actual provider strict wire schemas. UTF-8 bytes, not tokens/cost/quality.",
+    "delta": {
+      "instructions": -7,
+      "tinyurlContext": 0,
+      "strictTools": 0
+    }
+  },
+  "strictToolsHash": "2c7d0ef2a58eb344092fd65a2306232988202aaa3ceee5d517b9a60c2bd84393",
+  "foundation": {
+    "contextBytes": 17019,
+    "note": "Changed product default, so this v3 contract context is separate from the comparable retained schema2 request."
+  }
+}

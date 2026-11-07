@@ -7,6 +7,7 @@ import {
   emptyDesign,
   type OperationInput,
   studioArchitectureExample,
+  studioStudySeedOperations,
 } from "@jeeves/spec";
 import { eq } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
@@ -19,11 +20,7 @@ const tinyurl = studioArchitectureExample("studio-tinyurl");
 
 /** Builds the TinyURL study from an empty design, as the web does. */
 function tinyurlOps(): OperationInput[] {
-  return [
-    ...tinyurl.design.elements.map((element) => ({ op: "addElement" as const, element })),
-    ...tinyurl.design.connections.map((connection) => ({ op: "connect" as const, connection })),
-    { op: "setArchitecture", architecture: tinyurl.design.architecture ?? null },
-  ];
+  return studioStudySeedOperations(tinyurl.design);
 }
 
 /** The ops that add one service to `design` from the upload lane, through the command builder. */

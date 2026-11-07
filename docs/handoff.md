@@ -4728,3 +4728,41 @@ owner usability remain open. Real runtime/adapters/clocks/concurrency proof stay
 backend later; NC14 independently reviews the small subset.
 
 Local commit: **NC05: report exact snapshot compatibility and evidence gaps**.
+
+## 2026-11-07 — NC06: separate narrow TinyURL foundation and complete creation
+
+NC06 only after `4ada4c2`, primary main, one writer. New distinct
+`studio-tinyurl-foundation@1.0.0` is chooser/fresh-install default: Create/Follow, one collapsed
+Links owner/two API roles/shared deployable intent, PostgreSQL source and exact owned positive
+cache projection. Create source read-write, Resolve source read/cache read-write; verifier null.
+Report valid/complete/unavailable/none, generation no. Frozen records/profile and old extended
+study source/goal/schema2 semantics unchanged; saved owner projects/selections preserved.
+
+Shared complete version-aware seed fixes chooser/eval scope/ownership/operation loss, including
+scope-only v3. One atomic edit, disk reload, exact v2 loss refusal/v3 export, failed-seed isolation,
+one Undo/Redo checked. Declared writer facts now drive warnings where present, with legacy
+fallback; missing/invalid write permission still warns, no fake legacy owners. Actual blank mouse
+build rev31 and six-response scripted ChatService build rev1 match full canonical semantic
+blueprint/contracts/report after revision only. Inputs are deliberately chosen from the mouse
+snapshot: plumbing proof, not independent model quality/runtime proof. Full current docs,
+[review ledger](plans/reliable-foundations/nc06-review.md), append-only feedback/playbook updated.
+
+Frozen Node24.21.0 required checks: **370 tests / 46 files**, lint/all typechecks; **31 native
+E2Es** (47.9s); web build (existing chunk advisory); final lint/diff pass. Heavy suites sequential,
+source steady during E2E. Both-size actual mouse:6collapsed/7expanded tiles,7lines; exact both
+operation/role/owner chat/history, source/cache authority, pure fit/focus/collapse, required
+excluded/custom blockers and mouse Undo/reload. Fresh-install empty-list simulation uses actual
+application writes; no API seeding is labeled mouse construction. Zero final browser errors.
+Twenty-three inspected PNGs, raw scripts/logs/failures/hashes and byte audit are in
+[evidence](plans/reliable-foundations/evidence/nc06/README.md). Strict tools unchanged; instructions
+−7UTF-8bytes, retained schema2 context unchanged; no token/cost/quality claim or paid/live call.
+
+All own projects deleted204; e2e DB only its original default. Only own4312/4302 listeners/settings
+removed; owner4300/4310 remain, saved revisions53/1/1 unchanged. `.jeeves-feedback/` preserved.
+Next **NC14** independently reviews this subset. Coordinator accepts the small views, not owner
+usability. Carry forward inspector legacy no-owner/readers/inference under explicit authority and
+“Microservice” under API role for labeled-disclosure review. Read/publish ports, return arrows,
+YouTube/Marketplace gaps, extended overview/readability, Mini/live evidence and backend proof
+remain open. NC07–NC13 stay deferred; backend remains later.
+
+Local commit: **NC06: add the narrow TinyURL foundation study**.

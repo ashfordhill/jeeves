@@ -123,7 +123,10 @@ export function LaneCanvas({
                     roles
                   </small>
                   {ownerOperations(node.id).length ? (
-                    <small>{ownerOperations(node.id).length} declared operation</small>
+                    <small>
+                      {ownerOperations(node.id).length} declared operation
+                      {ownerOperations(node.id).length === 1 ? "" : "s"}
+                    </small>
                   ) : null}
                   <button
                     type="button"

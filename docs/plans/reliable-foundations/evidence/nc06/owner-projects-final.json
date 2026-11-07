@@ -1,0 +1,25 @@
+{
+  "projects": [
+    {
+      "id": "41bbd268-9244-47cc-be63-66c5e61d116c",
+      "name": "TinyURL · studio study",
+      "revision": 53,
+      "createdAt": "2026-11-05T04:09:03.243Z",
+      "updatedAt": "2026-11-06T23:20:56.170Z"
+    },
+    {
+      "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+      "name": "YouTube · studio study",
+      "revision": 1,
+      "createdAt": "2026-11-06T20:02:02.427Z",
+      "updatedAt": "2026-11-06T20:02:02.452Z"
+    },
+    {
+      "id": "81571ba1-c2da-4896-a79c-c31557f164ca",
+      "name": "Marketplace · studio study",
+      "revision": 1,
+      "createdAt": "2026-11-06T17:29:32.388Z",
+      "updatedAt": "2026-11-06T17:29:32.417Z"
+    }
+  ]
+}

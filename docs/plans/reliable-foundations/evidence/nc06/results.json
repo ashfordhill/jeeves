@@ -1,0 +1,47 @@
+{
+  "results": [
+    {
+      "freshInstall": "clean browser and one empty project listing; all creation writes actual application/API",
+      "id": "d838b04c-856d-4d94-b842-8c3ed3783d89",
+      "fullV3": true,
+      "reloadExact": true
+    },
+    {
+      "viewport": "1440x900",
+      "collapsedTiles": 6,
+      "expandedTiles": 7,
+      "lines": 7,
+      "fullViewPurity": true,
+      "sourceAndCacheAuthorityVisible": true,
+      "exactBothOperationsAndRolesOwnerReachChatHistory": true,
+      "extrasBlockAndUndo": true,
+      "reloadExact": true
+    },
+    {
+      "viewport": "1280x800",
+      "collapsedTiles": 6,
+      "expandedTiles": 7,
+      "lines": 7,
+      "fullViewPurity": true,
+      "sourceAndCacheAuthorityVisible": true,
+      "exactBothOperationsAndRolesOwnerReachChatHistory": true,
+      "extrasBlockAndUndo": true,
+      "reloadExact": true
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "d838b04c-856d-4d94-b842-8c3ed3783d89",
+      "status": 204
+    },
+    {
+      "id": "72b5cb9c-8a22-42d4-9d8d-00c9661dcba2",
+      "status": 204
+    },
+    {
+      "id": "95b4188d-0a51-4c60-9d32-7a0adb83d639",
+      "status": 204
+    }
+  ]
+}

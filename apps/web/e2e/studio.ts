@@ -8,7 +8,7 @@ export const ready = (page: Page) =>
   });
 
 /**
- * Creates a study project through the project menu (TinyURL, the default study, unless `study`
+ * Creates a study project through the project menu (the default study unless `study`
  * names another by its label, or is "blank" for a blank architecture) and returns its ID.
  */
 export async function createStudy(
@@ -138,7 +138,13 @@ export const test = base.extend<{ tinyurl: string }>({
   tinyurl: async ({ page }, use) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
-    const id = await createStudy(page);
+    // These existing graph/settings tests deliberately exercise the extended schema2 study.
+    // The new foundation's default and complete v3 seed are covered in foundation.spec.ts.
+    const id = await createStudy(
+      page,
+      "E2E TinyURL extended",
+      "TinyURL · extended study (design only)",
+    );
     await use(id);
     await page.request.delete(`/api/projects/${id}`);
     expect(errors).toEqual([]);

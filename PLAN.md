@@ -53,7 +53,7 @@ preview/commands and unresolved diagnostics. Selecting scope implements no capab
 
 The vocabulary is finite: sixteen kinds with immutable definitions (`studio-definitions.ts`), ten
 component kinds (`studio-components.ts`; their icons, and the helpers that add and link a tile's
-modules, are in `studio-modules.ts`). The studies, TinyURL v3 (the default), the marketplace and
+modules, are in `studio-modules.ts`). The studies, TinyURL foundation v1 (the default), extended TinyURL v3.2, the marketplace and
 YouTube, are built in lanes from published designs (`studio-examples/`).
 
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
@@ -258,4 +258,8 @@ availability and exact generated-output evidence. Generation eligibility require
 future output evidence is separate. Whole-design coverage blocks generic/legacy/unknown extras.
 The host-only trusted artifact formats have fixture-only positive tests; product has no registry,
 manifest, output or evidence. Existing write-only Create bindings retain a targeted missing-read
-gap rather than gaining permission. NC06 owns the new narrow study; old presets/projects remain intact.
+gap rather than gaining permission. NC06 adds the distinct `studio-tinyurl-foundation@1.0.0` default,
+with complete atomic v3 seeding, one Links owner, two API roles, exact source/cache contracts and
+visible exclusions. The old `studio-tinyurl@3.2.0` source and saved projects remain intact.
+Actual blank-canvas mouse and scripted ChatService construction agree exactly on the semantic
+blueprint/report; this is plumbing evidence, not model quality or runtime proof. NC14 reviews this subset.

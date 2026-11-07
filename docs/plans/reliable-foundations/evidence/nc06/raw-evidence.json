@@ -1,0 +1,662 @@
+{
+  "raw": [
+    {
+      "source": "/tmp/jeeves-nc06-browser/api.log",
+      "retained": "api.log.gz",
+      "bytes": 218005,
+      "sha256": "67290376d85005dbe5ac9476bf0d181be0e48dc7bf5ec4ac1b7339c97c959f78",
+      "compressedBytes": 15095,
+      "compressedSha256": "5d28cbfa562f73ea6ce23f850577198dd588721d94d67b28954da3819881fb73"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/audit-final.log",
+      "retained": "audit-final.log.gz",
+      "bytes": 3338,
+      "sha256": "8951572fb6d1201504cacf5ef38ef7a56883db038708a01a25877086e9c7ebec",
+      "compressedBytes": 1039,
+      "compressedSha256": "e458b8530bbe820ca635042113cfb58372f0210fcc7bf67a9ad8ca403e6950b0"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/audit.json",
+      "retained": "audit.json.gz",
+      "bytes": 3338,
+      "sha256": "8951572fb6d1201504cacf5ef38ef7a56883db038708a01a25877086e9c7ebec",
+      "compressedBytes": 1039,
+      "compressedSha256": "e458b8530bbe820ca635042113cfb58372f0210fcc7bf67a9ad8ca403e6950b0"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/audit.log",
+      "retained": "audit.log.gz",
+      "bytes": 3344,
+      "sha256": "7490889ac71d9dd93cc93d2c023db445bf7625e0ba19a07ec5ad917c57d20b77",
+      "compressedBytes": 1048,
+      "compressedSha256": "265fdf65f5238f7e19ff6907d7c0e8ce042b327311bbe0d084b900b1f142d1ff"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/audit.mts",
+      "retained": "audit.mts.gz",
+      "bytes": 3273,
+      "sha256": "83e611bcc8042c047438bc62a73e2208096752945015735fb1175ca0a9693bb5",
+      "compressedBytes": 1380,
+      "compressedSha256": "a41f5fd48d22303debb293c2423028ba8163e540a67f95ec8c10d9369ee21d3f"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/build.log",
+      "retained": "build.log.gz",
+      "bytes": 1340,
+      "sha256": "6d657d3492d194382a6e301e95a2f86bc70c479edfb82db00a9799513eaef005",
+      "compressedBytes": 647,
+      "compressedSha256": "177c5e184a442224ed491c8e4ff27a9ddc172b2db968c27b3eeffa47468647e0"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/chat-parity.log",
+      "retained": "chat-parity.log.gz",
+      "bytes": 173,
+      "sha256": "e021fde728b1a3eb4a877fa0f7feecc8f024364c0819401440537a5ae9419426",
+      "compressedBytes": 152,
+      "compressedSha256": "884801522ef07da08e44f4f1ef843928c0c63fe0c4477d0f21e78f28916a7f97"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/check-second.log",
+      "retained": "check-second.log.gz",
+      "bytes": 861,
+      "sha256": "69be26a37dd51e65dd05e4a4bb66c86714c2991921a8c215d816a83ab4a5972e",
+      "compressedBytes": 439,
+      "compressedSha256": "f781bf95acd973deea7d38b5608048f543addd30a8bcf4f3cd039bade2caff37"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/check.log",
+      "retained": "check.log.gz",
+      "bytes": 875,
+      "sha256": "3d9365f8d19b17465e8ebed8a8d3912ec7f3e500471528d79abccb38d70dbd76",
+      "compressedBytes": 346,
+      "compressedSha256": "5450d56340321424132cc10d8e777bb0a8230381e801db4c4775b33fcab9c677"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/e2e.log",
+      "retained": "e2e.log.gz",
+      "bytes": 6205,
+      "sha256": "adf62695dae98422473a03074fe46ec7e23f2e117aa42436a154cc7743d6308e",
+      "compressedBytes": 1762,
+      "compressedSha256": "e2c1efa7e2b14a6d644e2c1d1de446e5e7f4dd525586f470afec422e446c2e05"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/early-second.log",
+      "retained": "early-second.log.gz",
+      "bytes": 53,
+      "sha256": "605579ee79ee0e9d6b7ab2627e575279d608c1ca8007ae01f9818a889954d749",
+      "compressedBytes": 73,
+      "compressedSha256": "9ee3ae00bee164cf8945b87947b4c78d639102e1281db27e1dbdd2fccfb2e915"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/early.log",
+      "retained": "early.log.gz",
+      "bytes": 1284,
+      "sha256": "ecfdda0190c53c8b9de65cc9d32ca2e31c84410b327d60f4714e97e4af632f21",
+      "compressedBytes": 602,
+      "compressedSha256": "704607d3454dbc36a3be7b19de229ab74d3620237f548a1f27b1a8438f085ea1"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/early.mts",
+      "retained": "early.mts.gz",
+      "bytes": 1525,
+      "sha256": "d49bbd26c5436696e74ecdd35bf2acc9b7992a0175fe3a00dfed95a70047ae7d",
+      "compressedBytes": 663,
+      "compressedSha256": "30a2b2a541df6bb680dbc2e519a34ffaf405b54ea6e002dd2cbd9b71c5f9702d"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/first.json",
+      "retained": "first.json.gz",
+      "bytes": 51389,
+      "sha256": "4503fa926868df03e8b4c843f91c3dbc86f549e21bf2608091f14ae72e771fd7",
+      "compressedBytes": 6050,
+      "compressedSha256": "c125f7422e3ce65ddc7dba791a46e0762f1d0b0c568bef88d40a7cf32fe122e9"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/focused.log",
+      "retained": "focused.log.gz",
+      "bytes": 192,
+      "sha256": "94cf58d788fd0eef7bb58637921bcedba9e95d69bff6425fb309bcd4a6a0b85e",
+      "compressedBytes": 169,
+      "compressedSha256": "11c2dd680d7e2c257916d308a851255365bea7aa24181ba13136bdddd5dfa6ad"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-evidence.log",
+      "retained": "format-evidence.log.gz",
+      "bytes": 37,
+      "sha256": "d05b9f277d3ff42b1ddd87ef5533fae20382d575359f1201ccb54b0d8df25b1f",
+      "compressedBytes": 50,
+      "compressedSha256": "be54d6c52300fc7be6ba90486d6b0139eb12655e37d79389c9da51dc24936598"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-fifth.log",
+      "retained": "format-fifth.log.gz",
+      "bytes": 39,
+      "sha256": "a8b997d7303e7bafa95aee6ab7a1947482dc80089284773125cb48f03441ab78",
+      "compressedBytes": 54,
+      "compressedSha256": "1c11d6507ccc77a6f387a29a76c6e593d9b32d016dc7bdb216052f858bacca3f"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-fourth.log",
+      "retained": "format-fourth.log.gz",
+      "bytes": 40,
+      "sha256": "dde7a558dc7036c4c8503d42b71eac1c063fb34e44f6d31c39aaa64a03409c44",
+      "compressedBytes": 54,
+      "compressedSha256": "1b38a4dfa534e66a42a4f3476fbc3939726093f5311771b4005237ad75b13672"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-second.log",
+      "retained": "format-second.log.gz",
+      "bytes": 40,
+      "sha256": "ec33e193105d7aa2bf024679c1452268ee30fc016fd9f5e9acf1459bddad5f69",
+      "compressedBytes": 54,
+      "compressedSha256": "cccc26a9cba54793ec0b58def0d9b7c05ac1c0ff5337011f1e534e613de8b159"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-sixth.log",
+      "retained": "format-sixth.log.gz",
+      "bytes": 38,
+      "sha256": "fcc7cc44f6f6d388477a89da3c38b0ca7436fcaf9e3bdc7746a5b0be577ef8af",
+      "compressedBytes": 51,
+      "compressedSha256": "9f24ad0a37d9a89f7cf783318695b19a3113b2d09b9eb2cd1c97383102a9e7a9"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-third.log",
+      "retained": "format-third.log.gz",
+      "bytes": 41,
+      "sha256": "9767201738052498d0f1661c042a0ee5e9f63c059b7d6b0b85dd22d92b8de8ee",
+      "compressedBytes": 54,
+      "compressedSha256": "580a52807003f73eb890d85693ba715e4d873666446e6adda85eb85019ad1dac"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format.log",
+      "retained": "format.log.gz",
+      "bytes": 41,
+      "sha256": "7afe9ada18b5e996e64697a11ce8087abe2b5891be5bd4cdac8c3b2dc3c9b0d8",
+      "compressedBytes": 55,
+      "compressedSha256": "3ed9da8fd479af37056ae3f02bf20e680646c316eb8f1d8bc77f34283b0af145"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/initial-tests-second.log",
+      "retained": "initial-tests-second.log.gz",
+      "bytes": 1935,
+      "sha256": "9334af43e9633c32a84b2f750412f89056b54c20697841a4411813a56c7982c5",
+      "compressedBytes": 766,
+      "compressedSha256": "d132823808218804a32239664e1363b36d07b3f4791dbe782c557c18e20a6ae1"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/initial-tests.log",
+      "retained": "initial-tests.log.gz",
+      "bytes": 1666,
+      "sha256": "08e65c57037d00ecf689a3a291e6fdb782357c6d9027e27bc49832c3b3ea09f7",
+      "compressedBytes": 605,
+      "compressedSha256": "b8fec1810aabf3e44cf450c2caa55c415b3dc716e136a827bc586d60378d23ba"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/integration-second.log",
+      "retained": "integration-second.log.gz",
+      "bytes": 190,
+      "sha256": "fb109b2f4dd3061fda26f4ff0872f63149d779a350546722493f8ca62d98d160",
+      "compressedBytes": 167,
+      "compressedSha256": "25eaa5b52b41918d3ef4cb79daa54f29337abfc3fe495eb4c56f8ed5e4d5a08b"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/integration.log",
+      "retained": "integration.log.gz",
+      "bytes": 1271,
+      "sha256": "bd3558519d5958adacf3b11615b43de63a0f5eb0e2142d629f3c57ac78beebab",
+      "compressedBytes": 608,
+      "compressedSha256": "a825f721a30e78f4780a865f0fdd05a81ba796658e197ada7cf55cc704edb5bf"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-fifth.log",
+      "retained": "mouse-build-fifth.log.gz",
+      "bytes": 49,
+      "sha256": "1aefecf91162321072243328d1c2933170f9efc0f404c43b7c1f4514959cd1d9",
+      "compressedBytes": 67,
+      "compressedSha256": "f37a5d170621c9f6d0c4baf75a57e723064ed0ceb33d73bad16a175d7ea2fb77"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-final.log",
+      "retained": "mouse-build-final.log.gz",
+      "bytes": 49,
+      "sha256": "36b30347b76818e4ad93bf3339c0c7f2f6369148133610b24ecd48f90477d94b",
+      "compressedBytes": 69,
+      "compressedSha256": "462d6c7154a508ebb6f4bc0fa3006a87f3434e54c9941994a1ef2f02944ee567"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-fourth.log",
+      "retained": "mouse-build-fourth.log.gz",
+      "bytes": 3757,
+      "sha256": "f2ede8ed353c6e2ce11c8399cc0d1b30bb13a6b80f9a26adb831530edba24881",
+      "compressedBytes": 854,
+      "compressedSha256": "df2e97f254f30faff09d6c0489e95ba23bd5c8f0198741e9fba76898874ec3ac"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-labels.log",
+      "retained": "mouse-build-labels.log.gz",
+      "bytes": 49,
+      "sha256": "12401b019407f64847ac84480552c00b9f1724d9723407e6d303758eb7241d56",
+      "compressedBytes": 69,
+      "compressedSha256": "b81f90341196f3a9b677c414621fb132c8fe2e77867a9b8092ba2217a8d807e1"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-result.json",
+      "retained": "mouse-build-result.json.gz",
+      "bytes": 261,
+      "sha256": "b9ed60460dbea0fbfbb53309ac6fcd98d042becb25ac8e2b7aa802ca30d79427",
+      "compressedBytes": 211,
+      "compressedSha256": "ac23c79bdf07590ed22895192e42613d47697bed0fa3c4106356e568643e8682"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-second.log",
+      "retained": "mouse-build-second.log.gz",
+      "bytes": 6637,
+      "sha256": "e87a7808ca68e6b93d57cb17316cb202ccaca3c36d0c4081292707337d71c5d4",
+      "compressedBytes": 1750,
+      "compressedSha256": "0b61002f17182c2faa9c5fdc8098f0e39ebdfedcfc7a8fbe2ad2eef4e67720cd"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build-third.log",
+      "retained": "mouse-build-third.log.gz",
+      "bytes": 5812,
+      "sha256": "f45437f21cec1d6165a3e57f82e4d7eee8dd5b4730c8cc76e96a33b442bbcb68",
+      "compressedBytes": 1598,
+      "compressedSha256": "a55c92ed0ee63a3a64ade1abe460974f0c1ae879e591d401af77da32edc9803e"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build.log",
+      "retained": "mouse-build.log.gz",
+      "bytes": 4938,
+      "sha256": "b5f9403b0145fe741c059635014eabcda81233179bc792b1d35e22f58f4d5d4a",
+      "compressedBytes": 1536,
+      "compressedSha256": "7d8703b77e68bf6dc9e5c28fb920fdcda7ee9df27456ad5bba20b80ef8ced9e8"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-build.mts",
+      "retained": "mouse-build.mts.gz",
+      "bytes": 8884,
+      "sha256": "c5173e683665e3c701277405eae4a1d28a07c46e140fbdaf60b4d8401924849e",
+      "compressedBytes": 2449,
+      "compressedSha256": "a0b92c9527a53625408cbdec0f785f01998ac065018c6a63377657ebc2720124"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-built-blueprint.json",
+      "retained": "mouse-built-blueprint.json.gz",
+      "bytes": 31886,
+      "sha256": "a42804db854c2b96041d9625c64a30e6881a8dc9659c3a4781c0515d7e8b4fe9",
+      "compressedBytes": 4494,
+      "compressedSha256": "f6604a36b33be18ce5725ed840e1341fc2a1c1e07fe38836b0bb1cb02923b830"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-built-design.json",
+      "retained": "mouse-built-design.json.gz",
+      "bytes": 11869,
+      "sha256": "7f12f2a514566ee1f627bca22802a0269c5c1edb28a46a369c322be8bac24840",
+      "compressedBytes": 2003,
+      "compressedSha256": "9d18f1175b03920c8789c99f21bd02df857cfbfb82402aacad93f9f810589c34"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-built-engines-before-labels.json",
+      "retained": "mouse-built-engines-before-labels.json.gz",
+      "bytes": 11831,
+      "sha256": "d6688c4b8f17fad4f6893ac5cf84336e269a296a4505097f8b7b9bdd96d03888",
+      "compressedBytes": 1965,
+      "compressedSha256": "59309e2fde449ff0cfb06c4795e2e9f327ea99977ff3be651cb5f07607d2acfd"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-failed-1794084129615.json",
+      "retained": "mouse-failed-1794084129615.json.gz",
+      "bytes": 1626,
+      "sha256": "1ae3b3dd064fd4e1e2c34eefae013c7a2dae6484b3deb78d2887f8c6a1dee829",
+      "compressedBytes": 669,
+      "compressedSha256": "5a04f903cb8c29e80a452011d04ca79eef84bd18661ac1d0a34f0f3a4954fae8"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-failed-1794084197565.json",
+      "retained": "mouse-failed-1794084197565.json.gz",
+      "bytes": 5500,
+      "sha256": "94f9e46fa020978e05d90f3690c34c56848f1c2ae076a9735d0d6056a30b357d",
+      "compressedBytes": 1181,
+      "compressedSha256": "b5520332784d69b42b75d0e45de84d291f442310797957c5d526a746c779ef17"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-failed-1794084224047.json",
+      "retained": "mouse-failed-1794084224047.json.gz",
+      "bytes": 2044,
+      "sha256": "d334e545282687ce07e1bbd447c6bfb8507faf7bd0d28f8a085a9fdd8cbf0bb2",
+      "compressedBytes": 713,
+      "compressedSha256": "237bc12086c6d77ace32f0462eac7266f967d7ac336a8b99afe2025da1775753"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-failed-1794084237877.json",
+      "retained": "mouse-failed-1794084237877.json.gz",
+      "bytes": 12200,
+      "sha256": "33e25ab950ec1306e4c71252f7f3f258d44a12b26dd2b86d465b06ee5c2eff73",
+      "compressedBytes": 1875,
+      "compressedSha256": "91557997af0b63134c2a01b02d07bd825e5107bfec64a6d1e7cc6d35dd3d5fcb"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/mouse-graph.json",
+      "retained": "mouse-graph.json.gz",
+      "bytes": 4081,
+      "sha256": "e461fdf8e8bcccd94f2b09471380d188f15e9ce9980e99f3c9c24c03df0b274a",
+      "compressedBytes": 763,
+      "compressedSha256": "a86849e2c5ff0bea6ff93aec21b50ce18b926aed08dd1ff66200bc66b406a29e"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/owner-projects-final.json",
+      "retained": "owner-projects-final.json.gz",
+      "bytes": 529,
+      "sha256": "86274ba49829f14d5597518030e7c4684bf753725b433dc689656d6e2de19eb7",
+      "compressedBytes": 281,
+      "compressedSha256": "fb6162bda00e8b7c8105812b42aa65cd138346adae136bd1f76b28954067e067"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/parity-eval.log",
+      "retained": "parity-eval.log.gz",
+      "bytes": 175,
+      "sha256": "488396d80b1762a0b8a9d9a50c8fde35308fa4f738fc979ca238a6952f531c5f",
+      "compressedBytes": 158,
+      "compressedSha256": "c1af94ac60746e1e93aaa44202f9d50a21bfda31c469808d015da634aa06ef0a"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/replay-drift.json",
+      "retained": "replay-drift.json.gz",
+      "bytes": 763,
+      "sha256": "b885e9ae4fcbcd76c1bcad0623764b724bbb85833658b998a58747127cbce3cb",
+      "compressedBytes": 507,
+      "compressedSha256": "a9dac7d9a14c5f260ccee0b21ea0ed22425272e266a8d1633a16071b45c37c98"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/replay-drift.log",
+      "retained": "replay-drift.log.gz",
+      "bytes": 751,
+      "sha256": "9a5166d8f9ea3cf0b08a8ce266d1601d777785b8ee105aebc536a23ad670b93a",
+      "compressedBytes": 504,
+      "compressedSha256": "045691586f2c0bf345083a5091cc7d8fad19cd821eabc014e3a5e967811a1d18"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/replay-drift.mts",
+      "retained": "replay-drift.mts.gz",
+      "bytes": 1793,
+      "sha256": "f9e807a05cefd56cda28de8b32f04adc08200fdc1c8a015b8b84101e9be24e14",
+      "compressedBytes": 943,
+      "compressedSha256": "23eca11cda885655c54626ed23bd6bbe8442a1b3ce644a4f70d5f18fe2689cbd"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/results-modal-attempt.json",
+      "retained": "results-modal-attempt.json.gz",
+      "bytes": 452,
+      "sha256": "cacc0fe5d42dad454d74a99ed8da82333b4bf547ecb486e693558f4fad26fb92",
+      "compressedBytes": 264,
+      "compressedSha256": "2c5cf790a3681ab28c660a1ee7390d5d37a86e6960706ab3e26b0736053d9478"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/results.json",
+      "retained": "results.json.gz",
+      "bytes": 1165,
+      "sha256": "b5bffd88dea99f564e3d09c698f36c130de7ec855c8e1a20c2c1efdc5e03ae86",
+      "compressedBytes": 433,
+      "compressedSha256": "3383425da3fe25752550b706fde10f40cac8aa676221b48de8ea1e7e82fd4723"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/scratch-projects-before-e2e-finish.json",
+      "retained": "scratch-projects-before-e2e-finish.json.gz",
+      "bytes": 859,
+      "sha256": "586671a4b8acac46d2e0137886b620d8b05a51e222e473648510c32d3bc6dd28",
+      "compressedBytes": 355,
+      "compressedSha256": "39e657bbc4a494c17bf99f21cbb11368ea45c16442cdd972268cf2a96ca60706"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/scratch-projects-final.json",
+      "retained": "scratch-projects-final.json.gz",
+      "bytes": 184,
+      "sha256": "d1c01eba5b6ecbaa669bf90bc6a2aa9be3cffd9d17fb3d7d4fe0172291ef185d",
+      "compressedBytes": 162,
+      "compressedSha256": "5a0ef56cdc0359181d7f5116f469c1dae7ab4af69b79a8571e471a752c78d6d8"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/script.json",
+      "retained": "script.json.gz",
+      "bytes": 215,
+      "sha256": "8066e1b81a571bbfdcccdaec2d2fd004a1fc37147d4685f6af57885a1d055be8",
+      "compressedBytes": 173,
+      "compressedSha256": "3f7d4f2b8908177611a0a4120017fa3a7b22ca66cf247bdea777a9ef3f3b6940"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/typecheck-second.log",
+      "retained": "typecheck-second.log.gz",
+      "bytes": 1377,
+      "sha256": "158c96411648255b8142573724afa61f538e9e0fc746831a844a8c9e72820a38",
+      "compressedBytes": 564,
+      "compressedSha256": "96ac82c7336126953fff9cd239cca8500841a8bb3fa6ad4975ce553b22a845ae"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/typecheck.log",
+      "retained": "typecheck.log.gz",
+      "bytes": 3081,
+      "sha256": "743aa52f96a462e68246e298b3aaa885b8edd16a6d6c78124bf24eb181f4187e",
+      "compressedBytes": 578,
+      "compressedSha256": "3d023abb62b6250d25f0b012b22e9ab49795de118da13f2d7958df471b3b9005"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/walkthrough-modal-attempt.log",
+      "retained": "walkthrough-modal-attempt.log.gz",
+      "bytes": 3871,
+      "sha256": "e2930437c06972231f90e9a99fcb091eee6803df0c278f57975fc40dff1cb527",
+      "compressedBytes": 798,
+      "compressedSha256": "1df94c8930d094c295f15d6924ac2102c9caf21a31d91e32d27fd1c5dd4db78a"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/walkthrough-second.log",
+      "retained": "walkthrough-second.log.gz",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compressedBytes": 20,
+      "compressedSha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/walkthrough.log",
+      "retained": "walkthrough.log.gz",
+      "bytes": 3871,
+      "sha256": "e2930437c06972231f90e9a99fcb091eee6803df0c278f57975fc40dff1cb527",
+      "compressedBytes": 798,
+      "compressedSha256": "1df94c8930d094c295f15d6924ac2102c9caf21a31d91e32d27fd1c5dd4db78a"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/walkthrough.mts",
+      "retained": "walkthrough.mts.gz",
+      "bytes": 8428,
+      "sha256": "001327aa4b91efd734fff76fffc2c633b8a4cd95451ded254cbbc38d70c26479",
+      "compressedBytes": 2634,
+      "compressedSha256": "a18dafd41398c5aa16a8a108db98f18a3c38574eb0edf42d258bd9925eee0502"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/web.log",
+      "retained": "web.log.gz",
+      "bytes": 3740,
+      "sha256": "11a9e1a3c5c5279c36f52b31b28e4728c11c8d61706dbc1e42ee7417eb4802a6",
+      "compressedBytes": 529,
+      "compressedSha256": "2341d3e0ba741fc708a6f392e8584dd0e403b3d013c5c350df80ff31f953200c"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/final-lint.log",
+      "retained": "final-lint.log.gz",
+      "bytes": 62,
+      "sha256": "23d57e658a20533e78907037f8607acf77daa221209f3564eaaef9ec2891db14",
+      "compressedBytes": 77,
+      "compressedSha256": "31f39a37d396ea466d3aea537fe52fa2bdbaa07bda66ca745912c29101b49cf5"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/final-diff-check.log",
+      "retained": "final-diff-check.log.gz",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compressedBytes": 20,
+      "compressedSha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/format-final-evidence.log",
+      "retained": "format-final-evidence.log.gz",
+      "bytes": 39,
+      "sha256": "115ed00e79762487fef98d78630351e338d407e5a414228939f6e3a6e60547b0",
+      "compressedBytes": 53,
+      "compressedSha256": "86ebc49e47c12133296570d115e7cfdfa5a5262584c1d1f5504f5868b6318ad8"
+    },
+    {
+      "source": "/tmp/jeeves-nc06-browser/listeners-final.txt",
+      "retained": "listeners-final.txt.gz",
+      "bytes": 297,
+      "sha256": "932587c6aa760947341b4a9f798f4f26b426881a9fb6b8d326b624bb57ffdfa0",
+      "compressedBytes": 169,
+      "compressedSha256": "9187db253ce4bcf1f91909680e3b6ed70bdb6c77e5d900208c79d5c3b326f8d8"
+    }
+  ],
+  "images": [
+    {
+      "file": "1440-foundation-collapsed.png",
+      "bytes": 86528,
+      "sha256": "e9f5a81f244bb72eafb8944705cc2430fd509011f485b4cfe093a7561b4d8c73",
+      "inspected": true
+    },
+    {
+      "file": "1440-foundation-expanded.png",
+      "bytes": 93273,
+      "sha256": "38c72df07f80b029777ccc51567c10c9b9ee76fe0b7390b4038a1397b146d02f",
+      "inspected": true
+    },
+    {
+      "file": "1440-source-authority.png",
+      "bytes": 142880,
+      "sha256": "435bc918bb4e281cf74d541c7faa335e187adedb92067fa81311bbd78228e8d2",
+      "inspected": true
+    },
+    {
+      "file": "1440-cache-focus.png",
+      "bytes": 123922,
+      "sha256": "099cc809be61ed0fb9a1e7ac114fc0e51b3eb50d6a08a946119ef428a28c6978",
+      "inspected": true
+    },
+    {
+      "file": "1440-create-link-selected.png",
+      "bytes": 121242,
+      "sha256": "22f255194baf5fbafbc9c107a2e5b868938ed4d9ea37528829404fb4ee185daa",
+      "inspected": true
+    },
+    {
+      "file": "1440-resolve-link-selected.png",
+      "bytes": 125414,
+      "sha256": "b35449a7622379216441a687a0f95cb02946521aa4a182308d6c76b9c9e9c6e4",
+      "inspected": true
+    },
+    {
+      "file": "1440-owner-details.png",
+      "bytes": 114027,
+      "sha256": "6680cfb65002219a771e36fa50bfbee73a36c19657dc87566219e47840ceafdc",
+      "inspected": true
+    },
+    {
+      "file": "1440-report.png",
+      "bytes": 112397,
+      "sha256": "1ef6cebd29b17bee8c5d161594dbe6a7ae74f050ef297e38bbc650f4bebe724e",
+      "inspected": true
+    },
+    {
+      "file": "1440-required-custom-blocker.png",
+      "bytes": 111057,
+      "sha256": "be09bdc877b8402998ba2ecbda31e90857a19d414955f7fc56d5aa2b47210384",
+      "inspected": true
+    },
+    {
+      "file": "1280-foundation-collapsed.png",
+      "bytes": 67174,
+      "sha256": "51aaa0f33fd9c8e0eb4bad4d6da94f9137cc4e82f96cebee1032718d250c055b",
+      "inspected": true
+    },
+    {
+      "file": "1280-foundation-expanded.png",
+      "bytes": 86199,
+      "sha256": "8c09929400976c35945002c403d7cde168dcc0e3a10908bf7b418a54be19da6f",
+      "inspected": true
+    },
+    {
+      "file": "1280-source-authority.png",
+      "bytes": 125905,
+      "sha256": "224c7a8d43eadea65166c7ea13aae4229b2ea24acb0f8cbc69afea00a6dd57df",
+      "inspected": true
+    },
+    {
+      "file": "1280-cache-focus.png",
+      "bytes": 104965,
+      "sha256": "3304c4609413f4b11473513082499aa6365630553820f63c485ea24476fbfbbb",
+      "inspected": true
+    },
+    {
+      "file": "1280-create-link-selected.png",
+      "bytes": 102573,
+      "sha256": "bdf5867f39d4cbb321033e8f99eb5e0b49da9ab9021333410a60793d4b4c6ca9",
+      "inspected": true
+    },
+    {
+      "file": "1280-resolve-link-selected.png",
+      "bytes": 108491,
+      "sha256": "8f69243a2fe4f6d402cd5a380369bd94c0ba8da9f342a76849b2768bcfb278b6",
+      "inspected": true
+    },
+    {
+      "file": "1280-owner-details.png",
+      "bytes": 105184,
+      "sha256": "70a8cbb1d528722c4bf21d0202d9513c255aa460718e1e8215fa6a0a08a40125",
+      "inspected": true
+    },
+    {
+      "file": "1280-report.png",
+      "bytes": 98265,
+      "sha256": "e360ac0372243fb60b0a5b5820ce0528b717cd94546c0b568ea10130fe01b811",
+      "inspected": true
+    },
+    {
+      "file": "1280-required-custom-blocker.png",
+      "bytes": 99733,
+      "sha256": "fce8a2578c708feef0646bd244f5dac7f72c6a6107bcc132973c0a2d5af0261a",
+      "inspected": true
+    },
+    {
+      "file": "1440-mouse-ownership-preview.png",
+      "bytes": 136691,
+      "sha256": "d2a617a9029173a6dab3cecc962b363b1918a145deb3adf83fc95e261c29e0c1",
+      "inspected": true,
+      "note": "construction preview or early coordinator view"
+    },
+    {
+      "file": "1440-mouse-operation-preview.png",
+      "bytes": 141185,
+      "sha256": "7c3375ce78b10c04b0735b981effbcd18883dde67e74e8de65a0e2632f847876",
+      "inspected": true,
+      "note": "construction preview or early coordinator view"
+    },
+    {
+      "file": "1280-first-collapsed.png",
+      "bytes": 67333,
+      "sha256": "eb74b7775ab3a104c600cd31e89b18fd92022d56ea8ad04841adeef014a509c2",
+      "inspected": true,
+      "note": "construction preview or early coordinator view"
+    },
+    {
+      "file": "1280-first-expanded.png",
+      "bytes": 86387,
+      "sha256": "515c8ff5be9cc571abcba20db07d0aa76055fe1c6de6431d325344065fb4a85a",
+      "inspected": true,
+      "note": "construction preview or early coordinator view"
+    },
+    {
+      "file": "mouse-failed.png",
+      "bytes": 117378,
+      "sha256": "0db94d8060cdda26e4be8aa85e57812cbd03aafc86cd8b7f9e2dcd82ef908eea",
+      "inspected": true,
+      "note": "failed helper screenshot"
+    }
+  ],
+  "note": "Lossless raw bytes; formatted mouse-built-design.json only adds the formatter-required final newline to the raw snapshot. Semantics match exactly."
+}

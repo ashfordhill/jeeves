@@ -260,6 +260,17 @@ environment and results; a different composition invalidates it. No compiler/run
 
 ### NC06 — Rework and review the TinyURL study only
 
+**Progress, 2026-11-07:** implemented the distinct `studio-tinyurl-foundation@1.0.0` default,
+with one Links owner/two canonical API roles/shared deployable intent, PostgreSQL authority,
+exact positive cache projection and explicit read/write grants. Existing Create/Resolve/cache
+records and profile digest remain unchanged; the extended study source/goal and saved projects
+are preserved. Shared complete version-aware seeding fixes the chooser/fresh-install/eval seam;
+missing declared writes warn without inventing legacy writer metadata. Actual blank mouse
+construction and scripted ChatService tools agree on the complete semantic blueprint/contracts/
+report. This proves plumbing with chosen inputs, not model design quality. Coordinator accepted
+both-size presentation; owner usability and runtime acceptance remain open. See the short
+[NC06 review ledger](nc06-review.md) and [evidence](evidence/nc06/README.md). NC14 is next.
+
 **Depends:** NC05. Add a new explicit preset version for the chosen small foundation: one logical
 Links owner with API roles, durable create/resolve and the exact cache/profile choices. State
 analytics, management/disable, reputation and custom slug exclusions visibly. Keep a separate

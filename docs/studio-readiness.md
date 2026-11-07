@@ -16,6 +16,10 @@ counts and the composition hash; the read-only tool returns full detail on deman
 It does not require evidence for an output that cannot exist before first generation. It never
 means that output is runtime verified. There is no combined enterprise-readiness status.
 
+The distinct default `studio-tinyurl-foundation@1.0.0` has valid structure and complete exact
+declarations; implementation is unavailable, runtime evidence none, generation ineligible.
+The extended TinyURL study retains its old design-only scope and incomplete coverage.
+
 **Product availability remains unavailable; product runtime evidence remains none.** Jeeves has
 no template, dependency, auth-verifier or evidence registry, generated output, generator, runner
 or backend here. Positive paths exercise trust plumbing exclusively with isolated test bytes;

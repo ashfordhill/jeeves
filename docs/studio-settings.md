@@ -53,6 +53,10 @@ into contracts. Profile selection supplies no ownership/API/message contract, te
 Chat's `configureDesignScope` shares the mouse command and validation; RF04
 `declareReviewScope` remains turn-only metadata. See [blueprint](studio-blueprint.md).
 
+The new `studio-tinyurl-foundation@1.0.0` study explicitly stores these scope defaults, complete
+ownership/access and operation/cache declarations in schema v3 as one seed edit. This does not
+change per-kind creation defaults or migrate older projects/studies. No new settings were added.
+
 ## Applications
 
 `S` is `architecture.studio.elements[].settings`. "Common" means service, worker, billing,

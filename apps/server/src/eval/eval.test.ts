@@ -1,5 +1,11 @@
 import { createFakeProvider } from "@jeeves/providers";
-import { type DesignDocument, studioPatterns, validateDesign } from "@jeeves/spec";
+import {
+  type DesignDocument,
+  studioArchitectureExample,
+  studioPatterns,
+  tinyurlDesignScope,
+  validateDesign,
+} from "@jeeves/spec";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openTestDb } from "../test-support.ts";
 import { cases, commands } from "./cases.ts";
@@ -31,6 +37,31 @@ const failed = (id: string, value: Outcome) =>
   score(testCase(id), testCase(id).seed(), value)
     .filter((c) => !c.pass && c.critical)
     .map((c) => c.id);
+
+it.each(["full", "scope-only"])(
+  "eval seed preserves complete v3 %s semantics without changing historical case seeds",
+  async (mode) => {
+    const seed = studioArchitectureExample("studio-tinyurl-foundation").design;
+    const selected: DesignDocument =
+      mode === "full"
+        ? seed
+        : {
+            schemaVersion: 3,
+            revision: 0,
+            elements: [],
+            connections: [],
+            scope: tinyurlDesignScope(),
+          };
+    const result = await runCase(
+      database.db,
+      { ...testCase("tinyurl-response-cache-repair"), seed: () => selected },
+      "current",
+      createFakeProvider([{ text: "Read only; runtime unavailable." }]),
+      "offline-script",
+    );
+    expect(result.before).toEqual({ ...selected, revision: 1 });
+  },
+);
 
 describe("RF06 deterministic external rubric", () => {
   it("does not display seed quality failures as evaluated outcomes after an access rejection", () => {

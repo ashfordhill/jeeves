@@ -307,7 +307,18 @@ not prove architecture quality or runtime behavior; live-model evidence remains 
 
 New project offers three studies, described in the [studio guide](docs/studio.md).
 
-**TinyURL** (`studio-tinyurl@3.2.0`, the default) is built from published designs
+**TinyURL foundation** (`studio-tinyurl-foundation@1.0.0`, the default) is the bounded schema-v3
+create/resolve design: Create and Follow actions, one Links logical owner, Create link and Resolve
+link canonical API roles sharing an explicit deployable assignment, authoritative PostgreSQL and
+a Links-owned Redis-compatible positive projection. Create has source read-write access for
+commit/reconciliation; Resolve reads the primary and reads/fills the cache. Existing finite
+Create/Resolve/cache records and the exact TinyURL profile are pinned. The verifier is null;
+report: valid / complete / unavailable / none, generation ineligible. Analytics, editable targets,
+disable management, reputation, quotas and custom slugs are visibly excluded; required additions
+block this profile. There are no modules, additional services or runtime artifacts.
+([guide](docs/studio.md#the-tinyurl-foundation-study)).
+
+**Extended TinyURL** (`studio-tinyurl@3.2.0`, design only) is built from published designs
 (HelloInterview, System Design Primer, DesignGurus/Grokking, ByteByteGo, and Dub's open-source
 redirect): a read-heavy URL shortener with separate redirect and create services, a cache in
 front of one URL database that only the Shorten service writes, and click analytics through a
