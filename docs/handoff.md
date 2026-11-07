@@ -4128,3 +4128,91 @@ RF06 may now exercise the intended model; RF07 still reviews the milestone. Prio
 semantic-model limitations remain open. No generator work was introduced.
 
 Local commit: **RF05: preserve command semantics with strict OpenAI tools**.
+
+## 2026-11-07 — RF06: reproducible chat design evaluations (tooling complete; Mini evidence blocked)
+
+Worked RF06 only after RF05 `f5a9aa1`, on primary `main`, under the owner's sequential-unit
+and bounded live-run authorization. No delegation, branches, worktrees, stash or push. Preserved
+`.jeeves-feedback/`, owner 4300/4310, owner settings/projects and the `jeeves` database. RF07,
+semantic contracts and generator work were not started.
+
+Added eval 1.0.0: six compact synthetic cases cover video build/publication repair, finite-stock
+checkout build/late-notification edit, TinyURL response-cache repair/unsupported edit, including
+held-out variations. Versioned RF00 instructions/six tools retain source/capture provenance.
+The baseline is deliberately a guidance/tools/no-review ablation sharing current context,
+Workspace/provider transport/atomic save, with unavailable-tool refusal/continuation. Current
+uses production ChatService. It never swaps baseline tools under the current review gate.
+External checks inspect represented dependencies, ownership/settings and protected edits;
+status-bearing obligations or plain-language unresolved requirements receive equal treatment.
+Prose/claim signals require independent adjudication, and modules/names prove no implementation.
+
+`pnpm eval:chat` replays hand-authored canonical fixtures twice in disposable PGlite, with fetch
+forbidden. `--report=<absolute JSON>` replays recorded responses and verifies context hashes,
+final design, before state, activity, questions, tool results, obligations, refusals, attempted
+mutation batches after review and checks. Explicit `--live --allow-paid-api` opts in; default
+Mini is pinned to `gpt-5.4-mini-2026-03-17`, with omitted reasoning (documented default none),
+16 responses/4,096 output tokens/180 seconds per case and maxRetries 0. Provider-required opaque
+state stays in memory; artifacts omit credentials, headers and opaque/encrypted reasoning.
+
+Actual Mini access attempt: twelve first requests returned **no credits**, zero model responses,
+unknown usage/cost and untouched designs. The initial stop matcher missed that wording; fixed
+with regression, retained all failures and made no further Mini calls. Access rows and sections
+say not evaluated; they prove neither model quality nor live strict-schema acceptance.
+
+Coordinator authorized a separate fallback after CLI smoke succeeded (3.59s): existing Codex
+SDK 0.162.1 / CLI 0.165.0, requested `gpt-6.1-sol` alias, existing medium effort, ChatGPT login,
+API-key variables unset only in the owned subprocess. No owner login/settings changes. Same
+16-response/180-second limits both arms; output cap is unsupported by that adapter, and SDK
+retry behavior uncontrolled. All six pairs finished, no questions/timeouts/provider failures:
+
+- RF00: 14 responses, 255.4s case latency, 372,310 input / 34,432 cached / 8,199 output tokens,
+  three refused calls repaired, zero mutation batches after review.
+- Current: 29 responses, 298.9s, 909,034 input / 96,000 cached / 9,352 output tokens, four refused
+  calls repaired, three attempted mutation response batches after review (two checkout build,
+  one late-notification edit; includes scope). Monetary cost/billing unknown; Mini rates do not
+  apply to the CLI login. Largest observed output response: 1,495 tokens, not an enforced cap.
+
+Implementation and independent coordinator **AGENT** review credit both arms' honest unresolved
+requirements across all six cases. Baseline's five lexical misses are semantically credited;
+its preserved-original owner move is a tradeoff, not confirmed deletion (the prompt froze exact
+export details). Current retains original initiation ownership but leaves callbacks unmodeled.
+Current analytics review emits broader job lifecycle noise; scope precision remains limited.
+No confirmed critical destructive/domain/support claim was found in this small sample. No Mini
+improvement, population-quality gain, runtime/template/deployment or human-acceptance claim.
+
+Owner-readable artifacts: `docs/chat-evals.md`, `docs/evals/rf06/README.md`, `codex-live.md/.json`,
+`access-blocked.md/.json`, `codex-smoke.json`, `reviewer-notes.md` and `browser.json`. Full public
+canonical outputs/graphs are retained. Raw candidate flags remain, separately adjudicated.
+As-run prompt/tools/pattern/case/rubric/source hashes are recorded. Later changes only clarify
+one baseline comment and runner portability/reporting/access/replay; no proposal/case tuning.
+Feedback Resolution, playbook lessons, plan progress and README usage are current.
+
+Final checks with Node 24.21.0 first in PATH: `pnpm check` passes (Biome 234 files, all typechecks,
+31 files / 239 tests, including 14 RF06 tests); `pnpm test:e2e` passes (23, native Chromium);
+`pnpm --filter @jeeves/web build` passes (existing chunk-size advisory); `git diff --check` passes.
+Offline CLI passed all twelve hand-authored outcomes (six pairs) twice, and replayed all 12 fallback outcomes
+and all 12 access failures identically with no network. Tests include destructive/original
+loss, publication bypass, unrelated edits, unsupported claims, missing domain obligations,
+response caching, plain-language alternatives, strict review replay, unavailable baseline tools,
+no-credits fail-fast, zero-response report suppression and response-batch repair counting.
+A final-check lint pass initially caught formatting in new browser metadata; formatted and reran.
+
+Browser evidence: `/tmp/jeeves-rf06-browser-fQmy3H/` (32 PNGs, walkthrough.mts, three results
+JSONs; screenshot hashes/counts in committed `browser.json`). Isolated 4302/4312, scratch
+JEEVES_HOME, scripted provider and `jeeves_e2e`. By mouse at 1440×900 and 1280×800, default
+TinyURL renders (11 tiles/12 lines), plus current video build, both publication repairs, both
+checkout builds and both TinyURL cache repairs. Fit, tile selection, Focus relationships,
+Fit focus and Show all work; all design/blueprint values stay identical. No page/console errors
+or warnings. All eight scratch projects deleted (204); E2E DB retains only default TinyURL.
+Only owned servers stopped; owner listeners unchanged. Scratch settings directory was never
+created. Agent image review finds baseline publication overview unreadable at 0.22 zoom with
+both panels; focus/endpoint lists help, while other overviews still need zoom. Human review
+remains pending.
+
+Remaining release-claim blockers/limits: intended Mini quality and live strict API acceptance
+blocked by credits; owner/human review pending; six paired samples are not a general benchmark;
+scope completeness/precision, ownership/access, same-owner lifecycle, publication/cache visibility,
+finite-stock/payment/analytics contracts, runtime templates/evidence and overview readability
+remain open. RF07 must review the milestone without treating these gaps as implemented.
+
+Local commit: **RF06: add reproducible chat design evaluations**.

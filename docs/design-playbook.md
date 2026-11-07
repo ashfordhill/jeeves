@@ -771,3 +771,34 @@ command/graph validation and explicit review obligations. Report provider suppor
 Codex's structured outer answer contains argument JSON strings whose inner values are not
 constrained by that output schema. Mocked HTTP acceptance proves transport/codec behavior, not
 live API acceptance, model judgment or a runtime template.
+
+## 2026-11-07 evaluation follow-up: evidence needs an external rubric
+
+RF06's [paired evaluation](evals/rf06/README.md) separates represented topology, unresolved
+requirements and implemented behavior. A queue/worker/source path can be checked deterministically;
+its labels cannot prove pending state, idempotency, publication, reservation or payment recovery.
+Both ordinary prose and structured review can disclose a requirement honestly. Exact-word
+matching misses legitimate equivalents, while a disclaimer elsewhere can hide an affirmative
+claim. Keep these signals reviewable and record independent adjudication, never self-grading.
+
+Freeze prompts, synthetic seeds, budget and provider configuration before comparing arms; retain
+all refusals, outputs and failed attempts. Label a guidance/tools ablation precisely instead of
+calling it complete legacy execution. A correct alternative may change ownership or add a status
+API without deleting durable data. Judge the user's actual preservation constraint, not one exact
+node count or an overbroad protected-identity fixture. Still disclose ownership restructures that
+make an initiating owner disappear from the lifecycle just to satisfy the drawing's cycle rule.
+
+The live fallback showed both arms can state obligations accurately. Current's targeted review
+also emitted irrelevant job lifecycle requirements when the broad job pattern was selected only
+for click duplication. More obligations do not imply a more complete or precise architecture.
+The long publication alternative shrank to unreadable overview labels; mouse focus made endpoint
+lists useful. Count that readability cost alongside topology validity and preserve all hidden
+relationships. Agent inspection supports a bounded observation; it is not owner/human acceptance.
+
+The intended Mini run had no credits and produced no response. Access failure is neither model
+quality evidence nor proof a live strict schema was accepted. A stronger Codex Sol/medium fallback
+cannot answer the Mini question. Record the actual effort and enforced bounds: Codex's existing
+adapter does not forward an output-token cap. Tokens are reported usage; API list-price estimates
+are not ChatGPT billing. One paired sample per case cannot establish a general quality gain,
+particularly when current uses more input and calls. Runtime support and human review remain
+separate milestones even when replay, canvas checks and all tests pass.

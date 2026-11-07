@@ -373,3 +373,31 @@ been launched. Revised ownership, runtime relationships and contract semantics r
 - Still open after RF05: actual live schema/model acceptance and measured model design quality
   (RF06), the prior ownership/lifecycle/contract/generator questions, template/runtime evidence
   and overview readability limits. Strict argument shape does not resolve these architecture gaps.
+
+- RF06, local commit titled **RF06: add reproducible chat design evaluations**: six versioned
+  synthetic cases cover the three domains, builds, edits, repairs and held-out variations.
+  Deterministic network-free replay exercises production ChatService and a separate, explicitly
+  labeled RF00 guidance/tools/no-review ablation. Negative fixtures catch destructive edits,
+  unsafe publication/cache paths, omitted obligations and candidate false support claims.
+  Prose/claim signals require independent adjudication; modules and labels earn no implementation
+  credit. Exact model, configuration, prompt/pattern/eval/source hashes, canonical evidence,
+  refusals/repairs, tokens and latency are retained in the [RF06 reports](evals/rf06/README.md).
+- RF06's intended economical Mini snapshot returned **no credits** before any response. Twelve
+  failed first-request attempts are retained and marked not evaluated; the original fail-fast
+  wording miss has a regression. No Mini quality gain or live strict-schema acceptance is claimed.
+  A separately authorized Codex Sol/medium fallback completed six paired cases. Implementation
+  and coordinator **AGENT** review credit both arms' explicit unresolved requirements, with no
+  confirmed critical destructive/domain/support claim. The baseline's original-owner restructure
+  is a tradeoff, not a resource deletion; its wording misses receive semantic credit. Current
+  supplies richer targeted review but also irrelevant lifecycle obligations in analytics. This
+  one-sample-per-case suite supplies no population improvement or runtime evidence.
+- RF06 checked by network-free unit tests, 23 E2E tests, web build and offline replay of all
+  12 fallback outcomes and all 12 access failures. Isolated mouse review covers default TinyURL
+  and seven evaluated diagrams at both required viewports, fitted and focused, with unchanged
+  blueprints, no browser errors and all eight scratch projects deleted. Readability still needs
+  focus, especially the baseline's long publication chain at 0.22 overview zoom. Evidence is in
+  the RF06 [handoff](handoff.md) and [independent notes](evals/rf06/reviewer-notes.md).
+- Still open after RF06: intended Mini quality/live strict API acceptance (credits blocked),
+  owner/human readability and architecture review, scope completeness/precision, prior lifecycle,
+  ownership/access and domain contracts, runtime templates/verification and overview limitations.
+  RF07 remains the milestone review; no generator or semantic-contract work was introduced.

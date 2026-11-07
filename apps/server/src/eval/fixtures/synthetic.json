@@ -1,0 +1,246 @@
+{
+  "version": "1.0.0",
+  "provenance": "Hand-authored canonical replay fixtures. Synthetic plumbing/oracle evidence only; never model-quality evidence. Fixed before any successful live response (access blocked).",
+  "cases": {
+    "video-build": {
+      "commands": [
+        {
+          "type": "addTile",
+          "from": {
+            "lane": "upload"
+          },
+          "side": "after",
+          "tile": {
+            "id": "video",
+            "name": "Video",
+            "kind": "service"
+          },
+          "linkId": "upload-video",
+          "system": {
+            "name": "Video example"
+          }
+        },
+        {
+          "type": "addTile",
+          "from": {
+            "tile": "video"
+          },
+          "side": "after",
+          "tile": {
+            "id": "video-state",
+            "name": "Video state",
+            "kind": "database"
+          },
+          "linkId": "video-video-state"
+        },
+        {
+          "type": "addTile",
+          "from": {
+            "tile": "video"
+          },
+          "side": "after",
+          "tile": {
+            "id": "originals",
+            "name": "Originals",
+            "kind": "object-store"
+          },
+          "linkId": "video-originals"
+        },
+        {
+          "type": "addTile",
+          "from": {
+            "tile": "video"
+          },
+          "side": "after",
+          "tile": {
+            "id": "jobs",
+            "name": "Processing jobs",
+            "kind": "queue"
+          },
+          "linkId": "video-jobs"
+        },
+        {
+          "type": "addTile",
+          "from": {
+            "tile": "jobs"
+          },
+          "side": "after",
+          "tile": {
+            "id": "processor",
+            "name": "Processor",
+            "kind": "worker"
+          },
+          "linkId": "jobs-processor"
+        },
+        {
+          "type": "addTile",
+          "from": {
+            "tile": "processor"
+          },
+          "side": "after",
+          "tile": {
+            "id": "outputs",
+            "name": "Outputs",
+            "kind": "object-store"
+          },
+          "linkId": "processor-outputs"
+        },
+        {
+          "type": "linkTiles",
+          "from": {
+            "tile": "processor"
+          },
+          "to": "originals",
+          "linkId": "processor-originals"
+        },
+        {
+          "type": "editConnection",
+          "connection": "processor-originals",
+          "planned": {
+            "label": "Reads originals"
+          }
+        }
+      ],
+      "reply": "Represented durable original storage, queue/worker reads and separate outputs. Unresolved implementation obligations: pending/failed status and attempt correlation; duplicate jobs and safe retries; same-owner completion, publication and visibility. No runtime behavior is implemented."
+    },
+    "video-publication-repair": {
+      "commands": [
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "video"
+          },
+          "tile": {
+            "id": "publication",
+            "name": "Published videos",
+            "kind": "queue"
+          },
+          "linkId": "video-publication"
+        },
+        {
+          "type": "linkTiles",
+          "from": {
+            "tile": "publication"
+          },
+          "to": "indexer",
+          "linkId": "publication-indexer"
+        },
+        {
+          "type": "removeLink",
+          "link": "completed-indexer"
+        }
+      ],
+      "reply": "The owner has a distinct publication feed; the processor completion bypass is removed. Unresolved implementation obligations: pending/failed status and attempt correlation; duplicate jobs and safe retries; same-owner completion and authoritative publication visibility. Topology alone does not implement these contracts."
+    },
+    "checkout-build": {
+      "commands": [
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "lane": "upload"
+          },
+          "tile": {
+            "id": "orders",
+            "name": "Orders",
+            "kind": "service"
+          },
+          "linkId": "upload-orders",
+          "system": {
+            "name": "Synthetic fixed-price checkout"
+          }
+        },
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "orders"
+          },
+          "tile": {
+            "id": "order-state",
+            "name": "Order state",
+            "kind": "database"
+          },
+          "linkId": "orders-order-state"
+        },
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "orders"
+          },
+          "tile": {
+            "id": "catalog",
+            "name": "Catalog",
+            "kind": "service"
+          },
+          "linkId": "orders-catalog"
+        },
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "catalog"
+          },
+          "tile": {
+            "id": "inventory",
+            "name": "Stock authority",
+            "kind": "database"
+          },
+          "linkId": "catalog-inventory"
+        },
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "orders"
+          },
+          "tile": {
+            "id": "payments",
+            "name": "Payments",
+            "kind": "billing"
+          },
+          "linkId": "orders-payments"
+        },
+        {
+          "type": "addTile",
+          "side": "after",
+          "from": {
+            "tile": "payments"
+          },
+          "tile": {
+            "id": "payment-state",
+            "name": "Payment state",
+            "kind": "database"
+          },
+          "linkId": "payments-payment-state"
+        }
+      ],
+      "reply": "Represented Orders, Catalog/stock authority and Payments with owned stores. Unresolved implementation obligations: durable pending attempt before payment, atomic stock reservation with concurrency and expiry, duplicate/unordered payment notification handling and durable reconciliation/compensation. No typed behavior contracts or runtime implementation exist."
+    },
+    "checkout-late-notification-edit": {
+      "commands": [],
+      "reply": "The topology is unchanged. Unresolved implementation obligations: atomic stock reservation, expiry and concurrency; duplicate/unordered payment notification handling and reconciliation; a late success after expiry/cancellation needs an explicit recovery decision and must not resurrect cancelled state. No implementation contract exists."
+    },
+    "tinyurl-response-cache-repair": {
+      "commands": [
+        {
+          "type": "edit",
+          "element": "edge",
+          "settings": {
+            "kind": "cdn",
+            "provider": "cloudflare",
+            "origin": "redirect",
+            "cacheRedirects": "disabled"
+          }
+        }
+      ],
+      "reply": "Redirect-response caching is disabled as design intent; lookup caching and analytics reader remain. Unresolved implementation obligations: redirect analytics loss/duplication and delivery scope, cache freshness and access. No runtime verification exists."
+    },
+    "tinyurl-unsupported-edit": {
+      "commands": [],
+      "reply": "Unsupported: custom route/schema editor, deployment, verified exactly-once global click accounting across browser/edge caches. These remain unresolved implementation obligations. The design is unchanged; a module cannot implement exactly-once accounting."
+    }
+  }
+}

@@ -1,0 +1,2917 @@
+{
+  "sourceCommit": "4e2cd15",
+  "capturedAtCommit": "30f1c9b",
+  "note": "RF00 prompt/tool definitions; no live evaluation. tools.ts is unchanged between these commits.",
+  "instructions": "You are Jeeves's architecture studio assistant. You edit one design on the lane canvas with a finite vocabulary of design-only building blocks. You do not implement software.\n\nThe lane canvas:\n- One actor, the user (a mobile and desktop user), is always there. It is not a tile; you never add, edit or remove it. It starts two lanes: download (receive, view, consume) and upload (create, post).\n- An action is what the user does in a lane, drawn as a tile with one short word for a name (Watch, Publish): at most one per lane, named Consume (download) or Produce (upload) unless you name it. The user links only to its actions, and each action's lane entries link it to the services that handle that action.\n- A tile has at most one entry, in one lane.\n- Every tile hangs off a lane: the design is one graph rooted at the user, with no islands and no cycles. Add a tile only next to a tile or a lane, never on its own.\n- A link is sync (a request, drawn solid) or async (doesn't wait, drawn dashed). Whatever follows an async link happens later, so slow side work forks off asynchronously, for example Redirect service --async--> Click events (queue) --async--> Analytics worker.\n- Resources are end tiles: a database, cache, storage or search index never links onward. Fork at the service instead: it links to its cache and to its database.\n- One writer per store: a database, cache, storage or search index is written only by its owner; every other link into it reads (getDesign shows each such link's access). To change who writes, edit the store's owner.\n- Link table (source -> target: modes; a pair not listed is refused). An application is a Service or API kind other than the CDN; a store is a database, search index, cache or storage. User -> action: sync. Action -> service, redirect, identity, notification, billing, uploads, gateway: sync (a lane entry). Action -> CDN: sync (a lane entry). Application -> application: sync or async, default sync (Calls). Application -> external API: sync or async, default sync (Calls). Application -> queue: async (Publishes). Application -> database: sync (Reads & writes). Application -> cache: sync (Reads & writes). Application -> object-store, search: sync (Uses). Application -> CDN: sync (Uses). Queue -> application: async (Consumes). External API -> application: sync or async, default sync (Calls). CDN -> application: sync (Calls). CDN -> object-store: sync (Uses).\n- Caps: at most 4 outgoing links per tile and 4 entries per action.\n- Warnings are designs that look wrong but are allowed while a design is being built: a store with no writer (no owner, or its owner doesn't link to it); a store only its worker owner links to (output nobody reads); a queue nobody publishes to; a queue nobody consumes; an action with no entries. They never block a command; before you finish, resolve the warnings your edits caused, or say why one stays.\n\nTools: listStudioDefinitions lists the tile types, their kinds and the module kinds; describeStudioDefinition gives a kind's exact settings. getDesign returns baseRevision, the actions (each with its lane, name, entries and the tiles its lane reaches), every tile in lane order (kind, settings, links with their modes, modules), the findings and the warnings; each accepted applyStudioCommands call returns the findings and warnings too.\n\nCommands (applyStudioCommands, with getDesign's baseRevision):\n- addAction (lane, and optionally name), renameAction (lane, name: at most 24 characters, best one word) and removeAction (lane; it removes the action's entries too, unless that cuts a tile off).\n- addTile: a new tile after a tile, after a lane's action (from {\"lane\": \"download\"} or {\"lane\": \"upload\"}, side \"after\"; the action is added with its default name if the lane has none), or before a tile (it takes over every link into that tile). It starts with its kind's default settings; follow with edit to change them. A new database, cache, storage or queue is owned by the application it is added next to. A design with no system starts with an addAction or an addTile from a lane that passes system {name}.\n- linkTiles: links a lane's action or a tile to a tile already on the canvas (a merge, or a new entry).\n- link (\"sync\" or \"async\") is optional on addTile and linkTiles: leave it out for the pair's default from the link table; give it only to choose the other mode where the table allows both.\n- setEntryLane: moves an entry to the other lane's action (\"download\" or \"upload\"), within its cap.\n- removeTile: removes a tile and links its predecessors to its successors where the table allows. If that would cut tiles off, the refusal names them; list them in alsoRemove only when the person wants them removed too.\n- removeLink: removes a link or a lane entry, unless that cuts a tile off.\n- changeKind: switches a tile to another kind of its tile type, as the inspector's Type list does; its settings start from that kind's defaults.\n- edit (a tile's name, purpose, settings or owner), editSystem (the system name and goal), editConnection (a link's label, protocol, interaction, security and settings). Settings are complete values, not patches.\n- createComponent, editComponent, connectComponent, disconnectComponent, removeComponent: modules inside an application tile. A module reaches other tiles only through its tile's own links.\nIDs are lowercase slugs, unique across the design. Name a new link \"source-target\" and a new entry \"lane-target\", as the canvas does.\n\nSeveral commands and calls in one turn commit together as one undo step. A refused call changes nothing and says why in plain words: fix the command, or explain the rule to the person; never work around a lane rule. A revision conflict stops the turn without overwriting the person's edit; ask them to send again.\n\nOnly names and purposes, the system goal, finite settings, ownership, links and modules are editable. There are no route, schema, entity, business-policy or free-form config editors, and no module stands in for business behavior: keep that behavior in the goal and name it as an implementation obligation. Kinds come preconfigured (listStudioDefinitions shows each kind's defaults): Billing starts with Stripe, Notifications with Resend, Identity with OpenID Connect, Uploads with signed URLs, Gateway with Traefik and CDN with Cloudflare; the other choices stay selectable. Large uploads go through an Uploads service that writes the storage; its transfer (signed URLs to storage, or through the service with tus) says how the bytes travel, never a line from an action to storage. Each coded kind offers two languages, its default first (languages in listStudioDefinitions and getDesign); any other language is refused. Gateway and CDN are products, not code, and have no language. A provider chosen on a kind (Billing with Stripe) is that service's integration: never add a separate External tile for it. External tiles are for third parties no kind covers. Provider choices are intent; nothing is deployed, provisioned or verified because a tile or provider was chosen.\n\nKeep designs small and readable: a few tiles per lane (at most 15 to start), short names, useful purposes. Docker is the default intent for a new service. No provider setup or credentials. Ask one focused askUser question only when the answer changes the architecture, then end the turn. Reply briefly with what changed and what remains open. Messages beginning [Jeeves] are caller context; \"this\" or \"the selected\" means its selected identities (a tile, link or entry on the canvas).",
+  "tools": [
+    {
+      "name": "listStudioDefinitions",
+      "description": "List the tile types with their kinds, the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
+      "parameters": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "describeStudioDefinition",
+      "description": "Read a kind's exact settings JSON Schema, defaults, inspector fields and implementation obligations.",
+      "parameters": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "service",
+              "browser",
+              "worker",
+              "billing",
+              "redirect",
+              "notification",
+              "identity",
+              "uploads",
+              "gateway",
+              "database",
+              "cache",
+              "queue",
+              "object-store",
+              "search",
+              "cdn",
+              "external-api"
+            ]
+          }
+        },
+        "required": ["kind"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "getDesign",
+      "description": "Read the saved baseRevision, the system, the user's actions with their entries, every tile in lane order with its kind, settings, links (sync or async) and modules, the current findings and the design warnings.",
+      "parameters": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "applyStudioCommands",
+      "description": "Prepare commands against getDesign.baseRevision with the canvas's own command builder and validation. Actions, tiles and links change only through addAction, renameAction, removeAction, addTile, linkTiles, removeTile, removeLink, changeKind and setEntryLane. All accepted changes in this turn commit once; concurrent edits stop the turn. Settings are complete values, not patches.",
+      "parameters": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "baseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "commands": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "addAction"
+                    },
+                    "lane": {
+                      "type": "string",
+                      "enum": ["download", "upload"]
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24
+                    },
+                    "system": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 240
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["type", "lane"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "renameAction"
+                    },
+                    "lane": {
+                      "type": "string",
+                      "enum": ["download", "upload"]
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 24
+                    }
+                  },
+                  "required": ["type", "lane", "name"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "removeAction"
+                    },
+                    "lane": {
+                      "type": "string",
+                      "enum": ["download", "upload"]
+                    }
+                  },
+                  "required": ["type", "lane"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "addTile"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "lane": {
+                              "type": "string",
+                              "enum": ["download", "upload"]
+                            }
+                          },
+                          "required": ["lane"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "tile": {
+                              "type": "string",
+                              "maxLength": 63,
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                            }
+                          },
+                          "required": ["tile"],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": ["after", "before"]
+                    },
+                    "link": {
+                      "type": "string",
+                      "enum": ["sync", "async"]
+                    },
+                    "tile": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "maxLength": 63,
+                          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "service",
+                            "browser",
+                            "worker",
+                            "billing",
+                            "redirect",
+                            "notification",
+                            "identity",
+                            "uploads",
+                            "gateway",
+                            "database",
+                            "cache",
+                            "queue",
+                            "object-store",
+                            "search",
+                            "cdn",
+                            "external-api"
+                          ]
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 240
+                        }
+                      },
+                      "required": ["id", "name", "kind"],
+                      "additionalProperties": false
+                    },
+                    "linkId": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "system": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 240
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["type", "from", "side", "tile", "linkId"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "linkTiles"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "lane": {
+                              "type": "string",
+                              "enum": ["download", "upload"]
+                            }
+                          },
+                          "required": ["lane"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "tile": {
+                              "type": "string",
+                              "maxLength": 63,
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                            }
+                          },
+                          "required": ["tile"],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "to": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "link": {
+                      "type": "string",
+                      "enum": ["sync", "async"]
+                    },
+                    "linkId": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    }
+                  },
+                  "required": ["type", "from", "to", "linkId"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "removeTile"
+                    },
+                    "tile": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "alsoRemove": {
+                      "maxItems": 500,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 63,
+                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  "required": ["type", "tile"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "removeLink"
+                    },
+                    "link": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    }
+                  },
+                  "required": ["type", "link"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "changeKind"
+                    },
+                    "element": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "service",
+                        "browser",
+                        "worker",
+                        "billing",
+                        "redirect",
+                        "notification",
+                        "identity",
+                        "uploads",
+                        "gateway",
+                        "database",
+                        "cache",
+                        "queue",
+                        "object-store",
+                        "search",
+                        "cdn",
+                        "external-api"
+                      ]
+                    }
+                  },
+                  "required": ["type", "element", "kind"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "setEntryLane"
+                    },
+                    "entry": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "lane": {
+                      "type": "string",
+                      "enum": ["download", "upload"]
+                    }
+                  },
+                  "required": ["type", "entry", "lane"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "edit"
+                    },
+                    "element": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 240
+                    },
+                    "settings": {
+                      "oneOf": [
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "service"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "service"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "execution", "host"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "browser"
+                                },
+                                "delivery": {
+                                  "type": "string",
+                                  "const": "standalone"
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": ["kind", "delivery", "provider"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "browser"
+                                },
+                                "delivery": {
+                                  "type": "string",
+                                  "const": "bundled"
+                                },
+                                "servedBy": {
+                                  "type": "string",
+                                  "maxLength": 63,
+                                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                }
+                              },
+                              "required": ["kind", "delivery"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "worker"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "concurrency": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1024
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "worker"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "concurrency": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1024
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": ["kind", "language", "execution", "host"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "billing"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": ["unspecified", "stripe", "external"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "provider", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "billing"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": ["unspecified", "stripe", "external"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "language",
+                                "exposure",
+                                "provider",
+                                "execution",
+                                "host"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "redirect"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["go", "typescript"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "lookupStoreConnection": {
+                                  "type": "string",
+                                  "maxLength": 63,
+                                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                },
+                                "lookupCacheConnection": {
+                                  "type": "string",
+                                  "maxLength": 63,
+                                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "redirect"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["go", "typescript"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "lookupStoreConnection": {
+                                  "type": "string",
+                                  "maxLength": 63,
+                                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                },
+                                "lookupCacheConnection": {
+                                  "type": "string",
+                                  "maxLength": 63,
+                                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "execution", "host"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "notification"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": ["unspecified", "resend", "aws-ses", "external"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "provider", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "notification"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": ["unspecified", "resend", "aws-ses", "external"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "language",
+                                "exposure",
+                                "provider",
+                                "execution",
+                                "host"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "identity"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": ["unspecified", "oidc", "external"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "provider", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "identity"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": ["unspecified", "oidc", "external"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "language",
+                                "exposure",
+                                "provider",
+                                "execution",
+                                "host"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "uploads"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "transfer": {
+                                  "type": "string",
+                                  "enum": ["signed-url", "tus"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "language", "exposure", "transfer", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "uploads"
+                                },
+                                "language": {
+                                  "type": "string",
+                                  "enum": ["typescript", "go"]
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "transfer": {
+                                  "type": "string",
+                                  "enum": ["signed-url", "tus"]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "language",
+                                "exposure",
+                                "transfer",
+                                "execution",
+                                "host"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "gateway"
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "routing": {
+                                  "type": "string",
+                                  "enum": ["path-prefix", "host-name"]
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "envoy",
+                                    "kong",
+                                    "nginx",
+                                    "traefik",
+                                    "aws-api-gateway",
+                                    "external"
+                                  ]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "docker"
+                                }
+                              },
+                              "required": ["kind", "exposure", "routing", "provider", "execution"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "gateway"
+                                },
+                                "exposure": {
+                                  "type": "string",
+                                  "enum": ["internal", "public"]
+                                },
+                                "minReplicas": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000
+                                },
+                                "maxReplicas": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "autoscaleOn": {
+                                  "type": "string",
+                                  "enum": ["cpu", "requests-per-second", "queue-lag"]
+                                },
+                                "requestTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                },
+                                "concurrencyLimit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "routing": {
+                                  "type": "string",
+                                  "enum": ["path-prefix", "host-name"]
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "envoy",
+                                    "kong",
+                                    "nginx",
+                                    "traefik",
+                                    "aws-api-gateway",
+                                    "external"
+                                  ]
+                                },
+                                "execution": {
+                                  "type": "string",
+                                  "const": "managed"
+                                },
+                                "host": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unspecified",
+                                    "cloudflare-workers",
+                                    "aws",
+                                    "google-cloud",
+                                    "external"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "exposure",
+                                "routing",
+                                "provider",
+                                "execution",
+                                "host"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "database"
+                            },
+                            "engine": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "postgresql",
+                                "mysql",
+                                "sqlite",
+                                "mongodb",
+                                "clickhouse"
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "self-hosted",
+                                "aws",
+                                "google-cloud",
+                                "external",
+                                "neon",
+                                "supabase",
+                                "cloudflare-d1"
+                              ]
+                            },
+                            "readReplicas": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 15
+                            },
+                            "partitionKey": {
+                              "type": "string",
+                              "maxLength": 63,
+                              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                            }
+                          },
+                          "required": ["kind", "engine", "provider"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "cache"
+                            },
+                            "engine": {
+                              "type": "string",
+                              "enum": ["unspecified", "redis-compatible", "memcached"]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "self-hosted",
+                                "aws",
+                                "google-cloud",
+                                "external",
+                                "upstash"
+                              ]
+                            },
+                            "ttlSeconds": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 604800
+                            },
+                            "topology": {
+                              "type": "string",
+                              "enum": ["standalone", "cluster"]
+                            },
+                            "eviction": {
+                              "type": "string",
+                              "enum": ["lru", "lfu", "ttl", "none"]
+                            }
+                          },
+                          "required": ["kind", "engine", "provider"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "queue"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": ["work-queue", "topic"]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "self-hosted",
+                                "aws",
+                                "google-cloud",
+                                "external",
+                                "cloudflare-queues"
+                              ]
+                            },
+                            "retentionSeconds": {
+                              "type": "integer",
+                              "minimum": 60,
+                              "maximum": 1209600
+                            },
+                            "partitions": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1024
+                            }
+                          },
+                          "required": ["kind", "mode", "provider"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "object-store"
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "self-hosted",
+                                "cloudflare-r2",
+                                "aws-s3",
+                                "google-cloud-storage",
+                                "external"
+                              ]
+                            },
+                            "access": {
+                              "type": "string",
+                              "enum": ["private", "public"]
+                            }
+                          },
+                          "required": ["kind", "provider", "access"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "search"
+                            },
+                            "engine": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "opensearch",
+                                "elasticsearch",
+                                "meilisearch",
+                                "external"
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "self-hosted",
+                                "aws",
+                                "google-cloud",
+                                "external"
+                              ]
+                            }
+                          },
+                          "required": ["kind", "engine", "provider"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "cdn"
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "cloudflare",
+                                "aws-cloudfront",
+                                "google-cloud-cdn",
+                                "external"
+                              ]
+                            },
+                            "origin": {
+                              "type": "string",
+                              "maxLength": 63,
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                            },
+                            "imageResizing": {
+                              "type": "string",
+                              "enum": ["disabled", "on-request"]
+                            },
+                            "cacheRedirects": {
+                              "type": "string",
+                              "enum": ["disabled", "enabled"]
+                            }
+                          },
+                          "required": ["kind", "provider"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "external-api"
+                            },
+                            "category": {
+                              "type": "string",
+                              "enum": [
+                                "generic",
+                                "payments",
+                                "email",
+                                "identity",
+                                "recognition",
+                                "workflow"
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "unspecified",
+                                "cloudflare",
+                                "aws",
+                                "google-cloud",
+                                "external"
+                              ]
+                            }
+                          },
+                          "required": ["kind", "category", "provider"],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "owner": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": ["element", "package"]
+                            },
+                            "id": {
+                              "type": "string",
+                              "maxLength": 63,
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                            }
+                          },
+                          "required": ["kind", "id"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "element"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "editSystem"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 240
+                    }
+                  },
+                  "required": ["type"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "editConnection"
+                    },
+                    "connection": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "planned": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "protocol": {
+                          "type": "string",
+                          "enum": [
+                            "Unspecified",
+                            "HTTPS",
+                            "HTTP",
+                            "gRPC",
+                            "WebSocket",
+                            "SSE",
+                            "SQL",
+                            "Redis",
+                            "Messaging",
+                            "Native binding"
+                          ]
+                        },
+                        "interaction": {
+                          "type": "string",
+                          "enum": ["Request / response", "Asynchronous", "Streaming"]
+                        },
+                        "security": {
+                          "type": "string",
+                          "enum": ["Service identity", "User identity", "Public", "Private network"]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "timeoutMs": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 300000
+                        },
+                        "retry": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "mode": {
+                                  "type": "string",
+                                  "const": "unspecified"
+                                }
+                              },
+                              "required": ["mode"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "mode": {
+                                  "type": "string",
+                                  "const": "none"
+                                }
+                              },
+                              "required": ["mode"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "mode": {
+                                  "type": "string",
+                                  "const": "fixed"
+                                },
+                                "attempts": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10
+                                },
+                                "delayMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 60000
+                                }
+                              },
+                              "required": ["mode", "attempts", "delayMs"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "channelUse": {
+                          "type": "string",
+                          "enum": ["publish", "consume"]
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["type", "connection"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "createComponent"
+                    },
+                    "component": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "maxLength": 63,
+                          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                        },
+                        "host": {
+                          "type": "string",
+                          "maxLength": 63,
+                          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 240
+                        },
+                        "settings": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "rate-limiter"
+                                },
+                                "algorithm": {
+                                  "type": "string",
+                                  "enum": ["token-bucket", "sliding-window"]
+                                },
+                                "limit": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000000
+                                },
+                                "windowSeconds": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 86400
+                                },
+                                "key": {
+                                  "type": "string",
+                                  "enum": ["ip", "api-key", "user"]
+                                },
+                                "store": {
+                                  "type": "string",
+                                  "enum": ["memory", "redis"]
+                                }
+                              },
+                              "required": ["kind", "algorithm", "key", "store"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "cache-reader"
+                                },
+                                "pattern": {
+                                  "type": "string",
+                                  "enum": ["cache-aside", "read-through"]
+                                },
+                                "l1MaxEntries": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10000000
+                                },
+                                "l1TtlSeconds": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 86400
+                                },
+                                "l2TtlSeconds": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 604800
+                                },
+                                "negativeTtlSeconds": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 86400
+                                },
+                                "stampede": {
+                                  "type": "string",
+                                  "enum": ["none", "single-flight"]
+                                }
+                              },
+                              "required": ["kind", "pattern", "stampede"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "id-generator"
+                                },
+                                "strategy": {
+                                  "type": "string",
+                                  "enum": [
+                                    "db-sequence",
+                                    "redis-counter",
+                                    "range-allocation",
+                                    "snowflake",
+                                    "random"
+                                  ]
+                                },
+                                "blockSize": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000000
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "enum": ["base62", "base58", "base36", "decimal"]
+                                },
+                                "minLength": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 32
+                                }
+                              },
+                              "required": ["kind", "strategy", "encoding"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "redirect-responder"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": ["301", "302", "307"]
+                                },
+                                "edgeMaxAgeSeconds": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 31536000
+                                }
+                              },
+                              "required": ["kind", "status"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "event-publisher"
+                                },
+                                "batchSize": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10000
+                                },
+                                "lingerMs": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 60000
+                                },
+                                "outbox": {
+                                  "type": "string",
+                                  "enum": ["disabled", "enabled"]
+                                }
+                              },
+                              "required": ["kind", "outbox"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "event-consumer"
+                                },
+                                "concurrency": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1024
+                                },
+                                "batchSize": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10000
+                                },
+                                "retryLimit": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "deadLetterQueue": {
+                                  "type": "string",
+                                  "maxLength": 63,
+                                  "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                }
+                              },
+                              "required": ["kind"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "data-access"
+                                },
+                                "poolSize": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 1000
+                                },
+                                "readRouting": {
+                                  "type": "string",
+                                  "enum": ["primary", "replica"]
+                                },
+                                "statementTimeoutMs": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 300000
+                                }
+                              },
+                              "required": ["kind", "readRouting"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "auth-guard"
+                                },
+                                "credential": {
+                                  "type": "string",
+                                  "enum": ["jwt", "api-key", "session"]
+                                }
+                              },
+                              "required": ["kind", "credential"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "external-call"
+                                },
+                                "circuitBreaker": {
+                                  "type": "string",
+                                  "enum": ["disabled", "enabled"]
+                                }
+                              },
+                              "required": ["kind", "circuitBreaker"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "const": "custom"
+                                }
+                              },
+                              "required": ["kind"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": ["id", "host", "name", "settings"],
+                      "additionalProperties": false
+                    },
+                    "links": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "link": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "from": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "to": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "component"
+                                      },
+                                      "id": {
+                                        "type": "string",
+                                        "maxLength": 63,
+                                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                      }
+                                    },
+                                    "required": ["kind", "id"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "element"
+                                      },
+                                      "id": {
+                                        "type": "string",
+                                        "maxLength": 63,
+                                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                      },
+                                      "via": {
+                                        "type": "string",
+                                        "maxLength": 63,
+                                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                      }
+                                    },
+                                    "required": ["kind", "id", "via"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60
+                              }
+                            },
+                            "required": ["id", "from", "to"],
+                            "additionalProperties": false
+                          },
+                          "connection": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "from": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "to": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": ["uses-database", "calls", "depends-on"]
+                              },
+                              "planned": {
+                                "type": "object",
+                                "properties": {
+                                  "label": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 60
+                                  },
+                                  "protocol": {
+                                    "type": "string",
+                                    "enum": [
+                                      "Unspecified",
+                                      "HTTPS",
+                                      "HTTP",
+                                      "gRPC",
+                                      "WebSocket",
+                                      "SSE",
+                                      "SQL",
+                                      "Redis",
+                                      "Messaging",
+                                      "Native binding"
+                                    ]
+                                  },
+                                  "interaction": {
+                                    "type": "string",
+                                    "enum": ["Request / response", "Asynchronous", "Streaming"]
+                                  },
+                                  "security": {
+                                    "type": "string",
+                                    "enum": [
+                                      "Service identity",
+                                      "User identity",
+                                      "Public",
+                                      "Private network"
+                                    ]
+                                  }
+                                },
+                                "required": ["label", "protocol", "interaction", "security"],
+                                "additionalProperties": false
+                              },
+                              "settings": {
+                                "type": "object",
+                                "properties": {
+                                  "timeoutMs": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 300000
+                                  },
+                                  "retry": {
+                                    "oneOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "mode": {
+                                            "type": "string",
+                                            "const": "unspecified"
+                                          }
+                                        },
+                                        "required": ["mode"],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "mode": {
+                                            "type": "string",
+                                            "const": "none"
+                                          }
+                                        },
+                                        "required": ["mode"],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "mode": {
+                                            "type": "string",
+                                            "const": "fixed"
+                                          },
+                                          "attempts": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 10
+                                          },
+                                          "delayMs": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 60000
+                                          }
+                                        },
+                                        "required": ["mode", "attempts", "delayMs"],
+                                        "additionalProperties": false
+                                      }
+                                    ]
+                                  },
+                                  "channelUse": {
+                                    "type": "string",
+                                    "enum": ["publish", "consume"]
+                                  }
+                                },
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": ["id", "from", "to", "kind", "planned", "settings"],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": ["link"],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": ["type", "component"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "editComponent"
+                    },
+                    "component": {
+                      "type": "string",
+                      "maxLength": 63,
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "description": {
+                      "type": "string",
+                      "maxLength": 240
+                    },
+                    "settings": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "rate-limiter"
+                            },
+                            "algorithm": {
+                              "type": "string",
+                              "enum": ["token-bucket", "sliding-window"]
+                            },
+                            "limit": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1000000
+                            },
+                            "windowSeconds": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 86400
+                            },
+                            "key": {
+                              "type": "string",
+                              "enum": ["ip", "api-key", "user"]
+                            },
+                            "store": {
+                              "type": "string",
+                              "enum": ["memory", "redis"]
+                            }
+                          },
+                          "required": ["kind", "algorithm", "key", "store"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "cache-reader"
+                            },
+                            "pattern": {
+                              "type": "string",
+                              "enum": ["cache-aside", "read-through"]
+                            },
+                            "l1MaxEntries": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 10000000
+                            },
+                            "l1TtlSeconds": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 86400
+                            },
+                            "l2TtlSeconds": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 604800
+                            },
+                            "negativeTtlSeconds": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 86400
+                            },
+                            "stampede": {
+                              "type": "string",
+                              "enum": ["none", "single-flight"]
+                            }
+                          },
+                          "required": ["kind", "pattern", "stampede"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "id-generator"
+                            },
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "db-sequence",
+                                "redis-counter",
+                                "range-allocation",
+                                "snowflake",
+                                "random"
+                              ]
+                            },
+                            "blockSize": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1000000
+                            },
+                            "encoding": {
+                              "type": "string",
+                              "enum": ["base62", "base58", "base36", "decimal"]
+                            },
+                            "minLength": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 32
+                            }
+                          },
+                          "required": ["kind", "strategy", "encoding"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "redirect-responder"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": ["301", "302", "307"]
+                            },
+                            "edgeMaxAgeSeconds": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 31536000
+                            }
+                          },
+                          "required": ["kind", "status"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "event-publisher"
+                            },
+                            "batchSize": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 10000
+                            },
+                            "lingerMs": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 60000
+                            },
+                            "outbox": {
+                              "type": "string",
+                              "enum": ["disabled", "enabled"]
+                            }
+                          },
+                          "required": ["kind", "outbox"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "event-consumer"
+                            },
+                            "concurrency": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1024
+                            },
+                            "batchSize": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 10000
+                            },
+                            "retryLimit": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100
+                            },
+                            "deadLetterQueue": {
+                              "type": "string",
+                              "maxLength": 63,
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                            }
+                          },
+                          "required": ["kind"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "data-access"
+                            },
+                            "poolSize": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1000
+                            },
+                            "readRouting": {
+                              "type": "string",
+                              "enum": ["primary", "replica"]
+                            },
+                            "statementTimeoutMs": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 300000
+                            }
+                          },
+                          "required": ["kind", "readRouting"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "auth-guard"
+                            },
+                            "credential": {
+                              "type": "string",
+                              "enum": ["jwt", "api-key", "session"]
+                            }
+                          },
+                          "required": ["kind", "credential"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "external-call"
+                            },
+                            "circuitBreaker": {
+                              "type": "string",
+                              "enum": ["disabled", "enabled"]
+                            }
+                          },
+                          "required": ["kind", "circuitBreaker"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "custom"
+                            }
+                          },
+                          "required": ["kind"],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "component"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "connectComponent"
+                    },
+                    "links": {
+                      "minItems": 1,
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "link": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "from": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "to": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "component"
+                                      },
+                                      "id": {
+                                        "type": "string",
+                                        "maxLength": 63,
+                                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                      }
+                                    },
+                                    "required": ["kind", "id"],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "element"
+                                      },
+                                      "id": {
+                                        "type": "string",
+                                        "maxLength": 63,
+                                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                      },
+                                      "via": {
+                                        "type": "string",
+                                        "maxLength": 63,
+                                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                      }
+                                    },
+                                    "required": ["kind", "id", "via"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60
+                              }
+                            },
+                            "required": ["id", "from", "to"],
+                            "additionalProperties": false
+                          },
+                          "connection": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "from": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "to": {
+                                "type": "string",
+                                "maxLength": 63,
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": ["uses-database", "calls", "depends-on"]
+                              },
+                              "planned": {
+                                "type": "object",
+                                "properties": {
+                                  "label": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 60
+                                  },
+                                  "protocol": {
+                                    "type": "string",
+                                    "enum": [
+                                      "Unspecified",
+                                      "HTTPS",
+                                      "HTTP",
+                                      "gRPC",
+                                      "WebSocket",
+                                      "SSE",
+                                      "SQL",
+                                      "Redis",
+                                      "Messaging",
+                                      "Native binding"
+                                    ]
+                                  },
+                                  "interaction": {
+                                    "type": "string",
+                                    "enum": ["Request / response", "Asynchronous", "Streaming"]
+                                  },
+                                  "security": {
+                                    "type": "string",
+                                    "enum": [
+                                      "Service identity",
+                                      "User identity",
+                                      "Public",
+                                      "Private network"
+                                    ]
+                                  }
+                                },
+                                "required": ["label", "protocol", "interaction", "security"],
+                                "additionalProperties": false
+                              },
+                              "settings": {
+                                "type": "object",
+                                "properties": {
+                                  "timeoutMs": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 300000
+                                  },
+                                  "retry": {
+                                    "oneOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "mode": {
+                                            "type": "string",
+                                            "const": "unspecified"
+                                          }
+                                        },
+                                        "required": ["mode"],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "mode": {
+                                            "type": "string",
+                                            "const": "none"
+                                          }
+                                        },
+                                        "required": ["mode"],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "mode": {
+                                            "type": "string",
+                                            "const": "fixed"
+                                          },
+                                          "attempts": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 10
+                                          },
+                                          "delayMs": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 60000
+                                          }
+                                        },
+                                        "required": ["mode", "attempts", "delayMs"],
+                                        "additionalProperties": false
+                                      }
+                                    ]
+                                  },
+                                  "channelUse": {
+                                    "type": "string",
+                                    "enum": ["publish", "consume"]
+                                  }
+                                },
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": ["id", "from", "to", "kind", "planned", "settings"],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": ["link"],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": ["type", "links"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "disconnectComponent"
+                    },
+                    "links": {
+                      "minItems": 1,
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 63,
+                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  "required": ["type", "links"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "removeComponent"
+                    },
+                    "components": {
+                      "minItems": 1,
+                      "maxItems": 500,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "maxLength": 63,
+                        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  "required": ["type", "components"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": ["baseRevision", "commands"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "validateDesign",
+      "description": "Read current readiness findings. Findings do not establish runtime support.",
+      "parameters": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "askUser",
+      "description": "Ask a focused question with clickable choices, then end the turn.",
+      "parameters": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "choices": {
+            "minItems": 1,
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "allowFreeText": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": ["question", "choices"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "provider": "codex",
+  "requestedModel": "gpt-6.1-sol",
+  "reasoningEffort": "medium (existing adapter)",
+  "latencyMs": 3588.134499,
+  "text": "Ready.",
+  "usage": {
+    "inputTokens": 12823,
+    "outputTokens": 19,
+    "cachedInputTokens": 0
+  },
+  "stop": "end",
+  "outputCapEnforced": false
+}

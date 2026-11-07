@@ -1,0 +1,227 @@
+{
+  "date": "2026-11-07",
+  "review": "AGENT only; owner/human pending",
+  "evidenceDirectory": "/tmp/jeeves-rf06-browser-fQmy3H",
+  "ports": {
+    "web": 4302,
+    "api": 4312
+  },
+  "database": "jeeves_e2e",
+  "runs": [
+    {
+      "results": [
+        {
+          "name": "checkout-build-rf00-ablation",
+          "anchor": "Orders",
+          "viewport": "1440x900",
+          "nodeCount": 10,
+          "edgeCount": 10,
+          "fittedZoom": 0.649611,
+          "focusedZoom": 0.674412,
+          "focusStatus": "Orders \u00b7 5 shown \u00b7 5 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "checkout-build-rf00-ablation",
+          "anchor": "Orders",
+          "viewport": "1280x800",
+          "nodeCount": 10,
+          "edgeCount": 10,
+          "fittedZoom": 0.372024,
+          "focusedZoom": 0.566123,
+          "focusStatus": "Orders \u00b7 5 shown \u00b7 5 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "checkout-build-current",
+          "anchor": "Orders",
+          "viewport": "1440x900",
+          "nodeCount": 8,
+          "edgeCount": 7,
+          "fittedZoom": 0.812014,
+          "focusedZoom": 1,
+          "focusStatus": "Orders \u00b7 4 shown \u00b7 3 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "checkout-build-current",
+          "anchor": "Orders",
+          "viewport": "1280x800",
+          "nodeCount": 8,
+          "edgeCount": 7,
+          "fittedZoom": 0.46503,
+          "focusedZoom": 0.813802,
+          "focusStatus": "Orders \u00b7 4 shown \u00b7 3 relationships hidden\nFit focus\nShow all"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "results": [
+        {
+          "name": "tinyurl-response-cache-repair-rf00-ablation",
+          "anchor": "Redirect service",
+          "viewport": "1440x900",
+          "nodeCount": 12,
+          "edgeCount": 14,
+          "fittedZoom": 0.649611,
+          "focusedZoom": 0.705477,
+          "focusStatus": "Redirect service \u00b7 5 shown \u00b7 9 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "tinyurl-response-cache-repair-rf00-ablation",
+          "anchor": "Redirect service",
+          "viewport": "1280x800",
+          "nodeCount": 12,
+          "edgeCount": 14,
+          "fittedZoom": 0.372024,
+          "focusedZoom": 0.566123,
+          "focusStatus": "Redirect service \u00b7 5 shown \u00b7 9 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "tinyurl-response-cache-repair-current",
+          "anchor": "Redirect service",
+          "viewport": "1440x900",
+          "nodeCount": 12,
+          "edgeCount": 14,
+          "fittedZoom": 0.649611,
+          "focusedZoom": 0.705477,
+          "focusStatus": "Redirect service \u00b7 5 shown \u00b7 9 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "tinyurl-response-cache-repair-current",
+          "anchor": "Redirect service",
+          "viewport": "1280x800",
+          "nodeCount": 12,
+          "edgeCount": 14,
+          "fittedZoom": 0.372024,
+          "focusedZoom": 0.566123,
+          "focusStatus": "Redirect service \u00b7 5 shown \u00b7 9 relationships hidden\nFit focus\nShow all"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "results": [
+        {
+          "name": "tinyurl-study",
+          "anchor": "Redirect service",
+          "viewport": "1440x900",
+          "nodeCount": 11,
+          "edgeCount": 12,
+          "fittedZoom": 0.674412,
+          "focusedZoom": 0.954468,
+          "focusStatus": "Redirect service \u00b7 4 shown \u00b7 8 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "tinyurl-study",
+          "anchor": "Redirect service",
+          "viewport": "1280x800",
+          "nodeCount": 11,
+          "edgeCount": 12,
+          "fittedZoom": 0.448994,
+          "focusedZoom": 0.765931,
+          "focusStatus": "Redirect service \u00b7 4 shown \u00b7 8 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "video-build-current",
+          "anchor": "Processor",
+          "viewport": "1440x900",
+          "nodeCount": 8,
+          "edgeCount": 9,
+          "fittedZoom": 0.649611,
+          "focusedZoom": 0.954468,
+          "focusStatus": "Processor \u00b7 3 shown \u00b7 6 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "video-build-current",
+          "anchor": "Processor",
+          "viewport": "1280x800",
+          "nodeCount": 8,
+          "edgeCount": 9,
+          "fittedZoom": 0.372024,
+          "focusedZoom": 0.765931,
+          "focusStatus": "Processor \u00b7 3 shown \u00b7 6 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "video-publication-repair-rf00-ablation",
+          "anchor": "Processor",
+          "viewport": "1440x900",
+          "nodeCount": 13,
+          "edgeCount": 13,
+          "fittedZoom": 0.385362,
+          "focusedZoom": 0.954468,
+          "focusStatus": "Processor \u00b7 4 shown \u00b7 9 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "video-publication-repair-rf00-ablation",
+          "anchor": "Processor",
+          "viewport": "1280x800",
+          "nodeCount": 13,
+          "edgeCount": 13,
+          "fittedZoom": 0.220692,
+          "focusedZoom": 0.765931,
+          "focusStatus": "Processor \u00b7 4 shown \u00b7 9 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "video-publication-repair-current",
+          "anchor": "Processor",
+          "viewport": "1440x900",
+          "nodeCount": 12,
+          "edgeCount": 12,
+          "fittedZoom": 0.668717,
+          "focusedZoom": 1,
+          "focusStatus": "Processor \u00b7 4 shown \u00b7 8 relationships hidden\nFit focus\nShow all"
+        },
+        {
+          "name": "video-publication-repair-current",
+          "anchor": "Processor",
+          "viewport": "1280x800",
+          "nodeCount": 12,
+          "edgeCount": 12,
+          "fittedZoom": 0.382966,
+          "focusedZoom": 0.813802,
+          "focusStatus": "Processor \u00b7 4 shown \u00b7 8 relationships hidden\nFit focus\nShow all"
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "screenshots": {
+    "checkout-build-current-1280-fitted.png": "f20900e2b0afc7f55e2aaa880062a5626c4a10495de5abbbe8f9da0333c399ae",
+    "checkout-build-current-1280-focused.png": "30c9693a39e2d20ab4293142b5f4e8db0d4fd554f3253004290a11ed8cea722d",
+    "checkout-build-current-1440-fitted.png": "8d4777d1e2289bf96649948e9b05b517a5c291ba8fa155df8b52dee6ea1eacf9",
+    "checkout-build-current-1440-focused.png": "48234d91b9f78ddd0502f77c603835fb0fe76a54598a8b19a56bd79e0e9f3123",
+    "checkout-build-rf00-ablation-1280-fitted.png": "7012cb6f8d68a986945bed6200b4b59c20bd63610fa447783c68b5cc2b6daa6c",
+    "checkout-build-rf00-ablation-1280-focused.png": "4ff36b18737e91ab57eb85f3c93583fb5fcdd3c3da65de5fb098e92451c1b783",
+    "checkout-build-rf00-ablation-1440-fitted.png": "cfc3ea504e053dfac815b4fb9e5771fcd85942c07fd79cf8dcf4f16edf01392f",
+    "checkout-build-rf00-ablation-1440-focused.png": "0f7e59777f2062a9fe7e9f09a4a512da31d7e3e1239e7358a3eb632c51ca3ac3",
+    "tinyurl-response-cache-repair-current-1280-fitted.png": "390c42f2b8388ae063c55fee38d08a3315478b208209d8a7dad8d0506d2ccd1c",
+    "tinyurl-response-cache-repair-current-1280-focused.png": "349bdb6fc9f5fc49bb2c1fd420ead68a007cc5a1e1541516d65e78d373ed0bd7",
+    "tinyurl-response-cache-repair-current-1440-fitted.png": "9a1c4a567a7a073e7cf6f9dc33704d997f1cab422a7ca39e14136dd278c4e3bd",
+    "tinyurl-response-cache-repair-current-1440-focused.png": "8a87d34f8fb325c802ec74c886aabcd697096afa686e6e62da9fa81dee42cb65",
+    "tinyurl-response-cache-repair-rf00-ablation-1280-fitted.png": "e9cf1e47381356365820adbad1361b4138de2fd18cfae8e7a4f214cb31e839c1",
+    "tinyurl-response-cache-repair-rf00-ablation-1280-focused.png": "81960d6f71009753f370a6ae570acc43f55f536fecc175ea5530f42a2dbf5878",
+    "tinyurl-response-cache-repair-rf00-ablation-1440-fitted.png": "ab0596f80e61916b0fc24dd694723bb932e85d97bd467d50671e84a91e536ede",
+    "tinyurl-response-cache-repair-rf00-ablation-1440-focused.png": "d9c85061ebd6d11b00d6fcb29a38e5360a9ba87f568b4238e07bc57519c5a26c",
+    "tinyurl-study-1280-fitted.png": "b56c6d5c48fadbc7d3b86e82c8e0e98908434f7ba675259b8524e8b17e1b78d7",
+    "tinyurl-study-1280-focused.png": "50b92d88a6c40884cb71ad8e097e8769ed4054be40c50395a7bd78516ea4f2ca",
+    "tinyurl-study-1440-fitted.png": "f296c35368d17fbc8b45b18591fb718da4fa8e909fcb3532d68fa1c916ec4b7d",
+    "tinyurl-study-1440-focused.png": "35af47f115e4fa915fb67ecc03efc898dbdd18b07f5dcdc429f50772945556de",
+    "video-build-current-1280-fitted.png": "3c8fb7ef63e3fe68a1ea3186f1a8c5e0373bf4c69711e66c1baeec66c23d328c",
+    "video-build-current-1280-focused.png": "5b71b2d082dd9f68b8351187d1322c9c03caa229e119e5b1c27f56a58b81dd60",
+    "video-build-current-1440-fitted.png": "fa1da66047e7456b920a7279ab5f19abf35e7ed3b87949fc71c53516e97c91c3",
+    "video-build-current-1440-focused.png": "25b78a0541158d211834dcb77fd0b2a81c4aab28f7fecbaa8edfb7e065215df9",
+    "video-publication-repair-current-1280-fitted.png": "f0f27b31c69aa1a69c7442fc348446a07bd7bc3960fec68d0d3d1849e7abfae1",
+    "video-publication-repair-current-1280-focused.png": "25f15787b24d75fee21c82e05a644a93dd24f64aac1b4d9e3ea1bcfa0c31d553",
+    "video-publication-repair-current-1440-fitted.png": "a3d635d93c6eee040e7de3ee16b65cecb44e3c12727bcfe334dfb5e869d6896f",
+    "video-publication-repair-current-1440-focused.png": "a4e720f8087467e3c655dd241e7860c42fbde2fd4b463837fee5dad82e3ddbe8",
+    "video-publication-repair-rf00-ablation-1280-fitted.png": "ad5462762fba14226b6046d0a5e7b55aa1c97cc426731c1b15014b6cf3c7c642",
+    "video-publication-repair-rf00-ablation-1280-focused.png": "7c309292862e6fd297711f2346711f1d05babb1bb873fe71bdac05e50c0b0d5e",
+    "video-publication-repair-rf00-ablation-1440-fitted.png": "f9e99f6f92b994748ab22f49ff28661a8d33d9f63accfd367144f970bc25a2a1",
+    "video-publication-repair-rf00-ablation-1440-focused.png": "c74468b530ada39fb953cd4eeaf7cf433610f735232d2d0ecc817d145ae10fb5"
+  },
+  "cleanup": {
+    "scratchProjectsDeleted": 8,
+    "deleteStatus": 204,
+    "remainingProjects": ["TinyURL \u00b7 studio study"],
+    "ownerPortsAndSettingsPreserved": true
+  }
+}

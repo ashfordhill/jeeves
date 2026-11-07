@@ -192,6 +192,17 @@ accurately for each provider.
 
 ### RF06 — Measure design quality on the intended chat model
 
+**Progress (2026-11-07): tooling implemented; intended-model evidence blocked.** Six versioned
+synthetic cases replay deterministically without network in isolated PGlite, with negative
+rubric fixtures and opt-in live recording. Mini `gpt-5.4-mini-2026-03-17` returned no credits
+before any model response; quality and live strict-schema acceptance remain unverified. The
+separately authorized Codex `gpt-6.1-sol` / medium fallback completed six pairs under matched
+round/time limits. Both arms receive honest unresolved-obligation credit from independent
+AGENT review; no population improvement or runtime claim, and owner/human review remains pending.
+See [reports and adjudication](../../evals/rf06/README.md) and [usage](../../chat-evals.md).
+All required checks and isolated mouse checks pass; evidence is in the RF06 handoff. Local
+commit: **RF06: add reproducible chat design evaluations**. RF07 was not started in this unit.
+
 **Depends on:** RF03–RF05. **Areas:** versioned eval fixtures and an opt-in eval runner/report.
 
 Create a compact reviewed suite covering the three study domains, modifications, repairs and

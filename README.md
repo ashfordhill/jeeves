@@ -53,6 +53,10 @@ OpenAI tools use an [audited strict wire schema](docs/chat-tool-schemas.md) that
 command defaults. Codex's outer structured answer leaves inner argument strings unconstrained;
 the server validates every provider's commands.
 
+[Versioned chat evaluations](docs/chat-evals.md) replay offline and provide an explicitly opted-in
+live comparison with recorded limits, public evidence and independent review. See the
+[RF06 results](docs/evals/rf06/README.md) for the blocked Mini run and separate Codex fallback.
+
 ## Test
 
 ```sh
