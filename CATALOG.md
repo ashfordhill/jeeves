@@ -396,7 +396,7 @@ The canvas projects one owner card by default, expands canonical roles by mouse,
 ID and falls back to roles for unsafe collapsed graphs. View-only grouping changes no contracts.
 V3 retains every declaration and distinguishes legacy inference; v2 refuses every nonempty new
 row with an exact path. Generic tiles supply no capability, template or runtime verification.
-Operation bindings remain future units and must refine these grants. Existing presets are unchanged.
+Exact Create/Resolve operation bindings refine these grants; other operations remain unspecified. Existing presets are unchanged.
 
 
 ### Finite Create link contract (NC03)
@@ -414,5 +414,22 @@ replay for 24 hours and explicit errors under one 10-second deadline. Unknown ex
 retained/unresolved; known contradictions refuse. [Contract details](docs/studio-contracts.md).
 `describeOperation` retrieves this exact record; `configureOperations` previews/applies the same
 bounded declarations as the mouse. Optional v3 `operations` exports completely; default v2
-refuses each nonempty row. Auth verifiers/templates/runtime evidence remain unavailable; resolve
-and cache/expiry lookup policy remain NC04. No presets or owner designs are migrated.
+refuses each nonempty row. Auth verifiers/templates/runtime evidence remain unavailable. Resolve
+and cache/expiry lookup policy are declared separately by NC04. No presets or owner designs are migrated.
+
+
+### Finite Resolve link and positive cache (NC04)
+
+`resolve-operation-catalog.json` and `cache-policy-catalog.json` freeze `links-resolve@1.0.0`
+and `links-positive-cache@1.0.0`, with actual schema/behavior hashes. Create's NC03 identity is
+unchanged. Public GET `/links/{code}` yields 307 Location or 400/404/410/503, always no-store.
+Stable 410 retains expiry evidence forever; immutable codes/destinations are never reused/edited.
+Primary lookup, same-owner source read and exact cache projection read-and-fill compose with
+Create's durable success. Positive cache caps 300s and clamps every write to record expiry, with
+50 ms cache /1000 ms primary /1200 ms total bounds, 64 actual primary calls shared per instance,
+immediate overload refusal and no L1/negative/retries/HTTP response cache. These are finite
+contract choices, not runtime verification. Settings/modules/CDN contradictions refuse rather
+than migrate. Selected-profile namespace agreement is checked; arbitrary independent namespaces
+remain legal. Unknown exact refs and incomplete declarations stay unresolved. The existing form,
+chat lookup/configure, preview/history, compact API count and blueprint share these declarations.
+No preset, saved project, provider adapter, template or backend runtime is added.

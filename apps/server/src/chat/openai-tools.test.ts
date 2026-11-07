@@ -8,6 +8,7 @@ import {
   emptyDesign,
   operationContractsSchema,
   ownershipSchema,
+  positiveCachePolicy,
   studioArchitectureExample,
   tinyurlDesignScope,
 } from "@jeeves/spec";
@@ -57,10 +58,65 @@ function transport(rounds: Call[][]) {
   return { provider, requests };
 }
 const request = (items: ModelItem[] = []) => ({ model: "mock", instructions: "", tools, items });
+
+import { compatibleResolveDesign } from "../../../../packages/spec/src/fixtures/nc04-compatible.ts";
+import resolveFixture from "../../../../packages/spec/src/fixtures/nc04-resolve-v1.json" with {
+  type: "json",
+};
+
 const execute = (workspace: Workspace, calls: { name: string; arguments: string }[]) =>
   calls.map((call) => JSON.parse(workspace.run(call.name, call.arguments)));
 
 describe("strict OpenAI studio tools", () => {
+  it("round-trips the resolve union, null policy/connection and unknown exact policy through actual strict wire/history", async () => {
+    const base = compatibleResolveDesign(),
+      workspace = new Workspace(base),
+      operations = operationContractsSchema.parse(resolveFixture),
+      binding = operations.receivers[1]?.binding;
+    if (binding?.kind !== "resolve-link") throw new Error();
+    binding.cachePolicy = null;
+    binding.cacheConnection = null;
+    const args = { baseRevision: base.revision, action: "preview", operations },
+      apply = { ...args, action: "apply" };
+    const { provider, requests } = transport([
+      [{ name: "configureOperations", arguments: wire("configureOperations", args) }],
+      [{ name: "configureOperations", arguments: wire("configureOperations", apply) }],
+      [],
+    ]);
+    let items: ModelItem[] = [];
+    for (const expected of [args, apply]) {
+      const response = await provider.respond(request(items));
+      expect(JSON.parse(response.toolCalls[0]?.arguments ?? "null")).toEqual(expected);
+      const [result] = execute(workspace, response.toolCalls);
+      expect(result.ok).toBe(true);
+      items = [
+        ...items,
+        ...response.items,
+        {
+          type: "tool-result",
+          callId: response.toolCalls[0]?.callId ?? "",
+          output: JSON.stringify(result),
+        },
+      ];
+    }
+    expect(workspace.pending).toEqual(buildOperationsCommand(base, { operations }).ops);
+    await provider.respond(request(items));
+    const replay = JSON.parse(
+      String(requests[2]?.input.find((x) => x.type === "function_call")?.arguments),
+    );
+    expect(replay.upgrade).toBeNull();
+    expect(replay.operations.receivers[1].binding).toEqual(binding);
+    binding.cacheConnection = "redirect-cache";
+    binding.cachePolicy = { ...positiveCachePolicy.ref, version: "99.0.0", sha256: "a".repeat(64) };
+    const raw = wire("configureOperations", { ...args, operations });
+    expect(JSON.parse(raw).operations.receivers[1].binding.cachePolicy).toEqual(
+      binding.cachePolicy,
+    );
+    const bad = JSON.parse(raw);
+    bad.operations.receivers[1].binding.successRetentionHours = null;
+    const invalid = transport([[{ name: "configureOperations", arguments: JSON.stringify(bad) }]]);
+    await expect(invalid.provider.respond(request())).rejects.toThrow();
+  });
   it("transmits exact tagged operation refs, nullable verifier/retention, omission defaults and canonical history; refuses unknown fields", async () => {
     const base = structuredClone(studioArchitectureExample("studio-tinyurl").design);
     const shorten = base.architecture?.studio?.elements.find((x) => x.element === "shorten");
@@ -69,6 +125,7 @@ describe("strict OpenAI studio tools", () => {
     const workspace = new Workspace(base),
       operations = operationContractsSchema.parse(operationFixture);
     if (!operations.receivers[0]) throw new Error();
+    if (operations.receivers[0].binding.kind !== "create-link") throw new Error();
     operations.receivers[0].binding.successRetentionHours = null;
     const args = { baseRevision: base.revision, action: "preview", operations },
       apply = { ...args, action: "apply", upgrade: true };

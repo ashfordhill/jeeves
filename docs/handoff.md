@@ -4566,3 +4566,127 @@ Owned scratch projects deleted (204); e2e DB contains only its default TinyURL. 
 listeners and scratch settings directory were stopped/removed; owner 4300/4310 untouched.
 
 Local commit: **NC03: bind the finite Create link contract**.
+
+## 2026-11-07 — NC04: public Resolve and compatible positive-cache contracts
+
+Worked NC04 only after `1823124`, sequentially on primary main. Coordinator reviewed the concrete
+G5 record/binding/outcome/bounds proposal before material implementation, then inspected actual
+1280 form/fields/ref, shared-role/unknown-sibling and transfer/removal images. No delegation,
+branch, worktree, stash, push, backend, generator, live/paid model call, preset or owner-project
+rewrite. Owner's “Keep backend implementation for later” remains the boundary; NC05 is next.
+Preserved `.jeeves-feedback/`, owner settings/projects and all five archived owner images. The
+append-only feedback Resolution confirms the owner's archive question and coordinator's matching
+SHA256 verification; newest two images remain the original `db9af1c` artifacts.
+
+Added immutable `links-resolve@1.0.0` (`d819c8a2…`) and `links-positive-cache@1.0.0` (`968a31ff…`)
+with actual request/success/error/positive-record schema hashes and full-definition hashes. The
+NC03 Create JSON is byte-for-byte unchanged (`bac402c1…`), including its broader frozen code
+schema and all behavior. Shared pure record/ref/signature helpers avoid schema import cycles;
+records and exported catalog indexes are frozen. Exact wrong categories refuse, including the
+cache-record schema used as operation/policy. Unknown exact operation/schema/policy refs remain
+retained/unresolved without gaining known behavior; unknown operations may reuse known schemas.
+
+Resolve is public GET `/links/{code}`, one raw canonical 22-character unpadded base64url code for
+16 bytes (last character A/Q/g/w). Reject nonempty query/body, percent aliases, extra segments,
+padding or malformed code. The normalized operation envelope excludes ordinary HTTP headers.
+307 supplies Location and zero response bytes; explicit JSON errors are 400 invalid input,
+404 confirmed primary absence, 410 expired, 503 dependency failure and 503 overload. Every outcome
+has no-store, including errors; closed response headers describe only contract-owned headers,
+not the whole wire header set. Immutable destination/expiry and no code reuse; stable 410 needs
+indefinite minimal durable code+expiry evidence after physical cleanup. A durable Create success
+is visible to fresh primary Resolve immediately, yielding 410 if expiry has already passed.
+
+Pinned positive policy: maximum 300s clamped at actual write to record expiry; validate cached
+code, normalized immutable destination and expiry, and recheck wall-clock expiry on hit and
+before response, including after fill. Cache read/fill cap at 50ms, primary at 1000ms, one total
+1200ms monotonic deadline covering validation/phases/response decision without resetting. At most
+64 actual primary resolve calls shared across bindings in one runtime instance, immediate 503
+when full, no queue/retries. Hold admission until actual completion or confirmed cancellation;
+a request timeout cannot release an unbounded trail of orphaned queries. Cache miss/outage/
+timeout/malformed payload falls back once to primary within budget; primary failure is never
+404. Optional skipped/failed fill preserves timely authoritative success; exhausted overall
+deadline returns 503. No negative cache, L1, stale-on-error, single-flight wait or response cache.
+Trusted cache isolation, clocks/skew, cancellation, absolute-expiry precision and actual primary
+visibility remain future backend/adapter evidence, never simulated runtime verification.
+
+The new tagged resolve binding stores primary/cache connections and nullable exact policy ref;
+null stays unspecified. NC03 bindings need no migration. Source read and cache read-and-fill
+stay within explicit grants/dependencies, same logical owner and exact source projection. Only
+an exact compatible binding refines that cache's blanket population/freshness/failure warning;
+other projections and published reads remain unresolved. Resource inspector now reflects this
+qualified declaration. Selected one-public-namespace scope checks all known create/resolve source
+and owner agreement; arbitrary independent-source designs remain legal. Namespace obligations
+appear once; operation-neutral unresolved IDs replace misleading Create-only report IDs without
+changing stored requirements/history. Unknown/incomplete contracts remain blockers.
+
+Known receiver/caller deadline, protocol/security/channel, retries, cache TTL, Redirect lookup
+shortcut, primary routing and attached CDN contradictions refuse atomically. Generic SQL/Redis
+connection timeout/retry controls were not broadened; the policy carries those phase caps and
+existing data-access statement timeouts may be shorter. Applicable typed modules are traced
+through real component links via the bound source/cache dependency and upstream chain; unrelated
+same-host modules and paragraphs gain no operation applicability. Legacy TinyURL's represented
+replica/L1/L2/negative/single-flight/302/TTL intents are diagnosed, never rewritten.
+
+The existing sticky Operation contracts form and chat describe/configure tools share all finite
+fields, preview/commands, unknown ref roundtrip and review details. Multiple operations share an
+API/edge; an optional unspecified global API timeout permits Create 10000ms and Resolve 1200ms
+on the same canonical role. Explicit global timeout conflicts refuse. A compact plural count
+retains known/unknown siblings; inspector details select each exact `operation:<binding-id>`
+for actual chat/history. Canonical roles/edges/arrows stay unchanged. Role/authority/cache/source/
+grant removal or transfer and entry moves preview exact affected clears, clean/refuse atomically,
+retain unrelated custom requirements, refuse stale previews and restore in one Undo. V3 remains
+complete/pure; default v2 refuses every receiver/call row at its exact path. Template/runtime
+availability stays none. Read/publish ports, returned-data arrows, YouTube semantics and owner
+usability acceptance remain open. README/PLAN/catalog/studio/settings/blueprint/contracts,
+G5/NC04 plan, playbook and append-only feedback Resolution match this scope.
+
+Final required checks with Node 24.21.0 first in PATH, suites sequential and source held steady:
+`pnpm check` passed **284 tests / 40 files**, Biome and every typecheck; `pnpm test:e2e` passed
+**28 native Chromium** (44.6s); web production build passed (existing chunk advisory); final
+lint/diff checks passed. Focused tests cover immutable identities/categories, unknown refs,
+settings/access/namespace contradictions, unrelated modules, shared API operations, source/cache
+edge and authority cleanup, entry moves, atomic refusal, exact v2/v3 semantics, disk PGlite reload,
+one Undo, mouse/chat parity, strict nullable union/history and actual ChatService repair bounds.
+Both Create and Resolve scripted conversations exercise two repairs, refused third apply and
+permitted readonly preview/lookup afterward. No unit test needs Docker, Postgres or network.
+
+Actual final strict wire audit: configureOperations **74 properties / 17 enum values / depth 7**,
+7557 UTF-8 bytes including metadata; describeOperation **4 / 0 / 3**, 745 bytes. Giant studio union
+unchanged **427 / 538 / 9**. Same default schema2 TinyURL versus retained NC03: instructions
+13886→**14941** bytes, context 16293→**16633**, strict tools 69051→**69873** (+822). Codec strictness,
+omitted/null/default semantics and canonical history remain intact. These are bytes, not tokens,
+cost or model-quality claims. Current fetch-forbidden synthetic suite replays all 12 case/arm
+pairs deterministically (standalone eval file 14 tests). Old RF06 as-run records stay untouched;
+first old request intentionally drifts `77669bb5…`→`b5a04c34…` before response replay because
+shared context changed; exact hashes/reason retained. Historical RF06 overhead and intended
+Mini/live acceptance remain open; no credits/access or paid run was invented.
+
+Mouse at both 1440×900 and 1280×800: default TinyURL renders 11 tiles / 12 lines; explicit
+settings edits permit Resolve, exact outcomes/refs inspect and unknown policy reload/clear work;
+operation selection reaches actual chat, full export is equal after focus/Fit/Show all/collapse,
+cache read-only fill refuses, source/owner transfers and role/cache/isolated-edge removals show
+exact clears, entry move clears its one caller, stale preview preserves custom scope and one
+Undo/reload restores complete state. Shared-role Create+Resolve shows two operations; retained
+unknown sibling shows three, with independent selections. Zero unexpected browser errors; two
+intentional stale HTTP409 messages are recorded separately. The first walkthrough's one-shot
+owner visibility race and a scratch-script owner-ID assumption were fixed in acceptance helpers,
+with failed attempts retained separately. First E2E overlapped source edits and had three setup/
+detached timeouts (25/28); clean runs passed 28 without unrelated test changes. Its exact leaked
+setup project was identified and deleted 204. These observations do not prove runtime behavior.
+
+Fourteen inspected PNGs, browser/result/audit/drift metadata and failed-attempt evidence are in
+`docs/plans/reliable-foundations/evidence/nc04/`; full scripts/logs stay in
+`/tmp/jeeves-nc04-browser/`. Retained raw check/failure logs use lossless gzip with byte hashes;
+original raw files remain there. Isolated API 4312 / web 4302 used scratch settings, scripted provider and
+jeeves_e2e; every owned scratch project was deleted. Database contains only its default TinyURL.
+Stopped only owned 4312/4302 processes and removed own scratch settings. Read-only owner GETs
+remain TinyURL rev 53 / YouTube rev 1 / Marketplace rev 1; owner 4300/4310 listeners remain running.
+Existing fitted-overview labels still need zoom; coordinator acceptance is not owner usability
+or runtime acceptance.
+
+Next: NC05 must separate design validity, exact contract completeness, template availability and
+runtime evidence over this finite boundary. There are no product manifests/templates/runtime
+artifacts to certify. Preserve NC03 Create identity, unknown refs, current declaration semantics
+and old owner projects. NC06 owns the new narrow study; the separate backend remains a plan.
+
+Local commit: **NC04: bind public Resolve and positive cache contracts**.

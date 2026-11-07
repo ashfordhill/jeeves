@@ -16,7 +16,7 @@ import {
 import { findingSchema } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import {
-  createLinkOperation,
+  contractRecords,
   designOperations,
   exactContractRefSchema,
   operationContractFindings,
@@ -321,7 +321,7 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
       calls: byId(designOperations(design).calls).map(clone),
     },
     operationFindings: operationContractFindings(design),
-    operationCatalog: [{ ...createLinkOperation.ref }],
+    operationCatalog: contractRecords.map((x) => ({ ...x.ref })),
     scope,
     profileStatus: profileStatus(scope),
     unresolvedRequirements: [...unresolvedDesignScope(design)]

@@ -957,13 +957,13 @@ Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).
 
 ## Named API operation responsibilities
 
-The inspector's **Operation contracts** form declares the finite **Create link · v1** operation
+The inspector's **Operation contracts** form declares the finite **Create link · v1** and **Resolve link · v1** operations
 on an existing canonical API role. Its compact card label and expandable inspector responsibility
 refer to that same API, owner and graph relationships. They add no independent service or process.
 **Details & bindings** selects exactly that operation for chat; selecting its parent API/owner
 does not select all operations. Existing caller → target request arrows keep their meaning.
 
-Select a receiver, its authoritative write and existing entry/service callers; preview named
+For Create, select a receiver, its authoritative write and existing entry/service callers; preview named
 binding changes and the exact unresolved verifier finding before saving. A legacy design
 requires an explicit v3 upgrade. Existing API/connection timeouts must match the fixed deadline
 and are edited explicitly through ordinary Options. Retention can be declared or left unresolved;
@@ -971,3 +971,14 @@ missing auth runtime/template evidence remains unavailable. Removal/transfer pre
 affected binding and one Undo restores the entire change. [Contract details](studio-contracts.md)
 describe the fixed schemas and behavior. No Read counts/Publish view ports, returned-data arrows,
 YouTube contract rewrite, backend or generator is implemented by this first named responsibility.
+
+
+NC04 adds **Resolve link · v1** in that same form: select **Operation**, a canonical receiver,
+primary-read and cache read-and-fill connections, then the pinned positive-cache policy. Its
+expanded contract shows 307 Location, 400 invalid, 404 unknown, 410 expired and 503 failure/overload,
+with no-store on every outcome. Exact policy refs can be inspected, edited or cleared; unknowns
+remain unresolved. Existing TinyURL replica/L1/negative-cache/302/TTL settings must be edited
+explicitly before a compatible declaration saves. Named previews explain refusals and cleanup;
+reload and one Undo preserve complete refs. An API with several operations shows their count;
+inspector details select each binding separately for chat. The view adds no service/deployment,
+port or reversed data-return arrow. [Finite behavior and runtime limits](studio-contracts.md).

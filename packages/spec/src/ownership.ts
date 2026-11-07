@@ -5,6 +5,7 @@ import { emptyDesignScope } from "./design-scope.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
 import { idSchema } from "./ids.ts";
 import {
+  declaresPositiveCacheProjection,
   designOperations,
   operationChanges,
   operationContractFindings,
@@ -161,12 +162,13 @@ export function ownershipFindings(design: DesignDocument): Finding[] {
           ["resources", index, "source"],
           "A projection must name a different declared source resource; projection chains are not supported.",
         );
-      report(
-        "CONFIG_REQUIRED",
-        ["resources", index],
-        `Projection ${resource.element} records source intent only; population, freshness and failure contracts are not specified.`,
-        { element: resource.element },
-      );
+      if (!declaresPositiveCacheProjection(design, resource.element))
+        report(
+          "CONFIG_REQUIRED",
+          ["resources", index],
+          `Projection ${resource.element} records source intent only; population, freshness and failure contracts are not specified.`,
+          { element: resource.element },
+        );
     }
   });
   model.grants.forEach((grant, index) => {

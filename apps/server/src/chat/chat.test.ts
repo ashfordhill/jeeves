@@ -16,6 +16,7 @@ import {
   emptyOwnership,
   operationContractsSchema,
   ownershipSchema,
+  positiveCachePolicy,
   studioArchitectureExample,
   studioPatternIds,
   studioPatterns,
@@ -26,6 +27,10 @@ import ownershipFixture from "../../../../packages/spec/src/fixtures/nc02-owners
   type: "json",
 };
 import operationFixture from "../../../../packages/spec/src/fixtures/nc03-create-v1.json" with {
+  type: "json",
+};
+import { resolveFixtureSeedOps } from "../../../../packages/spec/src/fixtures/nc04-compatible.ts";
+import resolveFixture from "../../../../packages/spec/src/fixtures/nc04-resolve-v1.json" with {
   type: "json",
 };
 import type { Db } from "../db/client.ts";
@@ -199,6 +204,80 @@ const operationSeedOps = () => {
     { op: "setArchitecture", architecture: seed.architecture },
   ];
 };
+it("bounds resolve repairs through actual ChatService and leaves policy lookup/preview available afterward", async () => {
+  const initial = operationContractsSchema.parse(resolveFixture),
+    variants = [0, 1, 2].map((index) => {
+      const m = structuredClone(initial),
+        binding = m.receivers[1]?.binding;
+      if (binding?.kind !== "resolve-link") throw new Error();
+      binding.cachePolicy =
+        index === 0
+          ? null
+          : {
+              ...positiveCachePolicy.ref,
+              version: `${index + 1}.0.0`,
+              sha256: String(index).repeat(64),
+            };
+      return m;
+    });
+  const configure = (action: "preview" | "apply", operations = initial) => ({
+      name: "configureOperations",
+      arguments: { baseRevision: 1, action, operations },
+    }),
+    review = { name: "reviewDesign", arguments: {} };
+  const h = harness([
+    { toolCalls: [configure("preview"), configure("apply"), review] },
+    ...variants
+      .slice(0, 2)
+      .map((m) => ({ toolCalls: [configure("preview", m), configure("apply", m), review] })),
+    {
+      toolCalls: [
+        configure("preview", variants[2]),
+        configure("apply", variants[2]),
+        configure("preview", variants[2]),
+        { name: "describeOperation", arguments: { ref: positiveCachePolicy.ref } },
+      ],
+    },
+    { text: "Saved resolve declarations. Runtime unavailable." },
+  ]);
+  try {
+    const id = await h.project();
+    expect(
+      (
+        await h.call("POST", `/projects/${id}/operations`, {
+          baseRevision: 0,
+          ops: resolveFixtureSeedOps(),
+        })
+      ).status,
+    ).toBe(200);
+    const before = (await h.design(id)).design;
+    const { turn, state } = await h.chat(id, "Declare public resolve and its cache policy");
+    expect(turn.error).toBeNull();
+    expect(designOperations(state.design)).toEqual(variants[1]);
+    expect(h.requests).toHaveLength(5);
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({
+        tool: "configureOperations",
+        ok: false,
+        summary: expect.stringContaining("2 review repair passes are used"),
+      }),
+    );
+    expect(
+      turn.activity.filter(
+        (x) => x.tool === "configureOperations" && x.summary.startsWith("Previewed"),
+      ),
+    ).toHaveLength(5);
+    expect(turn.activity).toContainEqual(
+      expect.objectContaining({ tool: "describeOperation", ok: true }),
+    );
+    const undo = await h.call("POST", `/projects/${id}/undo`, {
+      baseRevision: state.design.revision,
+    });
+    expect(undo.body.design).toEqual({ ...before, revision: undo.body.design.revision });
+  } finally {
+    await h.app.close();
+  }
+});
 it("bounds actual operation repairs, preserves read-only lookup/preview and commits exact operation details as one Undo", async () => {
   const initial = operationContractsSchema.parse(operationFixture),
     ownership = ownershipSchema.parse(ownershipFixture),
@@ -206,6 +285,12 @@ it("bounds actual operation repairs, preserves read-only lookup/preview and comm
     second = structuredClone(initial),
     forbidden = structuredClone(initial);
   if (!first.receivers[0] || !second.receivers[0] || !forbidden.receivers[0]) throw new Error();
+  if (
+    first.receivers[0].binding.kind !== "create-link" ||
+    second.receivers[0].binding.kind !== "create-link" ||
+    forbidden.receivers[0].binding.kind !== "create-link"
+  )
+    throw new Error();
   first.receivers[0].binding.successRetentionHours = null;
   second.receivers[0].binding.authVerifier = {
     id: "future-verifier",

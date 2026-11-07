@@ -4,7 +4,9 @@ import {
   designOwnership,
   findingsForOperationBinding,
   isCreateOperation,
+  isResolveOperation,
   operationContractFindings,
+  operationDependencyIds,
   operationDisplayName,
 } from "@jeeves/spec";
 
@@ -28,7 +30,7 @@ export function OperationsSummary({
   const receivers = model.receivers.filter(
     (x) =>
       x.role === element ||
-      x.binding.storeConnection === connection ||
+      (connection && operationDependencyIds(x).includes(connection)) ||
       (ownerId && ownership.roles.some((r) => r.element === x.role && r.owner === ownerId)) ||
       model.calls.some(
         (c) =>
@@ -51,14 +53,16 @@ export function OperationsSummary({
             canonical role
           </p>
           <p>
-            {isCreateOperation(receiver.implementation)
+            {isCreateOperation(receiver.implementation) && receiver.binding.kind === "create-link"
               ? `Authenticated · durable commit · ${receiver.binding.successRetentionHours === null ? "Replay retention unspecified" : "24h replay"}`
-              : "Unknown behavior; exact reference retained"}{" "}
+              : isResolveOperation(receiver.implementation)
+                ? "Public · 307 · all-outcome no-store · primary + positive cache"
+                : "Unknown behavior; exact reference retained"}{" "}
             · {model.calls.filter((x) => x.receiverBinding === receiver.id).length} caller bindings
           </p>
           <p className="studio-field-help">
             {findingsForOperationBinding(design, receiver.id, findings).length} unresolved
-            declarations. Verifier / template / runtime evidence unavailable.
+            declarations. Template / runtime evidence unavailable.
           </p>
           <button
             type="button"

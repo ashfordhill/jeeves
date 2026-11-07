@@ -1,0 +1,26 @@
+{
+  "version": "nc04-resolve-v1",
+  "node": "24.21.0",
+  "sequentialRequiredChecks": {
+    "pnpm check": {
+      "exitCode": 0,
+      "tests": 284,
+      "files": 40
+    },
+    "pnpm test:e2e": {
+      "exitCode": 0,
+      "tests": 28,
+      "seconds": 44.6,
+      "browser": "native Chromium"
+    },
+    "pnpm --filter @jeeves/web build": {
+      "exitCode": 0,
+      "note": "Existing chunk-size advisory only"
+    }
+  },
+  "finalPromptClarification": "Create-only authentication/idempotency/10s requirements explicitly named Create link contract; final audit includes this copy.",
+  "strictAudit": "audit.json",
+  "offlineReplay": "synthetic-replay.log.gz",
+  "oldAsRunDrift": "replay-drift.json",
+  "runtimeVerification": "none"
+}

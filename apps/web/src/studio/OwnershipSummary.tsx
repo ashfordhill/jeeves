@@ -1,6 +1,7 @@
 import {
   type DesignDocument,
   declaredAccessLabels,
+  declaresPositiveCacheProjection,
   designOwnership,
   studioApplicationKinds,
 } from "@jeeves/spec";
@@ -96,7 +97,7 @@ export function OwnershipSummary({
           <p>
             {resource.kind === "source"
               ? "Source of truth"
-              : `Projection of ${name(resource.source)} · population/freshness unspecified`}
+              : `Projection of ${name(resource.source)} · ${declaresPositiveCacheProjection(design, resource.element) ? "positive cache / expiry / fallback contract declared" : "population/freshness unspecified"}`}
           </p>
           {model.grants
             .filter((x) => x.resource === resource.element)

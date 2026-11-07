@@ -220,6 +220,7 @@ describe("exact finite Create link declarations", () => {
     receiver.implementation.success = { ...createLinkOperation.definition.schemas.request.ref };
     receiver.role = "redirect";
     receiver.binding.storeConnection = "redirect-cache";
+    if (receiver.binding.kind !== "create-link") throw new Error();
     receiver.binding.successRetentionHours = null;
     receiver.implementation.auth = "public";
     receiver.implementation.idempotency = "none";
@@ -298,8 +299,10 @@ describe("exact finite Create link declarations", () => {
   it("requires explicit same-owner source write grants and keeps missing retention/verifier/call declarations unresolved", () => {
     const design = owned(),
       next = model();
-    required(next.receivers[0]).binding.successRetentionHours = null;
-    required(next.receivers[0]).binding.authVerifier = {
+    const binding = required(next.receivers[0]).binding;
+    if (binding.kind !== "create-link") throw new Error();
+    binding.successRetentionHours = null;
+    binding.authVerifier = {
       id: "unknown-verifier",
       version: "1.0.0",
       sha256: "c".repeat(64),

@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "sameApiCreateResolveMouse": true,
+      "distinctExactDeadlines": true,
+      "individualMouseSelections": true,
+      "unknownSiblingCountVisible": true
+    },
+    {
+      "viewport": "1280x800",
+      "sameApiCreateResolveMouse": true,
+      "distinctExactDeadlines": true,
+      "individualMouseSelections": true,
+      "unknownSiblingCountVisible": true
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "06a05402-d439-4ada-a218-c7d6c479378a",
+      "status": 204
+    },
+    {
+      "id": "7d6939e3-27d4-4e4a-8c0c-ce16b9a88589",
+      "status": 204
+    }
+  ]
+}

@@ -6,12 +6,16 @@ import {
   designOperations,
   designOwnership,
   isCreateOperation,
+  isResolveOperation,
   nextOperationBindingId,
   type OperationCall,
   type OperationContracts,
   operationCallerId,
   operationDisplayName,
+  positiveCachePolicy,
   previewOperations,
+  resolveLinkOperation,
+  resolveLinkSignature,
   studioApplicationKinds,
 } from "@jeeves/spec";
 import { Button, Group } from "@mantine/core";
@@ -19,6 +23,7 @@ import { useState } from "react";
 import { ConfigurationDialog } from "../components/ConfigurationDialog.tsx";
 import { useProject } from "../project/store.ts";
 import { OperationChanges } from "./OperationChanges.tsx";
+import { ResolveFields } from "./ResolveFields.tsx";
 import "./ownership.css";
 
 /** Finite catalog selection, canonical bindings and an exact preview; no schema editor. */
@@ -39,6 +44,7 @@ export function OperationsForm({
   }>();
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [operationKind, setOperationKind] = useState("create-link");
   const [selectedRole, setSelectedRole] = useState("");
   const name = (id: string) => design.elements.find((x) => x.id === id)?.name ?? id;
   const studio = design.architecture?.studio,
@@ -52,7 +58,13 @@ export function OperationsForm({
   );
   const availableRoles = applications.filter(
     (role) =>
-      !model.receivers.some((x) => x.role === role.element && isCreateOperation(x.implementation)),
+      !model.receivers.some(
+        (x) =>
+          x.role === role.element &&
+          (operationKind === "create-link"
+            ? isCreateOperation(x.implementation)
+            : isResolveOperation(x.implementation)),
+      ),
   );
   const update = (next: OperationContracts) => {
     setModel(next);
@@ -107,20 +119,36 @@ export function OperationsForm({
             model.receivers.map((x) => x.id),
           ),
           role: selectedRole,
-          implementation: createLinkSignature(),
-          binding: {
-            kind: "create-link",
-            storeConnection: store?.id ?? "unbound-store",
-            successRetentionHours: 24,
-            authVerifier: null,
-          },
+          implementation:
+            operationKind === "create-link" ? createLinkSignature() : resolveLinkSignature(),
+          binding:
+            operationKind === "create-link"
+              ? {
+                  kind: "create-link",
+                  storeConnection: store?.id ?? "unbound-store",
+                  successRetentionHours: 24,
+                  authVerifier: null,
+                }
+              : {
+                  kind: "resolve-link",
+                  storeConnection: store?.id ?? "unbound-store",
+                  cacheConnection:
+                    design.connections.find(
+                      (x) =>
+                        x.from.element === selectedRole &&
+                        studio?.elements.some(
+                          (e) => e.element === x.to.element && e.settings.kind === "cache",
+                        ),
+                    )?.id ?? null,
+                  cachePolicy: { ...positiveCachePolicy.ref },
+                },
         },
       ],
     });
     setSelectedRole("");
   };
   const possible: OperationCall[] = model.receivers
-    .filter((x) => isCreateOperation(x.implementation))
+    .filter((x) => isCreateOperation(x.implementation) || isResolveOperation(x.implementation))
     .flatMap((receiver) => [
       ...(studio?.entries ?? [])
         .filter((x) => x.element === receiver.role)
@@ -134,7 +162,7 @@ export function OperationsForm({
           },
           receiverBinding: receiver.id,
           receiverRole: receiver.role,
-          expects: createLinkSignature(),
+          expects: structuredClone(receiver.implementation),
         })),
       ...design.connections
         .filter(
@@ -147,7 +175,7 @@ export function OperationsForm({
           caller: { kind: "connection" as const, connection: link.id, role: link.from.element },
           receiverBinding: receiver.id,
           receiverRole: receiver.role,
-          expects: createLinkSignature(),
+          expects: structuredClone(receiver.implementation),
         })),
     ]);
   const callerName = (call: OperationCall) =>
@@ -178,9 +206,9 @@ export function OperationsForm({
     >
       <div className="ownership-form operation-form">
         <p>
-          Available reviewed contract: <strong>Create link · v1</strong>. A binding declares a
-          responsibility of the same API role. It adds no service or deployment. Templates and
-          runtime verification: none.
+          Available reviewed contracts: <strong>Create link · v1; Resolve link · v1</strong>. A
+          binding declares a responsibility of the same API role. It adds no service or deployment.
+          Templates and runtime verification: none.
         </p>
         <details>
           <summary>Fixed contract · authenticated create, durable success and replay</summary>
@@ -198,12 +226,36 @@ export function OperationsForm({
           </p>
           <p>
             Authentication, invalid input, idempotency conflict, allocation exhaustion and
-            dependency failures have exact schemas. Missing verifier remains unresolved. Resolve and
-            cache policy are separate.
+            dependency failures have exact schemas. Missing verifier remains unresolved. Resolve
+            uses its separate exact contract and cache policy.
           </p>
           <details>
             <summary>Exact immutable catalog record</summary>
             <pre>{JSON.stringify(createLinkOperation, null, 2)}</pre>
+          </details>
+        </details>
+        <details>
+          <summary>Fixed resolve · public redirect, expiry and positive cache</summary>
+          <p>
+            GET /links/&#123;code&#125; takes one canonical 22-character base64url code. 307
+            Location; 400 invalid input, 404 unknown, 410 expired, 503 dependency failure or
+            overload. Every outcome uses Cache-Control: no-store. Expiration evidence survives
+            cleanup forever; codes and destinations are never reused or changed.
+          </p>
+          <p>
+            Primary lookup sees durable create immediately, including 410 if already expired.
+            Positive cache entries carry code, immutable destination and expiry; validate hits,
+            clamp at write and check expiry again before response. One total 1200ms monotonic
+            deadline covers cache read, primary and optional fill. Wall-clock expiry and real
+            adapter/cancellation/clock evidence remain future work.
+          </p>
+          <details>
+            <summary>Exact immutable resolve record</summary>
+            <pre>{JSON.stringify(resolveLinkOperation, null, 2)}</pre>
+          </details>
+          <details>
+            <summary>Exact immutable positive cache policy</summary>
+            <pre>{JSON.stringify(positiveCachePolicy, null, 2)}</pre>
           </details>
         </details>
         <div className="studio-inspector-tabs" role="tablist" aria-label="Operation sections">
@@ -223,14 +275,32 @@ export function OperationsForm({
           {tab === "Receiver" ? (
             <>
               <p>
-                Choose a canonical API role and its own source database write. Missing ownership or
+                Choose a canonical API role and its same-owner source database. Missing ownership or
                 grants stay unresolved; contradictory declarations refuse. Distinct operations keep
                 separate binding IDs on the same API.
               </p>
               <label>
-                Create receiver role
+                Operation
                 <select
-                  aria-label="Create receiver role"
+                  aria-label="Operation"
+                  value={operationKind}
+                  onChange={(e) => {
+                    setOperationKind(e.target.value);
+                    setSelectedRole("");
+                  }}
+                >
+                  <option value="create-link">Create link · v1</option>
+                  <option value="resolve-link">Resolve link · v1</option>
+                </select>
+              </label>
+              <label>
+                {operationKind === "create-link" ? "Create receiver role" : "Resolve receiver role"}
+                <select
+                  aria-label={
+                    operationKind === "create-link"
+                      ? "Create receiver role"
+                      : "Resolve receiver role"
+                  }
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
                 >
@@ -245,10 +315,12 @@ export function OperationsForm({
                 </select>
               </label>
               <button type="button" disabled={!selectedRole} onClick={addReceiver}>
-                Declare Create link
+                {operationKind === "create-link" ? "Declare Create link" : "Declare Resolve link"}
               </button>
               {model.receivers.map((receiver) => {
-                const known = isCreateOperation(receiver.implementation),
+                const known =
+                    isCreateOperation(receiver.implementation) &&
+                    receiver.binding.kind === "create-link",
                   links = design.connections.filter(
                     (x) => x.from.element === receiver.role && stores.has(x.to.element),
                   );
@@ -257,7 +329,23 @@ export function OperationsForm({
                     <legend>
                       {operationDisplayName(receiver.implementation)} · {name(receiver.role)}
                     </legend>
-                    {known ? (
+                    {isResolveOperation(receiver.implementation) &&
+                    receiver.binding.kind === "resolve-link" ? (
+                      <ResolveFields
+                        design={design}
+                        id={receiver.id}
+                        role={receiver.role}
+                        binding={receiver.binding}
+                        onChange={(binding) =>
+                          update({
+                            ...model,
+                            receivers: model.receivers.map((x) =>
+                              x.id === receiver.id ? { ...x, binding } : x,
+                            ),
+                          })
+                        }
+                      />
+                    ) : known && receiver.binding.kind === "create-link" ? (
                       <>
                         <label>
                           Authoritative write connection
@@ -268,7 +356,7 @@ export function OperationsForm({
                               update({
                                 ...model,
                                 receivers: model.receivers.map((x) =>
-                                  x.id === receiver.id
+                                  x.id === receiver.id && x.binding.kind === "create-link"
                                     ? {
                                         ...x,
                                         binding: { ...x.binding, storeConnection: e.target.value },
@@ -299,7 +387,7 @@ export function OperationsForm({
                               update({
                                 ...model,
                                 receivers: model.receivers.map((x) =>
-                                  x.id === receiver.id
+                                  x.id === receiver.id && x.binding.kind === "create-link"
                                     ? {
                                         ...x,
                                         binding: {
@@ -340,12 +428,16 @@ export function OperationsForm({
                                   <input
                                     aria-label={`${receiver.id} verifier ${field}`}
                                     maxLength={field === "id" ? 63 : field === "version" ? 40 : 64}
-                                    value={receiver.binding.authVerifier?.[field] ?? ""}
+                                    value={
+                                      receiver.binding.kind === "create-link"
+                                        ? (receiver.binding.authVerifier?.[field] ?? "")
+                                        : ""
+                                    }
                                     onChange={(event) =>
                                       update({
                                         ...model,
                                         receivers: model.receivers.map((x) =>
-                                          x.id === receiver.id
+                                          x.id === receiver.id && x.binding.kind === "create-link"
                                             ? {
                                                 ...x,
                                                 binding: {
@@ -373,7 +465,7 @@ export function OperationsForm({
                                   update({
                                     ...model,
                                     receivers: model.receivers.map((x) =>
-                                      x.id === receiver.id
+                                      x.id === receiver.id && x.binding.kind === "create-link"
                                         ? { ...x, binding: { ...x.binding, authVerifier: null } }
                                         : x,
                                     ),
@@ -390,7 +482,7 @@ export function OperationsForm({
                                 update({
                                   ...model,
                                   receivers: model.receivers.map((x) =>
-                                    x.id === receiver.id
+                                    x.id === receiver.id && x.binding.kind === "create-link"
                                       ? {
                                           ...x,
                                           binding: {
@@ -411,7 +503,7 @@ export function OperationsForm({
                     ) : (
                       <p>
                         Exact unknown reference and its declared configuration are retained without
-                        substitution. No Create link behavior or compatibility is established.
+                        substitution. No known operation behavior or compatibility is established.
                       </p>
                     )}
                     <button

@@ -1,0 +1,36 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "legacyContradictionsRefused": true,
+      "explicitMouseSettingAlignment": true,
+      "resolveAndCreateExactRefs": true,
+      "mouseResolveSelectionReachesActualChat": true,
+      "viewActionsPreserveFullExport": true,
+      "unknownPolicyRoundtrip": true,
+      "nullCacheConnectionUndo": true,
+      "cacheFillReadGrantRefused": true,
+      "ownerTransferExactClearsUndo": true,
+      "cacheRemovalExactClearsUndo": true,
+      "staleRefusalPreservesCustomScope": true,
+      "roleRemovalExactClearsUndo": true,
+      "reloadExact": true
+    }
+  ],
+  "errors": [],
+  "expectedConflicts": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "cleanup": [
+    {
+      "id": "19edb74b-18e6-4987-8b52-bce10b8728a2",
+      "status": 204
+    },
+    {
+      "id": "aef11b86-67eb-47fa-8a76-6a32bd68df50",
+      "status": 204
+    }
+  ]
+}

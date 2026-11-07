@@ -1,11 +1,12 @@
 # Finite operation contracts
 
-NC03 adds declarative Create link contracts. There is no HTTP runtime, auth verifier, adapter,
-generator, template manifest or runtime evidence. Resolve and expiry/cache lookup policy are
-separate NC04 work. Existing studies and saved projects are never upgraded by reading them.
+NC03/NC04 add declarative Create link and Resolve link contracts plus one positive-cache policy. There is no HTTP runtime, auth verifier, adapter,
+generator, template manifest or runtime evidence. Existing studies and saved projects are never upgraded by reading them.
 
-The immutable local [catalog record](../packages/spec/src/operation-catalog.json) contains
-`links-create@1.0.0`, the actual request/success/error JSON Schemas and the finite behavior.
+The immutable local records are [Create](../packages/spec/src/operation-catalog.json),
+[Resolve](../packages/spec/src/resolve-operation-catalog.json) and
+[Positive cache](../packages/spec/src/cache-policy-catalog.json), each at `1.0.0`. The NC03 Create
+record and all of its hashes remain unchanged. Records contain actual JSON Schemas and finite behavior.
 Every exact reference is `{id, version, sha256}`: bounded exact SemVer (40 characters maximum,
 no leading zeroes), lowercase SHA256, no ranges or latest fallback. Hashes cover recursively
 key-sorted compact UTF-8 JSON; the operation hash covers the entire definition, including the
@@ -35,7 +36,7 @@ receiver binding must name the same canonical role. Stable binding IDs are disti
 IDs; several different operations can belong to one API and use one relationship. Duplicate
 binding IDs, duplicate known method/path on one API, and duplicate caller + receiver binding
 refuse. The signature pins operation/request/success/error references, auth, idempotency and
-10,000 ms deadline. No implicit schema subtyping or compatible-version guess is made.
+its total deadline (Create 10,000 ms; Resolve 1,200 ms). No implicit schema subtyping or compatible-version guess is made.
 
 Known incompatible promises refuse atomically. Well-formed unknown exact refs remain saveable
 and unresolved, including an unknown operation that reuses known schema records. It acquires no
@@ -44,7 +45,7 @@ exact known operation. Canonical graph references are still checked. Malformed r
 missing explicit binding references and contradictory endpoints refuse.
 
 Represented connection/receiver timeouts must agree with the fixed deadline. A known non-HTTP
-protocol or asynchronous/channel use contradicts a create call. Unknown protocol labels, fixed
+protocol or asynchronous/channel use contradicts a known HTTP call. Unknown protocol labels, fixed
 retries without same-key/total-deadline propagation, or service/public/network security without
 a declared verified-user propagation path remain targeted gaps. Public reachability alone says
 nothing about whether the user is authenticated. Existing TinyURL's shorter API timeout must be
@@ -108,6 +109,103 @@ prescribe this application's retention/allocation policy; those are the reviewed
 
 V3 exports complete declarations, catalog identity and targeted findings. Default v2 refuses
 each nonempty receiver/call row at its exact source path, even with empty scope/ownership.
-Create declarations replace the old blanket create-unspecified finding only when exact caller /
-receiver declarations exist; missing verifier and resolve/expiry/cache requirements remain. The one-public-namespace profile also retains an explicit unresolved composition obligation: all create/resolve bindings must share one authoritative source and compatible logical owner. NC04/NC05 must implement that agreement check; independent source databases in arbitrary designs are not blanket structural errors.
-Templates and runtime verification stay `none`.
+Create/Resolve declarations replace their blanket unspecified findings only when exact caller /
+receiver declarations exist; targeted gaps remain. The selected one-public-namespace profile
+checks every known create/resolve source and logical owner for agreement. Missing bindings or
+authorities remain incomplete; different declared sources/owners refuse atomically. Independent
+namespaces in arbitrary designs do not become blanket structural errors. Unknown exact refs
+remain unresolved and gain no known behavior. Templates and runtime verification stay `none`.
+
+## Resolve link v1 and positive cache v1
+
+Resolve uses fixed **GET `/links/{code}`**, public auth, no idempotency key and one total **1,200 ms**
+deadline. It returns **307** with `Location`; the target and expiry are immutable. It accepts one
+raw ASCII segment, exactly 22 unpadded base64url characters encoding 16 bytes: 21 alphabet
+characters followed by `A`, `Q`, `g` or `w` (four unused low bits are zero). Percent escapes,
+padding, extra segments and noncanonical aliases refuse. On the matched operation, nonempty
+query/body input returns 400. The normalized closed request envelope contains only `path.code`;
+ordinary HTTP headers are outside it. Create's broader frozen success schema stays unchanged;
+its actual 16-byte allocation already produces these canonical codes.
+
+Every response, including all errors, has **`Cache-Control: no-store`**. The normalized closed
+response envelope describes only contract-owned headers, allowing ordinary transport headers
+such as Date/Content-Length outside it. Success `body:null` means zero response bytes, not JSON
+null. Error bodies are JSON; their transport Content-Type is outside this header envelope.
+
+| Outcome | Status | Meaning |
+| --- | --- | --- |
+| Resolved | 307 | Unexpired immutable destination in Location; empty body |
+| Invalid input | 400 | Fix request; no dependency lookup |
+| Unknown | 404 | Confirmed fresh authoritative primary absence |
+| Expired | 410 | Wall-clock expiry reached; never redirect |
+| Dependency failure | 503 | Primary failure/timeout/unknown result or exhausted total deadline; never guessed 404 |
+| Overloaded | 503 | No primary slot; immediate refusal without a queue or internal retry |
+
+A receiver keeps its stable ID/role/signature with tagged
+`binding:{kind:"resolve-link",storeConnection,cacheConnection,cachePolicy}`. Cache connection and
+exact policy ref are nullable: null means unspecified, never an inferred no-cache policy. No NC03
+record needs migration. One API/edge may expose both known operations; leave the optional generic
+API timeout unspecified when their exact deadlines differ. An explicitly set API/caller timeout
+must match each bound operation. The form never edits those settings for the person.
+
+The source is the same logical owner's authoritative **source database**, with explicit read
+request and role grant (read-write may cover read; write alone does not). Misses use a fresh
+primary lookup, never a read replica or pre-create snapshot. A durable Create 201 is immediately
+visible to Resolve, yielding 410 if expiry has already passed. Stable 410 requires indefinite
+minimal durable code+expiry evidence (retained row or tombstone); physical cleanup never changes
+410 to 404. Allocated codes are never reused, independently of key retention or link expiry.
+
+The only known cache policy is `links-positive-cache@1.0.0`: the resolver reads **and fills** its
+own cache projection of this exact source. Both its dependency and grant require read-write.
+Only an exact compatible declaration refines NC02's blanket projection population/freshness/
+failure warning for that cache. Other projections and published-read markers remain unresolved.
+The closed positive-record schema contains canonical code, normalized immutable HTTP(S) destination
+and nullable expiry. Validate the payload and requested code before use; malformed data falls back.
+Schema validation does not authenticate poisoned values: a trusted, isolated namespace is required.
+
+- Maximum positive lifetime **300 seconds**, clamped at the actual write to no later than the
+  record's absolute expiry. Earlier eviction/shorter declared maxima are compatible. Value and
+  expiry write atomically; never round upward, refresh past record expiry or cache nonpositive life.
+- Cache read and optional fill each cap at **50 ms**; primary caps at **1,000 ms**. Start one
+  monotonic **1,200 ms** deadline at acceptance, covering validation, both phases and the response
+  decision. Every phase uses the smaller phase cap and remaining budget; never reset the deadline.
+- At most **64 actual primary resolve calls**, shared across all bindings in one runtime instance.
+  Admission is immediate, with no queue/retries. Keep the slot until actual completion or confirmed
+  cancellation; timing out a request cannot leave an unbounded trail of orphaned queries.
+- Cache miss, loss, outage, timeout or malformed payload falls back once to primary within that
+  deadline. A valid unexpired positive hit may succeed without primary. Primary failure is 503.
+  No negative cache, in-process L1, stale-on-error or single-flight wait exists in this policy.
+- Fill may skip for insufficient budget or fail without replacing timely authoritative success.
+  Recheck expiry after fill and immediately before redirect. An exhausted overall response deadline
+  is 503; ordinary fill failure is not. Wall-clock UTC determines expiry (`expiresAt <= now`);
+  monotonic time measures deadlines. Expired validated hits return 410 rather than redirecting.
+
+Known contradictions in the receiver/caller timeout, retries, protocol/security/channel use,
+cache TTL, primary routing, Redirect lookup shortcuts and attached CDN cache intent refuse atomically. Dependency timeout
+comparisons use phase maxima; existing generic connection timeout/retry controls remain restricted
+to HTTP(S)/gRPC, with no new SQL/Redis controls. Existing data-access statement timeouts may be
+shorter than the primary maximum. Typed module applicability follows actual component links via
+the bound source/cache edge and upstream component chain; unrelated same-host modules and prose
+are not assigned operation behavior. Legacy TinyURL's explicit replica, L1/L2/negative cache,
+single-flight and 302 settings are diagnosed without rewriting its study or saved copies.
+
+The mouse selects the operation, source/cache connections and pinned policy in the existing
+**Operation contracts** form, with an exact-reference disclosure that can inspect/edit/clear an
+unknown policy. Chat `describeOperation` reads the same exact operation/policy registry and
+`configureOperations` uses the same complete schema/preview/command. Known records in wrong
+categories refuse; well-formed unknown refs stay retained and unresolved. Multiple operations
+show a compact count on one API and separate names/selections in its inspector. Cache/source/
+role/authority/grant removal or transfer previews exact affected bindings and cleans or refuses
+atomically; entry moves never silently rebind. One Undo restores the whole accepted change.
+
+These checks validate declarations. Real HTTP outcomes, immediate create-to-resolve visibility,
+cache clamping and boundary-time expiry, synchronized wall-clock/skew, monotonic propagation,
+cancellation, trusted cache isolation and absolute-expiry precision need future backend and real
+adapter evidence. No runtime handlers or simulated lookup are supplied as verification.
+
+[RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html) defines the status semantics;
+[RFC 9111](https://www.rfc-editor.org/rfc/rfc9111.html) explains no-store (including why default
+404/410 heuristics are insufficient). [Redis SET](https://redis.io/docs/latest/commands/set/)
+illustrates atomic value/expiration mechanisms; [PostgreSQL isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
+explains committed-primary visibility. These sources do not choose the application's route,
+retention, bounds, adapter, provider or runtime version.

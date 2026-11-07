@@ -1,0 +1,94 @@
+{
+  "version": "nc04-resolve-v1",
+  "date": "2026-11-07",
+  "environment": {
+    "node": "24.21.0",
+    "browser": "Playwright native Chromium",
+    "api": "127.0.0.1:4312",
+    "web": "127.0.0.1:4302",
+    "database": "jeeves_e2e",
+    "settings": "isolated /tmp/jeeves-nc04-settings",
+    "models": "scripted fake provider only"
+  },
+  "viewports": ["1440x900", "1280x800"],
+  "inspectedImages": [
+    "1440-default.png",
+    "1440-owner-operations.png",
+    "1280-resolve-role.png",
+    "1280-resolve-fields.png",
+    "1280-policy-ref.png",
+    "1280-resolve-outcomes.png",
+    "1280-same-api-two-operations.png",
+    "1280-same-api-unknown-sibling.png",
+    "1280-transfer-preview.png",
+    "1280-entry-move-preview.png",
+    "1280-authority-transfer-preview.png",
+    "1280-cache-edge-preview.png",
+    "1280-cache-contract-summary.png",
+    "1280-stale-preview.png"
+  ],
+  "coordinatorReview": "G5 bounds/path/canonical code/expiry evidence reviewed before implementation; actual 1280 form, outcomes, two-operation and unknown-sibling views plus cleanup previews reviewed. Accepted as bounded design-contract UI, not owner usability acceptance.",
+  "results": ["results.json", "multi-results.json", "cleanup-results.json"],
+  "historicalAttempts": {
+    "walkthrough-settle-attempt.log.gz": "One-shot owner visibility was sampled before the new projection settled. Acceptance helper now explicitly waits for the new owner after declaring it; final both-size walkthrough passed.",
+    "cleanup-id-attempt.log.gz": "Scratch fixture owner ID was links, so new owner was owner-1 rather than owner-2. Script selects visible Other label; final both-size workflow passed.",
+    "e2e-editing-attempt.log.gz": "Initial run overlapped source edits and had three setup/detached selection timeouts (25 passed/28). No unrelated product/test changes made to hide them; clean source-frozen run passed 28. The failed setup project was deleted 204 after its exact timestamp/ID identified it."
+  },
+  "limits": [
+    "Contract/schema/graph/permission/settings declarations only; no HTTP resolve handler, cache lookup simulation, backend, generator, template or runtime verifier.",
+    "Wall clocks/skew, monotonic propagation, cancellation, actual held concurrency, primary visibility, cache integrity/expiry precision and response behavior require future backend/real-adapter evidence.",
+    "Overview labels still require zoom; no separate read/publish ports, returned-data arrows or YouTube contract rewrite.",
+    "No live/paid model calls, token/cost/quality claims or intended Mini acceptance. Old RF06 as-run records unchanged."
+  ],
+  "ownerState": {
+    "TinyURL": 53,
+    "YouTube": 1,
+    "Marketplace": 1
+  },
+  "preserved": ".jeeves-feedback/ and owner 4300/4310 settings/projects/listeners",
+  "failedSetupCleanup": {
+    "project": "7409cd0e-d717-4140-aae8-dbd51971f741",
+    "createdAt": "2026-11-07T19:52:09.181Z",
+    "status": 204
+  },
+  "compressedLogs": {
+    "encoding": "Lossless deterministic gzip; original raw bytes preserved, no whitespace cleanup. Raw logs also remain in /tmp/jeeves-nc04-browser/.",
+    "files": [
+      {
+        "file": "build.log.gz",
+        "rawSha256": "bf033b06f0dcb00fc6c7da8dfb26779211595347fc540773766bbe19451f9261",
+        "rawBytes": 1340
+      },
+      {
+        "file": "check.log.gz",
+        "rawSha256": "b01cee085ff361559b26773419160a663587f2858a087bc0a1e508ba2035ad3e",
+        "rawBytes": 862
+      },
+      {
+        "file": "cleanup-id-attempt.log.gz",
+        "rawSha256": "5b7dc1fda17378cae549ab5bd5df588744b4eba20f80803445098ffe4c9e0c29",
+        "rawBytes": 1983
+      },
+      {
+        "file": "e2e-editing-attempt.log.gz",
+        "rawSha256": "848c3b9eb8054f7bc26277bf6041d7bdb78fec58500453f5e64e30c9b75423bb",
+        "rawBytes": 14400
+      },
+      {
+        "file": "e2e.log.gz",
+        "rawSha256": "8a7b258959f5596dd76b9825bae667a99e2fba249bffe3b18b7b450c327cc873",
+        "rawBytes": 5674
+      },
+      {
+        "file": "synthetic-replay.log.gz",
+        "rawSha256": "767c1955c7d42a9b76aad8207a3910d4dbf1beb8085ee944efece586daf7900b",
+        "rawBytes": 174
+      },
+      {
+        "file": "walkthrough-settle-attempt.log.gz",
+        "rawSha256": "590a502ba4cf466eeef07b858d7f7e9cf2d95966a127784afa470df0af220c53",
+        "rawBytes": 652
+      }
+    ]
+  }
+}

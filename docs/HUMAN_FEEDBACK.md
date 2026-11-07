@@ -510,3 +510,17 @@ implementation for later”; the authorized Jeeves sequence continues and the ba
   This resolves the first bounded responsibility-presentation step only. Separate Read counts /
   Publish view ports, data-return arrows, YouTube lifecycle/analytics semantics, overview
   readability and owner usability acceptance remain open. Backend stays deferred.
+
+
+- NC04, local commit titled **NC04: bind public Resolve and positive cache contracts**: extends
+  the same canonical API responsibility view to Resolve link, with exact outcomes/cache policy
+  in the existing expandable inspector. Multiple operations show a compact truthful count and
+  individual selections; graph roles/relationship IDs and caller→target arrows remain unchanged.
+  Coordinator accepted actual 1280 form/preview direction and reviewed retained mouse evidence.
+  This is another bounded responsibility step, not the proposed Read counts/Publish view ports,
+  returned-data arrows, YouTube semantics or owner usability acceptance. Backend stays deferred.
+
+- Owner follow-up: asked whether the visual images were documented. Confirmed: all five images
+  from this conversation are archived byte-for-byte. The coordinator independently recomputed
+  matching SHA256 for the original YouTube/Marketplace/TinyURL images and the two API sketch/crop
+  originals. The newest two were committed in `db9af1c`; earlier feedback sections remain intact.

@@ -6,6 +6,7 @@ import { idSchema } from "./ids.ts";
 import {
   designOperations,
   knownCreateSignature,
+  knownResolveSignature,
   operationContractFindings,
 } from "./operation-contracts.ts";
 import type { OperationInput } from "./operations.ts";
@@ -192,32 +193,47 @@ export function unresolvedDesignScope(design: DesignDocument): ScopeUnresolved[]
         "required",
         "contract",
       );
-    add(
-      "namespace-authority",
-      "One-public-namespace composition is unresolved: all create/resolve bindings must agree on one authoritative source and compatible logical owner. Per-operation declarations alone do not validate that agreement; NC04/NC05 must check it.",
-      "required",
-      "contract",
-    );
     for (const [index, item] of operationContractFindings(design).entries())
       unresolved.push({
         source: "contract",
-        id: `create-binding-${index}`,
+        id:
+          item.target.path?.[1] === "namespace"
+            ? "namespace-authority"
+            : `operation-binding-${index}`,
         requirement: item.message,
         criticality: "required",
         ...(item.target.element ? { element: item.target.element } : {}),
         ...(item.target.connection ? { connection: item.target.connection } : {}),
       });
-    for (const [id, requirement] of [
-      [
+    const declaredResolve = operations.receivers.some(
+      (receiver) =>
+        knownResolveSignature(receiver.implementation) &&
+        operations.calls.some(
+          (call) => call.receiverBinding === receiver.id && knownResolveSignature(call.expects),
+        ),
+    );
+    if (!declaredResolve)
+      add(
         "resolve-contract",
-        "Public resolve, unknown/expired results and dependency-failure contracts are not specified.",
-      ],
-      [
+        "Public resolve and an exact matching caller/receiver binding are not fully declared.",
+        "required",
+        "contract",
+      );
+    if (
+      !declaredResolve ||
+      operationContractFindings(design).some(
+        (item) =>
+          item.target.path?.[1] === "receivers" &&
+          typeof item.target.path?.[2] === "number" &&
+          operations.receivers[item.target.path[2]]?.binding.kind === "resolve-link",
+      )
+    )
+      add(
         "expiry-cache-contract",
-        "Expiry enforcement, authoritative lookup and bounded cache/fallback policies are not specified.",
-      ],
-    ])
-      add(id as string, requirement as string, "required", "contract");
+        "Expiry enforcement, primary lookup and bounded positive-cache/fallback declarations are incomplete or incompatible; inspect exact resolve findings.",
+        "required",
+        "contract",
+      );
   } else
     add(
       "contracts-unspecified",

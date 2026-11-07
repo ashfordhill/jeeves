@@ -244,8 +244,8 @@ access inference or blueprint semantics. Later units and contract/generator mile
 open as described in the plan.
 
 
-NC01/NC02/NC03 now implement the accepted first-phase scope/version and ownership/access boundaries.
+NC01/NC02/NC03/NC04 now implement the accepted first-phase scope/version and ownership/access boundaries.
 `ownership.ts` validates declarations independently of legacy store inference; the narrow tool and
 mouse form share pure preview/commands. Owner collapse/expansion is a web view projection over
 canonical role/edge IDs, with safe expansion fallback. Deletion and transfer expose exact affected
-rows, preserve unrelated requirements and undo once. NC03 adds immutable finite Create link/schema refs, exact caller/receiver binding IDs, explicit operation selection and the shared bounded mouse/chat editor. [Finite contracts](docs/studio-contracts.md) define the accepted semantics; resolve/lookup policy remains NC04 and templates/runtime evidence are unavailable. No generator/runtime exists here. The first-phase continuation and G1/G2/G3/G4 decisions are recorded in the next contract plan.
+rows, preserve unrelated requirements and undo once. NC03 adds immutable finite Create link/schema refs, exact caller/receiver binding IDs, explicit operation selection and the shared bounded mouse/chat editor. [Finite contracts](docs/studio-contracts.md) define the accepted semantics; NC04 adds exact public Resolve/positive-cache records, expiry/primary/permission/settings checks and selected-profile namespace agreement; templates/runtime evidence are unavailable. No generator/runtime exists here. The first-phase continuation and G1/G2/G3/G4 decisions are recorded in the next contract plan.

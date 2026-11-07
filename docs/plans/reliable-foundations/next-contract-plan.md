@@ -35,7 +35,7 @@ dependency needs a new decision; a gate below is not a request for repeated appr
 | G2: owner and presentation — recorded NC02 | One logical **Links** owner; create and resolve are API roles inside it, a later analytics consumer may be a worker role. Roles may share one deployable; role ≠ owner ≠ process. Default collapsed owner tile, mouse expansion of roles. Preserve existing element IDs as role/resource references where possible; do not merge legacy owners automatically. | NC02; a concrete small owner/expanded-role sketch is reviewed at both sizes before coding presentation. |
 | G3: contracts and policies — recorded NC03 | Local immutable finite records with exact IDs/versions/schema hashes. Select a profile and bounded parameters; no route/entity/policy DSL or arbitrary expressions. Start with exact caller/receiver version equality; compatible evolution is a later explicit rule. | NC03; schema/command budget audit before adding tools. |
 | G4: version boundary — recorded NC01 | New stored design schema and blueprint **v3**, with explicit reader/writer migration. Existing default `/blueprint` stays v2 during rollout; explicit `?version=3` opts in. Legacy-only designs retain exact v2 meaning. A design using v3-only semantics refuses v2 export with a structured unsupported-content list, never a silently lossy success. Default-version switch is a separate final-review decision. | NC01; review API consumer impact and migration fixtures first. |
-| G5: first consistency policy | Authoritative primary lookup; immutable target; cache entries never outlive expiry; no negative cache initially, no browser/CDN redirect-response cache. Cache miss/outage falls back to authority; bounded outage protection is part of the profile. Create success follows durable commit; immediate resolve must find it. | NC04; cache fallback/overload behavior and finite parameter bounds are pinned in the profile. |
+| G5: first consistency policy — recorded NC04 | Authoritative primary lookup; immutable target; cache entries never outlive expiry; no negative cache initially, no browser/CDN redirect-response cache. Cache miss/outage falls back to authority; bounded outage protection is part of the profile. Create success follows durable commit; immediate resolve must find it. | NC04; cache fallback/overload behavior and finite parameter bounds are pinned in the profile. |
 | G6: runtime profile boundary | Recommend one future TypeScript/container, PostgreSQL, Redis-compatible cache and one messaging adapter. Jeeves records unresolved template bindings until an actual pinned manifest exists. Auth verification and provider-specific runtime adapters remain mandatory manifest requirements, not guessed implementations. | NC05 report can exist without a manifest; actual support requires a selected manifest. Backend repository/conventions remain unknown. |
 | G7: expansion | Finish NC14 review of the small TinyURL contract and then its separate backend proof before considering messaging/video/checkout expansion. Expansion needs its own accepted scope. Mini/live strict acceptance is still an evidence gate; no additional live paid run is implicitly authorized here. | After NC06/NC14 and backend proof; NC07+ stay deferred. |
 | G8: same-owner return | Semantic relationships and finite state/result contracts may revisit one owner; overview/journey steps reference that same identity. Acyclic lane projection remains a view invariant. A repeated reference is visibly the same participant, not a second owner or generated service. | NC08/NC09; review one concrete Video → job → Transcoder → result → Video projection first. |
@@ -199,6 +199,19 @@ never a guessed implementation. Display a compact operation card and inspect det
 This is contract validation, not an HTTP runtime or a route/schema programming editor.
 
 ### NC04 — Resolve-link, expiry and a compatible lookup policy
+
+**Progress, 2026-11-07:** G5 coordinator review accepted GET `/links/{code}`, canonical 16-byte/
+22-character base64url, 307 Location, explicit 400/404/410/503 schemas and all-outcome no-store.
+New immutable Resolve/positive-cache records retain NC03 Create identity. Fixed policy clamps
+positive entries to expiry with 300s maximum, 50 ms cache phases, 1000 ms primary, 64 actual primary
+calls shared per runtime instance and 1200 ms total monotonic deadline. Cache failure falls back;
+fill failure preserves timely success; primary failure never becomes 404. Stable 410 retains
+minimal durable expiration evidence indefinitely; no code reuse. Static source/read/cache-fill
+permissions, applicable settings/modules/CDN and selected-profile namespace agreement now check
+against exact declarations. Shared mouse/chat form/preview/history, operation selection and v3
+export remain finite and preserve legacy designs. Generic SQL/Redis connection controls are not
+expanded. Coordinator reviewed real 1280 form/preview. Backend/adapters/clocks/templates/runtime
+proof remain unavailable; no preset or owner project migration. [Complete decisions](../../studio-contracts.md).
 
 **Depends:** NC03/G5. Add public resolve, unknown/expired and dependency failure contracts. Proposed
 response is a temporary redirect with explicit no-response-cache policy; target stays immutable

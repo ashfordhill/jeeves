@@ -12,7 +12,7 @@ import {
   buildOperationsCommand,
   buildOwnershipCommand,
   buildStudioCommand,
-  createLinkOperation,
+  contractRecords,
   type DesignDocument,
   type DesignScope,
   designOperations,
@@ -30,6 +30,7 @@ import {
   listStudioPatterns,
   type OperationInput,
   operationContractFindings,
+  operationRecords,
   operationsCommandSchema,
   ownershipCommandSchema,
   ownershipFindings,
@@ -117,7 +118,7 @@ Reviewed design patterns (local catalog ${studioPatternCatalogVersion}): before 
 
 Review before saving: declareReviewScope explicitly selects this turn's pattern IDs, applicable checklist IDs, assumptions and custom obligations. It replaces only turn-local review metadata, never design settings. Retrieval does not select scope. Do not select variant checks (such as finite stock) unless they apply; use an empty checklist for topology-only scope. reviewDesign is read-only: inspect staged additions/updates/removals, targeted findings, assumptions and unsupported obligations. All selected behavior checks without typed contracts stay "not specified", never "verified"; no labels or module names prove payload semantics, transitions or side effects. A fresh review is sent back before edits commit even if you end your response. You may repair at most two response batches after receiving a review, within the normal 16-round limit; review again after edits. Warnings remain saveable: fix represented facts or explicitly report what remains. askUser still ends the turn immediately. The server appends the actual saved-edit and unresolved-review result.
 
-Exact create operation contracts: use describeOperation with availableOperations exact ref before binding Create link. configureOperations previews then applies the exact complete receiver/caller declarations; preserve unrelated rows and unknown refs. The immutable profile requires trusted verified issuer+subject, HTTP(S) normalization, atomic durable link+success-key commit, 24-hour replay, 16 random bytes encoded as 22 base64url characters, five total allocation attempts including the initial attempt, and a single total 10-second deadline. Entry identity includes canonical ID/lane/element; service calls use real role/edge endpoints. Never infer capabilities from tile names/modules or treat raw headers as verified principals. Missing verifier/retention/unknown refs remain targeted unresolved; no auth runtime or template is available. Known auth/idempotency/schema/timeout contradictions refuse. Operations belong to the same role/owner and add no fake service. Resolve/expiry/cache policies remain separate.
+Exact finite operation contracts: use describeOperation with availableOperations or availableCachePolicies exact ref before binding Create/Resolve link. configureOperations previews then applies the exact complete receiver/caller declarations; preserve unrelated rows and unknown refs. The Create link contract requires trusted verified issuer+subject, HTTP(S) normalization, atomic durable link+success-key commit, 24-hour replay, 16 random bytes encoded as 22 base64url characters, five total allocation attempts including the initial attempt, and a single total 10-second deadline. Entry identity includes canonical ID/lane/element; service calls use real role/edge endpoints. Never infer capabilities from tile names/modules or treat raw headers as verified principals. Missing verifier/retention/unknown refs remain targeted unresolved; no auth runtime or template is available. Known auth/idempotency/schema/timeout contradictions refuse. Operations belong to the same role/owner and add no fake service. Resolve is public GET /links/{code}: 307 Location, 400 invalid, 404 unknown, 410 expired, 503 dependency/overload; no-store on EVERY outcome. Canonical 22-character 16-byte base64url ends in A/Q/g/w; no query/body input. Immutable target, indefinite expiry evidence and no code reuse. Exact links-positive-cache policy: 300 s maximum clamped to record expiry, 50 ms cache phases, 1000 ms primary, 64 actual primary calls shared per instance with admission retained until settled/cancelled, 1200 ms total deadline never reset. Cache timeout/malformed payload falls back to fresh primary; DB failure is 503, fill failure preserves timely success. No retries/L1/negative/HTTP response cache. Source read and cache read-write require exact same-owner source/projection grants. Contradictory represented TTL, replica, module, CDN, timeout, protocol/security/channel settings refuse; never rewrite settings. Selected one-namespace profile requires all known create/resolve bindings to share source and owner. Clock/adapters/templates/runtime evidence remain unavailable.
 
 Explicit logical ownership and access: configureOwnership is the narrow mouse/chat command. First preview the exact complete declarations, then apply that same preview; edit/removal/transfer must retain unrelated facts and show every affected grant/dependency. Existing element IDs identify API/worker roles belonging to a logical owner; roles can share a deployable, which grants nothing. Resources declare one logical authority and source/projection intent independently from legacy inferred writer. Explicit same-owner reads stay reads. Cache read and fill needs read-write. Foreign writes refuse; foreign reads require a deliberate published-read contract or an owned projection, never accidental table access. These are declarations; exact operation bindings are edited separately and runtime authorization remains unverified. No owners or grants follow from names, module prose or packages. Missing declarations stay unresolved.
 
@@ -184,9 +185,9 @@ const schemas = {
 type ToolName = keyof typeof schemas;
 const descriptions: Record<ToolName, string> = {
   describeOperation:
-    "Read the one immutable Create link operation with exact operation/schema hashes, auth, idempotency, allocation, errors and total deadline. Unknown exact refs remain unresolved, with no substitution. No HTTP runtime or verifier is supplied.",
+    "Read an exact immutable Create/Resolve operation or positive-cache policy with schema/behavior hashes, outcomes and fixed bounds. Unknown exact refs remain unresolved, with no substitution. No HTTP runtime or verifier is supplied.",
   configureOperations:
-    "Preview then stage a complete bounded replacement of exact API receiver implementations and entry/service-call expectations. Preserve unrelated rows. Apply must match the latest preview; explicit v3 upgrade for legacy designs. Bind canonical IDs, refine explicit source-database write grants, and retain unknown refs as unresolved. Verifier/template/runtime availability remains none.",
+    "Preview then stage a complete bounded replacement of exact API receiver implementations and entry/service-call expectations. Preserve unrelated rows. Apply must match the latest preview; explicit v3 upgrade for legacy designs. Bind canonical IDs, refine source read/write and cache read-and-fill grants, and retain unknown refs as unresolved. Templates/runtime evidence remain none; Create verifier availability is separate.",
   listStudioDefinitions:
     "List the tile types with their kinds, the module kinds and the lane caps. Design only; none supplies a runtime or verification.",
   describeStudioDefinition:
@@ -328,9 +329,10 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
     availableProfileDefault: tinyurlDesignScope(),
     declaredOperations: designOperations(design),
     operationFindings: operationContractFindings(design),
-    availableOperations: [
-      { ...createLinkOperation.ref, name: createLinkOperation.definition.name },
-    ],
+    availableOperations: operationRecords.map((x) => ({ ...x.ref, name: x.definition.name })),
+    availableCachePolicies: contractRecords
+      .filter((x) => !operationRecords.some((record) => sameContractRef(record.ref, x.ref)))
+      .map((x) => ({ ...x.ref, name: x.definition.name })),
     declaredOwnership: designOwnership(design),
     ownershipFindings: ownershipFindings(design),
     ownershipMeaning:
@@ -511,17 +513,18 @@ export class Workspace {
       case "describeOperation": {
         const { ref } = parsed.data as z.infer<typeof schemas.describeOperation>;
         this.log(tool, true, "Read exact operation catalog reference");
-        return sameContractRef(ref, createLinkOperation.ref)
+        const record = contractRecords.find((x) => sameContractRef(ref, x.ref));
+        return record
           ? {
               status: "known",
-              record: createLinkOperation,
+              record,
               templateAvailability: "none",
               runtimeVerification: "none",
             }
           : {
               status: "unresolved",
               ref,
-              note: "No exact local operation record; no substitution.",
+              note: "No exact local operation or cache policy record; no substitution.",
             };
       }
       case "configureOperations":

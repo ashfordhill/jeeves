@@ -314,7 +314,7 @@ to its report and lists each changed/removed binding and grant. A stale preview 
 | --- | --- |
 | `owners[]` | Up to 50 distinct `{id, name}` records. Slug ID, trimmed name 1–120 chars. Logical responsibility, independent of studio packages. |
 | `roles[]` | Up to 500 distinct existing application element IDs: `{element, owner, kind: api/worker, deployable?}`. Owner must be declared; optional deployable is a slug assignment, supplies no permission and implies no running process. |
-| `resources[]` | Up to 500 distinct existing database/cache/storage/search element IDs: `{element, authority, kind: source}` or `{element, authority, kind: projection, source}`. Authority is a declared logical owner. A projection names a different declared source resource, with its own authority; projection chains/self references refuse. Population/freshness/failure behavior remains unresolved. |
+| `resources[]` | Up to 500 distinct existing database/cache/storage/search element IDs: `{element, authority, kind: source}` or `{element, authority, kind: projection, source}`. Authority is a declared logical owner. A projection names a different declared source resource, with its own authority; projection chains/self references refuse. Population/freshness/failure behavior remains unresolved unless the exact compatible positive-cache contract below refines this specific projection. |
 | `grants[]` | Up to 500 distinct role/resource pairs: `{role, resource, access: read/write/read-write, boundary?: published-read}`. Both endpoints need declarations. This records permission intent, not an implemented ACL. |
 | `dependencies[]` | Up to 500 distinct canonical application → store connection IDs: `{connection, access: read/write/read-write}`. The actual endpoints determine the role/resource; labels do not. |
 
@@ -343,8 +343,9 @@ Legacy topology warnings still describe the inferred writer approximation. Targe
 ## Exact operation contracts (schema v3)
 
 **Operation contracts** in the inspector edits the optional top-level `operations` allowlist.
-Choose the immutable **Create link · v1** record, an existing canonical API role and its
-authoritative database write connection, explicit 24-hour successful-key retention, and existing
+Choose a finite operation and canonical API role. Create uses its authoritative database write
+connection and explicit 24-hour successful-key retention. Resolve uses its source primary read
+and positive-cache read-and-fill connections plus the pinned policy. Both bind existing
 entry/service callers. Receiver/call IDs are separate stable binding identities. There is no
 route/schema/policy editor, auth verifier implementation or arbitrary configuration map.
 
@@ -361,3 +362,16 @@ role/owner. Generic configuration does not select one. Removal/transfer previews
 dependent operation clears. See [finite operation contracts](studio-contracts.md) for the complete
 field shapes, hashing, normalization, idempotency, allocation and error semantics. V3 retains all
 rows/findings; default v2 refuses their exact paths. Templates/runtime verification remain none.
+
+
+The tagged receiver binding is either the unchanged NC03
+`{kind:"create-link",storeConnection,successRetentionHours:null|24,authVerifier:null|exactRef}`
+or NC04 `{kind:"resolve-link",storeConnection,cacheConnection:null|id,cachePolicy:null|exactRef}`.
+Resolve's only known policy is Positive cache · clamp to record expiry v1. Null is unspecified.
+The form selects both canonical connections, declares/clears the pinned policy and exposes its
+exact ID/version/hash for inspection or an unresolved future reference. No numeric policy DSL,
+route/schema editor or new generic connection settings are added. Resolve's exact deadline is
+1200 ms; Create retains 10000 ms. A shared role can leave the optional global request timeout empty
+to retain each operation deadline. Explicit global/caller deadline conflicts refuse. All-outcome
+no-store, primary routing, cache read-write grants, TTL maximums and applicable typed module/CDN
+contradictions are checked. [Complete policy and bounds](studio-contracts.md#resolve-link-v1-and-positive-cache-v1).

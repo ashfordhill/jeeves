@@ -1,0 +1,68 @@
+{
+  "ref": {
+    "id": "links-positive-cache",
+    "version": "1.0.0",
+    "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a"
+  },
+  "definition": {
+    "id": "links-positive-cache",
+    "version": "1.0.0",
+    "name": "Positive cache · clamp to record expiry",
+    "schemas": {
+      "record": {
+        "ref": {
+          "id": "links-positive-cache-record",
+          "version": "1.0.0",
+          "sha256": "e3d4f9cef0e9ae8f9653cf2e5944a96402da07c130d72a70a2446fd5e9fbd17e"
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{21}[AQgw]$",
+              "minLength": 22,
+              "maxLength": 22
+            },
+            "destination": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "expiresAt": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            }
+          },
+          "required": ["code", "destination", "expiresAt"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "behavior": {
+      "source": "exact same-owner authoritative source database as resolve",
+      "population": "Resolver reads and fills its own projection; source access read, cache access read-write. Cache is internal record storage, never an HTTP response cache.",
+      "maxTtlSeconds": 300,
+      "cacheOperationMs": 50,
+      "primaryOperationMs": 1000,
+      "maxPrimaryInFlightPerInstance": 64,
+      "totalDeadlineMs": 1200,
+      "deadlines": "Start one monotonic 1200ms deadline at request acceptance, covering validation, cache read, primary lookup, optional fill and response decision; never reset it. Each operation is capped by min(its phase cap, remaining total time). No operation starts with no budget. Primary admission is immediate: at most64 actual in-flight primary resolve calls shared across all resolve bindings per runtime instance, no unbounded wait/queue, no retries. A timed-out primary call retains its slot until cancellation/completion is confirmed; timeout does not free an ongoing call.",
+      "admission": "No primary slot returns overloaded503 immediately after a cache miss/failure. Total deadline or primary phase deadline failure is dependency-failure503, never unknown404.",
+      "record": "Validate the closed record schema, canonical requested code equality, normalized HTTP(S) destination without credentials and supported normalized UTC-millisecond expiry before using a hit. Malformed/unsupported records are cache failures and fall back within budget. Only a trusted namespace-isolated cache may supply records; schema validation alone does not authenticate a poisoned payload.",
+      "expiry": "Wall-clock UTC decides expiresAt <= now; monotonic time measures deadlines. Recheck wall-clock expiry on every validated hit and immediately before a redirect decision. Expired positive records yield410 and never redirect. A nonexpiring record uses null.",
+      "fill": "At the actual write instant, set absolute cache expiry no later than min(write wall-clock +300s, record expiresAt), omitting the second bound for null. Skip nonpositive remaining life. Atomically write value+expiry, never round expiry upward or refresh beyond record expiry. Validate again before redirect; expiry crossed during fill returns410.",
+      "failure": "Miss, loss, outage or malformed cache payload falls back once to primary within the same deadline. No negative cache, stale-on-error serving or in-process L1. A validated unexpired cache hit may succeed without primary. Primary outage/timeout/unknown result yields503, never404.",
+      "fillFailure": "Fill is optional: skip if insufficient remaining budget and bound it by min(50ms, remaining budget with time reserved for the response decision). Cache fill failure cannot replace a timely authoritative success. Immediately before any response decision, an exhausted total deadline yields dependency-failure503, including after fill; otherwise an ordinary fill failure or skip preserves authoritative success. Never await fill beyond the response deadline; bounded adapter cancellation/completion is future evidence.",
+      "clockEvidence": "Finite intent only: synchronized wall-clock/skew handling, monotonic deadline propagation, cancellation, absolute-expiry precision, trusted cache isolation and real-adapter concurrency remain unavailable runtime evidence."
+    },
+    "sources": [
+      "https://redis.io/docs/latest/commands/set/",
+      "https://www.postgresql.org/docs/current/transaction-iso.html"
+    ],
+    "sourceReview": {
+      "date": "2026-11-07",
+      "meaning": "Sources inform expiration and primary visibility; bounds and clamp policy are application choices, with no selected runtime adapter."
+    }
+  }
+}

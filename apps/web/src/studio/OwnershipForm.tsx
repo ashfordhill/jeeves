@@ -321,7 +321,8 @@ export function OwnershipForm({
             <>
               <p>
                 Authority is explicit and separate from the store's legacy owner. A projection
-                declares its source; population and freshness remain unspecified.
+                declares its source; population and freshness need an exact compatible operation
+                policy.
               </p>
               {stores.map((binding) => {
                 const id = binding.element,

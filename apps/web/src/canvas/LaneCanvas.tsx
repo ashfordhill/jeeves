@@ -20,6 +20,7 @@ import {
   designOperations,
   designOwnership,
   knownCreateSignature,
+  knownResolveSignature,
   LANE_ACTOR,
   type LaneGraph,
   laneActionName,
@@ -161,13 +162,20 @@ export function LaneCanvas({
                     name={name(node.id)}
                     warnings={warnings.get(node.id)}
                     operation={
-                      operations.receivers.some((x) => x.role === node.id)
-                        ? operations.receivers.some(
-                            (x) => x.role === node.id && knownCreateSignature(x.implementation),
-                          )
+                      operations.receivers.filter((x) => x.role === node.id).length > 1
+                        ? `${operations.receivers.filter((x) => x.role === node.id).length} declared operations`
+                        : operations.receivers.some(
+                              (x) => x.role === node.id && knownCreateSignature(x.implementation),
+                            )
                           ? "Create link · v1"
-                          : "Unresolved operation"
-                        : undefined
+                          : operations.receivers.some(
+                                (x) =>
+                                  x.role === node.id && knownResolveSignature(x.implementation),
+                              )
+                            ? "Resolve link · v1"
+                            : operations.receivers.some((x) => x.role === node.id)
+                              ? "Unresolved operation"
+                              : undefined
                     }
                     owner={
                       ownership.owners.find(

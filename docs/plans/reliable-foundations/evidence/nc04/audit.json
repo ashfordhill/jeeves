@@ -1,0 +1,128 @@
+{
+  "version": "nc04-resolve-v1",
+  "tools": [
+    {
+      "tool": "describeOperation",
+      "properties": 4,
+      "enums": 0,
+      "depth": 3,
+      "bytes": 745
+    },
+    {
+      "tool": "configureOperations",
+      "properties": 74,
+      "enums": 17,
+      "depth": 7,
+      "bytes": 7557
+    },
+    {
+      "tool": "listStudioDefinitions",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 298
+    },
+    {
+      "tool": "describeStudioDefinition",
+      "properties": 1,
+      "enums": 16,
+      "depth": 2,
+      "bytes": 481
+    },
+    {
+      "tool": "listStudioPatterns",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 370
+    },
+    {
+      "tool": "describeStudioPattern",
+      "properties": 1,
+      "enums": 4,
+      "depth": 2,
+      "bytes": 529
+    },
+    {
+      "tool": "getDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 369
+    },
+    {
+      "tool": "configureDesignScope",
+      "properties": 17,
+      "enums": 18,
+      "depth": 5,
+      "bytes": 2497
+    },
+    {
+      "tool": "configureOwnership",
+      "properties": 28,
+      "enums": 13,
+      "depth": 5,
+      "bytes": 3623
+    },
+    {
+      "tool": "applyStudioCommands",
+      "properties": 427,
+      "enums": 538,
+      "depth": 9,
+      "bytes": 50591
+    },
+    {
+      "tool": "validateDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 239
+    },
+    {
+      "tool": "declareReviewScope",
+      "properties": 9,
+      "enums": 4,
+      "depth": 5,
+      "bytes": 1564
+    },
+    {
+      "tool": "reviewDesign",
+      "properties": 0,
+      "enums": 0,
+      "depth": 1,
+      "bytes": 433
+    },
+    {
+      "tool": "askUser",
+      "properties": 3,
+      "enums": 0,
+      "depth": 3,
+      "bytes": 562
+    }
+  ],
+  "instructionsBytes": 14941,
+  "tinyurlContextBytes": 16633,
+  "toolsHash": "1036668386b0ad2bc2d9a0b4218af4ae6cae44ce8e9f1197d0e0f6a57de2f738",
+  "instructionsHash": "e5dafd4125ac3537f520eb63b462522211e87298fdc56a85aa59a9346a78a146",
+  "priorRF06ToolsHash": "170213ff1ad633d3bd139a2ae05d884643ed4551f1b1a269c9314841b0a6ec1d",
+  "note": "No live calls. New instructions/context/tool make old RF06 request hashes intentionally different. Create and Resolve scripted real-ChatService regressions each use 5 responses: preview/apply/review, two preview/apply/review repairs, refused third apply plus read-only previews, final response. This is plumbing effort, not live-model quality/cost evidence.",
+  "requestComparison": {
+    "baseline": {
+      "instructions": 13886,
+      "tinyurlContext": 16293,
+      "strictTools": 69051
+    },
+    "current": {
+      "instructions": 14941,
+      "tinyurlContext": 16633,
+      "strictTools": 69873
+    },
+    "note": "Same default schema2 TinyURL; actual provider strict wire schemas. UTF-8 bytes, not tokens/cost/quality.",
+    "delta": {
+      "instructions": 1055,
+      "tinyurlContext": 340,
+      "strictTools": 822
+    }
+  },
+  "strictToolsHash": "e7e2c6579bf04fd9f8d1aa07d4b1442d15e52355005ae16e31ecf9e454ce20ff"
+}

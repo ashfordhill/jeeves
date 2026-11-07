@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "entryMoveExactPreviewUndo": true,
+      "sourceAuthorityTransferFourClearsUndo": true,
+      "isolatedCacheEdgeRemovalTwoClearsUndo": true,
+      "compatibleProjectionSummary": true
+    },
+    {
+      "viewport": "1280x800",
+      "entryMoveExactPreviewUndo": true,
+      "sourceAuthorityTransferFourClearsUndo": true,
+      "isolatedCacheEdgeRemovalTwoClearsUndo": true,
+      "compatibleProjectionSummary": true
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "id": "3c45e218-b432-44ad-a8a5-61b8ed339ac8",
+      "status": 204
+    },
+    {
+      "id": "1ccbe8cb-946d-4830-8982-3d471feec633",
+      "status": 204
+    }
+  ]
+}

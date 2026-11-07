@@ -1,0 +1,55 @@
+{
+  "results": [
+    {
+      "viewport": "1440x900",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "legacyContradictionsRefused": true,
+      "explicitMouseSettingAlignment": true,
+      "resolveAndCreateExactRefs": true,
+      "mouseResolveSelectionReachesActualChat": true,
+      "viewActionsPreserveFullExport": true,
+      "unknownPolicyRoundtrip": true,
+      "nullCacheConnectionUndo": true,
+      "cacheFillReadGrantRefused": true,
+      "ownerTransferExactClearsUndo": true,
+      "cacheRemovalExactClearsUndo": true,
+      "staleRefusalPreservesCustomScope": true,
+      "roleRemovalExactClearsUndo": true,
+      "reloadExact": true
+    },
+    {
+      "viewport": "1280x800",
+      "defaultTiles": 11,
+      "defaultLines": 12,
+      "legacyContradictionsRefused": true,
+      "explicitMouseSettingAlignment": true,
+      "resolveAndCreateExactRefs": true,
+      "mouseResolveSelectionReachesActualChat": true,
+      "viewActionsPreserveFullExport": true,
+      "unknownPolicyRoundtrip": true,
+      "nullCacheConnectionUndo": true,
+      "cacheFillReadGrantRefused": true,
+      "ownerTransferExactClearsUndo": true,
+      "cacheRemovalExactClearsUndo": true,
+      "staleRefusalPreservesCustomScope": true,
+      "roleRemovalExactClearsUndo": true,
+      "reloadExact": true
+    }
+  ],
+  "errors": [],
+  "expectedConflicts": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "cleanup": [
+    {
+      "id": "3ed722b1-b2dc-4605-ad46-2202318be6af",
+      "status": 204
+    },
+    {
+      "id": "3d66a51a-d3d8-43c2-a8a1-38045ca57e74",
+      "status": 204
+    }
+  ]
+}

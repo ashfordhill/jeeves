@@ -8,6 +8,16 @@ exports[`exact finite Create link declarations > preserves schema2 and explicit 
       "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f",
       "version": "1.0.0",
     },
+    {
+      "id": "links-resolve",
+      "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a",
+      "version": "1.0.0",
+    },
+    {
+      "id": "links-positive-cache",
+      "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a",
+      "version": "1.0.0",
+    },
   ],
   "operationFindings": [
     {

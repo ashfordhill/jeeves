@@ -1,0 +1,289 @@
+{
+  "ref": {
+    "id": "links-resolve",
+    "version": "1.0.0",
+    "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+  },
+  "definition": {
+    "id": "links-resolve",
+    "version": "1.0.0",
+    "name": "Resolve link",
+    "schemas": {
+      "request": {
+        "ref": {
+          "id": "links-resolve-request",
+          "version": "1.0.0",
+          "sha256": "2a3427d0d9a10c747225225a8727093beec5d3e9a1a46e4789f87f83722afe63"
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{21}[AQgw]$",
+                  "minLength": 22,
+                  "maxLength": 22
+                }
+              },
+              "required": ["code"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      "success": {
+        "ref": {
+          "id": "links-resolve-success",
+          "version": "1.0.0",
+          "sha256": "5a78b078aea1bd8a0d7dc58658f2ac3174cc2f7144f74abb848a40a573c48ab0"
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": 307
+            },
+            "headers": {
+              "type": "object",
+              "properties": {
+                "Cache-Control": {
+                  "const": "no-store"
+                },
+                "Location": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              },
+              "required": ["Cache-Control", "Location"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "null"
+            }
+          },
+          "required": ["status", "headers", "body"],
+          "additionalProperties": false
+        }
+      },
+      "errors": {
+        "ref": {
+          "id": "links-resolve-errors",
+          "version": "1.0.0",
+          "sha256": "44be0369ab407aadfa05d5771fdd756f747a791357e48ab34339e1bbda3c50a1"
+        },
+        "definition": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 400
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Cache-Control": {
+                      "const": "no-store"
+                    }
+                  },
+                  "required": ["Cache-Control"],
+                  "additionalProperties": false
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "invalid-input"
+                    },
+                    "retry": {
+                      "const": "fix-request"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "headers", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 404
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Cache-Control": {
+                      "const": "no-store"
+                    }
+                  },
+                  "required": ["Cache-Control"],
+                  "additionalProperties": false
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "unknown"
+                    },
+                    "retry": {
+                      "const": "never"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "headers", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 410
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Cache-Control": {
+                      "const": "no-store"
+                    }
+                  },
+                  "required": ["Cache-Control"],
+                  "additionalProperties": false
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "expired"
+                    },
+                    "retry": {
+                      "const": "never"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "headers", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 503
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Cache-Control": {
+                      "const": "no-store"
+                    }
+                  },
+                  "required": ["Cache-Control"],
+                  "additionalProperties": false
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "dependency-failure"
+                    },
+                    "retry": {
+                      "const": "retry-later"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "headers", "body"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": 503
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Cache-Control": {
+                      "const": "no-store"
+                    }
+                  },
+                  "required": ["Cache-Control"],
+                  "additionalProperties": false
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": "overloaded"
+                    },
+                    "retry": {
+                      "const": "retry-later"
+                    }
+                  },
+                  "required": ["code", "retry"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["status", "headers", "body"],
+              "additionalProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "behavior": {
+      "transport": {
+        "method": "GET",
+        "path": "/links/{code}",
+        "timeoutMs": 1200,
+        "responseCacheControl": "no-store",
+        "response": "307 temporary redirect with Location on success, null body. Every outcome, including invalid/unknown/expired/dependency/overload and transport failure responses at this boundary, carries Cache-Control:no-store. No browser/CDN response storage; internal positive records are distinct."
+      },
+      "authentication": "Public; no credential, verified-user or service-identity prerequisite. Do not infer security from public reachability. HTTPS or HTTP transport intent is checked separately; production transport security requires a future adapter.",
+      "responseEnvelope": "Normalized operation-owned response envelope only: closed headers contain required contract headers, not the entire wire header set; Date, Content-Length and other transport headers may exist. Success body:null means zero response bytes, never JSON null. Error bodies are JSON; transport Content-Type is outside this bounded header envelope.",
+      "requestEnvelope": "Closed operation-owned path envelope only. Match exactly one raw ASCII code segment at /links/{code}, no percent encoding, slash or padding. Reject a nonempty query string or request body with400 on the matched operation. Transport/auth headers are outside this envelope. No configurable routes.",
+      "validation": "Exactly22 unpadded base64url characters for16 bytes:21 alphabet characters and final character A,Q,g or w (the unused four low bits are zero). Reject noncanonical aliases, wrong length and percent-encoded input with400 before dependencies. Create v1 actual allocation uses this encoding; its frozen broader success schema is unchanged.",
+      "lookup": "After optional positive-cache read, perform one fresh authoritative primary lookup of the same namespace source as Create. No replica routing or pre-create snapshot. A durable201 must be immediately resolvable unless its optional expiry has elapsed. A confirmed primary absence yields404; failure, timeout or unknown result yields503.",
+      "expiry": "Immutable destination and expiry; wall-clock expiresAt <= now yields410 on hits, primary results and final response decision. Retain durable expired-code evidence indefinitely (expired row or tombstone containing code+expiry) so cleanup never turns410 into404. Never reuse allocated codes, including expired codes. No destination update/disable API.",
+      "cachePolicy": {
+        "id": "links-positive-cache",
+        "version": "1.0.0",
+        "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a"
+      },
+      "errors": {
+        "invalid-input": 400,
+        "unknown": 404,
+        "expired": 410,
+        "dependency-failure": 503,
+        "overloaded": 503
+      },
+      "limits": "Declarative contract only, no runtime handler/cache/clock/adapter/template or verification evidence."
+    },
+    "sources": [
+      "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "https://www.rfc-editor.org/rfc/rfc9111.html",
+      "https://www.postgresql.org/docs/current/transaction-iso.html"
+    ],
+    "sourceReview": {
+      "date": "2026-11-07",
+      "meaning": "HTTP status and no-store semantics come from RFCs; route, stable410 retention, primary consistency and bounded cache policy are application choices."
+    }
+  }
+}

@@ -59,7 +59,7 @@ and adds:
 | `profileStatus` | `known`, `unresolved` or `unspecified`; known means the scope record exists, never that its contracts are implemented. |
 | `unresolvedRequirements` | Namespaced `source` (`profile`, `requirement`, `contract`, `custom`), ID, requirement, criticality and optional targets. Includes unspecified legacy requirements, required incompatible behavior, missing contracts and unresolved custom behavior. Missing targets are diagnostic text; the stored original requirement survives. |
 | `ownership`, `ownershipStatus`, `ownershipFindings` | Complete explicit owners, canonical element roles, source/projection authority, role grants and dependency requests, plus targeted unresolved/refused declarations. Rows sort deterministically; status is declared or unspecified, never verified. |
-| `operations`, `operationCatalog`, `operationFindings` | Complete exact receiver/caller bindings, immutable local operation identity and targeted structural/readiness findings. Binding IDs are distinct from role/edge IDs; unknown refs remain unknown. [Finite contracts](studio-contracts.md). |
+| `operations`, `operationCatalog`, `operationFindings` | Complete exact receiver/caller bindings, immutable local operation and cache-policy identities and targeted structural/readiness findings. Binding IDs are distinct from role/edge IDs; unknown refs remain unknown. [Finite contracts](studio-contracts.md). |
 | `legacyOwnership`, `roleMeaning` | Qualify preserved `resources[].owner` as inferred writer and services as canonical application tiles, which are not independent logical owners or necessarily separate processes. |
 | `legacyAccess` | `inferred-from-ownership; not a declared operation grant`. Existing access values do not gain permission semantics. |
 | `templateAvailability`, `runtimeVerification` | Both `none`. Selecting a profile supplies neither. |
@@ -76,7 +76,7 @@ Undo/Redo restore the complete original schema and declarations as a new revisio
 The only known profile is `tinyurl-create-resolve@1.0.0`: one public namespace, immutable HTTP(S)
 destinations, authenticated create, public resolve and optional expiry. Required custom slugs,
 mutable destinations, disable/management, reputation, quotas or exact analytics remain visible
-and block this narrow scope. Selecting it supplies no declarations; ownership completeness uses targeted NC02 findings. NC03 checks exact Create link declarations and caller bindings, retaining verifier/access gaps; resolve and expiry/cache operation contracts remain not specified. This is no readiness certification or implementation.
+and block this narrow scope. Selecting it supplies no declarations; ownership completeness uses targeted NC02 findings. NC03/NC04 check exact Create/Resolve caller bindings, source/owner namespace agreement and positive-cache/expiry/settings intent, retaining targeted gaps and unknown refs. This is no readiness certification or implementation.
 
 ## Example
 
@@ -158,6 +158,6 @@ read. Its head, and three of its connections (a publish, a read and a write):
 
 
 Chat turn-only preview/review scope and assumptions are conversation metadata, distinct from persistent `scope` in v3. The review
-reuses these findings and checks declared finite Create link signatures and reports remaining behavior contracts as **not specified**; it does not
+reuses these findings and checks declared finite Create/Resolve signatures and positive-cache policy and reports remaining behavior contracts as **not specified**; it does not
 change blueprint version 2 or certify application completeness, template support or runtime
 behavior. A worker's outgoing call/publication/store dependency only expresses topology.

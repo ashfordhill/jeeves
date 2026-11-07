@@ -1,0 +1,152 @@
+{
+  "receivers": [
+    {
+      "role": "shorten",
+      "implementation": {
+        "operation": {
+          "id": "links-create",
+          "version": "1.0.0",
+          "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+        },
+        "request": {
+          "id": "links-create-request",
+          "version": "1.0.0",
+          "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80"
+        },
+        "success": {
+          "id": "links-create-success",
+          "version": "1.0.0",
+          "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4"
+        },
+        "errors": {
+          "id": "links-create-errors",
+          "version": "1.0.0",
+          "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c"
+        },
+        "auth": "verified-principal",
+        "idempotency": "principal-operation-key",
+        "timeoutMs": 10000
+      },
+      "id": "create-link",
+      "binding": {
+        "kind": "create-link",
+        "storeConnection": "shorten-db",
+        "successRetentionHours": 24,
+        "authVerifier": null
+      }
+    },
+    {
+      "id": "resolve-link",
+      "role": "redirect",
+      "implementation": {
+        "operation": {
+          "id": "links-resolve",
+          "version": "1.0.0",
+          "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+        },
+        "request": {
+          "id": "links-resolve-request",
+          "version": "1.0.0",
+          "sha256": "2a3427d0d9a10c747225225a8727093beec5d3e9a1a46e4789f87f83722afe63"
+        },
+        "success": {
+          "id": "links-resolve-success",
+          "version": "1.0.0",
+          "sha256": "5a78b078aea1bd8a0d7dc58658f2ac3174cc2f7144f74abb848a40a573c48ab0"
+        },
+        "errors": {
+          "id": "links-resolve-errors",
+          "version": "1.0.0",
+          "sha256": "44be0369ab407aadfa05d5771fdd756f747a791357e48ab34339e1bbda3c50a1"
+        },
+        "auth": "public",
+        "idempotency": "none",
+        "timeoutMs": 1200
+      },
+      "binding": {
+        "kind": "resolve-link",
+        "storeConnection": "redirect-db",
+        "cacheConnection": "redirect-cache",
+        "cachePolicy": {
+          "id": "links-positive-cache",
+          "version": "1.0.0",
+          "sha256": "968a31ff6b9a2c93d9ceb800e9fe047ce9388b3c151f8bc5300849173fa6872a"
+        }
+      }
+    }
+  ],
+  "calls": [
+    {
+      "caller": {
+        "kind": "entry",
+        "entry": "upload-shorten",
+        "lane": "upload",
+        "element": "shorten"
+      },
+      "expects": {
+        "operation": {
+          "id": "links-create",
+          "version": "1.0.0",
+          "sha256": "bac402c10fbee06292b333d35b698fa96c9f6baa88062a7e53b11bdfad18612f"
+        },
+        "request": {
+          "id": "links-create-request",
+          "version": "1.0.0",
+          "sha256": "884da0513e3bc20d59be8762ef1efd83783d1e84cf0f489d0731935ce8413a80"
+        },
+        "success": {
+          "id": "links-create-success",
+          "version": "1.0.0",
+          "sha256": "15fa0f8a34d19cfd56cbcda11add999be4c4dab0ccd68110a08cb92a184406d4"
+        },
+        "errors": {
+          "id": "links-create-errors",
+          "version": "1.0.0",
+          "sha256": "597102549edb893fe09bfa3284b971dcc4096e1cc3bcd58aa538d0d878541b9c"
+        },
+        "auth": "verified-principal",
+        "idempotency": "principal-operation-key",
+        "timeoutMs": 10000
+      },
+      "id": "create-upload",
+      "receiverBinding": "create-link",
+      "receiverRole": "shorten"
+    },
+    {
+      "id": "resolve-download",
+      "caller": {
+        "kind": "entry",
+        "entry": "download-redirect",
+        "lane": "download",
+        "element": "redirect"
+      },
+      "receiverBinding": "resolve-link",
+      "receiverRole": "redirect",
+      "expects": {
+        "operation": {
+          "id": "links-resolve",
+          "version": "1.0.0",
+          "sha256": "d819c8a28719fbdde3dad24c480e8a8044d1f6fac012b59b104137b9eb36552a"
+        },
+        "request": {
+          "id": "links-resolve-request",
+          "version": "1.0.0",
+          "sha256": "2a3427d0d9a10c747225225a8727093beec5d3e9a1a46e4789f87f83722afe63"
+        },
+        "success": {
+          "id": "links-resolve-success",
+          "version": "1.0.0",
+          "sha256": "5a78b078aea1bd8a0d7dc58658f2ac3174cc2f7144f74abb848a40a573c48ab0"
+        },
+        "errors": {
+          "id": "links-resolve-errors",
+          "version": "1.0.0",
+          "sha256": "44be0369ab407aadfa05d5771fdd756f747a791357e48ab34339e1bbda3c50a1"
+        },
+        "auth": "public",
+        "idempotency": "none",
+        "timeoutMs": 1200
+      }
+    }
+  ]
+}

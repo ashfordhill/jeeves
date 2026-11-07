@@ -894,3 +894,21 @@ The first Create link card/inspector/preview is a bounded application of the own
 sketch. It preserves caller → target arrows and canonical IDs, with the same logical owner. It
 does not implement separate read/publish ports, returned-data arrows or change old YouTube names
 into executable contracts. Full fitted overviews still need zoom and human usability review.
+
+
+## 2026-11-07 resolve/cache contract follow-up
+
+Treat internal positive-record caching separately from HTTP response caching. A no-store redirect
+profile needs no-store on errors too: confirmed absence, expired records and dependency failure
+must not become stale browser/CDN answers. Stable410 requires durable expiry evidence after
+cleanup and forbids code reuse. Immediate create-to-resolve visibility needs a fresh primary,
+not a replica promise hidden in an old module. Clamp each cache write to the immutable record's
+remaining life and recheck expiry before answering, including after optional fill.
+
+Bound fallback as part of the contract: one total deadline, phase caps and actual in-flight
+primary admission. A timeout must not free a still-running query slot; cache read and optional
+fill failures differ from primary failure. Static declarations do not prove cancellation, clocks,
+TTL precision or adapter behavior. Validate relevant typed module intent through actual resource
+and component links; an unrelated module on the same API must not force a new service. Several
+operations need a truthful compact count, individual inspector selection and optional unspecified
+global timeout when exact per-operation deadlines differ. Retain unknown siblings visibly.
