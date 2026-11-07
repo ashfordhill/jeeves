@@ -4216,3 +4216,88 @@ finite-stock/payment/analytics contracts, runtime templates/evidence and overvie
 remain open. RF07 must review the milestone without treating these gaps as implemented.
 
 Local commit: **RF06: add reproducible chat design evaluations**.
+
+## 2026-11-07 — RF07: Milestone 1 review and next contract plan (review complete)
+
+Worked RF07 only after RF06 `fab3d59`, on primary `main`, as the fresh sequential review agent.
+No branch, worktree, stash, push or further delegation. Preserved `.jeeves-feedback/`, owner
+settings and saved documents. No Milestone 2 schema/study implementation or generator started.
+
+Independently reviewed RF00→RF06 diffs and seams: local pattern content through actual chat
+continuations; staging/review-generation/repair/commit, atomic refusal, revision conflict,
+post-commit attribution, deletion/no-op/question/Undo; strict schema omission/null/default and
+canonical-history replay; lane arrows/styles, branch geometry, route selection/focus/removal;
+eval policy/cases/rubric/raw public outputs and representative tool/graph sequences. No confirmed
+production regression justified code changes. Corrected PLAN's stale six-tool/pre-RF04 warnings
+and loop/provider prose. Added `milestone1-review.md`, six retained saved-copy images and browser
+metadata; appended feedback/playbook lessons without rewriting prior entries.
+
+The ledger distinguishes bounded fixes (notation, exact identity/focus, chat review and mocked
+strict transport) from partial overview readability and open/model-blocked architecture. Durable
+Original videos has a reader. YouTube pending/failed/current-attempt lifecycle and committed
+publication order, Marketplace pending/finite-stock/payment recovery and TinyURL legacy-CDN
+analytics bypass/missing reader remain unresolved. Typed ownership/access/API/message/state/
+failure contracts, persistent requirements, templates and exact runtime evidence remain absent.
+RF06 Mini still has zero responses/no credits, so no Mini quality/live strict API acceptance.
+Both fallback arms retain honest unresolved-obligation credit; raw lexical/owner flags do not
+prove semantic failures. Current's broad click-job scope emits unrelated lifecycle obligations;
+scope precision and 2.44× input / 2.07× response overhead remain disclosed, not “fixed” by docs.
+No live/paid model calls were made in RF07 or old as-run records altered.
+
+`next-contract-plan.md` proposes NC01–NC06 plus independent NC14 review of the small TinyURL
+subset, followed by a separate backend proof once its repository/conventions are known. NC07–13
+are deferred expansions, not first-proof prerequisites. Chosen proposed defaults/gates cover
+immutable create/resolve scope, one Links owner with API roles, explicit dependency intent/role
+grants and later operation bindings within them, finite exact version/schema refs, persistent
+critical requirements, explicit design/blueprint v3 and v2 refusal for unsupported content.
+Cache policy checks validate clamp-to-record-expiry declarations, not unknown runtime timestamps;
+checkout checks require a concurrency contract, not claim real stock safety. Compatibility,
+availability and artifact verification stay separate; unknown critical requirements block
+readiness. Every vertical unit includes migration/mouse/chat/export/Undo and strict-tool-budget/
+request-effort audits. One acceptance can authorize the first phase; routine choices do not add
+repeated owner-permission gates. All semantics remain proposals, not current capabilities.
+
+Checks with Node 24.21.0 first in PATH: `pnpm check` passed (239 unit tests / 31 files, typechecks
+and Biome); `pnpm test:e2e` passed (23 native Chromium); `pnpm --filter @jeeves/web build` passed
+(existing chunk-size advisory). Synthetic eval replay passed twice, all twelve recorded Codex
+outcomes and all twelve failed Mini first requests replayed identically with fetch forbidden.
+Final document/JSON lint and `git diff --check` passed. No implementation-mirroring tests added
+for this documentation review.
+
+Browser evidence: `/tmp/jeeves-rf07-browser-b4rY6k/`, 43 isolated-acceptance PNGs plus owner
+before/after screenshots, source captures/hashes, `walkthrough.mts`, results/check/eval logs.
+Six useful images and `evidence/rf07/browser.json` are retained beside the review. API/web
+4312/4302, scratch JEEVES_HOME, scripted provider and `jeeves_e2e`; no owner project replacements.
+Latest owner GETs at 16:51:33 UTC were TinyURL rev53 (9 elements/9 saved links), YouTube rev1
+(18/18), Marketplace rev1 (17/14). New blank copies preserve full design identities/settings/
+architecture excluding revision. At 1440×900 and 1280×800, default TinyURL renders (11/12), and
+saved copies render (12/13, 21/25, 20/23 including actor/action/entry edges). Mouse traces identify
+all requested Originals/output/Watch/handler/indexer, CDN/reputation/custom, Catalog/payment/order
+paths; solid versus dashed styles/target arrows/verbs match saved edge identity. Watch overlap
+chooser selects the requested metadata route. Fit/focus/Fit focus/Show all preserve the entire
+design and blueprint including revision. Exact edge removal on each copy (`redirect-db`,
+`indexer-write`, `payments-prices`) and one mouse Undo restore complete semantics/export with
+the expected new revision. No isolated page/console warnings/errors. Images inspected directly;
+coordinator independently inspected small Originals/Catalog focus and YouTube overview.
+Overview names remain small at YouTube 0.35 / Marketplace 0.32 even with rails closed; focus
+helps inspection but does not close that concern. Owner/human readability acceptance is pending.
+
+Read-only owner 4300 initially reproduced the stale Vite missing `studioStoreAccessLabels`
+transform and blank page. Coordinator refreshed source/config mtimes only; normal API/Vite
+watchers reloaded with no content changes/process kill/settings/design mutation. A second fresh
+browser loaded YouTube's 21 tiles without page errors or write requests. All three owner saved
+hashes/revisions remained identical. Listener PIDs need not be unchanged after normal watchers.
+All four owned scratch projects deleted (204); E2E DB retains only its default TinyURL. Stopped
+only own 4302/4312 listener processes; scratch settings directory was never created.
+
+Next: owner can assess the ledger/diagrams and proposed first-phase defaults. Intended Mini/live
+strict evidence and owner review remain open; no contract/generator unit was started. Review
+and record scope before dispatching implementation; backend repository/conventions are still
+an actual dependency for its separate proof.
+
+Local commit: **RF07: review milestone one and plan typed contracts**.
+
+Coordinator review also aligned the future generator briefs with the narrow first-phase scope:
+core auth/create/resolve/expiry/cache/idempotency and real-adapter recovery first; disabled links,
+messaging/analytics/Stats and queue redelivery need separately accepted profile extensions. Source
+hashes/determinism, custom extension preservation and generated-file conflict checks stay in core.

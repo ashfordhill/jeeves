@@ -802,3 +802,31 @@ adapter does not forward an output-token cap. Tokens are reported usage; API lis
 are not ChatGPT billing. One paired sample per case cannot establish a general quality gain,
 particularly when current uses more input and calls. Runtime support and human review remain
 separate milestones even when replay, canvas checks and all tests pass.
+
+## 2026-11-07 milestone review: scope the next contract before extending the graph
+
+RF07's [Milestone 1 ledger](plans/reliable-foundations/milestone1-review.md) rechecks the owner's
+actual saved documents, not only current presets. Preserve source identities/settings and custom
+edits when making disposable review copies. A readable focused dependency proves that a reader
+can find it; it does not prove lifecycle, ownership, failure recovery or runtime behavior. The
+small fitted YouTube/Marketplace views still have small names and frame-like returns even with
+rails closed. Keep that limitation visible alongside the useful endpoint lists.
+
+A first foundation should choose one narrow workload before adding more modeling vocabulary.
+The proposed [next plan](plans/reliable-foundations/next-contract-plan.md) starts with immutable
+TinyURL create/resolve, one logical owner with API roles, explicit operation access and versioned
+finite contracts. Roles, deployables and owners are separate; a same-owner result journey repeats
+a reference to one identity. A new blueprint meaning needs an explicit version/migration path;
+legacy inferred access and absent requirements must not silently become declared contracts.
+
+Persistent included/excluded requirements and unresolved custom obligations should travel with
+the design. A chat turn's scope is only conversation metadata. Profile selection must be precise:
+click duplication does not by itself introduce an upload/job lifecycle. More warnings or tokens
+are not evidence of better architecture; compare applicability and request effort as well as
+correctness. Extend bounded references/tools deliberately, with strict-schema headroom and
+omitted/null/history checks, rather than expanding a deeply nested command union unchecked.
+
+Capability intent, compatible-template availability and exact-runtime verification remain three
+separate claims. Unknown critical contracts and required custom behavior block generation;
+clean graph checks cannot waive them. Review the small foundation before expanding to video and
+finite-stock checkout. New presets never authorize replacing the owner's older saved diagrams.

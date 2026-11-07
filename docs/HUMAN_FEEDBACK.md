@@ -401,3 +401,41 @@ been launched. Revised ownership, runtime relationships and contract semantics r
   owner/human readability and architecture review, scope completeness/precision, prior lifecycle,
   ownership/access and domain contracts, runtime templates/verification and overview limitations.
   RF07 remains the milestone review; no generator or semantic-contract work was introduced.
+
+- RF07, local commit titled **RF07: review milestone one and plan typed contracts**:
+  independently reviewed RF00→RF06 source/seams and the latest exact saved diagrams (TinyURL
+  rev53, YouTube rev1, Marketplace rev1). The [Milestone 1 ledger](plans/reliable-foundations/milestone1-review.md)
+  distinguishes fixed notation/identity/review/strict-transport behavior from partial overview
+  readability, open model evidence and architecture blocked by missing contracts. Six retained
+  saved-copy images and [browser metadata](plans/reliable-foundations/evidence/rf07/browser.json)
+  make the bounded observations reviewable. PLAN's stale tool/review/warning prose is corrected.
+- RF07 mouse traces at 1440×900 and 1280×800 identify the Originals reader, Transcoder output,
+  Watch cache/metadata, independent Completion handler/Search indexer returns, TinyURL legacy
+  CDN/reputation/custom paths and Marketplace Catalog/payment/order paths. Overlap choice targets
+  the exact edge. View-only actions preserve the full blueprint/design; selected-edge removal
+  and one Undo on each disposable copy restore all semantics. Default TinyURL also renders.
+  All four scratch projects were deleted. Owner designs/settings were preserved.
+- The owner's web 4300 initially still had a stale Vite export transform/blank page. The
+  coordinator refreshed file/config mtimes without content changes; normal dev watchers reloaded.
+  A fresh read-only browser then loaded YouTube (21 tiles, no page errors/write requests); all
+  three owner design hashes/revisions stayed unchanged. No source patch or process kill was
+  needed. Full acceptance used the fresh isolated app.
+- Required checks pass (239 network-free unit tests, 23 E2E, web build); synthetic replay twice,
+  all twelve Codex outcomes and all twelve Mini access failures replay offline identically.
+  No new paid/live calls. Both fallback arms retain honest unresolved-requirement credit;
+  baseline lexical flags are not semantic failures, and current's broad job obligations on
+  click analytics remain a scope-precision limitation. Mini/live strict acceptance remains
+  credits-blocked; owner/human readability review remains pending.
+- The [next contract plan](plans/reliable-foundations/next-contract-plan.md) proposes sequential
+  vertical units with chosen defaults/decision gates, migration, mouse/chat/export acceptance,
+  strict-schema headroom and request-effort audits. First finish a limited TinyURL create/resolve
+  foundation and scope review; then consider messaging/same-owner lifecycle/publication and each
+  study separately. These are proposals, not implemented or approved contract semantics.
+  Generic services stay design-only; capability, template availability and exact verification
+  remain separate. Unknown critical requirements block generation.
+- Still open after RF07: fitted-overview readability and owner acceptance; intended Mini quality/
+  live strict-schema acceptance; persistent requirements, logical ownership/access, typed APIs,
+  messages/state/failure contracts, same-owner asynchronous return, YouTube publication/visibility,
+  Marketplace pending/finite-stock/payment reconciliation and TinyURL analytics/cache/reader
+  questions. No Milestone 2 or generator implementation was introduced. Backend location and
+  conventions, real compatible templates and exact runtime evidence remain unknown.

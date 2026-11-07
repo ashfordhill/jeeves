@@ -223,6 +223,16 @@ invariant violation is a release blocker. Report uncertainty for small sample si
 
 ### RF07 — Milestone 1 review
 
+**Progress (2026-11-07): reviewed; owner acceptance and intended-model evidence remain open.**
+Independent RF00→RF06 source/seam review and mouse traces of exact saved copies (TinyURL rev53,
+YouTube rev1, Marketplace rev1) confirm bounded notation, identity/focus, atomic review/Undo and
+strict-codec behavior. Full overview and domain contracts remain unresolved. No production code
+defect justified a rewrite; PLAN's stale current-behavior prose was corrected. Required checks
+pass (239 unit tests, 23 E2E, web build), with all synthetic/Codex/access-failure replay offline.
+The [review ledger](milestone1-review.md), retained saved-diagram images and
+[next contract plan](next-contract-plan.md) separate fixed/partial/open/model-blocked concerns
+and proposed defaults/decision gates. No Milestone 2 or generator implementation was started.
+
 **Depends on:** RF01–RF06. Review the diff from RF00's commit through RF06.
 
 Trace the owner's three problematic diagrams by mouse. Check that styles reflect interaction,
@@ -239,41 +249,33 @@ the next milestone's contracts precise before handing them to implementation age
 
 ## Milestone 2: a specification that can describe one complete foundation
 
-These are bounded work areas for the next plan, **not yet dispatchable coding units**. RF07
-should split them into complete vertical changes after the decisions below are settled. Avoid
-giving one agent a general-purpose modeling-language rewrite.
+RF07 refines these work areas into the separate [next contract plan](next-contract-plan.md).
+It is **proposed, not implemented or owner-approved contract semantics**. Its decision gates
+must be recorded before dependent implementation; this plan does not authorize an unbounded
+modeling-language rewrite or generator work.
 
-| Order | Work area | Required outcome and acceptance |
-| --- | --- | --- |
-| 1 | Service ownership and access | Build on existing package ownership. Distinguish a logical business service, its API/consumer roles and deployables. Declare read/write intent rather than infer every owner's use as write. Reject unauthorized cross-boundary writes; make shared read models deliberate. All controls work by mouse. |
-| 2 | HTTP capabilities | Versioned capability/operation/schema references, caller/receiver compatibility, authorization and idempotency profiles. Start with create-link and resolve-link. A generic Service without a contract stays design-only. No arbitrary business-policy editor. |
-| 3 | Messaging capabilities | Versioned job/event schemas, subscriptions, ordering scope, idempotency and failure policies. Distinguish competing workers from independent subscriptions; duplicate delivery must remain possible in the model. |
-| 4 | Journeys and asynchronous return | Separate semantic relationships from lane presentation. Demonstrate a job/result lifecycle that revisits one owned service without creating another independent owner. Acyclic drawing is a projection, not a restriction on all runtime relationships. Warn about accidental recursion. Start with this concrete pattern; avoid unrestricted workflow machinery. |
-| 5 | Generation readiness | A separate compatibility report over blueprint + capability/template manifest. Distinguish valid design, supported combination and externally verified artifact. Every required unknown, omitted part and custom obligation is surfaced. No runtime or generator implementation in Jeeves. |
-| 6 | Reworked studies | Update one study per agent: TinyURL first, YouTube lifecycle second, Marketplace checkout third. Each has explicit included/excluded behaviors, ownership, failure scenarios and sourced decisions. Do not create more services to satisfy drawing constraints. |
-| 7 | Review | Read/migrate old projects without silent behavioral claims; compare source, inspector, chat and export for the same contracts; walk all studies by mouse; review all new compatibility gates. |
+The first six sequential vertical units cover a persistent narrow TinyURL scope/version boundary,
+one logical Links owner with API roles and explicit access, create/resolve capability contracts,
+compatibility/evidence separation and a new TinyURL preset, followed by independent review of
+that subset. Then prove TinyURL in the separate backend once its repository/conventions are
+known. Messaging/video/checkout expansions are deferred, not first-proof prerequisites. Later
+units separately cover optional click analytics and
+subscriptions, durable jobs, same-owner result journeys, committed publication, the YouTube
+study, finite-stock checkout, the Marketplace study and independent review.
 
-Contract decisions to capture before this milestone starts:
-
-- Keep the default canvas approachable. Choose whether API/worker roles are expanded inside an
-  owned service or shown as grouped tiles; do not equate a handler with a separately owned system.
-- Use a new blueprint version for changed meanings. Keep a deliberate compatibility path for
-  v2 consumers; a lossy projection must fail or explicitly report unsupported content, never
-  silently certify it. New fields load as unspecified in old documents.
-- Keep existing projects intact. New preset versions do not authorize replacing owner copies.
-- Prefer choosing reviewed capability contracts over building route/entity/policy programming
-  editors in the studio. The typed contract, not display text, determines future compilation.
-- Define a narrow initial workload and behavior scope. Read replicas, exact analytics, private
-  media, finite inventory and other guarantees must be chosen, not inferred from “enterprise.”
-
-These are proposals to discuss against RF00/RF07 evidence. Existing no-cycle, lane and owner rules
-remain in force until their replacement is deliberately implemented.
+The proposed defaults include blueprint/design v3 with explicit v2 compatibility/refusal,
+versioned finite refs, preserved unknowns and saved copies, no inference from labels, persistent
+critical requirements and separate template/runtime evidence. Generic services stay design-only.
+Every unit includes mouse/chat/blueprint/migration coverage, strict-schema headroom and request
+overhead audits. Existing no-cycle, lane and owner rules remain in force until a reviewed unit
+deliberately changes them. Backend repository/conventions remain unknown.
 
 ## Milestone 3: the separate generator, beginning with TinyURL
 
 The backend project location and its own AGENTS.md/build conventions must be known before work
-starts there. Suggested first profile: TypeScript containers, PostgreSQL, a Redis-compatible
-cache and one deliberately chosen messaging adapter. This is a recommendation, not an installed
+starts there. Suggested first profile: TypeScript containers, PostgreSQL and a Redis-compatible
+cache for the accepted NC01–NC06 create/resolve scope. Messaging needs its own later accepted
+profile extension and deliberately chosen adapter. This is a recommendation, not an installed
 or verified stack. Do not expand to every provider/language allowed by Jeeves.
 
 After the contract milestone, split these briefs into sequential, testable backend units:
@@ -283,14 +285,18 @@ After the contract milestone, split these briefs into sequential, testable backe
 | 1 | Snapshot reader and compatibility resolver | Read only the versioned blueprint and pinned contract/registry artifacts. Resolve explicit template IDs, versions and supported settings. Reject unknown requirements and missing artifacts. Output a readable resolution manifest before generating code. |
 | 2 | Deterministic compiler and regeneration boundary | Same normalized input and pinned toolchain yield identical generated source/configuration. Manifest ties output to blueprint hash and template versions. No LLM in compilation. Typed custom extension directories survive regeneration; modified generated files cause a conflict, not overwrite. |
 | 3 | Service/data foundation | Generate a runnable HTTP service, schema validation, auth hooks, migration path, health/readiness, structured logs and traces. Include a pinned local environment. Prove public contracts and persistence across restart. |
-| 4 | TinyURL create/redirect slice | Create, resolve, collision handling, idempotency, unknown/expired/disabled links and cache policy. Prove behavior with independent HTTP tests and the selected real database/cache adapters. Implement one declared consistency policy. |
-| 5 | Reliable event path and analytics | Add outbox/inbox where the chosen guarantee needs them, retry/dead-letter handling, event IDs and documented analytics loss/duplicate behavior. Kill processes at transaction/ack boundaries and verify recovery. Do not promise exactly-once transport. |
-| 6 | Full composition and change exercise | Generate, start, create a link, follow it, observe stats, change the design, regenerate and rerun. Preserve a sample custom extension. Test restart, cache loss, queue redelivery, incompatible contracts and schema upgrade. |
+| 4 | TinyURL create/redirect slice | Authenticated create, public resolve, collision handling, principal-scoped idempotency, unknown/expired links and the accepted immutable-target/cache policy. Prove durable commit and immediate resolve with independent HTTP tests and the selected real database/cache adapters. Disable/mutable-target behavior requires a separate accepted contract extension. |
+| 5 | Core failure and recovery proof | Exercise database/process restart, failure before/after durable commit, repeated create with the same or conflicting idempotency payload/principal, actual expiry/cache clamping, cache loss/outage fallback and authorization failures. Verify bounded behavior with real adapters; do not substitute mocked contract checks for runtime evidence. |
+| 6 | Full core composition and change exercise | Generate, start, create and resolve a link, exercise expiry/cache behavior, change the design, regenerate and rerun. Preserve a sample typed custom extension. Test incompatible contracts, schema upgrade, source hashes/determinism and generated-file conflict detection. Analytics/Stats and queue redelivery are outside this core profile. |
 | 7 | Review and evidence manifest | Independently review the compiler/runtime seam, unsupported combinations, upgrade safety and operational limits. Evidence identifies exact output, dependency/container versions, suite and environment. No blanket “enterprise-ready” badge. |
 
-Only after that evidence exists should the registry list this exact TinyURL profile as verified.
-Then repeat with durable upload/transcode/publish, followed by finite-stock checkout. Those
-exercise different composition risks and must earn their own evidence.
+Only after that evidence exists should the registry list this exact TinyURL core profile as
+verified. Optional click events/analytics/Stats require their accepted extension, messaging
+adapter, outbox/inbox where promised, retry/dead-letter/event-ID and loss/duplicate contracts,
+and independent transaction/ack-boundary/redelivery tests. No exactly-once transport promise.
+Disable/mutable-target behavior likewise earns its own accepted contract and cache/visibility
+tests. Then repeat with durable upload/transcode/publish, followed by finite-stock checkout.
+Those exercise different composition risks and must earn their own evidence.
 
 Backend integration tests can require real containers; that does not relax Jeeves' network-free,
 PGlite-based unit-test rule. Provider integration tests and deployments remain separate from local

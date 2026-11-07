@@ -1,0 +1,699 @@
+{
+  "kind": "AGENT mouse review; owner acceptance pending",
+  "sourceCommit": "fab3d59dd6a28793687e9fa0348468a6b8b8edbc",
+  "evidenceDirectory": "/tmp/jeeves-rf07-browser-b4rY6k",
+  "script": "walkthrough.mts",
+  "sources": [
+    {
+      "name": "tinyurl",
+      "id": "41bbd268-9244-47cc-be63-66c5e61d116c",
+      "capturedAt": "2026-11-07T16:51:33.956Z",
+      "revision": 53,
+      "hash": "554c732e72b998a4c551be2d766c82693a1e17e5d9b85a1ee93e19bb8e0ab4e5",
+      "elements": 9,
+      "connections": 9
+    },
+    {
+      "name": "youtube",
+      "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+      "capturedAt": "2026-11-07T16:51:33.966Z",
+      "revision": 1,
+      "hash": "65f32cfe365450e7067a19d739c434d7e3526e10067b2b5b50e8aa5bbadc9a52",
+      "elements": 18,
+      "connections": 18
+    },
+    {
+      "name": "marketplace",
+      "id": "81571ba1-c2da-4896-a79c-c31557f164ca",
+      "capturedAt": "2026-11-07T16:51:33.975Z",
+      "revision": 1,
+      "hash": "ba5a3eb2cb07215431b81f1541434536634fce44b3b4a791af4861fd256a0f27",
+      "elements": 17,
+      "connections": 14
+    }
+  ],
+  "results": [
+    {
+      "study": "default-tinyurl",
+      "viewport": "1440x900",
+      "tiles": 11,
+      "lines": 12,
+      "zoom": 0.674412
+    },
+    {
+      "study": "default-tinyurl",
+      "viewport": "1280x800",
+      "tiles": 11,
+      "lines": 12,
+      "zoom": 0.590946
+    },
+    {
+      "study": "tinyurl",
+      "sourceRevision": 53,
+      "viewport": "1440x900",
+      "overview": {
+        "zoom": 0.703565,
+        "tiles": 12,
+        "lines": 13
+      },
+      "routes": [
+        {
+          "edgeId": "shorten-reputation",
+          "from": "Shorten API",
+          "to": "URL reputation API",
+          "verb": "Checks destinations",
+          "interaction": "Request / response",
+          "focus": "Shorten API · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "cdn-redirect",
+          "from": "CDN",
+          "to": "Redirect service",
+          "verb": "Forwards cache misses",
+          "interaction": "Request / response",
+          "focus": "Redirect service · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "redirect-db",
+          "from": "Redirect service",
+          "to": "Links database",
+          "verb": "Reads links on miss",
+          "interaction": "Request / response",
+          "focus": "Redirect service · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "analytics-write",
+          "from": "Analytics worker",
+          "to": "Analytics store",
+          "verb": "Writes aggregates",
+          "interaction": "Request / response",
+          "focus": "Analytics worker · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        }
+      ],
+      "viewOnlyDesignAndBlueprintUnchanged": true
+    },
+    {
+      "study": "tinyurl",
+      "sourceRevision": 53,
+      "viewport": "1280x800",
+      "overview": {
+        "zoom": 0.625391,
+        "tiles": 12,
+        "lines": 13
+      },
+      "routes": [
+        {
+          "edgeId": "shorten-reputation",
+          "from": "Shorten API",
+          "to": "URL reputation API",
+          "verb": "Checks destinations",
+          "interaction": "Request / response",
+          "focus": "Shorten API · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "cdn-redirect",
+          "from": "CDN",
+          "to": "Redirect service",
+          "verb": "Forwards cache misses",
+          "interaction": "Request / response",
+          "focus": "Redirect service · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "redirect-db",
+          "from": "Redirect service",
+          "to": "Links database",
+          "verb": "Reads links on miss",
+          "interaction": "Request / response",
+          "focus": "Redirect service · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "analytics-write",
+          "from": "Analytics worker",
+          "to": "Analytics store",
+          "verb": "Writes aggregates",
+          "interaction": "Request / response",
+          "focus": "Analytics worker · 1 shown · 12 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        }
+      ],
+      "viewOnlyDesignAndBlueprintUnchanged": true
+    },
+    {
+      "study": "tinyurl",
+      "removedExactEdge": "redirect-db",
+      "oneMouseUndoRestoresDesignAndBlueprint": true
+    },
+    {
+      "study": "youtube",
+      "sourceRevision": 1,
+      "viewport": "1440x900",
+      "overview": {
+        "zoom": 0.394778,
+        "tiles": 21,
+        "lines": 25
+      },
+      "routes": [
+        {
+          "edgeId": "jobs-transcoder",
+          "from": "Upload jobs",
+          "to": "Transcoder",
+          "verb": "Delivers upload jobs",
+          "interaction": "Asynchronous",
+          "focus": "Transcoder · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "transcoder-read",
+          "from": "Transcoder",
+          "to": "Original videos",
+          "verb": "Reads originals",
+          "interaction": "Request / response",
+          "focus": "Transcoder · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "transcoder-write",
+          "from": "Transcoder",
+          "to": "Transcoded videos",
+          "verb": "Stores segments, playlists and thumbnails",
+          "interaction": "Request / response",
+          "focus": "Transcoder · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "watch-cache",
+          "from": "Watch API",
+          "to": "Metadata cache",
+          "verb": "Reads video details, fills on miss",
+          "interaction": "Request / response",
+          "focus": "Watch API · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "watch-metadata",
+          "from": "Watch API",
+          "to": "Metadata database",
+          "verb": "Reads video details on a miss",
+          "interaction": "Request / response",
+          "focus": "Watch API · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 0.809295
+        },
+        {
+          "edgeId": "handler-metadata",
+          "from": "Completion handler",
+          "to": "Metadata database",
+          "verb": "Records playable videos",
+          "interaction": "Request / response",
+          "focus": "Completion handler · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "indexer-write",
+          "from": "Search indexer",
+          "to": "Search index",
+          "verb": "Indexes playable videos",
+          "interaction": "Request / response",
+          "focus": "Search indexer · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        }
+      ],
+      "viewOnlyDesignAndBlueprintUnchanged": true
+    },
+    {
+      "study": "youtube",
+      "sourceRevision": 1,
+      "viewport": "1280x800",
+      "overview": {
+        "zoom": 0.345919,
+        "tiles": 21,
+        "lines": 25
+      },
+      "routes": [
+        {
+          "edgeId": "jobs-transcoder",
+          "from": "Upload jobs",
+          "to": "Transcoder",
+          "verb": "Delivers upload jobs",
+          "interaction": "Asynchronous",
+          "focus": "Transcoder · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "transcoder-read",
+          "from": "Transcoder",
+          "to": "Original videos",
+          "verb": "Reads originals",
+          "interaction": "Request / response",
+          "focus": "Transcoder · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "transcoder-write",
+          "from": "Transcoder",
+          "to": "Transcoded videos",
+          "verb": "Stores segments, playlists and thumbnails",
+          "interaction": "Request / response",
+          "focus": "Transcoder · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "watch-cache",
+          "from": "Watch API",
+          "to": "Metadata cache",
+          "verb": "Reads video details, fills on miss",
+          "interaction": "Request / response",
+          "focus": "Watch API · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "watch-metadata",
+          "from": "Watch API",
+          "to": "Metadata database",
+          "verb": "Reads video details on a miss",
+          "interaction": "Request / response",
+          "focus": "Watch API · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 0.709135
+        },
+        {
+          "edgeId": "handler-metadata",
+          "from": "Completion handler",
+          "to": "Metadata database",
+          "verb": "Records playable videos",
+          "interaction": "Request / response",
+          "focus": "Completion handler · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "indexer-write",
+          "from": "Search indexer",
+          "to": "Search index",
+          "verb": "Indexes playable videos",
+          "interaction": "Request / response",
+          "focus": "Search indexer · 1 shown · 24 relationships hidden\nFit focus\nShow all",
+          "zoom": 0.978117
+        }
+      ],
+      "viewOnlyDesignAndBlueprintUnchanged": true
+    },
+    {
+      "study": "youtube",
+      "removedExactEdge": "indexer-write",
+      "oneMouseUndoRestoresDesignAndBlueprint": true
+    },
+    {
+      "study": "marketplace",
+      "sourceRevision": 1,
+      "viewport": "1440x900",
+      "overview": {
+        "zoom": 0.367861,
+        "tiles": 20,
+        "lines": 23
+      },
+      "routes": [
+        {
+          "edgeId": "shop-catalog",
+          "from": "Shop service",
+          "to": "Catalog database",
+          "verb": "Writes shops and listings",
+          "interaction": "Request / response",
+          "focus": "Shop service · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "payments-prices",
+          "from": "Payments",
+          "to": "Catalog database",
+          "verb": "Reads prices and shops",
+          "interaction": "Request / response",
+          "focus": "Payments · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "payments-write",
+          "from": "Payments",
+          "to": "Payments database",
+          "verb": "Writes payments and payout accounts",
+          "interaction": "Request / response",
+          "focus": "Payments · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "recorder-write",
+          "from": "Order recorder",
+          "to": "Orders database",
+          "verb": "Writes paid orders",
+          "interaction": "Request / response",
+          "focus": "Order recorder · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 0.674412
+        }
+      ],
+      "viewOnlyDesignAndBlueprintUnchanged": true
+    },
+    {
+      "study": "marketplace",
+      "sourceRevision": 1,
+      "viewport": "1280x800",
+      "overview": {
+        "zoom": 0.322334,
+        "tiles": 20,
+        "lines": 23
+      },
+      "routes": [
+        {
+          "edgeId": "shop-catalog",
+          "from": "Shop service",
+          "to": "Catalog database",
+          "verb": "Writes shops and listings",
+          "interaction": "Request / response",
+          "focus": "Shop service · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "payments-prices",
+          "from": "Payments",
+          "to": "Catalog database",
+          "verb": "Reads prices and shops",
+          "interaction": "Request / response",
+          "focus": "Payments · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "payments-write",
+          "from": "Payments",
+          "to": "Payments database",
+          "verb": "Writes payments and payout accounts",
+          "interaction": "Request / response",
+          "focus": "Payments · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 1
+        },
+        {
+          "edgeId": "recorder-write",
+          "from": "Order recorder",
+          "to": "Orders database",
+          "verb": "Writes paid orders",
+          "interaction": "Request / response",
+          "focus": "Order recorder · 1 shown · 22 relationships hidden\nFit focus\nShow all",
+          "zoom": 0.590946
+        }
+      ],
+      "viewOnlyDesignAndBlueprintUnchanged": true
+    },
+    {
+      "study": "marketplace",
+      "removedExactEdge": "payments-prices",
+      "oneMouseUndoRestoresDesignAndBlueprint": true
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    {
+      "file": "1280-analytics-write.png",
+      "sha256": "d94225876ac718f70ece54025924331d5853cb1c098ab720c01a8ccd097cce77",
+      "retained": false
+    },
+    {
+      "file": "1280-cdn-redirect.png",
+      "sha256": "c470fbcfd7be733257541fd9bf28c17055b2823bcc7f71dec3783f9c3c6e7d9a",
+      "retained": false
+    },
+    {
+      "file": "1280-handler-metadata.png",
+      "sha256": "26ff73f14afbac9b570c265ae7e46b4d49b978f6cf3164fffd17341e6b150824",
+      "retained": false
+    },
+    {
+      "file": "1280-indexer-write.png",
+      "sha256": "265872a2c732d34321b854c0ca53831e2dfaf522b6e5f7b828cff05124a274f0",
+      "retained": false
+    },
+    {
+      "file": "1280-jobs-transcoder.png",
+      "sha256": "9990255d0e6dce876413571522711c58602c3ba91050ca90f8a69aa5460d3812",
+      "retained": false
+    },
+    {
+      "file": "1280-payments-prices.png",
+      "sha256": "b5c8110fbb41a8d5e7eb3fd15da685c565424b8254ed0ebba588541091fa9c89",
+      "retained": true
+    },
+    {
+      "file": "1280-payments-write.png",
+      "sha256": "79193254802b1171ae649af9ad5b5f1eb37ef35b3984b44eaf908135292880d8",
+      "retained": false
+    },
+    {
+      "file": "1280-recorder-write.png",
+      "sha256": "a5bd33d91a713c89e78397ef15e9a50a4c99811df1d87a70c773064252047f7a",
+      "retained": false
+    },
+    {
+      "file": "1280-redirect-db.png",
+      "sha256": "c4ffa4913dfb6956c30be62eeba079b82415cb853a27fb7945e553949cc02d06",
+      "retained": false
+    },
+    {
+      "file": "1280-shop-catalog.png",
+      "sha256": "dc83ffe927fc601a057b1406d8171d1c552950c8397d89981ad2f281c2bb6a7e",
+      "retained": false
+    },
+    {
+      "file": "1280-shorten-reputation.png",
+      "sha256": "a305dacefaead28729388bf93b01e12a037b11092bb355e3505a1a64606a4417",
+      "retained": false
+    },
+    {
+      "file": "1280-transcoder-read.png",
+      "sha256": "d22eb8a9b313107892491a876123d08739b598e57e463e75048ed399f1334ae3",
+      "retained": true
+    },
+    {
+      "file": "1280-transcoder-write.png",
+      "sha256": "a4fffc3247aba3ebc42ae0cf66dc48967d1d8829fa52f542691b516b8d1ab1e3",
+      "retained": false
+    },
+    {
+      "file": "1280-watch-cache.png",
+      "sha256": "d7a2385c17874ae77664de6bffe908999c95cdf7c971eec199d88856057191b5",
+      "retained": false
+    },
+    {
+      "file": "1280-watch-metadata.png",
+      "sha256": "fd853aeb1bc50fc0fba798b99e609eb88c18bddf85a3260c4033478515f79a32",
+      "retained": true
+    },
+    {
+      "file": "1440-analytics-write.png",
+      "sha256": "db0ff5291e22ebaa2a23ad27044314b332496c659a6eaf29f869390586aca9dd",
+      "retained": false
+    },
+    {
+      "file": "1440-cdn-redirect.png",
+      "sha256": "96aa47230d8c8a5e541f68563bbf4e5e2fac7e6640b9d6b4153c1ffb519f0e29",
+      "retained": false
+    },
+    {
+      "file": "1440-handler-metadata.png",
+      "sha256": "acfdd2dcbeedb967f28fd3fda40700ad526b88fc425f0109aeaa67215ebfc10e",
+      "retained": false
+    },
+    {
+      "file": "1440-indexer-write.png",
+      "sha256": "05d499d8b8fe988b7f874f25001580caf7135cb900dbc0b6317ef28153d292dd",
+      "retained": false
+    },
+    {
+      "file": "1440-jobs-transcoder.png",
+      "sha256": "06c62182bd9a6e6490bf634c8839a1f2339f0cd4b1132e9674313faf273ec08f",
+      "retained": false
+    },
+    {
+      "file": "1440-payments-prices.png",
+      "sha256": "9c6cc246c2fd689c09c48b20c44f5972d143e2056596131f9070cbfa5d2a7389",
+      "retained": false
+    },
+    {
+      "file": "1440-payments-write.png",
+      "sha256": "66ded24f67738245364c38167ee6f3a5f6265c3db09a3667b1a496b459f27417",
+      "retained": false
+    },
+    {
+      "file": "1440-recorder-write.png",
+      "sha256": "1160e384aae1c9b07a2957188fac923595f4c06c5bb51208f5b28cf8fc3f00bd",
+      "retained": false
+    },
+    {
+      "file": "1440-redirect-db.png",
+      "sha256": "4263f10ab30823ff518e2b79766b6b3aec9c523117f4cc2165eb808cfa071d80",
+      "retained": false
+    },
+    {
+      "file": "1440-shop-catalog.png",
+      "sha256": "0aed9bebdfc186bb6ad3da887852caae8c8172869ae245e8c90bb44c7f7915e8",
+      "retained": false
+    },
+    {
+      "file": "1440-shorten-reputation.png",
+      "sha256": "e8de77d58cdfdda7440ea9f0697cda7b77e0fef71b648b440d1ca6fb1877a46f",
+      "retained": false
+    },
+    {
+      "file": "1440-transcoder-read.png",
+      "sha256": "453bf297b467aa324d7fe1eaf6492d0609730dc47a1828c8f08bc4f9c20e0ea4",
+      "retained": false
+    },
+    {
+      "file": "1440-transcoder-write.png",
+      "sha256": "77e26d0499c1f7e76b484409753ee682dd45f6eaa03162a700c7d05ea726d566",
+      "retained": false
+    },
+    {
+      "file": "1440-watch-cache.png",
+      "sha256": "d91acce7f6b5936f3f3fd515a81370c5bb15667ad6a6ee410a1743a7617083a2",
+      "retained": false
+    },
+    {
+      "file": "1440-watch-metadata.png",
+      "sha256": "02412c9c40135bbdaf38fc54c91a478c0a69e2710770cc84b83c535bd1c863cf",
+      "retained": false
+    },
+    {
+      "file": "default-tinyurl-1280-fitted.png",
+      "sha256": "4db98b21dea0c382f89c141e0d1b006d80a95bbfd3b90663b3acc5fd9c64ac72",
+      "retained": false
+    },
+    {
+      "file": "default-tinyurl-1440-fitted.png",
+      "sha256": "7d34a07ff14969caaea7958a6438fda2f40f41a2e659c79775bffae066d6780d",
+      "retained": false
+    },
+    {
+      "file": "marketplace-1280-fitted.png",
+      "sha256": "7b02ba6c9bb941932c514d71917a6dc34f722008b821c8ac5eff3514c3b0b7ac",
+      "retained": true
+    },
+    {
+      "file": "marketplace-1440-fitted.png",
+      "sha256": "706bbc077120c3abac86aca8bf7031f8a4123891e06097f63d3c40968b6ae29f",
+      "retained": false
+    },
+    {
+      "file": "owner4300-before-refresh.png",
+      "sha256": "99db2a93b06fa1bf617f5c495e02dcf6c0b76961108491217e2cf4fed8699d35",
+      "retained": false
+    },
+    {
+      "file": "owner4300-readonly.png",
+      "sha256": "a0138e2b4edd2e2541c0cb34e2c23f8172d72c51aa16e7c3bc614a41359391ef",
+      "retained": false
+    },
+    {
+      "file": "removal-marketplace-payments-prices.png",
+      "sha256": "f0cce03991b94f6c0c76c175980cb2a888cc205fd06b2b7dc7e8ee95dfe8cb3a",
+      "retained": false
+    },
+    {
+      "file": "removal-tinyurl-redirect-db.png",
+      "sha256": "c4ffa4913dfb6956c30be62eeba079b82415cb853a27fb7945e553949cc02d06",
+      "retained": false
+    },
+    {
+      "file": "removal-youtube-indexer-write.png",
+      "sha256": "73079caee9e559d5cb1362b97287d2aa6745b83535cd5c01ae0ad2be448e38e3",
+      "retained": false
+    },
+    {
+      "file": "tinyurl-1280-fitted.png",
+      "sha256": "24d50f4d57aefb5dd289da93933fb9f7eb4168a36f2454f4fc93298662985fe9",
+      "retained": true
+    },
+    {
+      "file": "tinyurl-1440-fitted.png",
+      "sha256": "591a5d4e102ed191fb85468ad7c057d0e107dc2aa09e575b1b54d2c6eeee24e4",
+      "retained": false
+    },
+    {
+      "file": "youtube-1280-fitted.png",
+      "sha256": "c6beea970b4a809938b19943ccedaf0065842cd57661fa8a101f2b9d9738b5db",
+      "retained": true
+    },
+    {
+      "file": "youtube-1280-overlap-chooser.png",
+      "sha256": "4ab51185bf4f65e314a8e0333069557b2e5555f1e1dc204b57ae63336f54c5ee",
+      "retained": false
+    },
+    {
+      "file": "youtube-1440-fitted.png",
+      "sha256": "c98b220ddf34ec81abbee85ca0727a95f4b775bee05348349fcbf6afce55a0c4",
+      "retained": false
+    },
+    {
+      "file": "youtube-1440-overlap-chooser.png",
+      "sha256": "a7f02171844af726fa6262c20562b82b17b58a299e95df4267854f77664797c3",
+      "retained": false
+    }
+  ],
+  "ownerReadOnly": {
+    "beforeWatcherRefresh": {
+      "checkedAt": "2026-11-07T16:55:36.066Z",
+      "status": 200,
+      "title": "Jeeves",
+      "tiles": 0,
+      "body": "",
+      "pageErrors": [
+        "SyntaxError: The requested module '/@fs/home/ash/github/jeeves/packages/spec/src/index.ts?t=1794066455827' does not provide an export named 'studioStoreAccessLabels'"
+      ],
+      "writeRequests": [],
+      "ownerDesigns": [
+        {
+          "name": "tinyurl",
+          "revision": 53,
+          "unchanged": true
+        },
+        {
+          "name": "youtube",
+          "revision": 1,
+          "unchanged": true
+        },
+        {
+          "name": "marketplace",
+          "revision": 1,
+          "unchanged": true
+        }
+      ]
+    },
+    "afterWatcherRefresh": {
+      "checkedAt": "2026-11-07T17:01:09.333Z",
+      "status": 200,
+      "title": "Jeeves",
+      "tiles": 21,
+      "body": "Jeeves\nDesign\nSettings\nYouTube · studio study\nChat\n\nDescribe the app you want and the assistant draws it on the board. You can attach a Markdown brief or a sketch.\n\nMake me a link shortener like bit.ly\nAdd a cache after the selected service\nWhat is still undecided in this design?\nAttach\nSend\nUser\nWa",
+      "pageErrors": [],
+      "writeRequests": [],
+      "ownerDesigns": [
+        {
+          "name": "tinyurl",
+          "revision": 53,
+          "unchanged": true
+        },
+        {
+          "name": "youtube",
+          "revision": 1,
+          "unchanged": true
+        },
+        {
+          "name": "marketplace",
+          "revision": 1,
+          "unchanged": true
+        }
+      ]
+    },
+    "refresh": "Coordinator updated studio-links.ts and vite.config.ts mtimes only. Standard dev watchers reloaded; no content, settings or design change; no process kill."
+  }
+}

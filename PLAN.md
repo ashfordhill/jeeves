@@ -53,7 +53,8 @@ YouTube, are built in lanes from published designs (`studio-examples/`).
 `validateDesign` (`validate.ts`, `studio-validation.ts`) returns findings: structural errors
 reject a batch; readiness gaps (`CONFIG_REQUIRED`) are saved and reported; design warnings
 (`DESIGN_WARNING`, from `studio-warnings.ts`: a store with no writer, a worker's output nobody
-reads, a queue with no publisher or consumer, an action with no entries) are reported and never
+reads, a queue with no publisher or consumer, an action with no entries, Uploads without a
+storage relationship, a worker without an outgoing relationship) are reported and never
 reject anything. `studio-blueprint.ts`
 projects the design into the blueprint.
 
@@ -121,7 +122,11 @@ chosen model with a finite toolset (`chat/tools.ts`): `listStudioDefinitions` (t
 with their kinds, the module kinds and the caps), `describeStudioDefinition` (one kind's
 settings), `getDesign` (the actions, each with its lane, name, entries and the tiles its lane
 reaches, then each tile's kind, settings, links with their modes and modules, the caps,
-the findings and the design warnings; an accepted command returns both too), `applyStudioCommands`, `validateDesign` and `askUser`. The instructions
+the findings and the design warnings; an accepted command returns both too), `applyStudioCommands`,
+`validateDesign`, `askUser`, `listStudioPatterns`, `describeStudioPattern`, `declareReviewScope`
+and `reviewDesign`. The pattern tools supply four versioned local guidance records, their
+applicability and unsupported obligations; retrieval alone selects no scope and supplies no
+runtime template. The instructions
 (`INSTRUCTIONS`) describe the actor, the two lanes, what an action is (two sentences; a tile has
 one entry), the link table (generated from
 `studioLinkRules`),
@@ -131,13 +136,28 @@ studio commands, so tiles and links change only through the lane commands, as on
 commands run against a working copy with the same builder and validation, and a refusal returns
 its plain-words reason (naming the command when a call has several) and changes nothing for that
 call. An unknown command type (such as the retired `create`) is refused with the list of
-commands. The whole turn commits as one operation, so it is one undo step. A concurrent edit
-stops the turn rather than overwriting it. Attached files (Markdown, text, PNG, JPEG, WebP; SVG rasterized with resvg)
+commands. `declareReviewScope` replaces only turn-local assumptions, checklist selection and
+custom obligations; these are not saved application requirements. `reviewDesign` previews
+staged additions, updates and removals, findings and precise **not specified** obligations.
+After commands or scope change, a fresh review must reach a subsequent model request before
+commit, even when the model ends its response. Two repair response batches fit inside the
+ordinary sixteen-round limit. Questions still end immediately with deterministic review;
+pure conversation, review-only and semantic no-op turns need no design revision.
+The whole turn commits as one operation, so it is one undo step. A concurrent edit
+stops the turn rather than overwriting it. Final text and mouse Review details distinguish the
+exact chat snapshot from the current saved-state review; failure/conflict discards proposals,
+and deletion supplies no saved state. Scope completeness and typed domain behavior are not
+verified. See [patterns](docs/studio-patterns.md) and [evaluations](docs/chat-evals.md).
+Attached files (Markdown, text, PNG, JPEG, WebP; SVG rasterized with resvg)
 are stored in `files`. Turns, replies, questions, activity and token usage are kept in
 `chat_turns`; turns interrupted by a restart are marked failed on start.
 
-Providers (`packages/providers`): the OpenAI Responses API with an API key, and Codex through its
-own CLI login. Settings (`GET /settings`, `PUT /settings/roles`) choose one design-chat provider
+Providers (`packages/providers`): the OpenAI Responses API with an API key sends strict function
+schemas through an audited omission/null codec; server validation remains authoritative.
+Codex through its own CLI login constrains an outer answer containing JSON-string arguments,
+whose inner values are validated by the server. Mock transport checks do not establish live
+API acceptance or model quality; see [tool schemas](docs/chat-tool-schemas.md).
+Settings (`GET /settings`, `PUT /settings/roles`) choose one design-chat provider
 and model, stored in `~/.jeeves/config.json`. E2E tests set `JEEVES_FAKE_MODEL_SCRIPT` to replay a
 scripted model.
 
