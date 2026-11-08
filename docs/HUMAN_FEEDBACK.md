@@ -74,3 +74,9 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Problem:** frontend work should not dilute a benchmark for Jeeves' backend generation.
 - **Decision:** exclude all UI code, including frontend `src/`, until Jeeves has a UI builder and the owner expands the measure.
 - **Resolution:** method v2 requires a backend/UI scope and refuses unclassified source; YouTube v1 remains 159 / 2,715 LOC (5.53%). [Method/report](field-projects/source-loc.md) · [Implementation record](handoff.md#2026-11-08--backend-scope-for-loc-benchmarks).
+
+## 2026-11-08 — YouTube v2 extraction and inspector clutter review
+
+- **Problem:** only 5.53% of v1 backend source remains templated; role explanations and unrelated configuration obscure useful studio controls.
+- **Decision:** review reusable backend behavior and generation-relevant UI before a sequential v2 build plan; preserve basic functionality and the owner README.
+- **Resolution:** [Review](plans/reliable-foundations/youtube-v2-review.md) identifies upload/lifecycle/media candidates and concrete inspector issues. Template breadth, 60% acceptance policy and normal-inspector scope await owner answers; no v2 implementation started.

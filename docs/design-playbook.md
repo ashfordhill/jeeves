@@ -1103,3 +1103,24 @@ be claimed. Classify baseline foundations, custom business implementations, inte
 helper repairs separately. File counts and completed-scenario counts do not measure effort saved.
 Retain failed harness assumptions; decoded PCM is not human listening, and a controlled hidden
 signal is not an actual OS background-tab observation.
+
+## 2026-11-08 template controls and field extraction review
+
+The [YouTube v2 review](plans/reliable-foundations/youtube-v2-review.md) traces the 5.53%
+backend baseline to working behavior missing from generated shells, especially owned upload,
+lifecycle/publication and media processing. Extract concrete behavior with its persistence,
+contracts and resource wiring. Another field use is a hypothesis to exercise through the same
+typed input path; repackaging one exact application does not demonstrate configurable reuse.
+
+Before adding a normal inspector control, identify its template consumer, affected emitted
+behavior and why an existing default/setting is insufficient. Copying a value into JSON is
+not enough. Keep unsupported old intent readable without silently substituting an implementation.
+The owner's requested generation-focused normal UI needs matching mouse/chat support rules;
+React-only hiding leaves unsupported choices available through chat. Detailed v2 UI policy is
+pending the owner's answers in the review.
+
+Logical ownership can be useful generation input without repeated role/deployable explanations
+on tile faces and above every settings form. Keep committed-publication ordering and explicit
+access; simplify presentation separately. A collapse action that immediately falls back to
+expanded roles should not remain an apparently effective action. Preserve canonical graph
+identity rather than splitting owners to satisfy a view.

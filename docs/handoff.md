@@ -5408,3 +5408,21 @@ UI overriding a backend directory, and missing/invalid/unclassified scope; `pnpm
 `.jeeves-feedback/` are unchanged. Future versions must review their backend/UI scope explicitly.
 
 Local commit: **Scope LOC benchmarks to backend code**.
+
+## 2026-11-08 — YouTube v2 extraction and studio review
+
+Reviewed all 45 benchmarked backend files, generator/profile/export, current diagram and studio
+controls against the owner's latest README/feedback. [Review and questions](plans/reliable-foundations/youtube-v2-review.md)
+records exact LOC groups, reusable candidates, UI issues and a provisional sequential unit order;
+two live inspector screenshots retained. Added concise feedback/playbook lessons. No v2 code,
+templates, saved designs, root README or runtime changes; no delegation or push.
+
+Benchmark rerun matches the complete committed JSON: 159/2,715 LOC, 5.53%. Checks: `pnpm check`
+402 tests/51 files in 22.08s plus lint/types; 36 native E2Es in 1.3m; web build 915ms (size advisory).
+Mouse YouTube Fit/Upload/options/modules/ownership/operations/collapse and TinyURL Fit pass;
+0 page errors, all 5 complete owner design responses unchanged; v1's 14 services healthy. Logs in
+`/tmp/jeeves-youtube-v2-review/`. Existing `.jeeves-feedback/` edits and e2e-docker mode preserved.
+Next: owner answers template breadth, 60% target versus gate, and template-backed normal UI policy;
+then finalize bounded sequential assignments. No automatic v2 execution from this review.
+
+Local commit: **Review YouTube v2 extraction and studio controls**.
