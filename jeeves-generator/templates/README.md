@@ -1,5 +1,11 @@
 # Experimental local templates
 
+`local-v2/index.ts` is separate from the frozen registry below. `loadLocalV2Registry()` snapshots
+its actual source closure/assets before rendering and currently registers a diagnostic inventory
+emitter only. It installs no runtime/preset/feature support. New implementations belong in
+`local-v2/` and `src/v2/`; shared files have one explicit owner and named contributors, with no
+last-writer-wins. See the [v2 API](../README.md#v2-registry-and-export).
+
 `local-v1/index.ts` registers all 19 bounded template IDs from the frozen YouTube local profile.
 Use the exported `localV1Templates` explicitly; the assembler's empty default is still diagnostic.
 The registry reads its own source and sorted exact `.template` assets once at module load and

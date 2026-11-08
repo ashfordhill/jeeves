@@ -1,5 +1,9 @@
 # Experimental generator foundation
 
+The separate v2 API now accepts explicit schema3 generation selections. See
+[v2 registry and export](#v2-registry-and-export) for its current diagnostic-only implementation;
+the frozen v1 API, CLI and emitted bytes below retain their original contract.
+
 FP03a provides `@jeeves/generator`, a Node/TypeScript workspace package exporting source directly.
 It assembles deterministic **in-memory file bundles** through trusted local template code.
 The explicit `localV1Templates` registry installs **19 experimental local template families** and
@@ -144,3 +148,48 @@ Extract into a new directory; run scripts through `bash` as the emitted README d
 The same inputs/template versions yield the same payload and ZIP bytes. Download checks the
 preview archive hash and the browser checks it again before saving. Project switch/close cancels
 pending browser work; drafts/history actions and changed/stale sources require a fresh preview.
+
+## V2 registry and export
+
+`assembleV2({designJson}, registry)` uses `@jeeves/spec`'s `resolveGeneration` with installed
+consumer contracts derived from a trusted `createV2Registry(sources, emitters)`. It accepts edited
+supported selections rather than a frozen whole-document hash. `validateV2Input` preserves exact
+input bytes and original declarations separately from schema-parsed semantics. Source pointers
+must exist in the original JSON, including when parsing would materialize a default.
+
+`captureV2Sources(rootUrl, paths)` captures trusted repository files before assembly. The registry
+hashes actual source/asset bytes and each emitter's complete source closure. Each emitter declares
+its exact version, dependencies and optional runtime/preset/template consumer responsibilities.
+Semantic descriptor `sha256` values remain separate from executable `sourceSha256` values.
+Render receives only a frozen normalized model, setting decisions and copied pinned assets;
+an emitter can read only assets in its own fingerprinted closure. Trusted renderers must not read
+mutable files, clocks, randomness, network or environment. They must emit no feature files for
+unselected responsibilities. Input declarations cannot supply executable selectors.
+
+Each file has one writer, ownership class and original design pointers. Shared-file owners compose
+their complete output once and explicitly name any contributing emitters/source pointers. Duplicate,
+case-colliding, unsafe or reserved `.jeeves/` paths refuse; there is no implicit append/overwrite or
+generic fragment language. Every selected installed consumer's advertised output must actually be
+emitted and owned by that emitter or explicitly composed on its behalf. Missing outputs refuse.
+
+The bundle includes `.jeeves/inputs/design.json`, `.jeeves/normalized.json`,
+`.jeeves/report.json` and `.jeeves/manifest.json`. The manifest identifies exact input, canonical
+source, normalized semantic input, actual registry sources, runtime/preset/template/dependency refs
+and payload hashes/owners/contributors. It excludes its own hash. The report distinguishes installed
+mechanisms, fixed policies, custom hooks, unsupported choices and unfinished work. Semantic support
+does not imply emitted build/runtime evidence or strict TinyURL readiness; required hook gaps keep
+`applicationComplete` false. Partial and diagnostic emitters cannot install complete support.
+
+`loadLocalV2Registry()` currently installs **no runtime, preset or feature implementation**. Its
+trusted diagnostic emitter writes only `diagnostics/generation.json`, accompanied by a required
+unfinished gap. This is infrastructure for later sequential units, not a standalone app. Project
+envelope/build files start in YV2-04. No v2 studio preview or browser controls are wired yet.
+
+```
+pnpm --filter @jeeves/generator export:v2 /path/to/schema3-design.json /absolute/new-directory
+```
+
+The CLI exports this honest partial bundle using the existing `exportNewDirectory`; it refuses
+every existing destination, including an empty or edited one, and symlink ancestors. It prints
+completeness/findings without claiming the export runs. `planFileWrites` remains available for
+pure edit/custom-file preservation checks. V1 continues using `export:new` unchanged.

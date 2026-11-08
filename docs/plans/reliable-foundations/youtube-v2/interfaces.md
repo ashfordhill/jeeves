@@ -175,3 +175,75 @@ and Identity settings, endpoints/grants/channel modes/cross-selection/extra-bind
 immutability and safe identity/output paths. These are test-host attestations, not installed runtime
 features. No renderer, executable template, forms, broad registry or field output exists yet.
 Next owner: **YV2-03 only**.
+
+## YV2-03 — registry, assembly, provenance and fresh export
+
+Public exports from `@jeeves/generator`, implemented separately in `jeeves-generator/src/v2/`:
+
+- `validateV2Input({designJson})` / `V2Input` / `V2ValidatedInput`: strict explicit schema3
+  generation; preserve exact saved bytes, original parsed `rawDesign`, schema-parsed `design`,
+  `sourceSha256` and `sourceCanonicalSha256`. Schema defaults do not create source declarations
+  for file provenance. Unsupported selected choices stay diagnostic; structural contradictions
+  refuse with `GeneratorRefusal`.
+- `captureV2Sources(rootUrl, paths)` / `V2Source`: trusted registration reads repository bytes
+  once. `createV2Registry(sources, emitters)` / `V2Registry`: snapshot immutable source/asset
+  content, derive actual `sourceSha256` per emitter and full registry `sha256`, then derive the
+  spec's `GenerationInstalledSupport`. Semantic `{id,version,sha256}` refs remain distinct from
+  executable identity `{id,version,sourceSha256,sources,dependencies}` / `V2EmitterIdentity`.
+  Hosts supply the complete actual source closure; function text or descriptor SHA cannot replace
+  it. `asset(path)` returns copied bytes only; a renderer may read only its own declared closure.
+- `V2Emitter` has unique `id`, exact `version`, `sourcePaths` naming captured implementation/
+  assets, exact `dependencies?`, `status: implemented|partial|diagnostic`, `description`, optional
+  `provides`, and synchronous pure `render(context) -> {files,gaps?}`. `provides.runtime` and
+  `.presets[]` carry `{ref,outputPaths}`; `.templates[]` reuse **the actual spec contract**
+  `{ref,consumers:[{input,consumer,outputPaths}]}`. One emitter owns each runtime/preset/template
+  responsibility. Only real `implemented` emitters can attest installation. Partial/diagnostic
+  emitters cannot install complete support; partial emitters automatically add a required gap.
+- `V2RenderContext` is `{model: NormalizedGeneration, settings: GenerationSettingDecision[],
+  asset(path)}`. All trusted emitters are invoked in stable ID order; **feature emitters must
+  filter the normalized selections for their responsibility and return no feature files when
+  unselected**. Project owners may inspect the entire normalized model to compose shared output.
+  Renderers read no mutable files, v1 app, environment, clocks, randomness or network.
+- `V2TemplateFile` is `{path,content,ownership,sourcePaths,contributors?}`. Ownership is
+  `generated-scaffold|generated-extension`; source paths are distinct exact original-design JSON
+  pointers. `contributors` is `[{emitter,sourcePaths}]`, with unique other registered emitter IDs.
+  There is exactly one writer per file. A project owner composes the full file and names its
+  contributors; other emitters never append/overwrite. YV2-04 can introduce its specific typed
+  migration/access hooks using this single-writer boundary; no universal fragment DSL exists.
+- `V2Gap` is `{id,status: custom|unfinished|unsupported,description,sourcePaths,required}`.
+  Emitters must report missing required application hooks rather than treating generated shells
+  as implemented behavior. Required gaps prevent application completion.
+- `assembleV2({designJson}, registry) -> {files,manifest,report}`: use `resolveGeneration` exactly
+  once, render frozen normalized semantics, validate paths/collisions/original pointers and
+  verify **every selected installed consumer output against files actually emitted**, including
+  that consumer's owner/explicit contribution. A path advertisement or somebody else's file
+  does not count. Missing output refuses `MISSING_CONSUMER_OUTPUT`.
+
+Metadata paths are `.jeeves/inputs/design.json` (exact bytes), `.jeeves/normalized.json`,
+`.jeeves/report.json` and `.jeeves/manifest.json`. `.jeeves/` is assembler-owned. The manifest
+records source/canonical/normalized hashes, complete registry source hashes, exact runtime/preset/
+all declared template refs (including unsupported refs), executable/dependency identities and
+each payload's hash/bytes/owner/design pointers/contributors. It excludes itself; the support
+report is hashed. No timestamp, source filename, checkout path or project envelope selects code.
+
+The report retains resolver settings/findings and `localAdapterTreatments`. Setting `status`
+retains semantic meaning; `implementationStatus` separately says
+`implemented|fixed-policy|unsupported|unfinished`, so a supported value without an emitted
+consumer remains unfinished. Selections/fixed policies and custom/unfinished gaps stay explicit.
+`semanticComplete` is resolver support; `applicationComplete` additionally requires no required
+gap. Neither attests build/runtime/scenario evidence (`runtimeVerification: none`) nor strict
+readiness (`strictReadiness: not-assessed`).
+
+`loadLocalV2Registry()` in `templates/local-v2/index.ts` snapshots generator/spec source and assets
+and currently registers **only** `local.diagnostic`. It emits `diagnostics/generation.json`, with
+the required `application-implementations` unfinished gap; no semantic runtime/preset/template is
+installed. YV2-04 replaces/refines this broad diagnostic gap when the project envelope exists and
+registers only its real foundation. Later feature units register only their actual implementation.
+`export:v2 <saved-design.json> <new-directory>` uses the same registry and existing safe
+`exportNewDirectory`. Existing `assembleExperimental`, `export:new`, local-v1 assets/identities and
+108-file output (including manifest) remain unchanged. No forms, server preview or v2 app exists.
+
+Five focused offline cases cover determinism/semantic versus raw identity, actual changed asset
+identity/immutable capture, missing/wrong-owner consumers and explicit shared ownership, unsupported
+selections, unsafe/defaulted source paths, edited/custom output preservation and frozen v1 output.
+The CLI is also exercised against a disposable saved fixture. Next owner: **YV2-04 only**.

@@ -5503,3 +5503,33 @@ or strict readiness. Preserve owner services/resources, root README, `.jeeves-fe
 existing e2e-docker mode. Sequential main; no delegation/branch/worktree/stash/push.
 
 Local commit: **YV2-02: resolve template bindings and supported controls**.
+
+## 2026-11-08 — YV2-03: separate deterministic assembler and safe export
+
+Added `validateV2Input`, `captureV2Sources`, `createV2Registry`, `assembleV2`,
+`loadLocalV2Registry` and `export:v2`; [actual interfaces](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-03--registry-assembly-provenance-and-fresh-export)
+record the contracts. Exact saved/canonical/normalized input identities stay separate from
+semantic descriptor refs and actual executable/source/asset fingerprints. Render uses frozen
+normalized input and copied captured assets. Files have one owner, exact original-source pointers
+and explicit contributors; actual emitted ownership is required for every selected consumer path.
+Shared writers/collisions/default-created source pointers refuse. Reports retain unsupported intent,
+missing consumers and required custom/unfinished hooks. Diagnostic/partial emitters install no
+complete support. Existing safe export and edit/custom-path preservation helpers are reused.
+
+The real local registry currently emits **only** `diagnostics/generation.json` plus four provenance
+files: no runtime/preset/feature implementation, app envelope, UI or server preview. Two actual CLI
+exports match byte-for-byte; existing destination refuses while preserving edited/custom files.
+Five offline checks plus final `pnpm check` **416 tests/55 files, 29.60s**, lint/types; **36 native
+E2Es, 1.8m**; web build **1.31s** (existing chunk advisory). Logs in
+`/tmp/jeeves-yv2-03/{check-final,e2e,build,cli,cli-existing,v1}.log`.
+Browser E2Es retain TinyURL lane/mouse and legacy preview/download checks; this infrastructure
+unit changes no normal UI, so no separate manual mouse check was needed.
+
+Frozen v1's complete **108-path/hash list is identical**, including manifest SHA
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-04 only**: real standalone project/provider/access foundation; refine the broad diagnostic
+gap when that foundation exists, preserving missing feature/hook findings. No v2 field app or
+prefilled baseline. Root README, local-v1 assets, v1 inputs/app/runtime, owner services/resources,
+`.jeeves-feedback` dirt and e2e-docker mode are unchanged. Sequential main, no delegation/push.
+
+Local commit: **YV2-03: assemble and export versioned v2 templates**.
