@@ -11,7 +11,9 @@ FP03b adds guarded Jeeves mouse preview/ZIP download for the exact frozen saved 
 retains the [actual untouched generated baseline](../../../field-projects/youtube/v1/notes/baseline.md),
 independently installed and built both in this repository and outside the checkout. FP05 supplies
 the [concrete custom completion plan](../../../field-projects/youtube/v1/notes/implementation-plan.md)
-against commit `02ac280da62616e9c7aad7f88457dcb72084cb25`; no application scenario is complete yet.
+against commit `02ac280da62616e9c7aad7f88457dcb72084cb25`. FP06a adds the
+[custom owned-state foundation](../../../field-projects/youtube/v1/notes/fp06a-foundation.md) and
+native008–010 schema3 ownership/publication corrections; no application scenario is complete yet.
 
 ## Scope and decisions
 
@@ -295,7 +297,7 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | FP03b: Jeeves export (implemented) | Guarded mouse preview/download of the same in-memory bundle as a bounded deterministic ZIP, including frozen input/image/template provenance. Trusted profile/template assets ship in Jeeves Docker; only exact saved-source matches export. No strict eligibility credit or heavy template certification. |
 | FP04: generated v1 checkpoint (implemented) | Actual Jeeves mouse ZIP retained untouched in v1/app with exact archive/payload/input/image provenance; frozen installs and TypeScript builds pass in-repo and in a fresh independent extraction. Business scenarios remain incomplete/unrun. |
 | FP05: custom completion plan (implemented) | [Concrete contracts, file hooks and assigned units](../../../field-projects/youtube/v1/notes/implementation-plan.md) from the untouched FP04 commit: shared Video authority, explicit grants, committed publication, finite lifecycle, real media/browser and frozen-scope acceptance. Planning only; no custom app code or scenario closure. |
-| FP06a: authority/state foundation | Apply/snapshot v1 schema3 ownership and processing/publication corrections; owned SQL/migrations, ready-only grants, finite envelopes/transitions/inbox/outbox and necessary shell integration. |
+| FP06a: authority/state foundation (implemented) | [Custom foundation and exact FP06b interfaces](../../../field-projects/youtube/v1/notes/fp06a-foundation.md): native008–010/schema3 revision6, owned migrations/private SQL/public views/runtime grants, finite contracts/transitions/inbox/outbox and HTTP/AMQP integration. Bounded real SQL/broker probes pass; application consumers remain unstarted and S01–S08 incomplete. |
 | FP06b: creator/multipart/uploader | Real PKCE/creator controls, private multipart/resume/abort/status and plain browser build. S01 staged setup, S02–S03 evidence; unfinished workers stay stopped. |
 | FP06c: processing/publication/playback | Real FFmpeg ladder/thumbnail, lifecycle results/deadlines, committed ready/publication, Watch cache and HLS interface. S04–S05 evidence. |
 | FP07a: search/counts/core UI | Committed OpenSearch projection/query, duplicate-safe counts and actual-played event policy; S06–S07 and complete minimal interface. |

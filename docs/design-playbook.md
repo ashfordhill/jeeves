@@ -1051,3 +1051,16 @@ general toolbar draft flag deliberately excludes validation errors for its exist
 behavior; reusing it alone left the new export trigger enabled. Use an export-specific guard,
 then recheck source/current project after asynchronous work. Preserve the failed mouse result
 and the corrected presentation; this observation adds no application-runtime or chat-quality credit.
+
+## 2026-11-07 custom field ownership and role-title observation
+
+The first custom YouTube authority edit exposed an existing finite outbox check: a publisher
+module needs its own explicit database module link, even when its host already has a metadata
+relationship. Preserve the intermediate finding and add the concrete link; host membership is
+not a substitute for the declared dependency. No new outbox capability or template was inferred.
+
+A native export/studio review of the expanded Video roles found “Upload & status API” clipped
+beside the role subtitle. “Upload API” fits better; its Purpose retains status responsibility.
+Use concise tile names and keep detailed responsibilities in the inspector. The fitted overview
+still has small text, and the collapsed workflow cycle still uses the existing expanded fallback;
+this naming correction does not establish full owner usability or require split authority.

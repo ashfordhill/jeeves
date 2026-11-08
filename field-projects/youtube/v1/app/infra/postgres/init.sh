@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-# No application tables or ownership beyond the declared metadata/counts owners.
+# First-start database owners only. Repeatable scripts/migrate.mjs supplies runtime grants/data.
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname postgres \
   --set=metadata_owner="$(cat /run/secrets/metadata_owner)" \
   --set=metadata_reader="$(cat /run/secrets/metadata_reader)" \
@@ -19,11 +19,9 @@ REVOKE ALL ON DATABASE metadata, counts, identity FROM PUBLIC;
 GRANT CONNECT ON DATABASE metadata TO metadata_reader;
 GRANT CONNECT ON DATABASE counts TO counts_reader;
 \connect metadata
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-GRANT USAGE ON SCHEMA public TO metadata_reader;
-ALTER DEFAULT PRIVILEGES FOR ROLE metadata_owner IN SCHEMA public GRANT SELECT ON TABLES TO metadata_reader;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE metadata_owner IN SCHEMA public REVOKE ALL ON TABLES FROM metadata_reader;
 \connect counts
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-GRANT USAGE ON SCHEMA public TO counts_reader;
-ALTER DEFAULT PRIVILEGES FOR ROLE counts_owner IN SCHEMA public GRANT SELECT ON TABLES TO counts_reader;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE counts_owner IN SCHEMA public REVOKE ALL ON TABLES FROM counts_reader;
 SQL

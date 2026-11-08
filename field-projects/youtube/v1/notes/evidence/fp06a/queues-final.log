@@ -1,0 +1,9 @@
+name	messages	consumers
+completion-handler	0	0
+view-counter	0	0
+search-indexer	0	0
+completion-handler.failed	0	0
+search-indexer.failed	0	0
+upload-jobs.failed	0	0
+upload-jobs	0	0
+view-counter.failed	0	0

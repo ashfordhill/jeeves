@@ -5153,3 +5153,42 @@ field stack/provider campaign. Owner4300/4310 watchers/other Compose projects/`.
 preserved. No paid/live/cloud calls or secrets/media/dependencies/build/runtime data staged.
 
 Local commit: **FP05: plan custom YouTube v1 completion from generated baseline**.
+
+## 2026-11-07 — FP06a: custom YouTube authority and durable state foundation
+
+Only FP06a after **`aed1d1d29c2e41f3173d3d11fd771e8519e0a838`**, main/primary sole writer, no
+branch/worktree/stash/delegation/push. Retained v1 copy now schema3/r6 through ordinary operations
+6470–6472 and actual native [008–010](../field-projects/youtube/v1/diagrams/index.md): shared Video
+Upload/lifecycle authority, explicit grants/upload-state, Processing→lifecycle and committed
+Publication→indexer, enabled SQL outboxes, batch1/immediate count/fixed-CPU prose.008 retains two
+missing direct module→DB findings;009 fixes them;010 shortens a clipped Upload title. Expanded-role
+owner-cycle fallback/small overview and eight unresolved executable-contract findings stay honest.
+Original YouTube2/TinyURL53/Marketplace1 and histories preserved. Frozen005/001–007/inputs/generator/
+templates/`.jeeves` unchanged; current source intentionally refuses frozen-profile export.
+
+[State/client handoff](../field-projects/youtube/v1/notes/fp06a-foundation.md) names strict bounded
+v1 contracts, stable IDs, typed transaction functions, private metadata/upload/inbox/outbox and count
+receipts/totals, ready/totals public views, versioned repeatable migrations, migration-only owners
+and metadata_upload/metadata_lifecycle/counts_writer. Legacy reader grants revoked before private
+creation/on upgrades; Transcoder remains broker+S3/no SQL. Confirmed destination relays/backoff,
+pre-listen HTTP/awaited-handler budgets and AMQP terminal metadata/fatal closed signal implemented;
+unfinished shells refuse before consumption/listen. No FP06b browser/upload routes or FP06c processing.
+
+[Evidence/provenance](../field-projects/youtube/v1/notes/evidence/fp06a/README.md): app own frozen
+install/TS7 build +2 network-free checks; isolated real SQL/broker migration/grant/atomic rollback/
+duplicate/confirm/backoff/terminal-close/binding probes pass. Synthetic SQL rows/outbox/counts0 and
+all queues0/consumers0 before owned jeeves-fp06a containers/two volumes/network/image/secrets removed.
+No prepared field runtime; next FP06b creates final jeeves-youtube-v1 with safe first-run/restart
+and starts only its implemented Upload/browser subset. G01–G08/S01–S08 remain incomplete; no feature/
+template/effort-saving claim.83 baseline payloads+manifest unchanged,24 planned integration edits,
+17 new custom app files; seven business extensions/pins/locks unchanged. Active effort/cost unknown.
+
+Required checks sequential/source steady/no Docker build-cleanup overlap: first known PGlite5s
+restart timeout397/398 retained, isolated12/12 then unchanged full **398/50** pass21.25s;
+**36 native E2Es1.2m**, **web build975ms** (existing advisory). Final actual owner4300 mouse
+Resources/Access/focus/custom-profile refusal/TinyURL12/13 pass; zero page errors/one expected422.
+E2E DB matches prior default-only state. Owned capture4302 stopped; original4300/4310 watchers,
+four other Compose projects and `.jeeves-feedback/` preserved. No live/paid/cloud calls or media/
+credentials/runtime/dependencies/build data staged. No automatic v2 before working-v1 owner review.
+
+Local commit: **FP06a: add custom YouTube ownership and durable state foundation**.

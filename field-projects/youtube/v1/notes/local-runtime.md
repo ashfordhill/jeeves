@@ -164,3 +164,26 @@ processing events. First-run initialization and normal stop/start get separate d
 that preserve secrets/volumes. These are planned changes, not another runtime campaign or an
 amendment to the historical probe results above. Baseline app/runtime bytes remain untouched
 through FP05; final working stack is to remain available at loopback4400–4402 for owner review.
+
+## FP06a current foundation and resource handoff
+
+The custom app now has private versioned metadata/counts migrations, ready/totals-only readers,
+separate metadata_upload/metadata_lifecycle/counts_writer secrets, conditional transactional state,
+inbox/outbox and strict v1 envelopes. Owners remain setup-only; Transcoder has broker+S3 only.
+Processing→lifecycle and committed publication→indexer assertions remove obsolete bindings.
+See [exact interfaces](fp06a-foundation.md) and [current operator commands](../app/README.md).
+These are foundation results, not S01–S08 completion; unfinished application shells refuse startup.
+
+All real provider probes used the isolated **jeeves-fp06a** Compose project from
+`/tmp/jeeves-fp06a/runtime-app`. Only postgres/broker and one-shot setup/probe containers ran;
+no application consumer, S3, Identity, search, media or browser field app was started. Synthetic
+ready/pending/inbox/outbox/count records were removed to0, all eight durable queues were0 with
+0consumers, then the two owned containers/two named volumes/network/`jeeves-fp06a-app` image and
+scratch `.runtime` secrets were removed. Final app has no `.runtime` and no prepared field stack.
+Other four Compose projects and owner4300/4310 watchers stay running; owned capture4302 is stopped.
+No fake jobs/publications/ready rows survive for later real-media demos.
+
+FP06b creates the final **jeeves-youtube-v1** runtime and implements its safe first-run step
+tracking, providers/bootstrap/search assertions and normal restart path before starting only its
+implemented upload/browser subset. Do not start lifecycle sweeps/processing/indexer/counter yet.
+No secret rotation, volume reset or full-provider certification campaign is implied by this unit.

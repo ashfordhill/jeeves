@@ -1,0 +1,8 @@
+ Container jeeves-fp06a-postgres-1 Running 
+ Container jeeves-fp06a-postgres-1 Waiting 
+ Container jeeves-fp06a-postgres-1 Healthy 
+ Container jeeves-fp06a-migrate-run-d2528c5b83ee Creating 
+ Container jeeves-fp06a-migrate-run-d2528c5b83ee Created 
+Applied metadata/001-video.sql
+Applied counts/001-counts.sql
+Migrations current; runtime credentials preserved. Owners are setup-only.

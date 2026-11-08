@@ -1,0 +1,11 @@
+{
+  "kind": "custom-field-integration",
+  "projectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+  "revision": 6,
+  "schemaVersion": 3,
+  "canonicalSha256": "dac02e0e1e32436e3170988670da19a1a493f327abbe778586297bc319961571",
+  "snapshot": "../diagrams/010-readable-upload-role",
+  "generatedBaselineCommit": "02ac280da62616e9c7aad7f88457dcb72084cb25",
+  "historicalManifest": ".jeeves/manifest.json",
+  "implementation": "FP06a state foundation; no completed S01\u2013S08; generated provenance remains historical"
+}

@@ -38,6 +38,15 @@
     },
     "upload_s3": {
       "file": ".runtime/secrets/upload_s3"
+    },
+    "metadata_upload": {
+      "file": ".runtime/secrets/metadata_upload"
+    },
+    "metadata_lifecycle": {
+      "file": ".runtime/secrets/metadata_lifecycle"
+    },
+    "counts_writer": {
+      "file": ".runtime/secrets/counts_writer"
     }
   },
   "services": {
@@ -151,7 +160,10 @@
       "init": true,
       "secrets": [
         "broker_password",
-        "metadata_owner"
+        "metadata_lifecycle"
+      ],
+      "profiles": [
+        "application"
       ]
     },
     "edge": {
@@ -175,6 +187,9 @@
         "./infra/edge/nginx.conf:/etc/nginx/nginx.conf:ro",
         "./public:/usr/share/nginx/html:ro",
         "edge-cache:/var/cache/nginx"
+      ],
+      "profiles": [
+        "application"
       ]
     },
     "identity": {
@@ -299,7 +314,10 @@
       },
       "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
       "init": true,
-      "secrets": []
+      "secrets": [],
+      "profiles": [
+        "application"
+      ]
     },
     "search-index": {
       "environment": {
@@ -363,6 +381,9 @@
       "init": true,
       "secrets": [
         "broker_password"
+      ],
+      "profiles": [
+        "application"
       ]
     },
     "search-init": {
@@ -444,6 +465,9 @@
           "source": "transcoder_s3",
           "target": "s3_credentials"
         }
+      ],
+      "profiles": [
+        "application"
       ]
     },
     "upload": {
@@ -479,7 +503,11 @@
         {
           "source": "upload_s3",
           "target": "s3_credentials"
-        }
+        },
+        "metadata_upload"
+      ],
+      "profiles": [
+        "application"
       ]
     },
     "view-counter": {
@@ -516,7 +544,10 @@
       "init": true,
       "secrets": [
         "broker_password",
-        "counts_owner"
+        "counts_writer"
+      ],
+      "profiles": [
+        "application"
       ]
     },
     "watch": {
@@ -552,6 +583,37 @@
         "metadata_reader",
         "counts_reader",
         "cache_password"
+      ],
+      "profiles": [
+        "application"
+      ]
+    },
+    "migrate": {
+      "build": {
+        "context": ".",
+        "target": "app"
+      },
+      "image": "${COMPOSE_PROJECT_NAME:-youtube-v1}-app",
+      "init": true,
+      "profiles": [
+        "setup"
+      ],
+      "command": [
+        "node",
+        "scripts/migrate.mjs"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        }
+      },
+      "secrets": [
+        "postgres_admin",
+        "metadata_owner",
+        "counts_owner",
+        "metadata_upload",
+        "metadata_lifecycle",
+        "counts_writer"
       ]
     }
   },

@@ -103,3 +103,21 @@ or a new generator run, as the byte/provenance comparison anchor. The [FP05 impl
 plan](implementation-plan.md) reads the actual helpers/services/workers/scripts/Compose and
 assigns FP06a–FP07b. It does not modify any of the108 generated files, frozen inputs, historical
 snapshots, locks or reports, and does not close G01–G08 or pass an S01–S08 scenario.
+
+## FP06a custom foundation provenance
+
+FP05 containing commit is `aed1d1d29c2e41f3173d3d11fd771e8519e0a838`. The immutable comparison
+anchor remains FP04 `02ac280da62616e9c7aad7f88457dcb72084cb25`; generator/templates/inputs and
+`app/.jeeves` are unchanged. [Per-file provenance](evidence/fp06a/provenance.json) compares the107
+hashed payloads plus manifest:83 payloads remain byte-identical,24 are modified for planned custom
+integration, the manifest remains identical, and17 application files are newly custom. No dependency
+or lock change, reused custom runtime source or retroactive template success is asserted. All seven
+business extension files remain unchanged; no complete application scenario is claimed.
+
+The changes implement the planned owned-state seam, source/config/grant/topology corrections and
+HTTP/AMQP/outbox integration. They are distinct from a verified generic template or defect campaign.
+A new confirm-timer cleanup and fatal-close signal were reviewed during custom implementation.
+Real rollback/denial/duplicate/binding evidence supports this foundation only. G01–G03 have concrete
+building blocks; their integration and all S01–S08 remain incomplete pending later assigned units.
+Current schema3 revision6/native010 deliberately differs from frozen005 generation source; no
+profile broadening or historical input/diagram/output-manifest rewriting keeps Generate eligible.

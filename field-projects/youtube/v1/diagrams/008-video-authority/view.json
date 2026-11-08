@@ -1,0 +1,203 @@
+{
+  "camera": "translate(164.035px, 134.702px) scale(0.342654)",
+  "tiles": [
+    {
+      "id": "@actor",
+      "style": "z-index: 0; transform: translate(32px, 752px); pointer-events: all; visibility: visible; width: 128px; height: 160px;"
+    },
+    {
+      "id": "@download",
+      "style": "z-index: 0; transform: translate(224px, 480px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "@upload",
+      "style": "z-index: 0; transform: translate(224px, 1056px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "watch",
+      "style": "z-index: 0; transform: translate(416px, 288px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "search",
+      "style": "z-index: 0; transform: translate(416px, 480px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "video-cdn",
+      "style": "z-index: 0; transform: translate(416px, 640px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "metadata-cache",
+      "style": "z-index: 0; transform: translate(640px, 32px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "metadata-db",
+      "style": "z-index: 0; transform: translate(1088px, 800px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "view-counts",
+      "style": "z-index: 0; transform: translate(640px, 192px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "view-events",
+      "style": "z-index: 0; transform: translate(640px, 352px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "search-index",
+      "style": "z-index: 0; transform: translate(1536px, 800px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "transcoded",
+      "style": "z-index: 0; transform: translate(640px, 800px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "view-counter",
+      "style": "z-index: 0; transform: translate(832px, 352px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "identity",
+      "style": "z-index: 0; transform: translate(416px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "upload",
+      "style": "z-index: 0; transform: translate(416px, 1120px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "upload-queue",
+      "style": "z-index: 0; transform: translate(640px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "originals",
+      "style": "z-index: 0; transform: translate(640px, 1120px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "transcoder",
+      "style": "z-index: 0; transform: translate(832px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "completion-events",
+      "style": "z-index: 0; transform: translate(1088px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "completion-handler",
+      "style": "z-index: 0; transform: translate(1280px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "publication-events",
+      "style": "z-index: 0; transform: translate(1536px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    },
+    {
+      "id": "search-indexer",
+      "style": "z-index: 0; transform: translate(1728px, 960px); pointer-events: all; visibility: visible; width: 128px; height: 128px;"
+    }
+  ],
+  "lines": [
+    {
+      "id": "watch-views-publish",
+      "path": "M 544 352 L 608 352 L 608 416 L 640 416"
+    },
+    {
+      "id": "views-counter",
+      "path": "M 768 416 L 832 416"
+    },
+    {
+      "id": "upload-publish",
+      "path": "M 544 1184 L 576 1184 L 576 1024 L 640 1024"
+    },
+    {
+      "id": "jobs-transcoder",
+      "path": "M 768 1024 L 832 1024"
+    },
+    {
+      "id": "transcoder-publish",
+      "path": "M 960 1024 L 1088 1024"
+    },
+    {
+      "id": "completions-handler",
+      "path": "M 1216 1024 L 1280 1024"
+    },
+    {
+      "id": "handler-publication",
+      "path": "M 1408 1024 L 1536 1024"
+    },
+    {
+      "id": "publications-indexer",
+      "path": "M 1664 1024 L 1728 1024"
+    },
+    {
+      "id": "@actor-download",
+      "path": "M 160 832 L 192 832 L 192 544 L 224 544"
+    },
+    {
+      "id": "@actor-upload",
+      "path": "M 160 832 L 192 832 L 192 1120 L 224 1120"
+    },
+    {
+      "id": "download-watch",
+      "path": "M 352 544 L 384 544 L 384 352 L 416 352"
+    },
+    {
+      "id": "download-search",
+      "path": "M 352 544 L 416 544"
+    },
+    {
+      "id": "download-video-cdn",
+      "path": "M 352 544 L 384 544 L 384 704 L 416 704"
+    },
+    {
+      "id": "upload-identity",
+      "path": "M 352 1120 L 384 1120 L 384 1024 L 416 1024"
+    },
+    {
+      "id": "upload-service",
+      "path": "M 352 1120 L 384 1120 L 384 1184 L 416 1184"
+    },
+    {
+      "id": "watch-cache",
+      "path": "M 544 352 L 576 352 L 576 96 L 640 96"
+    },
+    {
+      "id": "watch-metadata",
+      "path": "M 544 352 L 576 352 L 576 496 L 1056 496 L 1056 864 L 1088 864"
+    },
+    {
+      "id": "watch-counts-read",
+      "path": "M 544 352 L 608 352 L 608 256 L 640 256"
+    },
+    {
+      "id": "search-read",
+      "path": "M 544 544 L 1472 544 L 1472 864 L 1536 864"
+    },
+    {
+      "id": "cdn-transcoded",
+      "path": "M 544 704 L 576 704 L 576 864 L 640 864"
+    },
+    {
+      "id": "counter-write",
+      "path": "M 960 416 L 1024 416 L 1024 336 L 608 336 L 608 256 L 640 256"
+    },
+    {
+      "id": "upload-originals",
+      "path": "M 544 1184 L 640 1184"
+    },
+    {
+      "id": "upload-state",
+      "path": "M 544 1184 L 576 1184 L 576 1264 L 1024 1264 L 1024 864 L 1088 864"
+    },
+    {
+      "id": "transcoder-read",
+      "path": "M 960 1024 L 992 1024 L 992 1104 L 608 1104 L 608 1184 L 640 1184"
+    },
+    {
+      "id": "transcoder-write",
+      "path": "M 960 1024 L 992 1024 L 992 944 L 608 944 L 608 864 L 640 864"
+    },
+    {
+      "id": "handler-metadata",
+      "path": "M 1408 1024 L 1440 1024 L 1440 784 L 1024 784 L 1024 864 L 1088 864"
+    },
+    {
+      "id": "indexer-write",
+      "path": "M 1856 1024 L 1888 1024 L 1888 944 L 1504 944 L 1504 864 L 1536 864"
+    }
+  ]
+}

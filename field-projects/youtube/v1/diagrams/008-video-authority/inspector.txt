@@ -1,0 +1,44 @@
+Inspector
+Compatibility report
+Video · one logical owner
+
+API role · Upload & status API · deployable unspecified
+
+Upload & status API
+Video lifecycle worker
+Collapse Video
+Ownership & access
+
+Design intent only. Inspect operation declarations separately; runtime authorization is unavailable.
+
+Operation contracts
+Focus relationships
+Upload & status API
+
+API role
+
+Tile kind: Uploads · deployable intent: unspecified. A role is a responsibility within its logical owner; roles may share a process.
+
+Type
+Microservice
+Worker service
+Redirect
+Identity
+Notifications
+Billing
+Uploads
+General
+Options
+Connections
+Modules
+Name
+Purpose
+Execution
+Docker
+Managed
+Language
+TypeScript
+Go
+Exposure
+Internal
+Public

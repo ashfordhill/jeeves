@@ -1,0 +1,739 @@
+{
+  "fromSchema": 2,
+  "toSchema": 3,
+  "ownership": {
+    "owners": [
+      {
+        "id": "video",
+        "name": "Video"
+      },
+      {
+        "id": "media",
+        "name": "Media"
+      },
+      {
+        "id": "watch-owner",
+        "name": "Watch"
+      },
+      {
+        "id": "discovery",
+        "name": "Discovery"
+      },
+      {
+        "id": "counts",
+        "name": "Counts"
+      },
+      {
+        "id": "identity-owner",
+        "name": "Identity"
+      }
+    ],
+    "roles": [
+      {
+        "element": "upload",
+        "owner": "video",
+        "kind": "api"
+      },
+      {
+        "element": "completion-handler",
+        "owner": "video",
+        "kind": "worker"
+      },
+      {
+        "element": "transcoder",
+        "owner": "media",
+        "kind": "worker"
+      },
+      {
+        "element": "watch",
+        "owner": "watch-owner",
+        "kind": "api"
+      },
+      {
+        "element": "search",
+        "owner": "discovery",
+        "kind": "api"
+      },
+      {
+        "element": "search-indexer",
+        "owner": "discovery",
+        "kind": "worker"
+      },
+      {
+        "element": "view-counter",
+        "owner": "counts",
+        "kind": "worker"
+      },
+      {
+        "element": "identity",
+        "owner": "identity-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "metadata-db",
+        "authority": "video",
+        "kind": "source"
+      },
+      {
+        "element": "originals",
+        "authority": "video",
+        "kind": "source"
+      },
+      {
+        "element": "transcoded",
+        "authority": "media",
+        "kind": "source"
+      },
+      {
+        "element": "metadata-cache",
+        "authority": "watch-owner",
+        "kind": "projection",
+        "source": "metadata-db"
+      },
+      {
+        "element": "view-counts",
+        "authority": "counts",
+        "kind": "source"
+      },
+      {
+        "element": "search-index",
+        "authority": "discovery",
+        "kind": "projection",
+        "source": "metadata-db"
+      }
+    ],
+    "grants": [
+      {
+        "role": "upload",
+        "resource": "metadata-db",
+        "access": "read-write"
+      },
+      {
+        "role": "completion-handler",
+        "resource": "metadata-db",
+        "access": "read-write"
+      },
+      {
+        "role": "watch",
+        "resource": "metadata-db",
+        "access": "read",
+        "boundary": "published-read"
+      },
+      {
+        "role": "upload",
+        "resource": "originals",
+        "access": "read-write"
+      },
+      {
+        "role": "transcoder",
+        "resource": "originals",
+        "access": "read",
+        "boundary": "published-read"
+      },
+      {
+        "role": "transcoder",
+        "resource": "transcoded",
+        "access": "read-write"
+      },
+      {
+        "role": "watch",
+        "resource": "metadata-cache",
+        "access": "read-write"
+      },
+      {
+        "role": "view-counter",
+        "resource": "view-counts",
+        "access": "read-write"
+      },
+      {
+        "role": "watch",
+        "resource": "view-counts",
+        "access": "read",
+        "boundary": "published-read"
+      },
+      {
+        "role": "search-indexer",
+        "resource": "search-index",
+        "access": "read-write"
+      },
+      {
+        "role": "search",
+        "resource": "search-index",
+        "access": "read"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "upload-state",
+        "access": "read-write"
+      },
+      {
+        "connection": "handler-metadata",
+        "access": "read-write"
+      },
+      {
+        "connection": "watch-metadata",
+        "access": "read"
+      },
+      {
+        "connection": "upload-originals",
+        "access": "read-write"
+      },
+      {
+        "connection": "transcoder-read",
+        "access": "read"
+      },
+      {
+        "connection": "transcoder-write",
+        "access": "read-write"
+      },
+      {
+        "connection": "watch-cache",
+        "access": "read-write"
+      },
+      {
+        "connection": "counter-write",
+        "access": "read-write"
+      },
+      {
+        "connection": "watch-counts-read",
+        "access": "read"
+      },
+      {
+        "connection": "indexer-write",
+        "access": "read-write"
+      },
+      {
+        "connection": "search-read",
+        "access": "read"
+      }
+    ]
+  },
+  "changes": [
+    {
+      "field": "owners",
+      "id": "video",
+      "change": "added",
+      "before": null,
+      "after": {
+        "id": "video",
+        "name": "Video"
+      }
+    },
+    {
+      "field": "owners",
+      "id": "media",
+      "change": "added",
+      "before": null,
+      "after": {
+        "id": "media",
+        "name": "Media"
+      }
+    },
+    {
+      "field": "owners",
+      "id": "watch-owner",
+      "change": "added",
+      "before": null,
+      "after": {
+        "id": "watch-owner",
+        "name": "Watch"
+      }
+    },
+    {
+      "field": "owners",
+      "id": "discovery",
+      "change": "added",
+      "before": null,
+      "after": {
+        "id": "discovery",
+        "name": "Discovery"
+      }
+    },
+    {
+      "field": "owners",
+      "id": "counts",
+      "change": "added",
+      "before": null,
+      "after": {
+        "id": "counts",
+        "name": "Counts"
+      }
+    },
+    {
+      "field": "owners",
+      "id": "identity-owner",
+      "change": "added",
+      "before": null,
+      "after": {
+        "id": "identity-owner",
+        "name": "Identity"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "upload",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "upload",
+        "owner": "video",
+        "kind": "api"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "completion-handler",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "completion-handler",
+        "owner": "video",
+        "kind": "worker"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "transcoder",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "transcoder",
+        "owner": "media",
+        "kind": "worker"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "watch",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "watch",
+        "owner": "watch-owner",
+        "kind": "api"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "search",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "search",
+        "owner": "discovery",
+        "kind": "api"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "search-indexer",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "search-indexer",
+        "owner": "discovery",
+        "kind": "worker"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "view-counter",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "view-counter",
+        "owner": "counts",
+        "kind": "worker"
+      }
+    },
+    {
+      "field": "roles",
+      "id": "identity",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "identity",
+        "owner": "identity-owner",
+        "kind": "api"
+      }
+    },
+    {
+      "field": "resources",
+      "id": "metadata-db",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "metadata-db",
+        "authority": "video",
+        "kind": "source"
+      }
+    },
+    {
+      "field": "resources",
+      "id": "originals",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "originals",
+        "authority": "video",
+        "kind": "source"
+      }
+    },
+    {
+      "field": "resources",
+      "id": "transcoded",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "transcoded",
+        "authority": "media",
+        "kind": "source"
+      }
+    },
+    {
+      "field": "resources",
+      "id": "metadata-cache",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "metadata-cache",
+        "authority": "watch-owner",
+        "kind": "projection",
+        "source": "metadata-db"
+      }
+    },
+    {
+      "field": "resources",
+      "id": "view-counts",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "view-counts",
+        "authority": "counts",
+        "kind": "source"
+      }
+    },
+    {
+      "field": "resources",
+      "id": "search-index",
+      "change": "added",
+      "before": null,
+      "after": {
+        "element": "search-index",
+        "authority": "discovery",
+        "kind": "projection",
+        "source": "metadata-db"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "upload/metadata-db",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "upload",
+        "resource": "metadata-db",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "completion-handler/metadata-db",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "completion-handler",
+        "resource": "metadata-db",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "watch/metadata-db",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "watch",
+        "resource": "metadata-db",
+        "access": "read",
+        "boundary": "published-read"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "upload/originals",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "upload",
+        "resource": "originals",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "transcoder/originals",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "transcoder",
+        "resource": "originals",
+        "access": "read",
+        "boundary": "published-read"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "transcoder/transcoded",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "transcoder",
+        "resource": "transcoded",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "watch/metadata-cache",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "watch",
+        "resource": "metadata-cache",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "view-counter/view-counts",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "view-counter",
+        "resource": "view-counts",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "watch/view-counts",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "watch",
+        "resource": "view-counts",
+        "access": "read",
+        "boundary": "published-read"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "search-indexer/search-index",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "search-indexer",
+        "resource": "search-index",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "grants",
+      "id": "search/search-index",
+      "change": "added",
+      "before": null,
+      "after": {
+        "role": "search",
+        "resource": "search-index",
+        "access": "read"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "upload-state",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "upload-state",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "handler-metadata",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "handler-metadata",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "watch-metadata",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "watch-metadata",
+        "access": "read"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "upload-originals",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "upload-originals",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "transcoder-read",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "transcoder-read",
+        "access": "read"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "transcoder-write",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "transcoder-write",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "watch-cache",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "watch-cache",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "counter-write",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "counter-write",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "watch-counts-read",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "watch-counts-read",
+        "access": "read"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "indexer-write",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "indexer-write",
+        "access": "read-write"
+      }
+    },
+    {
+      "field": "dependencies",
+      "id": "search-read",
+      "change": "added",
+      "before": null,
+      "after": {
+        "connection": "search-read",
+        "access": "read"
+      }
+    }
+  ],
+  "operationChanges": [],
+  "findings": [
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Projection metadata-cache records source intent only; population, freshness and failure contracts are not specified.",
+      "target": {
+        "element": "metadata-cache",
+        "path": [
+          "ownership",
+          "resources",
+          3
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Projection search-index records source intent only; population, freshness and failure contracts are not specified.",
+      "target": {
+        "element": "search-index",
+        "path": [
+          "ownership",
+          "resources",
+          5
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary watch → metadata-db has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "watch",
+        "path": [
+          "ownership",
+          "grants",
+          2,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary transcoder → originals has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "transcoder",
+        "path": [
+          "ownership",
+          "grants",
+          4,
+          "boundary"
+        ]
+      }
+    },
+    {
+      "code": "CONFIG_REQUIRED",
+      "severity": "error",
+      "message": "Published-read boundary watch → view-counts has no pinned published contract, freshness or failure behavior; runtime authorization is unspecified.",
+      "target": {
+        "element": "watch",
+        "path": [
+          "ownership",
+          "grants",
+          8,
+          "boundary"
+        ]
+      }
+    }
+  ],
+  "canApply": true,
+  "note": "Design declarations only. Legacy inferred writers are unchanged. Roles may share a deployable; co-deployment grants nothing. This ownership edit adds no operation contract, template or runtime authorization. Saving is one Undo step."
+}

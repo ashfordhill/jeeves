@@ -1,0 +1,15 @@
+{
+  "baseRevision": 5,
+  "source": "api",
+  "ops": [
+    {
+      "op": "updateElement",
+      "id": "upload",
+      "name": "Upload API",
+      "description": "Creator-authorized resumable uploads and private status. Video authority allocates lifecycle state and commits pending plus one processing-job outbox intent after verified object completion.",
+      "classification": {
+        "kind": "Application"
+      }
+    }
+  ]
+}

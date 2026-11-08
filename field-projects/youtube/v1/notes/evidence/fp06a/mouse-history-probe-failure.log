@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+undefined !== NaN
+
+    at file:///tmp/jeeves-fp06a/final-mouse.mjs:8:386 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: NaN,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

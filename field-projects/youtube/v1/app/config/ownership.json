@@ -1,0 +1,210 @@
+{
+  "owners": [
+    {
+      "id": "video",
+      "name": "Video"
+    },
+    {
+      "id": "media",
+      "name": "Media"
+    },
+    {
+      "id": "watch-owner",
+      "name": "Watch"
+    },
+    {
+      "id": "discovery",
+      "name": "Discovery"
+    },
+    {
+      "id": "counts",
+      "name": "Counts"
+    },
+    {
+      "id": "identity-owner",
+      "name": "Identity"
+    }
+  ],
+  "roles": [
+    {
+      "element": "upload",
+      "owner": "video",
+      "kind": "api"
+    },
+    {
+      "element": "completion-handler",
+      "owner": "video",
+      "kind": "worker"
+    },
+    {
+      "element": "transcoder",
+      "owner": "media",
+      "kind": "worker"
+    },
+    {
+      "element": "watch",
+      "owner": "watch-owner",
+      "kind": "api"
+    },
+    {
+      "element": "search",
+      "owner": "discovery",
+      "kind": "api"
+    },
+    {
+      "element": "search-indexer",
+      "owner": "discovery",
+      "kind": "worker"
+    },
+    {
+      "element": "view-counter",
+      "owner": "counts",
+      "kind": "worker"
+    },
+    {
+      "element": "identity",
+      "owner": "identity-owner",
+      "kind": "api"
+    }
+  ],
+  "resources": [
+    {
+      "element": "metadata-db",
+      "authority": "video",
+      "kind": "source"
+    },
+    {
+      "element": "originals",
+      "authority": "video",
+      "kind": "source"
+    },
+    {
+      "element": "transcoded",
+      "authority": "media",
+      "kind": "source"
+    },
+    {
+      "element": "metadata-cache",
+      "authority": "watch-owner",
+      "kind": "projection",
+      "source": "metadata-db"
+    },
+    {
+      "element": "view-counts",
+      "authority": "counts",
+      "kind": "source"
+    },
+    {
+      "element": "search-index",
+      "authority": "discovery",
+      "kind": "projection",
+      "source": "metadata-db"
+    }
+  ],
+  "grants": [
+    {
+      "role": "upload",
+      "resource": "metadata-db",
+      "access": "read-write"
+    },
+    {
+      "role": "completion-handler",
+      "resource": "metadata-db",
+      "access": "read-write"
+    },
+    {
+      "role": "watch",
+      "resource": "metadata-db",
+      "access": "read",
+      "boundary": "published-read"
+    },
+    {
+      "role": "upload",
+      "resource": "originals",
+      "access": "read-write"
+    },
+    {
+      "role": "transcoder",
+      "resource": "originals",
+      "access": "read",
+      "boundary": "published-read"
+    },
+    {
+      "role": "transcoder",
+      "resource": "transcoded",
+      "access": "read-write"
+    },
+    {
+      "role": "watch",
+      "resource": "metadata-cache",
+      "access": "read-write"
+    },
+    {
+      "role": "view-counter",
+      "resource": "view-counts",
+      "access": "read-write"
+    },
+    {
+      "role": "watch",
+      "resource": "view-counts",
+      "access": "read",
+      "boundary": "published-read"
+    },
+    {
+      "role": "search-indexer",
+      "resource": "search-index",
+      "access": "read-write"
+    },
+    {
+      "role": "search",
+      "resource": "search-index",
+      "access": "read"
+    }
+  ],
+  "dependencies": [
+    {
+      "connection": "upload-state",
+      "access": "read-write"
+    },
+    {
+      "connection": "handler-metadata",
+      "access": "read-write"
+    },
+    {
+      "connection": "watch-metadata",
+      "access": "read"
+    },
+    {
+      "connection": "upload-originals",
+      "access": "read-write"
+    },
+    {
+      "connection": "transcoder-read",
+      "access": "read"
+    },
+    {
+      "connection": "transcoder-write",
+      "access": "read-write"
+    },
+    {
+      "connection": "watch-cache",
+      "access": "read-write"
+    },
+    {
+      "connection": "counter-write",
+      "access": "read-write"
+    },
+    {
+      "connection": "watch-counts-read",
+      "access": "read"
+    },
+    {
+      "connection": "indexer-write",
+      "access": "read-write"
+    },
+    {
+      "connection": "search-read",
+      "access": "read"
+    }
+  ]
+}

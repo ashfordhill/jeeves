@@ -1,0 +1,28 @@
+{
+  errors: [],
+  consoleErrors: [
+    'Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)'
+  ],
+  audit: [
+    {
+      id: '0a12f132-b0f4-400d-9b94-51546911bb6b',
+      revision: 2,
+      preserved: true
+    },
+    {
+      id: '41bbd268-9244-47cc-be63-66c5e61d116c',
+      revision: 53,
+      preserved: true
+    },
+    {
+      id: '81571ba1-c2da-4896-a79c-c31557f164ca',
+      revision: 1,
+      preserved: true
+    },
+    {
+      id: '293b4a2d-e25b-4a5b-83da-b27de7876f02',
+      revision: 6,
+      preserved: false
+    }
+  ]
+}

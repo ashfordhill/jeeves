@@ -1,0 +1,11 @@
+{
+  "declared": {
+    "kind": "data-access",
+    "poolSize": 10,
+    "readRouting": "primary",
+    "statementTimeoutMs": 2000
+  },
+  "id": "upload-state-writer",
+  "sourcePath": "/architecture/studio/components/20",
+  "customSourceRevision": 5
+}

@@ -1,3 +1,4 @@
-import { consume } from "../lib/amqp.ts";
-export const connect = (handle: (body: Buffer) => Promise<void>) => consume("search-indexer",4,5,handle);
+import { consume, type MessageHandler, type ConsumerOptions } from "../lib/amqp.ts";
+export const connect = (handle: MessageHandler, options: ConsumerOptions = {}) =>
+  consume("search-indexer", 4, 5, handle, options);
 // No batching; callbacks acknowledge only after successful handling.

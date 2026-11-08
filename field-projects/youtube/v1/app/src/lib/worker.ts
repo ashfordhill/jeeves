@@ -1,14 +1,10 @@
-import { writeFileSync } from "node:fs";
-import { consume } from "./amqp.ts";
 import { Unimplemented } from "./env.ts";
+// An unfinished entry point must refuse before opening a consumer or advertising readiness.
 export async function workerShell(
   id: string,
-  queue: string,
-  concurrency: number,
-  retryLimit: number,
-) {
-  await consume(queue, concurrency, retryLimit, async () => {
-    throw new Unimplemented(`${id} message handler`);
-  });
-  writeFileSync("/tmp/shell-ready", "connected; business handler unimplemented\n");
+  _queue: string,
+  _concurrency: number,
+  _retryLimit: number,
+): Promise<never> {
+  throw new Unimplemented(`${id} startup: business handler is not implemented`);
 }

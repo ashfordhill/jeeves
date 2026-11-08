@@ -1,0 +1,6 @@
+ Container jeeves-fp06a-broker-1 Running 
+ Container jeeves-fp06a-broker-1 Waiting 
+ Container jeeves-fp06a-broker-1 Healthy 
+ Container jeeves-fp06a-broker-init-run-02d9578c91b4 Creating 
+ Container jeeves-fp06a-broker-init-run-02d9578c91b4 Created 
+Durable processing→lifecycle, publication→indexer and view→counter topology asserted; obsolete completion/indexer bindings removed.

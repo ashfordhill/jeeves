@@ -94,3 +94,28 @@ lesson alone does not change actual chat guidance or prove assistant/model quali
 These choices resolve planning questions, not application gaps. H01–H09 remain hypotheses;
 existing ownership/publication lessons already apply. No new reusable-template/chat-quality
 lesson, functional percentage or measured time/token saving is asserted from static inspection.
+
+## 2026-11-07 — FP06a implemented owned-state foundation
+
+- **D19 (Video authority adopted):** retained copy explicitly upgrades schema3 in ordinary atomic
+  operation6470/r4; original roles/legacy metadata preserved, Upload and lifecycle receive named
+  read-write grants, Transcoder no SQL, Watch published views, Discovery projection and Counts
+  authority. [008](../diagrams/008-video-authority/snapshot.json) retains the initial direct-outbox-link
+  findings; [009](../diagrams/009-explicit-outbox-store/snapshot.json)/6471/r5 adds both explicit module
+  links; [010](../diagrams/010-readable-upload-role/snapshot.json)/6472/r6 shortens a clipped role name.
+  Status responsibility stays in Purpose; existing expanded-role fallback/readability limit remains.
+- **D20 (durable policy implemented, flow incomplete):** checksummed repeatable owner migrations,
+  runtime-only DML roles/private schemas, ready/totals-only views, fixed identities/inbox/outbox,
+  conditional state and per-event count receipts now exist. Real isolated grant/rollback/duplicate/
+  confirm/backoff probes pass; no synthetic rows/messages survive. No RLS/exactly-once claim.
+- **D21 (publication and transport boundary):** processing only to lifecycle, committed publication
+  only to indexer; repeat setup unbinds old fanout. HTTP config/init precedes listen; awaited handlers
+  own execution admission; AMQP terminal hook precedes failed-copy/ack and exposes fatal closure for
+  stopping loops/pools. No unfinished consumer starts. Exact [FP06b interfaces](fp06a-foundation.md)
+  keep its scope independent of later real media consumers.
+
+H02–H04 now have concrete app-specific code and bounded SQL/broker observations, but remain reuse
+hypotheses until working flows and another applicable use justify a shared template/module. H06/H07
+continue as evidence/source consistency practices. No generic lifecycle/contract framework, heavy
+certification, coverage percentage, time/token savings or automatic v2 decision follows from this
+foundation. The modified-generated/new-custom file accounting is [explicit](evidence/fp06a/provenance.json).

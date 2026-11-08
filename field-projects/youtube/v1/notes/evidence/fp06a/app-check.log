@@ -1,0 +1,12 @@
+$ pnpm build && node --test checks/foundation.test.mjs
+$ tsc -p tsconfig.json
+✔ bounded destination envelopes bind stable identity and result paths (7.269262ms)
+✔ HTTP config precedes listen; deadline retains actual admission until work settles (68.423079ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 206.735931

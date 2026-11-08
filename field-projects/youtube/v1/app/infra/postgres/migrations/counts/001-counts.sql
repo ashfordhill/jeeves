@@ -1,0 +1,10 @@
+CREATE SCHEMA count_private AUTHORIZATION counts_owner;
+CREATE SCHEMA count_public AUTHORIZATION counts_owner;
+REVOKE ALL ON SCHEMA count_private,count_public FROM PUBLIC;
+CREATE TABLE count_private.receipts(video_id uuid NOT NULL,event_id uuid NOT NULL,accepted_at timestamptz NOT NULL,PRIMARY KEY(video_id,event_id));
+CREATE TABLE count_private.totals(video_id uuid PRIMARY KEY,views bigint NOT NULL CHECK(views>=0));
+CREATE VIEW count_public.video_totals AS SELECT video_id,views FROM count_private.totals;
+GRANT USAGE ON SCHEMA count_private TO counts_writer;
+GRANT SELECT,INSERT,UPDATE ON count_private.receipts,count_private.totals TO counts_writer;
+GRANT USAGE ON SCHEMA count_public TO counts_reader;
+GRANT SELECT ON count_public.video_totals TO counts_reader;

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';import{randomUUID}from'node:crypto';import{broker,consume,NonRetryable}from'./dist/lib/amqp.js';
+const connection=await broker(),channel=await connection.createConfirmChannel(),prefix='fp06a-'+randomUUID(),queues=[prefix+'-fatal',prefix+'-fatal.failed',prefix,prefix+'.failed',prefix+'-retry',prefix+'-retry.failed',prefix+'-hook'];
+const confirm=(queue,body,id)=>new Promise((resolve,reject)=>channel.sendToQueue(queue,Buffer.from(body),{messageId:id,persistent:true},e=>e?reject(e):resolve()));
+try{
+ for(const q of queues)await channel.assertQueue(q,{durable:true});
+ const seen=[];let done;const terminal=new Promise(r=>done=r),id=randomUUID();
+ const c=await consume(prefix,1,3,async(body,d)=>{assert.equal(d.messageId,id);assert.equal(d.deliveryCount,1);assert.equal(body.toString(),'terminal');seen.push('handle');throw new NonRetryable('INVALID_MEDIA');},{onTerminal:async(body,d)=>{seen.push('hook');await confirm(prefix+'-hook',body,d.messageId);done();}});
+ await confirm(prefix,'terminal',id);await terminal;await new Promise(r=>setTimeout(r,100));await c.close();const failed=await channel.get(prefix+'.failed',{noAck:true}),hook=await channel.get(prefix+'-hook',{noAck:true});assert.ok(failed&&hook);assert.equal(failed.properties.messageId,id);assert.equal(hook.properties.messageId,id);assert.deepEqual(seen,['handle','hook']);
+ let resolveRetry;const retried=new Promise(r=>resolveRetry=r),attempts=[],rid=randomUUID();const rc=await consume(prefix+'-retry',1,3,async(body,d)=>{assert.equal(d.messageId,rid);attempts.push(d.deliveryCount);if(d.deliveryCount<3)throw new Error('transient');resolveRetry();});await confirm(prefix+'-retry','retry',rid);await retried;await rc.close();assert.deepEqual(attempts,[1,2,3]);
+ const fc=await consume(prefix+'-fatal',1,0,async()=>{throw new NonRetryable('INVALID_MEDIA');},{onTerminal:async()=>{throw new Error('simulated hook failure');}});await confirm(prefix+'-fatal','fatal',randomUUID());assert.deepEqual(await Promise.race([fc.closed,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Fatal close deadline')),5000))]),{fatal:true});process.exitCode=0;const requeued=await channel.get(prefix+'-fatal',{noAck:true});assert.ok(requeued);assert.equal(requeued.fields.redelivered,true);
+ for(const q of queues)assert.equal((await channel.checkQueue(q)).messageCount,0);
+ // Seed obsolete existing bindings. The repeated real setup assertion must explicitly remove them.
+ await channel.assertExchange('completion-events','fanout',{durable:true});await channel.bindQueue('search-indexer','completion-events','');await channel.bindQueue('completion-handler','completion-events','');await channel.bindQueue('search-indexer','processing-events','');
+ console.log(JSON.stringify({deliveryMetadata:true,nonretryableTerminalHookBeforeFailedCopy:true,retryCounts:attempts,stableIds:true,gracefulDrain:true,fatalClosedSignalAndUnackedRedelivery:true,probeQueuesEmpty:true,obsoleteBindingsSeeded:true}));
+}finally{for(const q of queues)await channel.deleteQueue(q);await channel.close();await connection.close();}

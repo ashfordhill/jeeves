@@ -1,0 +1,160 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "009-explicit-outbox-store",
+  "implementation": "Target design; field implementation incomplete, no S01–S08 credit",
+  "capturedAt": "2026-11-08T05:03:23.370Z",
+  "project": {
+    "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "name": "YouTube · field v1 · local Docker",
+    "revision": 5,
+    "createdAt": "2026-11-08T02:55:26.959Z",
+    "updatedAt": "2026-11-08T05:03:20.029Z"
+  },
+  "source": {
+    "designSha256": "bf259016fa075d1240ddf799e127638e06258e82684e1b2f042d403b4a64cb23",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+    "schemaVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "aed1d1d29c2e41f3173d3d11fd771e8519e0a838",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "renderer-audit.json",
+  "image": {
+    "filename": "YouTube-field-v1-local-Docker-r5.png",
+    "sha256": "908f4cb664f32b4ef2f0d77ac8e0eb0a87a20cfb5074c3a54e682458f9da7cfe",
+    "width": 3840,
+    "height": 2592,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 1296
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": [
+      {
+        "id": "video",
+        "name": "Video",
+        "requestedExpanded": false,
+        "fallbackExpanded": true,
+        "rendered": "roles"
+      },
+      {
+        "id": "media",
+        "name": "Media",
+        "requestedExpanded": false,
+        "fallbackExpanded": true,
+        "rendered": "roles"
+      },
+      {
+        "id": "watch-owner",
+        "name": "Watch",
+        "requestedExpanded": false,
+        "fallbackExpanded": true,
+        "rendered": "roles"
+      },
+      {
+        "id": "discovery",
+        "name": "Discovery",
+        "requestedExpanded": false,
+        "fallbackExpanded": true,
+        "rendered": "roles"
+      },
+      {
+        "id": "counts",
+        "name": "Counts",
+        "requestedExpanded": false,
+        "fallbackExpanded": true,
+        "rendered": "roles"
+      },
+      {
+        "id": "identity-owner",
+        "name": "Identity",
+        "requestedExpanded": false,
+        "fallbackExpanded": true,
+        "rendered": "roles"
+      }
+    ]
+  },
+  "counts": {
+    "canonicalElements": 19,
+    "canonicalConnections": 20,
+    "tiles": 22,
+    "lines": 27
+  },
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "state": "Fit overview; Upload role selected in inspector. Existing expanded-role fallback retained for collapsed Video workflow cycle. Full overview names remain small; inspect/focus required."
+  },
+  "generation": "Current source intentionally differs from frozen005 profile; historical generation stays reproducible.",
+  "browser": "153.0.8010.12",
+  "errors": [],
+  "files": {
+    "blueprint.json": {
+      "bytes": 137845,
+      "sha256": "4f9bddecc00faa976b1797a42e78078123bd70e35eb6b49f096aca839a75252f"
+    },
+    "capture.json": {
+      "bytes": 23797,
+      "sha256": "6ba9af958a48cbe79ff90e65313dc9d249d86d36131854791a57c924145750cf"
+    },
+    "design-response.json": {
+      "bytes": 51864,
+      "sha256": "fa0dc4e42a4bb7b5181dcf33f1ce2248206bd7ec0bad91836b6d7f7866c0a85f"
+    },
+    "design.json": {
+      "bytes": 45372,
+      "sha256": "749530917a5a5ca72621c58975b6b1300bcb0879a161dad0f641af8f9fcd8e83"
+    },
+    "diagram.png": {
+      "bytes": 451820,
+      "sha256": "908f4cb664f32b4ef2f0d77ac8e0eb0a87a20cfb5074c3a54e682458f9da7cfe"
+    },
+    "inspector.txt": {
+      "bytes": 706,
+      "sha256": "eba58f5de1a405fe75c27702a593159394c3d23e8131abdb7bf3fcfbb5980938"
+    },
+    "layout.json": {
+      "bytes": 45,
+      "sha256": "682755cb488bad90fb2d2693753dff70df57c36914c651238499d06f70c82522"
+    },
+    "project.json": {
+      "bytes": 232,
+      "sha256": "4204940623bab6011f566d345b873a662ff5399ce9543e52091d70fa5a9c9307"
+    },
+    "renderer-audit.json": {
+      "bytes": 46759,
+      "sha256": "a802e96f0749b86f7a86bb606b7a556448753d72b91d8d025b941a268e30fa94"
+    },
+    "studio.png": {
+      "bytes": 126432,
+      "sha256": "ed5901ca6dfbbffe5100765a94e31a52e041e662785929b1ebc10d4bbf762463"
+    },
+    "upload-inspector.png": {
+      "bytes": 151008,
+      "sha256": "bd6f0105ef4018315d945f6ad60f488403b3cbb11e41193bcc0e7f533eca6674"
+    },
+    "view.json": {
+      "bytes": 6726,
+      "sha256": "ea04a05cde8248df3f9ca2769360c32c6506ea7edec116919f3af9ac856993de"
+    }
+  }
+}

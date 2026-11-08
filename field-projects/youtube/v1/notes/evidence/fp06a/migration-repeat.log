@@ -1,0 +1,6 @@
+ Container jeeves-fp06a-postgres-1 Running 
+ Container jeeves-fp06a-postgres-1 Waiting 
+ Container jeeves-fp06a-postgres-1 Healthy 
+ Container jeeves-fp06a-migrate-run-5fbb9b77933a Creating 
+ Container jeeves-fp06a-migrate-run-5fbb9b77933a Created 
+Migrations current; runtime credentials preserved. Owners are setup-only.

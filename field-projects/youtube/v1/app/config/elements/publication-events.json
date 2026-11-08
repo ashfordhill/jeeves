@@ -1,0 +1,10 @@
+{
+  "id": "publication-events",
+  "declared": {
+    "kind": "queue",
+    "mode": "topic",
+    "provider": "self-hosted"
+  },
+  "sourcePath": "/architecture/studio/elements/18",
+  "customSourceRevision": 5
+}

@@ -1,0 +1,12 @@
+source_name	destination_name	routing_key
+	completion-handler	completion-handler
+	view-counter	view-counter
+	search-indexer	search-indexer
+	completion-handler.failed	completion-handler.failed
+	search-indexer.failed	search-indexer.failed
+	upload-jobs.failed	upload-jobs.failed
+	upload-jobs	upload-jobs
+	view-counter.failed	view-counter.failed
+processing-events	completion-handler	
+view-events	view-counter	
+publication-events	search-indexer	

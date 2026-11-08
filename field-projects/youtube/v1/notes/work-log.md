@@ -347,3 +347,66 @@ the generator profile to keep the custom-source generation button enabled. Keep 
 workers stopped and unique synthetic SQL/broker probes cleaned before handoff.
 
 Local commit: **FP05: plan custom YouTube v1 completion from generated baseline**.
+
+## 2026-11-07 — FP06a custom authority and owned-state foundation
+
+Base FP05 **`aed1d1d29c2e41f3173d3d11fd771e8519e0a838`**; immutable generated comparison FP04
+**`02ac280da62616e9c7aad7f88457dcb72084cb25`**. Fresh sequential Sol/xhigh unit, sole writer on
+primary main; no delegation/branch/worktree/stash/push. Existing generated/custom code and prior
+capture scripts were available. Active time/turns/tokens/cost and savings remain unknown.
+
+Applied only retained v1 source293b4a2d…6f02: schema3/r4 operation6470 declares Video authority
+for Upload/lifecycle and exact store grants/dependencies; new upload-state module, processing-only
+lifecycle results, committed Publication events/indexer boundary, enabled job/publication outbox,
+batch1/immediate count intent and corrected fixed-CPU/projection/status prose. Native
+[008](../diagrams/008-video-authority/snapshot.json) preserves initial missing direct module→DB
+outbox findings. Add both links r5/6471 and [009](../diagrams/009-explicit-outbox-store/snapshot.json).
+Root review found the long Upload role title clipped; r6/6472 and
+[010](../diagrams/010-readable-upload-role/snapshot.json) shorten it to Upload API, retaining status
+Purpose. All actual source/blueprint/native mouse PNG,1280×800 overview/inspector, view and renderer
+Git/tree audits retained; earlier artifacts unchanged. Expanded owner-cycle fallback and small
+fitted names remain disclosed. Eight executable/profile/projection/published-read warnings remain
+honest. Custom source intentionally refuses frozen005 export; original generation reproducible.
+
+Added private SQL migrations/runner, explicit runtime roles, ready-public/totals views, strict bounded
+v1 Zod data/envelopes/stable IDs, transactional conditional upload/lifecycle/inbox/outbox/count state,
+destination-scoped confirmed relay/backoff, pre-listen HTTP factory/admission and AMQP metadata/
+nonretryable terminal/closed shutdown interfaces. Revoke legacy blanket/default reader grants before
+private creation and on upgrades; owners are init/migration-only. Setup can deliberately add absent
+scoped runtime secrets without rotating existing ones; mismatched existing logins refuse. Transcoder
+remains broker+S3 only. Broker assertions explicitly remove old completion/indexer bindings. Every
+unfinished shell now refuses before consumption/listen; application profile is opt-in. No business
+extension or browser/media service is started. [Handoff](fp06a-foundation.md) names exact FP06b seams.
+
+App own frozen install/TS7 build and two network-free envelope/transition/HTTP admission checks pass.
+Real isolated **jeeves-fp06a** PostgreSQL/RabbitMQ probes pass repeated checksummed migrations,
+legacy grants revocation, allowed DML/public views and denied private/inbox/delete/DDL, pending+job
+and ready+publication rollback, stable repeats, count receipt dedupe, real confirms/repeated stable
+IDs/backoff, terminal-hook order/retry1,2,3/graceful drain/fatal unacked redelivery and corrected
+bindings. Every synthetic record/outbox/count was cleaned to0 and all durable queues0/consumers0
+before two containers/two volumes/network/owned image/scratch secrets were removed. No prepared final
+runtime or fake media/job/publication remains. Other four Compose projects and owner watchers stay.
+
+[Evidence](evidence/fp06a/README.md) retains a first scratch-broker probe failure: RabbitMQ4.4 refuses
+non-durable/nonexclusive queues; use durable owned probe queues instead, without changing the app's
+already-durable topology. Root reviewed public row/outcome types, CAS affected counts, readable scoped
+formatting, awaited-handler budget and fatal-close signal. Scratch root-tsx lookup/working-directory
+misses and TS possibly-undefined row diagnostics were corrected before final builds; they do not
+repair frozen baseline bytes. First mouse audit assumed history was an array; it is a summary object,
+so the corrected audit checks latest6472 and unchanged original complete responses. No source effect.
+
+Required checks sequential/source steady, no Docker build/cleanup overlap: first `pnpm check` hit
+existing5s PGlite restart timeout397/398; retained, no overlap attribution or weakened timeout.
+Isolated file12/12 in4.50s, unchanged full rerun **398/50 in21.25s**, all lint/typechecks. Then
+**36 native scripted E2Es1.2m**, **web build975ms** (existing chunk advisory). E2E DB default-only
+list matches before. Final owner4300 actual mouse ownership/resources/access, Upload focus, frozen
+custom-source refusal and TinyURL53 Fit12/13 pass; no page errors, only expected422 console entry.
+Three original owner project/design/history/layout/blueprint responses unchanged; local copy r6
+and layout retained. Own capture4302 stops normally; owner4300/4310 watchers/`.jeeves-feedback/`
+preserved. No paid/live/cloud/model calls, media, tokens, credentials, dependencies, build/runtime
+data or global prune.83 baseline payloads+manifest unchanged,24 planned integration modifications,
+17 new custom app files; seven business extensions unchanged, no template certification/feature
+percentage. All G01–G08 remain integration gaps and S01–S08 incomplete. Next FP06b only implements
+creator/upload/browser/first-run subset; working-v1 review still precedes v2.
+
+Local commit: **FP06a: add custom YouTube ownership and durable state foundation**.

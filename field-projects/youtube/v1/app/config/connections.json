@@ -1,6 +1,6 @@
 [
   {
-    "access": "read-write-cache-fill",
+    "access": "read-write",
     "connectionId": "watch-cache",
     "declaredProtocol": "Redis",
     "declaredSecurity": "Service identity",
@@ -11,23 +11,23 @@
     "toId": "metadata-cache"
   },
   {
-    "access": "read-primary",
+    "access": "read",
     "connectionId": "watch-metadata",
     "declaredProtocol": "SQL",
     "declaredSecurity": "Service identity",
     "fromId": "watch",
-    "localResource": "postgresql.metadata",
+    "localResource": "postgresql.metadata.video_public.ready_videos",
     "proposedOnly": true,
     "sourcePath": "/connections/1",
     "toId": "metadata-db"
   },
   {
-    "access": "read-primary",
+    "access": "read",
     "connectionId": "watch-counts-read",
     "declaredProtocol": "SQL",
     "declaredSecurity": "Service identity",
     "fromId": "watch",
-    "localResource": "postgresql.counts",
+    "localResource": "postgresql.counts.count_public.video_totals",
     "proposedOnly": true,
     "sourcePath": "/connections/2",
     "toId": "view-counts"
@@ -55,12 +55,12 @@
     "toId": "view-counter"
   },
   {
-    "access": "write-owner",
+    "access": "read-write",
     "connectionId": "counter-write",
     "declaredProtocol": "SQL",
     "declaredSecurity": "Service identity",
     "fromId": "view-counter",
-    "localResource": "postgresql.counts",
+    "localResource": "postgresql.counts.count_private",
     "proposedOnly": true,
     "sourcePath": "/connections/5",
     "toId": "view-counts"
@@ -99,7 +99,7 @@
     "toId": "upload-queue"
   },
   {
-    "access": "multipart-owner",
+    "access": "read-write",
     "connectionId": "upload-originals",
     "declaredProtocol": "HTTPS",
     "declaredSecurity": "Service identity",
@@ -132,7 +132,7 @@
     "toId": "originals"
   },
   {
-    "access": "write-owner",
+    "access": "read-write",
     "connectionId": "transcoder-write",
     "declaredProtocol": "HTTPS",
     "declaredSecurity": "Service identity",
@@ -148,7 +148,7 @@
     "declaredProtocol": "Messaging",
     "declaredSecurity": "Service identity",
     "fromId": "transcoder",
-    "localResource": "amqp.completion-events",
+    "localResource": "rabbitmq:processing-events",
     "proposedOnly": true,
     "sourcePath": "/connections/13",
     "toId": "completion-events"
@@ -165,36 +165,55 @@
     "toId": "completion-handler"
   },
   {
-    "access": "consume",
-    "connectionId": "completions-indexer",
-    "declaredProtocol": "Messaging",
-    "declaredSecurity": "Service identity",
-    "fromId": "completion-events",
-    "localResource": "amqp.search-indexer",
-    "proposedOnly": true,
-    "sourcePath": "/connections/15",
-    "toId": "search-indexer"
-  },
-  {
-    "access": "write-owner",
+    "access": "read-write",
     "connectionId": "handler-metadata",
     "declaredProtocol": "SQL",
     "declaredSecurity": "Service identity",
     "fromId": "completion-handler",
-    "localResource": "postgresql.metadata",
+    "localResource": "postgresql.metadata.video_private",
     "proposedOnly": true,
-    "sourcePath": "/connections/16",
+    "sourcePath": "/connections/15",
     "toId": "metadata-db"
   },
   {
-    "access": "write-owner",
+    "access": "read-write",
     "connectionId": "indexer-write",
     "declaredProtocol": "HTTPS",
     "declaredSecurity": "Service identity",
     "fromId": "search-indexer",
     "localResource": "opensearch.videos",
     "proposedOnly": true,
-    "sourcePath": "/connections/17",
+    "sourcePath": "/connections/16",
     "toId": "search-index"
+  },
+  {
+    "connectionId": "upload-state",
+    "fromId": "upload",
+    "toId": "metadata-db",
+    "declaredProtocol": "SQL",
+    "declaredSecurity": "Service identity",
+    "access": "read-write",
+    "sourcePath": "/connections/17",
+    "localResource": "postgresql.metadata.video_private"
+  },
+  {
+    "connectionId": "handler-publication",
+    "fromId": "completion-handler",
+    "toId": "publication-events",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "access": "publish",
+    "sourcePath": "/connections/18",
+    "localResource": "amqp.publication-events"
+  },
+  {
+    "connectionId": "publications-indexer",
+    "fromId": "publication-events",
+    "toId": "search-indexer",
+    "declaredProtocol": "Messaging",
+    "declaredSecurity": "Service identity",
+    "access": "consume",
+    "sourcePath": "/connections/19",
+    "localResource": "amqp.search-indexer"
   }
 ]

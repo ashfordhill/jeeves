@@ -1,0 +1,5 @@
+ Container jeeves-fp06a-probe-run-bb4de68d185d Creating 
+ Container jeeves-fp06a-probe-run-bb4de68d185d Created 
+Outbox upload-jobs delivery deferred
+{"grants":"allowed views/DML; private/inbox/delete/DDL denied","pendingAtomicRollback":true,"readyAtomicRollback":true,"stableCompleteAndPublication":true,"terminalAndForeignSafe":true,"duplicateCounts":1,"confirmedRelayRepeatedSameIds":true,"failedConfirmBackoff":true,"allProbeQueuesDrained":true}
+{"remainingMetadata":0,"remainingOutbox":0,"remainingCounts":0}

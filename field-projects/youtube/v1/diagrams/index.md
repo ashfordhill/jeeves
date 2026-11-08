@@ -87,3 +87,31 @@ FP03b commit **`aedbd606342c5a369142b10cf127fc7130d50671`** contains006/007 abov
 actual mouse-downloaded [untouched generated output](../app/) with [baseline provenance](../notes/baseline.md).
 Saved source/revision3 and view are unchanged, so005 remains the generation image;006/007 retain
 presentation history. No new architecture snapshot or historical image/source edit in FP04.
+
+## FP06a custom Video authority and publication boundary
+
+All three new captures are **target-state designs; implementation incomplete**, with actual
+source/blueprint/native Export diagram PNG,1280×800 overview/Upload inspector, view geometry and
+renderer Git/tree audits.001–007, frozen005 inputs and `.jeeves` remain immutable.
+
+- [008 Video authority](008-video-authority/snapshot.json), schema3 revision4, operation6470:
+  ordinary atomic upgrade/ownership/event/outbox/batch/prose edit. One Video owner retains Upload
+  and lifecycle canonical roles; Transcoder is separate Media with no SQL; Watch uses public views,
+  Discovery is a projection, Counts owns receipts/totals. Native22tiles/27lines. This intermediate
+  source honestly retains two missing direct outbox-module→database findings.
+- [009 explicit outbox store](009-explicit-outbox-store/snapshot.json), revision5, operation6471:
+  add the two direct publisher module→metadata links required by the existing outbox validator.
+  Eight executable/profile/published-read/projection findings remain unresolved; no contract or
+  runtime-template verification is invented. Native22tiles/27lines.
+- [010 readable Upload role](010-readable-upload-role/snapshot.json), revision6, operation6472:
+  review of009 found the long “Upload & status API” role title clipped. Shorten it to “Upload API”;
+  status responsibility stays in Purpose. Native22tiles/27lines; all authority/relationships/settings
+  preserved.008/009 are retained unchanged, including their identifier-like capture reason fields;
+  these bullets provide their human-readable reasons.
+
+The existing expanded-role fallback is used for the collapsed Video workflow cycle. Full native
+exports retain all relationships, while fitted studio overviews have small names and still need
+focus/inspector review. This is a documented readability limit, not a reason to split authority
+or redesign the renderer. Captures use a fresh owned4302 web server proxying preserved owner4310;
+renderer source stays unchanged. The modified saved source intentionally fails frozen005-profile
+export; original CLI generation remains reproducible. No new owner feedback image was supplied.

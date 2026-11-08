@@ -1,8 +1,8 @@
 {
   "declared": {
-    "batchSize": 100,
-    "concurrency": 4,
     "kind": "event-consumer",
+    "concurrency": 4,
+    "batchSize": 1,
     "retryLimit": 5
   },
   "id": "indexer-consumer",

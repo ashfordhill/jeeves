@@ -1,0 +1,9 @@
+{
+  "declared": {
+    "kind": "event-publisher",
+    "outbox": "enabled"
+  },
+  "id": "handler-publications",
+  "sourcePath": "/architecture/studio/components/21",
+  "customSourceRevision": 5
+}

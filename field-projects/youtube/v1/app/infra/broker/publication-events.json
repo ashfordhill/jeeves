@@ -1,0 +1,6 @@
+{
+  "exchange": "publication-events",
+  "queues": [
+    "search-indexer"
+  ]
+}

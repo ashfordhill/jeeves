@@ -1,0 +1,30 @@
+ Container jeeves-fp06a-probe-run-0576fdab1f47 Creating 
+ Container jeeves-fp06a-probe-run-0576fdab1f47 Created 
+/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/safe_emit.js:8
+      throw e;
+      ^
+
+Error: Connection closed: 541 (INTERNAL-ERROR) with message "INTERNAL_ERROR - Feature `transient_nonexcl_queues` is deprecated.
+By default, this feature is not permitted anymore.
+The feature will be removed from a future major RabbitMQ version, regardless of the configuration; actual version to be determined.
+To..."
+    at Object.accept (/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/connection.js:592:17)
+    at Connection.mainAccept [as accept] (/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/connection.js:564:24)
+    at Socket.go (/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/connection.js:425:16)
+    at Socket.emit (node:events:514:28)
+    at emitReadable_ (node:internal/streams/readable:845:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+Emitted 'error' event on ChannelModel instance at:
+    at Connection.emit (node:events:514:28)
+    at safeEmit (/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/safe_emit.js:3:13)
+    at Connection.onSocketError (/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/connection.js:300:7)
+    at Connection.emit (node:events:514:28)
+    at Socket.go (/app/node_modules/.pnpm/amqplib@2.2.0/node_modules/amqplib/lib/connection.js:429:14)
+    at Socket.emit (node:events:514:28)
+    at emitReadable_ (node:internal/streams/readable:845:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 541
+}
+
+Node.js v24.21.0
+

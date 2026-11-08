@@ -1,5 +1,5 @@
 {
-  "applicationDatabaseIsolation": "one PostgreSQL instance; separate logical databases and users for metadata, counts and Keycloak; owner write/read-only grants",
+  "applicationDatabaseIsolation": "one PostgreSQL instance; separate metadata/counts/identity databases; migration-only owners, explicit metadata_upload/metadata_lifecycle/counts_writer DML and ready/totals view-only readers",
   "broker": "one RabbitMQ node; persistent messages, publisher confirms, manual acknowledgements after side effects",
   "garageWebsiteHost": "youtube-v1-transcoded.web.garage.localhost",
   "hostPublishing": "loopback only; infrastructure ports internal except identity/S3 browser endpoints; optional management ports must remain loopback",

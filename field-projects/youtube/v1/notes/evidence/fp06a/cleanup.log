@@ -1,0 +1,16 @@
+ Container jeeves-fp06a-broker-1 Stopping 
+ Container jeeves-fp06a-postgres-1 Stopping 
+ Container jeeves-fp06a-postgres-1 Stopped 
+ Container jeeves-fp06a-postgres-1 Removing 
+ Container jeeves-fp06a-postgres-1 Removed 
+ Container jeeves-fp06a-broker-1 Stopped 
+ Container jeeves-fp06a-broker-1 Removing 
+ Container jeeves-fp06a-broker-1 Removed 
+ Volume jeeves-fp06a_postgres-data Removing 
+ Volume jeeves-fp06a_broker-data Removing 
+ Network jeeves-fp06a_default Removing 
+ Volume jeeves-fp06a_postgres-data Removed 
+ Volume jeeves-fp06a_broker-data Removed 
+ Network jeeves-fp06a_default Removed 
+Untagged: jeeves-fp06a-app:latest
+Deleted: sha256:db4c87b910681040acd15d3a4f4b5d4a985e18c4bddd06b1664eb7469ebc3b9d

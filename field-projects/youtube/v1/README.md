@@ -1,4 +1,4 @@
-# YouTube v1: untouched generated baseline
+# YouTube v1: custom implementation in progress
 
 FP01 freezes the saved diagram and a finite local mapping. FP02 adds the
 [experimental generator foundation](../../../jeeves-generator/README.md), pinned to these exact
@@ -10,15 +10,17 @@ and PNG; exact-source checks refuse other designs and preserve strict readiness.
 actual untouched mouse-downloaded output in [app/](app/), with [baseline provenance and observable
 limits](notes/baseline.md) and [independent build evidence](notes/evidence/fp04/README.md).
 FP05 supplies the [custom completion plan](notes/implementation-plan.md), anchored to FP04 commit
-`02ac280da62616e9c7aad7f88457dcb72084cb25`. Next are sequential FP06a state/diagram foundation,
+`02ac280da62616e9c7aad7f88457dcb72084cb25`. FP06a now supplies the [custom owned-state foundation](notes/fp06a-foundation.md): schema3
+Video authority, private SQL/views, runtime grants, finite contracts/transitions/inbox/outbox and
+transport integration, with [bounded SQL/broker evidence](notes/evidence/fp06a/README.md). Next are
 FP06b upload, FP06c processing/playback, FP07a search/counts and FP07b independent walkthrough.
-No custom app code or complete application scenario is claimed by planning. Review working v1
+All application scenarios remain incomplete. Review working v1
 with the owner before deciding on v2.
 
 - [Diagram history](diagrams/index.md): original owner, approved PostgreSQL, separate v1 copy and
   each intentional local edit, with real mouse PNG downloads and 1280×800 studio screenshots.
 - [Frozen input manifest](inputs/manifest.json): exact design/blueprint bytes, hashes and the
-  final source-linked image. Source schema **2**, read-only blueprint **3**; no schema upgrade.
+  final source-linked image. Frozen source schema **2**, read-only blueprint **3**; these historical inputs never upgrade.
 - [Local bindings](inputs/local-bindings.json) and [pins](inputs/runtime-pins.json): proposed
   finite selectors by canonical IDs, definitions and settings; explicit unsupported paths.
 - [Mapping and gaps](notes/mapping-and-gaps.md), [runtime decisions](notes/local-runtime.md),
@@ -26,7 +28,8 @@ with the owner before deciding on v2.
   and [work log](notes/work-log.md).
 
 The retained studio project is **YouTube · field v1 · local Docker**,
-`293b4a2d-e25b-4a5b-83da-b27de7876f02`, revision **3**. It descends from owner YouTube
+`293b4a2d-e25b-4a5b-83da-b27de7876f02`, current schema **3**, revision **6**, with [native010](diagrams/010-readable-upload-role/snapshot.json).
+Frozen generation source remains schema2 revision3/snapshot005. It descends from owner YouTube
 `0a12f132-b0f4-400d-9b94-51546911bb6b`, approved revision **2**. The owner's two engines changed
 in one revision-checked API operation; its other fields, source/schema identity and history were
 preserved. TinyURL revision 53 and Marketplace revision 1 remain unchanged.

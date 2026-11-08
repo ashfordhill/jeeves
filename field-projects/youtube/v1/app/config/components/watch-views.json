@@ -1,8 +1,8 @@
 {
   "declared": {
-    "batchSize": 500,
     "kind": "event-publisher",
-    "lingerMs": 50,
+    "batchSize": 1,
+    "lingerMs": 0,
     "outbox": "disabled"
   },
   "id": "watch-views",

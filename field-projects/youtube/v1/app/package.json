@@ -24,7 +24,8 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "setup": "node scripts/setup.mjs"
+    "setup": "node scripts/setup.mjs",
+    "check:foundation": "pnpm build && node --test checks/foundation.test.mjs"
   },
   "type": "module",
   "version": "0.0.0-experimental.1"

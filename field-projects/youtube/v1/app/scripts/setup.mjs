@@ -1,6 +1,34 @@
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, statSync } from "node:fs";
 
+// Explicit upgrade path adds only the three newly scoped runtime credentials, never rotates existing ones.
+if (process.argv.includes("--add-runtime-roles")) {
+  for (const name of [
+    "postgres_admin",
+    "metadata_owner",
+    "metadata_reader",
+    "counts_owner",
+    "counts_reader",
+  ]) {
+    if (!existsSync(`.runtime/secrets/${name}`))
+      throw new Error(
+        "Existing runtime is incomplete; preserve it and inspect missing setup secrets.",
+      );
+  }
+  for (const dir of [".runtime", ".runtime/secrets"])
+    if (statSync(dir).mode & 0o077)
+      throw new Error("Runtime parent directories must remain private (0700).");
+  for (const name of ["metadata_upload", "metadata_lifecycle", "counts_writer"])
+    if (!existsSync(`.runtime/secrets/${name}`))
+      writeFileSync(`.runtime/secrets/${name}`, randomBytes(32).toString("hex"), {
+        mode: 0o644,
+        flag: "wx",
+      });
+  console.log(
+    "Scoped runtime credentials present; existing secrets preserved. Run the repeatable migrate setup service.",
+  );
+  process.exit(0);
+}
 if (existsSync(".runtime"))
   throw new Error(
     ".runtime exists; retain it. Setup only creates a new runtime; never reset credentials over live volumes.",
@@ -12,8 +40,11 @@ const values = Object.fromEntries(
     "postgres_admin",
     "metadata_owner",
     "metadata_reader",
+    "metadata_upload",
+    "metadata_lifecycle",
     "counts_owner",
     "counts_reader",
+    "counts_writer",
     "identity_password",
     "cache_password",
     "broker_password",
