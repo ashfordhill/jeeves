@@ -2,6 +2,7 @@ import { z } from "zod";
 import { unbindArchitecture } from "./architecture.ts";
 import { type DesignDocument, designIdNouns, designIds } from "./design.ts";
 import { type Finding, finding, isStructural } from "./findings.ts";
+import { generationFindings, pruneGenerationTargets } from "./generation.ts";
 import {
   operationContractFindings,
   operationsAfterOwnership,
@@ -84,6 +85,7 @@ export function applyOperations(
     ...validateStudio(draft),
     ...ownershipFindings(draft),
     ...operationContractFindings(draft),
+    ...generationFindings(draft),
   ].filter(isStructural);
   if (studioErrors.length) return { ok: false, errors: studioErrors };
   const introduced = findings.filter((f) => isStructural(f) && !before.has(findingKey(f)));
@@ -168,11 +170,35 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
       design.operations = op.operations;
       return;
     }
+    case "setGeneration": {
+      if (design.schemaVersion !== 3)
+        throw new OpError(
+          finding(
+            "INVALID_OPERATION",
+            "Explicitly upgrade to schema v3 before declaring template selections.",
+            { op: index },
+          ),
+        );
+      if (op.generation === null) delete design.generation;
+      else design.generation = op.generation;
+      return;
+    }
     case "setArchitecture": {
       const previous = design.architecture?.studio?.entries ?? [];
+      const components = design.architecture?.studio?.components ?? [];
       if (op.architecture === null) delete design.architecture;
       else design.architecture = op.architecture;
       pruneOperationEntries(design, previous);
+      pruneGenerationTargets(
+        design,
+        [],
+        components
+          .filter(
+            (entry) =>
+              !design.architecture?.studio?.components?.some((next) => next.id === entry.id),
+          )
+          .map((entry) => entry.id),
+      );
       return;
     }
     case "updateArchitectureSystem": {
@@ -184,9 +210,20 @@ function applyOne(design: DesignDocument, op: Operation, index: number): void {
     case "setStudio": {
       if (!design.architecture) throw needsArchitecture("setting studio intent");
       const previous = design.architecture.studio?.entries ?? [];
+      const components = design.architecture.studio?.components ?? [];
       if (op.studio === null) delete design.architecture.studio;
       else design.architecture.studio = op.studio;
       pruneOperationEntries(design, previous);
+      pruneGenerationTargets(
+        design,
+        [],
+        components
+          .filter(
+            (entry) =>
+              !design.architecture?.studio?.components?.some((next) => next.id === entry.id),
+          )
+          .map((entry) => entry.id),
+      );
       return;
     }
     case "addElement": {

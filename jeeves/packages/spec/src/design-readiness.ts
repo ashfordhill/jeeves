@@ -97,6 +97,11 @@ function coverageIssues(design: DesignDocument): ReadinessIssue[] {
   const issues: ReadinessIssue[] = [];
   const add = (message: string, target: ReadinessTarget) =>
     issues.push({ code: "BEHAVIOR_UNREPRESENTED", message, target });
+  if (design.schemaVersion === 3 && design.generation)
+    add(
+      "Generation declarations are outside the strict finite TinyURL Create/Resolve composition.",
+      { path: ["generation"] },
+    );
   const receivers = operations.receivers.filter((receiver) =>
     exactKnownOperationSignature(receiver.implementation),
   );

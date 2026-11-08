@@ -73,6 +73,7 @@ export type StudioChange = {
     | "scope"
     | "ownership"
     | "operations"
+    | "generation"
     | "action"
     | "element"
     | "connection"
@@ -107,6 +108,13 @@ export function studioChanges(base: DesignDocument, working: DesignDocument): St
         "operation-bindings",
         "Exact operation implementations and caller expectations",
         design.operations,
+      );
+    if (design.schemaVersion === 3 && design.generation)
+      add(
+        "generation",
+        "template-selections",
+        "Exact template selections and bindings",
+        design.generation,
       );
     if (design.architecture)
       add("system", "system", design.architecture.system.name, design.architecture.system);

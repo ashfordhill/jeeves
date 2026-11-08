@@ -15,6 +15,7 @@ import {
   contractRecords,
   type DesignDocument,
   type DesignScope,
+  designGeneration,
   designOperations,
   designOwnership,
   designReadiness,
@@ -23,6 +24,7 @@ import {
   emptyReviewScope,
   exactContractRefSchema,
   type Finding,
+  generationFindings,
   isDesignWarning,
   LANE_ACTOR,
   type LaneGraph,
@@ -353,6 +355,12 @@ function designSummary(design: DesignDocument, findings: readonly Finding[]) {
     },
     availableProfileDefault: tinyurlDesignScope(),
     declaredOperations: designOperations(design),
+    ...(designGeneration(design)
+      ? {
+          declaredGeneration: designGeneration(design),
+          generationFindings: generationFindings(design),
+        }
+      : {}),
     operationFindings: operationContractFindings(design),
     availableOperations: operationRecords.map((x) => ({ ...x.ref, name: x.definition.name })),
     availableCachePolicies: contractRecords

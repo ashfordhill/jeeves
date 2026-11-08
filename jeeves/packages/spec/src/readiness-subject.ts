@@ -40,6 +40,8 @@ export function readinessSubject(design: DesignDocument) {
   const subject = {
     domain: "jeeves.tinyurl.composition.v1" as const,
     sourceSchemaVersion: design.schemaVersion,
+    // Absence preserves the existing exact subject/hash. New output semantics cannot reuse it.
+    ...(design.schemaVersion === 3 && design.generation ? { generation: design.generation } : {}),
     resolvedProfile: profileStatus(scope) === "known" ? tinyurlReadinessProfileRef : null,
     scope: {
       profile: scope.profile,

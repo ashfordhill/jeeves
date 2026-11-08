@@ -70,6 +70,7 @@ and adds:
 | `unresolvedRequirements` | Namespaced `source` (`profile`, `requirement`, `contract`, `custom`), ID, requirement, criticality and optional targets. Includes unspecified legacy requirements, required incompatible behavior, missing contracts and unresolved custom behavior. Missing targets are diagnostic text; the stored original requirement survives. |
 | `ownership`, `ownershipStatus`, `ownershipFindings` | Complete explicit owners, canonical element roles, source/projection authority, role grants and dependency requests, plus targeted unresolved/refused declarations. Rows sort deterministically; status is declared or unspecified, never verified. |
 | `operations`, `operationCatalog`, `operationFindings` | Complete exact receiver/caller bindings, immutable local operation and cache-policy identities and targeted structural/readiness findings. Binding IDs are distinct from role/edge IDs; unknown refs remain unknown. [Finite contracts](studio-contracts.md). |
+| `generation`, `generationFindings` (optional) | Schema3's exact runtime/preset/template selections, canonical targets and finite tagged bindings, detached without materializing absent declarations. Targeted source findings distinguish canonical contradictions and unavailable refs. Catalog presence installs nothing. [Actual interfaces](plans/reliable-foundations/youtube-v2/interfaces.md). |
 | `legacyOwnership`, `roleMeaning` | Qualify preserved `resources[].owner` as inferred writer and services as canonical application tiles, which are not independent logical owners or necessarily separate processes. |
 | `legacyAccess` | `inferred-from-ownership; not a declared operation grant`. Existing access values do not gain permission semantics. |
 | `templateAvailability`, `runtimeVerification` | Both `none`. Selecting a profile supplies neither. |
@@ -77,10 +78,17 @@ and adds:
 
 Stored schema v2 remains readable as-is and exports its identical v2 meaning. Explicit
 `upgradeDesign` creates schema v3 plus `scope` in one operation; `setDesignScope` requires v3.
-A schema-v3 design with no scope, ownership or operation rows can still export v2 with legacy meaning. Profile,
+A schema-v3 design with no scope, ownership or operation rows and no generation declaration can still export v2 with legacy meaning. Profile,
 each finite/custom requirement and every ownership/operation row cause v2 refusal with its exact source path,
 including nonempty ownership with empty scope. Optional ownership is never added on read;
 `setOwnership` / `setOperations` require v3. Optional operations are never added on read. Empty declarations add no meaning.
+
+Optional `generation` is preserved exactly in v3, including unknown well-formed refs. V2 refuses
+`generation.version`, `.runtime`, optional `.preset` and every `.selections[index]`; even an
+explicit empty selection collection carries a runtime identity. `setGeneration` requires v3,
+and `null` removes the optional field. Existing absent-generation source, blueprint and frozen
+v1 output bytes remain unchanged. Present generation also changes the strict TinyURL subject
+hash and blocks that finite composition; experimental selections supply no readiness credit.
 
 V3 projects detached ownership rows as well as detached settings/scope/operations: changing the
 returned object cannot change source declarations. Validator finding paths always address the

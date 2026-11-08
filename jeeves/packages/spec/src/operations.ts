@@ -2,6 +2,7 @@ import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
 import { connectionSchema, elementSchema, plannedConnectionSchema } from "./design.ts";
 import { designScopeSchema } from "./design-scope.ts";
+import { generationSchema } from "./generation.ts";
 import { idSchema } from "./ids.ts";
 import { operationContractsSchema } from "./operation-contracts.ts";
 import { ownershipSchema } from "./ownership.ts";
@@ -17,6 +18,7 @@ export const operationSchema = z.discriminatedUnion("op", [
   z.strictObject({ op: z.literal("setDesignScope"), scope: designScopeSchema }),
   z.strictObject({ op: z.literal("setOwnership"), ownership: ownershipSchema }),
   z.strictObject({ op: z.literal("setOperations"), operations: operationContractsSchema }),
+  z.strictObject({ op: z.literal("setGeneration"), generation: generationSchema.nullable() }),
   z.strictObject({ op: z.literal("setArchitecture"), architecture: architectureSchema.nullable() }),
   /** Canonical system text only. */
   z.strictObject({

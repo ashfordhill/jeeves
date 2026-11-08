@@ -3,6 +3,7 @@ import { containerClassification } from "./architecture-choices.ts";
 import { type DesignDocument, type DesignIdType, designIdNouns, designIds } from "./design.ts";
 import { designScopeFindings } from "./design-scope.ts";
 import { type Finding, finding } from "./findings.ts";
+import { generationFindings } from "./generation.ts";
 import { operationContractFindings } from "./operation-contracts.ts";
 import { ownershipFindings } from "./ownership.ts";
 
@@ -13,6 +14,7 @@ export function validateDesign(design: DesignDocument): Finding[] {
     ...designScopeFindings(design),
     ...ownershipFindings(design),
     ...operationContractFindings(design),
+    ...generationFindings(design),
   );
 
   const seen = new Map<string, DesignIdType>();

@@ -15,6 +15,7 @@ import {
   unresolvedDesignScope,
 } from "./design-scope.ts";
 import { findingSchema } from "./findings.ts";
+import { generationFindings, generationSchema } from "./generation.ts";
 import { idSchema } from "./ids.ts";
 import {
   contractRecords,
@@ -216,6 +217,30 @@ export type UnsupportedBlueprintContent = { path: (string | number)[]; reason: s
 export function unsupportedBlueprintV2(design: DesignDocument): UnsupportedBlueprintContent[] {
   if (design.schemaVersion === 2) return [];
   return [
+    ...(design.generation
+      ? [
+          {
+            path: ["generation", "version"],
+            reason: "Generation schema identity is unsupported by blueprint v2.",
+          },
+          {
+            path: ["generation", "runtime"],
+            reason: "Exact runtime selection is unsupported by blueprint v2.",
+          },
+          ...(design.generation.preset
+            ? [
+                {
+                  path: ["generation", "preset"],
+                  reason: "Exact preset selection is unsupported by blueprint v2.",
+                },
+              ]
+            : []),
+          ...design.generation.selections.map((_, index) => ({
+            path: ["generation", "selections", index],
+            reason: "Exact template target and binding are unsupported by blueprint v2.",
+          })),
+        ]
+      : []),
     ...(design.scope.profile
       ? [
           {
@@ -264,6 +289,8 @@ export const designBlueprintV3Schema = designBlueprintSchema.extend({
   operations: operationContractsSchema,
   operationFindings: z.array(findingSchema),
   operationCatalog: z.array(exactContractRefSchema),
+  generation: generationSchema.optional(),
+  generationFindings: z.array(findingSchema).optional(),
   unresolvedRequirements: z.array(
     z.strictObject({
       source: z.enum(["profile", "requirement", "contract", "custom"]),
@@ -302,6 +329,7 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
       ...designScopeFindings(design),
       ...ownershipFindings(design),
       ...operationContractFindings(design),
+      ...generationFindings(design),
     ],
     ownership: Object.fromEntries(
       Object.entries(designOwnership(design)).map(([key, rows]) => [
@@ -327,6 +355,12 @@ export function designBlueprintV3(design: DesignDocument, projectName = ""): Des
     },
     operationFindings: operationContractFindings(design),
     operationCatalog: contractRecords.map((x) => ({ ...x.ref })),
+    ...(design.schemaVersion === 3 && design.generation
+      ? {
+          generation: clone(design.generation),
+          generationFindings: generationFindings(design),
+        }
+      : {}),
     scope,
     profileStatus: profileStatus(scope),
     unresolvedRequirements: [...unresolvedDesignScope(design)]

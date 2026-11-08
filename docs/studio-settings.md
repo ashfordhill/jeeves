@@ -391,3 +391,21 @@ route/schema editor or new generic connection settings are added. Resolve's exac
 to retain each operation deadline. Explicit global/caller deadline conflicts refuse. All-outcome
 no-store, primary routing, cache read-write grants, TTL maximums and applicable typed module/CDN
 contradictions are checked. [Complete policy and bounds](studio-contracts.md#resolve-link-v1-and-positive-cache-v1).
+
+## Experimental generation declarations (schema v3)
+
+The optional top-level `generation` contract now preserves exact local runtime/preset/template
+refs, canonical element/component targets and finite resource/connection/selection bindings.
+It adds no form or normal settings control. Unknown refs remain explicit unavailable declarations;
+the finite catalog does not install implementations. Internal versioned transfer/media/lifecycle/
+cache/count/public-video policies remain in typed metadata. Existing cache TTL and other settings
+keep one authority; bindings do not copy configurable numeric values.
+
+`buildGenerationCommand` / `previewGeneration` accept the complete selection plus optional
+explicit ownership replacement, preview affected ownership/operation facts and produce one
+atomic batch. Schema2 requires an explicit upgrade. Reads never add selections, grants or
+defaults. Deleting a selected target cleans its selection; removing a resource/connection/guard
+still bound by a surviving selection refuses until explicitly detached or replaced in the same
+batch. Undo/Redo restore full declarations. Blueprint v3 preserves them; v2 refuses the exact
+unsupported paths. Template resolution, installed support and later mouse/chat choices are
+separate work. [Actual source interfaces](plans/reliable-foundations/youtube-v2/interfaces.md).

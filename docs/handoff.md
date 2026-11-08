@@ -5445,3 +5445,29 @@ Logs `/tmp/jeeves-youtube-v2-plan-*.log`. Root README and unrelated feedback/e2e
 preserved. Next assigned implementation unit: **YV2-01 only**; this planning unit starts none.
 
 Local commit: **Plan reusable YouTube v2 templates and sequential execution**.
+
+## 2026-11-08 — YV2-01: typed generation source and blueprint boundary
+
+Optional strict schema3 `generation` now carries exact runtime/preset/template refs, stable
+selection IDs, canonical targets and ten finite tagged bindings. Immutable semantic catalogs/
+internal policies install no implementation. [Actual interfaces](plans/reliable-foundations/youtube-v2/interfaces.md)
+records symbols and native010-compatible queue direction, auth-guard identity and cross-role
+same-authority lifecycle bindings. Atomic `buildGenerationCommand`/`previewGeneration` includes
+explicit ownership changes; target cleanup, surviving-reference refusal and complete snapshot
+Undo/Redo share existing history. V3/chat retain declarations; v2 refuses exact unsupported paths.
+Present generation changes strict TinyURL's subject/hash and blocks that finite composition;
+absent-generation documents/subjects stay unchanged. Blueprint/settings docs updated.
+
+Five focused offline cases cover strict round-trip/refusal, actual native010 topology, target/
+component cleanup and PGlite schema2 upgrade+ownership+generation Undo/Redo. Final required checks:
+`pnpm check` **407 tests/53 files, 23.24s**, **36 native E2Es, 1.4m**, web build **1.00s**
+(existing size advisory). Logs `/tmp/jeeves-yv2-01-{check-final,e2e,build}.log`. Frozen assembler
+still emits **108 identical files**, including unchanged manifest. No normal UI/rendering change;
+E2Es retain TinyURL/mouse coverage; no separate manual mouse check needed for this source unit.
+
+Next **YV2-02 only**: pure normalization, full role/grant/provider/setting/policy requirements
+and host-supplied installed support. No v2 renderer, forms, executable templates, field snapshot
+or app yet. No v1/generator/root README/runtime/input changes. Owner `.jeeves-feedback` edits,
+e2e-docker mode and services/resources preserved. Sequential main; no delegation/branch/stash/push.
+
+Local commit: **YV2-01: add typed template selections to design source**.

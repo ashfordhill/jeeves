@@ -2,6 +2,7 @@ import { z } from "zod";
 import { architectureSchema } from "./architecture.ts";
 import { classificationSchema } from "./architecture-choices.ts";
 import { designScopeSchema } from "./design-scope.ts";
+import { generationSchema } from "./generation.ts";
 import { idSchema } from "./ids.ts";
 import { operationContractsSchema } from "./operation-contracts.ts";
 import { ownershipSchema } from "./ownership.ts";
@@ -67,6 +68,7 @@ export const designV3Schema = designV2Schema.extend({
   scope: designScopeSchema,
   ownership: ownershipSchema.optional(),
   operations: operationContractsSchema.optional(),
+  generation: generationSchema.optional(),
 });
 export const designSchema = z.discriminatedUnion("schemaVersion", [designV2Schema, designV3Schema]);
 export type DesignDocument = z.output<typeof designSchema>;
