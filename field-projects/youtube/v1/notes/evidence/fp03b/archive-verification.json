@@ -1,0 +1,53 @@
+{
+  "reader": "Python standard-library zipfile (independent of stored-ZIP writer)",
+  "results": [
+    {
+      "archive": "production-download.zip",
+      "sha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "archiveBytes": 946247,
+      "files": 108,
+      "payloadBytes": 931999,
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "everyAssemblerPayloadAndCrcMatched": true,
+      "dotfilesIncluded": [
+        ".dockerignore",
+        ".gitignore",
+        ".jeeves/inputs/blueprint.json",
+        ".jeeves/inputs/design.json",
+        ".jeeves/inputs/diagram.png",
+        ".jeeves/inputs/local-bindings.json",
+        ".jeeves/inputs/manifest.json",
+        ".jeeves/inputs/runtime-pins.json",
+        ".jeeves/manifest.json",
+        ".jeeves/report.json"
+      ],
+      "diagramBytesMatchFrozen005": true,
+      "strictEligibility": false,
+      "unsupportedPaths": 25
+    },
+    {
+      "archive": "mouse-download.zip",
+      "sha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "archiveBytes": 946247,
+      "files": 108,
+      "payloadBytes": 931999,
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "everyAssemblerPayloadAndCrcMatched": true,
+      "dotfilesIncluded": [
+        ".dockerignore",
+        ".gitignore",
+        ".jeeves/inputs/blueprint.json",
+        ".jeeves/inputs/design.json",
+        ".jeeves/inputs/diagram.png",
+        ".jeeves/inputs/local-bindings.json",
+        ".jeeves/inputs/manifest.json",
+        ".jeeves/inputs/runtime-pins.json",
+        ".jeeves/manifest.json",
+        ".jeeves/report.json"
+      ],
+      "diagramBytesMatchFrozen005": true,
+      "strictEligibility": false,
+      "unsupportedPaths": 25
+    }
+  ]
+}

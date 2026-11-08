@@ -163,3 +163,80 @@ archive generation/download; package trusted generator source/assets and exact f
 commits untouched output; FP05 plans G01–G08 from that output. No automatic v2.
 
 Local commit: **FP03a: add real local templates and independent build**.
+
+## 2026-11-07 — FP03b guarded Jeeves preview and ZIP download
+
+Unit base FP03a **`5c79e4efe932b6ae138d966e2373f89216d8dd0c`**. Coordinator-assigned sequential
+Sol/xhigh unit, sole writer on primary main, no delegation/branch/worktree/stash/push. This is
+studio/generator integration investment, not field-app completion. Active time/tokens/cost are
+unavailable and are not estimated. Evidence artifacts span roughly 04:00–04:24 UTC on November 8;
+these timestamps are not active-effort measurements. No paid/live/cloud model calls.
+
+Added read-only-to-project POST preview/download routes and mouse **Generate project → Preview
+scaffold → Download project ZIP**. The server uses only the trusted frozen loader and real
+19-family registry, with strict profile/revision/full-source checks before and after assembly;
+download additionally checks the preview ZIP identity. No arbitrary host output path, input code
+or uploaded template/assets. Exact canonical source copies are supported with explicit selected
+project versus frozen archive origin; another current source refuses clearly. Browser checks
+all drafts/history/current source, cancellation, saved source and actual response hash. Details
+show useful foundations, G01–G08, seven custom extensions, all 25 unsupported paths and local
+substitutions, versions/hashes and the separate strict false/none/none contract. Raw frozen
+blueprint/report/calculators and generationEligible semantics remain unchanged.
+
+The ZIP is bounded stored output: 256 files, 8 MiB per file, 16 MiB total; sorted safe ASCII paths,
+fixed 1980 dates, no extras/comments/symlink/executable entries or server filesystem writes.
+[Independent Python verification](evidence/fp03b/archive-verification.json) compares every actual
+mouse/packaged download path, byte count and SHA with the real assembler, checks all CRCs,
+dotfiles and exact 005 PNG. The repeated actual ZIPs are identical:
+`c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86`, 946,247 bytes.
+108 files total 931,999 bytes including the 80,362-byte final manifest (107 hashed manifest payloads
+still total 851,637 bytes). Manifest remains
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Canonical source remains `7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93`.
+No emitted generator/report/template bytes changed: generator 0.1.0-experimental.2, template
+families 0.1.0-experimental.1 and profile 1.0.0 remain. No field `app/` output or custom algorithms.
+
+Production Docker ships the workspace generator/assets, five exact JSON inputs and 005 PNG with
+non-root-readable ownership. Initial packaging smoke caught a private lock asset's mode; COPY
+ownership fixes actual uid 1000 loading. Hierarchical outer Docker exclusions correct an initial
+negation-rule overinclusion; build context independently contains exactly those six field files,
+excluding future apps/history/runtime secrets. A complete isolated packaged API previews/downloads
+from a temporary exact copy, preserves its state and deletes it; final rebuilt image's uid 1000
+module/asset assembly matches the same hashes. No provider campaign was repeated.
+
+Immutable real [006](../diagrams/006-generation-ui/snapshot.json) records the initial generation UI;
+[007](../diagrams/007-generation-draft-guard/snapshot.json) records the E2E-discovered invalid-draft
+trigger correction, preserving 006. Fresh owned 4302/4312 servers and dirty-parent file audits
+record actual source, blueprint, native PNG, 1280×800 studio/dialog and invalid-name screenshots.
+The value is restored without a saved edit. Both native PNGs match 005 byte for byte,
+`23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9`, 3008×2752, 21 tiles/25 lines.
+005 remains authoritative for generation; no topology or profile changed. Final 293-file audit checks 007 and every 006/007 artifact, recording only a later generator README
+wording change separately. Containing FP03b commit belongs in a subsequent entry.
+
+Final required checks sequential on Node 24.21.0: **pnpm check 398 tests / 50 files**, lint/all
+typechecks; **36 native E2Es (1.2m)** with source steady; **web build 922ms** (existing chunk
+advisory). First full check had the existing 5s PGlite restart timeout; unmodified isolated 12-test
+file and two later full 398-test runs passed. First full E2E 35/36 found the inherited toolbar flag
+ignoring invalid form fields; only generation now blocks every dirty/pending draft. Focused 2/2
+and final 36/36 pass; no timeout weakened or test removed. Large Buffer byte equality uses native
+comparison rather than expensive deep array assertions. Other early test/script/port/formatting/
+lockfile corrections are retained in [evidence](evidence/fp03b/README.md).
+
+Real owner mouse checks preserve all four complete project/design/history/layout/blueprint
+responses and listing. TinyURL 53 renders 12/13; Fit and unsupported-profile refusal work. No page
+errors; the deliberately unsupported 422 has one expected console entry. E2E DB returns to its
+original default-only list. Owned 4302/4312 listeners, isolated container/anonymous volume and named
+images are removed; other Compose projects, owner 4300/4310 and `.jeeves-feedback/` remain. No
+secrets/capabilities or new owner image copies retained. Build cache/shared images may remain;
+no global prune. FP04 next commits actual untouched output and independently installs/builds it;
+FP05 then plans G01–G08 from that checkpoint. S01–S08 still unrun, no coverage/savings claim or v2.
+
+Local commit: **FP03b: add guarded experimental project download**.
+
+
+FP03b operational follow-up before commit: the coordinator found owner API 4310 unavailable while
+its original tsx watcher remained. Initial app.ts HMR preceded workspace-link installation and
+failed ERR_MODULE_NOT_FOUND. A byte-preserving touch of watched main.ts restarted that existing
+watcher's child; no watcher was killed/replaced. Owner 4310/4300 health and actual proxy preview/
+download are restored and full four-project state equality is rechecked. Capture 4302/4312 remain
+stopped. Docs distinguish eager template-file startup failures from in-request input/PNG/assembly 503.

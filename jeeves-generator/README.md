@@ -3,11 +3,11 @@
 FP03a provides `@jeeves/generator`, a Node/TypeScript workspace package exporting source directly.
 It assembles deterministic **in-memory file bundles** through trusted local template code.
 The explicit `localV1Templates` registry installs **19 experimental local template families** and
-a conservative new-directory exporter. There is no archive/HTTP/browser flow yet (FP03b), and no
-field application is committed (FP04). G01–G08 custom implementation follows the actual baseline.
+a conservative new-directory exporter. Jeeves now offers a guarded experimental preview/ZIP
+download (FP03b). No field application is committed (FP04). G01–G08 custom implementation follows the actual baseline.
 
 Only the frozen `youtube-local-v1@1.0.0` profile is accepted: source schema2, blueprint3,
-snapshot005, source hash `7d1874a1…7979cc93`, project revision3. This is deliberately a finite
+snapshot005, source hash `7d1874a1…7979cc93`, project revision 3. This is deliberately a finite
 experiment, not a general study/provider registry. Another source, profile or dependency pin
 requires an explicit reviewed profile/version change; names and prose never select algorithms
 or ownership. Existing strict `generationEligible`, template availability and runtime evidence
@@ -100,9 +100,11 @@ deletes partial output on failure. Its parent must be trusted against concurrent
 Node cannot make that attack safe with portable filesystem APIs. Runtime secrets remain private.
 
 `loadYoutubeLocalInput()` loads the trusted exact frozen artifacts and real source-linked PNG.
-Production server packaging must ship `jeeves-generator/` (including source/assets) and the five
+Production server packaging ships `jeeves-generator/` (including source/assets) and the five
 `field-projects/youtube/v1/inputs/` files plus `diagrams/005-local-intent-aligned/diagram.png` at
-their repository-relative locations. FP03b can call the same loader/assembler API.
+their repository-relative locations with ownership readable by the non-root API user. The Jeeves
+API calls the same loader/assembler API; it never writes output to the server filesystem. The outer
+Docker context admits only those six field files, excluding future apps and runtime secrets.
 
 `pnpm --filter @jeeves/generator export:new /absolute/new-directory` is a physical CLI export.
 It does not create the field baseline in this checkout. Follow the emitted README to build/run.
@@ -115,3 +117,29 @@ preservation of edits. New network-free checks cover real-registry determinism, 
 exclusive/symlink-refusing export. The independent build and bounded startup evidence lives in
 [field FP03a evidence](../field-projects/youtube/v1/notes/evidence/fp03a/README.md). Field business
 scenarios remain separate and unmeasured; no functional credit comes from placeholder handlers.
+
+## Jeeves preview and ZIP download
+
+The canvas **Generate project → Preview scaffold → Download project ZIP** flow uses the explicit
+real registry. Only exact canonical saved source (including revision 3) matching snapshot005 is
+accepted. Another source is refused; the old frozen app is never silently substituted. An exact
+source copy can export, with selected-project identity shown separately from the frozen origin.
+The ZIP retains the original frozen provenance unchanged. No strict readiness is upgraded.
+
+Read-only POST routes under `/projects/:id/experimental-generation/preview` and `/download`
+accept `{ profileId, baseRevision, sourceSha256 }`; download additionally requires the preview's
+`archiveSha256`. Bodies are strict; no output directory, artifact upload or executable selection
+is accepted. Preview returns the full partial report plus summary counts, versions, source and
+archive hashes. Both recheck the saved source after assembly; stale source/archive returns 409,
+unsupported profile/source returns 422, missing project 404, malformed request 400, and
+input/PNG or assembly failures inside a request return 503. Templates load eagerly at API module
+startup: missing/unreadable template files can prevent startup and must be repaired before the
+routes become available. All responses use `Cache-Control: no-store`.
+
+The server wraps the unchanged assembler files in a deterministic stored ZIP (`zip-store-v1`):
+stable ASCII path ordering, 1980-01-01 dates, no extras/comments, no symlink/executable entries,
+maximum 256 files, 8 MiB per file and 16 MiB archive. Dotfiles and the exact diagram PNG are included.
+Extract into a new directory; run scripts through `bash` as the emitted README describes.
+The same inputs/template versions yield the same payload and ZIP bytes. Download checks the
+preview archive hash and the browser checks it again before saving. Project switch/close cancels
+pending browser work; drafts/history actions and changed/stale sources require a fresh preview.

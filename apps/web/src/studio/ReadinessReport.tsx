@@ -66,8 +66,8 @@ export function ReadinessReport({
         Generation eligible: <strong>{report.generationEligible ? "yes" : "no"}</strong>
       </p>
       <p className="studio-field-help">
-        No product template or evidence registry exists. A complete contract does not verify a
-        running output.
+        No strict contract-compatible product template or evidence registry exists. Experimental
+        partial scaffold export is separate; a complete contract does not verify a running output.
       </p>
       {stages.map(([key, label]) => {
         const stage = report[key];

@@ -20,14 +20,15 @@ The distinct default `studio-tinyurl-foundation@1.0.0` has valid structure and c
 declarations; implementation is unavailable, runtime evidence none, generation ineligible.
 The extended TinyURL study retains its old design-only scope and incomplete coverage.
 
-**Product availability remains unavailable; product runtime evidence remains none.** Jeeves has
-no template, dependency, auth-verifier or evidence registry, generated output, generator, runner
-or backend here. Positive paths exercise trust plumbing exclusively with isolated test bytes;
+**Strict product availability remains unavailable; strict runtime evidence remains none.** This
+contract-compatible path has no product template, dependency, auth-verifier or evidence registry,
+runner or backend. Its positive paths exercise trust plumbing exclusively with isolated test bytes;
 they prove no HTTP, storage, clock, cancellation, concurrency or real-adapter behavior.
 
-The planned [YouTube field-project workflow](plans/reliable-foundations/youtube-field-project-plan.md)
-will distinguish experimental scaffold export, with explicit unfinished behavior, from this strict
-report. That export path is not implemented yet. Partial output or a field-project smoke check
+The [YouTube field-project workflow](plans/reliable-foundations/youtube-field-project-plan.md)
+now supplies a separate experimental partial scaffold preview/ZIP export for exact frozen local-v1
+source through 19 real local template families. Its unfinished behavior and unsupported intent
+remain explicit; the raw frozen strict report stays historical. Partial output or a field-project smoke check
 must not turn `generationEligible`, contract completeness or runtime verification into a weaker
 claim. Heavy generated-template certification is deferred by the owner while field projects
 inform the design; the existing report semantics remain unchanged.

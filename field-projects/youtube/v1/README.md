@@ -5,7 +5,9 @@ FP01 freezes the saved diagram and a finite local mapping. FP02 adds the
 inputs, with deterministic in-memory bundles and explicit partial reports. FP03a now adds
 **19 real experimental template families and an independent scratch build** of actual output;
 [evidence](notes/evidence/fp03a/README.md) distinguishes infrastructure checks from business gaps.
-No field app is committed or measured functional coverage claimed. FP03b adds mouse download. The real untouched
+FP03b adds guarded mouse preview/ZIP download of that same real output, including frozen inputs
+and PNG; exact-source checks refuse other designs and preserve strict readiness. No field app is
+committed or measured functional coverage claimed. The real untouched
 generator output must be committed in FP04 before the custom implementation plan or application
 code. Review working v1 with the owner before deciding on v2.
 

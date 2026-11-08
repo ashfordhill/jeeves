@@ -47,3 +47,36 @@ descriptions still said replica and the CDN prose still promised resizing. 005 c
 actual context mismatch. Do not use 004 for generation. Frozen inputs reference 005. The next
 unit should append the containing FP01 commit here or in the work log; no snapshot contains
 its own containing commit.
+
+
+## FP03b: experimental generation controls
+
+[006 generation UI](006-generation-ui/snapshot.json) appends real mouse PNG/source/blueprint,
+1280×800 [studio](006-generation-ui/studio.png), [preview](006-generation-ui/generation.png)
+and [opened gaps](006-generation-ui/generation-gaps.png) captures. Architecture and saved revision 3
+remain unchanged; the actual clean PNG is byte-identical to 005 (`23c06f6d…dc5bdb9`).
+005 remains the immutable authoritative generator image/input profile. 006 records presentation,
+not a new architecture/profile. The clean native PNG still uses full bounds, all 25 projected
+lines, 21 tiles, 2× scale and Nunito/light paper.
+
+The fresh owned 4302/4312 renderer samples dirty parent `5c79e4efe932b6ae138d966e2373f89216d8dd0c`.
+[006 source audit](006-generation-ui/renderer-audit.json) records the actual file hashes and dirty
+status at capture; startup identity alone is not HMR attestation. The containing FP03b commit is
+recorded in a later work-log/index entry to avoid self-reference. The generation dialog retains
+selected-source versus frozen-origin provenance, strict false/none distinction and missing work.
+Actual mouse ZIP and non-root packaged API ZIP match; source/history/blueprint/layout/listing and
+interactive view/preferences remain equal. TinyURL 12/13 renders and refuses this profile.
+One expected browser console 422 accompanies that deliberately unsupported request; no uncaught
+page errors or unexpected console errors occurred. Earlier 001–005 descriptions/audit remain
+historical. No owner feedback image was supplied or recopied.
+
+
+[007 generation draft guard](007-generation-draft-guard/snapshot.json) preserves 006 and records
+one correction found by mouse E2E: the inherited general toolbar draft flag ignores invalid
+fields, so the new generation trigger now separately blocks every pending/dirty draft. The
+[actual invalid-name state](007-generation-draft-guard/draft-guard.png) shows the disabled trigger;
+the original value is restored without a saved edit. Valid preview/ZIP controls, source revision 3
+and full PNG remain unchanged. This second capture uses newly restarted owned 4302/4312 servers
+and a [final source audit](007-generation-draft-guard/renderer-audit.json) over the corrected code.
+006 remains the first real presentation record, not a silently replaced capture. Both 007 ZIP
+and PNG match the previously verified bytes; the profile continues to reference 005.

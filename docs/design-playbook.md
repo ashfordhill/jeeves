@@ -1037,3 +1037,17 @@ SQL read routing to primary while two module descriptions still said replica; sn
 corrects those descriptions and names the Local video edge. Equal PNGs can hide real settings
 changes: preserve source hashes and inspector evidence as well as clean diagram images.
 These are source/provenance lessons, not runtime validation or measured chat-quality gains.
+
+## 2026-11-07 partial export source and draft boundaries
+
+A frozen experimental profile must check the selected saved source before offering its output.
+Keep an exact copy's selected project separate from the archive's frozen origin, and refuse a
+changed or unsupported canvas rather than silently substituting historical inputs. Present useful
+foundations, unfinished behavior and unsupported intent separately from strict compatibility.
+Local provider normalization does not erase remaining language, TLS or service-identity gaps.
+
+Generation guards must consider every dirty/pending draft, including invalid values. Jeeves'
+general toolbar draft flag deliberately excludes validation errors for its existing history
+behavior; reusing it alone left the new export trigger enabled. Use an export-specific guard,
+then recheck source/current project after asynchronous work. Preserve the failed mouse result
+and the corrected presentation; this observation adds no application-runtime or chat-quality credit.

@@ -64,6 +64,7 @@ import { StudioIcon } from "../studio/StudioIcon.tsx";
 import "../studio/studio.css";
 import { startsSelected, useLaneCreation } from "./creation.tsx";
 import { ExportDiagram } from "./ExportDiagram.tsx";
+import { GenerateProject } from "./GenerateProject.tsx";
 import { LaneCanvas, laneNodeName } from "./LaneCanvas.tsx";
 import { LaneIcon, laneNames } from "./LaneIcon.tsx";
 import { ownerNodeId, projectOwnerGraph } from "./ownerProjection.ts";
@@ -99,6 +100,10 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
     );
   const historyBusy = useProject((state) => state.historyBusy);
   const failed = formDrafts.hasProblems(projectId);
+  const generationBlocked =
+    historyBusy ||
+    failed ||
+    formDrafts.forProject(projectId).some((draft) => draft.flight || draft.paths.size);
   const undoable = useProject(canUndo);
   const redoable = useProject(canRedo);
   const notice = useProject((state) => state.notice);
@@ -109,6 +114,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [headerHost, setHeaderHost] = useState<HTMLElement | null>(null);
   const [focusName, setFocusName] = useState<string>();
   const [exportOpen, setExportOpen] = useState(false);
+  const [generationOpen, setGenerationOpen] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
   const [operationsOpen, setOperationsOpen] = useState(false);
   const [ownershipOpen, setOwnershipOpen] = useState(false);
@@ -296,6 +302,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
 
   return (
     <div className="studio-workspace">
+      {generationOpen ? <GenerateProject onClose={() => setGenerationOpen(false)} /> : null}
       {exportOpen ? (
         <ExportDiagram
           board={board}
@@ -450,6 +457,18 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
             onClick={() => setExportOpen(true)}
           >
             <IconDownload size={18} /> Export diagram
+          </button>
+          <button
+            type="button"
+            title={
+              generationBlocked
+                ? "Finish saving edits before generating"
+                : "Generate experimental project"
+            }
+            disabled={generationBlocked}
+            onClick={() => setGenerationOpen(true)}
+          >
+            Generate project
           </button>
         </div>
         {notice ? (

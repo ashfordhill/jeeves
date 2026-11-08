@@ -21,6 +21,9 @@ RUN apk add --no-cache bash ca-certificates font-dejavu nginx \
 COPY --from=production-dependencies /app/node_modules ./node_modules
 COPY --from=production-dependencies /app/apps/server ./apps/server
 COPY --from=production-dependencies /app/packages ./packages
+COPY --from=production-dependencies --chown=node:node /app/jeeves-generator ./jeeves-generator
+COPY --chown=node:node field-projects/youtube/v1/inputs/*.json ./field-projects/youtube/v1/inputs/
+COPY --chown=node:node field-projects/youtube/v1/diagrams/005-local-intent-aligned/diagram.png ./field-projects/youtube/v1/diagrams/005-local-intent-aligned/diagram.png
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY patches ./patches
 COPY --from=build /app/apps/web/dist ./apps/web/dist

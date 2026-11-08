@@ -8,7 +8,8 @@ talk to a chat assistant that edits the same design with the same rules. Every d
 as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). The [experimental generator foundation](jeeves-generator/README.md) assembles deterministic
 in-memory bundles for the frozen YouTube local-v1 profile. FP03a adds 19 real experimental local
 template families, a new-directory CLI exporter and independently built service/worker scaffolding.
-Mouse generation/download remains FP03b; business behavior is explicitly unfinished. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
+The canvas now previews/downloads the exact frozen local-v1 source as an experimental partial
+project ZIP; other saved sources refuse clearly. Business behavior is explicitly unfinished. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
 keeps the generator and experimental templates in `jeeves-generator/`, exports standalone
 applications and measures improvements across working v1/v2 field projects before heavy
 certification. [YouTube v1's frozen inputs and numbered images](field-projects/youtube/v1/README.md)

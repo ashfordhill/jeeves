@@ -1,0 +1,149 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "Tighten Generate project trigger to block all dirty/pending drafts, including invalid field values. Preserve006 initial presentation; no saved architecture/profile or generator payload changes.",
+  "capturedAt": "2026-11-08T04:19:33.454Z",
+  "project": {
+    "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "name": "YouTube · field v1 · local Docker",
+    "revision": 3,
+    "createdAt": "2026-11-08T02:55:26.959Z",
+    "updatedAt": "2026-11-08T02:58:15.881Z"
+  },
+  "source": {
+    "revision": 3,
+    "schemaVersion": 2,
+    "canonicalSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved"
+  },
+  "parent": {
+    "snapshot": "006-generation-ui",
+    "projectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "revision": 3
+  },
+  "blueprint": {
+    "requestedVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "5c79e4efe932b6ae138d966e2373f89216d8dd0c",
+    "trackedTreeDirtyAtBuild": true,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "renderer-audit.json",
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "theme": "light",
+    "state": "Fit, no focus/selection in studio.png; actual preview and gaps with reachable fixed footer. draft-guard.png temporarily empties the selected Identity name without saving; trigger disabled, original value restored and exact saved state preserved."
+  },
+  "image": {
+    "filename": "YouTube-field-v1-local-Docker-r3.png",
+    "sha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "counts": {
+    "canonicalElements": 18,
+    "canonicalConnections": 18,
+    "renderedTiles": 21,
+    "renderedLines": 25
+  },
+  "generation": {
+    "profileId": "youtube-local-v1",
+    "generator": {
+      "id": "jeeves-generator",
+      "version": "0.1.0-experimental.2"
+    },
+    "archive": {
+      "filename": "youtube-local-v1-experimental.zip",
+      "format": "zip-store-v1",
+      "bytes": 946247,
+      "sha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "files": 108,
+      "payloadBytes": 931999
+    },
+    "selectedSource": {
+      "projectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+      "revision": 3,
+      "canonicalSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+      "matchesFrozenProfile": true
+    },
+    "frozenInputsRemainSnapshot": "005-local-intent-aligned",
+    "pngByteIdenticalTo005": true
+  },
+  "browser": "153.0.8010.12",
+  "exportPreservedDesignHistoryBlueprintLayoutPreferencesAndInteractiveView": true,
+  "errors": [],
+  "expectedConsoleErrorsFromUnsupportedSource": [
+    "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+  ],
+  "files": {
+    "blueprint.json": {
+      "bytes": 61453,
+      "sha256": "041facff14d88c045e788f75fa6a7868f872cc37e0e9d9d5641c6fcce81d7e64"
+    },
+    "capture.json": {
+      "bytes": 21514,
+      "sha256": "6c518ae45873b703555788c90239b10f67fa336f0947b155559bc7a3005897ac"
+    },
+    "design-response.json": {
+      "bytes": 21800,
+      "sha256": "b587d02d2f8e649cced41af68f2d1a243b0fc1f1904df5dd89a92ac530240521"
+    },
+    "design.json": {
+      "bytes": 35922,
+      "sha256": "7ea79f431f89352814320d385591ae1e84cf8e63129e93d8fb649c6b2716045c"
+    },
+    "diagram.png": {
+      "bytes": 409401,
+      "sha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9"
+    },
+    "draft-guard.png": {
+      "bytes": 151935,
+      "sha256": "5f36d74996d8b55a48c1a7640bea6b07dc1f037ef631719eb80dfbf722d2e319"
+    },
+    "generation-gaps.png": {
+      "bytes": 153682,
+      "sha256": "e443e8fc6b2ea7f17986755d6c015653a0379d00d2fa56daa3e17731d5e6eb3d"
+    },
+    "generation.png": {
+      "bytes": 136095,
+      "sha256": "111a41b5a4c0b9c0bfb205bd7c455e1b1d83714943d39262756bc4cf14edc5c9"
+    },
+    "project.json": {
+      "bytes": 203,
+      "sha256": "bf543b46d16b3b507f716915899b981a064e14bfb6a282424b94c2645394d0d2"
+    },
+    "renderer-audit.json": {
+      "bytes": 47413,
+      "sha256": "e1dea354eb69b0cb935fdb8237c2569bc0002fc63192ceb9f1af60af29197b70"
+    },
+    "studio.png": {
+      "bytes": 122666,
+      "sha256": "1d1ae522cafec16881436ef77fcf64e78293850b4508f3ebbb1935343d8200bb"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-11-08T04:19:35.055Z",
+  "projects": [
+    {
+      "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+      "name": "YouTube · field v1 · local Docker",
+      "revision": 3,
+      "beforeSha256": "20dea742d4006d536d4e9190a05d2c43093a24bc160cac0e7bdeddceaf67af45",
+      "afterSha256": "20dea742d4006d536d4e9190a05d2c43093a24bc160cac0e7bdeddceaf67af45"
+    },
+    {
+      "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+      "name": "YouTube · studio study",
+      "revision": 2,
+      "beforeSha256": "06f0b2335faccbab1f3a67876eef0c2ec980fbabb2a8f2ccfd532411508227fc",
+      "afterSha256": "06f0b2335faccbab1f3a67876eef0c2ec980fbabb2a8f2ccfd532411508227fc"
+    },
+    {
+      "id": "41bbd268-9244-47cc-be63-66c5e61d116c",
+      "name": "TinyURL · studio study",
+      "revision": 53,
+      "beforeSha256": "375bd8800e8eeeb104ce0508be48c5f0d903fcbe701cf8bc616527f725f7a922",
+      "afterSha256": "375bd8800e8eeeb104ce0508be48c5f0d903fcbe701cf8bc616527f725f7a922"
+    },
+    {
+      "id": "81571ba1-c2da-4896-a79c-c31557f164ca",
+      "name": "Marketplace · studio study",
+      "revision": 1,
+      "beforeSha256": "8f0f48ad85873ffcb129363f923bca97b49451313906112d134f5151e13a8047",
+      "afterSha256": "8f0f48ad85873ffcb129363f923bca97b49451313906112d134f5151e13a8047"
+    }
+  ],
+  "projectListingPreserved": true,
+  "errors": [],
+  "expectedConsoleErrorsFromUnsupportedSource": [
+    "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+  ],
+  "tinyurl": {
+    "tiles": 12,
+    "lines": 13,
+    "mouseFit": true,
+    "unsupportedSourceRefused": true,
+    "invalidDraftTriggerBlocked": true
+  },
+  "v1": {
+    "tiles": 21,
+    "lines": 25,
+    "sourceSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+    "imageSha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9",
+    "pngByteIdenticalTo005": true,
+    "archive": {
+      "filename": "youtube-local-v1-experimental.zip",
+      "format": "zip-store-v1",
+      "bytes": 946247,
+      "sha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+      "manifestSha256": "5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f",
+      "files": 108,
+      "payloadBytes": 931999
+    }
+  },
+  "allResponsesAndViewsPreserved": true
+}

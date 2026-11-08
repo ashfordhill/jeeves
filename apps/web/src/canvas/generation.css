@@ -1,0 +1,37 @@
+.generation-preview {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.generation-preview > p:first-child {
+  margin-top: 0;
+}
+.generation-preview details {
+  border-top: 1px solid var(--mantine-color-default-border);
+  padding: 10px 0;
+}
+.generation-preview summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.generation-preview code {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.generation-preview li {
+  margin-bottom: 8px;
+}
+.generation-preview li p {
+  margin: 4px 0 0;
+}
+.generation-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.generation-actions button {
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.generation-actions button:disabled {
+  cursor: default;
+}

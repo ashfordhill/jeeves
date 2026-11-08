@@ -1,0 +1,10 @@
+{
+  "health": {
+    "status": "ok",
+    "database": "ok",
+    "version": "0.1.0"
+  },
+  "previewAndDownloadThroughOwner4300": true,
+  "archiveSha256": "c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86",
+  "watcherRecovery": "Existing watcher resumed after byte-preserving main.ts touch; no replacement or kill"
+}

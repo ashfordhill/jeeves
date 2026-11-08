@@ -1,0 +1,17 @@
+{
+  "finalRuntimeSourceFilesMatch007Audit": true,
+  "sourceFilesChecked": 293,
+  "documentationOnlyAfterCapture": [
+    {
+      "path": "jeeves-generator/README.md",
+      "captureSha256": "3c4bf0c2910ecf9fe02132288367b8086a8ff06750f56e6a691b4f2a721133dc",
+      "finalSha256": "5068789bf7d8ccf123192718cf3062a9dd0d4230816074876b96ced203c85cb4",
+      "reason": "Qualify eager template startup failure versus in-request503; no executable/template changes"
+    }
+  ],
+  "all006And007ArtifactHashesMatch": true,
+  "allFourOwnerProjectResponsesStillEqual": true,
+  "frozenInputs005GeneratorCodeAndTemplateBytesUnchanged": true,
+  "noFieldApp": true,
+  "baselineCommit": "5c79e4efe932b6ae138d966e2373f89216d8dd0c"
+}

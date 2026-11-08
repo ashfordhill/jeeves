@@ -138,7 +138,8 @@ export const api = {
   getProject: (id: string) =>
     request<{ project: Project }>(`/projects/${id}`).then((r) => r.project),
 
-  getDesign: (id: string) => request<DesignState>(`/projects/${id}/design`),
+  getDesign: (id: string, signal?: AbortSignal) =>
+    request<DesignState>(`/projects/${id}/design`, { signal }),
 
   edit: (id: string, baseRevision: number, ops: OperationInput[]) =>
     change(`/projects/${id}/operations`, { baseRevision, ops, source: "canvas" }),

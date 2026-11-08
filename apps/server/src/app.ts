@@ -9,6 +9,7 @@ import { ChatService, type ModelSource } from "./chat/service.ts";
 import type { Db } from "./db/client.ts";
 import { DesignService } from "./design/service.ts";
 import { chatRoutes } from "./routes/chat.ts";
+import { generationRoutes } from "./routes/generation.ts";
 import { projectRoutes } from "./routes/projects.ts";
 import { settingsRoutes } from "./routes/settings.ts";
 import { jeevesHome, Settings } from "./settings.ts";
@@ -72,6 +73,7 @@ export function buildApp({
   const design = new DesignService(db);
   const chat = new ChatService(db, design, models);
   app.register(projectRoutes, { service: design });
+  app.register(generationRoutes, { service: design });
   app.register(chatRoutes, { chat });
   app.register(settingsRoutes, { settings });
 

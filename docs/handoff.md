@@ -5031,3 +5031,61 @@ output before **FP05** plans custom work. Full provenance/investment/failed atte
 [field work log](../field-projects/youtube/v1/notes/work-log.md); no savings claim or automatic v2.
 
 Local commit: **FP03a: add real local templates and independent build**.
+
+## 2026-11-07 — FP03b: guarded Jeeves preview and deterministic project ZIP
+
+FP03b only after **`5c79e4efe932b6ae138d966e2373f89216d8dd0c`**, primary main/sole writer,
+no delegation/branch/worktree/stash/push. Added read-only-to-project POST experimental preview/
+download and mouse **Generate project → Preview scaffold → Download project ZIP**. Only exact
+saved snapshot005 source/revision 3 matching the trusted local-v1 profile exports; other studies,
+changed/stale sources and unknown profiles refuse clearly. Exact copies show selected-project
+versus frozen-origin provenance. Server rechecks source and preview archive identity; browser
+checks drafts/history/current project, cancellation, saved source and actual ZIP hash. No arbitrary
+paths/assets/code or server output writes. Partial foundations, G01–G08/seven extensions, 25
+unsupported paths and local substitutions remain explicit. Strict calculators/blueprints/raw
+report, generationEligible and profile/input/template bytes unchanged. Generator stays
+0.1.0-experimental.2; no field app/custom code or functional-coverage claim.
+
+Bounded stable stored ZIP **108 files, 946,247 bytes**. Python `zipfile` independently verifies
+every actual assembler payload/hash/CRC, dotfiles and exact PNG for actual mouse and packaged API
+downloads. ZIP SHA **`c885dd34e323c1102447587db25d68d273c5897826c240db31a9c222b8269c86`**;
+manifest unchanged **`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`**.
+All files total 931,999 bytes including 80,362-byte final manifest; 107 hashed payloads remain 851,637.
+[API/docs](../jeeves-generator/README.md), [evidence](../field-projects/youtube/v1/notes/evidence/fp03b/README.md).
+Production image builds and actual isolated API preview/download pass. Final image uid 1000 loads
+all real assets and matches hashes. Docker COPY ownership fixes private template-asset mode;
+outer hierarchical context rules admit exactly five input JSONs + 005 PNG, excluding future apps/
+history/runtime secrets. Workspace resolution and existing independent-app boundaries preserved.
+
+Required final checks sequential: **pnpm check 398 tests / 50 files**, all lint/typechecks;
+**36 native E2Es 1.2m** with source steady; web build **922ms** (existing advisory). Retained first
+existing 5s PGlite restart timeout, isolated 12-test pass and later full passes; no timeout weakened.
+First E2E 35/36 caught invalid fields excluded by the inherited toolbar flag: generation alone now
+uses every dirty/pending draft, preserving existing history/diagram-export semantics. Final mouse
+cases cover actual preview/download,503/retry, unsupported/stale source, cancellation/switch and
+invalid drafts. No tests removed. Reverted unrelated lock pruning; only workspace importer added.
+
+Real immutable [006 UI](../field-projects/youtube/v1/diagrams/006-generation-ui/snapshot.json) and
+[007 guard](../field-projects/youtube/v1/diagrams/007-generation-draft-guard/snapshot.json) retain
+source/blueprint/native PNG, 1280×800 studio/dialog/invalid-name screenshots and fresh dirty-parent
+renderer audits; 007 final audit checks 293 recorded files; only the later generator README wording differs. Both PNGs byte-identical to 005
+(`23c06f6d…dc5bdb9`, 3008×2752, 21/25);005 remains authoritative. No source/topology/profile change
+or historical rewrite. Complete four owner project/design/history/layout/blueprint/listing
+responses unchanged; TinyURL 53 mouse 12/13, Fit/refusal work. No page errors; expected unsupported
+HTTP 422 console entry recorded. E2E DB restored. Own 4302/4312, container/anonymous volume/named
+images removed; owner 4300/4310, other Compose projects and `.jeeves-feedback/` preserved. No new
+owner images, runtime secrets, paid/live/cloud/model calls or global prune.
+
+Next **FP04** commits real untouched output before **FP05** custom planning. Record this containing
+commit in the next work-log entry; retain exact profile/source 7d1874a1…7979cc93 and manifest above.
+All G01–G08/S01–S08 remain open/unrun; no template certification or working YouTube app claim.
+
+Local commit: **FP03b: add guarded experimental project download**.
+
+
+FP03b operational follow-up before commit: the coordinator found owner API 4310 unavailable while
+its original tsx watcher remained. Initial app.ts HMR preceded workspace-link installation and
+failed ERR_MODULE_NOT_FOUND. A byte-preserving touch of watched main.ts restarted that existing
+watcher's child; no watcher was killed/replaced. Owner 4310/4300 health and actual proxy preview/
+download are restored and full four-project state equality is rechecked. Capture 4302/4312 remain
+stopped. Docs distinguish eager template-file startup failures from in-request input/PNG/assembly 503.

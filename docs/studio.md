@@ -1,17 +1,18 @@
 # The studio
 
 The studio is the **Design** tab: the lane canvas of one project, a chat rail on the left and an
-inspector on the right. Everything in it is design intent. Nothing is provisioned, deployed or
-generated in the studio. The [experimental generator foundation](../jeeves-generator/README.md)
-currently exposes a frozen local-v1 in-memory assembly API, with no application templates or
-mouse generation/export. It reads the [blueprint](studio-blueprint.md). Field values are
+inspector on the right. Designs describe intent; the studio does not provision or deploy them.
+The [experimental generator](../jeeves-generator/README.md) supplies a separate mouse-operated
+partial scaffold preview/ZIP export for the exact frozen YouTube local-v1 source, using 19 real
+experimental template families. It reads the [blueprint](studio-blueprint.md). Field values are
 listed in [studio settings](studio-settings.md).
 
 Open **Compatibility report** in the inspector to see four separate results for the saved
 snapshot: design validity, exact contracts, implementation availability and exact output evidence.
 Expand a blocker list and use its mouse buttons to select the exact role/resource, relationship,
 owner or operation for chat. Report, selection, focus and Fit never save or upgrade the design.
-There is no product template/evidence registry; availability stays unavailable and evidence none.
+There is no strict contract-compatible product template/evidence registry; strict availability
+stays unavailable and evidence none. Experimental partial export grants no strict readiness credit.
 The [report guide](studio-readiness.md) explains its exact composition identity and limitations.
 
 ## Projects
@@ -1060,3 +1061,25 @@ explicitly before a compatible declaration saves. Named previews explain refusal
 reload and one Undo preserve complete refs. An API with several operations shows their count;
 inspector details select each binding separately for chat. The view adds no service/deployment,
 port or reversed data-return arrow. [Finite behavior and runtime limits](studio-contracts.md).
+
+## Experimental project export
+
+Use **Generate project** in the canvas toolbar, then **Preview scaffold**. Only frozen YouTube
+local v1 snapshot005, saved revision 3 and its exact canonical source are accepted. Select the
+retained **YouTube · field v1 · local Docker** project. A different normal study, owner YouTube,
+or changed source receives an actionable unsupported-source error. An exact saved-source copy
+can export; details identify its selected project separately from the archive's frozen origin.
+
+Preview summarizes 108 real files / 19 experimental families and includes mouse-opened details for
+foundations, G01–G08/custom work, all 25 unsupported paths/local substitutions, versions, hashes and
+strict compatibility. The full report stays in `.jeeves/report.json`. This is a partial scaffold,
+not a working YouTube app or certified output: S01–S08 remain unrun and functional coverage is
+unmeasured. Local substitutions do not promise cloud, TLS, security or scale equivalence.
+
+**Download project ZIP** reassembles and checks the preview identity, rechecks the saved source,
+and verifies the actual response hash before the browser saves it. Finish any draft or history
+action first. Source changes, stale canvas revisions, failed asset loading and cancelled work
+refuse; close/switch disposes pending work. The dialog footer keeps both mouse actions reachable
+at 1280×800. Nothing changes the design, revision, history, layout, focus, camera or preferences.
+Extract into a new directory and follow README; secrets/data are provisioned later. ZIP details
+and API/error limits are documented in the generator guide.

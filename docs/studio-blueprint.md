@@ -2,8 +2,9 @@
 
 The blueprint is the part of a design that a code generator reads. The
 [experimental generator foundation](../jeeves-generator/README.md) validates frozen design/blueprint
-inputs and assembles in-memory bundles for one local YouTube profile. No application templates or
-studio generation/export are installed yet. The active
+inputs and assembles in-memory bundles for one local YouTube profile using 19 experimental
+template families. The canvas offers a separately labeled partial preview/ZIP download for the
+exact saved source; other designs refuse without substituting the frozen baseline. The active
 [field-project plan](plans/reliable-foundations/youtube-field-project-plan.md) keeps the package
 separate from the studio; its partial report grants no strict readiness or runtime credit. The studio writes
 through operations; the blueprint is derived on every request and is never stored or edited.
@@ -18,7 +19,7 @@ They neither filter this endpoint nor change the design revision: the blueprint 
 every saved relationship.
 
 ```text
-studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (experimental; studio integration pending)
+studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (experimental partial preview/ZIP; exact frozen profile only)
 ```
 
 ## Endpoint
@@ -179,3 +180,15 @@ Chat turn-only preview/review scope and assumptions are conversation metadata, d
 reuses these findings and checks declared finite Create/Resolve signatures and positive-cache policy and reports remaining behavior contracts as **not specified**; it does not
 change blueprint version 2 or certify application completeness, template support or runtime
 behavior. A worker's outgoing call/publication/store dependency only expresses topology.
+
+## Separate partial export API
+
+`POST /projects/:id/experimental-generation/preview` and `/download` are read-only-to-project
+operations over the exact saved revision/source hash. They use the trusted frozen profile,
+real local registry and image, with no arbitrary input code or host output paths. Preview's full
+partial report retains strict readiness, all 25 unsupported paths and G01–G08. Download requires
+the preview archive hash and returns a bounded deterministic stored ZIP of unchanged assembler
+payloads, including `.jeeves/manifest.json`, `.jeeves/report.json` and source-linked diagram.
+Selected-project provenance is separate from the frozen archive origin. See the
+[generator API](../jeeves-generator/README.md#jeeves-preview-and-zip-download) for exact requests,
+limits and errors. This adds no fields or eligibility credit to strict blueprint/report contracts.

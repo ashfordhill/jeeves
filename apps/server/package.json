@@ -11,6 +11,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@jeeves/generator": "workspace:*",
     "@jeeves/providers": "workspace:*",
     "@jeeves/spec": "workspace:*",
     "@resvg/resvg-js": "2.6.2",
