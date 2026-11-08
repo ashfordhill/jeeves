@@ -788,3 +788,90 @@ segment→playlist→master→marker upload ordering, confirmed result callbacks
 workspace cleanup. **YV2-15/16** own product event/path adapters, actual source-bound compiled
 recipe and pinned service/image wiring; non-video builds must continue without FFmpeg.
 [Real pinned-media, standalone and regression evidence](../evidence/youtube-v2/yv2-10-video-engine.md).
+
+## YV2-11 — storage-backed media worker runner
+
+`local.media-worker` is an implemented **dependency emitter** for normalized `video-hls`
+selections. It emits `src/runtime/{media-worker,media-objects}.ts`, using the YV2-05 delivery/
+AMQP clients and YV2-10 fixed engine/result/identity modules. Its explicit `local` contribution
+adds selected originals read and outputs read/write storage bindings and the consuming jobs
+queue to the foundation. The foundation still validates actual normalized authority/access,
+creates scoped storage keys and durable queue/failed topology, and remains the sole shared-file
+writer. Selected results exchange topology comes from the normalized publish channel; a later
+lifecycle consumer contributes its subscriber queue. No SQL login, mount, service, image change,
+source-template attestation or normal control is added. Do not duplicate these media storage
+bindings in a later recipe. Required `video-hls-worker-bindings` remains until YV2-15/16 supplies
+the compiled application/queue/runtime/service bindings; `applicationComplete:false` is honest.
+
+`startMediaWorker<J,R>({codecs,objects,openPublisher,openConsumer,engine?,tempRoot?,onFatal?})`
+returns `{close,closed}`. `engine` defaults to the actual `encodeVideoHls`; an injected trusted
+engine must keep the same `VideoHlsInput -> VideoCompletionMarker` contract. This permits
+existing/offline composition without installing another processing preset. `tempRoot` defaults
+to the OS temporary directory; it must be an existing absolute local directory. The factory
+owns its objects and opened transports. It opens the publisher before its consumer, requires
+consumer **concurrency:1**, and gives every valid delivery one **20-minute** execution deadline.
+Only one configured worker may serialize an immutable namespace; no distributed lock is added.
+
+`MediaCodecs<J,R>` has the following required application boundaries:
+
+- `job(rawWire,messageId):J` validates the actual job envelope and its transport identity.
+  The runner bounds JSON to **64 KiB**, requires a nonempty bounded message ID and maps any
+  decode/binding error to `NonRetryable("MALFORMED_MESSAGE")`. It never feeds a normalized job
+  back to the application's wire codec; terminal handling re-decodes the **original** body.
+- `video(job):VideoHlsJob` derives/checks authoritative original key and result prefix. The runner
+  then applies the existing strict `videoHlsJob` codec. No product source/result namespace is
+  assumed. Identity/source/prefix must describe the actual committed job, not client paths.
+- `result(rawVideoResult,job):R` validates/maps the bound engine result for this application.
+  The runner validates the fixed result/prefix before calling it.
+- `eventId(job,kind):string` constructs the stable logical started/succeeded/failed identity,
+  independent of retry/timestamp. `event(job,{kind,eventId,occurredAt,result?|code?}):unknown`
+  constructs **and validates** the actual application wire. The runner bounds serialized JSON
+  to64 KiB and awaits `MediaPublisher.publish(body,eventId)` broker confirmation. The trusted
+  application codec owns the correspondence between its wire fields and the supplied job/event.
+
+`MediaEvent<R>` is started, succeeded with result, or failed with **INVALID_MEDIA** or
+**PROCESSING_FAILED** only. `MediaPublisher` is confirmed `publish` plus `close/closed`;
+`MediaTransport` is `close/closed`. Bind `openPublisher(hooks)` and
+`openConsumer({handle,onTerminal,onFatal,concurrency:1})` to the actual YV2-05 factories,
+including explicit queue, failedQueue and bounded retryLimit. `onFatal` is notification-only;
+it must be wired so loss cancels an in-progress encoder immediately, before transport drain
+completes. A malformed job emits no invented application failure. Invalid media is nonretryable;
+other failures use the existing bounded delivery retries, then a confirmed finite failure before
+confirmed failed-queue publication/ack. No SQL/outbox transaction is performed by this runner.
+
+`downloadMediaSource(objects,job,file,signal)` requires provider ContentLength to match and
+streams into an exclusively created local file, rejecting overflow/truncation and checking
+**actual source-byte SHA256**, not just declared metadata. The workspace alone is created with
+`mkdtemp`; engine output creation stays exclusive. A `finally` always removes the entire
+workspace, including source and successful/partial output, after upload/confirmation or failure.
+
+`reuseMediaMarker(objects,job,signal)` first reads the bounded marker and applies the strict
+`bindVideoMarker`: all asset/job/attempt IDs, every source fingerprint field and result prefix.
+It then Heads every inventory entry and checks actual **size, content type and SHA metadata**.
+This metadata check is not an independent hash of remote output bytes. A valid duplicate emits
+the same logical success with no source read, encode, local workspace or object rewrite.
+An invalid existing marker/inventory fails rather than silently overwriting completed output.
+Without a complete marker, partial output may be rewritten under the single-worker policy.
+`mediaUploadRank(path)` orders segments → rendition playlists → thumbnail → master; final
+`_complete.json` comes last. Marker plus entire remote inventory is re-read/checked before
+confirmed success. This is neither multi-object atomic publication nor a stronger ACL boundary.
+Remote partial/orphan cleanup remains outside this unit.
+
+`MediaObjects` is the narrow source/marker/head/put/complete/close interface.
+`createMediaObjects({source,results,sha256Metadata})` supplies its actual S3 implementation:
+source/results each require `{client,bucket,owns(job)}`. The trusted `owns` callbacks check their
+complete authoritative namespaces on every operation; no bucket/key/prefix defaults exist.
+SHA metadata name is explicit and lower-case. Marker Get requires JSON, nonzero exact length
+≤256 KiB and a bounded stream; missing404 alone means absent. Put streams local regular files
+with exact ContentLength/type/SHA metadata. Playlists cache60s; segments/thumbnail/marker use
+immutable one-year caching, preserving v1 policy. Both injected clients are destroyed (once if
+shared), attempting each even if another close fails. There is no List/Delete/SQL operation.
+
+`close()` is idempotent: normal shutdown cancels consumer admission and drains bounded work,
+then attempts publisher and object-client close even after an earlier close rejection. Fatal
+notification aborts ongoing execution and schedules close without awaiting its own delivery.
+`closed` reports `{fatal}` including transport/startup/teardown failures. No process signal or
+readiness file is installed by emitting this library. **YV2-16 must verify the pinned FFmpeg/
+ffprobe runtime before marking a process ready**, install the exact image/service, bind actual
+codecs/publishers/consumer retry policy, and wire process signals to the owned close lifecycle.
+Non-video apps still require no FFmpeg. [Real provider and regression evidence](../evidence/youtube-v2/yv2-11-media-worker.md).

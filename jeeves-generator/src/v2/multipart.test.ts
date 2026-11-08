@@ -247,9 +247,14 @@ describe("owned signed multipart engine", () => {
   });
 
   it("emits real generic transport and minimal object access while keeping required recipe hooks unfinished", () => {
+    const generation = generationSelectionsFixture();
     const design = designSchema.parse({
       ...generationSourceFixture(),
-      generation: generationSelectionsFixture(),
+      generation: {
+        version: 1,
+        runtime: generation.runtime,
+        selections: generation.selections.filter((s) => s.binding.kind === "owned-multipart"),
+      },
     });
     const registry = loadLocalV2Registry();
     const bundle = assembleV2({ designJson: JSON.stringify(design) }, registry);

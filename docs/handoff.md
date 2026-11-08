@@ -5776,3 +5776,47 @@ confirmed callbacks; create only parent workspace, then finally remove input/suc
 YV2-15/16 retain product adapters and installed pinned image/service composition. Preserve root
 README, owner dirt/e2e-docker mode and all owner resources. No v2 field app, branch/worktree/
 stash/push. Local commit: **YV2-10: generate reusable fixed video processing**.
+
+## 2026-11-08 — YV2-11: storage-backed media worker runner
+
+`local.media-worker` emits `src/runtime/{media-worker,media-objects}.ts` and contributes explicit
+selected original-read/output-read-write storage and job-consumer wiring through the foundation.
+[Actual APIs/ownership and remaining bindings](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-11--storage-backed-media-worker-runner).
+`startMediaWorker<J,R>` injects distinct raw job/result/event codecs, authoritative namespaces,
+object clients/buckets and confirmed YV2-05 transports; default engine remains fixed YV2-10.
+64KiB job/event bounds, actual downloaded-byte size/SHA, exclusive parent workspace/engine output,
+20-minute execution, predownload marker+inventory reuse, ordered segments→playlists→thumbnail/
+master→marker uploads, remote revalidation and confirmed callbacks remain. Malformed jobs invent
+no failure identity; invalid media is finite/nonretryable. Normal close drains; fatal aborts and
+schedules all owned drains without self-await. No product schemas, SQL credential/mount, remote
+cleanup, new provider policy/ACL/atomic-publication claim, installed service or normal control.
+
+Three focused offline cases; final `pnpm check` **444 tests/63 files,28.59s**, lint/types;
+**36 native E2Es,1.3m**; web build **880ms** (existing advisory). Initial full run exposed the
+multipart emission test selecting all features while expecting upload-only storage; scoped that
+fixture to multipart, preserving its exact assertion. No assertion/timeout/pin weakened. Two
+final deterministic **33-file** exports pass own frozen install/untouched build and a typed
+non-YouTube lesson worker adapter build without SQL/search/count. Real generated first-run,
+Garage/RabbitMQ and pinned FFmpeg probe passes14 inventory objects+marker/15 ordered PUTs,
+confirmed start/success, exact duplicate bytes/ETags/mtime/versions with no download/encode/PUT,
+actual invalid-media confirmed failure+failed queue and empty local workspace. Inspected exact
+read-only fixture/image mounts and no SQL service/login/mount; worker source PUT actually403.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-11-media-worker.md); logs
+`/tmp/jeeves-yv2-11/{focused-final,export-verified,install-verified,build-verified,build-adapter-verified,first-run-final,probe-final,mount-check,check-final,e2e,web-build,cleanup-final,cleanup-files}.log`,
+`media-evidence/{summary,marker,mounts,snapshot-before,snapshot-after}.json` and `cleanup-summary.json`.
+
+Scratch **jeeves-yv2-11-media** providers/probe,2 volumes,network and own app image removed;
+**45260–45263** free (only Garage45262 was published). Owned exports/deps/build/runtime/work
+removed; sanitized logs/harness/evidence retained. Exact FFmpeg image and all14 healthy v1
+services untouched. Frozen v1 **108-path/hash list** unchanged, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`;
+fixture15584953 bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9.
+Root README including owner Future Benchmarks,feedback dirt/e2e-docker mode and v1 assets intact.
+No field v2 app,branch,worktree,stash or push. No UI changed; TinyURL lane/mouse coverage passes.
+
+Next **YV2-12 only**: positive-cache module. Required video recipe remains unfinished;
+YV2-15/16 must bind actual codecs/transports/source namespaces and the one media service, install
+exact pinned FFmpeg and verify ffmpeg/ffprobe before readiness, and wire signals/drain. Do not
+contribute these media storage bindings twice. Remote reuse checks SHA metadata; only the probe
+independently hashes remote outputs. Preserve owner resources/frozen v1. Local commit:
+**YV2-11: generate storage-backed media job runner**.

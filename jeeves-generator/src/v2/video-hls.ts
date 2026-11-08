@@ -62,7 +62,7 @@ export function createLocalVideoHls(sourcePaths: readonly string[]): V2Emitter {
             status: "unfinished" as const,
             required: true,
             description:
-              "Bind job/result codecs, source/result object paths, download/hash verification, immutable marker reuse/upload ordering, pinned FFmpeg runtime and service construction in a compiled recipe. Engine dependency output alone installs no worker.",
+              "Bind authoritative job/result/event codecs, source/result namespaces, confirmed queue transports, pinned FFmpeg runtime and the single media service in a compiled recipe. Engine/runner libraries and access contributions alone install no worker.",
             sourcePaths: paths,
           },
         ],

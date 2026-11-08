@@ -4,6 +4,7 @@ import { jsonFile } from "../../src/json.ts";
 import { createLocalAssetLifecycle } from "../../src/v2/asset-lifecycle.ts";
 import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
+import { createLocalMediaWorker } from "../../src/v2/media-worker.ts";
 import { createLocalMultipart } from "../../src/v2/multipart.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
@@ -79,9 +80,10 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
   };
   const distinct = [...new Set(paths)];
   const multipart = createLocalMultipart(distinct);
+  const mediaWorker = createLocalMediaWorker(distinct);
   return createV2Registry(captureV2Sources(root, distinct), [
     diagnostic,
-    createLocalFoundation(distinct, [multipart, ...features]),
+    createLocalFoundation(distinct, [multipart, mediaWorker, ...features]),
     createLocalRuntimePrimitives(distinct),
     createLocalDurability(distinct),
     createLocalUploadState(distinct),
@@ -89,6 +91,7 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     createLocalAssetIdentity(distinct),
     createLocalAssetLifecycle(distinct),
     createLocalVideoHls(distinct),
+    mediaWorker,
     ...features,
   ]);
 }
