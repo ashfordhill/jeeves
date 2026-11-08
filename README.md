@@ -1,8 +1,84 @@
 # Jeeves
 
-Jeeves is a web-application architecture studio intended to help Software Engineers design & generate software using [C4 modeling](https://www.visual-paradigm.com/guide/what-is-the-c4-model-a-comprehensive-guide-to-visualizing-software-architecture/)-inspired diagramming. This is intended to provide a balance between human design and AI-generated code, reducing the amount of non-deterministic code generation for better maintability.
+## V1
 
-- Targets TypeScript code generation
+The C4-Modeling architecture has been a good inspiration and thought tool. However, my intention with generated code templates likely benefits more from simplifying diagram view into 1 diagram per system (or subsystem, I suppose), offering configuration options.
+
+Additionally, I've extracted the custom grid library logic from my other project automation-illustrator to give a better starting point with Tiles, Lines, and UX experience. If I can't read and interact with the diagrams easily then there's no point in trying to build out the backend.
+
+<img src=".docs/user-consume-produce.gif" width="49%" />&nbsp;<img src=".docs/menu-options.gif" width="49%" />
+
+### Strategy
+
+I am having frontier models (Astra, Opus 5.5, @ xhigh or max) handle build plans and then spawning off sequential steps to have fresh, cheaper agents execute each segment of the build plan (not in parallel). 
+
+There are 3 field projects I would like to work with:
+
+  - YouTube
+  - Marketplace (a generic buy/sell portal. Apparently Etsy is heavily PHP so not a good patternt to follow for microservices..Amazon is disgusting and eBay is probably crusty as well)
+  - TinyURL
+
+Each project will go through V1, V2, etc. where the diagrams become generated code.
+
+Benchmarks against generated template code via Jeeves Generator (the deterministic code) vs the non-deterministic custom code added later that glues/enhances the project, will be compared via # lines of source code. **The goal is to get V2 of YouTube to use less non-deterministic code than V1, etc.** 
+
+When executing, builder agents will:
+
+- Screenshot the diagram used to make the V# of that project.
+- Adjust diagram and config options on Jeeves as necessary to adjust original diagram 
+- Update possible generated code template options if it seems like a good use case
+- **Not** spend a bunch of time on unit testing Jeeves Generator nor the Templates code; why waste tokens testing a moving target?
+
+#### YouTube V1
+
+Lives [here](field-projects\youtube\v1\README.md).
+
+<p align="center"><img src=".docs/youtube-v1/watch-monster-hunter.png" width="400"/></p>
+
+
+##### Diagrams
+
+Original / Modified during build process
+
+<img src=".docs/youtube-v1/diagram-original.png" width="49%" />&nbsp;<img src=".docs/youtube-v1/diagram-modified.png" width="49%" />
+
+
+##### Features
+
+- Account sign in (no account creation option)
+- Upload
+- Playback
+- View count
+- Search videos (search needs some help tho; searching `f` results in nothing while `fixtures` does, for instance)
+
+##### Missing features:
+
+- Cloud connections were intentionally not targeted as part of V1; would need further testing around this later on. Docker locally suffices for now
+- **Account creation**; prob should have a template anyway
+- Deeper video **analytics** besides view count; might be useful to have generic analytics microservice (?)
+- **General browsing** of random/all video **inventory**; could see generic template opportunity for 'inventory browsing', unsure
+- Further **video editing** options when uploading (would need to check YouTube for ideas); might be useful for a generic video editing or upload template
+- **and much more**!
+
+##### Lines of Code
+
+**Does not include UI-specific code since Jeeves is not a UI build helper**
+
+- **5.53% src code is from Jeeves Generator**
+  - 159 lines deterministic
+  - 2,715 non-deterministic
+
+Note that tests for the templated code are not really in place so 'deterministic'/reliable code is being used liberally here.
+
+This is below my target of wanting at least 60% templated code, but it's a start.
+
+## Archive
+
+### V0
+
+#### Notes
+
+Jeeves is a web-application architecture studio intended to help Software Engineers design & generate software using [C4 modeling](https://www.visual-paradigm.com/guide/what-is-the-c4-model-a-comprehensive-guide-to-visualizing-software-architecture/)-inspired diagramming. This is intended to provide a balance between human design and AI-generated code, reducing the amount of non-deterministic code generation for better maintability.
 
 <p align="center"><img src=".docs/c4-flow.svg" width="600"/></p>
 
