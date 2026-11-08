@@ -4814,3 +4814,31 @@ model evidence and backend proof remain open. Next is future backend kickoff und
 rules and accepted scope, not another automatic domain expansion.
 
 Local commit: **NC14: review the TinyURL contract boundary and defer backend proof**.
+
+## 2026-11-07 — YouTube field-project plan and benchmark boundaries
+
+Planning-only unit on main after `450ed3e`; no delegation, runtime changes, generator or field
+application. The owner's new direction supersedes separate-repo/TinyURL-first/certification-first
+sequencing: current YouTube diagram → actual generated baseline commit → custom completion plan
+and implementation → working v1 → owner/fresh-agent review → improved Jeeves and fresh v2.
+
+Added [the active plan](plans/reliable-foundations/youtube-field-project-plan.md), updated current
+README/PLAN/agent guidance and superseding notices, and appended feedback/playbook decisions.
+Defined partial experimental export without weakening strict readiness, generated/custom/repair/
+reuse provenance, stable-feature effort comparisons, reuse hypotheses and later curated chat
+guidance/evaluations. Heavy generated-template certification is deferred; lightweight build/
+determinism/working-flow checks remain. No benchmark measurements are claimed.
+
+Required existing Jeeves checks passed on Node 24.21.0: `pnpm check` (380 tests / 46 files,
+lint/typechecks), 32 native E2Es (59.8s), web build (881ms; existing chunk advisory).
+Running owner app checked by mouse at 1280×800: existing TinyURL rev53 renders 12 tiles; Fit
+and legend work; zero page/console errors, saved design and project listing unchanged.
+Logs, browser result and inspected screenshot: /tmp/jeeves-youtube-field-plan/. No owned server
+or project was created for that browser check. Existing E2Es clean their own projects.
+
+Next: FP01 records the saved YouTube baseline and explicit local bindings. Minimal UI versus
+API-only and PostgreSQL versus drawn MySQL remain unanswered; preserve the drawing's database
+unless changed deliberately. Do not front-load all video abstractions or auto-start v2 before
+the owner's requested review. Keep .jeeves-feedback/ untouched.
+
+Local commit: **Plan iterative YouTube field projects and generation benchmarks**.

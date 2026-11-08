@@ -1,5 +1,11 @@
 # Next contract milestone: one complete TinyURL foundation first
 
+**Current direction, 2026-11-07:** NC01–NC06 and NC14 are complete. The later owner-directed
+[YouTube field-project plan](youtube-field-project-plan.md) supersedes the TinyURL-first runtime
+sequence and separate-repository assumption below. Start v1 from the current YouTube diagram,
+record generated/custom work separately and defer heavy template certification. NC07–NC13 remain
+reference material rather than mandatory pre-v1 work.
+
 Execution authorized, 2026-11-07. The owner's existing “goahead and kick it off” and
 subsequent correction that work should continue across milestone boundaries authorize the
 bounded first phase NC01–NC06 and NC14 under the defaults below. The earlier coordinator stop

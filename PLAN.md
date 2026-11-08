@@ -266,8 +266,18 @@ blueprint/report; this is plumbing evidence, not model quality or runtime proof.
 
 The [NC14 independent review](docs/plans/reliable-foundations/nc14-review.md) records the bounded
 contract milestone and its corrections: secondary legacy inspector facts, exact Create source
-compatibility, detached ownership exports and executable-suite content pinning. The separate
-[first backend proof plan](docs/plans/reliable-foundations/backend-first-proof-plan.md) is a plan
-only. Repository/conventions, auth/runtime/adapter versions and real fault evidence remain future
-kickoff dependencies; no backend, assembler, registry or runner is implemented here. NC07–NC13
-remain deferred until the TinyURL backend proof and a new expansion scope decision.
+compatibility, detached ownership exports and executable-suite content pinning.
+
+The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
+supersedes the separate-repository, TinyURL-first backend sequence. Keep generation/templates
+here; generate from the existing YouTube design, commit untouched output, plan and implement the
+missing custom behavior, then compare fresh versions after owner review. Scope is local Docker
+upload/transcode/playback/search/basic counts with automatic public publication and generation
+from Jeeves. UI packaging and database choice remain open as recorded in the plan.
+
+Heavy template certification is deferred while designs iterate. Use lightweight build/start/flow
+checks and experimental labels; strict readiness does not certify partial scaffolds. Track reusable
+diagram/template/operation/tile candidates, actual custom effort, generated repairs and investment
+in Jeeves. No generator or field application exists yet. NC07–NC13 are reference briefs, not
+mandatory pre-v1 work; the older [TinyURL proof plan](docs/plans/reliable-foundations/backend-first-proof-plan.md)
+remains a later verification reference.

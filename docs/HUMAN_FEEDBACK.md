@@ -571,3 +571,48 @@ implementation for later”; the authorized Jeeves sequence continues and the ba
   usability acceptance and intended Mini/live evidence remain open. Earlier actual contract
   commits remain NC01 `8ee2027`, NC02 `db9af1c`, NC03 `1823124`, NC04 `7b789a7`, NC05 `4ada4c2`
   and NC06 `888c1bc`; no earlier feedback section or image was rewritten.
+
+## 2026-11-07 — YouTube field projects and measured generation improvements
+
+This text follow-up changes the implementation order. The five previously supplied images remain
+in their original entries; no new image accompanied these instructions.
+
+**Owner's points:**
+
+- Keep generation work in the Jeeves repository and try YouTube first.
+- Start a v1 field project from the diagram we have now; note reusable improvements to Jeeves,
+  including possible tiles, rather than making every improvement a prerequisite.
+- Commit the real generated output first. Then plan and implement the application-specific work
+  the diagram/templates do not cover, producing a working v1.
+- Defer heavy generated-template testing while the design is changing. Reliable, heavily tested
+  templates remain a future objective.
+- The owner will review v1 with a fresh agent, refine Jeeves, then repeat for v2 and possibly v3.
+  Compare whether later versions use more generated behavior and require less custom effort.
+- Preserve why decisions were made, what worked and what did not. Use approved lessons later to
+  improve Jeeves and its chat helper. Repeat with Marketplace or TinyURL after YouTube.
+
+**Questions and answers from the preceding planning exchange:**
+
+- First scope: **current core, delivered in stages** (upload, real transcode, playback, search,
+  basic view counts).
+- First environment: **entirely local Docker, no cloud account**.
+- Publication: **automatic public playback after successful processing**, authenticated upload.
+- Entry point: **generate from Jeeves, then run the exported project locally**.
+- The proposed minimal interface and PostgreSQL-versus-drawn-MySQL questions remain unanswered.
+  Preserve the drawn database unless a change is chosen; do not record a recommendation as approval.
+
+**Decision:** the [field-project plan](plans/reliable-foundations/youtube-field-project-plan.md)
+supersedes the separate-repository, TinyURL-first execution sequence and certification-first
+proposal. Distinguish untouched generated output, repairs, custom work and reuse. Measure working
+behavior and remaining effort on a stable scope, alongside the cost of improving Jeeves.
+Experimental partial export must expose gaps without weakening existing strict readiness claims.
+Keep lightweight builds/smoke walkthroughs; broad template certification is deferred.
+
+**Resolution:**
+
+- Planning unit, local commit titled **Plan iterative YouTube field projects and generation benchmarks**:
+  added the concrete v1-to-v2 process, commit/provenance boundaries, benchmark definitions,
+  initial reuse hypotheses and proposed execution units. Updated current plan pointers and agent
+  guidance; appended the playbook lesson. No generator or field application was implemented and
+  no benchmark results were invented. The two product choices, actual v1 work, owner review,
+  template stabilization and later reliability evidence remain open.

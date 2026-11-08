@@ -25,6 +25,13 @@ no template, dependency, auth-verifier or evidence registry, generated output, g
 or backend here. Positive paths exercise trust plumbing exclusively with isolated test bytes;
 they prove no HTTP, storage, clock, cancellation, concurrency or real-adapter behavior.
 
+The planned [YouTube field-project workflow](plans/reliable-foundations/youtube-field-project-plan.md)
+will distinguish experimental scaffold export, with explicit unfinished behavior, from this strict
+report. That export path is not implemented yet. Partial output or a field-project smoke check
+must not turn `generationEligible`, contract completeness or runtime verification into a weaker
+claim. Heavy generated-template certification is deferred by the owner while field projects
+inform the design; the existing report semantics remain unchanged.
+
 Missing exact schemas/policies/retention/bindings/grants are contract gaps. A known verified-user
 auth behavior and an unavailable concrete verifier are distinct: verifier availability blocks
 the implementation stage. Unknown exact refs stay unresolved, without version substitution.

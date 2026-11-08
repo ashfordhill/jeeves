@@ -1,5 +1,10 @@
 # Reliable foundations: build plan
 
+**Current next work, 2026-11-07:** follow the owner's
+[YouTube field-project plan](youtube-field-project-plan.md) for same-repository generation,
+committed v1 output/custom completion and measured v2 improvements. The older separate-backend,
+TinyURL-first milestones below are retained as references, not the current execution order.
+
 2026-11-06. **Status: in progress.** On 2026-11-07 the owner authorized implementation
 (“goahead and kick it off”), using fresh sequential Sol xhigh agents. RF00 is the
 [review](review.md) and feedback record. RF01 implements relationship clarity; later units and

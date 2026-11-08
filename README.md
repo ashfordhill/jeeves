@@ -6,7 +6,9 @@ cache, queue, storage or external tile hangs off them, laid out automatically wi
 no cycles. You configure each tile from a finite catalog of settings and provider choices, and
 talk to a chat assistant that edits the same design with the same rules. Every design is exposed
 as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). Code generation is not
-part of Jeeves: a future, separate service will read the blueprint and generate from it.
+implemented yet. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
+keeps the generator and experimental templates in this repository, exports standalone applications
+and measures improvements across working v1/v2 field projects before heavy certification.
 The inspector, blueprint v3 and chat share a [snapshot compatibility report](docs/studio-readiness.md):
 structural validity, exact contracts, implementation availability and exact-output evidence stay
 separate. Product artifacts remain unavailable and runtime evidence remains none.
@@ -24,7 +26,9 @@ to medium tasks with a clearly defined outcome.
 - [Studio blueprint](docs/studio-blueprint.md): the code-generation boundary.
 - [Catalog](CATALOG.md): tile kinds and types, the lane link table, components, providers.
 - [Architecture review and foundations plan](docs/plans/reliable-foundations/review.md):
-  the three studies, design-chat guidance and the contract work needed before a separate generator.
+  the three studies, design-chat guidance and the completed contract work.
+- [YouTube field projects](docs/plans/reliable-foundations/youtube-field-project-plan.md):
+  the current generation plan, generated/custom checkpoints, benchmark and improvement trail.
 - [Architecture overview](PLAN.md): apps, packages, data model and how they fit.
 - [C4 notes](docs/c4-modeling.md) and [Docker](docs/docker.md).
 

@@ -1,5 +1,11 @@
 # Separate backend: first TinyURL proof plan
 
+**Superseded as the next execution sequence, 2026-11-07:** the owner now wants
+[YouTube field projects in this repository](youtube-field-project-plan.md), beginning with the
+existing diagram, committed generated output and custom completion. Heavy template certification
+is deferred until designs stabilize. The earlier TinyURL proof below remains a verification
+reference; it is not a prerequisite for the YouTube v1 experiment.
+
 Plan only, 2026-11-07, following the [NC14 review](nc14-review.md). The owner explicitly deferred
 backend implementation. No new repository, runtime, generator, registry, adapter or paid model
 run is created by this document. NC07–NC13 are not prerequisites and remain deferred.

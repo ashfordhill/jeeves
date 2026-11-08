@@ -1,8 +1,11 @@
 # Agents working on Jeeves
 
 Jeeves is an architecture design studio with chat and a read-only blueprint API (see
-[README](README.md) and [PLAN](PLAN.md)). Code generation is a separate future service; do not
-add it here unless the owner asks.
+[README](README.md) and [PLAN](PLAN.md)). The owner selected same-repository generation through
+the [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md).
+Keep studio, generator/templates and independently runnable field apps separate. Templates start
+experimental; heavy certification is deferred while field projects inform their design.
+That deferral does not remove the existing Jeeves regression checks below.
 
 ## How work happens
 

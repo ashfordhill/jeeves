@@ -974,3 +974,26 @@ YouTube/Marketplace domain questions and intended-model evidence open. The separ
 finite templates/assembly, real auth/HTTP/PostgreSQL/Redis and exact-output fault evidence first.
 Regeneration must preserve custom-owned files and refuse edits to generated-owned files; reserved
 extension space cannot silently acquire the narrow profile's verification.
+
+## 2026-11-07 field-project learning before template certification
+
+The owner selected [iterative YouTube field projects](plans/reliable-foundations/youtube-field-project-plan.md):
+start with today's diagram, commit real generator output, then complete and record the custom
+application work. Preserve that baseline before extracting improvements into Jeeves and generating
+a fresh later version. Avoid making every possible reusable abstraction a prerequisite for v1.
+
+Treat new tiles as one possible answer to observed friction. The right change may instead be an
+operation view, module, contract, configuration field or template. Record the problem, source
+diagram/code, another plausible use, decision and later result. Proposed reuse is a hypothesis
+until a field project supplies evidence; a handler is not automatically a new service/tile.
+
+Compare the same observable features and remaining custom effort. Generated scaffolding, copied
+dependencies and renamed custom code must not inflate functional coverage. Record generated
+repairs and investment in Jeeves separately, along with model/environment/scope changes that can
+affect the comparison. Keep failed approaches and rejected ideas in the decision trail.
+
+Heavy template certification is deferred while interfaces iterate. Lightweight build/start/flow
+checks establish only observed smoke results. Experimental partial output needs an explicit gap
+list and cannot weaken the strict compatibility report or become verified runtime evidence.
+Promote concise, applicable field lessons into actual chat context/tools and evaluation cases;
+archiving a retrospective does not by itself change assistant behavior.
