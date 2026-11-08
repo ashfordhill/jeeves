@@ -1,7 +1,7 @@
 # Experimental generator foundation
 
 The separate v2 API now accepts explicit schema3 generation selections. See
-[v2 registry and export](#v2-registry-and-export) for its current diagnostic-only implementation;
+[v2 registry and export](#v2-registry-and-export) for its standalone local foundation;
 the frozen v1 API, CLI and emitted bytes below retain their original contract.
 
 FP03a provides `@jeeves/generator`, a Node/TypeScript workspace package exporting source directly.
@@ -180,10 +180,29 @@ mechanisms, fixed policies, custom hooks, unsupported choices and unfinished wor
 does not imply emitted build/runtime evidence or strict TinyURL readiness; required hook gaps keep
 `applicationComplete` false. Partial and diagnostic emitters cannot install complete support.
 
-`loadLocalV2Registry()` currently installs **no runtime, preset or feature implementation**. Its
-trusted diagnostic emitter writes only `diagnostics/generation.json`, accompanied by a required
-unfinished gap. This is infrastructure for later sequential units, not a standalone app. Project
-envelope/build files start in YV2-04. No v2 studio preview or browser controls are wired yet.
+`loadLocalV2Registry()` installs the **local runtime foundation**, with exact standalone
+package/lock/build files, selected pinned providers and private setup/restart/access wiring.
+Feature/preset implementations remain unfinished; no handlers, domain tables or shell workers
+are started. `diagnostics/generation.json` and required report gaps retain that distinction.
+No v2 studio preview or browser controls are wired yet.
+
+Trusted feature registration can pass `V2Emitter[]` to `loadLocalV2Registry(features)`.
+`V2Emitter.local(context)` returns the finite `V2LocalContribution` hooks for migrations,
+runtime logins, schema-qualified views/relation grants, topic subscribers, storage access/CORS,
+versioned search mappings and runnable services. The foundation owns each shared file once and
+records only its actual contributors; static utility assets do not credit unrelated features.
+See the [actual interface record](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-04--standalone-local-foundation).
+
+Exports use Node 24.21.0/pnpm 12.16.1 and the captured exact v1 dependency/provider pins.
+Rendering never reads mutable v1 files. Install with `pnpm install --frozen-lockfile --ignore-scripts`
+and build with `pnpm build` in the export. Allocate `COMPOSE_PROJECT_NAME`, `LOCAL_HTTP_PORT`,
+`LOCAL_IDENTITY_PORT`, `LOCAL_OBJECT_PORT` together; all three ports must be distinct, free,
+loopback ports outside the owner/v1 reservations. Run `pnpm first-run` once, `pnpm stop` for
+all profiles and `pnpm start` to retain the exact project, private `.runtime` credentials and
+recorded Docker volume identities. Changed/missing identities refuse. Interrupted storage
+bootstrap requires manual inspection. Migration hash changes refuse without resetting data.
+Owners are setup-only; runtime users require explicit relation grants and published readers
+can receive only contributed views. Provider startup is not application readiness.
 
 ```
 pnpm --filter @jeeves/generator export:v2 /path/to/schema3-design.json /absolute/new-directory

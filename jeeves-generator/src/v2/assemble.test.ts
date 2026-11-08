@@ -60,7 +60,11 @@ describe("isolated versioned v2 assembly", () => {
       runtimeVerification: "none",
       strictReadiness: "not-assessed",
     });
-    expect(registry.installed).toEqual({ presets: [], templates: [] });
+    expect(registry.installed).toMatchObject({
+      runtime: { id: "local-runtime" },
+      presets: [],
+      templates: [],
+    });
     expect(first.report.selections).toHaveLength(10);
     expect(first.report.selections.every((selection) => selection.status === "unfinished")).toBe(
       true,

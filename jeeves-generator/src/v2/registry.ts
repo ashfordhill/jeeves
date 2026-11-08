@@ -13,6 +13,7 @@ import {
 } from "@jeeves/spec";
 import { assertDistinctPaths, assertSafeOutputPath } from "../files.ts";
 import { canonicalJson, freeze, refuse, sha256 } from "../json.ts";
+import type { V2LocalContributor } from "./local-contract.ts";
 
 export type V2Source = { path: string; bytes: Uint8Array };
 export type V2Gap = {
@@ -51,6 +52,8 @@ export type V2Emitter = {
   /** Real partial modules may emit useful files without attesting complete implementation. */
   status: "implemented" | "partial" | "diagnostic";
   description: string;
+  /** Specific local project hooks; the foundation remains the sole shared-file writer. */
+  local?: V2LocalContributor;
   render(context: V2RenderContext): {
     files: readonly V2TemplateFile[];
     gaps?: readonly V2Gap[];

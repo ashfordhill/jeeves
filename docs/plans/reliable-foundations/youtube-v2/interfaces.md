@@ -247,3 +247,86 @@ Five focused offline cases cover determinism/semantic versus raw identity, actua
 identity/immutable capture, missing/wrong-owner consumers and explicit shared ownership, unsupported
 selections, unsafe/defaulted source paths, edited/custom output preservation and frozen v1 output.
 The CLI is also exercised against a disposable saved fixture. Next owner: **YV2-04 only**.
+
+## YV2-04 — standalone local foundation
+
+`loadLocalV2Registry(features: readonly V2Emitter[] = [])` now snapshots optional trusted feature
+registrations and installs `local.foundation` for `generationRuntime.ref`. It still uses
+`createV2Registry` → `assembleV2` → `resolveGeneration`; no second assembly/normalization path
+exists. `createLocalFoundation(sourcePaths, features)` in `src/v2/local.ts` owns project files.
+`local.diagnostic` retains a required missing-feature gap only while selected templates are
+uninstalled. No preset/feature is installed by this unit.
+
+`V2Emitter.local?: V2LocalContributor` and exported `V2LocalContribution` in
+`src/v2/local-contract.ts` are trusted compiled-template hooks, never saved-design fields:
+
+- `sourcePaths`: actual selected source pointers, required for any contribution.
+- `migrations: {resource,id,sql}[]`: selected SQL resource, unique ordered `001-...sql` or later;
+  trusted SQL is emitted once into `infra/postgres/<canonical-resource>/<id>`.
+- `logins: {resource,host}[]`: canonical bound host/store; creates an exact composed runtime role
+  with CONNECT/USAGE, no implicit table or sequence grants. Migration-owner/admin mounts stay
+  setup-only. Role credentials are verified on every migration, never rotated.
+- `views: {resource,schema?,name,selectSql}[]` and
+  `grants: {resource,host,schema?,relation,kind: table|view,privileges}[]`: finite SELECT/INSERT/
+  UPDATE/DELETE privileges, separately quoted bounded schema/relation identifiers. Schema defaults
+  to `public`; explicit schema USAGE accompanies relation grants. Declared normalized access bounds
+  privileges; a foreign `published-read` may receive only an explicitly contributed view. All
+  login/view declarations are gathered before cross-module grants, independent of emitter order.
+- `broker: {resource,host}[]`: durable topic subscriber for an actual normalized consuming host.
+  Selected work queues use their canonical resource ID; selected topics use canonical exchange
+  IDs and contributed `<resource>--<host>` queues. Every delivery queue has a `.failed` queue.
+- `storage: {resource,host,corsPut?}[]`: exact bound read/write permissions, private generated
+  per-host keys; optional PUT CORS uses the injected HTTP origin and temporary owner permission
+  revoked in `finally`. Selected buckets/public website intent derive from canonical bindings.
+- `search: {resource,version,properties}[]`: explicit strict versioned mapping; finite keyword,
+  text, integer, long, double, date fields and optional `index` flag. Existing mismatches refuse
+  without deletion. Missing selected mappings remain required unfinished gaps.
+- `services: {host,command,http?,identity?,dependsOn,sql?,storage?,broker?,cache?}[]`: one real
+  later implementation per canonical host, exact runtime credential mounts and selected dependency
+  health ordering. Optional `identity` must match the host's normalized principal binding and
+  supplies public issuer/internal JWKS URLs. The HTTP slot exposes one service; multiple APIs
+  require a later explicit edge. This unit contributes no application services or fake readiness.
+
+The foundation is the sole writer for `compose.yaml`, `infra/local.json`, migration SQL and the
+standalone envelope. Only actual typed contributors appear on composed outputs; each migration
+names its specific contributor; static assets have no feature contributors. Runtime resource
+bindings aggregate required access per host/store (read + write → read-write), preserve deliberate
+publication boundaries and validate authority/grant/dependency provenance before credentials.
+SQL identities use injective canonical slug conversion and quoted identifiers. Composed database/
+role names must fit PostgreSQL's 63-byte limit; storage/broker names validate provider limits.
+Oversized identities refuse; nothing truncates or sanitizes into a collision.
+
+`templates/local-v2/assets/` captures v1 package/lock and provider pins as extraction material at
+implementation time. It contains no v1 runtime reads or product names/demo users/domain schema.
+TypeScript source assets use `.ts.template`, outside generator dependency resolution; the exported
+standalone project compiles them with its own exact lock/dependencies. Internal workspace imports
+and `workspace:` dependencies never enter application output. All existing exact dependencies are
+retained in this first envelope; feature units can reuse them without introducing new pins.
+
+Generated output: package/lock/tsconfig/Dockerfile, ignored private-runtime boundaries,
+`src/runtime/local.ts` (actual secret reader/quoted SQL utility), `scripts/{common,status,setup,
+local,migrate,broker-init,bootstrap,storage-config,search-init}.mjs`, selected provider/setup Compose,
+`infra/local.json`, per-store `000-foundation.sql`, README and unchanged assembler provenance.
+Postgres role/database creation moved into the explicit setup migration service; no product init
+shell or domain table is copied. The sole foundation table tracks migration hashes. Keycloak receives a distinct vendor runtime
+login (`ik_<canonical-sql-id>`) with schema CREATE in its isolated database, never the setup-only
+migration owner (`io_<canonical-sql-id>`) or that owner credential. This vendor capability does
+not extend to ordinary application logins.
+
+First-run requires an explicit unique Compose project and a free distinct injected port trio;
+HTTP/identity/object ports bind `127.0.0.1` only. Owner/v1 reserved ports refuse. Secrets are created
+only after export under ignored `.runtime/secrets`, with private 0700 parent directories and
+container-readable credential files. The 0600 state records project/ports/composition, credential
+hashes and exact Docker volume identities. Normal restart verifies all of them; unknown existing
+runtime/Docker state (including exact-name unlabeled volume/default-network collisions), missing/recreated volumes, changed credentials/composition or an interrupted
+single-use storage bootstrap refuse. `stop` addresses every Compose profile. Scoped disposable
+cleanup uses the exact recorded project with `docker compose --profile '*' down --volumes`;
+there is no global prune/reset operation. No runtime evidence is inferred by assembly reports.
+
+Next owner: **YV2-05 only**, repaired reusable HTTP/verified identity and messaging mechanics.
+No domain feature, field app, saved v2 snapshot, forms, server preview or v1 change exists yet.
+
+Integration boundary for **YV2-16**: the foundation currently permits one directly exposed HTTP
+service slot. YouTube needs three internal APIs behind its single pinned nginx edge, plus static
+browser/public media routing. Extend the finite service/edge composition in that assigned unit;
+do not add public API ports or editor configuration to bypass the boundary.

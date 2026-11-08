@@ -5533,3 +5533,34 @@ prefilled baseline. Root README, local-v1 assets, v1 inputs/app/runtime, owner s
 `.jeeves-feedback` dirt and e2e-docker mode are unchanged. Sequential main, no delegation/push.
 
 Local commit: **YV2-03: assemble and export versioned v2 templates**.
+
+## 2026-11-08 — YV2-04: standalone local project/provider/access foundation
+
+`local.foundation` now installs only the real runtime envelope through the existing registry/
+assembler/resolver. Captured local-v2 assets emit exact standalone package/lock/build/Docker,
+selected provider/setup Compose, private setup/restart scripts and hash-checked migrations.
+`V2Emitter.local` / `V2LocalContribution` provide finite migration/login/schema-qualified view/
+relation-grant, broker/storage/search and service hooks, with one shared-file writer and actual
+contributors. Composed SQL/provider names validate without truncation; store access aggregates
+per host. Migration owners stay setup-only, including separate Keycloak owner/vendor logins.
+Required feature/service/mapping gaps remain explicit; no domain tables/handlers, field app,
+forms, preview or v2 snapshot. [Interfaces](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-04--standalone-local-foundation).
+
+Final `pnpm check`: **419 tests/56 files, 38.61s**, plus lint/types; native **36 E2Es, 1.8m**;
+web build **1.12s** (existing size advisory). TinyURL/mouse browser coverage retained; no normal
+studio UI changed. Two final deterministic 27-file scratch exports pass own frozen install/build
+and all emitted script syntax checks. Real six-provider startup, retained-identity restart,
+applied migration-hash refusal, separate vendor-role SQL probe and no-secret unlabeled-volume
+namespace refusal passed. [Sanitized evidence/resources/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-04-foundation.md);
+logs `/tmp/jeeves-yv2-04/`. Scoped cleanup removed all three scratch stacks, ten volumes, three
+networks/image tags, private runtimes and the single separately owned preflight-probe volume.
+All fourteen v1 services remain healthy; no owner state was reset.
+
+Frozen v1 still emits 108 identical paths, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-05 only**: real HTTP/identity/AMQP primitives. Feature mappings/CORS/handlers remain
+unobserved and unfinished. YV2-16 must add the finite nginx edge for three internal APIs/static/
+public media; current direct HTTP slot permits one service. Preserve root README, local-v1,
+v1 app/inputs/runtime, owner resources, `.jeeves-feedback` dirt and e2e-docker mode. No push.
+
+Local commit: **YV2-04: emit standalone local runtime and access foundation**.

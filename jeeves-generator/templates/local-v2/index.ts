@@ -1,5 +1,7 @@
 import { readdirSync } from "node:fs";
+import { sameContractRef } from "@jeeves/spec";
 import { jsonFile } from "../../src/json.ts";
+import { createLocalFoundation } from "../../src/v2/local.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
 
 const root = new URL("../../../", import.meta.url);
@@ -11,8 +13,15 @@ function sourcePaths(path: string): string[] {
     );
 }
 
-/** Infrastructure only: no runtime, template or preset implementation is installed yet. */
-export function loadLocalV2Registry() {
+/** Runtime foundation only. Features explicitly register their own emitted implementation. */
+export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
+  // Snapshot registration metadata before the foundation captures its contribution callbacks.
+  const features = featureValues.map((feature) => ({
+    ...feature,
+    sourcePaths: [...feature.sourcePaths],
+    provides: structuredClone(feature.provides),
+    dependencies: structuredClone(feature.dependencies),
+  }));
   const paths = [
     ...sourcePaths("jeeves-generator/src/v2"),
     ...sourcePaths("jeeves-generator/templates/local-v2"),
@@ -23,6 +32,7 @@ export function loadLocalV2Registry() {
     "jeeves-generator/package.json",
     "jeeves/packages/spec/package.json",
     "pnpm-lock.yaml",
+    ...features.flatMap((feature) => feature.sourcePaths),
   ];
   const diagnostic: V2Emitter = {
     id: "local.diagnostic",
@@ -30,7 +40,7 @@ export function loadLocalV2Registry() {
     status: "diagnostic",
     description:
       "Normalized binding inventory only; implements no application behavior or setting consumer.",
-    sourcePaths: paths,
+    sourcePaths: [...new Set(paths)],
     render: ({ model }) => ({
       files: [
         {
@@ -40,17 +50,31 @@ export function loadLocalV2Registry() {
           sourcePaths: ["/generation"],
         },
       ],
-      gaps: [
-        {
-          id: "application-implementations",
-          status: "unfinished",
-          required: true,
-          description:
-            "No standalone project envelope, runtime, feature implementations or application hooks are installed.",
-          sourcePaths: ["/generation"],
-        },
-      ],
+      gaps: model.selections.some(
+        (selection) =>
+          !features.some((feature) =>
+            feature.provides?.templates?.some((template) =>
+              sameContractRef(template.ref, selection.template),
+            ),
+          ),
+      )
+        ? [
+            {
+              id: "application-implementations",
+              status: "unfinished",
+              required: true,
+              description:
+                "Feature implementations and required application hooks remain unfinished; selected providers alone are not a working application.",
+              sourcePaths: ["/generation"],
+            },
+          ]
+        : [],
     }),
   };
-  return createV2Registry(captureV2Sources(root, paths), [diagnostic]);
+  const distinct = [...new Set(paths)];
+  return createV2Registry(captureV2Sources(root, distinct), [
+    diagnostic,
+    createLocalFoundation(distinct, features),
+    ...features,
+  ]);
 }
