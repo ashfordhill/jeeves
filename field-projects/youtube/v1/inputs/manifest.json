@@ -1,0 +1,51 @@
+{
+  "format": "youtube-v1-input-freeze-v1",
+  "preparedOn": "2026-11-07",
+  "project": {
+    "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "name": "YouTube · field v1 · local Docker",
+    "revision": 3,
+    "createdAt": "2026-11-08T02:55:26.959Z",
+    "updatedAt": "2026-11-08T02:58:15.881Z"
+  },
+  "sourceSnapshot": "../diagrams/005-local-intent-aligned",
+  "sourceCanonicalSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+  "canonicalHashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+  "sourceSchemaVersion": 2,
+  "blueprintVersion": 3,
+  "diagram": {
+    "path": "../diagrams/005-local-intent-aligned/diagram.png",
+    "sha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9"
+  },
+  "rendererCommit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+  "generator": {
+    "version": null,
+    "templateVersions": null,
+    "status": "not implemented; no generated output"
+  },
+  "strictReadiness": {
+    "generationEligible": false,
+    "templateAvailability": "none",
+    "runtimeVerification": "none",
+    "note": "Preserved actual v3 report; this proposal grants no readiness/verification credit"
+  },
+  "files": {
+    "design.json": {
+      "bytes": 35922,
+      "sha256": "7ea79f431f89352814320d385591ae1e84cf8e63129e93d8fb649c6b2716045c"
+    },
+    "blueprint.json": {
+      "bytes": 61453,
+      "sha256": "041facff14d88c045e788f75fa6a7868f872cc37e0e9d9d5641c6fcce81d7e64"
+    },
+    "local-bindings.json": {
+      "bytes": 48968,
+      "sha256": "4e91a9a4edfce4385e67d4e696af8a61ac127c9682a22b0e691b0464c7d0e5d2"
+    },
+    "runtime-pins.json": {
+      "bytes": 11451,
+      "sha256": "66c5474e9e93d81dc5eb8dcb63289559491d57c80383c941e41c239e97f894fb"
+    }
+  },
+  "nextUnit": "FP02; implement generator only; preserve these frozen inputs; record containing FP01 commit in a later entry"
+}

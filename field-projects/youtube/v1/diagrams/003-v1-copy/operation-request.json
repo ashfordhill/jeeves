@@ -1,0 +1,1485 @@
+{
+  "baseRevision": 0,
+  "ops": [
+    {
+      "op": "addElement",
+      "element": {
+        "id": "watch",
+        "name": "Watch API",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Gives the player a video's details, playlist and view count, and records each view."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "metadata-cache",
+        "name": "Metadata cache",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Videos' details by video ID, filled by the Watch API on a miss and kept an hour."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "metadata-db",
+        "name": "Metadata database",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Playable videos: title, description, channel, duration, playlist and thumbnails."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "view-counts",
+        "name": "View counts",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Each video's view count, added to in batches."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "view-events",
+        "name": "View events",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Views, from the Watch API to the View counter, keyed by video."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "view-counter",
+        "name": "View counter",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Sums views per video and adds them to View counts."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "search",
+        "name": "Search API",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Finds videos by title, description and channel."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "search-index",
+        "name": "Search index",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Playable videos by title, description and channel."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "video-cdn",
+        "name": "Video CDN",
+        "classification": {
+          "kind": "External system"
+        },
+        "description": "Serves video segments, playlists and thumbnails from the edge; resizes thumbnails on request."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "transcoded",
+        "name": "Transcoded videos",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Each video's segments at every resolution, its HLS playlists and its thumbnails."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "identity",
+        "name": "Identity",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Signs creators and viewers in and issues the tokens the services verify."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "upload",
+        "name": "Upload service",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Lets a creator upload a video in resumable parts, with URLs it signs, into Original videos, then queues it for transcoding."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "originals",
+        "name": "Original videos",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Each video as the creator uploaded it, kept to transcode again."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "upload-queue",
+        "name": "Upload jobs",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Uploaded videos waiting to be transcoded, one job each, with title and description."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "transcoder",
+        "name": "Transcoder",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Encodes each upload into streamable segments at several bitrates, with playlists and thumbnails, then announces the video."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "completion-events",
+        "name": "Completion events",
+        "classification": {
+          "kind": "Data store"
+        },
+        "description": "Each playable video's details, from the Transcoder to the Completion handler and the Search indexer."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "completion-handler",
+        "name": "Completion handler",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Records each playable video in the Metadata database, once."
+      }
+    },
+    {
+      "op": "addElement",
+      "element": {
+        "id": "search-indexer",
+        "name": "Search indexer",
+        "classification": {
+          "kind": "Application"
+        },
+        "description": "Adds each playable video to the Search index."
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "watch-cache",
+        "kind": "uses-database",
+        "from": {
+          "element": "watch"
+        },
+        "to": {
+          "element": "metadata-cache"
+        },
+        "planned": {
+          "label": "Reads video details, fills on miss",
+          "protocol": "Redis",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "watch-metadata",
+        "kind": "uses-database",
+        "from": {
+          "element": "watch"
+        },
+        "to": {
+          "element": "metadata-db"
+        },
+        "planned": {
+          "label": "Reads video details on a miss",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "watch-counts-read",
+        "kind": "uses-database",
+        "from": {
+          "element": "watch"
+        },
+        "to": {
+          "element": "view-counts"
+        },
+        "planned": {
+          "label": "Reads view counts",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "watch-views-publish",
+        "kind": "depends-on",
+        "from": {
+          "element": "watch"
+        },
+        "to": {
+          "element": "view-events"
+        },
+        "planned": {
+          "label": "Publishes views",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "views-counter",
+        "kind": "depends-on",
+        "from": {
+          "element": "view-events"
+        },
+        "to": {
+          "element": "view-counter"
+        },
+        "planned": {
+          "label": "Delivers views",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "counter-write",
+        "kind": "uses-database",
+        "from": {
+          "element": "view-counter"
+        },
+        "to": {
+          "element": "view-counts"
+        },
+        "planned": {
+          "label": "Adds summed views",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "search-read",
+        "kind": "depends-on",
+        "from": {
+          "element": "search"
+        },
+        "to": {
+          "element": "search-index"
+        },
+        "planned": {
+          "label": "Searches videos",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "cdn-transcoded",
+        "kind": "depends-on",
+        "from": {
+          "element": "video-cdn"
+        },
+        "to": {
+          "element": "transcoded"
+        },
+        "planned": {
+          "label": "Reads segments and thumbnails",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "upload-publish",
+        "kind": "depends-on",
+        "from": {
+          "element": "upload"
+        },
+        "to": {
+          "element": "upload-queue"
+        },
+        "planned": {
+          "label": "Publishes upload jobs",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "upload-originals",
+        "kind": "depends-on",
+        "from": {
+          "element": "upload"
+        },
+        "to": {
+          "element": "originals"
+        },
+        "planned": {
+          "label": "Starts, signs and completes uploads",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "jobs-transcoder",
+        "kind": "depends-on",
+        "from": {
+          "element": "upload-queue"
+        },
+        "to": {
+          "element": "transcoder"
+        },
+        "planned": {
+          "label": "Delivers upload jobs",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "transcoder-read",
+        "kind": "depends-on",
+        "from": {
+          "element": "transcoder"
+        },
+        "to": {
+          "element": "originals"
+        },
+        "planned": {
+          "label": "Reads originals",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "transcoder-write",
+        "kind": "depends-on",
+        "from": {
+          "element": "transcoder"
+        },
+        "to": {
+          "element": "transcoded"
+        },
+        "planned": {
+          "label": "Stores segments, playlists and thumbnails",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "transcoder-publish",
+        "kind": "depends-on",
+        "from": {
+          "element": "transcoder"
+        },
+        "to": {
+          "element": "completion-events"
+        },
+        "planned": {
+          "label": "Publishes completed videos",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "completions-handler",
+        "kind": "depends-on",
+        "from": {
+          "element": "completion-events"
+        },
+        "to": {
+          "element": "completion-handler"
+        },
+        "planned": {
+          "label": "Delivers completed videos",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "completions-indexer",
+        "kind": "depends-on",
+        "from": {
+          "element": "completion-events"
+        },
+        "to": {
+          "element": "search-indexer"
+        },
+        "planned": {
+          "label": "Delivers completed videos",
+          "protocol": "Messaging",
+          "interaction": "Asynchronous",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "handler-metadata",
+        "kind": "uses-database",
+        "from": {
+          "element": "completion-handler"
+        },
+        "to": {
+          "element": "metadata-db"
+        },
+        "planned": {
+          "label": "Records playable videos",
+          "protocol": "SQL",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "connect",
+      "connection": {
+        "id": "indexer-write",
+        "kind": "depends-on",
+        "from": {
+          "element": "search-indexer"
+        },
+        "to": {
+          "element": "search-index"
+        },
+        "planned": {
+          "label": "Indexes playable videos",
+          "protocol": "HTTPS",
+          "interaction": "Request / response",
+          "security": "Service identity"
+        }
+      }
+    },
+    {
+      "op": "setArchitecture",
+      "architecture": {
+        "studio": {
+          "version": 1,
+          "origin": {
+            "example": {
+              "id": "studio-youtube",
+              "version": "2.1.0"
+            },
+            "goalManifestSha256": "4e8ea30c860ba3b1fa32e75ec6f293e2d65ba6646248425427012053785de312"
+          },
+          "elements": [
+            {
+              "element": "watch",
+              "definition": {
+                "id": "studio-service",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "service",
+                "language": "typescript",
+                "exposure": "public",
+                "minReplicas": 3,
+                "maxReplicas": 50,
+                "autoscaleOn": "requests-per-second",
+                "requestTimeoutMs": 1000,
+                "concurrencyLimit": 2000,
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "metadata-cache",
+              "definition": {
+                "id": "studio-cache",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "cache",
+                "engine": "redis-compatible",
+                "provider": "self-hosted",
+                "ttlSeconds": 3600,
+                "topology": "cluster",
+                "eviction": "lru"
+              },
+              "owner": {
+                "kind": "element",
+                "id": "watch"
+              }
+            },
+            {
+              "element": "metadata-db",
+              "definition": {
+                "id": "studio-database",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "database",
+                "engine": "postgresql",
+                "provider": "self-hosted",
+                "readReplicas": 3,
+                "partitionKey": "video_id"
+              },
+              "owner": {
+                "kind": "element",
+                "id": "completion-handler"
+              }
+            },
+            {
+              "element": "view-counts",
+              "definition": {
+                "id": "studio-database",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "database",
+                "engine": "postgresql",
+                "provider": "self-hosted",
+                "readReplicas": 2,
+                "partitionKey": "video_id"
+              },
+              "owner": {
+                "kind": "element",
+                "id": "view-counter"
+              }
+            },
+            {
+              "element": "view-events",
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "topic",
+                "provider": "self-hosted",
+                "retentionSeconds": 86400,
+                "partitions": 12
+              },
+              "owner": {
+                "kind": "element",
+                "id": "watch"
+              }
+            },
+            {
+              "element": "view-counter",
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "worker",
+                "language": "typescript",
+                "concurrency": 8,
+                "minReplicas": 1,
+                "maxReplicas": 8,
+                "autoscaleOn": "queue-lag",
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "search",
+              "definition": {
+                "id": "studio-service",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "service",
+                "language": "typescript",
+                "exposure": "public",
+                "minReplicas": 2,
+                "maxReplicas": 20,
+                "autoscaleOn": "requests-per-second",
+                "requestTimeoutMs": 1000,
+                "concurrencyLimit": 1000,
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "search-index",
+              "definition": {
+                "id": "studio-search",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "search",
+                "engine": "opensearch",
+                "provider": "self-hosted"
+              },
+              "owner": {
+                "kind": "element",
+                "id": "search-indexer"
+              }
+            },
+            {
+              "element": "video-cdn",
+              "definition": {
+                "id": "studio-cdn",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "cdn",
+                "provider": "cloudflare",
+                "origin": "transcoded",
+                "imageResizing": "on-request"
+              }
+            },
+            {
+              "element": "transcoded",
+              "definition": {
+                "id": "studio-object-store",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "object-store",
+                "provider": "cloudflare-r2",
+                "access": "public"
+              },
+              "owner": {
+                "kind": "element",
+                "id": "transcoder"
+              }
+            },
+            {
+              "element": "identity",
+              "definition": {
+                "id": "studio-identity",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "identity",
+                "language": "typescript",
+                "exposure": "public",
+                "minReplicas": 2,
+                "maxReplicas": 4,
+                "autoscaleOn": "cpu",
+                "provider": "oidc",
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "upload",
+              "definition": {
+                "id": "studio-uploads",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "uploads",
+                "language": "typescript",
+                "exposure": "public",
+                "minReplicas": 2,
+                "maxReplicas": 10,
+                "autoscaleOn": "requests-per-second",
+                "requestTimeoutMs": 5000,
+                "concurrencyLimit": 500,
+                "transfer": "signed-url",
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "originals",
+              "definition": {
+                "id": "studio-object-store",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "object-store",
+                "provider": "cloudflare-r2",
+                "access": "private"
+              },
+              "owner": {
+                "kind": "element",
+                "id": "upload"
+              }
+            },
+            {
+              "element": "upload-queue",
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "work-queue",
+                "provider": "self-hosted",
+                "retentionSeconds": 604800
+              },
+              "owner": {
+                "kind": "element",
+                "id": "upload"
+              }
+            },
+            {
+              "element": "transcoder",
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "worker",
+                "language": "typescript",
+                "concurrency": 1,
+                "minReplicas": 1,
+                "maxReplicas": 50,
+                "autoscaleOn": "queue-lag",
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "completion-events",
+              "definition": {
+                "id": "studio-queue",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "queue",
+                "mode": "topic",
+                "provider": "self-hosted",
+                "retentionSeconds": 604800,
+                "partitions": 6
+              },
+              "owner": {
+                "kind": "element",
+                "id": "transcoder"
+              }
+            },
+            {
+              "element": "completion-handler",
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "worker",
+                "language": "typescript",
+                "concurrency": 4,
+                "minReplicas": 1,
+                "maxReplicas": 4,
+                "autoscaleOn": "queue-lag",
+                "execution": "docker"
+              }
+            },
+            {
+              "element": "search-indexer",
+              "definition": {
+                "id": "studio-worker",
+                "version": "1.0.0"
+              },
+              "settings": {
+                "kind": "worker",
+                "language": "typescript",
+                "concurrency": 4,
+                "minReplicas": 1,
+                "maxReplicas": 4,
+                "autoscaleOn": "queue-lag",
+                "execution": "docker"
+              }
+            }
+          ],
+          "packages": [],
+          "connections": [
+            {
+              "connection": "watch-cache",
+              "settings": {}
+            },
+            {
+              "connection": "watch-metadata",
+              "settings": {}
+            },
+            {
+              "connection": "watch-counts-read",
+              "settings": {}
+            },
+            {
+              "connection": "watch-views-publish",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "views-counter",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "counter-write",
+              "settings": {}
+            },
+            {
+              "connection": "search-read",
+              "settings": {}
+            },
+            {
+              "connection": "cdn-transcoded",
+              "settings": {}
+            },
+            {
+              "connection": "upload-publish",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "upload-originals",
+              "settings": {}
+            },
+            {
+              "connection": "jobs-transcoder",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "transcoder-read",
+              "settings": {}
+            },
+            {
+              "connection": "transcoder-write",
+              "settings": {}
+            },
+            {
+              "connection": "transcoder-publish",
+              "settings": {
+                "channelUse": "publish"
+              }
+            },
+            {
+              "connection": "completions-handler",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "completions-indexer",
+              "settings": {
+                "channelUse": "consume"
+              }
+            },
+            {
+              "connection": "handler-metadata",
+              "settings": {}
+            },
+            {
+              "connection": "indexer-write",
+              "settings": {}
+            }
+          ],
+          "components": [
+            {
+              "id": "watch-cache-reader",
+              "host": "watch",
+              "name": "Details cache",
+              "description": "Cache-aside: looks a video up in the Metadata cache; on a miss reads a replica and fills the cache for an hour.",
+              "settings": {
+                "kind": "cache-reader",
+                "pattern": "cache-aside",
+                "l2TtlSeconds": 3600,
+                "stampede": "single-flight"
+              }
+            },
+            {
+              "id": "watch-details",
+              "host": "watch",
+              "name": "Details reader",
+              "description": "Reads a video's title, description, channel and playlist from a replica.",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 50,
+                "readRouting": "replica",
+                "statementTimeoutMs": 500
+              }
+            },
+            {
+              "id": "watch-counts",
+              "host": "watch",
+              "name": "View count reader",
+              "description": "Reads a video's view count.",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 20,
+                "readRouting": "primary",
+                "statementTimeoutMs": 500
+              }
+            },
+            {
+              "id": "watch-views",
+              "host": "watch",
+              "name": "View publisher",
+              "description": "Publishes each view the player reports, in batches.",
+              "settings": {
+                "kind": "event-publisher",
+                "batchSize": 500,
+                "lingerMs": 50,
+                "outbox": "disabled"
+              }
+            },
+            {
+              "id": "counter-consumer",
+              "host": "view-counter",
+              "name": "View consumer",
+              "description": "Consumes views in batches with bounded retries.",
+              "settings": {
+                "kind": "event-consumer",
+                "concurrency": 8,
+                "batchSize": 1000,
+                "retryLimit": 5
+              }
+            },
+            {
+              "id": "counter-sum",
+              "host": "view-counter",
+              "name": "View summer",
+              "description": "Sums views per video for a few seconds before writing.",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "id": "counter-writer",
+              "host": "view-counter",
+              "name": "Count writer",
+              "description": "Adds each video's summed views to its count.",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 10,
+                "readRouting": "primary",
+                "statementTimeoutMs": 2000
+              }
+            },
+            {
+              "id": "search-query",
+              "host": "search",
+              "name": "Video search",
+              "description": "Queries the index by title, description and channel, a page at a time.",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "id": "upload-auth",
+              "host": "upload",
+              "name": "Creator check",
+              "description": "Accepts only signed-in creators, by Identity's token.",
+              "settings": {
+                "kind": "auth-guard",
+                "credential": "jwt"
+              }
+            },
+            {
+              "id": "upload-multipart",
+              "host": "upload",
+              "name": "Multipart uploads",
+              "description": "Starts a multipart upload, signs a URL for each part, lists the parts that arrived so the creator can resume, and completes it.",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "id": "upload-jobs",
+              "host": "upload",
+              "name": "Job publisher",
+              "description": "Publishes an upload job once the upload completes, with the video's ID, channel, title and description.",
+              "settings": {
+                "kind": "event-publisher",
+                "outbox": "disabled"
+              }
+            },
+            {
+              "id": "transcoder-consumer",
+              "host": "transcoder",
+              "name": "Job consumer",
+              "description": "Takes one upload job at a time with bounded retries.",
+              "settings": {
+                "kind": "event-consumer",
+                "concurrency": 1,
+                "retryLimit": 3
+              }
+            },
+            {
+              "id": "transcoder-encoder",
+              "host": "transcoder",
+              "name": "Segmenter and encoder",
+              "description": "Reads the original and encodes it, in segments of a few seconds, at each resolution and bitrate (ffmpeg); Xu's task DAG runs here.",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "id": "transcoder-packager",
+              "host": "transcoder",
+              "name": "Packager",
+              "description": "Stores the segments with an HLS playlist per rendition and one master playlist.",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "id": "transcoder-thumbnails",
+              "host": "transcoder",
+              "name": "Thumbnailer",
+              "description": "Picks frames and stores them as the video's thumbnails, at full size.",
+              "settings": {
+                "kind": "custom"
+              }
+            },
+            {
+              "id": "transcoder-done",
+              "host": "transcoder",
+              "name": "Completion publisher",
+              "description": "Announces the playable video with the job's title and description, its duration, playlist and thumbnails.",
+              "settings": {
+                "kind": "event-publisher",
+                "outbox": "disabled"
+              }
+            },
+            {
+              "id": "handler-consumer",
+              "host": "completion-handler",
+              "name": "Completion consumer",
+              "description": "Consumes completed videos with bounded retries.",
+              "settings": {
+                "kind": "event-consumer",
+                "concurrency": 4,
+                "retryLimit": 10
+              }
+            },
+            {
+              "id": "handler-writer",
+              "host": "completion-handler",
+              "name": "Video writer",
+              "description": "Records the playable video once, by its ID: title, description, channel, duration, playlist and thumbnails.",
+              "settings": {
+                "kind": "data-access",
+                "poolSize": 10,
+                "readRouting": "primary",
+                "statementTimeoutMs": 2000
+              }
+            },
+            {
+              "id": "indexer-consumer",
+              "host": "search-indexer",
+              "name": "Completion consumer",
+              "description": "Consumes completed videos with bounded retries.",
+              "settings": {
+                "kind": "event-consumer",
+                "concurrency": 4,
+                "batchSize": 100,
+                "retryLimit": 5
+              }
+            },
+            {
+              "id": "indexer-writer",
+              "host": "search-indexer",
+              "name": "Index writer",
+              "description": "Adds the playable video's title, description and channel to the search index.",
+              "settings": {
+                "kind": "custom"
+              }
+            }
+          ],
+          "componentConnections": [
+            {
+              "id": "details-cache-redis",
+              "from": "watch-cache-reader",
+              "to": {
+                "kind": "element",
+                "id": "metadata-cache",
+                "via": "watch-cache"
+              }
+            },
+            {
+              "id": "details-cache-miss",
+              "from": "watch-cache-reader",
+              "to": {
+                "kind": "component",
+                "id": "watch-details"
+              },
+              "label": "Loads on miss"
+            },
+            {
+              "id": "details-reader-db",
+              "from": "watch-details",
+              "to": {
+                "kind": "element",
+                "id": "metadata-db",
+                "via": "watch-metadata"
+              }
+            },
+            {
+              "id": "count-reader-db",
+              "from": "watch-counts",
+              "to": {
+                "kind": "element",
+                "id": "view-counts",
+                "via": "watch-counts-read"
+              }
+            },
+            {
+              "id": "view-publisher-events",
+              "from": "watch-views",
+              "to": {
+                "kind": "element",
+                "id": "view-events",
+                "via": "watch-views-publish"
+              }
+            },
+            {
+              "id": "view-consumer-events",
+              "from": "counter-consumer",
+              "to": {
+                "kind": "element",
+                "id": "view-events",
+                "via": "views-counter"
+              }
+            },
+            {
+              "id": "view-consumer-sum",
+              "from": "counter-consumer",
+              "to": {
+                "kind": "component",
+                "id": "counter-sum"
+              },
+              "label": "Hands batch"
+            },
+            {
+              "id": "view-sum-writer",
+              "from": "counter-sum",
+              "to": {
+                "kind": "component",
+                "id": "counter-writer"
+              },
+              "label": "Writes sums"
+            },
+            {
+              "id": "count-writer-db",
+              "from": "counter-writer",
+              "to": {
+                "kind": "element",
+                "id": "view-counts",
+                "via": "counter-write"
+              }
+            },
+            {
+              "id": "video-search-index",
+              "from": "search-query",
+              "to": {
+                "kind": "element",
+                "id": "search-index",
+                "via": "search-read"
+              }
+            },
+            {
+              "id": "creator-check-multipart",
+              "from": "upload-auth",
+              "to": {
+                "kind": "component",
+                "id": "upload-multipart"
+              },
+              "label": "Allows creator"
+            },
+            {
+              "id": "multipart-originals",
+              "from": "upload-multipart",
+              "to": {
+                "kind": "element",
+                "id": "originals",
+                "via": "upload-originals"
+              }
+            },
+            {
+              "id": "multipart-jobs",
+              "from": "upload-multipart",
+              "to": {
+                "kind": "component",
+                "id": "upload-jobs"
+              },
+              "label": "On completion"
+            },
+            {
+              "id": "job-publisher-queue",
+              "from": "upload-jobs",
+              "to": {
+                "kind": "element",
+                "id": "upload-queue",
+                "via": "upload-publish"
+              }
+            },
+            {
+              "id": "job-consumer-queue",
+              "from": "transcoder-consumer",
+              "to": {
+                "kind": "element",
+                "id": "upload-queue",
+                "via": "jobs-transcoder"
+              }
+            },
+            {
+              "id": "job-consumer-encoder",
+              "from": "transcoder-consumer",
+              "to": {
+                "kind": "component",
+                "id": "transcoder-encoder"
+              },
+              "label": "Hands job"
+            },
+            {
+              "id": "encoder-originals",
+              "from": "transcoder-encoder",
+              "to": {
+                "kind": "element",
+                "id": "originals",
+                "via": "transcoder-read"
+              }
+            },
+            {
+              "id": "encoder-packager",
+              "from": "transcoder-encoder",
+              "to": {
+                "kind": "component",
+                "id": "transcoder-packager"
+              },
+              "label": "Hands segments"
+            },
+            {
+              "id": "packager-transcoded",
+              "from": "transcoder-packager",
+              "to": {
+                "kind": "element",
+                "id": "transcoded",
+                "via": "transcoder-write"
+              }
+            },
+            {
+              "id": "encoder-thumbnails",
+              "from": "transcoder-encoder",
+              "to": {
+                "kind": "component",
+                "id": "transcoder-thumbnails"
+              },
+              "label": "Hands frames"
+            },
+            {
+              "id": "thumbnails-transcoded",
+              "from": "transcoder-thumbnails",
+              "to": {
+                "kind": "element",
+                "id": "transcoded",
+                "via": "transcoder-write"
+              }
+            },
+            {
+              "id": "packager-done",
+              "from": "transcoder-packager",
+              "to": {
+                "kind": "component",
+                "id": "transcoder-done"
+              },
+              "label": "Hands playlist"
+            },
+            {
+              "id": "thumbnails-done",
+              "from": "transcoder-thumbnails",
+              "to": {
+                "kind": "component",
+                "id": "transcoder-done"
+              },
+              "label": "Hands thumbnails"
+            },
+            {
+              "id": "done-events",
+              "from": "transcoder-done",
+              "to": {
+                "kind": "element",
+                "id": "completion-events",
+                "via": "transcoder-publish"
+              }
+            },
+            {
+              "id": "handler-consumer-events",
+              "from": "handler-consumer",
+              "to": {
+                "kind": "element",
+                "id": "completion-events",
+                "via": "completions-handler"
+              }
+            },
+            {
+              "id": "handler-consumer-writer",
+              "from": "handler-consumer",
+              "to": {
+                "kind": "component",
+                "id": "handler-writer"
+              },
+              "label": "Records video"
+            },
+            {
+              "id": "video-writer-db",
+              "from": "handler-writer",
+              "to": {
+                "kind": "element",
+                "id": "metadata-db",
+                "via": "handler-metadata"
+              }
+            },
+            {
+              "id": "indexer-consumer-events",
+              "from": "indexer-consumer",
+              "to": {
+                "kind": "element",
+                "id": "completion-events",
+                "via": "completions-indexer"
+              }
+            },
+            {
+              "id": "indexer-consumer-writer",
+              "from": "indexer-consumer",
+              "to": {
+                "kind": "component",
+                "id": "indexer-writer"
+              },
+              "label": "Hands video"
+            },
+            {
+              "id": "index-writer-search",
+              "from": "indexer-writer",
+              "to": {
+                "kind": "element",
+                "id": "search-index",
+                "via": "indexer-write"
+              }
+            }
+          ],
+          "entries": [
+            {
+              "id": "download-watch",
+              "lane": "download",
+              "element": "watch"
+            },
+            {
+              "id": "download-search",
+              "lane": "download",
+              "element": "search"
+            },
+            {
+              "id": "download-video-cdn",
+              "lane": "download",
+              "element": "video-cdn"
+            },
+            {
+              "id": "upload-identity",
+              "lane": "upload",
+              "element": "identity"
+            },
+            {
+              "id": "upload-service",
+              "lane": "upload",
+              "element": "upload"
+            }
+          ],
+          "actions": [
+            {
+              "lane": "download",
+              "name": "Watch"
+            },
+            {
+              "lane": "upload",
+              "name": "Publish"
+            }
+          ]
+        },
+        "system": {
+          "name": "YouTube",
+          "description": "Creators upload videos that are transcoded for streaming; viewers find them by search, watch them at a bitrate that suits their connection and see how many times each was viewed."
+        },
+        "nodes": [],
+        "relationships": []
+      }
+    }
+  ],
+  "source": "api"
+}

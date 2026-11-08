@@ -274,9 +274,11 @@ in `jeeves-generator/`; generate from the existing YouTube design, commit untouc
 missing custom behavior, then compare fresh versions after owner review. Scope is local Docker
 upload/transcode/playback/search/basic counts with automatic public publication and generation
 from Jeeves. The owner selected a minimal browser interface and PostgreSQL, approving the diagram
-change before v1. First add mouse PNG export, preserve the original and changed diagrams, then
-freeze the baseline. Every intentional diagram or presentation change during a field version
-retains a new source-linked snapshot; UI changes also retain studio screenshots.
+change before v1. FP00 implements mouse PNG export; FP01 preserves the original and changed
+diagrams and [freezes the local v1 input baseline](field-projects/youtube/v1/README.md).
+FP02 implements the experimental generator next. Every intentional diagram or presentation
+change during a field version retains a new source-linked snapshot; UI changes also retain
+studio screenshots.
 
 Heavy template certification is deferred while designs iterate. Use lightweight build/start/flow
 checks and experimental labels; strict readiness does not certify partial scaffolds. Track reusable

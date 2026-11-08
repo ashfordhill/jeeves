@@ -1,0 +1,121 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "Align two module descriptions with primary reads and name/describe Local video edge without global CDN or thumbnail resizing claims; no topology change",
+  "capturedAt": "2026-11-08T02:58:19.022Z",
+  "project": {
+    "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "name": "YouTube · field v1 · local Docker",
+    "revision": 3,
+    "createdAt": "2026-11-08T02:55:26.959Z",
+    "updatedAt": "2026-11-08T02:58:15.881Z"
+  },
+  "source": {
+    "revision": 3,
+    "schemaVersion": 2,
+    "canonicalSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved"
+  },
+  "parent": {
+    "projectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "revision": 2
+  },
+  "blueprint": {
+    "requestedVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "../renderer-audit.json",
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "theme": "light",
+    "state": "Fit; no focus or selection in studio.png; inspector selection in named screenshots"
+  },
+  "image": {
+    "filename": "YouTube-field-v1-local-Docker-r3.png",
+    "sha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "counts": {
+    "canonicalElements": 18,
+    "canonicalConnections": 18,
+    "renderedTiles": 21,
+    "renderedLines": 25
+  },
+  "browser": "153.0.8010.12",
+  "exportPreservedDesignHistoryBlueprintAndInteractiveView": true,
+  "errors": [],
+  "files": {
+    "blueprint.json": {
+      "bytes": 61453,
+      "sha256": "041facff14d88c045e788f75fa6a7868f872cc37e0e9d9d5641c6fcce81d7e64"
+    },
+    "capture.json": {
+      "bytes": 21515,
+      "sha256": "3d08883e0d85dcd717862ced97fb6da6cfa2e1701dc22a6ddf4731eac4788962"
+    },
+    "design-response.json": {
+      "bytes": 21800,
+      "sha256": "b587d02d2f8e649cced41af68f2d1a243b0fc1f1904df5dd89a92ac530240521"
+    },
+    "design.json": {
+      "bytes": 35922,
+      "sha256": "7ea79f431f89352814320d385591ae1e84cf8e63129e93d8fb649c6b2716045c"
+    },
+    "diagram.png": {
+      "bytes": 409401,
+      "sha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9"
+    },
+    "inspector-metadata-db.png": {
+      "bytes": 155497,
+      "sha256": "598bbd6c1419d31677500ffcfc338b86eb83b02cc657ab1b612f81345f5b6869"
+    },
+    "inspector-view-counts.png": {
+      "bytes": 155592,
+      "sha256": "e6ddf16fbb3df42e70f7713ea755f65aea4e08e8072a9bde1b93d84b10156e58"
+    },
+    "operation-request.json": {
+      "bytes": 26787,
+      "sha256": "25eeac9f80cfcfae46ce86b51bd537eedec4c82adfd2b936ee590d4300c5cd65"
+    },
+    "operation-response.json": {
+      "bytes": 21819,
+      "sha256": "fad092f15ff381b9fd91fda7446da5ea041523836d8a8f0c07ea36d73616cc13"
+    },
+    "project.json": {
+      "bytes": 203,
+      "sha256": "bf543b46d16b3b507f716915899b981a064e14bfb6a282424b94c2645394d0d2"
+    },
+    "studio.png": {
+      "bytes": 121169,
+      "sha256": "f0df333a68a421e18b371dffef78ebb8cf058e20b3809a6fbf52c3bfacfb4eca"
+    }
+  }
+}

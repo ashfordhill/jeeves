@@ -4912,3 +4912,51 @@ projection is deliberate. Vector export, automatic archive, generator and field-
 open. These are export checks, not acceptance of underlying YouTube architecture/runtime.
 
 Local commit: **FP00: export the full diagram as PNG**.
+
+## 2026-11-07 — FP01: frozen YouTube v1 source and local mappings
+
+FP01 only after `a98bf70`, primary main, one writer/no delegation. Archived actual owner YouTube
+r1 before mutation, then one revision-checked atomic `setStudio` operation 6466 changed only
+`metadata-db`/`view-counts` MySQL→PostgreSQL (owner r2); source schema2/origin and every other
+field remain. Retained named **YouTube · field v1 · local Docker** project
+`293b4a2d-e25b-4a5b-83da-b27de7876f02`, copied with full `studioStudySeedOperations`, then two
+local batches through r3: explicit single-node/self-hosted/primary-read settings, followed by
+two stale replica descriptions and the Local video edge name/prose correction. No topology
+rewrite, shipped-study/default change, new contract/schema, generator, template or app code.
+
+[V1 archive](../field-projects/youtube/v1/README.md) has five immutable real mouse PNG/source/
+blueprint/capture snapshots, 1280×800 studio/engine screenshots and a clean `a98bf70` renderer
+file audit. 001–004 clean PNGs are byte-identical because the changed settings are not tile
+faces; 005 changes the local-edge label. Final canonical source `7d1874a1…7979cc93`, image
+`23c06f6d…dc5bdb9`; 18 canonical elements/18 connections, 20 components/30 component links,
+21 rendered tiles/25 lines. Inputs point to 005, blueprint3 over unchanged schema2. Narrow
+Biome exclusions preserve exact immutable v1 JSON bytes; future app code is not excluded.
+
+Finite proposed 18/20/18 ID/definition/settings mappings, exact local image/npm/native pins and
+primary availability/digest evidence are frozen. Twenty-five exact TypeScript identity /
+HTTPS / service-identity source paths have explicit unsupported local overrides; no vendor,
+TLS or production-security equivalence is claimed. Original scale/cloud intent stays archived.
+S01–S08 freeze independent setup/sign-in, real signed multipart+resume/abort, real HLS encoding/
+playback, public-only search, two-second playback-event counts and clear failures. Fixture recipe,
+G01–G08 actual gaps, decisions, reuse hypotheses and provenance/effort fields remain explicit;
+all field smoke/coverage/effort-saving results remain unmeasured. FFmpeg transitive OS package
+closure is a named FP03 build detail. Strict readiness remains false/none; no certification.
+
+Required Node24.21.0 checks passed sequentially: `pnpm check` **385 tests / 47 files**, lint/all
+typechecks; **34 native E2Es (1.1m)** with source steady; web build **1.02s** (existing advisory).
+Final 1280×800 mouse checks TinyURL12/13, project-menu v1 selection, both PostgreSQL inspectors,
+self-hosted originals, external edge/disabled resizing and export dialog; zero errors and exact
+view-independent source/history/listing preservation. Full hash/mapping/renderer audit passed.
+[Evidence](../field-projects/youtube/v1/notes/evidence/README.md) retains logs/scripts/results.
+TinyURL53/Marketplace1 complete responses unchanged; E2E DB returns to its original default-only
+listing. Only own web4302 stopped; owner4300/4310 remain. No scratch/settings/live-paid calls;
+`.jeeves-feedback/` and all five original owner images preserved. Feedback/playbook appended.
+
+Next **FP02 only**, after coordinator review: record this containing commit in a later work-log
+entry, preserve frozen inputs and implement the finite experimental generator without weakening
+strict readiness. FP03 adds actual templates/export, FP04 commits **real untouched output** before
+FP05 plans custom completion. Keep lifecycle ownership, independent completion/search ordering,
+idempotence and browser-interface gaps visible; original-storage reader already exists. Review
+working v1 with owner before deciding on v2; NC07–NC13/heavy certification stay deferred.
+
+Local commit: **FP01: freeze YouTube v1 source and local mappings**.

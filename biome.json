@@ -6,7 +6,13 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/pnpm-lock.yaml", "!.jeeves-feedback"]
+    "includes": [
+      "**",
+      "!**/pnpm-lock.yaml",
+      "!.jeeves-feedback",
+      "!field-projects/youtube/v1/diagrams/**/*.json",
+      "!field-projects/youtube/v1/inputs/**/*.json"
+    ]
   },
   "formatter": {
     "indentStyle": "space",

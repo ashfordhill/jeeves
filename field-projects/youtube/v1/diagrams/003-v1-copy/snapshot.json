@@ -1,0 +1,121 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "Named v1 deliverable copied using studioStudySeedOperations from approved owner source revision 2; only new project identity and revision differ",
+  "capturedAt": "2026-11-08T02:55:44.978Z",
+  "project": {
+    "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "name": "YouTube · field v1 · local Docker",
+    "revision": 1,
+    "createdAt": "2026-11-08T02:55:26.959Z",
+    "updatedAt": "2026-11-08T02:55:26.992Z"
+  },
+  "source": {
+    "revision": 1,
+    "schemaVersion": 2,
+    "canonicalSha256": "25b87e8a9d1fbba30c68d9d65454c38173d812cd45f4928944dfbd5f3f889873",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved"
+  },
+  "parent": {
+    "projectId": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+    "revision": 2
+  },
+  "blueprint": {
+    "requestedVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "../renderer-audit.json",
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "theme": "light",
+    "state": "Fit; no focus or selection in studio.png; inspector selection in named screenshots"
+  },
+  "image": {
+    "filename": "YouTube-field-v1-local-Docker-r1.png",
+    "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "counts": {
+    "canonicalElements": 18,
+    "canonicalConnections": 18,
+    "renderedTiles": 21,
+    "renderedLines": 25
+  },
+  "browser": "153.0.8010.12",
+  "exportPreservedDesignHistoryBlueprintAndInteractiveView": true,
+  "errors": [],
+  "files": {
+    "blueprint.json": {
+      "bytes": 61953,
+      "sha256": "be4b98eb6d5ac79518bdca595118913b215791b0267fda756c1678cd224facab"
+    },
+    "capture.json": {
+      "bytes": 21494,
+      "sha256": "5acf76a5b06f5ebc1f0fbb219240a04cdaca1f307f899fb04051b254d3fc7284"
+    },
+    "create-request.json": {
+      "bytes": 52,
+      "sha256": "53d1047fb81d3c8744d21e8df9166e0734d83702db0105dc2925fe9297a4a4cf"
+    },
+    "create-response.json": {
+      "bytes": 232,
+      "sha256": "110c5a20f6dcc01b514aaae7895d1a64abfc370ffe7a3b367da8cda0dca3e68b"
+    },
+    "design-response.json": {
+      "bytes": 22050,
+      "sha256": "deb42f6372059c7772d240b35a0806ac8ebb55e6e420ce207036c361c27b9279"
+    },
+    "design.json": {
+      "bytes": 36382,
+      "sha256": "22e497d45f8bd58f57670172eb44515c02529b85236c66cea887c4572920ba98"
+    },
+    "diagram.png": {
+      "bytes": 407852,
+      "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f"
+    },
+    "operation-request.json": {
+      "bytes": 42770,
+      "sha256": "0f02b5d9871741be2bbdf64657c9692a84506ce73b5bf64f116b10fed5ca3e91"
+    },
+    "operation-response.json": {
+      "bytes": 22069,
+      "sha256": "71a9ebb0b265fd4da800dd16e0e8f62e465ce4cde4fab847cc6fee9296a217f8"
+    },
+    "project.json": {
+      "bytes": 203,
+      "sha256": "37e5c2b8eb4dda3e5b1158e13b966b6fe36bd499a32918771a7c8e0d42b73425"
+    },
+    "studio.png": {
+      "bytes": 121074,
+      "sha256": "f5792caa01543f0601a0beae5b2fd3d68be3d028c712ac1f61564b22fdee7a5c"
+    }
+  }
+}

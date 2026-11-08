@@ -1,0 +1,125 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "One atomic local-only normalization: self-hosted object stores, external local edge without resizing, one replica per process, standalone cache, primary SQL reads, no logical sharding/retention claim",
+  "capturedAt": "2026-11-08T02:56:24.562Z",
+  "project": {
+    "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "name": "YouTube · field v1 · local Docker",
+    "revision": 2,
+    "createdAt": "2026-11-08T02:55:26.959Z",
+    "updatedAt": "2026-11-08T02:56:21.449Z"
+  },
+  "source": {
+    "revision": 2,
+    "schemaVersion": 2,
+    "canonicalSha256": "e735dceb12c1e734a47d7862be7991bdc91d7e426a86ae2f89051b68cc7aa8f6",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved"
+  },
+  "parent": {
+    "projectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+    "revision": 1
+  },
+  "blueprint": {
+    "requestedVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "../renderer-audit.json",
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "theme": "light",
+    "state": "Fit; no focus or selection in studio.png; inspector selection in named screenshots"
+  },
+  "image": {
+    "filename": "YouTube-field-v1-local-Docker-r2.png",
+    "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "counts": {
+    "canonicalElements": 18,
+    "canonicalConnections": 18,
+    "renderedTiles": 21,
+    "renderedLines": 25
+  },
+  "browser": "153.0.8010.12",
+  "exportPreservedDesignHistoryBlueprintAndInteractiveView": true,
+  "errors": [],
+  "files": {
+    "blueprint.json": {
+      "bytes": 61151,
+      "sha256": "76db123603503275a0bf08192263c7fa09c962c73ac9d38c624229f3ec040313"
+    },
+    "capture.json": {
+      "bytes": 21494,
+      "sha256": "d79479eb6392a8c22797c7fb97b165de388c1b01337d3143aea1d284fda7062c"
+    },
+    "design-response.json": {
+      "bytes": 21649,
+      "sha256": "1bd78881ff15b6e86dd0058fbbadb78f53050d56c418a5f5d1d3fb55971bdf89"
+    },
+    "design.json": {
+      "bytes": 35771,
+      "sha256": "bc605bae99e0b154949998e03d0376d171cc20371d0df298b1d680bd436653fb"
+    },
+    "diagram.png": {
+      "bytes": 407852,
+      "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f"
+    },
+    "inspector-metadata-db.png": {
+      "bytes": 155454,
+      "sha256": "8bba22e6b4082a1c7c26d711d6c95ddf29c254404b1206b92cfd7436f5351f90"
+    },
+    "inspector-view-counts.png": {
+      "bytes": 155548,
+      "sha256": "507e059eb1f77179b412f04a5baf38ff598dbc879a20051cf330d2bb8d8c4bc6"
+    },
+    "intentional-changes.json": {
+      "bytes": 5584,
+      "sha256": "e18dba47bb6a97014785c9798f8c168b3dc9ea9ddc74990d373dfd17a812adfb"
+    },
+    "operation-request.json": {
+      "bytes": 26425,
+      "sha256": "a1e2b558bfacbc892aa5c23cb61bb0e53f224bdf7427d520d584a5e7b3a56ae8"
+    },
+    "operation-response.json": {
+      "bytes": 21668,
+      "sha256": "52acb4e6a8f37931cdf71d8ffad69c5b5ec1ca633df227aeb054fe4aae8698d8"
+    },
+    "project.json": {
+      "bytes": 203,
+      "sha256": "640b21d8b17d2efeea1cebe2c22d4728dde539ebd92542351b99f64320583bee"
+    },
+    "studio.png": {
+      "bytes": 121074,
+      "sha256": "f5792caa01543f0601a0beae5b2fd3d68be3d028c712ac1f61564b22fdee7a5c"
+    }
+  }
+}

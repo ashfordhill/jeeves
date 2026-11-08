@@ -1,0 +1,102 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "Original saved owner source before the explicitly approved PostgreSQL edit",
+  "capturedAt": "2026-11-08T02:52:38.364Z",
+  "project": {
+    "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+    "name": "YouTube · studio study",
+    "revision": 1,
+    "createdAt": "2026-11-06T20:02:02.427Z",
+    "updatedAt": "2026-11-06T20:02:02.452Z"
+  },
+  "source": {
+    "revision": 1,
+    "schemaVersion": 2,
+    "canonicalSha256": "bc0b332b3fc414721962c27792d7be1e4f76c280d1b6f419a747b45c43aa8b06",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved"
+  },
+  "parent": null,
+  "blueprint": {
+    "requestedVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "../renderer-audit.json",
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "theme": "light",
+    "state": "Fit; no focus or selection in studio.png; inspector selection in named screenshots"
+  },
+  "image": {
+    "filename": "YouTube-studio-study-r1.png",
+    "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "counts": {
+    "canonicalElements": 18,
+    "canonicalConnections": 18,
+    "renderedTiles": 21,
+    "renderedLines": 25
+  },
+  "browser": "153.0.8010.12",
+  "exportPreservedDesignHistoryBlueprintAndInteractiveView": true,
+  "errors": [],
+  "files": {
+    "diagram.png": {
+      "bytes": 407852,
+      "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f"
+    },
+    "capture.json": {
+      "bytes": 21473,
+      "sha256": "2057ec163c6f75c1b487577f8c145e49b28fb8a6ab8136f66c960617c0d57cb4"
+    },
+    "studio.png": {
+      "bytes": 121158,
+      "sha256": "b0625214f818df4fd5c185ccb01d5f1b2f52e38f5a65f35fe163b3aed81b93bb"
+    },
+    "design.json": {
+      "bytes": 36372,
+      "sha256": "303388ce195f168b3077007c16cb8b181ce9f39cc4830f1cec226ba5e84ecfcf"
+    },
+    "design-response.json": {
+      "bytes": 22040,
+      "sha256": "903c2120226b4e94c735800571632156206de86772b0e9916d64ed837bd2255d"
+    },
+    "blueprint.json": {
+      "bytes": 61933,
+      "sha256": "e82dfc35bec33a72dd34344e6b865f157fd08f469ee2114bf9272459a0b1e82c"
+    },
+    "project.json": {
+      "bytes": 191,
+      "sha256": "e5af45cb93cbaf3a23f07630d1e6ef5f469c5f7e71cf5526fda6c2b608524841"
+    }
+  }
+}

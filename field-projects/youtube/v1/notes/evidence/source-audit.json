@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-11-08T03:07:09.800Z",
+  "snapshots": [
+    {
+      "slug": "001-owner-original",
+      "revision": 1,
+      "canonicalDesignSha256": "bc0b332b3fc414721962c27792d7be1e4f76c280d1b6f419a747b45c43aa8b06",
+      "imageSha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+      "allFileHashesMatch": true
+    },
+    {
+      "slug": "002-postgresql-baseline",
+      "revision": 2,
+      "canonicalDesignSha256": "a6d8e07020b6bb1ab46165fb2f1762109d5dcca495dbbea3622d1dd41e06a6c5",
+      "imageSha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+      "allFileHashesMatch": true
+    },
+    {
+      "slug": "003-v1-copy",
+      "revision": 1,
+      "canonicalDesignSha256": "25b87e8a9d1fbba30c68d9d65454c38173d812cd45f4928944dfbd5f3f889873",
+      "imageSha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+      "allFileHashesMatch": true
+    },
+    {
+      "slug": "004-local-generation-baseline",
+      "revision": 2,
+      "canonicalDesignSha256": "e735dceb12c1e734a47d7862be7991bdc91d7e426a86ae2f89051b68cc7aa8f6",
+      "imageSha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+      "allFileHashesMatch": true
+    },
+    {
+      "slug": "005-local-intent-aligned",
+      "revision": 3,
+      "canonicalDesignSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+      "imageSha256": "23c06f6dd8a4533456f962016bc9da1cd2d2ae57e4a56391643ade236dc5bdb9",
+      "allFileHashesMatch": true
+    }
+  ],
+  "ownerAtomicChange": "only revision and two database engines; operation 6466",
+  "v1Copy": "exact approved owner source except revision, then 35 explicit settings changes and one prose/name batch",
+  "v1ProjectId": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+  "v1Revision": 3,
+  "sourceSchemaVersion": 2,
+  "blueprintVersion": 3,
+  "allInputHashesMatch": true,
+  "mappingCounts": {
+    "elements": 18,
+    "components": 20,
+    "connections": 18,
+    "unsupportedSourcePaths": 25
+  },
+  "allUnsupportedPathsMatch": true,
+  "allRendererSourceHashesUnchanged": true,
+  "rendererCommit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+  "tinyurlAndMarketplaceFullResponsesUnchanged": true,
+  "onlyRetainedV1CopyAdded": true,
+  "strictReadinessUnchanged": true,
+  "fieldRuntimeSmoke": "not run"
+}

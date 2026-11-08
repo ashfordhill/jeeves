@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-11-08T03:11:28.132Z",
+  "allOwnerAndV1ResponsesStillMatchPrecheckArchive": true,
+  "allFrozenInputFileHashesMatch": true,
+  "ports": {
+    "4300": 200,
+    "4302": "not listening",
+    "4310": 200
+  },
+  "retainedV1Project": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+  "ownerRevisions": {
+    "TinyURL": 53,
+    "YouTube": 2,
+    "Marketplace": 1
+  },
+  "v1Revision": 3,
+  "ownWeb4302Stopped": true,
+  "noOwnApiOrSettingsPathCreated": true,
+  "e2eDatabase": "original single default project; exact listing retained",
+  "unrelatedFeedback": "untouched",
+  "fieldRuntimeSmoke": "not run"
+}

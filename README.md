@@ -9,7 +9,8 @@ as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default 
 implemented yet. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
 keeps the generator and experimental templates in `jeeves-generator/`, exports standalone
 applications and measures improvements across working v1/v2 field projects before heavy
-certification. Numbered diagram images and their editable source will trace each version's changes.
+certification. [YouTube v1's frozen inputs and numbered images](field-projects/youtube/v1/README.md)
+retain the original owner diagram, approved PostgreSQL update and a separate local copy.
 The inspector, blueprint v3 and chat share a [snapshot compatibility report](docs/studio-readiness.md):
 structural validity, exact contracts, implementation availability and exact-output evidence stay
 separate. Product artifacts remain unavailable and runtime evidence remains none.

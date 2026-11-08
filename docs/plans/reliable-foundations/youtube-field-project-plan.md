@@ -5,7 +5,8 @@ It supersedes the separate-repository, TinyURL-first sequence and broad template
 before the first field project. Build a working YouTube v1, review it with a fresh agent, improve
 Jeeves, then generate a fresh v2 and possibly v3. Marketplace and TinyURL follow when the owner is
 satisfied. FP00 implements diagram PNG export; no generator, field application or benchmark result exists
-yet. FP01 is the next assigned unit.
+yet. FP01 freezes the [actual v1 source, images and local mapping](../../../field-projects/youtube/v1/README.md);
+FP02 is the next assigned unit.
 
 ## Scope and decisions
 
@@ -29,8 +30,9 @@ yet. FP01 is the next assigned unit.
 The owner answered the two remaining product questions: minimal interface and PostgreSQL.
 PostgreSQL fits the relational metadata/counting requirements and shares Jeeves' existing database
 tooling; this is a deliberate v1 choice, not a claim that MySQL cannot support this application.
-Record explicit local replacements for Cloudflare storage/delivery and exact adapter versions
-before generation. Choose these bounded implementation details in FP01; ask again only if a
+FP01 records explicit local replacements for Cloudflare storage/delivery and exact adapter
+versions in the [frozen v1 inputs](../../../field-projects/youtube/v1/inputs/manifest.json).
+Compatibility remains unverified until the actual field build/smoke. Ask again only if a
 discovered tradeoff changes the agreed scope, needs a cloud account or introduces a paid service.
 
 ## The experiment
@@ -73,7 +75,8 @@ authorized.
 | field-projects/youtube/v2/ | A fresh later experiment with its own baseline and comparison. |
 | docs/field-projects/ | Cross-version benchmark definitions and reusable-improvement decision log. |
 
-These packages/directories are planned. Add `jeeves-generator` explicitly to pnpm workspace
+FP01 creates the v1 input/diagram/note directories; the generator and application remain planned.
+Add `jeeves-generator` explicitly to pnpm workspace
 discovery when implementing its package; put reusable backend code there with a thin Jeeves API
 entry point. A separate running generator service is not necessary for the first local export.
 Keep field apps outside the studio's apps/* and packages/* workspace discovery.
@@ -99,8 +102,8 @@ The exported full logical view preserves the canvas's current expanded/collapsed
 projection, explicitly recorded in capture details. Expand roles first when the snapshot should
 show individual responsibilities. All projected relationships render even during focus. The
 secondary capture-details download records exact PNG/source hashes and resolved layout/view
-context; FP01 must still archive the editable source, blueprint and external renderer Git/tree
-audit. Development identity is recorded at server startup and cannot attest later HMR changes.
+context. FP01 archives the editable source, blueprint and external renderer Git/tree audit.
+Development identity is recorded at server startup and cannot attest later HMR changes.
 The 2× light capture refuses missing/failed layout/fonts, stale source and oversize images rather
 than silently clipping or shrinking. No version archive service is implied.
 
@@ -156,8 +159,9 @@ them. Do not claim pixel-identical renders across different fonts, browsers or r
 
 FP00's checks cover readable actual mouse PNG downloads for YouTube and TinyURL, including
 pan/zoom/focus, owner projection and saved-state/view preservation. Its bounded regression checks
-cover route ink, stale source, font failure and cancellation. FP01 still establishes the actual
-archived source and PostgreSQL baseline. This is bounded export and provenance work, not a new
+cover route ink, stale source, font failure and cancellation. FP01 establishes the actual
+archived source and PostgreSQL baseline in five numbered snapshots, ending with an explicitly
+local v1 copy. This is bounded export and provenance work, not a new
 image-certification suite.
 
 ## Useful partial output and truthful claims
@@ -273,7 +277,7 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | Unit | Deliverable and exit |
 | --- | --- |
 | FP00: diagram image export (implemented) | Mouse PNG export of the real full canvas; readable labels/routes, stable capture and no saved-state or view mutation. Document usage and the snapshot convention. |
-| FP01: baseline and mappings | Archive original saved YouTube, change its database selection to approved PostgreSQL, archive the result and make the v1 copy. Select local adapters, freeze minimal-UI smoke scenarios and supported-template/gap mappings. |
+| FP01: baseline and mappings (implemented) | Five immutable source/image snapshots retain original owner, approved PostgreSQL and the named local v1 copy. Exact local pins, canonical finite mapping/gaps, S01–S08 scenarios and decision ledger are frozen; no generator/templates/runtime exist yet. |
 | FP02: experimental generator | Finite assembly, provenance, partial-output reporting, safe file ownership and deterministic export; strict readiness semantics preserved. |
 | FP03: first templates and Jeeves export | Useful v1 template output plus mouse generation/download; prove independent build. No heavy template certification. |
 | FP04: generated v1 checkpoint | Run the real generator and commit untouched output and provenance as its own unit. |

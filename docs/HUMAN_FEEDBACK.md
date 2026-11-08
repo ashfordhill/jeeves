@@ -663,3 +663,15 @@ identity. The two product questions are answered; local adapter details remain b
   [FP00 evidence](plans/reliable-foundations/evidence/fp00/README.md). Original owner YouTube/TinyURL
   sources remain unchanged. FP01's original/PostgreSQL/baseline snapshots, database change,
   generator, field app, benchmark and owner review remain open; no earlier entry/image was edited.
+
+- FP01, local commit titled **FP01: freeze YouTube v1 source and local mappings**: archived actual
+  owner revision 1 before the approved atomic PostgreSQL change (owner revision 2), then retained
+  a named v1 copy through local normalization and a prose/name consistency correction (revision 3).
+  [Five numbered snapshots](../field-projects/youtube/v1/diagrams/index.md) pair mouse-exported PNG,
+  editable source, read-only blueprint v3, capture/hash/Git audit and standard studio screenshots;
+  inspector images show the otherwise invisible engine change. No new owner image was supplied
+  and all five original images remain unchanged. Exact local adapter pins, canonical ID/settings
+  mappings, explicit unsupported source paths, S01–S08 smoke scenarios and an improvement ledger
+  are frozen. No generator/templates/app output, field runtime result or benchmark saving is
+  claimed. Actual generation/baseline commit, custom completion, working v1, owner review and
+  later template reliability remain open; strict readiness remains ineligible/unverified.

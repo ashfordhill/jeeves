@@ -1,0 +1,1024 @@
+{
+  "format": "jeeves-diagram-capture-v1",
+  "capturedAt": "2026-11-08T02:54:16.467Z",
+  "project": {
+    "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+    "name": "YouTube · studio study",
+    "revision": 2
+  },
+  "source": {
+    "designSha256": "a6d8e07020b6bb1ab46165fb2f1762109d5dcca495dbbea3622d1dd41e06a6c5",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+    "schemaVersion": 2
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "image": {
+    "filename": "YouTube-studio-study-r2.png",
+    "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "layout": {
+    "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"watch\",128,128,0],[\"search\",128,128,0],[\"video-cdn\",128,128,0],[\"metadata-cache\",128,128,0],[\"metadata-db\",128,128,1],[\"view-counts\",128,128,0],[\"view-events\",128,128,0],[\"search-index\",128,128,1],[\"transcoded\",128,128,1],[\"view-counter\",128,128,0],[\"identity\",128,128,2],[\"upload\",128,128,2],[\"upload-queue\",128,128,2],[\"originals\",128,128,2],[\"transcoder\",128,128,2],[\"completion-events\",128,128,2],[\"completion-handler\",128,128,2],[\"search-indexer\",128,128,2]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-watch\",\"@download\",\"watch\",0,0,0],[\"download-search\",\"@download\",\"search\",0,0,0],[\"download-video-cdn\",\"@download\",\"video-cdn\",0,0,0],[\"upload-identity\",\"@upload\",\"identity\",0,0,2],[\"upload-service\",\"@upload\",\"upload\",0,0,2],[\"watch-cache\",\"watch\",\"metadata-cache\",0,0,0],[\"watch-metadata\",\"watch\",\"metadata-db\",0,0,0],[\"watch-counts-read\",\"watch\",\"view-counts\",0,0,0],[\"watch-views-publish\",\"watch\",\"view-events\",0,0,0],[\"search-read\",\"search\",\"search-index\",0,0,0],[\"cdn-transcoded\",\"video-cdn\",\"transcoded\",0,0,0],[\"views-counter\",\"view-events\",\"view-counter\",0,0,0],[\"counter-write\",\"view-counter\",\"view-counts\",0,0,0],[\"upload-publish\",\"upload\",\"upload-queue\",0,0,2],[\"upload-originals\",\"upload\",\"originals\",0,0,2],[\"jobs-transcoder\",\"upload-queue\",\"transcoder\",0,0,2],[\"transcoder-read\",\"transcoder\",\"originals\",0,0,2],[\"transcoder-write\",\"transcoder\",\"transcoded\",0,0,2],[\"transcoder-publish\",\"transcoder\",\"completion-events\",0,0,2],[\"completions-handler\",\"completion-events\",\"completion-handler\",0,0,2],[\"completions-indexer\",\"completion-events\",\"search-indexer\",0,0,2],[\"handler-metadata\",\"completion-handler\",\"metadata-db\",0,0,2],[\"indexer-write\",\"search-indexer\",\"search-index\",0,0,2]]]",
+    "positions": {
+      "@actor": {
+        "x": 32,
+        "y": 752
+      },
+      "@download": {
+        "x": 224,
+        "y": 480
+      },
+      "@upload": {
+        "x": 224,
+        "y": 1056
+      },
+      "watch": {
+        "x": 416,
+        "y": 288
+      },
+      "search": {
+        "x": 416,
+        "y": 480
+      },
+      "video-cdn": {
+        "x": 416,
+        "y": 640
+      },
+      "metadata-cache": {
+        "x": 640,
+        "y": 32
+      },
+      "metadata-db": {
+        "x": 1056,
+        "y": 800
+      },
+      "view-counts": {
+        "x": 640,
+        "y": 192
+      },
+      "view-events": {
+        "x": 640,
+        "y": 352
+      },
+      "search-index": {
+        "x": 1280,
+        "y": 800
+      },
+      "transcoded": {
+        "x": 640,
+        "y": 800
+      },
+      "view-counter": {
+        "x": 832,
+        "y": 352
+      },
+      "identity": {
+        "x": 416,
+        "y": 960
+      },
+      "upload": {
+        "x": 416,
+        "y": 1120
+      },
+      "upload-queue": {
+        "x": 640,
+        "y": 1056
+      },
+      "originals": {
+        "x": 640,
+        "y": 1216
+      },
+      "transcoder": {
+        "x": 832,
+        "y": 1056
+      },
+      "completion-events": {
+        "x": 1056,
+        "y": 1056
+      },
+      "completion-handler": {
+        "x": 1280,
+        "y": 960
+      },
+      "search-indexer": {
+        "x": 1280,
+        "y": 1120
+      }
+    },
+    "routes": {
+      "@actor-download": [
+        {
+          "x": 160,
+          "y": 832
+        },
+        {
+          "x": 192,
+          "y": 832
+        },
+        {
+          "x": 192,
+          "y": 544
+        },
+        {
+          "x": 224,
+          "y": 544
+        }
+      ],
+      "@actor-upload": [
+        {
+          "x": 160,
+          "y": 832
+        },
+        {
+          "x": 192,
+          "y": 832
+        },
+        {
+          "x": 192,
+          "y": 1120
+        },
+        {
+          "x": 224,
+          "y": 1120
+        }
+      ],
+      "download-watch": [
+        {
+          "x": 352,
+          "y": 544
+        },
+        {
+          "x": 384,
+          "y": 544
+        },
+        {
+          "x": 384,
+          "y": 352
+        },
+        {
+          "x": 416,
+          "y": 352
+        }
+      ],
+      "download-search": [
+        {
+          "x": 352,
+          "y": 544
+        },
+        {
+          "x": 416,
+          "y": 544
+        }
+      ],
+      "download-video-cdn": [
+        {
+          "x": 352,
+          "y": 544
+        },
+        {
+          "x": 384,
+          "y": 544
+        },
+        {
+          "x": 384,
+          "y": 704
+        },
+        {
+          "x": 416,
+          "y": 704
+        }
+      ],
+      "upload-identity": [
+        {
+          "x": 352,
+          "y": 1120
+        },
+        {
+          "x": 384,
+          "y": 1120
+        },
+        {
+          "x": 384,
+          "y": 1024
+        },
+        {
+          "x": 416,
+          "y": 1024
+        }
+      ],
+      "upload-service": [
+        {
+          "x": 352,
+          "y": 1120
+        },
+        {
+          "x": 384,
+          "y": 1120
+        },
+        {
+          "x": 384,
+          "y": 1184
+        },
+        {
+          "x": 416,
+          "y": 1184
+        }
+      ],
+      "watch-cache": [
+        {
+          "x": 544,
+          "y": 352
+        },
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 576,
+          "y": 96
+        },
+        {
+          "x": 640,
+          "y": 96
+        }
+      ],
+      "watch-metadata": [
+        {
+          "x": 544,
+          "y": 352
+        },
+        {
+          "x": 576,
+          "y": 352
+        },
+        {
+          "x": 576,
+          "y": 496
+        },
+        {
+          "x": 992,
+          "y": 496
+        },
+        {
+          "x": 992,
+          "y": 864
+        },
+        {
+          "x": 1056,
+          "y": 864
+        }
+      ],
+      "watch-counts-read": [
+        {
+          "x": 544,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 256
+        },
+        {
+          "x": 640,
+          "y": 256
+        }
+      ],
+      "watch-views-publish": [
+        {
+          "x": 544,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 352
+        },
+        {
+          "x": 608,
+          "y": 416
+        },
+        {
+          "x": 640,
+          "y": 416
+        }
+      ],
+      "search-read": [
+        {
+          "x": 544,
+          "y": 544
+        },
+        {
+          "x": 1216,
+          "y": 544
+        },
+        {
+          "x": 1216,
+          "y": 864
+        },
+        {
+          "x": 1280,
+          "y": 864
+        }
+      ],
+      "cdn-transcoded": [
+        {
+          "x": 544,
+          "y": 704
+        },
+        {
+          "x": 576,
+          "y": 704
+        },
+        {
+          "x": 576,
+          "y": 864
+        },
+        {
+          "x": 640,
+          "y": 864
+        }
+      ],
+      "views-counter": [
+        {
+          "x": 768,
+          "y": 416
+        },
+        {
+          "x": 832,
+          "y": 416
+        }
+      ],
+      "upload-publish": [
+        {
+          "x": 544,
+          "y": 1184
+        },
+        {
+          "x": 576,
+          "y": 1184
+        },
+        {
+          "x": 576,
+          "y": 1120
+        },
+        {
+          "x": 640,
+          "y": 1120
+        }
+      ],
+      "upload-originals": [
+        {
+          "x": 544,
+          "y": 1184
+        },
+        {
+          "x": 576,
+          "y": 1184
+        },
+        {
+          "x": 576,
+          "y": 1280
+        },
+        {
+          "x": 640,
+          "y": 1280
+        }
+      ],
+      "jobs-transcoder": [
+        {
+          "x": 768,
+          "y": 1120
+        },
+        {
+          "x": 832,
+          "y": 1120
+        }
+      ],
+      "transcoder-publish": [
+        {
+          "x": 960,
+          "y": 1120
+        },
+        {
+          "x": 1056,
+          "y": 1120
+        }
+      ],
+      "completions-handler": [
+        {
+          "x": 1184,
+          "y": 1120
+        },
+        {
+          "x": 1216,
+          "y": 1120
+        },
+        {
+          "x": 1216,
+          "y": 1024
+        },
+        {
+          "x": 1280,
+          "y": 1024
+        }
+      ],
+      "completions-indexer": [
+        {
+          "x": 1184,
+          "y": 1120
+        },
+        {
+          "x": 1216,
+          "y": 1120
+        },
+        {
+          "x": 1216,
+          "y": 1184
+        },
+        {
+          "x": 1280,
+          "y": 1184
+        }
+      ],
+      "counter-write": [
+        {
+          "x": 960,
+          "y": 416
+        },
+        {
+          "x": 992,
+          "y": 416
+        },
+        {
+          "x": 992,
+          "y": 336
+        },
+        {
+          "x": 608,
+          "y": 336
+        },
+        {
+          "x": 608,
+          "y": 256
+        },
+        {
+          "x": 640,
+          "y": 256
+        }
+      ],
+      "transcoder-read": [
+        {
+          "x": 960,
+          "y": 1120
+        },
+        {
+          "x": 992,
+          "y": 1120
+        },
+        {
+          "x": 992,
+          "y": 1200
+        },
+        {
+          "x": 608,
+          "y": 1200
+        },
+        {
+          "x": 608,
+          "y": 1280
+        },
+        {
+          "x": 640,
+          "y": 1280
+        }
+      ],
+      "transcoder-write": [
+        {
+          "x": 960,
+          "y": 1120
+        },
+        {
+          "x": 992,
+          "y": 1120
+        },
+        {
+          "x": 992,
+          "y": 960
+        },
+        {
+          "x": 608,
+          "y": 960
+        },
+        {
+          "x": 608,
+          "y": 864
+        },
+        {
+          "x": 640,
+          "y": 864
+        }
+      ],
+      "handler-metadata": [
+        {
+          "x": 1408,
+          "y": 1024
+        },
+        {
+          "x": 1440,
+          "y": 1024
+        },
+        {
+          "x": 1440,
+          "y": 944
+        },
+        {
+          "x": 1024,
+          "y": 944
+        },
+        {
+          "x": 1024,
+          "y": 864
+        },
+        {
+          "x": 1056,
+          "y": 864
+        }
+      ],
+      "indexer-write": [
+        {
+          "x": 1408,
+          "y": 1184
+        },
+        {
+          "x": 1472,
+          "y": 1184
+        },
+        {
+          "x": 1472,
+          "y": 784
+        },
+        {
+          "x": 1248,
+          "y": 784
+        },
+        {
+          "x": 1248,
+          "y": 864
+        },
+        {
+          "x": 1280,
+          "y": 864
+        }
+      ]
+    },
+    "chips": {},
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    }
+  },
+  "tiles": [
+    {
+      "id": "@actor",
+      "w": 128,
+      "h": 160,
+      "shape": "rect",
+      "label": "User"
+    },
+    {
+      "id": "@download",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Watch"
+    },
+    {
+      "id": "@upload",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Publish"
+    },
+    {
+      "id": "watch",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Watch API"
+    },
+    {
+      "id": "search",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Search API"
+    },
+    {
+      "id": "video-cdn",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "Video CDN"
+    },
+    {
+      "id": "metadata-cache",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "Metadata cache"
+    },
+    {
+      "id": "metadata-db",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Metadata database"
+    },
+    {
+      "id": "view-counts",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "View counts"
+    },
+    {
+      "id": "view-events",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "pill",
+      "label": "View events"
+    },
+    {
+      "id": "search-index",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Search index"
+    },
+    {
+      "id": "transcoded",
+      "w": 128,
+      "h": 128,
+      "band": 1,
+      "shape": "pill",
+      "label": "Transcoded videos"
+    },
+    {
+      "id": "view-counter",
+      "w": 128,
+      "h": 128,
+      "band": 0,
+      "shape": "rect",
+      "label": "View counter"
+    },
+    {
+      "id": "identity",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Identity"
+    },
+    {
+      "id": "upload",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Upload service"
+    },
+    {
+      "id": "upload-queue",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Upload jobs"
+    },
+    {
+      "id": "originals",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Original videos"
+    },
+    {
+      "id": "transcoder",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Transcoder"
+    },
+    {
+      "id": "completion-events",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "pill",
+      "label": "Completion events"
+    },
+    {
+      "id": "completion-handler",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Completion handler"
+    },
+    {
+      "id": "search-indexer",
+      "w": 128,
+      "h": 128,
+      "band": 2,
+      "shape": "rect",
+      "label": "Search indexer"
+    }
+  ],
+  "lines": [
+    {
+      "id": "@actor-download",
+      "source": "@actor",
+      "target": "@download",
+      "dashed": false,
+      "directed": true,
+      "label": "User to Watch",
+      "removable": false
+    },
+    {
+      "id": "@actor-upload",
+      "source": "@actor",
+      "target": "@upload",
+      "dashed": false,
+      "directed": true,
+      "label": "User to Publish",
+      "removable": false
+    },
+    {
+      "id": "download-watch",
+      "source": "@download",
+      "target": "watch",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Watch API",
+      "band": 0
+    },
+    {
+      "id": "download-search",
+      "source": "@download",
+      "target": "search",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Search API",
+      "band": 0
+    },
+    {
+      "id": "download-video-cdn",
+      "source": "@download",
+      "target": "video-cdn",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch to Video CDN",
+      "band": 0
+    },
+    {
+      "id": "upload-identity",
+      "source": "@upload",
+      "target": "identity",
+      "dashed": false,
+      "directed": true,
+      "label": "Publish to Identity",
+      "band": 2
+    },
+    {
+      "id": "upload-service",
+      "source": "@upload",
+      "target": "upload",
+      "dashed": false,
+      "directed": true,
+      "label": "Publish to Upload service",
+      "band": 2
+    },
+    {
+      "id": "watch-cache",
+      "source": "watch",
+      "target": "metadata-cache",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to Metadata cache",
+      "detail": "Reads video details, fills on miss",
+      "band": 0
+    },
+    {
+      "id": "watch-metadata",
+      "source": "watch",
+      "target": "metadata-db",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to Metadata database",
+      "detail": "Reads video details on a miss",
+      "band": 0
+    },
+    {
+      "id": "watch-counts-read",
+      "source": "watch",
+      "target": "view-counts",
+      "dashed": false,
+      "directed": true,
+      "label": "Watch API to View counts",
+      "detail": "Reads view counts",
+      "band": 0
+    },
+    {
+      "id": "watch-views-publish",
+      "source": "watch",
+      "target": "view-events",
+      "dashed": true,
+      "directed": true,
+      "label": "Watch API to View events",
+      "detail": "Publishes views",
+      "band": 0
+    },
+    {
+      "id": "search-read",
+      "source": "search",
+      "target": "search-index",
+      "dashed": false,
+      "directed": true,
+      "label": "Search API to Search index",
+      "detail": "Searches videos",
+      "band": 0
+    },
+    {
+      "id": "cdn-transcoded",
+      "source": "video-cdn",
+      "target": "transcoded",
+      "dashed": false,
+      "directed": true,
+      "label": "Video CDN to Transcoded videos",
+      "detail": "Reads segments and thumbnails",
+      "band": 0
+    },
+    {
+      "id": "views-counter",
+      "source": "view-events",
+      "target": "view-counter",
+      "dashed": true,
+      "directed": true,
+      "label": "View events to View counter",
+      "detail": "Delivers views",
+      "band": 0
+    },
+    {
+      "id": "counter-write",
+      "source": "view-counter",
+      "target": "view-counts",
+      "dashed": false,
+      "directed": true,
+      "label": "View counter to View counts",
+      "detail": "Adds summed views",
+      "band": 0
+    },
+    {
+      "id": "upload-publish",
+      "source": "upload",
+      "target": "upload-queue",
+      "dashed": true,
+      "directed": true,
+      "label": "Upload service to Upload jobs",
+      "detail": "Publishes upload jobs",
+      "band": 2
+    },
+    {
+      "id": "upload-originals",
+      "source": "upload",
+      "target": "originals",
+      "dashed": false,
+      "directed": true,
+      "label": "Upload service to Original videos",
+      "detail": "Starts, signs and completes uploads",
+      "band": 2
+    },
+    {
+      "id": "jobs-transcoder",
+      "source": "upload-queue",
+      "target": "transcoder",
+      "dashed": true,
+      "directed": true,
+      "label": "Upload jobs to Transcoder",
+      "detail": "Delivers upload jobs",
+      "band": 2
+    },
+    {
+      "id": "transcoder-read",
+      "source": "transcoder",
+      "target": "originals",
+      "dashed": false,
+      "directed": true,
+      "label": "Transcoder to Original videos",
+      "detail": "Reads originals",
+      "band": 2
+    },
+    {
+      "id": "transcoder-write",
+      "source": "transcoder",
+      "target": "transcoded",
+      "dashed": false,
+      "directed": true,
+      "label": "Transcoder to Transcoded videos",
+      "detail": "Stores segments, playlists and thumbnails",
+      "band": 2
+    },
+    {
+      "id": "transcoder-publish",
+      "source": "transcoder",
+      "target": "completion-events",
+      "dashed": true,
+      "directed": true,
+      "label": "Transcoder to Completion events",
+      "detail": "Publishes completed videos",
+      "band": 2
+    },
+    {
+      "id": "completions-handler",
+      "source": "completion-events",
+      "target": "completion-handler",
+      "dashed": true,
+      "directed": true,
+      "label": "Completion events to Completion handler",
+      "detail": "Delivers completed videos",
+      "band": 2
+    },
+    {
+      "id": "completions-indexer",
+      "source": "completion-events",
+      "target": "search-indexer",
+      "dashed": true,
+      "directed": true,
+      "label": "Completion events to Search indexer",
+      "detail": "Delivers completed videos",
+      "band": 2
+    },
+    {
+      "id": "handler-metadata",
+      "source": "completion-handler",
+      "target": "metadata-db",
+      "dashed": false,
+      "directed": true,
+      "label": "Completion handler to Metadata database",
+      "detail": "Records playable videos",
+      "band": 2
+    },
+    {
+      "id": "indexer-write",
+      "source": "search-indexer",
+      "target": "search-index",
+      "dashed": false,
+      "directed": true,
+      "label": "Search indexer to Search index",
+      "detail": "Indexes playable videos",
+      "band": 2
+    }
+  ]
+}

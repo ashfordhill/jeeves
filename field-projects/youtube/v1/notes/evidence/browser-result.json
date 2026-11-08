@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-11-08T03:06:21.615Z",
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "webPort": 4302,
+  "apiPort": 4310,
+  "tinyurl": {
+    "tiles": 12,
+    "lines": 13
+  },
+  "v1": {
+    "tiles": 21,
+    "lines": 25
+  },
+  "mouseChecks": [
+    "TinyURL Fit and line legend",
+    "Project-menu switch to retained named v1 copy",
+    "Both PostgreSQL engines visible in Options",
+    "Self-hosted originals provider visible",
+    "External local edge provider visible",
+    "Export dialog opens/closes"
+  ],
+  "sourceAndHistoryUnchanged": true,
+  "listingUnchanged": true,
+  "errors": []
+}

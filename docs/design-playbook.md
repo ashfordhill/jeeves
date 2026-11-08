@@ -1024,3 +1024,16 @@ stroke: deep SVG cloning must retain the board's CSS variables and usable SVG vi
 Font embedding and light-theme overrides also need to survive serialization and dark root styles.
 A small route-ink regression plus source/view checks addresses this observed failure without
 turning experimental diagram capture into broad pixel certification.
+
+## 2026-11-07 local field-source consistency
+
+When adapting a saved design to a small local deployment, preserve the original cloud/scale
+intent first and use a separate named copy. Change unsupported capacity/provider settings
+explicitly or report the exact source paths; a local proxy/cache is not a global CDN, and
+resource credentials do not implement a declared workload identity or TLS boundary.
+
+Review structured settings and assistant-facing prose together. The YouTube local copy changed
+SQL read routing to primary while two module descriptions still said replica; snapshot 005
+corrects those descriptions and names the Local video edge. Equal PNGs can hide real settings
+changes: preserve source hashes and inspector evidence as well as clean diagram images.
+These are source/provenance lessons, not runtime validation or measured chat-quality gains.

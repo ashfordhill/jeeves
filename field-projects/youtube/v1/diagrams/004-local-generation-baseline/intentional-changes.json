@@ -1,0 +1,317 @@
+[
+  {
+    "target": {
+      "kind": "element",
+      "id": "watch"
+    },
+    "path": "settings.minReplicas",
+    "before": 3,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "watch"
+    },
+    "path": "settings.maxReplicas",
+    "before": 50,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "watch"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "requests-per-second",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "metadata-cache"
+    },
+    "path": "settings.topology",
+    "before": "cluster",
+    "after": "standalone"
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "metadata-db"
+    },
+    "path": "settings.readReplicas",
+    "before": 3,
+    "after": 0
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "metadata-db"
+    },
+    "path": "settings.partitionKey",
+    "before": "video_id",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "view-counts"
+    },
+    "path": "settings.readReplicas",
+    "before": 2,
+    "after": 0
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "view-counts"
+    },
+    "path": "settings.partitionKey",
+    "before": "video_id",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "view-events"
+    },
+    "path": "settings.partitions",
+    "before": 12,
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "view-events"
+    },
+    "path": "settings.retentionSeconds",
+    "before": 86400,
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "view-counter"
+    },
+    "path": "settings.maxReplicas",
+    "before": 8,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "view-counter"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "queue-lag",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "search"
+    },
+    "path": "settings.minReplicas",
+    "before": 2,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "search"
+    },
+    "path": "settings.maxReplicas",
+    "before": 20,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "search"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "requests-per-second",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "video-cdn"
+    },
+    "path": "settings.provider",
+    "before": "cloudflare",
+    "after": "external"
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "video-cdn"
+    },
+    "path": "settings.imageResizing",
+    "before": "on-request",
+    "after": "disabled"
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "transcoded"
+    },
+    "path": "settings.provider",
+    "before": "cloudflare-r2",
+    "after": "self-hosted"
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "identity"
+    },
+    "path": "settings.minReplicas",
+    "before": 2,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "identity"
+    },
+    "path": "settings.maxReplicas",
+    "before": 4,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "identity"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "cpu",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "upload"
+    },
+    "path": "settings.minReplicas",
+    "before": 2,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "upload"
+    },
+    "path": "settings.maxReplicas",
+    "before": 10,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "upload"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "requests-per-second",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "originals"
+    },
+    "path": "settings.provider",
+    "before": "cloudflare-r2",
+    "after": "self-hosted"
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "upload-queue"
+    },
+    "path": "settings.retentionSeconds",
+    "before": 604800,
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "transcoder"
+    },
+    "path": "settings.maxReplicas",
+    "before": 50,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "transcoder"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "queue-lag",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "completion-events"
+    },
+    "path": "settings.partitions",
+    "before": 6,
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "completion-events"
+    },
+    "path": "settings.retentionSeconds",
+    "before": 604800,
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "completion-handler"
+    },
+    "path": "settings.maxReplicas",
+    "before": 4,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "completion-handler"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "queue-lag",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "search-indexer"
+    },
+    "path": "settings.maxReplicas",
+    "before": 4,
+    "after": 1
+  },
+  {
+    "target": {
+      "kind": "element",
+      "id": "search-indexer"
+    },
+    "path": "settings.autoscaleOn",
+    "before": "queue-lag",
+    "after": null
+  },
+  {
+    "target": {
+      "kind": "component",
+      "id": "watch-details"
+    },
+    "path": "settings.readRouting",
+    "before": "replica",
+    "after": "primary"
+  }
+]

@@ -1,0 +1,121 @@
+{
+  "format": "jeeves-field-diagram-snapshot-v1",
+  "reason": "Owner-authorized atomic MySQL to PostgreSQL change for metadata-db and view-counts; every other design field preserved",
+  "capturedAt": "2026-11-08T02:54:16.467Z",
+  "project": {
+    "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+    "name": "YouTube · studio study",
+    "revision": 2,
+    "createdAt": "2026-11-06T20:02:02.427Z",
+    "updatedAt": "2026-11-08T02:53:23.171Z"
+  },
+  "source": {
+    "revision": 2,
+    "schemaVersion": 2,
+    "canonicalSha256": "a6d8e07020b6bb1ab46165fb2f1762109d5dcca495dbbea3622d1dd41e06a6c5",
+    "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved"
+  },
+  "parent": {
+    "projectId": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+    "revision": 1
+  },
+  "blueprint": {
+    "requestedVersion": 3
+  },
+  "renderer": {
+    "appVersion": "0.1.0",
+    "commit": "a98bf708d4f70083e7ed4293eaa561561c67694d",
+    "trackedTreeDirtyAtBuild": false,
+    "mode": "development",
+    "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36"
+  },
+  "externalRendererAudit": "../renderer-audit.json",
+  "studio": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "theme": "light",
+    "state": "Fit; no focus or selection in studio.png; inspector selection in named screenshots"
+  },
+  "image": {
+    "filename": "YouTube-studio-study-r2.png",
+    "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f",
+    "width": 3008,
+    "height": 2752,
+    "scale": 2,
+    "margin": 32,
+    "background": "#e8f4fa",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "w": 1504,
+      "h": 1376
+    },
+    "font": "Nunito Variable",
+    "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+  },
+  "view": {
+    "relationships": "all projected relationships; focus omitted",
+    "selection": "omitted",
+    "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+    "ownerExpansion": "current canvas projection",
+    "owners": []
+  },
+  "counts": {
+    "canonicalElements": 18,
+    "canonicalConnections": 18,
+    "renderedTiles": 21,
+    "renderedLines": 25
+  },
+  "browser": "153.0.8010.12",
+  "exportPreservedDesignHistoryBlueprintAndInteractiveView": true,
+  "errors": [],
+  "files": {
+    "blueprint.json": {
+      "bytes": 61953,
+      "sha256": "544a28c9773b968288f75084a842599a338856f27a0703b5af6cd0fe55381f52"
+    },
+    "capture.json": {
+      "bytes": 21473,
+      "sha256": "b66d15437c407351503eeeba81f8819599ada3268962f7af7ad06ecd91de3adc"
+    },
+    "design-response.json": {
+      "bytes": 22050,
+      "sha256": "fee3da500eadb2f7d3e0584c0a76d7fc04c18ec207ac648708b284a668bf170b"
+    },
+    "design.json": {
+      "bytes": 36382,
+      "sha256": "f5237655a1807f33ceea20bd7ccd1c8e646403210c735a0e199d83dfece5982e"
+    },
+    "diagram.png": {
+      "bytes": 407852,
+      "sha256": "472a4c8cf3f8eadf8f7c9f2dc79e20f37b19a3656abcb4587dda9b3f6d33dc9f"
+    },
+    "inspector-metadata-db.png": {
+      "bytes": 155427,
+      "sha256": "664f5b01554bedd80fa1fd4898db8495b03a3c9edfdd48af0fd4b29186ee554f"
+    },
+    "inspector-view-counts.png": {
+      "bytes": 155516,
+      "sha256": "adb4b32fbb9cb6476a72a8d5e79cc25a17c98462dd9ac28f9153b420763ada31"
+    },
+    "operation-request.json": {
+      "bytes": 27066,
+      "sha256": "0455919e5b586c072c3ebe6e0a25b6de58b3cf3bd1505d5d21ed22cd4f54daa0"
+    },
+    "operation-response.json": {
+      "bytes": 22069,
+      "sha256": "c5187bfb45b79ad1a1a4b2db3f4f697377dea201b8e2126f72c6f34650c3cfca"
+    },
+    "project.json": {
+      "bytes": 191,
+      "sha256": "1c49b4cbcbf8b6899007a4df9d3e98bb2ef70224cb258f62caf16e980e3e23b1"
+    },
+    "studio.png": {
+      "bytes": 121158,
+      "sha256": "b0625214f818df4fd5c185ccb01d5f1b2f52e38f5a65f35fe163b3aed81b93bb"
+    }
+  }
+}
