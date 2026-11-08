@@ -786,9 +786,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     "scripts/search-init.mjs",
     "scripts/common.mjs",
   ])
-    files.push(
-      file(path, context.asset(`${assets}${path}${path.endsWith(".ts") ? ".template" : ""}`)),
-    );
+    files.push(file(path, context.asset(`${assets}${path}`)));
   const missingHosts = [...new Set(model.selections.map((s) => s.host))].filter(
     (host) => !application.includes(`app-${host}`),
   );

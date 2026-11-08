@@ -5594,3 +5594,35 @@ later adapters/composition. Keep YV2-16's finite edge boundary. No v2 field app,
 root README, pins/locks, owner resources, `.jeeves-feedback` or e2e-docker mode changes. No push.
 
 Local commit: **YV2-05: extract reusable HTTP and messaging runtime**.
+
+## 2026-11-08 — YV2-06: transactional delivery and receipt dependencies
+
+`local.durability` emits typed transaction scopes, bound generic outbox schema/enqueue/relay and
+receipt-with-effect APIs. [Actual interfaces](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-06--transactional-delivery-and-receipt-dependencies).
+State/intent/receipt effects share one SQL transaction; caught SQL/enqueue/receipt failures still
+refuse commit. Stable receipt identity projection permits validated transport-timestamp drift.
+Relay reuses the YV2-05 confirmed publisher, locks bounded due batches, defers with capped backoff,
+and drains on close. Confirm-before-mark is at least once: post-confirm SQL rollback can duplicate
+the same event ID. No network/SQL atomicity or exactly-once claim. Shared dependency-free
+local/durable-sql sources reuse actual foundation quoting/migration/grant hooks; no implicit
+logins/grants, business templates, services, forms or product transitions are installed.
+
+Final `pnpm check`: **426 tests/58 files, 40.37s**, lint/types (existing Biome style info);
+**36 native E2Es, 2.3m**; web build **4.60s** (existing chunk advisory). Three focused offline
+PGlite cases; generator-only dev dependency reuses existing pin **0.5.9**, no runtime app pin
+change. Two final deterministic **40-file** scratch exports pass own frozen install/build;
+a typed non-video adapter compiles. Actual PostgreSQL/RabbitMQ rollback/dedup, exact runtime
+grants, concurrent SKIP LOCKED, confirm/retry/post-confirm rollback duplicate IDs and one receipt
+effect passed. [Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-06-durability.md).
+Logs `/tmp/jeeves-yv2-06/{check-final,e2e,web-build,export-verified,install-verified,build-verified,migrate,probe,cleanup}.log`.
+Scoped cleanup removed two containers/two volumes/network, no image; private runtime removed,
+ports **45240–45244** free and all fourteen v1 services healthy. No normal UI change; native
+browser coverage retains TinyURL lane rendering and mouse/generation behavior.
+
+Frozen v1's **108-path/hash list** is identical, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Next **YV2-07 only**: owned-upload persistence/hooks. Required business/application/mapping gaps
+remain unfinished. Preserve YV2-16 edge boundary, root README, local-v1/v1 source/input/runtime,
+owner resources, `.jeeves-feedback` dirt and e2e-docker mode. No field v2 app or push.
+
+Local commit: **YV2-06: extract transactional delivery and receipt modules**.

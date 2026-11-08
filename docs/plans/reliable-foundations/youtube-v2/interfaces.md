@@ -404,3 +404,67 @@ its asserted `<queue>.failed` destination; the generic clients also accept unrel
 bindings. No helper contains YouTube contracts, resource IDs, audience or product constants.
 [Bounded actual evidence and limits](../evidence/youtube-v2/yv2-05-primitives.md).
 Next owner: **YV2-06 only**, generic transactional outbox/inbox/receipts.
+
+## YV2-06 — transactional delivery and receipt dependencies
+
+`loadLocalV2Registry` also registers `local.durability`, an implemented dependency emitter with
+no `provides.templates` or preset. Actual owned-multipart, asset-lifecycle or event-counter
+selections emit `src/runtime/{transaction,durable-sql,outbox,receipts}.ts`, with their selected
+source pointers. This installs no owned-upload/lifecycle/counter business template, policy,
+service, migration or implicit permission. Required application/feature/mapping gaps remain.
+
+- `transaction.ts`: `Tx` exposes a typed generic `query<Row>(sql,values?)` for one active
+  transaction; `TransactionPool` is the actual pg pool's connect boundary.
+  `transaction<T>(pool,effect: (tx: Tx) => Promise<T>)` begins, awaits the callback and commits,
+  or rolls back/releases. `assertTransaction` rejects inactive/failed scopes;
+  `abortTransaction(tx,error)` invalidates the scope. Failed queries, enqueue and receipt hooks
+  poison it even when a compiled adapter catches the error, so an aborted PostgreSQL transaction
+  cannot return false committed success. Failed rollback discards the connection. Callbacks must
+  await their SQL work and use this scope; they are trusted compiled adapters, never saved-source
+  code. Business state and intent/receipt effects use this same `Tx`.
+- `durable-sql.ts`: `SqlRelation {schema,table}`, `OutboxTable` additionally has finite unique
+  `destinations`. `qualifiedRelation` reuses foundation `quoteSqlIdentifier` independently for
+  schema/table; invalid identifiers/destinations refuse. `outboxSchema(binding)` and
+  `receiptSchema(binding)` return SQL with private schema/public revocation, fixed generic
+  columns and constraints, no owner name, product schema, message schema or grants. Outbox
+  event/intent IDs are explicit bounded text keys; intent keys are unique across that table.
+  Receipts key `(scope_key,event_id)` and retain validated identity payload plus result.
+  `durableIdentity`, `jsonPayload`, `validateOutboxTable` are shared validation helpers.
+- `outbox.ts`: `PayloadCodec<T> = (unknown,eventId) => T` validates/normalizes actual payloads;
+  `ConfirmedPublisher` derives `publish` directly from YV2-05 `createPublisher`'s return type.
+  `createOutbox<Payload>(table,destination,codec)` snapshots the validated qualified table and
+  requires a destination in its finite allowlist. `enqueue(tx,{eventId,intentKey,payload})`
+  returns true on insert, false for the same persisted intent/payload, and refuses conflicting
+  IDs/keys/payloads. IDs and payloads come from the adapter; it generates no replacement UUIDs.
+  `relayBatch(pool,publisher,limit=10)` returns `{selected,sent,deferred}`. Due rows lock with
+  `FOR UPDATE SKIP LOCKED`, ordered and bounded to 1–25. Codec/confirm failure defers the row
+  with capped 250–5000ms exponential backoff and saturating attempt count; pending intent is
+  retained, with no automatic terminal deletion. Confirm precedes sent-mark SQL. SQL failure
+  rolls back the batch. `startRelay(outbox,pool,publisher,{limit?,onError?})` polls every second
+  and returns idempotent `close()` that stops scheduling and drains the admitted bounded batch.
+  The caller then closes publisher/pool. `onError` is a synchronous notification, not drain work.
+- `receipts.ts`: `createReceipts<Payload,Result>(relation,{payload,result,identity?})` returns
+  `withEffect(tx,{scopeKey,eventId,payload},effect: (sameTx,parsedPayload) => Promise<Result>)`.
+  New receipt + validated result + SQL effect commit together; repeat returns
+  `{applied:false,result}` without rerunning the effect. Conflicting/incomplete receipt refuses.
+  Default duplicate identity compares the full validated payload. Optional trusted
+  `identity(parsedPayload)` projects stable business fields, allowing regenerated transport
+  timestamps to differ without weakening payload validation. Adapters must retain every field
+  relevant to the effect in that projection. Outbox intent payloads instead remain immutable.
+
+Generator exports `outboxSchema`, `receiptSchema`, `SqlRelation` and `OutboxTable` through
+`src/v2/durability.ts`/`src/index.ts`. Later compiled feature emitters call them from `local`
+contributions and explicitly declare YV2-04 migrations, exact runtime logins and schema-qualified
+table/view grants. No permission follows from table names or from selecting these libraries.
+The foundation remains the sole migration/shared-file writer. Dependency-free
+`assets/src/runtime/{local,durable-sql}.ts` are shared directly by the generator and emitted
+project so SQL quoting/schema implementation has one source. `local.ts` moved unchanged from
+`.ts.template`; SDK-bearing runtime assets remain `.ts.template` and compile in the standalone
+package. This adds only generator dev dependency PGlite at the existing workspace pin 0.5.9;
+no emitted runtime dependency/version changed.
+
+Broker I/O is **not atomic with SQL**. A crash or commit failure after confirmed publish can
+deliver the same stable event ID again; consumers commit their receipt/effect before ack through
+YV2-05. This is at least once, with no distributed transaction, reconnect or exactly-once claim.
+[Offline/standalone/actual SQL-broker evidence](../evidence/youtube-v2/yv2-06-durability.md).
+Next owner: **YV2-07 only**, generic owned-upload persistence/hooks.

@@ -1,6 +1,7 @@
 import { readdirSync } from "node:fs";
 import { sameContractRef } from "@jeeves/spec";
 import { jsonFile } from "../../src/json.ts";
+import { createLocalDurability } from "../../src/v2/durability.ts";
 import { createLocalFoundation } from "../../src/v2/local.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
@@ -77,6 +78,7 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     diagnostic,
     createLocalFoundation(distinct, features),
     createLocalRuntimePrimitives(distinct),
+    createLocalDurability(distinct),
     ...features,
   ]);
 }

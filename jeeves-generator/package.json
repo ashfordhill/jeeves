@@ -15,7 +15,8 @@
     "zod": "4.5.4"
   },
   "devDependencies": {
-    "tsx": "4.23.15",
-    "rolldown": "1.2.15"
+    "@electric-sql/pglite": "0.5.9",
+    "rolldown": "1.2.15",
+    "tsx": "4.23.15"
   }
 }
