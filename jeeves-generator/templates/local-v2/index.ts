@@ -10,6 +10,7 @@ import { createLocalMultipart } from "../../src/v2/multipart.ts";
 import { createLocalPositiveCache } from "../../src/v2/positive-cache.ts";
 import { createLocalRuntimePrimitives } from "../../src/v2/primitives.ts";
 import { captureV2Sources, createV2Registry, type V2Emitter } from "../../src/v2/registry.ts";
+import { createLocalSearch } from "../../src/v2/search.ts";
 import { createLocalUploadState } from "../../src/v2/upload-state.ts";
 import { createLocalAssetIdentity, createLocalVideoHls } from "../../src/v2/video-hls.ts";
 
@@ -84,9 +85,10 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
   const multipart = createLocalMultipart(distinct);
   const mediaWorker = createLocalMediaWorker(distinct);
   const eventCounter = createLocalEventCounter(distinct);
+  const search = createLocalSearch(distinct);
   return createV2Registry(captureV2Sources(root, distinct), [
     diagnostic,
-    createLocalFoundation(distinct, [multipart, mediaWorker, eventCounter, ...features]),
+    createLocalFoundation(distinct, [multipart, mediaWorker, eventCounter, search, ...features]),
     createLocalRuntimePrimitives(distinct),
     createLocalDurability(distinct),
     createLocalUploadState(distinct),
@@ -97,6 +99,7 @@ export function loadLocalV2Registry(featureValues: readonly V2Emitter[] = []) {
     mediaWorker,
     createLocalPositiveCache(distinct),
     eventCounter,
+    search,
     ...features,
   ]);
 }

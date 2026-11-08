@@ -1019,3 +1019,103 @@ private/public names are internal recipe bindings, never normal editor fields. N
 remains until YV2-15/16 binds the real ViewPlayed/Watch qualifier and canonical IDs, tables/public
 view, runtime constructors/credentials, retry/drain/signals and source-bound complete service.
 [Focused/standalone/real-provider evidence](../evidence/youtube-v2/yv2-13-event-counter.md).
+
+## YV2-14 — public search projection and bounded query
+
+`createLocalSearch(sourcePaths)` in `jeeves-generator/src/v2/search.ts`, registered as
+**`local.search-projection-query`**, emits dependency modules for selected `search-projection`
+and/or `search-query` responsibilities. All are source-fingerprinted standalone files:
+
+- `src/runtime/search-contract.ts`: `SearchField`, `SearchMapping<Document>`, `SearchIndex`,
+  `SearchDocument<Document>`, `defineSearchDocument({mapping,codec,id,version})`,
+  `validateSearchMapping`, `validateSearchIndex`, `searchIdentity`, `searchVersion`.
+- `src/runtime/search-schema.ts`: `assertSearchIndex(client,binding)`.
+- `src/runtime/search-projection.ts`: `SearchProjectionEvent<Document>` and
+  `createSearchProjection<Event,Document>({client,binding,document,adapter})` → `{parse,upsert}`.
+- `src/runtime/search-indexer.ts`: `SearchConsumer` and
+  `startSearchIndexer({projection,openConsumer})` → `Promise<{close,closed}>`.
+  Projection/indexer files require a selected projection; query-only output omits them.
+- `src/runtime/search-query.ts`: `SearchInput`, `SearchQueryPreset`, `parseSearchInput(raw)` and
+  `createSearchQuery({client,binding,document,preset})` → `(raw)=>Promise<{input,pageSize:20,
+  total,documents}>`. HTTP paths/URLs and exact browser response mapping remain YV2-15.
+- `src/features/search-bindings.ts`: `searchBindings[selectionId]` with exact normalized host,
+  `index:{resource,endpoint}` and, for a projection, `events:{resource,exchange,queue,failedQueue}`.
+  Endpoint is the foundation service `http://search-<resource>:9200`; topic queue is exactly
+  `<resource>--<host>` and its `.failed` queue, matching the foundation broker contribution.
+  Caller passes that endpoint plus explicit request timeout to existing `createSearch` and
+  binds actual broker/concurrency/retry settings to existing YV2-05 `createConsumer`.
+
+`SearchMapping` is a **trusted compiled descriptor**, not saved source or an editor schema.
+Every document property has an explicit supported scalar mapping; typed mappings cover every
+key. The document factory checks the complete field set both before and after the codec,
+validates the derived ID/version and snapshots JSON. Codecs must validate values and eligibility;
+private/extra fields cannot be silently stripped into an accepted document. Generic IDs remain
+case-sensitive nonempty/control-free UTF-8 strings ≤512 bytes; versions are positive safe
+integers. No `videoId`, channel, YouTube namespace, SQL loader or product eligibility exists in
+these runtime modules. Typed catalog documents use the same exported factories.
+
+`adapter.event(rawWire,messageId?)`, `eventId(event)` and `document(event)` decode raw wire once
+and select only public data. Supplied transport IDs must also exactly match the derived event
+ID, regardless of the adapter's own checks. `parse` returns the distinct internal
+`{eventId,id,version,document}` envelope. `upsert` revalidates that envelope/document and checks
+its derived ID/version; it never passes normalized data back to the application wire decoder.
+Writes use the explicitly bound index, ID, positive document version, `external_gte` and `3s`
+OpenSearch timeout. Repeated same-version events retain one document at that external version.
+As in v1, equal-version writes may replace contents and stale-version conflicts propagate;
+this is versioned repeat-safe upsert, not an additional event-receipt/conflict policy.
+
+`assertSearchIndex` creates only an absent index, with **one shard/no replicas**, `dynamic:strict`,
+`_meta:{version}` and exact properties. Existing mapping version/properties, analyzers/subfields/
+indexing changes, disabled source/mapping and dynamic templates refuse, as do incompatible
+shard/replica settings. No delete, reset or putMapping repair occurs, even on an empty incompatible
+index. It agrees with YV2-04's actual `search-init.mjs`. Generator helper
+**`searchProjectionMapping({resource,mapping,sourcePaths})`**, exported from generator
+`src/index.ts`, contributes those same validated version/properties through `V2Emitter.local`.
+Default dependency emission contributes no product mapping; the foundation still reports its
+required missing-mapping gap until a compiled recipe supplies one. No provider/pin changed.
+
+The indexer requires a message ID and JSON body ≤64KiB. Bad wire/document/identity becomes
+YV2-05 `NonRetryable("MALFORMED_MESSAGE")`; index errors use that consumer's existing finite
+retry/confirmed-failed behavior. Successful upsert completes before ack. The factory owns the
+opened consumer and drains once; **caller owns the search client** and closes it afterward.
+Caller asserts mapping/settings before admission. No SQL credential/mount, private metadata
+read, separate retry loop, readiness file or process signals are added by this library.
+Producers must commit eligible public metadata and outbox intent together before relay.
+
+The query factory accepts only raw `{q:string,page?:string}`. It trims q, requires1–200 chars,
+defaults page1, accepts the existing nonzero-decimal syntax and bounds page1–100. It fixes
+`from=(page-1)*20`, size20, `track_total_hits:true`, timeout750ms. Only the trusted compiled
+preset supplies query/sort, never HTTP/saved-source DSL. Results reject timeout/shard failure,
+nonexact/invalid totals, oversized hit windows, invalid public documents and `_id` mismatch.
+They return validated documents without media URL or browser response policy.
+
+When `youtube-search` is selected, separate feature files are emitted:
+
+- `src/features/public-video.ts`: `publicVideoRecord`, `PublicVideoRecord`,
+  `publicVideoDocumentSchema`, `PublicVideoDocument`, `publicVideoMapping`, `publicVideoDocument`.
+  The strict reusable record has **videoId(UUID),publicationVersion(literal1),title(1–200),
+  description(≤5000),channel(1–200),durationSeconds(finite1–600),manifest/thumbnail(nonempty≤250),
+  publishedAt(ISO timestamp)**. Document adds only `state:"ready"`, `visibility:"public"`.
+  Mapping version1 matches the v1 fields/types; manifest/thumbnail are unindexed keywords.
+  It rejects pending/private status and creator/original/upload/job/private extra fields.
+- `src/features/public-video-search.ts`: reexports that shared schema and provides
+  `publicVideoQueryPreset`. It preserves ready/public term filters, `multi_match` best_fields
+  **title^3,description,channel^2**, default matching (no added AND/prefix), and sorts
+  score desc/publishedAt desc/videoId asc. No relevance/filter/paging/sort choice is exposed.
+
+**YV2-15 should reuse this record/schema rather than duplicate validators.** Generic lifecycle
+`assetId` maps to this feature's `videoId` at the application adapter. The UUID schema does not
+canonicalize case; YV2-15 must normalize document/event/transport UUID identities consistently.
+The feature intentionally does not authenticate paths/namespaces or define `VideoPublished`
+wire identity: YV2-15 must bind actual asset/job/attempt paths and public-media URL mapping,
+validate the wire envelope, and project its committed public fields. Manifest/thumbnail string
+validation alone is not proof of ownership. Watch can reuse the public record through its own
+emitter without requiring a search consumer; these files currently emit on `youtube-search`.
+
+No `provides.templates` attestation or complete service is installed. Required gap
+**`search-application-bindings`** remains until YV2-15/16 installs the actual publication wire
+codec/projection, source-bound mapping/preset, Search HTTP mapping, client/consumer construction,
+readiness and signals. Actual mappings/services are compiled recipe contributions, never user
+mapping/weight/version/internal-ID fields. No broad Marketplace schema/search, prefix matching,
+recommendations or private database access was added.
+[Focused/standalone/committed-event evidence](../evidence/youtube-v2/yv2-14-search.md).

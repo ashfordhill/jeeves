@@ -205,6 +205,13 @@ Object download/reuse/upload ordering, pinned FFmpeg runtime and actual worker/s
 remain required gaps; no source-bound video template is installed from engine files alone. See
 the [engine API and cleanup contract](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-10--fixed-reusable-video-to-hls-engine).
 
+Selected search projection/query emits public-document validation, explicit versioned mapping
+assertion, repeat-safe event upsert, a bounded query factory and a draining consumer factory.
+The public-video record/mapping and title/description/channel query preset are separate feature
+assets. Compiled recipes still supply committed event codecs, mappings, service construction
+and HTTP response mapping; no private SQL login or complete application is installed. See the
+[search interfaces and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-14--public-search-projection-and-bounded-query).
+
 Trusted feature registration can pass `V2Emitter[]` to `loadLocalV2Registry(features)`.
 `V2Emitter.local(context)` returns the finite `V2LocalContribution` hooks for migrations,
 runtime logins, schema-qualified views/relation grants, topic subscribers, storage access/CORS,

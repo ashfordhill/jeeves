@@ -5897,3 +5897,50 @@ IDs at that adapter boundary** before generic case-sensitive text keys. Supply e
 counter tables/view/grants and bound YV2-05 consumer; keep public reader away from receipts/
 private login, and end caller pool after consumer drain. Local commit:
 **YV2-13: generate generic receipt-based event counts**.
+
+## 2026-11-08 — YV2-14: public search projection and bounded query
+
+`local.search-projection-query` emits generic `search-{contract,schema,projection,indexer,query}`
+runtime modules and normalized search bindings. `searchProjectionMapping` contributes actual
+version/properties through YV2-04; selected projection contributes its actual topic subscriber.
+Separate `features/public-video{,-search}.ts` holds shared public record/document schema+mapping
+and unchanged finite query preset. [Actual APIs/ownership/gaps](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-14--public-search-projection-and-bounded-query).
+Public exact fields/ID/version validated, raw wire decoded once, separate internal envelope,
+external_gte/3s upsert before ack, consumer drain once/caller closes client. Explicit mapping
+version/properties/settings assertion refuses incompatible data without repair/reset. Trimmed
+q1–200,page1–100,size20,exact totals,750ms,ready/public filters,best_fields title^3/description/
+channel^2,default OR (no AND/prefix),score/publishedAt/ID sort retained. No SQL credential,
+normal field/provider/pin or prior algorithm change; actual application support stays unfinished.
+
+Three focused offline cases; `pnpm check` **457 tests/66 files,29.78s**, lint/types;
+**36 native E2Es,1.3m**; web build **1.67s** (existing advisory). Two final deterministic
+**51-file** renamed exports pass own frozen install/untouched build, then typed non-video
+catalog adapter build+offline round trip through the same generic factories. Real disk-backed
+PGlite metadata/outbox commit survives reopen before confirmed RabbitMQ relay and separate
+read-only indexer makes it queryable in OpenSearch. Rollback publishes nothing; repeat retains
+count1/external version1; pending/private fails finitely; full-word/default OR/page2 and
+incompatible-version refusal observed. Indexer has code/deps/broker secret only, no SQL mount/
+login, and drains exit0. Probe nested publicNotice wire is not YV2-15's application codec.
+[Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-14-search.md);
+logs/harness `/tmp/jeeves-yv2-14/{focused-final,export-final,install-final,build-final,
+build-adapter-final,catalog-smoke-final,setup-search,setup-broker,probe,cleanup,check,e2e,
+web-build}.log` and `{export-summary,probe-summary,cleanup-summary,indexer-mounts}.json`.
+
+Scratch **jeeves-yv2-14-search** broker/search/indexer,2 volumes/network removed by exact-project
+`down --volumes --remove-orphans`; **45280–45284** free. No image built/removed; exports/deps/
+builds/private runtime and producer DB removed before root checks. Frozen v1 **108 paths/hashes**
+unchanged, manifest `5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`;
+fixture15584953 bytes/SHA1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9.
+All14 retained v1 services healthy. Root README/owner Future Benchmarks,feedback dirt/Unicode
+Zone.Identifier/colon variants and e2e-docker mode preserved. No v2 app,branch/worktree/stash/push.
+No UI changed; native TinyURL lane/mouse coverage passes. Local commit:
+**YV2-14: generate search projection and bounded query modules**.
+
+Next **YV2-15 only**: actual YouTube HTTP/event/metadata adapters. Reuse `public-video.ts`
+record/schema/mapping rather than duplicate validators; map generic lifecycle assetId→videoId
+and canonicalize UUID document/event/transport IDs consistently. Wire VideoPublished stable
+identity and authoritative namespace/path checks, exact HTTP/media URLs remain15; bounded
+manifest/thumbnail strings alone do not establish ownership. Required `search-application-bindings`
+remains until actual compiled consumers/mappings/services15/16 install; default emission grants
+no SQL or product mapping, and no template attestation is claimed.16 still owns complete pack/
+service/runtime readiness, finite edge and pinned FFmpeg/ffprobe readiness before process ready.
