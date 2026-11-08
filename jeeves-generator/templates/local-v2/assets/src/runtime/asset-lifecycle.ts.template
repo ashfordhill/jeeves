@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { assetUuid, type AssetJobIdentity } from "./asset-identity.ts";
 import {
   durableIdentity,
   qualifiedRelation,
@@ -10,6 +11,8 @@ import type { UploadHooks, UploadTerminal, VerifiedOriginal } from "./owned-uplo
 import { createReceipts } from "./receipts.ts";
 import { abortTransaction, assertTransaction, type Tx } from "./transaction.ts";
 
+export { assetUuid, type AssetJobIdentity } from "./asset-identity.ts";
+
 export type AssetState =
   | "uploading"
   | "pending"
@@ -19,11 +22,6 @@ export type AssetState =
   | "aborted"
   | "expired";
 export type ProcessingKind = "started" | "succeeded" | "failed";
-export interface AssetJobIdentity {
-  assetId: string;
-  jobId: string;
-  attemptId: string;
-}
 export interface AssetCompletion extends AssetJobIdentity {
   uploadId: string;
   state: "pending";
@@ -110,14 +108,6 @@ export interface AssetLifecycleHooks<M, R, Response, Job, Publication> {
   };
 }
 
-export function assetUuid(value: string): string {
-  if (
-    typeof value !== "string" ||
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-  )
-    throw new Error("Invalid asset/job identity");
-  return value.toLowerCase();
-}
 /** Namespace is explicitly application-bound; text parts retain case. Normalize domain UUIDs
  * with assetUuid before using them here. Narrow adapters may preserve existing event IDs. */
 export function assetEventId(namespace: string, ...parts: string[]): string {

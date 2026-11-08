@@ -198,6 +198,13 @@ queue/processing deadlines and supports optional transaction-bound publication. 
 event codecs, public view and actual service wiring remain compiled-recipe gaps. See the
 [lifecycle API and limits](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-09--fixed-asset-lifecycle-and-committed-publication-hooks).
 
+Selected video processing emits a fixed reusable CPU HLS engine, strict result/marker codecs and
+shared asset/job identities, without importing lifecycle SQL or product metadata. It retains the
+MP4/H.264/AAC landscape bounds,360p/720p ladder, full-size thumbnail and byte-hashed inventory.
+Object download/reuse/upload ordering, pinned FFmpeg runtime and actual worker/service recipe
+remain required gaps; no source-bound video template is installed from engine files alone. See
+the [engine API and cleanup contract](../docs/plans/reliable-foundations/youtube-v2/interfaces.md#yv2-10--fixed-reusable-video-to-hls-engine).
+
 Trusted feature registration can pass `V2Emitter[]` to `loadLocalV2Registry(features)`.
 `V2Emitter.local(context)` returns the finite `V2LocalContribution` hooks for migrations,
 runtime logins, schema-qualified views/relation grants, topic subscribers, storage access/CORS,

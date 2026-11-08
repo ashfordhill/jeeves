@@ -5737,3 +5737,42 @@ sweep work. Preserve root README, local-v1/v1 app/input/runtime/fixture, owner r
 `.jeeves-feedback` dirt and e2e-docker mode. No field v2 app, branches/worktrees/stash or push.
 
 Local commit: **YV2-09: generate asset lifecycle and committed publication hooks**.
+
+## 2026-11-08 — YV2-10: fixed reusable video-to-HLS engine
+
+`local.video-hls` emits `media-process.ts`, `video-result.ts` and `video-hls.ts`; shared
+`local.asset-identity` emits `asset-identity.ts` under `src/runtime/`. Existing lifecycle
+`assetUuid`/`AssetJobIdentity` reexports remain compatible, with no SQL/SDK dependency in the
+engine. [Actual APIs and cleanup contract](plans/reliable-foundations/youtube-v2/interfaces.md#yv2-10--fixed-reusable-video-to-hls-engine).
+`encodeVideoHls({input,output,job,signal})` accepts existing asset/job/attempt IDs, explicit
+source key/size/SHA and immutable resultPrefix. It creates output exclusively, returns a bound
+strict marker and removes its own output on failure; caller must finally remove the whole
+workspace, including input and successful output. Fixed MP4/H264/AAC landscape bounds,
+360p/720p CPU ladder, full-size thumbnail, subprocess/deadline bounds and byte inventory remain.
+No product schemas/namespaces, SQL, search/count, encoder controls or installed service claim.
+Required `video-hls-worker-bindings` stays honest; engine files alone install no source template.
+
+Three new focused offline cases; `pnpm check` **441 tests/62 files,29.42s**, lint/types;
+**36 native E2Es,1.3m**; web build **988ms** (existing chunk advisory). TinyURL lane/mouse/
+generation checks pass; no UI changed. Two deterministic **31-file** fresh engine-only exports;
+own frozen install/untouched build and typed course-video adapter build pass. Real pinned
+FFmpeg on retained read-only fixture passes both H264/AAC renditions,20.000s,full-size MJPEG,
+14-file exact inventory/bound generic attachment marker, invalid-media failure/local cleanup,
+preabort and existing-output refusal. FFmpeg **7:5.1.9-0+deb12u1** and all288 OS package versions
+match frozen lock; executable/configuration hashes recorded. [Evidence/limits](plans/reliable-foundations/evidence/youtube-v2/yv2-10-video-engine.md);
+logs `/tmp/jeeves-yv2-10/{check,e2e,web-build,export-final,install-final,build-final,build-adapter-final,media-smoke-final,cleanup}.log`,
+`media-evidence/{runtime,probes,marker,result,cleanup}.json` and `export-summary.json`.
+Own network-none/read-only scratch container auto-removed; scratch exports/deps/build/media
+work removed, useful sanitized logs/harness retained. No ports,volumes or images created;
+retained exact FFmpeg image untouched and all fourteen v1 services healthy.
+
+Frozen v1 **108-path/hash list** is identical, manifest
+`5098707958077ea90b4ad36118f987069351ace61b6f33251d347144f764e21f`.
+Retained fixture stays15584953 bytes, SHA
+`1658728175f3a431c9c93107582ad14d4286d6fb3c5253c61f4731d3668aebf9`;
+no v1 source/input/runtime/fixture/pin edits. Next **YV2-11 only** owns source download/byte-hash
+verification, queue/storage runner, immutable marker/inventory reuse, ordered uploads and
+confirmed callbacks; create only parent workspace, then finally remove input/success output.
+YV2-15/16 retain product adapters and installed pinned image/service composition. Preserve root
+README, owner dirt/e2e-docker mode and all owner resources. No v2 field app, branch/worktree/
+stash/push. Local commit: **YV2-10: generate reusable fixed video processing**.

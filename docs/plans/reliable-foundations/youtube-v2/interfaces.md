@@ -722,3 +722,69 @@ drains the consumer and sweep, then attempts relay/publisher close even if anoth
 owns/ends its SQL pool. No service starts until a later compiled recipe calls this factory.
 [Focused offline, standalone and regression evidence](../evidence/youtube-v2/yv2-09-lifecycle.md).
 Next owner: **YV2-10 only**, reusable fixed video-to-HLS engine.
+
+## YV2-10 — fixed reusable video-to-HLS engine
+
+`loadLocalV2Registry()` now registers dependency emitters `local.video-hls` and
+`local.asset-identity`. A selected `video-hls` emits **`src/runtime/media-process.ts`,
+`video-result.ts`, `video-hls.ts` and `asset-identity.ts`**. The single identity writer also serves
+`asset-lifecycle`; existing `assetUuid` and `AssetJobIdentity` imports from `asset-lifecycle.ts`
+remain valid reexports. The extracted identity module imports no SQL/SDK/transport code.
+`assetEventId`, lifecycle hooks and all YV2-09 behavior remain unchanged. Engine-only output needs
+no lifecycle/Postgres/search/count module or application domain contract.
+
+`video-result.ts` exports strict Zod codecs `videoSourceFingerprint`, `videoHlsJob`,
+`videoHlsResult`, `videoCompletionMarker`, their `VideoSourceFingerprint`, `VideoHlsJob`,
+`VideoHlsResult`, `VideoCompletionMarker` types, plus `videoContentType`, `bindVideoResult` and
+`bindVideoMarker`. Job shape is the existing **`AssetJobIdentity`** (`assetId/jobId/attemptId`,
+normalized by the existing `assetUuid`) plus **`source:{key,size,sha256}`** and **`resultPrefix`**.
+The source is structurally compatible with the fingerprint portion of YV2-07's
+`VerifiedOriginal`; ETag is not a byte checksum. Source size is 1–268435456, lowercase SHA256;
+source/result keys are bounded relative ASCII object keys with no empty/dot/traversal segments.
+The immutable result prefix is explicit, relative, at most150 characters and ends in `/`.
+The trusted job adapter **must derive/check that prefix against its authoritative job namespace**;
+core does not invent a product path convention. `bindVideoMarker(raw,job)` checks all three IDs,
+all source fingerprint fields and the exact result prefix. `bindVideoResult(raw,resultPrefix)`
+is available to application/lifecycle result codecs with that same authoritative binding.
+
+`encodeVideoHls({input,output,job,signal}:VideoHlsInput):Promise<VideoCompletionMarker>` from
+`video-hls.ts` accepts **absolute local paths**. Caller supplies a previously downloaded/hash-
+verified regular input; the engine checks actual byte size, then probes the source. Hashing the
+original download belongs to **YV2-11**, not a new assertion about storage metadata. The engine
+creates **a fresh output directory exclusively**; the caller creates only its parent workspace.
+Existing output directories/files are refused without modification. On any failure after mkdir,
+the engine waits for subprocess close and removes its newly created output; it never removes
+caller input. **The runner must unconditionally finally remove the entire execution workspace,
+including input and successful output, after consuming/uploading the returned package.**
+
+Fixed behavior: one H.264 and one AAC stream in MP4; even landscape720–1080p, width≤1920,
+no nonzero rotation, duration1–600s. Encodes sequential 640×360/1000k and 1280×720/3000k
+libx264 veryfast/yuv420p, two encoding threads,128k stereo48kHz AAC, four-second VOD MPEG-TS
+segments with closed independent GOPs; aspect preserved with padding. Thumbnail is a single
+full-source-size MJPEG frame at0.5s, one thread. Both encoded streams/dimensions/duration and
+thumbnail codec/dimensions are independently ffprobed before packaging. No editor knobs.
+
+`media-process.ts` exports `InvalidMedia` (`code:"INVALID_MEDIA"`), `MediaProbe`,
+`validateVideoOriginal`, `probeMedia`, `localMediaPath` and `runMedia`. Subprocesses use argv,
+`no shell`, no stdin, a local file/crypto/data protocol allowlist,1MiB stdout bound,4KiB retained
+stderr tail,30s probe/20m FFmpeg timeouts, and TERM→KILL after1s on abort. Close is awaited;
+abort reason is preserved and a timeout cannot resolve as success. The whole encode/package
+operation also has one20m AbortSignal deadline. Missing executable/OS runtime is not installed
+by emitting these files; later composition must supply the exact retained FFmpeg pin.
+
+`videoPlaylistReferences(playlist,names)` and
+`packageVideoHls(output,job,duration,signal)` expose the finite local packaging checks for reuse.
+Only360/720/index.m3u8, segmentNNNNN.ts, thumbnail.jpg and generated master.m3u8 are accepted;
+each VOD rendition has1–160 unique local segment references, no extra files or URI tags.
+Packaging requires a fresh three-entry encoded root, writes master exclusively, checks regular
+nonempty bounded files and streams their actual byte hashes into the marker inventory. Marker
+has required master/thumbnail/both playlists/segments, unique paths and exact content types.
+It returns a marker object; **it does not write `_complete.json` or publish any object**.
+
+`video-hls-worker-bindings` remains a required gap; no `provides.templates` attestation, runnable
+service, FFmpeg install/image stage or normal configuration control was added. **YV2-11** owns
+bounded object download/hash verification, immutable existing-marker/inventory validation/reuse,
+segment→playlist→master→marker upload ordering, confirmed result callbacks, concurrency1 and
+workspace cleanup. **YV2-15/16** own product event/path adapters, actual source-bound compiled
+recipe and pinned service/image wiring; non-video builds must continue without FFmpeg.
+[Real pinned-media, standalone and regression evidence](../evidence/youtube-v2/yv2-10-video-engine.md).
