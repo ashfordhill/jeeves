@@ -997,3 +997,16 @@ checks establish only observed smoke results. Experimental partial output needs 
 list and cannot weaken the strict compatibility report or become verified runtime evidence.
 Promote concise, applicable field lessons into actual chat context/tools and evaluation cases;
 archiving a retrospective does not by itself change assistant behavior.
+
+## 2026-11-07 diagram snapshots as field-project evidence
+
+Pair each intentional architecture or adopted presentation change with an immutable diagram
+image, editable source and renderer identity. Retain the original before changing a field
+baseline. A clean full-diagram export supports architecture comparison; a standard-size studio
+screenshot additionally shows controls, layout and readability. Preserve both when UI changes.
+
+Source equality does not establish visual equality: layout hints, fonts, owner expansion and
+renderer changes can alter the picture. Record these capture inputs and retain earlier renders.
+Image export must not mutate the project or the user's camera, focus and selection, and a focus
+filter must not silently omit relationships from a purported full-diagram export. Treat images
+as review evidence alongside the machine-readable source, not as substitute generator contracts.

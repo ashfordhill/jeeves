@@ -4842,3 +4842,32 @@ unless changed deliberately. Do not front-load all video abstractions or auto-st
 the owner's requested review. Keep .jeeves-feedback/ untouched.
 
 Local commit: **Plan iterative YouTube field projects and generation benchmarks**.
+
+## 2026-11-07 — Diagram snapshot plan and settled YouTube v1 choices
+
+Planning unit on main after `f04f88b`; no runtime, diagram or generator changes. The owner asks
+for diagram images inside every field version, new images when its diagram changes, and the
+same-repository backend under `jeeves-generator/`. Follow-up answers settle a minimal functional
+browser UI and PostgreSQL; changing the saved YouTube's drawn MySQL before v1 is authorized.
+
+Updated the [active plan](plans/reliable-foundations/youtube-field-project-plan.md), current
+repository pointers and the stale blueprint introduction. Appended feedback/playbook decisions.
+FP00 now adds mouse PNG export of the real full canvas; FP01 archives original source/image,
+updates PostgreSQL, archives again and makes a named v1 copy. Numbered snapshots retain hashes,
+source revision, renderer identity, resolved layout/view context and reasons; UI changes also
+retain studio screenshots. No existing diagram-image export was found; resvg is currently used
+only for chat attachments. Heavy template certification stays deferred.
+
+Required checks passed on Node 24.21.0: `pnpm check` (380 tests / 46 files, lint/typechecks),
+32 native E2Es (1.0m), and web production build (existing chunk advisory). Running owner app
+checked by mouse at 1280×800: TinyURL rev53 renders 12 tiles, Fit and line guide work, no browser
+errors; complete design/history response and project listing unchanged. Logs, inspected PNG and
+browser result are in /tmp/jeeves-diagram-snapshot-plan/. No owned server or project was created.
+
+Next: dispatch only FP00 to a fresh Sol/xhigh agent, then coordinate subsequent units sequentially.
+There are no unanswered product choices. Agents may choose bounded local implementation details;
+ask only if new evidence changes the agreed scope. Preserve the original before the authorized
+database update. Keep `.jeeves-feedback/` untouched; do not push. Record actual implementation
+and export limits rather than presenting this plan as completed functionality.
+
+Local commit: **Plan diagram snapshots and settle YouTube v1 choices**.

@@ -1,8 +1,9 @@
 # Studio blueprint
 
-The blueprint is the part of a design that a code generator reads. Code generation is a separate
-future service and is not built here. The studio writes through operations; the blueprint is
-derived on every request and is never stored or edited.
+The blueprint is the part of a design that a code generator reads. Code generation is not
+implemented yet; the active [field-project plan](plans/reliable-foundations/youtube-field-project-plan.md)
+places it in `jeeves-generator/` in this repository, separate from the studio. The studio writes
+through operations; the blueprint is derived on every request and is never stored or edited.
 
 The new default `studio-tinyurl-foundation@1.0.0` stores complete schema-v3 declarations. Its
 default v2 export deliberately refuses exact scope/ownership/operation loss; request
@@ -14,7 +15,7 @@ They neither filter this endpoint nor change the design revision: the blueprint 
 every saved relationship.
 
 ```text
-studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ generator (future, separate)
+studio (operations) ──▶ design document ──▶ designBlueprint() ──▶ GET /projects/:id/blueprint ──▶ jeeves-generator (planned)
 ```
 
 ## Endpoint

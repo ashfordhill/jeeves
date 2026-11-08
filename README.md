@@ -7,8 +7,9 @@ no cycles. You configure each tile from a finite catalog of settings and provide
 talk to a chat assistant that edits the same design with the same rules. Every design is exposed
 as a read-only, versioned **blueprint** (`GET /projects/:id/blueprint`, default v2; `?version=3` includes explicit persistent profile/requirements and logical ownership/access and exact finite Create/Resolve operation and positive-cache policy declarations). Code generation is not
 implemented yet. The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
-keeps the generator and experimental templates in this repository, exports standalone applications
-and measures improvements across working v1/v2 field projects before heavy certification.
+keeps the generator and experimental templates in `jeeves-generator/`, exports standalone
+applications and measures improvements across working v1/v2 field projects before heavy
+certification. Numbered diagram images and their editable source will trace each version's changes.
 The inspector, blueprint v3 and chat share a [snapshot compatibility report](docs/studio-readiness.md):
 structural validity, exact contracts, implementation availability and exact-output evidence stay
 separate. Product artifacts remain unavailable and runtime evidence remains none.

@@ -616,3 +616,39 @@ Keep lightweight builds/smoke walkthroughs; broad template certification is defe
   guidance; appended the playbook lesson. No generator or field application was implemented and
   no benchmark results were invented. The two product choices, actual v1 work, owner review,
   template stabilization and later reliability evidence remain open.
+
+## 2026-11-07 — Field-version diagram snapshots and final v1 product choices
+
+Text follow-up; no new image was attached. The five original owner images remain archived in
+their existing entries.
+
+**Owner's points:**
+
+- Add a diagram image export option if needed, and include the diagram image in the YouTube v1
+  folder. Diagram changes during a version warrant new images, so UI and architecture changes
+  remain comparable across v1, v2 and later versions.
+- Put the generation backend in the same repository under a folder such as `jeeves-generator/`.
+- Resolve remaining build-plan questions before dispatching implementation agents.
+
+**Questions and answers:**
+
+- Interface: **minimal functional browser interface**, covering creator sign-in, upload, search
+  and watch.
+- Database: **change the diagram from MySQL to PostgreSQL** before beginning v1. The owner
+  explicitly permits diagram changes now and wants a suitable database choice.
+- Snapshot convention is a coordinator implementation decision: numbered, immutable images
+  paired with source and capture metadata, with additional studio screenshots for UI changes.
+  It does not imply that a screenshot alone describes every executable contract.
+
+**Decision:** use `jeeves-generator/` for the generator and its templates. Add FP00 mouse PNG
+export before FP01 freezes the baseline. Archive the current YouTube drawing before the approved
+database update, archive the result, then use a named v1 copy for further field-project changes.
+Retain every intentional diagram/presentation change with its reason, source and renderer
+identity. The two product questions are answered; local adapter details remain bounded FP01 work.
+
+**Resolution:**
+
+- Planning unit, local commit titled **Plan diagram snapshots and settle YouTube v1 choices**:
+  updated the active field plan, repository boundary and current documentation; added concrete
+  capture/provenance requirements and sequential Sol/xhigh unit dispatch. Image export, the actual
+  database selection change, baseline snapshots and generation remain implementation work.

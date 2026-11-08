@@ -10,26 +10,32 @@ satisfied. No generator, field application or benchmark result exists yet.
 
 - Start v1 from the existing YouTube diagram. Snapshot the actual saved design, blueprint and
   view before changes; do not require a broad diagram rewrite or all of NC07–NC11 first.
-- Keep generator, templates, field-project source and learning records in this repository.
-  Exported applications must also build and run outside the Jeeves checkout.
+- Keep generator and templates under `jeeves-generator/`, with field-project source and learning
+  records in this repository. Exported applications must also run outside the Jeeves checkout.
 - Deliver uploads, real transcoding, playback, search and basic view counts in stages.
 - Run locally in Docker without a cloud account. Upload requires a signed-in creator;
   successful processing automatically makes the video public.
 - Generate from Jeeves; commit the actual untouched output; plan and implement the missing
   application-specific work; then review a working v1 before starting v2.
+- Include a minimal browser interface for creator sign-in, upload, search and playback.
+- Use PostgreSQL. The owner approved updating the drawn MySQL selection before v1; retain
+  before/after diagram snapshots and record why the binding changed.
+- Retain diagram images inside each field version. Capture a new snapshot for every intentional
+  diagram change during that version, including changes to its visual presentation.
 - Defer heavy generated-template certification while the designs iterate. Keep lightweight
   working checks and accurate experimental labels.
 
-Two earlier questions remain unanswered: a minimal upload/search/watch interface versus APIs
-only, and PostgreSQL versus the drawn MySQL. A minimal interface is proposed for demonstration.
-Preserve the drawn database unless the owner chooses a change; do not silently switch it.
-Record local replacements for Cloudflare storage/delivery and exact adapter versions before
-generation. These choices do not prevent recording this process or taking the baseline snapshot.
+The owner answered the two remaining product questions: minimal interface and PostgreSQL.
+PostgreSQL fits the relational metadata/counting requirements and shares Jeeves' existing database
+tooling; this is a deliberate v1 choice, not a claim that MySQL cannot support this application.
+Record explicit local replacements for Cloudflare storage/delivery and exact adapter versions
+before generation. Choose these bounded implementation details in FP01; ask again only if a
+discovered tradeoff changes the agreed scope, needs a cloud account or introduces a paid service.
 
 ## The experiment
 
 1. **Freeze the starting point.** Record the saved diagram/revision, available blueprint,
-   generator/template versions, explicit local bindings and a small feature checklist.
+   clean diagram image, generator/template versions, explicit local bindings and a small feature checklist.
    Identify unsupported parts without completing them on the generator's behalf.
 2. **Generate and commit the baseline.** A real deterministic generator emits supported
    scaffolding/code, configuration and explicit extension points. Record inputs, file hashes
@@ -56,17 +62,21 @@ authorized.
 
 | Location | Responsibility |
 | --- | --- |
-| packages/generator/ | Deterministic assembly, finite input mapping, manifest and export. |
-| packages/templates/ | Versioned source templates and supported configuration; initially experimental. |
+| jeeves-generator/ | Generator workspace package: deterministic assembly, finite input mapping, manifest and export. |
+| jeeves-generator/templates/ | Versioned source templates and supported configuration; initially experimental. |
 | apps/server/ and apps/web/ | Existing Jeeves API and mouse-operated generation/export flow. |
-| field-projects/youtube/v1/inputs/ | Frozen design/blueprint, local bindings, screenshot and input hashes. |
+| field-projects/youtube/v1/inputs/ | Exact generation inputs: design/blueprint, local bindings, input hashes and a diagram snapshot reference. |
+| field-projects/youtube/v1/diagrams/ | Numbered immutable diagram images, editable source, view metadata and change index. |
 | field-projects/youtube/v1/app/ | Actual generated application, then completion through explicit custom commits. |
 | field-projects/youtube/v1/notes/ | Baseline commit, implementation plan, work log, smoke results and retrospective. |
 | field-projects/youtube/v2/ | A fresh later experiment with its own baseline and comparison. |
 | docs/field-projects/ | Cross-version benchmark definitions and reusable-improvement decision log. |
 
-These packages/directories are planned. Keep field apps outside the studio's apps/* workspace
-discovery. Exported lockfiles/imports/build files must stand alone, without checkout paths or
+These packages/directories are planned. Add `jeeves-generator` explicitly to pnpm workspace
+discovery when implementing its package; put reusable backend code there with a thin Jeeves API
+entry point. A separate running generator service is not necessary for the first local export.
+Keep field apps outside the studio's apps/* and packages/* workspace discovery.
+Exported lockfiles/imports/build files must stand alone, without checkout paths or
 unresolved workspace dependencies. Do not commit videos, caches, dependencies, container data or
 secrets; use a reproducible small media fixture for checks.
 
@@ -75,6 +85,69 @@ self-referential manifests. The final v1 commit and review identify the full cus
 Editing a generated file is recorded repair/integration cost, not untouched-generated credit.
 Prefer custom files and extension points, but allow necessary repairs during the experiment.
 Never silently regenerate over edits. Preserve v1 while creating v2.
+
+## Diagram images and visual history
+
+Add a mouse-operated **Export diagram → PNG** action before freezing v1. There is currently no
+diagram-image export. The board combines HTML tile faces and SVG relationships; the server's
+existing SVG rasterizer handles chat attachments, not a complete diagram. Reuse the actual canvas
+composition and settled layout so the export does not become a competing diagram renderer.
+PNG is the first deliverable; vector export can follow if useful.
+
+Export the full diagram at a readable scale, including offscreen tiles, labels, icons, routes
+and arrowheads. Omit editing controls, selection highlights and transient focus filters. Record
+owner expansion and other view choices explicitly; never present a filtered view as the complete
+architecture. Use a stable light background for comparison. Export must preserve the user's
+camera, selection, focus, saved design, revision and Undo history. Wait for the matching saved
+revision, fonts and settled layout; stale or failed captures must produce a clear error.
+
+For each version, use numbered snapshot directories such as:
+
+```text
+field-projects/youtube/v1/diagrams/
+  index.md
+  001-owner-original/
+    diagram.png
+    design.json
+    blueprint.json
+    snapshot.json
+  002-postgresql-baseline/
+    diagram.png
+    design.json
+    blueprint.json
+    snapshot.json
+```
+
+Each snapshot records project/revision, content hashes, blueprint schema, Jeeves renderer commit,
+capture settings and reason. Retain the resolved layout/view information needed to explain the
+image: layout is not persisted in the current design and stability hints can affect placement.
+Record a dirty renderer tree explicitly or capture from a clean commit. Link the snapshot's
+containing Git commit from a later index/work-log entry; avoid self-referential commit hashes.
+An image is a review artifact; saved source and blueprint remain the machine-readable inputs.
+
+Archive the current owner diagram first, then the approved PostgreSQL change, then the exact
+generation baseline. A baseline can reference the preceding snapshot when its source and view
+are identical. During v1, every intentional saved architecture edit or adopted layout/rendering
+change gets a new snapshot before the corresponding unit is handed off; multiple edits in a
+unit retain their individual change snapshots. Do not overwrite earlier files. Incidental pan,
+zoom and selection do not create architecture versions. Label intermediate snapshots explicitly
+when code has not caught up, and reconcile diagram and implementation before the final v1 review.
+
+When changing studio controls, layout or diagram presentation, also retain a standard-size
+`studio.png` screenshot alongside the clean diagram image, with viewport and interaction state
+recorded. This captures UI/readability differences that a clean diagram alone cannot show. Use
+the same capture settings across versions, explaining unavoidable differences. If the source
+is unchanged but the renderer changes, retain both renders with their renderer identities.
+
+Include the referenced diagram snapshot in the exported field-project bundle and record its
+link to the generator input hashes. Keep capture timestamps and image provenance separate from
+deterministic generated-source hashing; freeze image bytes as explicit inputs when bundling
+them. Do not claim pixel-identical renders across different fonts, browsers or renderer versions.
+
+FP00 verifies the mouse download opens as a readable complete PNG for YouTube and TinyURL,
+including exports after pan/zoom/focus; export must not mutate the project or interactive view.
+FP01 then establishes the actual archived source and PostgreSQL baseline. This is bounded export
+and provenance work, not a new image-certification suite.
 
 ## Useful partial output and truthful claims
 
@@ -104,7 +177,8 @@ deliberately reproduce a confirmed defect just to match the drawing. Record each
 correction with before/after references and its classification: diagram change, template fix
 or custom application decision. Keep actual ownership/dependencies consistent with the diagram;
 track implementation details the diagram cannot yet express. Preserve the original owner
-project and use a separate v1 copy or an explicit change preview.
+snapshot before the approved PostgreSQL update. Use a clearly named v1 project copy for subsequent
+experiment changes; retain its source-project identity and before/after snapshot links.
 
 ## Validation now, certification later
 
@@ -141,6 +215,7 @@ and dependencies rather than attributing every improvement to generation.
 | Final source provenance | Untouched generated, modified generated, newly custom, reused custom and external dependencies. |
 | Investment in Jeeves | Generator/template/diagram improvement effort separately from field-app completion; do not hide this cost. |
 | Diagram usefulness | Missing concepts, ambiguous relationships, source/code disagreements and difficulties tracing or editing the design. |
+| Visual evolution | Numbered source-linked diagram images and UI screenshots, with the reason and outcome of each architecture or presentation change. |
 | Working result | The same smoke scenarios, observed defects and limitations for each finished version. |
 
 Behavior coverage and remaining effort are the primary comparison. Source-line counts are only
@@ -186,7 +261,8 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 
 | Unit | Deliverable and exit |
 | --- | --- |
-| FP01: baseline and mappings | Snapshot saved YouTube, settle open UI/database/local adapter choices, freeze smoke scenarios and supported-template/gap mappings. Keep necessary changes minimal and recorded. |
+| FP00: diagram image export | Mouse PNG export of the real full canvas; readable labels/routes, stable capture and no saved-state or view mutation. Document usage and the snapshot convention. |
+| FP01: baseline and mappings | Archive original saved YouTube, change its database selection to approved PostgreSQL, archive the result and make the v1 copy. Select local adapters, freeze minimal-UI smoke scenarios and supported-template/gap mappings. |
 | FP02: experimental generator | Finite assembly, provenance, partial-output reporting, safe file ownership and deterministic export; strict readiness semantics preserved. |
 | FP03: first templates and Jeeves export | Useful v1 template output plus mouse generation/download; prove independent build. No heavy template certification. |
 | FP04: generated v1 checkpoint | Run the real generator and commit untouched output and provenance as its own unit. |
@@ -195,6 +271,8 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | FP07: search/counts and usable v1 | Complete agreed core/interface, run lightweight walkthrough and prepare results/limitations for review. |
 | FP08: owner review and next iteration | Owner reviews with a fresh agent; choose evidence-backed Jeeves changes and the v2 comparison. Do not automatically start v2 before that review. |
 
-Follow one writer/unit on main, handoff and local-commit rules. Split oversized units further.
+The owner requested fresh Sol agents at xhigh for implementation. Coordinate sequential units
+with one writer on main; each agent reads the latest handoff, completes only its assigned unit,
+runs the applicable checks and makes one local commit. Split oversized units further.
 The review trail must connect diagram → generated baseline → custom plan/diff → working result
 → lesson → Jeeves improvement → fresh v2.

@@ -270,10 +270,13 @@ compatibility, detached ownership exports and executable-suite content pinning.
 
 The active [YouTube field-project plan](docs/plans/reliable-foundations/youtube-field-project-plan.md)
 supersedes the separate-repository, TinyURL-first backend sequence. Keep generation/templates
-here; generate from the existing YouTube design, commit untouched output, plan and implement the
+in `jeeves-generator/`; generate from the existing YouTube design, commit untouched output, plan and implement the
 missing custom behavior, then compare fresh versions after owner review. Scope is local Docker
 upload/transcode/playback/search/basic counts with automatic public publication and generation
-from Jeeves. UI packaging and database choice remain open as recorded in the plan.
+from Jeeves. The owner selected a minimal browser interface and PostgreSQL, approving the diagram
+change before v1. First add mouse PNG export, preserve the original and changed diagrams, then
+freeze the baseline. Every intentional diagram or presentation change during a field version
+retains a new source-linked snapshot; UI changes also retain studio screenshots.
 
 Heavy template certification is deferred while designs iterate. Use lightweight build/start/flow
 checks and experimental labels; strict readiness does not certify partial scaffolds. Track reusable
