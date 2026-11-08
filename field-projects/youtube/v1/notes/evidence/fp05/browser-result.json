@@ -1,0 +1,49 @@
+{
+  "capturedAt": "2026-11-08T04:56:06.642Z",
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "ownerWeb": "http://127.0.0.1:4300",
+  "ownerApi": "http://127.0.0.1:4310",
+  "readOnly": true,
+  "mouseFlow": ["local v1 Fit", "project picker", "TinyURL Fit"],
+  "localV1": {
+    "revision": 3,
+    "sourceSha256": "7d1874a1e74c6bf53df9058a9b2f826b4d83def2aaddb328022747355979cc93",
+    "tiles": 21,
+    "lines": 25
+  },
+  "tinyurl": {
+    "revision": 53,
+    "tiles": 12,
+    "lines": 13
+  },
+  "completeProjectDesignHistoryLayoutBlueprintResponsesPreserved": true,
+  "projectListingPreserved": true,
+  "projects": [
+    {
+      "id": "293b4a2d-e25b-4a5b-83da-b27de7876f02",
+      "beforeSha256": "20dea742d4006d536d4e9190a05d2c43093a24bc160cac0e7bdeddceaf67af45",
+      "afterSha256": "20dea742d4006d536d4e9190a05d2c43093a24bc160cac0e7bdeddceaf67af45"
+    },
+    {
+      "id": "0a12f132-b0f4-400d-9b94-51546911bb6b",
+      "beforeSha256": "06f0b2335faccbab1f3a67876eef0c2ec980fbabb2a8f2ccfd532411508227fc",
+      "afterSha256": "06f0b2335faccbab1f3a67876eef0c2ec980fbabb2a8f2ccfd532411508227fc"
+    },
+    {
+      "id": "41bbd268-9244-47cc-be63-66c5e61d116c",
+      "beforeSha256": "375bd8800e8eeeb104ce0508be48c5f0d903fcbe701cf8bc616527f725f7a922",
+      "afterSha256": "375bd8800e8eeeb104ce0508be48c5f0d903fcbe701cf8bc616527f725f7a922"
+    },
+    {
+      "id": "81571ba1-c2da-4896-a79c-c31557f164ca",
+      "beforeSha256": "8f0f48ad85873ffcb129363f923bca97b49451313906112d134f5151e13a8047",
+      "afterSha256": "8f0f48ad85873ffcb129363f923bca97b49451313906112d134f5151e13a8047"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": []
+}

@@ -5122,3 +5122,34 @@ baseline/G01–G08; keep `.jeeves`/historical artifacts immutable and classify l
 repairs/custom/reused work. No automatic v2 before working-v1 owner review.
 
 Local commit: **FP04: commit untouched generated YouTube v1 baseline**.
+
+## 2026-11-07 — FP05: concrete custom YouTube v1 completion plan
+
+FP05 only on main/primary checkout after actual baseline **`02ac280da62616e9c7aad7f88457dcb72084cb25`**;
+preceding export/UI **`aedbd606342c5a369142b10cf127fc7130d50671`** recorded in appended provenance.
+No delegation/branch/worktree/stash/push. [Implementation plan](../field-projects/youtube/v1/notes/implementation-plan.md)
+names actual generated hooks/files, routes/messages/state/data/storage/publication, precise
+role/credential boundaries, source corrections and sequential acceptance. Video owns Upload +
+lifecycle with explicit grants; Transcoder no-SQL, Watch ready-view-only, private uploads/inbox/
+outbox and separate count receipts. Processing events feed lifecycle; committed ready/publication
+outbox feeds new Publication events/indexer. Stable IDs/finite failures, actual multipart/media/
+played counts, plain pinned-TS browser and safe first-run/restart are specified. No generic DSL,
+new contract framework, renderer redesign or certification prerequisite. Root reviewed decisions.
+
+Next **FP06a** applies/snapshots schema3 authority + event/outbox/batch/prose corrections and
+implements SQL/migrations/contracts/helpers; unique synthetic probes must be rolled back/cleaned.
+Then FP06b creator/multipart/uploader, FP06c actual FFmpeg/lifecycle/Watch/HLS, FP07a search/counts,
+FP07b independent S01–S08/provenance/review pack. No product choices remain or repeated milestone
+approval; owner/fresh-agent review precedes v2. Custom source naturally leaves frozen-profile
+eligibility; normal app commands continue, original005 CLI generation stays reproducible.
+
+Planning only: all108 app bytes/manifest/locks, `.jeeves`, inputs, diagrams and generator unchanged;
+manifest SHA50987079…764e21f. G01–G08 open/S01–S08 incomplete, no feature/savings/template credit.
+[Evidence](../field-projects/youtube/v1/notes/evidence/fp05/README.md): **pnpm check398/50**,
+**36 native E2Es1.3m**, **web build1.06s**, unchanged app own frozen install/TS7 build, all first
+try. Actual mouse local-v1 Fit21/25 and TinyURL53 Fit12/13, zero errors; four complete owner
+responses/listing preserved, E2E DB matches prior default-only state. No new source snapshot or
+field stack/provider campaign. Owner4300/4310 watchers/other Compose projects/`.jeeves-feedback/`
+preserved. No paid/live/cloud calls or secrets/media/dependencies/build/runtime data staged.
+
+Local commit: **FP05: plan custom YouTube v1 completion from generated baseline**.

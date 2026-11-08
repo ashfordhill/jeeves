@@ -9,8 +9,9 @@ template families and a new-directory CLI, with actual standalone build/bounded 
 business benchmark results remain unmeasured. FP01 freezes the [actual v1 source, images and local mapping](../../../field-projects/youtube/v1/README.md);
 FP03b adds guarded Jeeves mouse preview/ZIP download for the exact frozen saved source. FP04
 retains the [actual untouched generated baseline](../../../field-projects/youtube/v1/notes/baseline.md),
-independently installed and built both in this repository and outside the checkout. Custom planning
-is next in FP05; no application scenario is complete.
+independently installed and built both in this repository and outside the checkout. FP05 supplies
+the [concrete custom completion plan](../../../field-projects/youtube/v1/notes/implementation-plan.md)
+against commit `02ac280da62616e9c7aad7f88457dcb72084cb25`; no application scenario is complete yet.
 
 ## Scope and decisions
 
@@ -293,9 +294,12 @@ chosen activity; no assistant-quality improvement is claimed before measurement.
 | FP03a: first real templates (implemented) | Versioned local families emit useful standalone shells/clients/resources/containers and exact dependency/OS locks. Real scratch export builds and bounded provider/helper probes pass; business scenarios remain unrun. |
 | FP03b: Jeeves export (implemented) | Guarded mouse preview/download of the same in-memory bundle as a bounded deterministic ZIP, including frozen input/image/template provenance. Trusted profile/template assets ship in Jeeves Docker; only exact saved-source matches export. No strict eligibility credit or heavy template certification. |
 | FP04: generated v1 checkpoint (implemented) | Actual Jeeves mouse ZIP retained untouched in v1/app with exact archive/payload/input/image provenance; frozen installs and TypeScript builds pass in-repo and in a fresh independent extraction. Business scenarios remain incomplete/unrun. |
-| FP05: custom completion plan | Use the committed output's actual gaps to write the implementation plan, work log and benchmark baseline before custom coding. |
-| FP06: upload/process/playback | Complete the custom path and necessary correctness fixes through smaller assigned units, logging provenance, effort and diagram gaps; demonstrate real encoding/playback. |
-| FP07: search/counts and usable v1 | Complete agreed core/interface, run lightweight walkthrough and prepare results/limitations for review. |
+| FP05: custom completion plan (implemented) | [Concrete contracts, file hooks and assigned units](../../../field-projects/youtube/v1/notes/implementation-plan.md) from the untouched FP04 commit: shared Video authority, explicit grants, committed publication, finite lifecycle, real media/browser and frozen-scope acceptance. Planning only; no custom app code or scenario closure. |
+| FP06a: authority/state foundation | Apply/snapshot v1 schema3 ownership and processing/publication corrections; owned SQL/migrations, ready-only grants, finite envelopes/transitions/inbox/outbox and necessary shell integration. |
+| FP06b: creator/multipart/uploader | Real PKCE/creator controls, private multipart/resume/abort/status and plain browser build. S01 staged setup, S02–S03 evidence; unfinished workers stay stopped. |
+| FP06c: processing/publication/playback | Real FFmpeg ladder/thumbnail, lifecycle results/deadlines, committed ready/publication, Watch cache and HLS interface. S04–S05 evidence. |
+| FP07a: search/counts/core UI | Committed OpenSearch projection/query, duplicate-safe counts and actual-played event policy; S06–S07 and complete minimal interface. |
+| FP07b: independent working-v1 walkthrough | Outside-checkout S01–S08, finite failures and normal restart persistence, bounded repairs, provenance/benchmark and owner review pack; leave owner stack usable at4400–4402. |
 | FP08: owner review and next iteration | Owner reviews with a fresh agent; choose evidence-backed Jeeves changes and the v2 comparison. Do not automatically start v2 before that review. |
 
 The owner requested fresh Sol agents at xhigh for implementation. Coordinate sequential units

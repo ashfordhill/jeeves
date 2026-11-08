@@ -94,3 +94,12 @@ G01–G08, seven named business extensions and all 25 unsupported setting paths 
 generated report remains `applicationComplete: false`; strict readiness remains ineligible,
 template availability `none`, runtime verification `none`. No percentage, time/token saving or
 completed business behavior is inferred. Actual custom completion effort is still unmeasured.
+
+## FP05 containing-commit reference
+
+FP04's actual containing commit is **`02ac280da62616e9c7aad7f88457dcb72084cb25`**. It follows
+FP03b **`aedbd606342c5a369142b10cf127fc7130d50671`**. Use FP04, rather than later custom source
+or a new generator run, as the byte/provenance comparison anchor. The [FP05 implementation
+plan](implementation-plan.md) reads the actual helpers/services/workers/scripts/Compose and
+assigns FP06a–FP07b. It does not modify any of the108 generated files, frozen inputs, historical
+snapshots, locks or reports, and does not close G01–G08 or pass an S01–S08 scenario.

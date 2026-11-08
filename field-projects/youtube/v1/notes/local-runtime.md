@@ -153,3 +153,14 @@ lifecycle/publication/search/count/UI policy is implemented. G01–G08 and stric
 unchanged. Independent fanout publication ordering is not repaired, and upload/transcoder receive
 no metadata/counts grants. Later field handoffs require independent build and applicable checks;
 heavy provider/fault/performance/template certification remains deferred.
+
+## FP05 next runtime changes
+
+The [custom implementation plan](implementation-plan.md) specifies the next source/SQL/credential
+corrections and FP06a–FP07b order against committed FP04. In particular private upload/lifecycle
+tables must not inherit the generated default reader SELECT; runtime Video/Counts writer logins
+are separated from migration owners, and search consumes committed publication instead of raw
+processing events. First-run initialization and normal stop/start get separate documented paths
+that preserve secrets/volumes. These are planned changes, not another runtime campaign or an
+amendment to the historical probe results above. Baseline app/runtime bytes remain untouched
+through FP05; final working stack is to remain available at loopback4400–4402 for owner review.

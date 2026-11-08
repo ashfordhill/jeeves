@@ -9,8 +9,11 @@ FP03b adds guarded mouse preview/ZIP download of that same real output, includin
 and PNG; exact-source checks refuse other designs and preserve strict readiness. FP04 retains the
 actual untouched mouse-downloaded output in [app/](app/), with [baseline provenance and observable
 limits](notes/baseline.md) and [independent build evidence](notes/evidence/fp04/README.md).
-Custom completion planning is FP05; no application scenario or measured functional coverage is
-claimed. Review working v1 with the owner before deciding on v2.
+FP05 supplies the [custom completion plan](notes/implementation-plan.md), anchored to FP04 commit
+`02ac280da62616e9c7aad7f88457dcb72084cb25`. Next are sequential FP06a state/diagram foundation,
+FP06b upload, FP06c processing/playback, FP07a search/counts and FP07b independent walkthrough.
+No custom app code or complete application scenario is claimed by planning. Review working v1
+with the owner before deciding on v2.
 
 - [Diagram history](diagrams/index.md): original owner, approved PostgreSQL, separate v1 copy and
   each intentional local edit, with real mouse PNG downloads and 1280×800 studio screenshots.
